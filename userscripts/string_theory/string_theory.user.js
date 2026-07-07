@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.224924
+// @version      2026.7.7.225256
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.7.224924 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.140343\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.224924\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.7.225256 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.140343\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.225256\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16541,7 +16541,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.224924","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.224924","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.225256","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.225256","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -16737,6 +16737,10 @@ ${lines}
     if (recCb) { const tr = recCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY); } return; }
     const workCb = ev.target.closest && ev.target.closest('input.work');
     if (workCb) { ev.preventDefault(); openWorkMenu(workCb, ev.clientX, ev.clientY); return; }
+    // #374 right-click a "recording of" rel (or its pencil) → copy its attributes + dates onto the selected
+    // recordings' own recording-of rels (or all if none selected). Handled before the credit +/pencil below.
+    const roItem = ev.target.closest && !ev.target.closest(REMOVE_SEL) && ev.target.closest('.relationship-item');   // not the × — that keeps its delete menu (#374 review)
+    if (roItem) { const rr = relFromNode(roItem); if (rr && rr.entity0 && rr.entity0.entityType === 'recording' && rr.entity1 && rr.entity1.entityType === 'work') { ev.preventDefault(); openRecOfMenu(roItem, ev.clientX, ev.clientY); return; } }
     // #373 right-click the role-group "+" (add another) → copy scoped to that role's credits; right-click a
     // rel's pencil (edit) → copy scoped to just that one credit. Both reuse the recording copy menu.
     const addBtn = ev.target.closest && ev.target.closest('button.add-item.add-another-entity');
@@ -17243,6 +17247,40 @@ ${lines}
       .filter(o => o.type).sort((a, b) => a.typeID - b.typeID);
     if (!objs.length) return null;
     try { return MB.tree.fromDistinctAscArray(objs); } catch (e) { return null; }
+  }
+  // #374 apply recording-of attributes + dates onto an EXISTING recording→work rel — an update (keeps the
+  // rel's id/entities, replaces its attributes/dates), not an add. Verified against MB's reducer.
+  function updateRelAttrs(re, destRel, attrList, dates) {
+    const src = destRel.entity0 && destRel.entity0.entityType === 'recording' ? destRel.entity0 : destRel.entity1;
+    re.dispatch({
+      type: 'update-relationship-state', sourceEntity: src, batchSelectionCount: null,
+      creditsToChangeForSource: '', creditsToChangeForTarget: '',
+      oldRelationshipState: destRel,
+      newRelationshipState: { ...destRel, attributes: buildAttrTree(attrList), begin_date: (dates && dates.begin_date) || null, end_date: (dates && dates.end_date) || null, ended: !!(dates && dates.ended) },
+    });
+  }
+  function relAttrList(rel) {   // a rel's attributes as [{typeID, text_value, credited_as, name}]
+    if (!rel || !rel.attributes || !W.MB || !W.MB.tree) return [];
+    try { return [...W.MB.tree.iterate(rel.attributes)].map(a => ({ typeID: a.typeID, text_value: a.text_value || '', credited_as: a.credited_as || '', name: (a.type && a.type.name) || ((W.MB.linkedEntities.link_attribute_type[a.typeID] || {}).name) || '' })); } catch (e) { return []; }
+  }
+  const fmtRoDate = d => { const one = x => x && x.year ? [x.year, x.month, x.day].filter(Boolean).join('‑') : ''; const b = one(d.begin_date), e = one(d.end_date); if (b && e) return `${b} → ${e}`; if (b) return d.ended ? `${b} → ` : b; if (e) return `→ ${e}`; return d.ended ? 'ended' : ''; };
+  // #374 copy a "recording of" rel's attributes + dates onto the selected recordings' own recording-of
+  // rels (or all if none selected) — "always set the others exactly like that one".
+  function openRecOfMenu(sourceItem, x, y) {
+    const re = RE(); if (!re) return;
+    const srcRel = relFromNode(sourceItem); if (!srcRel) return;
+    const attrList = relAttrList(srcRel);
+    const dates = { begin_date: srcRel.begin_date || null, end_date: srcRel.end_date || null, ended: !!srcRel.ended };
+    const selTr = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
+    const trs = selTr.length ? selTr : [...document.querySelectorAll('tr.track')];
+    const destRels = [];
+    trs.forEach(tr => tr.querySelectorAll('.relationship-item').forEach(it => { if (it === sourceItem) return; const r = relFromNode(it); if (r && r._status !== 3 && r.entity0 && r.entity0.entityType === 'recording' && r.entity1 && r.entity1.entityType === 'work') destRels.push(r); }));
+    const summary = [attrList.map(a => a.name).filter(Boolean).join(', '), fmtRoDate(dates)].filter(Boolean).join(' · ') || '(no attributes or dates set)';
+    const where = selTr.length ? `${destRels.length} selected` : `all ${destRels.length}`;
+    const items = [{ header: `Copy “recording of” attributes → ${where} recording${destRels.length !== 1 ? 's' : ''}` }, { note: summary }];
+    if (!destRels.length) items.push({ header: 'No other recording-of rels to copy to' });
+    else items.push({ label: 'Copy', run: () => { let n = 0; destRels.forEach(dr => { try { updateRelAttrs(re, dr, attrList, dates); n++; } catch (e) {} }); if (n) markUsed(`Copied “recording of” attributes to ${n} recording${n !== 1 ? 's' : ''}`); toast(`Set “recording of” attributes on ${n} — review & save`); } });
+    openMenu(x, y, items);
   }
   // fetch another release's release-level credits (artists + labels) as copy specs (not yet dispatched)
   async function fetchReleaseRels(sourceGid) {
