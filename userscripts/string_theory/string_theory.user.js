@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.201039
+// @version      2026.7.7.201206
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.7.201039 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.140343\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.201039\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.7.201206 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.140343\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.201500\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16541,7 +16541,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.201039","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.201039","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.201500","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.201500","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -16898,6 +16898,11 @@ ${lines}
       /* #372 top toolbar (moved off the "Release relationships" heading to the top of the tab) */
       .gt-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 14px;padding:8px 10px;background:#f7f9fc;border:1px solid #e5ebf3;border-radius:7px}
       .gt-toolbar .gt-clone-btn{margin-left:0}
+      /* #365 "Vertical:" section — label + two icon-only up/down buttons */
+      .gt-vert{display:inline-flex;align-items:center;gap:5px}
+      .gt-vert-lbl{font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#66707c}
+      .gt-vert-btn{margin-left:0;font-size:14px;line-height:1;padding:2px 8px}
+      .gt-vert .gt-vert-btn+.gt-vert-btn{margin-left:0}
       .gt-toolbar .gt-cfg-btn{float:none;margin-left:auto}
       /* #372 config window (⚙): standard header (icon + name + version + Help) + options body */
       .gt-cfg-pop{min-width:270px;padding:0}
@@ -17083,6 +17088,91 @@ ${lines}
     if (failed) try { toast(`Copied ${n}, but ${failed} could not be copied (see console)`); } catch (e) {}
     return n;
   }
+  // #365 map a link type to the equivalent for a different entity end, by NAME — e.g. artist-recording
+  // "producer" (#141) ↔ artist-release "producer" (#30). Returns null when the role has no equivalent for
+  // that entity type (e.g. "instrument" is recording-only), so we can skip + report it.
+  function ltEquiv(srcLtId, targetType) {
+    const lt = W.MB.linkedEntities && W.MB.linkedEntities.link_type, src = lt && lt[srcLtId]; if (!src) return null;
+    const otherEnd = [src.type0, src.type1].find(t => t !== 'release' && t !== 'recording'); if (!otherEnd) return null;   // must be a credit (artist/label)
+    if (src.type0 === targetType || src.type1 === targetType) return srcLtId;   // already the right pair
+    const want = [targetType, otherEnd].sort().join('-');
+    const m = Object.values(lt).find(t => t.name === src.name && [t.type0, t.type1].slice().sort().join('-') === want);
+    return m ? m.id : null;
+  }
+  // like copyCredits, but maps each source credit's link type to the destination's entity type (#365
+  // release↔recording). Returns { n applied, skipped (no equivalent role for that entity) }.
+  function copyCreditsMapped(srcRels, destEntities) {
+    const re = RE(); if (!re) return { n: 0, skipped: 0 };
+    let n = 0, skipped = 0;
+    for (const dest of destEntities) {
+      if (!dest || dest.id == null) { skipped += srcRels.length; continue; }
+      for (const s of srcRels) {
+        const lt = ltEquiv(s.linkTypeID, dest.entityType);
+        if (lt == null) { skipped++; continue; }
+        try { dispatchRelationship(re, dest, s.other, lt, s.credit, s.attributes, s); n++; } catch (e) { skipped++; }
+      }
+    }
+    return { n, skipped };
+  }
+  // #365 read the release's OWN credits — the relationship-items in the Release relationships section
+  // (i.e. NOT inside a track row). Filtered to artist/label credits, like recordingRels.
+  function releaseCreditRels() {
+    const out = [];
+    [...document.querySelectorAll('.relationship-item')].filter(i => !i.closest('tr.track')).forEach(item => {
+      const rel = relFromNode(item); if (!rel || !looksRel(rel)) return;
+      const rel0 = rel.entity0 && rel.entity0.entityType === 'release', rel1 = rel.entity1 && rel.entity1.entityType === 'release';
+      if (!rel0 && !rel1) return;
+      const other = rel0 ? rel.entity1 : rel.entity0;
+      if (!other || !['artist', 'label'].includes(other.entityType)) return;   // only copyable credits
+      const credit = rel0 ? rel.entity1_credit : rel.entity0_credit;
+      out.push({ item, other, credit: val(credit) || '', linkTypeID: rel.linkTypeID, attributes: rel.attributes || null,
+        begin_date: rel.begin_date || null, end_date: rel.end_date || null, ended: !!rel.ended, removed: rel._status === 3 });
+    });
+    return out;
+  }
+  const releaseEntity = () => { try { const re = RE(); return re && (re.state.entity || re.state.release) || null; } catch (e) { return null; } };
+  // #365 (1) copy/move the release's own credits onto its recordings (the ticked ones, or all if none ticked)
+  function openRelToRec(anchor) {
+    const srcRels = releaseCreditRels().filter(r => !r.removed);
+    const selTr = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
+    const dests = (selTr.length ? selTr : [...document.querySelectorAll('tr.track')]).map(recordingEntity).filter(Boolean);
+    const where = selTr.length ? `${dests.length} selected recording${dests.length > 1 ? 's' : ''}` : `all ${dests.length} recordings`;
+    // #365 cleansing — release-level / packaging roles that don't belong on a recording start UNTICKED
+    // (re-tick to override). Matched as substrings against the role label.
+    const CLEANSE = ['liner note', 'compiler', 'mastering', 'remaster', 'artwork', 'art direction', 'design', 'illustration', 'photograph', 'graphic', 'manufactured', 'pressed by', 'printed by', 'booklet', 'translat', 'lacquer', 'publish', 'copyright', 'booking', '℗', '©'];
+    const entries = srcRels.map(s => { const lbl = (roleLabelOf(s) || '').toLowerCase(); return { rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : ''), checked: !CLEANSE.some(k => lbl.includes(k)) }; });
+    const chosen = () => entries.filter(e => e.cb ? e.cb.checked : e.checked !== false).map(e => e.rel);
+    const r = anchor.getBoundingClientRect();
+    if (!srcRels.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No release-level credits to copy' }]); return; }
+    if (!dests.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No recordings on this release' }]); return; }
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n, skipped } = copyCreditsMapped(c, dests); if (n) markUsed(`Copied ${n} release credit${n > 1 ? 's' : ''} to ${where}`); toast(`Copied ${n} to ${where}${skipped ? ` · ${skipped} had no per-recording role` : ''} — review & save`); } };
+    const moveItem = { label: 'Move (remove from release)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n } = copyCreditsMapped(c, dests); c.forEach(s => { try { const rm = s.item.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} }); if (n) markUsed(`Moved ${n} release credit${n > 1 ? 's' : ''} to ${where}`); toast(`Moved ${n} to ${where} — review & save`); } };
+    openMenu(r.left, r.bottom + 4, [{ header: `Copy release credits → ${where}` }, { checklist: entries, onToggle: () => copyItem._setSub && copyItem._setSub(String(chosen().length)) }, copyItem, moveItem]);
+  }
+  // #365 (2) collect the recordings' credits onto the release — a UNION across all tracks (dedup by
+  // role+artist+credit), each row showing the track range it covers (* = every track).
+  function openRecToRel(anchor) {
+    const rel = releaseEntity();
+    const r = anchor.getBoundingClientRect();
+    if (!rel || rel.id == null) { openMenu(r.left, r.bottom + 4, [{ header: 'Release not ready' }]); return; }
+    const total = document.querySelectorAll('tr.track').length, byKey = new Map();
+    document.querySelectorAll('tr.track').forEach(tr => {
+      const pos = trackPosOfRow(tr);
+      recordingRels(tr).filter(s => !s.removed && s.other && ['artist', 'label'].includes(s.other.entityType)).forEach(s => {
+        const key = roleKeyOfSpec(s) + '|' + (val(s.other.gid) || '') + '|' + (s.credit || '');
+        let e = byKey.get(key);
+        if (!e) { e = { rel: s, roleLbl: roleLabelOf(s), other: s.other, credit: s.credit, tracks: new Set(), items: [] }; byKey.set(key, e); }
+        if (pos != null) e.tracks.add(pos); e.items.push(s.item);
+      });
+    });
+    const trkLbl = set => (set.size && set.size >= total) ? '*' : ranges(set);
+    const entries = [...byKey.values()].map(e => ({ _e: e, role: e.rel.linkTypeID + '#' + e.roleLbl, pos: e.roleLbl, text: `${trkLbl(e.tracks)}  ${val(e.other.name)}${e.credit && e.credit !== val(e.other.name) ? ` (${e.credit})` : ''}` }));
+    const chosen = () => entries.filter(x => x.cb ? x.cb.checked : true);
+    if (!entries.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No recording credits to collect' }]); return; }
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n, skipped } = copyCreditsMapped(c.map(x => x._e.rel), [rel]); if (n) markUsed(`Collected ${n} credit${n > 1 ? 's' : ''} onto the release`); toast(`Added ${n} to the release${skipped ? ` · ${skipped} had no release role` : ''} — review & save`); } };
+    const moveItem = { label: 'Move (remove from recordings)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n } = copyCreditsMapped(c.map(x => x._e.rel), [rel]); c.forEach(x => x._e.items.forEach(it => { try { const rm = it.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} })); if (n) markUsed(`Moved ${n} credit${n > 1 ? 's' : ''} from recordings onto the release`); toast(`Moved ${n} onto the release — review & save`); } };
+    openMenu(r.left, r.bottom + 4, [{ header: 'Collect recording credits → the release (union)' }, { checklist: entries, onToggle: () => copyItem._setSub && copyItem._setSub(String(chosen().length)) }, copyItem, moveItem]);
+  }
   // destination recordings = every OTHER track row whose recording checkbox is ticked
   function checkedDestinations(sourceTr) {
     const dests = [];
@@ -17262,6 +17352,17 @@ ${lines}
     const wm = el('button', 'gt-clone-btn', '◎ Match works…');
     wm.title = 'Match each recording to an existing MusicBrainz work (via ISRC + title/artist siblings) and stage recording→work “performance” relationships';
     wm.type = 'button'; wm.onclick = () => openWorkMatch(); bar.appendChild(wm);
+    // #365 one "Vertical:" section — ⬆ pushes the release's credits DOWN to its recordings, ⬇ pulls the
+    // recordings' credits UP to the release (icons per majkinetor: up = release→recordings, down = →release)
+    const vwrap = el('span', 'gt-vert');
+    vwrap.appendChild(el('span', 'gt-vert-lbl', 'Vertical:'));
+    const r2r = el('button', 'gt-clone-btn gt-vert-btn', '⬆');
+    r2r.title = 'Release → recordings: copy (or move) the release-level credits onto its recordings — the ticked ones, or all if none ticked';
+    r2r.type = 'button'; r2r.onclick = () => openRelToRec(r2r);
+    const c2r = el('button', 'gt-clone-btn gt-vert-btn', '⬇');
+    c2r.title = 'Recordings → release: collect the recordings’ credits onto the release — a union across all tracks (shows the track range each covers)';
+    c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r);
+    vwrap.append(r2r, c2r); bar.appendChild(vwrap);
     const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
     cfg.onclick = () => openAboutPopover(cfg); bar.appendChild(cfg);
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
