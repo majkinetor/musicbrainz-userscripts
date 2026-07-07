@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.151826
+// @version      2026.7.7.152919
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -730,7 +730,8 @@
     const tabs = content.querySelector(':scope > .tabs');
     content.insertBefore(bar, tabs ? tabs.nextSibling : content.firstChild);
     gtApplyHelp();
-    if (gtAutoMatch) setTimeout(() => { try { openWorkMatch(); } catch (e) {} }, 500);   // #372 auto-open + match
+    // #372 auto-open + match — but skip it when every recording already has a work (nothing to do)
+    if (gtAutoMatch) setTimeout(() => { try { if (wmRecordings().some(r => !r.hasWorkOnPage)) openWorkMatch(); } catch (e) {} }, 500);
     return true;
   }
 
@@ -1413,7 +1414,7 @@
         return;
       }
       if (dot) { dot.style.visibility = 'visible'; if (w._gtNew) { dot.style.background = '#2c7a51'; dot.title = 'new work'; } else { const L = WM_LEVEL[row.level] || WM_LEVEL.near; dot.style.background = L.c; dot.title = L.t; } }
-      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + w.title); nw.title = 'change / pick a work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
+      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || '')); nw.title = 'change / pick a work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
       else { const a = el('a', 'gt-wm-wa', w.title); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'change / pick a work (middle-click to open the work)'; a.onclick = e => { e.preventDefault(); e.stopPropagation(); wmPicker(row, wkd, draw, updatePlan); }; wkd.appendChild(a); if (w.disambiguation) wkd.appendChild(el('span', 'gt-wm-disamb', ` (${w.disambiguation})`)); }
       if (wad) {
         wad.textContent = '';
@@ -1471,7 +1472,7 @@
       cur.textContent = ''; cur.appendChild(el('span', 'gt-wm-cur-l', 'Current: '));
       const w = row.chosen;
       if (!w) { cur.appendChild(el('span', 'gt-wm-none', '— none —')); return; }
-      if (w._gtNew) { cur.appendChild(el('span', 'gt-wm-newtag', '＋ new work: ' + w.title)); return; }
+      if (w._gtNew) { cur.appendChild(el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || ''))); return; }
       const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'open this work in a new tab'; cur.appendChild(a);
       if (row.writers && row.writers.length) cur.appendChild(el('span', 'gt-wm-rw', ' — ' + row.writers.slice(0, 4).join(', ')));
       const clr = el('button', 'gt-wm-act', '↺'); clr.type = 'button'; clr.title = 'clear this match'; clr.onclick = () => { row.chosen = null; paintCur(); draw && draw(); updatePlan && updatePlan(); }; cur.appendChild(clr);
