@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.160551
+// @version      2026.7.7.165335
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1272,6 +1272,7 @@
       + '.gt-wm-tb .gt-wm-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}'
       + '.gt-wm-tbl2{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555}.gt-wm-tbl2 b{color:#563b8f}'
       + '.gt-wm-warn{color:#b00;font-weight:600;font-size:12px}.gt-wm-warn.click{cursor:pointer}.gt-wm-warn.click:hover{text-decoration:underline}'
+      + '.gt-wm-cancel{font:12px Arial;color:#b00;background:#fff;border:1px solid #e3aeae;border-radius:12px;padding:1px 9px;cursor:pointer;flex:none}.gt-wm-cancel:hover{background:#fdecec}'
       + '.gt-wm-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}'
       + '.gt-wm-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}.gt-wm-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}'
       + '.gt-wm-btn:disabled,.gt-wm-caret:disabled{opacity:.45;cursor:default;pointer-events:none}'
@@ -1350,6 +1351,7 @@
     // then resolve serially (WS2 rate-limits ~1 req/s) and fill each row in as its match lands
     let done = 0; api.setProgress(0, rows.length);
     for (const row of rows) {
+      if (api.isCancelled()) { toast(`Matching cancelled — ${done} of ${rows.length} matched`); break; }   // #372 stop, keep partial results
       if (!row.hasWorkOnPage) { try { await wmMatchOne(row); } catch (e) {} }
       row._matched = true; api.setProgress(++done, rows.length); api.draw(); api.updatePlan();
       if (!wmEl) return;   // dialog closed mid-run
@@ -1383,12 +1385,15 @@
     const paintChip = () => { const lvl = WM_LVL_BY_RANK[wmCutoff] || 'near'; chipDot.style.background = WM_LEVEL[lvl].c; chipLbl.textContent = lvl; };
     paintChip();
     const warn = el('span', 'gt-wm-warn');
+    let cancelled = false;   // #372 cancel an ongoing match without closing the matcher
+    const cancelBtn = el('button', 'gt-wm-cancel', '✕ cancel'); cancelBtn.type = 'button'; cancelBtn.title = 'stop matching (keeps what has matched so far)'; cancelBtn.style.display = 'none';
+    cancelBtn.onclick = () => { cancelled = true; cancelBtn.style.display = 'none'; };
     const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
     const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.title = 'more actions';
     matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
     // #363 new-work options on the left; matched status + cutoff + Match (with a caret menu for Clear) on the right
-    tb.append(wmNewParamsUi(), amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, matchCaret); body.appendChild(tb);
-    const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); matchBtn.disabled = !!n; matchCaret.disabled = !!n; };   // disable ⚡ Match while matching runs
+    tb.append(wmNewParamsUi(), amstatus, cancelBtn, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, matchCaret); body.appendChild(tb);
+    const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); matchBtn.disabled = !!n; matchCaret.disabled = !!n; cancelBtn.style.display = n ? '' : 'none'; };   // disable ⚡ Match + offer cancel while matching runs
     // ── table ──
     const tbl = el('table', 'gt-wm-tbl');
     const cg = document.createElement('colgroup'); ['4%', '27%', '19%', '3%', '28%', '19%'].forEach(w => { const c = document.createElement('col'); c.style.width = w; cg.appendChild(c); }); tbl.appendChild(cg);   // fixed widths — the # column was ballooning to an equal 1/6 (blank left column)
@@ -1455,7 +1460,7 @@
     applyBtn.onclick = async () => { const n = await wmApply(rows, null); if (n > 0) closeWorkMatch(); };   // close the popup once staged (#363 follow-up)
     foot.append(newAllBtn, plan, applyBtn);   // #363 Clear moved to the Match caret menu; new-work options moved to the toolbar
     draw(); updatePlan();
-    return { draw, updatePlan, setProgress };
+    return { draw, updatePlan, setProgress, isCancelled: () => cancelled };
   }
   function wmResRow(work, row, draw, updatePlan) {
     const r = el('div', 'gt-wm-res');
