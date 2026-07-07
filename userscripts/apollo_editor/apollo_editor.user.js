@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.7.231400
+// @version      2026.7.7.233628
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -234,10 +234,12 @@
   // {art} if any artist in its credit does — MB marks each with span.mp (gold).
   function recPendingState(mi, ti) {
     try {
-      const rec = u(koTrack(mi, ti).recording); if (!rec) return null;
-      let art = false; const ac = u(rec.artistCredit), names = ac && u(ac.names);
+      const ko = koTrack(mi, ti), rec = u(ko.recording);
+      // #376 check the CURRENTLY-shown artist credit (the track's), not the recording's — so picking a
+      // different (non-pending) artist clears the highlight. Title pending stays recording-level.
+      let art = false; const ac = u(ko.artistCredit), names = ac && u(ac.names);
       if (names) for (const n of names) { const a = u(n.artist); if (a && u(a.editsPending)) { art = true; break; } }
-      return { rec: !!u(rec.editsPending), art };
+      return { rec: rec ? !!u(rec.editsPending) : false, art };
     } catch (e) { return null; }
   }
   function liveNames(track) { const ac = u(track.artistCredit) || {}; return u(ac.names) || []; }
