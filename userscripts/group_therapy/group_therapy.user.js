@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.225500
+// @version      2026.7.7.225256
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -208,7 +208,7 @@
     if (workCb) { ev.preventDefault(); openWorkMenu(workCb, ev.clientX, ev.clientY); return; }
     // #374 right-click a "recording of" rel (or its pencil) → copy its attributes + dates onto the selected
     // recordings' own recording-of rels (or all if none selected). Handled before the credit +/pencil below.
-    const roItem = ev.target.closest && ev.target.closest('.relationship-item');
+    const roItem = ev.target.closest && !ev.target.closest(REMOVE_SEL) && ev.target.closest('.relationship-item');   // not the × — that keeps its delete menu (#374 review)
     if (roItem) { const rr = relFromNode(roItem); if (rr && rr.entity0 && rr.entity0.entityType === 'recording' && rr.entity1 && rr.entity1.entityType === 'work') { ev.preventDefault(); openRecOfMenu(roItem, ev.clientX, ev.clientY); return; } }
     // #373 right-click the role-group "+" (add another) → copy scoped to that role's credits; right-click a
     // rel's pencil (edit) → copy scoped to just that one credit. Both reuse the recording copy menu.
