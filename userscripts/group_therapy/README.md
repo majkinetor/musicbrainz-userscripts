@@ -49,17 +49,21 @@ If you've **selected recordings/works** (ticked their checkboxes), the group opt
 
 ### Copy / Move
 
-Tick the destination recordings (MB's own recording checkboxes), then
-  
+Tick the destination recordings (MB's own recording checkboxes) — **or tick none, which means every other track** — then
+
 #### From recording/work
 
 Right-click the source recording's checkbox for a menu (its header shows which tracks you're copying to):
-- *Copy* — duplicate this recording's credits onto every ticked recording with credits updated if there are already some
+- *Copy* — duplicate this recording's credits onto every destination recording, updating any it already has
 - *Move* — the same, then remove them from the source. 
 
 **Right-click a work's checkbox** to copy/move that work's own credits (writer, composer, lyricist, …) onto the selected works.
 
-The menu lists each credit with a **checkbox** (all on by default) — untick any you don't want to copy, or **right-click a credit to select only that role** (e.g. just the composers). Copy/Move act on the ticked credits, and the count updates live.
+The menu lists each credit with a **checkbox** (all on by default) — untick any you don't want to copy. To pick roles fast:
+- **Right-click a credit** selects only that role (e.g. just the composers); **Shift-right-click** *adds* a role to the current selection.
+- Hover a credit for two buttons that **select destination tracks by that credit**: **[A]** ticks every track crediting that **artist** (in any role), **[R]** every track crediting that artist **in the same role** — so you can, say, copy a credit onto exactly the tracks that already feature that performer.
+
+Copy/Move act on the ticked credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
 
 <img width="650" src="./screenshots/copy.png" /> 
 
@@ -144,8 +148,11 @@ When (and only when) you actually **use** Group Therapy on a page, it stamps MB'
 | Where | Action |
 | --- | --- |
 | right-click a relationship's **×** | open the group-delete menu |
-| right-click a recording's **checkbox** | copy / move its credits to the ticked recordings |
+| right-click a recording's **checkbox** | copy / move its credits to the ticked recordings (or all tracks if none ticked) |
 | right-click a work's **checkbox** | copy / move that work's credits (writer/composer/…) to the ticked works |
+| right-click a credit's **＋ / pencil** | copy scoped to that role / that one credit |
+| right-click a credit in the copy list | select only that role · **Shift** adds a role to the selection |
+| **[A] / [R]** on a credit (hover) | select all tracks crediting that artist · in the same role |
 | hover an entity name / role label | highlight all matches + show a count tooltip |
 
 The recording/work checkboxes and the `×` buttons carry a faint green accent and a tooltip so the
