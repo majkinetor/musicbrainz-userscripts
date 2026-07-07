@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.233721
+// @version      2026.7.8.004506
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.7.233721 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.233700\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.231700\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.8.004506 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.233700\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.232320\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16629,7 +16629,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.231700","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.231700","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.232320","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.232320","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -16736,7 +16736,7 @@ ${lines}
     menuEl = el('div', 'gt-menu');
     for (const it of items) {
       if (it === 'sep') { menuEl.appendChild(el('div', 'gt-sep')); continue; }
-      if (it.header != null) { menuEl.appendChild(el('div', 'gt-hdr', it.header)); continue; }
+      if (it.header != null) { const h = el('div', 'gt-hdr', it.header); it._set = v => { try { h.textContent = v; } catch (e) {} }; menuEl.appendChild(h); continue; }   // #377 live header
       if (it.note != null) { menuEl.appendChild(el('div', 'gt-note', it.note)); continue; }
       if (it.checklist) {   // per-credit toggles for copy/move — clicking a box toggles, doesn't close the menu
         const box = el('div', 'gt-ck-list');
@@ -16744,9 +16744,11 @@ ${lines}
           const lab = el('label', 'gt-ck');
           const cb = el('input', 'gt-ck-cb'); cb.type = 'checkbox'; cb.checked = entry.checked !== false; entry.cb = cb;
           cb.addEventListener('change', () => { if (it.onToggle) it.onToggle(); });
-          // whole row toggles (it's a <label>); right-click selects only this role (same link type)
-          lab.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); it.checklist.forEach(en => { if (en.cb) en.cb.checked = en.role === entry.role; }); if (it.onToggle) it.onToggle(); });
+          // whole row toggles (it's a <label>); right-click selects only this role — SHIFT-right-click ADDS
+          // this role to the current selection instead of replacing it (#377)
+          lab.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); it.checklist.forEach(en => { if (!en.cb) return; if (ev.shiftKey) { if (en.role === entry.role) en.cb.checked = true; } else en.cb.checked = en.role === entry.role; }); if (it.onToggle) it.onToggle(); });
           lab.appendChild(cb); lab.appendChild(el('span', 'gt-ck-pos', `[${entry.pos}]`)); lab.appendChild(el('span', 'gt-ck-tx', entry.text));
+          if (it.rowBtns) { const acts = el('span', 'gt-ck-acts'); it.rowBtns.forEach(rb => { const b = el('button', 'gt-ck-act', rb.label); b.type = 'button'; b.title = rb.title || ''; b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); rb.run(entry); }); acts.appendChild(b); }); lab.appendChild(acts); }   // #377 [A]/[R] per-row select buttons
           box.appendChild(lab);
         });
         menuEl.appendChild(box);
@@ -16979,6 +16981,11 @@ ${lines}
       .gt-menu .gt-ck-list{margin:2px 0 3px}
       .gt-menu .gt-ck{display:flex;align-items:flex-start;gap:7px;padding:3px 9px;font-size:11px;color:#5a6472;line-height:1.4;cursor:pointer;user-select:none}
       .gt-menu .gt-ck:hover{background:#eef1f6}
+      /* #377 per-row [A]/[R] select-by-artist/role buttons, shown on row hover */
+      .gt-menu .gt-ck-acts{margin-left:auto;display:none;gap:3px;flex:none;align-self:center}
+      .gt-menu .gt-ck:hover .gt-ck-acts{display:inline-flex}
+      .gt-menu .gt-ck-act{font:bold 10px Arial;color:#2e6da4;background:#eef4fb;border:1px solid #cfe0f0;border-radius:3px;padding:1px 6px;cursor:pointer;line-height:1.4}
+      .gt-menu .gt-ck-act:hover{background:#dce9f7;border-color:#a9cbe8}
       .gt-menu .gt-ck-cb{margin:1px 0 0;flex:none;accent-color:#2e9e5b;cursor:pointer}
       .gt-menu .gt-ck-pos{flex:none;color:#9aa3b0}
       .gt-menu .gt-ck-tx{flex:1;white-space:normal;word-break:break-word}
@@ -18361,21 +18368,28 @@ ${lines}
     const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : ''), checked: preselect ? !!preselect(s) : true }));
     // before the checkboxes render, respect the preselect (e.checked) so the Copy count reflects the ticked subset (#373)
     const chosen = () => entries.filter(e => e.cb ? e.cb.checked : e.checked !== false).map(e => e.rel);
-    // destination rows = ticked recording checkboxes (other than the source) → entities + track positions
-    const destRows = [...document.querySelectorAll('tr.track')].filter(tr => { if (tr === sourceTr) return false; const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
-    const dests = destRows.map(recordingEntity).filter(Boolean);
-    const destPos = new Set(destRows.map(trackPosOfRow).filter(p => p != null));
-    const nR = srcRels.length, nD = dests.length;
-    const srcPos = posLabel(sourceTr);
-    const where = destPos.size ? `track${destPos.size > 1 ? 's' : ''} ${ranges(destPos)}` : `${nD} recording${nD > 1 ? 's' : ''}`;
+    const nR = srcRels.length, srcPos = posLabel(sourceTr);
+    // #377 destinations are LIVE (recomputed when you Copy/Move) so the [A]/[R] row buttons can grow the
+    // selection; with nothing ticked it means ALL other tracks.
+    const tickedRows = () => [...document.querySelectorAll('tr.track')].filter(tr => { if (tr === sourceTr) return false; const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
+    const destRows = () => { const t = tickedRows(); return t.length ? t : [...document.querySelectorAll('tr.track')].filter(tr => tr !== sourceTr); };
+    const getDests = () => destRows().map(recordingEntity).filter(Boolean);
+    const whereText = () => { const t = tickedRows(); if (!t.length) return `all ${destRows().length} tracks`; const pos = new Set(t.map(trackPosOfRow).filter(p => p != null)); return pos.size ? `track${pos.size > 1 ? 's' : ''} ${ranges(pos)}` : `${t.length} recording${t.length > 1 ? 's' : ''}`; };
+    // #377 tick destination tracks by a credit: [A] = any track crediting this artist (any role); [R] = same role
+    const selectByCredit = (gid, roleKey) => { let n = 0; document.querySelectorAll('tr.track').forEach(tr => { if (tr === sourceTr) return; const has = recordingRels(tr).some(r => !r.removed && r.other && r.other.gid === gid && (roleKey == null || roleKeyOfSpec(r) === roleKey)); if (has) { const cb = tr.querySelector('input.recording'); if (cb && !cb.checked) { cb.click(); n++; } } }); return n; };
     const items = [];
     if (!nR) { items.push({ header: 'No credits here' }); }
-    else if (!nD) { items.push({ header: 'Tick destination recordings first' }); }
     else {
-      const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, dests)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${where}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
-      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; if (copyCredits(c, dests)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${where}`); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
-      items.push({ header: `Copy to ${where}` },
-        { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
+      const hdr = { header: `Copy to ${whereText()}` };
+      const refreshHdr = () => { hdr._set && hdr._set(`Copy to ${whereText()}`); };
+      const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(), dests = getDests(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, dests)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${whereText()}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${dests.length} recording${dests.length > 1 ? 's' : ''} — review & save`); } };
+      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(), dests = getDests(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; if (copyCredits(c, dests)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${whereText()}`); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${dests.length} recording${dests.length > 1 ? 's' : ''} — review & save`); } };
+      items.push(hdr,
+        { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); },
+          rowBtns: [
+            { label: 'A', title: 'select every track crediting this artist — any role', run: e => { const n = selectByCredit(e.rel.other.gid, null); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this artist` : 'No other tracks with this artist'); } },
+            { label: 'R', title: 'select every track crediting this artist in the same role', run: e => { const n = selectByCredit(e.rel.other.gid, e.role); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this role` : 'No other tracks with this role'); } },
+          ] },
         copyItem, moveItem);
     }
     openMenu(x, y, items);
