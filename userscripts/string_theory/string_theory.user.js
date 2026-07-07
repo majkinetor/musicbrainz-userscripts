@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.135435
+// @version      2026.7.7.142617
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.7.135435 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.6.220859\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.135434\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.7.142617 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.6.220859\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.142616\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16541,7 +16541,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.135434","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.135434","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.142616","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.7.142616","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -17544,17 +17544,12 @@ ${lines}
   const wmNewWorks = new Map();
   // #363 optional params applied to every new work created this session — Type + lyrics language(s), like
   // MB's own "Batch-add new works" dialog. Both catalogues live on the page (MB.linkedEntities), so there's
-  // no pagination/fetch: cache them once for the searchable combos. Choices persist across sessions.
+  // no pagination/fetch: cache them once for the searchable combos. Choices are NOT persisted (per maintainer).
   let _wmTypesCache = null, _wmLangsCache = null;
   const wmWorkTypes = () => (_wmTypesCache || (_wmTypesCache = Object.values((W.MB.linkedEntities && W.MB.linkedEntities.work_type) || {}).slice().sort((a, b) => a.name.localeCompare(b.name))));
   const wmLanguages = () => (_wmLangsCache || (_wmLangsCache = Object.values((W.MB.linkedEntities && W.MB.linkedEntities.language) || {}).filter(l => l.frequency > 0 || l.name).sort((a, b) => (b.frequency - a.frequency) || a.name.localeCompare(b.name))));
   let wmNewType = null;      // work-type id (number) or null
   let wmNewLangs = [];       // array of MB language objects
-  function wmLoadNewParams() {
-    try { const t = GM_getValue('gt-wm-newtype', ''); wmNewType = (t === '' || t == null) ? null : +t; } catch (e) {}
-    try { const ids = GM_getValue('gt-wm-newlangs', []); const lg = W.MB.linkedEntities && W.MB.linkedEntities.language; if (lg && Array.isArray(ids)) wmNewLangs = ids.map(id => lg[id]).filter(Boolean); } catch (e) {}
-  }
-  function wmSaveNewParams() { try { GM_setValue('gt-wm-newtype', wmNewType == null ? '' : wmNewType); GM_setValue('gt-wm-newlangs', wmNewLangs.map(l => l.id)); } catch (e) {} }
   const wmLangRels = () => wmNewLangs.map(l => ({ language: l, last_updated: null }));   // MB's work.languages shape
   // push the current Type/language choice onto every new work already staged (params can change after some
   // were created — MB reads these off the entity on submit)
@@ -17577,15 +17572,16 @@ ${lines}
     if (key) wmNewWorks.set(key, w);
     return w;
   }
-  // #363 the "New work:" controls in the matcher footer — a Type <select> and a searchable, multi-select
-  // Lyrics-language combo (common languages first). Both catalogues are already on the page, so no fetch.
+  // #363 the "New work options" controls in the matcher toolbar — a Type <select> and a searchable,
+  // multi-select Lyrics-language combo (common languages first). Both catalogues are already on the page.
   function wmNewParamsUi() {
-    const wrap = el('div', 'gt-wm-nwp'); wrap.appendChild(el('span', 'gt-wm-nwp-lbl', 'New work:'));
+    const wrap = el('div', 'gt-wm-nwp'); wrap.appendChild(el('span', 'gt-wm-nwp-lbl', 'New work options'));
+    const rowc = el('div', 'gt-wm-nwp-row');
     const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.title = 'Work type applied to every new work';
     typeSel.appendChild(new Option('— type —', ''));
     wmWorkTypes().forEach(t => { const o = new Option(t.name, String(t.id)); if (t.id === wmNewType) o.selected = true; typeSel.appendChild(o); });
-    typeSel.onchange = () => { wmNewType = typeSel.value ? +typeSel.value : null; wmApplyNewParams(); wmSaveNewParams(); };
-    wrap.appendChild(typeSel);
+    typeSel.onchange = () => { wmNewType = typeSel.value ? +typeSel.value : null; wmApplyNewParams(); };
+    rowc.appendChild(typeSel);
     const lc = el('div', 'gt-wm-nwp-lang'); lc.title = 'Lyrics language(s) applied to every new work';
     const chips = el('span', 'gt-wm-nwp-chips'), inp = el('input', 'gt-wm-nwp-inp');
     inp.placeholder = 'lyrics language…'; inp.spellcheck = false;
@@ -17594,7 +17590,7 @@ ${lines}
     function closeDrop() { if (drop) { drop.remove(); drop = null; document.removeEventListener('mousedown', onDown, true); } }
     function renderChips() {
       chips.textContent = '';
-      wmNewLangs.forEach(l => { const c = el('span', 'gt-wm-nwp-chip', l.name); const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove'; x.onclick = () => { wmNewLangs = wmNewLangs.filter(o => o !== l); wmApplyNewParams(); wmSaveNewParams(); renderChips(); }; c.appendChild(x); chips.appendChild(c); });
+      wmNewLangs.forEach(l => { const c = el('span', 'gt-wm-nwp-chip', l.name); const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove'; x.onclick = () => { wmNewLangs = wmNewLangs.filter(o => o !== l); wmApplyNewParams(); renderChips(); }; c.appendChild(x); chips.appendChild(c); });
     }
     function showDrop() {
       closeDrop();
@@ -17602,12 +17598,12 @@ ${lines}
       const list = wmLanguages().filter(l => !picked.has(l.id) && (!q || l.name.toLowerCase().includes(q)));
       if (!list.length) return;
       drop = el('div', 'gt-wm-nwp-drop');
-      list.slice(0, 50).forEach(l => { const it = el('div', 'gt-wm-nwp-opt', l.name); it.onmousedown = e => { e.preventDefault(); wmNewLangs.push(l); wmApplyNewParams(); wmSaveNewParams(); renderChips(); inp.value = ''; showDrop(); inp.focus(); }; drop.appendChild(it); });
+      list.slice(0, 50).forEach(l => { const it = el('div', 'gt-wm-nwp-opt', l.name); it.onmousedown = e => { e.preventDefault(); wmNewLangs.push(l); wmApplyNewParams(); renderChips(); inp.value = ''; showDrop(); inp.focus(); }; drop.appendChild(it); });
       lc.appendChild(drop); document.addEventListener('mousedown', onDown, true);
     }
     inp.oninput = showDrop; inp.onfocus = showDrop;
     inp.onkeydown = e => { if (e.key === 'Escape' && drop) { closeDrop(); e.stopPropagation(); } };
-    lc.append(chips, inp); wrap.appendChild(lc); renderChips();
+    lc.append(chips, inp); rowc.appendChild(lc); wrap.appendChild(rowc); renderChips();
     return wrap;
   }
   // proactively space WS2 calls so a long tracklist doesn't burst past the ~1 req/s limit and drop the
@@ -17761,8 +17757,9 @@ ${lines}
       + '.gt-wm-cur{margin:2px 0 6px;padding:4px 7px;background:#f6f3fc;border-radius:5px;font-size:12px}.gt-wm-cur-l{color:#777}'
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}'
       // #363 New-work params (Type + searchable lyrics-language combo) in the footer
-      + '.gt-wm-nwp{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#555}'
-      + '.gt-wm-nwp-lbl{color:#563b8f;font-weight:600;white-space:nowrap}'
+      + '.gt-wm-nwp{display:inline-flex;flex-direction:column;gap:3px;font-size:12px;color:#555}'
+      + '.gt-wm-nwp-row{display:inline-flex;align-items:center;gap:6px}'
+      + '.gt-wm-nwp-lbl{color:#8a8496;font-size:11px;white-space:nowrap}'
       + '.gt-wm-nwp-type{font:12px Arial;padding:2px 4px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;max-width:130px}'
       + '.gt-wm-nwp-lang{position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:3px;min-width:120px;max-width:240px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;padding:2px 4px}'
       + '.gt-wm-nwp-chip{display:inline-flex;align-items:center;gap:3px;background:#efeaf9;color:#5b4a86;border-radius:9px;padding:1px 4px 1px 7px;font-size:11px;white-space:nowrap}'
@@ -17776,7 +17773,7 @@ ${lines}
   function onWmKey(e) { if (e.key === 'Escape') { if (popEl) return; e.stopPropagation(); closeWorkMatch(); } }   // let an open picker take Escape first
   function closeWorkMatch() { if (wmEl) { wmEl.remove(); wmEl = null; document.removeEventListener('keydown', onWmKey, true); } }
   async function openWorkMatch() {
-    closeWorkMatch(); closePopover(); wmStyle(); wmLoadNewParams();   // #363 restore persisted Type/language for new works
+    closeWorkMatch(); closePopover(); wmStyle();
     const re = RE(); if (!re) { toast('Open the relationship editor first'); return; }
     if (performanceLtId() == null) { toast('Could not resolve the “performance” link type'); return; }
     wmEl = el('div', 'gt-cons-ov'); const panel = el('div', 'gt-cons gt-wm'), hdr = el('div', 'gt-cons-hdr');
@@ -17829,7 +17826,10 @@ ${lines}
     paintChip();
     const warn = el('span', 'gt-wm-warn');
     const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
-    tb.append(amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn); body.appendChild(tb);
+    const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.title = 'more actions';
+    matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all matches', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
+    // #363 new-work options on the left; matched status + cutoff + Match (with a caret menu for Clear) on the right
+    tb.append(wmNewParamsUi(), amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, matchCaret); body.appendChild(tb);
     const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); };
     // ── table ──
     const tbl = el('table', 'gt-wm-tbl');
@@ -17890,10 +17890,8 @@ ${lines}
     chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
     const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording still unresolved — same-title tracks share one';
     newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };
-    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Clear every match';
-    clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
     applyBtn.onclick = async () => { const n = await wmApply(rows, null); if (n > 0) closeWorkMatch(); };   // close the popup once staged (#363 follow-up)
-    foot.append(wmNewParamsUi(), newAllBtn, clearBtn, plan, applyBtn);
+    foot.append(newAllBtn, plan, applyBtn);   // #363 Clear moved to the Match caret menu; new-work options moved to the toolbar
     draw(); updatePlan();
     return { draw, updatePlan, setProgress };
   }
