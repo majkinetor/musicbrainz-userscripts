@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.162134
+// @version      2026.7.7.163227
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -395,9 +395,10 @@
       .gt-pop .gt-pop-tf{display:block;width:100%;box-sizing:border-box;min-width:0;padding:6px 8px;border:1px solid #4a90d9;border-radius:5px;font:inherit;outline:none}
       .gt-pop .gt-hidden{display:none}
       /* subtle discoverability: the controls Group Therapy adds a right-click menu to (recording/work
-         checkboxes → copy/move; the × → group delete) get a faint green accent, and a clearer ring on hover */
+         checkboxes → copy/move; the × → group delete; the +/pencil → scoped copy #373) get a green ring on hover */
       tr.track input.recording, tr.track input.work { accent-color:#2e9e5b; }
-      tr.track input.recording:hover, tr.track input.work:hover, button.icon.remove-item:hover {
+      tr.track input.recording:hover, tr.track input.work:hover, button.icon.remove-item:hover,
+      tr.track button.add-item.add-another-entity:hover, tr.track button.icon.edit-item:hover {
         outline:2px solid rgba(46,158,91,.55); outline-offset:1px; border-radius:3px; }
       /* Consolidate RG (#349) — the release×role matrix modal */
       .gt-cons-ov{position:fixed;inset:0;z-index:2147483646;background:rgba(20,24,30,.44);display:flex;align-items:center;justify-content:center}
