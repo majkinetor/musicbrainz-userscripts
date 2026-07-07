@@ -15,7 +15,8 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 <img width="500" src="./screenshots/copy-release.png" /><br>
 <img width="800" src="./screenshots/consolidation.png" /><br>
 <img width="500" src="./screenshots/highlight.png" /><br>
-<img width="650" src="./screenshots/edit-note.png" />
+<img width="650" src="./screenshots/edit-note.png" /><br>
+<img width="800" src="./screenshots/match-works.png" /><br>
 </details>
 
 **Note**: [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc) is valuable companion script.
@@ -89,18 +90,14 @@ With more than 10 releases in a group you must pick releases to be consolidated 
 
 ### Work matching
 
-The **◎ Match works…** button (next to *Consolidate RG…*) links each recording on the release to an **existing** MusicBrainz work, so a release of standards or a hits compilation **reuses** the works that already exist instead of creating duplicates. It opens a matrix — one row per recording, **Track** on the left, matched **Work** on the right — and each ticked row stages a recording→work [**performance**](https://musicbrainz.org/relationship/a3005666-a872-32c3-ad06-98af558e99b0) relationship.
+The **◎ Match works…** button links each recording on the release to an existing MusicBrainz work, so a release of standards or a hits compilation **reuses** the works that already exist instead of creating duplicates. It opens a review table — one row per recording, track on the left, matched work on the right.
 
-Both sides show a credit so you can sanity-check a match at a glance: the **performer** on the left (from the recording's artist credit) and the **writers/composers** on the right (from the work).
-
-#### How it matches
+<img width="800" src="./screenshots/match-works.png" /><br>
 
 The hard part is disambiguation — a bare title like *Beat It* matches many works. Two signals drive it:
 
 - **ISRC** — recordings that share an ISRC almost always share a work; an `/isrc` lookup returns those works (an MB text *search* can't), the strongest signal when ISRCs are present.
-- **Work autocomplete** — MB's own `/ws/js/work` endpoint (the one the native *Add relationship → Work* field uses). It returns the writers, work type, disambiguation, and **how many recordings already use each work** inline. Candidates are ranked by **exact-title match**, then by that **popularity** — so *Beat It* resolves to Michael Jackson's work (100+ recordings) over the same-named covers. Exactness ignores a descriptive trailing parenthetical, so *Take My Breath Away (love theme from "Top Gun")* still matches the work *Take My Breath Away*.
-
-#### The matrix
+- **Work autocomplete** — MB's own `/ws/js/work` endpoint (the one the native *Add relationship → Work* field uses). It returns the writers, work type, disambiguation, and **how many recordings already use each work**. Candidates are ranked by **exact-title match**, then by **popularity** — so *Beat It* resolves to Michael Jackson's work (100+ recordings) over the same-named covers. Exactness ignores a descriptive trailing parenthetical, so *Take My Breath Away (love theme from "Top Gun")* still matches the work *Take My Breath Away*.
 
 Each row gets a **confidence dot**:
 
@@ -108,21 +105,18 @@ Each row gets a **confidence dot**:
 | --- | --- |
 | 🔵 blue | **ISRC-confirmed** — a sibling recording with the same ISRC links this work |
 | 🟢 green | **unique title** — the only work with exactly this title |
-| 🟡 yellow | **dominant** — exact title and clearly the most-recorded work, but other same-titled works exist (worth a glance) |
-| 🟠 orange | **ambiguous** — several plausible works; pick one |
-| ⚪ grey | **no match** — nothing found |
+| 🟡 yellow | **dominant** — exact title and clearly the most-recorded work, but other same-titled works exist |
+| 🟠 orange | **ambiguous** — several plausible works |
 
-Controls in the footer:
+Available options:
 
-- **Cutoff selector** — how far down that ladder to auto-tick: *ISRC only* (🔵), *unique title* (🔵🟢), **dominant** (🔵🟢🟡, the default), or *any candidate* (🔵🟢🟡🟠). The matrix pre-ticks per this setting when it opens, and re-ticks immediately when you change it. Persisted.
-- **⚡ Match** — (re)ticks every row at/above the current cutoff. Handy after **Clear** or after hand-editing.
-- **✎** (per row) — opens a picker to **search** works (writers + type shown per candidate, like native), **paste a work MBID/URL**, or **＋ create a new work**.
-- **＋ new for rest** — creates a new work (named after the track) for every recording still unmatched; same-title tracks share one new work, so this never reintroduces duplicates.
-- **Clear** — unticks everything.
+- **Cutoff** — confidence level (persisted)
+- **⚡ Match** — selects every row at and above the current cutoff
+- **✎** (per row) — opens a picker to **search** works (writers + type shown per candidate), **paste a work MBID/URL**, or **＋ create a new work**.
+- **＋ New work for unresolved** — creates a new work (named after the track) for every recording still unmatched
+- **Clear** — removes all work associations in the review table
 
-**Only ticked rows are staged.** **Apply** dispatches them into the relationship editor, where they show up in MB's **pending edits** — the script never submits; you review and **save** yourself.
-
-> Matching runs progressively — rows appear immediately and fill in one by one. The autocomplete is the editor's own endpoint (not rate-limited); only the per-recording ISRC/artist lookup uses the public API, gently paced so a long tracklist doesn't trip the rate limit.
+**Apply** dispatches all associated works into the relationship editor, where they show up in MB's **pending edits** — the script never submits; you review and **save** yourself.
 
 ### Highlight
 
