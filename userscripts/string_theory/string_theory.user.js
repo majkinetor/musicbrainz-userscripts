@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.171920
+// @version      2026.7.8.172643
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.8.171920 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.8.162833\n  · Art Station v2026.7.8.171920\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.8.161249\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.8.165449");
+  console.log('%c String Theory %c v2026.7.8.172643 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.8.162833\n  · Art Station v2026.7.8.171920\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.8.172643\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.8.165449");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16645,7 +16645,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.8.161249","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.8.161249","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.8.172643","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.8.172643","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -18023,21 +18023,37 @@ ${lines}
   // the left column is populated immediately instead of trickling in as each match lands.
   async function wmPrefetchArtists(rows, draw) {
     const re = RE(); if (!re || !re.state || !re.state.entity) return;
-    const j = await wmJson('/ws/2/release/' + re.state.entity.gid + '?inc=recordings+artist-credits&fmt=json');
+    // #363 ONE release lookup fills every row's artist + ISRCs + already-linked status, so wmMatchOne can
+    // skip the per-recording /ws/2/recording detail call — the dominant serial cost of matching a long
+    // tracklist (one gated request per recording). recording-level-rels+work-rels gives each recording's
+    // work links; isrcs gives its codes.
+    const j = await wmJson('/ws/2/release/' + re.state.entity.gid + '?inc=recordings+artist-credits+isrcs+recording-level-rels+work-rels&fmt=json');
     if (!j) return;
     const byGid = new Map();
-    (j.media || []).forEach(m => (m.tracks || []).forEach(t => { const r = t.recording; if (r && r.id) byGid.set(r.id, (r['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim()); }));
+    (j.media || []).forEach(m => (m.tracks || []).forEach(t => { const r = t.recording; if (r && r.id) byGid.set(r.id, r); }));
     let any = false;
-    rows.forEach(row => { if (!row.artist) { const a = byGid.get(row.rec.gid); if (a) { row.artist = a; any = true; } } });
+    rows.forEach(row => {
+      const r = byGid.get(row.rec.gid); if (!r) return;
+      if (!row.artist) { const a = (r['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim(); if (a) { row.artist = a; any = true; } }
+      row._isrcs = r.isrcs || [];
+      row._linked = (r.relations || []).some(rel => rel.work);
+      row._prefetched = true;
+    });
     if (any) draw();
   }
   // gather candidate works for one recording: ISRC-sibling works + the internal work autocomplete
   async function wmMatchOne(row) {
     const rec = row.rec;
-    const self = await wmJson('/ws/2/recording/' + rec.gid + '?inc=artist-credits+isrcs+work-rels&fmt=json');
-    if (self && self['artist-credit']) row.artist = self['artist-credit'].map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim();
-    if (self && (self.relations || []).some(r => r.work)) { row.linked = true; return; }   // already linked
-    const isrcs = (self && self.isrcs) || [];
+    let isrcs;
+    if (row._prefetched) {   // #363 the batch release lookup already has artist + ISRCs + linked → skip the per-recording call (the big serial cost)
+      if (row._linked) { row.linked = true; return; }
+      isrcs = row._isrcs || [];
+    } else {
+      const self = await wmJson('/ws/2/recording/' + rec.gid + '?inc=artist-credits+isrcs+work-rels&fmt=json');
+      if (self && self['artist-credit']) row.artist = self['artist-credit'].map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim();
+      if (self && (self.relations || []).some(r => r.work)) { row.linked = true; return; }   // already linked
+      isrcs = (self && self.isrcs) || [];
+    }
     // compare exactness against both the full title and the title minus a trailing parenthetical, so
     // "Take My Breath Away (love theme…)" counts as an exact match of the work "Take My Breath Away"
     const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
@@ -18172,7 +18188,7 @@ ${lines}
     const rows = wmRecordings();
     if (!rows.length) { note('No recordings found on this release.'); return; }
     const api = renderWorkMatch(body, foot, rows);   // show the whole matrix at once — rows start "matching…"
-    wmPrefetchArtists(rows, api.draw);   // fill every performer name from one release lookup, before matching
+    await wmPrefetchArtists(rows, api.draw);   // #363 one release lookup fills artist + ISRCs + linked for EVERY row up front; awaited so the loop then skips the per-recording detail call
     api.runMatch();   // #372 the initial pass (and ⚡ Match afterwards) go through the same re-runnable, cancellable path
   }
   // floating menu near an anchor (cutoff options / caret actions), Apollo-style
@@ -18222,7 +18238,7 @@ ${lines}
     const updatePlan = () => {
       const n = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked).length;
       plan.textContent = n ? `${n} work${n > 1 ? 's' : ''} to add` : 'nothing resolved'; applyBtn.disabled = !n;
-      const uns = rows.filter(r => r._matched && !r.chosen && !r.hasWorkOnPage && !r.linked);
+      const uns = rows.filter(r => (r._matched || !wmRunning) && !r.chosen && !r.hasWorkOnPage && !r.linked);   // #363 once stopped, cancelled (un-matched) rows count as unresolved too
       warn.textContent = uns.length ? `⚠ ${uns.length} unresolved` : ''; warn.className = 'gt-wm-warn' + (uns.length ? ' click' : '');
       warn.onclick = uns.length ? () => {
         const r0 = uns[unresCursor % uns.length]; unresCursor++;
@@ -18234,8 +18250,11 @@ ${lines}
       wkd.textContent = ''; if (wad) wad.textContent = '';
       if (row._artEl) row._artEl.textContent = row.artist || '';
       if (row.hasWorkOnPage || row.linked) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-linked', 'already linked ✓')); return; }
-      if (!row._matched) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-dim', wmRunning ? 'matching…' : '—')); return; }
-      const w = row.chosen;
+      // #363 not matched yet: while the run is going it's "matching…"; once it stops (finished/cancelled)
+      // treat it like an unresolved row — a clickable "— none —" (pick a work) + a ＋ new-work action — so a
+      // cancelled row isn't a dead "—". We keep _matched=false so ⚡ Match still resumes it.
+      if (!row._matched && wmRunning) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-dim', 'matching…')); return; }
+      const w = !row._matched ? null : row.chosen;
       if (!w) {
         if (dot) dot.style.visibility = 'hidden';
         const none = el('span', 'gt-wm-none', '— none —'); none.title = 'pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
@@ -18293,7 +18312,7 @@ ${lines}
     matchBtn.onclick = runMatch;
     chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
     const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording still unresolved — same-title tracks share one';
-    newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };
+    newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && (r._matched || !wmRunning) && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };   // #363 include cancelled rows once matching has stopped
     applyBtn.onclick = async () => { const n = await wmApply(rows, null); if (n > 0) closeWorkMatch(); };   // close the popup once staged (#363 follow-up)
     foot.append(newAllBtn, plan, applyBtn);   // #363 Clear moved to the Match caret menu; new-work options moved to the toolbar
     draw(); updatePlan();
