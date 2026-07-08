@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.172643
+// @version      2026.7.8.181512
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1474,6 +1474,8 @@
       // toolbar (clone of Apollo's .tc-rec-tb)
       // #372 sticky toolbar; #376 flush to the header + bled to the panel edges so nothing shows behind the gap
       '.gt-wm .gt-cons-body{padding-top:0}'
+      // #381 drag-to-resize from the lower-right so a big screen can widen the table (less Artist wrap)
+      + '.gt-cons.gt-wm{resize:both;overflow:hidden;max-width:98vw;max-height:94vh;min-width:620px;min-height:320px}'
       + '.gt-wm-tb{display:flex;align-items:center;gap:8px;padding:9px 14px;flex-wrap:wrap;position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid #ecebf3;margin:0 -14px 8px}'
       + '.gt-wm-tb .gt-wm-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}'
       + '.gt-wm-tbl2{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555}.gt-wm-tbl2 b{color:#563b8f}'
