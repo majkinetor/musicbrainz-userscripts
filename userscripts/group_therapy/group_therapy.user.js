@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.191545
+// @version      2026.7.8.192042
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1738,6 +1738,14 @@
     const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
     const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No candidates yet — search or paste a work.')); };
     showCands();
+    // #363 if this row was never matched (e.g. cancelled before its turn), run the same match ⚡ Auto-match
+    // uses right now, so candidates appear automatically instead of a blank list until you type.
+    if (!(row.cands || []).length && !row._matched && !row.linked) {
+      list.textContent = ''; list.appendChild(el('div', 'gt-pop-note', 'Searching…'));
+      const myPop = popEl;
+      wmMatchOne(row).then(() => { row._matched = true; if (popEl === myPop) { showCands(); paintCur(); } draw && draw(); updatePlan && updatePlan(); })
+        .catch(() => { if (popEl === myPop) showCands(); });
+    }
     let t = null;
     const run = async () => {
       const term = (q.value || '').trim(); if (!term) return showCands();
