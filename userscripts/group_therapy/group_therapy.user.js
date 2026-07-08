@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.193456
+// @version      2026.7.8.194109
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1237,6 +1237,10 @@
   const wmWorkTypes = () => (_wmTypesCache || (_wmTypesCache = Object.values((W.MB.linkedEntities && W.MB.linkedEntities.work_type) || {}).slice().sort((a, b) => a.name.localeCompare(b.name))));
   const wmLanguages = () => (_wmLangsCache || (_wmLangsCache = Object.values((W.MB.linkedEntities && W.MB.linkedEntities.language) || {}).filter(l => l.frequency > 0 || l.name).sort((a, b) => (b.frequency - a.frequency) || a.name.localeCompare(b.name))));
   let wmNewType = null;      // work-type id (number) or null
+  // #363 default the work type to "Song" once the work_type catalogue is available (it isn't at script-init).
+  // Runs once; a later user pick sticks (the flag stays set so we never override it).
+  let _wmTypeInit = false;
+  const wmDefaultType = () => { if (_wmTypeInit) return; const s = wmWorkTypes().find(t => /^song$/i.test(t.name || '')); if (s) { wmNewType = s.id; _wmTypeInit = true; } };
   let wmNewLangs = [];       // array of MB language objects
   const wmLangRels = () => wmNewLangs.map(l => ({ language: l, last_updated: null }));   // MB's work.languages shape
   // #363 attributes + dates that go on the recording→work "recording of" RELATIONSHIP (not the work) —
@@ -1280,6 +1284,7 @@
   // #363 the "New work options" controls in the matcher toolbar — a Type <select> and a searchable,
   // multi-select Lyrics-language combo (common languages first). Both catalogues are already on the page.
   function wmNewParamsUi() {
+    wmDefaultType();   // #363 default to "Song" (once the catalogue exists)
     const wrap = el('div', 'gt-wm-nwp');
     const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.title = 'Work type applied to every new work';
     typeSel.appendChild(new Option('— type —', ''));
