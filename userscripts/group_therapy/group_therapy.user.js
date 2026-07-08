@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.181512
+// @version      2026.7.8.191300
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1621,7 +1621,9 @@
       // treat it like an unresolved row — a clickable "— none —" (pick a work) + a ＋ new-work action — so a
       // cancelled row isn't a dead "—". We keep _matched=false so ⚡ Match still resumes it.
       if (!row._matched && wmRunning) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-dim', 'matching…')); return; }
-      const w = !row._matched ? null : row.chosen;
+      // whatever's chosen (matched, picked, or a ＋/new-work on a cancelled row) — NOT gated on _matched, or a
+      // chosen set after a cancel (un-matched row) would wrongly render as "— none —" (#363: ＋ / New-work no-op)
+      const w = row.chosen;
       if (!w) {
         if (dot) dot.style.visibility = 'hidden';
         const none = el('span', 'gt-wm-none', '— none —'); none.title = 'pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
@@ -1673,6 +1675,10 @@
         row._matched = true; done++; setProgress(done, total); draw(); updatePlan();
       }
       setProgress(done, 0);                 // clears wmRunning → leftover rows show "—", ⚡ Match re-enabled
+      // #363 the run is over (finished or cancelled) — drop the AbortController. A cancel leaves it in the
+      // aborted state, and wmJson bails on an aborted signal, so keeping it would make the ✎ picker's OWN
+      // searches return nothing after a cancel (they don't after a full run, which never aborts it).
+      if (wmAbort && wmAbort.signal.aborted) wmAbort = null;
       if (!cancelled) applyCutoff();        // auto-select strong matches after a full pass (not after a cancel)
       draw(); updatePlan();
     };
