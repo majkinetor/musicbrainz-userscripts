@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.7.233700
+// @version      2026.7.8.162833
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -2595,6 +2595,11 @@
   function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
   function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
   function runAction(a) {
+    // #378 a bridged external tool (x:…). The PINNED toolbar button reaches us via bindActions (which
+    // rebinds every [data-act] to runAction, overriding pickTool), so re-sync the bridge map HERE too —
+    // otherwise a stale map (a prior sync while the external button was hidden) means nothing fires, while
+    // the Tools menu (which goes through pickTool/getToolCfg) still works.
+    if (String(a).startsWith('x:')) { syncBridges(); const b = _bridgeMap[a]; if (b) fireBridge(b); else Log.warn('Apollo bridge not present:', a); return; }
     if (a === 'match') matchAll();
     else if (a === 'revert') revertAll();
     else if (a === 'guesscase') guessCaseAll();
@@ -2676,7 +2681,9 @@
      re-reads (the external code writes the native fields / KO model, which
      Apollo doesn't watch per-value), so its grid reflects the change. ── */
   const bridgeBtn = re => [...document.querySelectorAll('button, input[type="button"], input[type="submit"]')]
-    .find(b => b.offsetParent !== null && re.test((b.textContent || b.value || '').trim())) || null;
+    // #378 must NOT match Apollo's OWN surfaced copy of the tool (the pinned bar button / Tools-menu item
+    // carry the same label) — otherwise the pinned button fires itself and nothing happens. Skip our UI.
+    .find(b => b.offsetParent !== null && !b.closest('.tc-tools, .tc-toolbtns, .tc-menu, #tc-panel, .tc-mirror') && re.test((b.textContent || b.value || '').trim())) || null;
   // built-in registry: known external buttons, each with a STABLE `act` so its
   // bar/menu placement persists. Add one entry { act, label, icon, find } to bridge another.
   const BRIDGE = [
@@ -2695,6 +2702,7 @@
       if (!out.some(o => o.act === act)) out.push({ act, label, icon: el.dataset.apolloIcon || '🔧', el });
     });
     _bridges = out; _bridgeMap = Object.fromEntries(out.map(b => [b.act, b]));
+    Log.debug('Apollo bridges synced:', out.length ? out.map(b => b.act + (b.el ? '' : '(no-el)')).join(', ') : '(none)');   // #378 diagnostics
     return out;
   }
   // tool-def accessor: native tools + present bridges, so render/customize treat them alike
@@ -2704,9 +2712,16 @@
   const isImgIcon = v => typeof v === 'string' && /^(?:data:|https?:\/\/)/.test(v);
   const iconHtml = v => isImgIcon(v) ? `<img class="tc-icimg" src="${esc(v)}" alt="">` : esc(v == null ? '' : v);
   async function fireBridge(it) {
-    if (!it || !it.el) { Log.warn('Apollo bridge: nothing to fire'); return; }
-    Log.info('Apollo bridge: firing', it.label);
-    it.el.click();
+    if (!it) { Log.warn('Apollo bridge: nothing to fire (no tool)'); return; }
+    // #378 re-resolve the LIVE element at fire time: the cached one can be stale, and a fresh find() also
+    // avoids firing Apollo's own surfaced copy of the tool. Fall back to the cached element.
+    let el = it.el;
+    const reg = BRIDGE.find(b => b.act === it.act);
+    try { if (reg && reg.find) { const fresh = reg.find(); if (fresh) el = fresh; } } catch (e) { Log.warn('Apollo bridge: find() threw', e.message); }
+    Log.info('Apollo bridge:', it.label, '· cached el', it.el ? 'yes' : 'null', '· resolved', !el ? 'null' : (el === it.el ? 'cached' : 'fresh'), '· ourUI', !!(el && el.closest && el.closest('.tc-tools,.tc-toolbtns,.tc-menu,#tc-panel')));
+    if (!el) { Log.warn('Apollo bridge: element gone —', it.label); return; }
+    Log.info('Apollo bridge: clicking', it.label, '→', el.tagName + '.' + ((el.className || '').toString().split(' ')[0] || ''));
+    el.click();
     try { await rebuild(true); } catch (e) { Log.warn('Apollo bridge: re-render failed', e.message); }   // re-read (no re-match)
   }
   // default Tools bar (in display order) for a fresh install — every other tool starts
@@ -2788,6 +2803,7 @@
     return b;
   }
   function pickTool(act) {
+    if (String(act).startsWith('x:')) Log.info('Apollo: external tool activated —', act, '· in map:', !!_bridgeMap[act]);   // #378 diagnostics (bar button or Tools-menu item)
     if (_bridgeMap[act]) return runAction(act);                  // bridged external tool — fire-and-forget
     if (OPTLESS.has(act)) return runAction(act);                 // instant (Guess feat.)
     // #280: a param tool picked from the Tools menu has nowhere to show its controls
