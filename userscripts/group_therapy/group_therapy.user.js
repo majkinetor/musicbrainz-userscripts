@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.204643
+// @version      2026.7.8.234917
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -739,7 +739,10 @@
       type: 'update-relationship-state', sourceEntity: src, batchSelectionCount: null,
       creditsToChangeForSource: '', creditsToChangeForTarget: '',
       oldRelationshipState: destRel,
-      newRelationshipState: { ...destRel, attributes: buildAttrTree(attrList), begin_date: (dates && dates.begin_date) || null, end_date: (dates && dates.end_date) || null, ended: !!(dates && dates.ended) },
+      // #383 MUST bump _status to EDIT (2) for an EXISTING rel — spreading destRel keeps _status 0 (NOOP), so
+      // MB treats the attribute/date change as nothing and submit says "You haven't made any changes". A
+      // not-yet-saved rel (ADD = 1) stays ADD so it isn't turned into an edit-of-nothing.
+      newRelationshipState: { ...destRel, _status: destRel._status === 1 ? 1 : 2, attributes: buildAttrTree(attrList), begin_date: (dates && dates.begin_date) || null, end_date: (dates && dates.end_date) || null, ended: !!(dates && dates.ended) },
     });
   }
   function relAttrList(rel) {   // a rel's attributes as [{typeID, text_value, credited_as, name}]
