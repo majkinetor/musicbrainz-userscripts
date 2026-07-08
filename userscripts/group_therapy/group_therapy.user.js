@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.232320
+// @version      2026.7.8.161249
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -296,7 +296,10 @@
     if (!needle || !window.CSS?.highlights || typeof Highlight === 'undefined') return { n: 0 };
     const lower = needle.toLowerCase(); if (lower.length < 2) return { n: 0 };
     const exist = [], neu = [], tracks = new Set(); let release = false, n = 0;
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode(x) { const p = x.parentNode; if (!p) return NodeFilter.FILTER_REJECT; const t = p.tagName; return (t === 'STYLE' || t === 'SCRIPT' || t === 'NOSCRIPT' || t === 'TEXTAREA' || t === 'INPUT') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
+    // #379 count/highlight only within the relationship editor — not the (possibly hidden) edit log, edit
+    // notes, sidebar, etc., which were inflating the tooltip counts.
+    const root = document.querySelector('div.release-relationship-editor') || document.body;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode(x) { const p = x.parentNode; if (!p) return NodeFilter.FILTER_REJECT; const t = p.tagName; return (t === 'STYLE' || t === 'SCRIPT' || t === 'NOSCRIPT' || t === 'TEXTAREA' || t === 'INPUT') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
     let node;
     while ((node = walker.nextNode())) {
       const lt = node.nodeValue.toLowerCase(); if (lt.length < lower.length) continue;
