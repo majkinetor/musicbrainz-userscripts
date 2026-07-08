@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.7.133551
+// @version      2026.7.8.171920
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2680,7 +2680,7 @@
     };
     img.src = src;
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
-    const dims = it.w && it.h ? `${it.w} × ${it.h}` : '';
+    const dims = [it.bytes ? fmtSize(it.bytes) : '', it.w && it.h ? `${it.w} × ${it.h}` : ''].filter(Boolean).join(' · ');   // #380-followup show file size in full screen too, like the card
     const cap = ov.querySelector('.as-lb-cap');
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
     cap.innerHTML = `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
