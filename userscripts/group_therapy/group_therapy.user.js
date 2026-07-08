@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.194109
+// @version      2026.7.8.204643
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1073,11 +1073,6 @@
     else toast(`✓ Added ${okEdits} credit${okEdits > 1 ? 's' : ''} across ${okRel} release${okRel > 1 ? 's' : ''} — check your edits`);
     return okEdits;
   }
-  // #372 after applying, jump to the Release relationships section so the new release-level credits are in view
-  function gtScrollToReleaseRels() {
-    const h2 = [...document.querySelectorAll('h2')].find(h => /^\s*Release relationships/i.test(h.textContent || ''));
-    if (h2) try { h2.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { h2.scrollIntoView(); }
-  }
   // The legend doubles as the release selector: columns follow which releases are ticked. Rels are fetched
   // lazily (only for selected releases) and cached; rows are rebuilt from the selected set on every render,
   // while each row's `propose` set persists in `rowsByKey`.
@@ -1148,7 +1143,7 @@
     const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Deselect every proposed credit';
     autoBtn.onclick = () => { cols.forEach(rel => addableFor(rel).forEach(row => row.propose.add(rel.gid))); draw(); updatePlan(); };
     clearBtn.onclick = () => { rows.forEach(row => row.propose.clear()); draw(); updatePlan(); };
-    applyBtn.onclick = async () => { const n = await applyConsolidation(cols, rows, () => renderConsMatrix(ctx)); if (n) { closeConsolidate(); gtScrollToReleaseRels(); } };   // #372 close + focus the release rels
+    applyBtn.onclick = async () => { const n = await applyConsolidation(cols, rows, () => renderConsMatrix(ctx)); if (n) closeConsolidate(); };   // close on success (no auto-scroll — leave the page where it was)
     foot.append(autoBtn, clearBtn, planLbl, applyBtn);
     draw(); updatePlan();
   }
