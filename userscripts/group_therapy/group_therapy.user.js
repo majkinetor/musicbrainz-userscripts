@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.190603
+// @version      2026.7.9.192529
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1260,7 +1260,22 @@
   // Click MB's own "Expand all mediums" once on load (it then loads each collapsed medium). Guarded so a
   // re-inject doesn't click it repeatedly.
   let _gtUncollapsed = false;
-  const gtApplyUncollapse = () => { if (!gtUncollapse || _gtUncollapsed) return; const b = document.getElementById('expand-all-mediums'); if (b) { _gtUncollapsed = true; try { b.click(); } catch (e) {} } };
+  const gtApplyUncollapse = () => { if (!gtUncollapse || _gtUncollapsed) return; const b = document.getElementById('expand-all-mediums'); if (b) { _gtUncollapsed = true; try { b.click(); } catch (e) {} gtLoadingBanner(); } };
+  // #390 a bottom banner while the expanded mediums load (MB renders one .loading-message per medium)
+  function gtLoadingBanner() {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:2147483646;background:#2c3a33;color:#fff;padding:7px 14px;border-radius:8px;font:13px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    banner.textContent = 'Loading media…'; document.body.appendChild(banner);
+    let ticks = 0, seen = false;
+    const poll = () => {
+      ticks++;
+      const n = document.querySelectorAll('.loading-message').length;
+      if (n > 0) { seen = true; banner.textContent = 'Loading media… (' + n + ' left)'; setTimeout(poll, 400); return; }
+      if (!seen && ticks < 12) { setTimeout(poll, 400); return; }   // grace: wait up to ~5s for loading to begin
+      banner.remove();
+    };
+    setTimeout(poll, 300);
+  }
   // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
   // already carries authors inline for searched works)
   const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;
