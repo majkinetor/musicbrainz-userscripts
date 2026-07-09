@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.9.184734
+// @version      2026.7.9.190943
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1771,10 +1771,8 @@
     let n = 0;
     list.forEach((t, i) => {
       const mix = t.version && !/^original mix$/i.test(t.version) ? ' (' + t.version + ')' : '';
-      // #387 per-track URL: /track/{id}[-slug]. The id alone 308-redirects to the
-      // canonical slug URL, but we build the slug so MB stores the canonical form.
-      const vslug = ((t.title || '') + (t.version ? ' ' + t.version : '')).toLowerCase()
-        .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      // #387 per-track URL is /track/{id} — the slug is NOT part of MB's canonical form (chaban-mb), so
+      // don't append it; the bare id 308-redirects to the slug URL in a browser anyway.
       const e = {
         isrc:   normalizeIsrc(t.isrc || ''),
         title:  (t.title || '') + mix,
@@ -1782,7 +1780,7 @@
         disc:   t.disc_number || 1,
         pos:    t.number || t.track_number || (i + 1),
         dur:    t.duration ? msToMmSs(t.duration) : '',
-        url:    t.id ? 'https://volumo.com/track/' + t.id + (vslug ? '-' + vslug : '') : '',
+        url:    t.id ? 'https://volumo.com/track/' + t.id : '',
       };
       try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Volumo map hiccup for ' + e.isrc + ': ' + errText(err)); }
       try { if (onProgress) onProgress(++n, list.length); } catch (err) {}
@@ -2458,13 +2456,13 @@
       // id, so we match by ISRC and hand back the per-track URL. Only offered when the release has a Volumo link.
       { code: 'vo', name: 'Volumo', color: _PROV_COLOR.volumo, icon: SRC_ICON.vo, linkTypeID: 254,
         album: true, urlKey: 'volumoId', conc: 99, gap: 0,
-        test: u => /(?:^|\.)volumo\.com\/track\//i.test(u),
+        test: u => /(?:^|[./])volumo\.com\/track\//i.test(u),   // note the char class incl. '/': the URL is https://volumo.com/… (no www)
         resolve: (isrc) => provAlbumUrl('volumo', isrc) },
       // Beatport (#387): same album-scoped, ISRC-matched shape as Volumo. Its tracklist (with track
       // id+slug) comes from the API when logged in via Platform Check, else from the Cloudflare tab harvest.
       { code: 'bp', name: 'Beatport', color: _PROV_COLOR.beatport, icon: SRC_ICON.bp, linkTypeID: 254,
         album: true, urlKey: 'beatportId', conc: 99, gap: 0,
-        test: u => /(?:^|\.)beatport\.com\/track\//i.test(u),
+        test: u => /(?:^|[./])beatport\.com\/track\//i.test(u),
         resolve: (isrc) => provAlbumUrl('beatport', isrc) },
     ];
 
