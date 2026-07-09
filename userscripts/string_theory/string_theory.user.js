@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.192530
+// @version      2026.7.9.193743
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.9.192530 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.161114\n  · Art Station v2026.7.8.171920\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.9.192529\n  · ISRC Scout v2026.7.9.192506\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.9.162603");
+  console.log('%c String Theory %c v2026.7.9.193743 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.161114\n  · Art Station v2026.7.8.171920\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.9.193743\n  · ISRC Scout v2026.7.9.192506\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.9.162603");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16656,7 +16656,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.9.192529","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.9.192529","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.9.193743","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.9.193743","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -18052,6 +18052,8 @@ ${lines}
   let _wmNext = 0;
   async function wmGate() { const now = Date.now(); const at = Math.max(now, _wmNext); _wmNext = at + 380; if (at > now) await sleep(at - now); }
   let wmAbort = null, wmRunning = false;   // #372 cancel aborts in-flight matching fetches; wmRunning drives the "matching…" row state
+  let wmPrefetchP = null;                  // #363 the in-flight prefetch (fired, not awaited up front) — wmMatchOne folds it in per row
+  let _wmPrefetchCache = null;             // #363 { gid, at, data } — cached 1h so re-opening the matcher doesn't re-fetch the release
   async function wmJson(url) {
     const sig = wmAbort && wmAbort.signal;
     for (let i = 0; i < 5; i++) {
@@ -18096,29 +18098,48 @@ ${lines}
   // the left column is populated immediately instead of trickling in as each match lands.
   async function wmPrefetchArtists(rows, draw) {
     const re = RE(); if (!re || !re.state || !re.state.entity) return;
+    const gid = re.state.entity.gid;
     // #363 ONE release lookup fills every row's artist + ISRCs + already-linked status, so wmMatchOne can
-    // skip the per-recording /ws/2/recording detail call — the dominant serial cost of matching a long
-    // tracklist (one gated request per recording). recording-level-rels+work-rels gives each recording's
-    // work links; isrcs gives its codes.
-    const j = await wmJson('/ws/2/release/' + re.state.entity.gid + '?inc=recordings+artist-credits+isrcs+recording-level-rels+work-rels&fmt=json');
-    if (!j) return;
-    const byGid = new Map();
-    (j.media || []).forEach(m => (m.tracks || []).forEach(t => { const r = t.recording; if (r && r.id) byGid.set(r.id, r); }));
+    // skip the per-recording /ws/2/recording detail call. Cached for 1h so re-opening the matcher (or a
+    // quick close/reopen) doesn't re-fetch. It's fired in PARALLEL with matching now (not awaited up front):
+    // artist is only a ranking hint, so the title search starts immediately and folds this in when ready.
+    let byGid = (_wmPrefetchCache && _wmPrefetchCache.gid === gid && (Date.now() - _wmPrefetchCache.at) < 3600000) ? _wmPrefetchCache.data : null;
+    if (!byGid) {
+      const j = await wmJson('/ws/2/release/' + gid + '?inc=recordings+artist-credits+isrcs+recording-level-rels+work-rels&fmt=json');
+      if (!j) return;
+      byGid = new Map();
+      (j.media || []).forEach(m => (m.tracks || []).forEach(t => { const r = t.recording; if (r && r.id) byGid.set(r.id, {
+        artist: (r['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim(),
+        isrcs: r.isrcs || [], linked: (r.relations || []).some(rel => rel.work),
+      }); }));
+      _wmPrefetchCache = { gid, at: Date.now(), data: byGid };
+    }
     let any = false;
     rows.forEach(row => {
-      const r = byGid.get(row.rec.gid); if (!r) return;
-      if (!row.artist) { const a = (r['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim(); if (a) { row.artist = a; any = true; } }
-      row._isrcs = r.isrcs || [];
-      row._linked = (r.relations || []).some(rel => rel.work);
-      row._prefetched = true;
+      const d = byGid.get(row.rec.gid); if (!d) return;
+      if (!row.artist && d.artist) { row.artist = d.artist; any = true; }
+      row._isrcs = d.isrcs; row._linked = d.linked; row._prefetched = true;
     });
     if (any) draw();
   }
   // gather candidate works for one recording: ISRC-sibling works + the internal work autocomplete
   async function wmMatchOne(row) {
     const rec = row.rec;
+    // compare exactness against both the full title and the title minus a trailing parenthetical, so
+    // "Take My Breath Away (love theme…)" counts as an exact match of the work "Take My Breath Away"
+    const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    const tnorm = wmNorm(row.title), bnorm = wmNorm(bare);
+    const isExact = t => { const n = wmNorm(t); return n === tnorm || (!!bnorm && n === bnorm); };
+    // #363 kick off the title work-search NOW — it hits the editor's UNGATED /ws/js and only needs the track
+    // title (already known), so it isn't blocked on the prefetch (artist/ISRCs), which runs in parallel. A
+    // DESCRIPTIVE trailing parenthetical isn't part of the work title → retry stripped when the full title
+    // finds nothing (titles where it IS part of the work match on the full title and skip the fallback).
+    const searchP = row.title ? (async () => { let ws = await wmWorkSearch(row.title); if (!ws.length && bare && bare !== row.title) ws = await wmWorkSearch(bare); return ws; })() : Promise.resolve([]);
+    // fold in the prefetch (artist + ISRCs + already-linked): awaited PER ROW (a shared one-time cost), not
+    // an up-front block. If there was no prefetch at all, fall back to a per-recording detail call.
+    if (wmPrefetchP) { try { await wmPrefetchP; } catch (e) {} }
     let isrcs;
-    if (row._prefetched) {   // #363 the batch release lookup already has artist + ISRCs + linked → skip the per-recording call (the big serial cost)
+    if (row._prefetched) {
       if (row._linked) { row.linked = true; return; }
       isrcs = row._isrcs || [];
     } else {
@@ -18127,15 +18148,9 @@ ${lines}
       if (self && (self.relations || []).some(r => r.work)) { row.linked = true; return; }   // already linked
       isrcs = (self && self.isrcs) || [];
     }
-    // compare exactness against both the full title and the title minus a trailing parenthetical, so
-    // "Take My Breath Away (love theme…)" counts as an exact match of the work "Take My Breath Away"
-    const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
-    const tnorm = wmNorm(row.title), bnorm = wmNorm(bare);
-    const isExact = t => { const n = wmNorm(t); return n === tnorm || (!!bnorm && n === bnorm); };
-    // does the work's own writer/artist match the track's performer? A strong signal — e.g. the
-    // "Overnight Success" work whose artist IS Teri DeSario should beat the generic same-titled ones.
-    // split the performer credit into individual names so a duet matches regardless of order/join —
-    // recording "Ann Wilson & Mike Reno" vs work artist "Mike Reno & Ann Wilson"
+    // does the work's own writer/artist match the track's performer? A strong ranking signal — split the
+    // performer credit into names so a duet matches regardless of order/join. (artist comes from the
+    // prefetch, so it's only ready here — hence a ranking hint, never a gate on finding candidates.)
     const perfNames = wmNorm(row.artist || '').split(/\s*(?:&|,|;|\/|\bfeat\.?\b|\bfeaturing\b|\bwith\b|\bvs\.?\b|\band\b|\bx\b)\s*/).map(x => x.trim()).filter(x => x.length > 2);
     const nameHit = names => !!perfNames.length && (names || []).some(n => { const nn = wmNorm(n); return perfNames.some(p => nn.includes(p)); });
     const cands = new Map();   // workGid → { gid, id, title, disambiguation, type, authors, artists, pop, isrc, exact, artistMatch }
@@ -18153,15 +18168,8 @@ ${lines}
       const j = await wmJson('/ws/2/isrc/' + encodeURIComponent(code) + '?inc=work-rels&fmt=json');
       (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) add({ gid: rel.work.id, id: null, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, true); }));
     }
-    // work autocomplete — authors + artist-popularity inline, no per-work lookup. A DESCRIPTIVE trailing
-    // parenthetical ("Take My Breath Away (love theme from “Top Gun”)") isn't part of the work title, so the
-    // full title finds nothing → retry stripped. Titles where it IS part of the work ("You Spin Me Round
-    // (Like a Record)") match on the full title and never hit the fallback.
-    if (row.title) {
-      let ws = await wmWorkSearch(row.title);
-      if (!ws.length && bare && bare !== row.title) ws = await wmWorkSearch(bare);
-      ws.forEach(w => add(w, false));
-    }
+    // fold in the title search that's been running since the top of this call
+    (await searchP).forEach(w => add(w, false));
     // rank: ISRC-confirmed → performer is on the work → exact-title → most-recorded (popularity)
     const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || ((b.artistMatch ? 1 : 0) - (a.artistMatch ? 1 : 0)) || (b.exact - a.exact) || (b.pop - a.pop));
     row.cands = list;
@@ -18273,7 +18281,7 @@ ${lines}
     const rows = wmRecordings();
     if (!rows.length) { note('No recordings found on this release.'); return; }
     const api = renderWorkMatch(body, foot, rows);   // show the whole matrix at once — rows start "matching…"
-    await wmPrefetchArtists(rows, api.draw);   // #363 one release lookup fills artist + ISRCs + linked for EVERY row up front; awaited so the loop then skips the per-recording detail call
+    wmPrefetchP = wmPrefetchArtists(rows, api.draw);   // #363 fire it in PARALLEL (don't block the popup/matching); wmMatchOne awaits it per row and the title search runs regardless
     // #363 auto-run the match only if opted in (settings) or forced by "Auto-match on start"; otherwise the
     // popup opens with every row unresolved and you click ⚡ Match yourself.
     if (forceMatch || wmAutoOnOpen) api.runMatch();   // #372 the initial pass (and ⚡ Match afterwards) go through the same re-runnable, cancellable path
