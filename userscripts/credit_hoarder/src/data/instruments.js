@@ -44,7 +44,7 @@ export const INSTRUMENTS = {
     'Vocoder': 'vocoder',
     'Xylophone': 'xylophone',
     'Bells': 'bells',
-    'Chimes': 'wind chimes',
+    'Chimes': 'chimes',   // #392 MB has no "wind chimes" instrument; the generic MB name is "chimes"
     'Glockenspiel': 'glockenspiel',
     'Shakers': 'shaker',
     'Shaker': 'shaker',

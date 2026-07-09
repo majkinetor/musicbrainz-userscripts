@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.9.211201
+// @version      2026.7.9.214355
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1055,7 +1055,8 @@
     "Vocoder": "vocoder",
     "Xylophone": "xylophone",
     "Bells": "bells",
-    "Chimes": "wind chimes",
+    "Chimes": "chimes",
+    // #392 MB has no "wind chimes" instrument; the generic MB name is "chimes"
     "Glockenspiel": "glockenspiel",
     "Shakers": "shaker",
     "Shaker": "shaker",
