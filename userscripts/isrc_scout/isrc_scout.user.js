@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.9.180438
+// @version      2026.7.9.184734
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2545,6 +2545,31 @@
       return PROV.filter(p => !p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey]));
     }
 
+    // #389 Show EVERY linked provider, even ones ISRC Scout can't add per-track. Recognise the common
+    // streaming/store hosts for a nice name/colour (Spotify even gets its glyph); anything else falls back
+    // to its hostname with a generic globe. These are read-only (open in a tab) — no add/remove actions.
+    const _GLOBE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></svg>';
+    const KNOWN_LINK = [
+      { test: u => /open\.spotify\.com\//i.test(u),                                       name: 'Spotify',      color: _PROV_COLOR.spotify, icon: SRC_ICON.sp },
+      { test: u => /(?:^|[./])qobuz\.com\//i.test(u),                                      name: 'Qobuz',        color: '#0e1a44', icon: _GLOBE },
+      { test: u => /music\.youtube\.com\/watch|youtu\.be\/|youtube\.com\/watch/i.test(u),  name: 'YouTube',      color: '#ff0000', icon: _GLOBE },
+      { test: u => /soundcloud\.com\//i.test(u),                                           name: 'SoundCloud',   color: '#ff5500', icon: _GLOBE },
+      { test: u => /music\.amazon\./i.test(u),                                             name: 'Amazon Music', color: '#00a8e1', icon: _GLOBE },
+      { test: u => /music\.apple\.com\//i.test(u),                                         name: 'Apple Music',  color: _PROV_COLOR.apple, icon: SRC_ICON.am },
+    ];
+    // recUrls this track carries that no PROV provider already renders → [{url,name,color,icon}] (deduped).
+    function otherLinked(t) {
+      const out = [], seen = new Set();
+      (t.recUrls || []).forEach(u => {
+        if (!u || seen.has(u) || PROV.some(p => p.test(u))) return;   // PROV ones are shown already
+        seen.add(u);
+        const k = KNOWN_LINK.find(x => x.test(u));
+        if (k) { out.push({ url: u, name: k.name, color: k.color, icon: k.icon }); return; }
+        let host = ''; try { host = new URL(u).hostname.replace(/^www\./, ''); } catch (e) {}
+        if (host) out.push({ url: u, name: host, color: '#8a8f98', icon: _GLOBE });
+      });
+      return out;
+    }
     // #301: two columns. LINKED = monochrome icons for providers already linked on
     // MB; ADD = a hidden candidate slot per not-yet-linked provider (Find links fills
     // them, and an added one moves over to the LINKED column).
@@ -2555,7 +2580,9 @@
     }
     function linkedHtml(t) {
       const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex, !!(t.endedUrls && t.endedUrls.has(ex))) : ''; }).filter(Boolean).join('');
-      return '<div class="ii-tl-linked" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
+      // #389 append every OTHER linked provider (read-only), so the column shows all links, not just addable ones
+      const others = t.recId ? otherLinked(t).map(o => '<a class="ii-tl linked ii-tl-other" style="color:' + o.color + '" href="' + esc(o.url) + '" target="_blank" rel="noopener" title="' + esc(o.name) + ' — linked (ISRC Scout doesn’t add this provider) · click to open">' + o.icon + '</a>').join('') : '';
+      return '<div class="ii-tl-linked" data-rec="' + esc(t.recId || '') + '">' + cells + others + '</div>';
     }
     function addHtml(t) {
       const cells = providersFor(t).map(p =>
