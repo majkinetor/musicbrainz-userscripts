@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.183447
+// @version      2026.7.9.185733
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -912,6 +912,7 @@
     body.appendChild(opt('Hide native batch tools', "Hide MusicBrainz's own batch-tools table (#batch-tools) on the edit-relationships page", () => gtHideBatch, v => { gtHideBatch = v; try { GM_setValue('gt-hide-batch', v); } catch (e) {} gtApplyBatch(); }));
     body.appendChild(opt('Auto-match on start', 'Open the work matcher and run matching automatically when the page loads', () => gtAutoMatch, v => { gtAutoMatch = v; try { GM_setValue('gt-auto-match', v); } catch (e) {} }));
     body.appendChild(opt('Auto-match on open', 'When you open the work matcher, run matching automatically — off (default): the popup opens with everything unresolved and you click ⚡ Match yourself', () => wmAutoOnOpen, v => { wmAutoOnOpen = v; try { GM_setValue('gt-wm-auto-open', v); } catch (e) {} }));
+    body.appendChild(opt('Uncollapse media on start', 'On load, click MusicBrainz’s “Expand all mediums” so every medium’s tracks are reachable during the fill phase (MB collapses mediums past the first few). Off by default — expanding a large release takes a moment.', () => gtUncollapse, v => { gtUncollapse = v; try { GM_setValue('gt-uncollapse', v); } catch (e) {} if (v) gtApplyUncollapse(); }));
     popEl.appendChild(body);
     document.body.appendChild(popEl);
     const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
@@ -921,7 +922,7 @@
   }
   function injectCloneButton() {
     const content = document.getElementById('content'); if (!content) return false;
-    if (content.querySelector('.gt-toolbar')) { gtApplyHelp(); gtApplyBatch(); return true; }
+    if (content.querySelector('.gt-toolbar')) { gtApplyHelp(); gtApplyBatch(); gtApplyUncollapse(); return true; }
     // wait until the relationship editor has rendered (its heading is the readiness signal)
     if (![...document.querySelectorAll('h2')].some(h => /^\s*Release relationships/i.test(h.textContent || ''))) return false;
     const bar = el('div', 'gt-toolbar');
@@ -950,7 +951,7 @@
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
     const tabs = content.querySelector(':scope > .tabs');
     content.insertBefore(bar, tabs ? tabs.nextSibling : content.firstChild);
-    gtApplyHelp(); gtApplyBatch();
+    gtApplyHelp(); gtApplyBatch(); gtApplyUncollapse();
     // #372 auto-open + match — but skip it when every recording already has a work (nothing to do)
     if (gtAutoMatch) setTimeout(() => { try { if (wmRecordings().some(r => !r.hasWorkOnPage)) openWorkMatch(true); } catch (e) {} }, 500);   // "Auto-match on start" opens AND runs, regardless of the per-open toggle
     return true;
@@ -1250,10 +1251,16 @@
   let gtHideHelp = (() => { try { return GM_getValue('gt-hide-help', true) !== false; } catch (e) { return true; } })();
   let gtAutoMatch = (() => { try { return GM_getValue('gt-auto-match', false) === true; } catch (e) { return false; } })();
   let gtHideBatch = (() => { try { return GM_getValue('gt-hide-batch', false) === true; } catch (e) { return false; } })();   // hide MB's own batch-tools table (off by default)
+  let gtUncollapse = (() => { try { return GM_getValue('gt-uncollapse', false) === true; } catch (e) { return false; } })();   // #390 auto-expand all mediums on load (off by default)
   // the two help paragraphs are the only direct-child <p> of #content (the batch-tools hint + the guidelines
   // link) — a stable selector even after we insert our toolbar, since that's a <div>.
   const gtApplyHelp = () => { document.querySelectorAll('#content > p').forEach(p => { p.style.display = gtHideHelp ? 'none' : ''; }); };
   const gtApplyBatch = () => { const t = document.getElementById('batch-tools'); if (t) t.style.display = gtHideBatch ? 'none' : ''; };
+  // #390 MB collapses mediums past the first few, so their tracks aren't reachable during the fill phase.
+  // Click MB's own "Expand all mediums" once on load (it then loads each collapsed medium). Guarded so a
+  // re-inject doesn't click it repeatedly.
+  let _gtUncollapsed = false;
+  const gtApplyUncollapse = () => { if (!gtUncollapse || _gtUncollapsed) return; const b = document.getElementById('expand-all-mediums'); if (b) { _gtUncollapsed = true; try { b.click(); } catch (e) {} } };
   // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
   // already carries authors inline for searched works)
   const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;

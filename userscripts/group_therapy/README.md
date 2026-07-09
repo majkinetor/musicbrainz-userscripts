@@ -151,6 +151,20 @@ When (and only when) you actually **use** Group Therapy on a page, it stamps MB'
 
 <img width="650" src="./screenshots/edit-note.png" />
 
+## Options
+
+Open the **⚙ settings** popover from the toolbar. Every option is remembered per-browser (via the userscript manager).
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| **Hide help text** | on | Hides MusicBrainz's two help paragraphs at the top of the edit-relationships page. |
+| **Hide native batch tools** | off | Hides MusicBrainz's own batch-tools table (`#batch-tools`). |
+| **Auto-match on start** | off | Opens the work matcher and runs matching automatically when the page loads. |
+| **Auto-match on open** | off | When you open the work matcher, runs matching automatically (otherwise it opens unresolved and you click **⚡ Match**). |
+| **Uncollapse media on start** | off | On load, clicks MusicBrainz's **Expand all mediums** so every medium's tracks are reachable during the fill phase (MB collapses mediums past the first few). Expanding a large release takes a moment. |
+
+The **work matcher** popup carries its own controls, also persisted: the **Cutoff** confidence level, and — under **＋ New work** — the new-work **Type** and **lyrics language**.
+
 ## Shortcuts
 
 | Where | Action |
