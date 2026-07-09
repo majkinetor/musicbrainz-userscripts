@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.170611
+// @version      2026.7.9.183447
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -745,9 +745,24 @@
       newRelationshipState: { ...destRel, _status: destRel._status === 1 ? 1 : 2, attributes: buildAttrTree(attrList), begin_date: (dates && dates.begin_date) || null, end_date: (dates && dates.end_date) || null, ended: !!(dates && dates.ended) },
     });
   }
-  // #385 set ONLY the date period (begin/end/ended) on an existing rel, leaving its attributes/credit
-  // untouched — the "Copy date" propagation. Same _status discipline as updateRelAttrs (#383): bump an
-  // existing rel to EDIT (2) so the change actually submits; a not-yet-saved rel (ADD = 1) stays ADD.
+  // #385 set the date period (begin/end/ended) on an existing rel, leaving attributes/credit untouched —
+  // powers "Set missing dates". Same _status discipline as updateRelAttrs (#383): bump an existing rel to
+  // EDIT (2) so the change submits; a not-yet-saved rel (ADD = 1) stays ADD.
+  //
+  // ── Findings (so we don't re-investigate — see issue #385) ──────────────────────────────────────────
+  // This can only FILL a blank date. It can NOT overwrite an existing date, nor clear one. Why:
+  //   • MB's editor reducer routes 'update-relationship-state' through getUpdatesForAcceptedRelationship →
+  //     mergeRelationship, which MERGES the new state into the existing relationship and KEEPS the non-empty
+  //     date. So an empty or different date sent via MB.relationshipEditor.dispatch is silently ignored and
+  //     the old date stays. Verified empirically: null, {year:null,month:null,day:null}, and empty strings
+  //     ALL leave the date intact; setting a different date keeps the first one.
+  //   • The ONLY way to overwrite/clear a date is to drive MB's own edit dialog: click the rel's
+  //     "edit-relationship-…" button to OPEN the dialog (only then does MB.relationshipEditor
+  //     .relationshipDialogDispatch exist — it's undefined otherwise), dispatch
+  //     {type:'update-date-period', action:{type:'update-begin-date', action:{type:'set-date', date}}} etc.,
+  //     then click the dialog's positive (Done) button. loujine's "Copy dates" userscript works this way.
+  //   • DECISION (majkinetor): we do NOT drive the UI, so overwrite/remove are abandoned; this stays fill-only.
+  // ────────────────────────────────────────────────────────────────────────────────────────────────────
   function applyRelDate(re, destRel, dates) {
     const e0 = destRel.entity0, e1 = destRel.entity1;
     const src = (e0 && e0.entityType === 'recording') ? e0 : (e1 && e1.entityType === 'recording') ? e1 : e0;
@@ -1830,16 +1845,19 @@
     const whereText = () => { const t = tickedRows(); if (!t.length) return `all ${destRows().length} tracks`; const pos = new Set(t.map(trackPosOfRow).filter(p => p != null)); return pos.size ? `track${pos.size > 1 ? 's' : ''} ${ranges(pos)}` : `${t.length} recording${t.length > 1 ? 's' : ''}`; };
     // #377 tick destination tracks by a credit: [A] = any track crediting this artist (any role); [R] = same role
     const selectByCredit = (gid, roleKey) => { let n = 0; document.querySelectorAll('tr.track').forEach(tr => { if (tr === sourceTr) return; const has = recordingRels(tr).some(r => !r.removed && r.other && r.other.gid === gid && (roleKey == null || roleKeyOfSpec(r) === roleKey)); if (has) { const cb = tr.querySelector('input.recording'); if (cb && !cb.checked) { cb.click(); n++; } } }); return n; };
-    // #385 "Copy date": the pencil-clicked rel carries a date period (e.g. a "recorded at" place with a
-    // date). Propagate that date onto EVERY relationship (all roles + recording-of) on the target tracks.
-    // url rels can't carry a date period, so they're skipped.
+    // #385 "Set missing dates": the pencil-clicked rel carries a date period (e.g. a "recorded at" place
+    // with a date). Stamp that date onto every UNDATED relationship (all roles + recording-of) on the target
+    // tracks. It only FILLS blanks — MB's editor reducer merges an update into the existing relationship and
+    // keeps a non-empty date, so an existing date can't be overwritten or cleared from here (that would need
+    // driving MB's own edit dialog, which we don't do). url rels can't carry a date period, so they're skipped.
     const clickedRel = (preselect && srcRels.find(s => preselect(s))) || null;
     const hasDate = !!(clickedRel && (clickedRel.begin_date || clickedRel.end_date || clickedRel.ended));
+    const relDated = r => !!((r.begin_date && r.begin_date.year) || (r.end_date && r.end_date.year) || r.ended);
     // Honour the recording checkboxes INCLUDING the source track (unlike credit copy, which targets the
     // OTHER tracks and so excludes the source). Ticking only the source ⇒ date this recording's own rels;
     // ticking nothing ⇒ all tracks. (majkinetor: a single selected track was being ignored.)
     const dateRows = () => { const t = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; }); return t.length ? t : [...document.querySelectorAll('tr.track')]; };
-    const dateTargets = () => { const out = [], skip = clickedRel && clickedRel.item; dateRows().forEach(tr => tr.querySelectorAll('.relationship-item').forEach(it => { if (it === skip) return; const r = relFromNode(it); if (!r || !looksRel(r) || r._status === 3) return; const other = (r.entity0 && r.entity0.entityType === 'recording') ? r.entity1 : r.entity0; if (!other || other.entityType === 'url') return; out.push(r); })); return out; };
+    const dateTargets = () => { const out = [], skip = clickedRel && clickedRel.item; dateRows().forEach(tr => tr.querySelectorAll('.relationship-item').forEach(it => { if (it === skip) return; const r = relFromNode(it); if (!r || !looksRel(r) || r._status === 3) return; const other = (r.entity0 && r.entity0.entityType === 'recording') ? r.entity1 : r.entity0; if (!other || other.entityType === 'url') return; if (relDated(r)) return; out.push(r); })); return out; };
     // Copy date's OWN scope text — distinct from the credit header, which targets the OTHER tracks
     const dateWhere = () => { const rows = dateRows(); const anyTicked = [...document.querySelectorAll('tr.track input.recording')].some(cb => cb.checked); if (!anyTicked) return `all ${rows.length} tracks`; if (rows.length === 1 && rows[0] === sourceTr) return 'this track'; const pos = new Set(rows.map(trackPosOfRow).filter(p => p != null)); return pos.size ? `track${pos.size > 1 ? 's' : ''} ${ranges(pos)}` : `${rows.length} recording${rows.length > 1 ? 's' : ''}`; };
     const items = [];
@@ -1856,17 +1874,18 @@
             { label: 'R', title: 'select every track crediting this artist in the same role', run: e => { const n = selectByCredit(e.rel.other.gid, e.role); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this role` : 'No other tracks with this role'); } },
           ] },
         copyItem, moveItem);
-      // #385 Copy date — only when the clicked rel actually has a date to propagate
+      // #385 Set missing dates — only when the clicked rel actually has a date to propagate. Fills the
+      // UNDATED rels only (see relDated / the note on applyRelDate — existing dates can't be changed here).
       if (hasDate) {
         const dl = fmtRoDate(clickedRel) || 'date';
-        const dateItem = { label: `Copy date (${dl}) → ${dateWhere()}`, sub: String(dateTargets().length), run: () => {
+        const dateItem = { label: `Set missing dates (${dl}) → ${dateWhere()}`, sub: String(dateTargets().length), run: () => {
           const re = RE(); if (!re) { toast('Editor not ready'); return; }
           const dates = { begin_date: clickedRel.begin_date || null, end_date: clickedRel.end_date || null, ended: !!clickedRel.ended };
-          const targets = dateTargets(); if (!targets.length) { toast('No relationships to date'); return; }
-          let n = 0; targets.forEach(r => { try { applyRelDate(re, r, dates); n++; } catch (e) { console.warn('[Group Therapy] copy-date failed on a rel:', e && e.message); } });
-          console.debug(`[Group Therapy] Copy date ${dl}: set on ${n}/${targets.length} relationship(s) across ${dateRows().length} track(s)`);
-          if (n) markUsed(`Copied date ${dl} to ${n} relationship${n > 1 ? 's' : ''} on ${dateWhere()}`);
-          toast(`Set date ${dl} on ${n} relationship${n > 1 ? 's' : ''} — review & save`);
+          const targets = dateTargets(); if (!targets.length) { toast('No undated relationships to fill'); return; }
+          let n = 0; targets.forEach(r => { try { applyRelDate(re, r, dates); n++; } catch (e) { console.warn('[Group Therapy] set-date failed on a rel:', e && e.message); } });
+          console.debug(`[Group Therapy] Set missing dates ${dl}: filled ${n}/${targets.length} undated relationship(s) across ${dateRows().length} track(s)`);
+          if (n) markUsed(`Set missing dates ${dl} on ${n} relationship${n > 1 ? 's' : ''} — ${dateWhere()}`);
+          toast(`Set ${dl} on ${n} undated relationship${n > 1 ? 's' : ''} — review & save`);
         } };
         items.push(dateItem);
       }

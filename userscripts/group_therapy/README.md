@@ -65,11 +65,13 @@ The menu lists each credit with a **checkbox** (all on by default) — untick an
 
 Copy/Move act on the ticked credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
 
-#### Copy date
+#### Set missing dates
 
-If the relationship you right-click carries a **date period** (e.g. a *recorded at “<place>”* with a date), the copy menu also offers **Copy date (D1 → D2)**. It stamps that date onto **every** relationship — all performers/instruments plus the *recording of* work — on its target tracks, and the row shows where it will go (**→ this track / → tracks 1–3 / → all N tracks**).
+If the relationship you right-click carries a **date period** (e.g. a *recorded at “<place>”* with a date), the copy menu also offers **Set missing dates (D1 → D2)**. It stamps that date onto every **undated** relationship — all performers/instruments plus the *recording of* work — on its target tracks, and the row shows where it will go (**→ this track / → tracks 1–3 / → all N tracks**).
 
-Note the date scope differs from the credit copy above it: copying a *credit* onto its own recording is pointless, so **Copy/Move** target the **other** ticked tracks (or all others); but dating a rel's own recording is the whole point, so **Copy date** targets the **ticked tracks including the source** — or all tracks if none are ticked. So ticking just one recording and picking Copy date fills that recording's own performers with its *recorded-at* date; tick nothing to do a whole live album at once. Existing dates are overwritten; nothing is submitted — the edits land in the editor for you to review and save.
+The date scope differs from the credit copy above it: copying a *credit* onto its own recording is pointless, so **Copy/Move** target the **other** ticked tracks (or all others); but dating a rel's own recording is the whole point, so **Set missing dates** targets the **ticked tracks including the source** — or all tracks if none are ticked. So ticking just one recording and picking it fills that recording's own performers with its *recorded-at* date; tick nothing to do a whole live album at once. Nothing is submitted — the edits land in the editor for you to review and save.
+
+> **Fills blanks only — it can't overwrite or remove a date.** MusicBrainz's editor reducer merges a relationship update and keeps any existing non-empty date, so a date sent through it is only applied where there was none. Overwriting or clearing a date would require driving MB's own edit dialog (which we deliberately don't do). See [#385](https://github.com/majkinetor/musicbrainz-userscripts/issues/385) for the details.
 
 <img width="650" src="./screenshots/copy.png" /> 
 
@@ -157,7 +159,7 @@ When (and only when) you actually **use** Group Therapy on a page, it stamps MB'
 | right-click a recording's **checkbox** | copy / move its credits to the ticked recordings (or all tracks if none ticked) |
 | right-click a work's **checkbox** | copy / move that work's credits (writer/composer/…) to the ticked works |
 | right-click a credit's **＋ / pencil** | copy scoped to that role / that one credit |
-| right-click a **dated** rel's pencil → *Copy date* | stamp that date onto every rel on the source + selected tracks |
+| right-click a **dated** rel's pencil → *Set missing dates* | fill that date into every undated rel on the source + selected tracks |
 | right-click a credit in the copy list | select only that role · **Shift** adds a role to the selection |
 | **[A] / [R]** on a credit (hover) | select all tracks crediting that artist · in the same role |
 | hover an entity name / role label | highlight all matches + show a count tooltip |
