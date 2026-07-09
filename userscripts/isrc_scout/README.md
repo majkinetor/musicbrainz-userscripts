@@ -1,6 +1,6 @@
 # ISRC Scout <img src="icon.svg" align="left" width="48">
 
-Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz. With ISRC present, finds and adds **streaming links to the recordings**.
+Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz. With ISRC present, finds and adds **streaming / store links to the recordings** (Deezer, Tidal, Beatport, Volumo, Bandcamp, Apple Music), and shows every other link a recording already carries.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/isrc_scout/isrc_scout.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -23,10 +23,34 @@ https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
     - **[Delete existing ISRCs](#deleting-existing-isrcs)**
     - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting
     - **[Submit to MusicBrainz](#submitting)** — one-time OAuth, then submit straight from the editor
-- **[Links](#links)** — find and add streaming links to recordings 
-  - Find links based on release external links and ISRCs 
+- **[Links](#links)** — find and add streaming / store links to recordings (Deezer, Tidal, Beatport, Volumo, Bandcamp, Apple Music), and see every other provider a recording already links to.
+  - Find links based on release external links and ISRCs
   - [Batch ending or removing](#ending--removing) link relationship
 - Using release group external links and [Platform Check](../platform_check/README.md) links
+
+## Providers at a glance
+
+ISRC Scout has **two independent provider systems** — a provider can support one without the other:
+
+1. **[ISRC import](#import-sources)** — bulk-fills the missing ISRCs on the release from a provider.
+2. **[Per-track links](#links)** — resolves a per-track provider URL and offers it in the **Add** column of the Links tab.
+
+| Provider | ISRC import | Per-track link | How the link resolves |
+| --- | :---: | :---: | --- |
+| **Deezer** | ✓ | ✓ | by **ISRC** — global by-ISRC lookup, works on any release |
+| **Tidal** | ✓ | ✓ | by **ISRC** — official API (baked-in app token), any release |
+| **Beatport** | ✓ | ✓ | by **album** — the Beatport tracklist (id + ISRC), matched by ISRC |
+| **Volumo** | ✓ | ✓ | by **album** — the Volumo album JSON (id + ISRC), matched by ISRC |
+| **Bandcamp** | – | ✓ | by **album** — album page track list, matched by position + title |
+| **Apple Music** | – | ✓ | by **album** — album `ld+json`, matched by position + title |
+| **HDtracks** | ✓ | – | download store — no per-track pages to link |
+| **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
+| **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
+| **Qobuz** | – | – | API is auth-only; shown read-only when already linked |
+
+> **Album-based** providers (everything except Deezer/Tidal) need the release's album link — either already in MB, or one [Platform Check](../platform_check/README.md) found by barcode, or a URL you paste yourself.
+
+Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) as a **read-only** icon you can click to open — even when ISRC Scout can't add that provider itself.
 
 ## ISRC badge
 
@@ -101,9 +125,9 @@ Check the box next to any existing ISRC and click **🗑 Delete checked**. Delet
 
 ## Links
 
-ISRC Scout also adds **streaming links to recordings** in the background. The **Links** tab shows two columns per track:
+ISRC Scout also adds **streaming / store links to recordings** in the background. The **Links** tab shows two columns per track:
 
-- **Linked** — what the recording already links to on MusicBrainz (brand-coloured icon per provider).
+- **Linked** — what the recording already links to on MusicBrainz (brand-coloured icon per provider). This includes **every** provider it links to, not just the ones ISRC Scout can add — see [read-only links](#read-only-links) below.
 - **Add** — links found but not yet on MB.
 
 ### Providers
@@ -111,9 +135,14 @@ ISRC Scout also adds **streaming links to recordings** in the background. The **
 | Provider | How it resolves | MB link type |
 | --- | --- | --- |
 | **Deezer**, **Tidal** | by **ISRC** — a global by-ISRC lookup, so it works on any release whose tracks have ISRCs | free streaming / streaming |
+| **Beatport**, **Volumo** | by **album** — the release's Beatport/Volumo album carries every track's **ISRC** (and id), so the per-track URL is matched by ISRC. Both are download stores → *purchase for download* | purchase for download |
 | **Bandcamp**, **Apple Music** | by **album page** — the release's Bandcamp/Apple album link lists every track URL, matched to the tracklist by **position + title** (a title mismatch is skipped, never guessed) | free streaming / streaming |
 
-A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Bandcamp/Apple need the release's album link) or the recording is already linked to it.
+A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Beatport/Volumo/Bandcamp/Apple need the release's album link) or the recording is already linked to it.
+
+#### Read-only links
+
+The **Linked** column also surfaces **every other provider a recording already links to** — Spotify, Qobuz, YouTube, SoundCloud, Amazon Music (each with its name/colour), or any other host shown with a generic globe by its hostname. These are **read-only**: click to open the link in a tab, but there's no add/end/remove (ISRC Scout has no per-track path for them). This just lets you see the full picture of a recording's links in one place, even for providers it can't manage. *(Spotify and Qobuz have no anonymous ISRC→track URL, so per-track adding isn't possible; they appear here only when already linked.)*
 
 **Dead links aren't offered.** Deezer keeps an ISRC→track mapping even after it pulls the audio, so a by-ISRC lookup can return a track that no longer streams anywhere (Deezer reports it as unreadable, available in zero countries). Find links treats such a track as not found, so it won't offer a broken link to add.
 
