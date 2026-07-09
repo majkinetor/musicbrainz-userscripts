@@ -52,6 +52,29 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 
 Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) as a **read-only** icon you can click to open — even when ISRC Scout can't add that provider itself.
 
+<details>
+<summary><b>Why Qobuz isn't a Scout source</b> (the full investigation, so we don't re-litigate it — #353 / #201)</summary>
+
+Qobuz was **tried and dropped** from ISRC Scout. The reasoning, verified end-to-end:
+
+- Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant endpoints:
+  - **`album/search`** (album-level: `upc`, `label`, `year`, `tracks_count`) — **works anonymously** with the web-player app_id **`712109809`**. This is all [Platform Check](../platform_check/README.md) needs, so **Qobuz stays a PC provider**.
+  - **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). This is **session-gated**, not just geo-gated:
+    - app_id `712109809` → **`404` "No result matching given argument"** for *every* album id — even ids `album/search`/`getFeatured` had just returned.
+    - the other web app_id `798273057` → **`401` "User authentication is required"**.
+    - no app_id / a bogus one → `400 Invalid or missing app_id` (so `712109809` *is* accepted — the endpoint just needs a **logged-in Qobuz user session** on top).
+- The **store page HTML has zero ISRCs** (it renders the tracklist via `popinAddToCartBtnPlayerTrack<N>` markers but carries no `isrc` field) — so there is **no anonymous scrape fallback** the way Beatport/Volumo have.
+- Confirmed from majkinetor's own browser (Serbia is geo-blocked — can't even register a Qobuz account); chaban-mb *could* get `album/get` to return from their region/session, which is exactly the point: it's **not reliably anonymous**.
+
+**The only route to Qobuz ISRCs (and roled credits) is a Qobuz login** — email + password → a `user_auth_token` signed with the `app_id` + `app_secret` from the web bundle, stored locally like the Beatport token. That unlocks `album/get` → per-track ISRCs for Scout *and* roled `performers` for Credit Hoarder. Not built (needs a Qobuz account + storing a login token); captured here for whenever it's wanted.
+
+Other Qobuz gotchas worth remembering:
+- **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
+- **Barcode padding** — Qobuz stores the UPC as the 13-digit EAN with a **leading zero** (`0199257198605`), so a barcode-first `album/search` must try the zero-padded form (#354).
+- The slug-less `open.qobuz.com/album/<id>` form an MB rel often carries is an **SPA shell** with no data; fetch the `www.qobuz.com/<store>/album/<slug>/<id>` store URL instead (a wrong slug 301-redirects to the canonical page).
+
+</details>
+
 ## ISRC badge
 
 An **ISRC** button is injected next to the release title, showing how many tracks already have an ISRC (`✓ 12/12`) or pulsing pink when some are missing (`⚠ 9/12`). Click it to open the editor.
