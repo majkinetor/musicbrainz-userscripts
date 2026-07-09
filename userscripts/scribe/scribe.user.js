@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3
+// @version      2026.7.9
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -464,7 +464,7 @@
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'scribe-launcher';
-    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;background:#2c3a33;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,.32);transition:background .15s,transform .1s';
+    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;background:#ececec;color:#7a2622;box-shadow:0 2px 9px rgba(0,0,0,.2);transition:background .15s,color .15s,transform .1s';
     launcher.innerHTML = SCRIBE_ICON;
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.06)'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; };
@@ -475,7 +475,8 @@
     if (!launcher) return;
     const active = !!(session && session.active);
     launcher.style.display = _helperUp ? 'flex' : 'none';
-    launcher.style.background = active ? '#2e9e5b' : '#2c3a33';
+    launcher.style.background = active ? '#cfeadd' : '#ececec';
+    launcher.style.color = active ? '#2e9e5b' : '#7a2622';
     launcher.title = !_helperUp ? `${NAME} — start the extedit helper to enable`
       : active ? `${NAME} — editing this release · click to stop` : `${NAME} — edit this release as Markdown (Ctrl+Alt+R)`;
   }
