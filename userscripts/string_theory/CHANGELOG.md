@@ -1,5 +1,48 @@
 # String Theory Changelog
 
+## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Highlight pending changes on recordings ([#376](https://github.com/majkinetor/musicbrainz-userscripts/issues/376))
+1. Search and replace tool improvements ([#375](https://github.com/majkinetor/musicbrainz-userscripts/issues/375))
+1. "Guess Punctuation" doesn't work when tool is pinned ([#378](https://github.com/majkinetor/musicbrainz-userscripts/issues/378))
+1. Inconsistent appearance of punctuation ([#369](https://github.com/majkinetor/musicbrainz-userscripts/issues/369))
+1. Removed track artist credits shift when changing to native editor ([#366](https://github.com/majkinetor/musicbrainz-userscripts/issues/366))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Keep order within an imported image group ([#370](https://github.com/majkinetor/musicbrainz-userscripts/issues/370))
+1. Support for darkened cover art items ([#368](https://github.com/majkinetor/musicbrainz-userscripts/issues/368))
+1. Visible internet Archive warning  ([#367](https://github.com/majkinetor/musicbrainz-userscripts/issues/367))
+1. Better parallelization and reordering on final commit ([#362](https://github.com/majkinetor/musicbrainz-userscripts/issues/362))
+1. Automatically expand file drop zone when on `/add-cover-art` ([#361](https://github.com/majkinetor/musicbrainz-userscripts/issues/361))
+1. Upload images from subfolders ([#359](https://github.com/majkinetor/musicbrainz-userscripts/issues/359))
+1. Edit note by Enhanced Cover Art Uploads not pre-filled ([#364](https://github.com/majkinetor/musicbrainz-userscripts/issues/364))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Setting missing dates ([#385](https://github.com/majkinetor/musicbrainz-userscripts/issues/385))
+1. Resizing of the "match work" popup  ([#381](https://github.com/majkinetor/musicbrainz-userscripts/issues/381))
+1. Copy relationship dialog improvements ([#377](https://github.com/majkinetor/musicbrainz-userscripts/issues/377))
+1. Copy "recording of" attributes ([#374](https://github.com/majkinetor/musicbrainz-userscripts/issues/374))
+1. More right click targets: plus, pencil ([#373](https://github.com/majkinetor/musicbrainz-userscripts/issues/373))
+1. New toolbar position and more options ([#372](https://github.com/majkinetor/musicbrainz-userscripts/issues/372))
+1. Copy release credits from/to recordings ([#365](https://github.com/majkinetor/musicbrainz-userscripts/issues/365))
+1. Work matching ([#363](https://github.com/majkinetor/musicbrainz-userscripts/issues/363))
+1. Coping recording attribute fails to apply ([#383](https://github.com/majkinetor/musicbrainz-userscripts/issues/383))
+1. Wrong counts in tooltip ([#379](https://github.com/majkinetor/musicbrainz-userscripts/issues/379))
+1. Can't see instruments during cosolidation ([#371](https://github.com/majkinetor/musicbrainz-userscripts/issues/371))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Show all linked providers instead of just addable ones ([#389](https://github.com/majkinetor/musicbrainz-userscripts/issues/389))
+1. Adding links for Volumo & Beatport ([#387](https://github.com/majkinetor/musicbrainz-userscripts/issues/387))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Wrong Beatport result via DDG search ([#380](https://github.com/majkinetor/musicbrainz-userscripts/issues/380))
+
 ## [2026.7.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.4)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

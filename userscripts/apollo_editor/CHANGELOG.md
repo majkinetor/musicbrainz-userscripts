@@ -1,5 +1,18 @@
 # Apollo Editor Changelog
 
+## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
+
+### Features
+
+1. Highlight pending changes on recordings ([#376](https://github.com/majkinetor/musicbrainz-userscripts/issues/376))
+1. Search and replace tool improvements ([#375](https://github.com/majkinetor/musicbrainz-userscripts/issues/375))
+
+### Fixes
+
+1. "Guess Punctuation" doesn't work when tool is pinned ([#378](https://github.com/majkinetor/musicbrainz-userscripts/issues/378))
+1. Inconsistent appearance of punctuation ([#369](https://github.com/majkinetor/musicbrainz-userscripts/issues/369))
+1. Removed track artist credits shift when changing to native editor ([#366](https://github.com/majkinetor/musicbrainz-userscripts/issues/366))
+
 ## [2026.7.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.4)
 
 ### Features

@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
+
+### Fixes
+
+1. Wrong Beatport result via DDG search ([#380](https://github.com/majkinetor/musicbrainz-userscripts/issues/380))
+
 ## [2026.7.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.4)
 
 ### Features

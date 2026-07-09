@@ -1,5 +1,12 @@
 # ISRC Scout Changelog
 
+## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
+
+### Features
+
+1. Show all linked providers instead of just addable ones ([#389](https://github.com/majkinetor/musicbrainz-userscripts/issues/389))
+1. Adding links for Volumo & Beatport ([#387](https://github.com/majkinetor/musicbrainz-userscripts/issues/387))
+
 ## [2026.7.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.2)
 
 ### Features

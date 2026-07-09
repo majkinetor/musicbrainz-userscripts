@@ -1,5 +1,20 @@
 # Art Station Changelog
 
+## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
+
+### Features
+
+1. Keep order within an imported image group ([#370](https://github.com/majkinetor/musicbrainz-userscripts/issues/370))
+1. Support for darkened cover art items ([#368](https://github.com/majkinetor/musicbrainz-userscripts/issues/368))
+1. Visible internet Archive warning  ([#367](https://github.com/majkinetor/musicbrainz-userscripts/issues/367))
+1. Better parallelization and reordering on final commit ([#362](https://github.com/majkinetor/musicbrainz-userscripts/issues/362))
+1. Automatically expand file drop zone when on `/add-cover-art` ([#361](https://github.com/majkinetor/musicbrainz-userscripts/issues/361))
+1. Upload images from subfolders ([#359](https://github.com/majkinetor/musicbrainz-userscripts/issues/359))
+
+### Fixes
+
+1. Edit note by Enhanced Cover Art Uploads not pre-filled ([#364](https://github.com/majkinetor/musicbrainz-userscripts/issues/364))
+
 ## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
 
 - Small improvements
