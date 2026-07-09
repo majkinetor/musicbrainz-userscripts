@@ -67,7 +67,9 @@ Copy/Move act on the ticked credits and the currently-ticked destinations (recom
 
 #### Copy date
 
-If the relationship you right-click carries a **date period** (e.g. a *recorded at “<place>”* with a date), the copy menu also offers **Copy date (D1 → D2)**. It stamps that date onto **every** relationship — all performers/instruments plus the *recording of* work — on the **source track and the selected tracks** (or all tracks if none are ticked). So a single recording's *recorded-at* date fills in the dates for all its performers, and across a live album in one go. Existing dates are overwritten; nothing is submitted — the edits land in the editor for you to review and save.
+If the relationship you right-click carries a **date period** (e.g. a *recorded at “<place>”* with a date), the copy menu also offers **Copy date (D1 → D2)**. It stamps that date onto **every** relationship — all performers/instruments plus the *recording of* work — on its target tracks, and the row shows where it will go (**→ this track / → tracks 1–3 / → all N tracks**).
+
+Note the date scope differs from the credit copy above it: copying a *credit* onto its own recording is pointless, so **Copy/Move** target the **other** ticked tracks (or all others); but dating a rel's own recording is the whole point, so **Copy date** targets the **ticked tracks including the source** — or all tracks if none are ticked. So ticking just one recording and picking Copy date fills that recording's own performers with its *recorded-at* date; tick nothing to do a whole live album at once. Existing dates are overwritten; nothing is submitted — the edits land in the editor for you to review and save.
 
 <img width="650" src="./screenshots/copy.png" /> 
 

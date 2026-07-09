@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.153538
+// @version      2026.7.9.155005
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1831,13 +1831,17 @@
     // #377 tick destination tracks by a credit: [A] = any track crediting this artist (any role); [R] = same role
     const selectByCredit = (gid, roleKey) => { let n = 0; document.querySelectorAll('tr.track').forEach(tr => { if (tr === sourceTr) return; const has = recordingRels(tr).some(r => !r.removed && r.other && r.other.gid === gid && (roleKey == null || roleKeyOfSpec(r) === roleKey)); if (has) { const cb = tr.querySelector('input.recording'); if (cb && !cb.checked) { cb.click(); n++; } } }); return n; };
     // #385 "Copy date": the pencil-clicked rel carries a date period (e.g. a "recorded at" place with a
-    // date). Propagate that date onto EVERY relationship (all roles + recording-of) on the source track AND
-    // the selected tracks — the source's own siblings included, so a recording's recorded-at date fills all
-    // its performers. url rels can't carry a date period, so they're skipped.
+    // date). Propagate that date onto EVERY relationship (all roles + recording-of) on the target tracks.
+    // url rels can't carry a date period, so they're skipped.
     const clickedRel = (preselect && srcRels.find(s => preselect(s))) || null;
     const hasDate = !!(clickedRel && (clickedRel.begin_date || clickedRel.end_date || clickedRel.ended));
-    const dateRows = () => { const t = tickedRows(); const base = t.length ? [...t] : [...document.querySelectorAll('tr.track')]; if (!base.includes(sourceTr)) base.push(sourceTr); return base; };
+    // Honour the recording checkboxes INCLUDING the source track (unlike credit copy, which targets the
+    // OTHER tracks and so excludes the source). Ticking only the source ⇒ date this recording's own rels;
+    // ticking nothing ⇒ all tracks. (majkinetor: a single selected track was being ignored.)
+    const dateRows = () => { const t = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; }); return t.length ? t : [...document.querySelectorAll('tr.track')]; };
     const dateTargets = () => { const out = [], skip = clickedRel && clickedRel.item; dateRows().forEach(tr => tr.querySelectorAll('.relationship-item').forEach(it => { if (it === skip) return; const r = relFromNode(it); if (!r || !looksRel(r) || r._status === 3) return; const other = (r.entity0 && r.entity0.entityType === 'recording') ? r.entity1 : r.entity0; if (!other || other.entityType === 'url') return; out.push(r); })); return out; };
+    // Copy date's OWN scope text — distinct from the credit header, which targets the OTHER tracks
+    const dateWhere = () => { const rows = dateRows(); const anyTicked = [...document.querySelectorAll('tr.track input.recording')].some(cb => cb.checked); if (!anyTicked) return `all ${rows.length} tracks`; if (rows.length === 1 && rows[0] === sourceTr) return 'this track'; const pos = new Set(rows.map(trackPosOfRow).filter(p => p != null)); return pos.size ? `track${pos.size > 1 ? 's' : ''} ${ranges(pos)}` : `${rows.length} recording${rows.length > 1 ? 's' : ''}`; };
     const items = [];
     if (!nR) { items.push({ header: 'No credits here' }); }
     else {
@@ -1855,13 +1859,13 @@
       // #385 Copy date — only when the clicked rel actually has a date to propagate
       if (hasDate) {
         const dl = fmtRoDate(clickedRel) || 'date';
-        const dateItem = { label: `Copy date (${dl})`, sub: String(dateTargets().length), run: () => {
+        const dateItem = { label: `Copy date (${dl}) → ${dateWhere()}`, sub: String(dateTargets().length), run: () => {
           const re = RE(); if (!re) { toast('Editor not ready'); return; }
           const dates = { begin_date: clickedRel.begin_date || null, end_date: clickedRel.end_date || null, ended: !!clickedRel.ended };
           const targets = dateTargets(); if (!targets.length) { toast('No relationships to date'); return; }
           let n = 0; targets.forEach(r => { try { applyRelDate(re, r, dates); n++; } catch (e) { console.warn('[Group Therapy] copy-date failed on a rel:', e && e.message); } });
           console.debug(`[Group Therapy] Copy date ${dl}: set on ${n}/${targets.length} relationship(s) across ${dateRows().length} track(s)`);
-          if (n) markUsed(`Copied date ${dl} to ${n} relationship${n > 1 ? 's' : ''}`);
+          if (n) markUsed(`Copied date ${dl} to ${n} relationship${n > 1 ? 's' : ''} on ${dateWhere()}`);
           toast(`Set date ${dl} on ${n} relationship${n > 1 ? 's' : ''} — review & save`);
         } };
         items.push(dateItem);
