@@ -88,7 +88,7 @@ go-to-field button) and counted in a header badge; **✕ stops editing**.
 - **Not applied yet** (round-trips losslessly — use the native editor): external links, and
   add / remove / reorder of tracks. (Phase 2.)
 - **Edit note** — once Scribe has set at least one field, it stamps the release's edit note with the
-  standard header (`Scribe v… by majkinetor - <homepage>`) and a stats line summarising what it
+  stats line summarising what it
   changed (e.g. `Edited via Markdown — set 5 fields: release title, barcode · 2 track fields · 1
   event field`). Anything you'd already typed in the note is kept; re-running updates the Scribe
   block in place rather than piling up duplicates.
