@@ -13,7 +13,7 @@ https://github.com/user-attachments/assets/3fb448db-a46c-487a-9d5d-5f3dce997cbf
 - **Edit field** (Ctrl+Alt+E):<br> 
 With cursor in any text box, press it, the text opens in your editor; **save** and the field updates.
 - **Edit release** (Ctrl+Alt+R)<br>
-Edit a whole release as one Markdown document** (see [the release editor](#edit-a-whole-release)).
+Edit a whole release as one Markdown document (see [the release editor](#edit-a-whole-release)).
 
 ## Usage
 
