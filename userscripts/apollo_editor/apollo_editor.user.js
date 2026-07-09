@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.9.152644
+// @version      2026.7.9.161114
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -246,6 +246,9 @@
       return { rec: rec ? !!u(rec.editsPending) : false, art: artGids.size > 0, artGids };
     } catch (e) { return null; }
   }
+  // #376 a slot golds only when it's a SELECTED artist (committed, with a gid) whose entity is pending —
+  // so editing a field to free text (which unselects the mbid) drops the gold on the next re-adorn.
+  const slotIsPending = (artGids, slot) => !!(slot && slot.committed && slot.gid && artGids && artGids.has(slot.gid));
   function liveNames(track) { const ac = u(track.artistCredit) || {}; return u(ac.names) || []; }
 
   const ORIGINALS = new Map();
@@ -324,7 +327,7 @@
   // can't steal focus or detach the slot an in-flight edit is using
   function refreshAdorns() {
     if (!MODEL) return;
-    MODEL.tracks.forEach(t => { const row = rowEl(t.mi, t.ti); if (!row) return; const searches = row.querySelectorAll('.tc-search'); t.slots.forEach((s, i) => { const search = searches[i]; if (search) adorn(search, s, search.querySelector('.nm')); }); });
+    MODEL.tracks.forEach(t => { const row = rowEl(t.mi, t.ti); if (!row) return; const ps = recPendingState(t.mi, t.ti); const pg = ps && ps.artGids; const searches = row.querySelectorAll('.tc-search'); t.slots.forEach((s, i) => { const search = searches[i]; if (search) { adorn(search, s, search.querySelector('.nm')); search.classList.toggle('tc-slot-pending', slotIsPending(pg, s)); } }); });
   }
   // batch-fetch aliases for every committed artist we don't have yet, then refresh the bars in place
   async function enrichResolvedAliases() {
@@ -1113,7 +1116,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.9.152644';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.9.161114';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2396,8 +2399,11 @@
     inp.addEventListener('input', updNmClr);
     search.appendChild(nmClr); updNmClr();
     if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s, refreshBadges));   // join lives inside the box, right side
-    adorn(search, s, inp); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
-    wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); refreshStatus(); });
+    // #376 keep the pending gold in sync with the slot's selected/committed state on every re-adorn —
+    // editing the field to free text (unselecting the mbid) must drop the gold, not just the green.
+    const applyPend = () => { const ps = recPendingState(entry.mi, entry.ti); search.classList.toggle('tc-slot-pending', slotIsPending(ps && ps.artGids, s)); };
+    adorn(search, s, inp); applyPend(); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
+    wireAutocomplete(inp, s, () => { adorn(search, s, inp); applyPend(); refreshBadges(); refreshStatus(); });
     // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover
     const acts = document.createElement('span'); acts.className = 'tc-acts';
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
@@ -2494,8 +2500,8 @@
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
         <td class="c-badge"></td>`;
       const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
-      const art = tr.querySelector('.c-art'); const pgids = ps && ps.artGids;   // #376 gold ONLY the slot(s) whose selected artist has pending edits — not free-text neighbours
-      t.slots.forEach((s, si) => { const se = slotEl(t, s, si, refreshBadges); if (pgids && s.gid && pgids.has(s.gid)) { const sr = se.querySelector('.tc-search'); if (sr) sr.classList.add('tc-slot-pending'); } art.appendChild(se); });
+      const art = tr.querySelector('.c-art'); const pgids = ps && ps.artGids;   // #376 gold ONLY the slot(s) whose SELECTED artist has pending edits — not free-text neighbours, and not a field edited to free text
+      t.slots.forEach((s, si) => { const se = slotEl(t, s, si, refreshBadges); const sr = se.querySelector('.tc-search'); if (sr) sr.classList.toggle('tc-slot-pending', slotIsPending(pgids, s)); art.appendChild(se); });
       refreshBadges();
       // guess-case: highlight when the title differs from its guessed form; a per-title button applies it
       const tin = tr.querySelector('.t-title'); const diff = t.guessTitle && t.guessTitle !== t.title;
