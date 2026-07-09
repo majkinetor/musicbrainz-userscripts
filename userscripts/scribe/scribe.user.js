@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.163204
+// @version      2026.7.9.185044
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -228,7 +228,9 @@
   // ════════════════════ MB page glue ════════════════════
   const u = v => { try { return typeof v === 'function' ? v() : v; } catch (e) { return undefined; } };
   const releaseMbid = () => (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1] || null;
-  const onEditPage = () => /\/release\/[0-9a-f-]{36}\/edit/i.test(location.pathname) && releaseMbid();
+  // the release EDITOR only — /release/<mbid>/edit exactly, NOT /edit-relationships or /edit_annotation
+  // (the loose /edit match also fired on edit-relationships, esp. via the String Theory bundle's broad @match)
+  const onEditPage = () => /\/release\/[0-9a-f-]{36}\/edit(?![-\w])/i.test(location.pathname) && releaseMbid();
   async function fetchWs2(id) {
     const inc = 'artist-credits+labels+recordings+release-groups+url-rels+media+annotation';
     const r = await fetch(`/ws/2/release/${id}?inc=${inc}&fmt=json`, { headers: { Accept: 'application/json' } });
@@ -464,7 +466,7 @@
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'scribe-launcher';
-    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;background:#ececec;color:#7a2622;box-shadow:0 2px 9px rgba(0,0,0,.2);transition:background .15s,color .15s,transform .1s';
+    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;background:transparent;color:#7a2622;box-shadow:0 2px 9px rgba(0,0,0,.2);transition:background .15s,color .15s,transform .1s';
     launcher.innerHTML = SCRIBE_ICON;
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.06)'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; };
@@ -475,7 +477,7 @@
     if (!launcher) return;
     const active = !!(session && session.active);
     launcher.style.display = _helperUp ? 'flex' : 'none';
-    launcher.style.background = active ? '#cfeadd' : '#ececec';
+    launcher.style.background = 'transparent';   // 100% transparent; active state is shown by the icon colour
     launcher.style.color = active ? '#2e9e5b' : '#7a2622';
     launcher.title = !_helperUp ? `${NAME} — start the extedit helper to enable`
       : active ? `${NAME} — editing this release · click to stop` : `${NAME} — edit this release as Markdown (Ctrl+Alt+R)`;
