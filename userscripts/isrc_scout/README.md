@@ -50,7 +50,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 
 > **Album-based** providers (everything except Deezer/Tidal) need the release's album link — either already in MB, or one [Platform Check](../platform_check/README.md) found by barcode, or a URL you paste yourself.
 
-Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) as a **read-only** icon you can click to open — even when ISRC Scout can't add that provider itself.
+Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
 
 <details>
 <summary><b>Why Qobuz isn't a Scout source</b> (the full investigation, so we don't re-litigate it — #353 / #201)</summary>
@@ -150,7 +150,7 @@ Check the box next to any existing ISRC and click **🗑 Delete checked**. Delet
 
 ISRC Scout also adds **streaming / store links to recordings** in the background. The **Links** tab shows two columns per track:
 
-- **Linked** — what the recording already links to on MusicBrainz (brand-coloured icon per provider). This includes **every** provider it links to, not just the ones ISRC Scout can add — see [read-only links](#read-only-links) below.
+- **Linked** — what the recording already links to on MusicBrainz (brand-coloured icon per provider). This includes **every** provider it links to, not just the ones ISRC Scout can add — see [other linked providers](#other-linked-providers) below.
 - **Add** — links found but not yet on MB.
 
 ### Providers
@@ -163,9 +163,11 @@ ISRC Scout also adds **streaming / store links to recordings** in the background
 
 A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Beatport/Volumo/Bandcamp/Apple need the release's album link) or the recording is already linked to it.
 
-#### Read-only links
+#### Other linked providers
 
-The **Linked** column also surfaces **every other provider a recording already links to** — Spotify, Qobuz, YouTube, SoundCloud, Amazon Music (each with its name/colour), or any other host shown with a generic globe by its hostname. These are **read-only**: click to open the link in a tab, but there's no add/end/remove (ISRC Scout has no per-track path for them). This just lets you see the full picture of a recording's links in one place, even for providers it can't manage. *(Spotify and Qobuz have no anonymous ISRC→track URL, so per-track adding isn't possible; they appear here only when already linked.)*
+The **Linked** column also surfaces **every other provider a recording already links to** — Spotify, Qobuz, YouTube, SoundCloud, Amazon Music (each with its name/colour), or any other host shown with a generic globe by its hostname — so you see the full picture of a recording's links in one place, even for providers ISRC Scout can't resolve.
+
+ISRC Scout **can't _add_** these (there's no per-track resolve path for them), but **ending and removing act on the relationship that's already there** — that's a plain edit by URL, no resolve needed — so they get the **same [end / remove actions](#ending--removing)** as the providers it manages: **right-click** toggles *ended*, **middle-click** removes, with the usual `Ctrl` (whole track) / `Alt` (that provider everywhere) modifiers. Only the **Add** column is unavailable for them (once removed, ISRC Scout can't offer it back). *(Spotify and Qobuz have no anonymous ISRC→track URL, so per-track adding isn't possible; they appear here only when already linked.)*
 
 **Dead links aren't offered.** Deezer keeps an ISRC→track mapping even after it pulls the audio, so a by-ISRC lookup can return a track that no longer streams anywhere (Deezer reports it as unreadable, available in zero countries). Find links treats such a track as not found, so it won't offer a broken link to add.
 
@@ -180,6 +182,8 @@ The **Linked** column also surfaces **every other provider a recording already l
 On a **Linked** icon, **left-click** opens the provider track. **Right-click toggles the relationship's *ended* flag** — use it when a release is taken down and its streaming links no longer resolve ([MB style](https://musicbrainz.org/doc/Style/Relationships/URLs#When_to_remove)); an ended link is shown **faded**, and right-clicking it again reverts it. **Ctrl + right-click** ends the whole track, **Alt + right-click** ends that provider everywhere.
 
 Actual **removal** is on **middle-click** (right-click's modifiers already scope the *ended* toggle): **middle-click** removes that link · **Ctrl + middle-click** removes all on the track · **Alt + middle-click** removes that provider everywhere.
+
+These end / remove actions work on **any** linked provider — including the [other linked providers](#other-linked-providers) ISRC Scout can't add — since they act on the relationship already on MusicBrainz, not on a resolved candidate.
 
 ### Use providers from the whole release group (option)
 

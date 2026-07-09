@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.9
+// @version      2026.7.9.234106
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2583,8 +2583,16 @@
     }
     function linkedHtml(t) {
       const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex, !!(t.endedUrls && t.endedUrls.has(ex))) : ''; }).filter(Boolean).join('');
-      // #389 append every OTHER linked provider (read-only), so the column shows all links, not just addable ones
-      const others = t.recId ? otherLinked(t).map(o => '<a class="ii-tl linked ii-tl-other" style="color:' + o.color + '" href="' + esc(o.url) + '" target="_blank" rel="noopener" title="' + esc(o.name) + ' — linked (ISRC Scout doesn’t add this provider) · click to open">' + o.icon + '</a>').join('') : '';
+      // #389 append every OTHER linked provider, so the column shows all links, not just addable ones.
+      // ISRC Scout can't *add* these, but ending/removing acts on the existing relationship by URL — no
+      // resolve/add path needed — so they get the same right-click (end) / middle-click (remove) actions.
+      const others = t.recId ? otherLinked(t).map(o => {
+        let host = ''; try { host = new URL(o.url).hostname.replace(/^www\./, ''); } catch (e) {}
+        const code = 'x:' + (host || o.name);                        // synthetic per-host code, so Alt = "that provider everywhere" still works
+        const ended = !!(t.endedUrls && t.endedUrls.has(o.url));
+        return '<a class="ii-tl linked ii-tl-other' + (ended ? ' ended' : '') + '" data-code="' + esc(code) + '" data-other="1" data-name="' + esc(o.name) + '" style="color:' + o.color + '" href="' + esc(o.url) + '" target="_blank" rel="noopener" ' +
+          'title="' + esc(o.name) + ' — linked' + (ended ? ' · ENDED' : '') + ' (ISRC Scout can’t add this one back) · left-click opens · right-click ' + (ended ? 'un-ends' : 'marks ended') + ' (Ctrl: whole track · Alt: ' + esc(o.name) + ' everywhere) · middle-click removes (same modifiers)">' + o.icon + '</a>';
+      }).join('') : '';
       return '<div class="ii-tl-linked" data-rec="' + esc(t.recId || '') + '">' + cells + others + '</div>';
     }
     function addHtml(t) {
@@ -2723,6 +2731,10 @@
     // which WS2 doesn't expose — fetch it from /ws/js/entity (the rel editor's API)
     // and submit an EDIT_RELATIONSHIP_DELETE (92 — 91 is EDIT, a no-op for removal). ──
     const _relCache = {};
+    // #389 loose URL equality — the icon href (WS2 `url.resource`) and the ws/js rel `target.name`
+    // are normally identical, but tolerate a scheme/trailing-slash difference so the read-only
+    // "other" links (which have no provider-test fallback) still match their relationship.
+    const urlEq = (a, b) => a === b || String(a).replace(/^https?:/i, '').replace(/\/+$/, '') === String(b).replace(/^https?:/i, '').replace(/\/+$/, '');
     async function recUrlRels(recGid) {
       if (_relCache[recGid]) return _relCache[recGid];
       const r = await fetch(MB_ROOT + '/ws/js/entity/' + recGid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } });
@@ -2744,7 +2756,15 @@
     }
     function linkedIcons(selector) {
       const out = [];
-      modal.querySelectorAll(selector).forEach(a => { const p = PROV.find(x => x.code === a.dataset.code); const tr = a.closest('tr[data-idx]'); if (p && tr) out.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href'), el: a }); });
+      modal.querySelectorAll(selector).forEach(a => {
+        const tr = a.closest('tr[data-idx]'); if (!tr) return;
+        let p = PROV.find(x => x.code === a.dataset.code);
+        if (!p && a.dataset.other) {   // #389 a read-only "other" linked provider — synthesize a URL-matched descriptor so end/remove work
+          const url = a.getAttribute('href');
+          p = { code: a.dataset.code, name: a.dataset.name || 'link', icon: a.innerHTML, color: a.style.color, linkTypeID: null, test: u => u === url, other: true };
+        }
+        if (p) out.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href'), el: a });
+      });
       return out;
     }
     async function removeBatch(icons) {
@@ -2755,7 +2775,7 @@
         for (const ic of icons) {
           const t = RELEASE.tracks[ic.idx]; if (!t.recId) continue;
           const rels = await recUrlRels(t.recId);
-          const rel = rels.find(r => (r.target && r.target.name) === ic.url) || rels.find(r => ic.p.test((r.target && r.target.name) || '') && r.linkTypeID === ic.p.linkTypeID);
+          const rel = rels.find(r => (r.target && r.target.name) === ic.url) || rels.find(r => urlEq((r.target && r.target.name) || '', ic.url)) || rels.find(r => ic.p.test((r.target && r.target.name) || '') && r.linkTypeID === ic.p.linkTypeID);
           if (!rel) { Log.warn('No ' + ic.p.name + ' relationship found to remove on "' + (t.title || t.recId) + '"'); continue; }
           edits.push({ edit_type: 92, id: rel.id, linkTypeID: rel.linkTypeID, attributes: [], entities: [{ entityType: 'recording', gid: t.recId }, { entityType: 'url', gid: rel.target.gid, name: rel.target.name }] });
           used.push(ic);
@@ -2765,7 +2785,7 @@
         used.forEach(ic => {
           const t = RELEASE.tracks[ic.idx]; if (t) { t.recUrls = (t.recUrls || []).filter(u => u !== ic.url); delete _relCache[t.recId]; }
           ic.el.remove();
-          const ab = addBox(ic.idx);   // re-offer as a hidden Add candidate so Find links can resolve it again
+          const ab = !ic.p.other && addBox(ic.idx);   // re-offer as a hidden Add candidate so Find links can resolve it again — but never for the read-only "other" providers ISRC Scout can't add
           if (ab && !ab.querySelector('.ii-tl[data-code="' + ic.p.code + '"]')) { const s = document.createElement('span'); s.className = 'ii-tl cand'; s.dataset.code = ic.p.code; s.title = ic.p.name; s.innerHTML = ic.p.icon; ab.appendChild(s); }
         });
         Log.info('Removed ' + used.length + ' link' + (used.length === 1 ? '' : 's') + ' on MusicBrainz');
@@ -2793,7 +2813,7 @@
         for (const ic of icons) {
           const t = RELEASE.tracks[ic.idx]; if (!t.recId) continue;
           const rels = await recUrlRels(t.recId);
-          const rel = rels.find(r => (r.target && r.target.name) === ic.url) || rels.find(r => ic.p.test((r.target && r.target.name) || '') && r.linkTypeID === ic.p.linkTypeID);
+          const rel = rels.find(r => (r.target && r.target.name) === ic.url) || rels.find(r => urlEq((r.target && r.target.name) || '', ic.url)) || rels.find(r => ic.p.test((r.target && r.target.name) || '') && r.linkTypeID === ic.p.linkTypeID);
           if (!rel) { Log.warn('No ' + ic.p.name + ' relationship found on "' + (t.title || t.recId) + '"'); ic.el.classList.remove('removing'); continue; }
           if (!!rel.ended === ended) { ic.el.classList.remove('removing'); ic.el.classList.toggle('ended', ended); continue; }   // already in the desired state
           edits.push({ edit_type: 91, id: rel.id, linkTypeID: rel.linkTypeID, attributes: [], ended: ended, entities: [{ entityType: 'recording', gid: t.recId }, { entityType: 'url', gid: rel.target.gid, name: rel.target.name }] });
