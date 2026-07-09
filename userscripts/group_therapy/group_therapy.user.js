@@ -761,7 +761,10 @@
   //     .relationshipDialogDispatch exist — it's undefined otherwise), dispatch
   //     {type:'update-date-period', action:{type:'update-begin-date', action:{type:'set-date', date}}} etc.,
   //     then click the dialog's positive (Done) button. loujine's "Copy dates" userscript works this way.
-  //   • DECISION (majkinetor): we do NOT drive the UI, so overwrite/remove are abandoned; this stays fill-only.
+  //   • Or submit the edit directly to MB's edit API (like GT's RG Consolidation), bypassing the editor
+  //     reducer entirely — that can set/remove too, but it auto-submits instead of staging for review.
+  //   • DECISION (majkinetor): we neither drive the UI nor auto-submit edits, so overwrite/remove are
+  //     abandoned; this stays fill-only.
   // ────────────────────────────────────────────────────────────────────────────────────────────────────
   function applyRelDate(re, destRel, dates) {
     const e0 = destRel.entity0, e1 = destRel.entity1;
