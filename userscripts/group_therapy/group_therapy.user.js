@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.234917
+// @version      2026.7.9.020606
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -878,6 +878,7 @@
     const body = el('div', 'gt-cfg-body');
     const opt = (label, hint, get, set) => { const l = el('label', 'gt-cfg-opt'); l.title = hint; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = get(); cb.onchange = () => set(cb.checked); l.append(cb, el('span', null, label)); return l; };
     body.appendChild(opt('Hide help text', 'Hide the two MusicBrainz help paragraphs at the top of the edit-relationships page', () => gtHideHelp, v => { gtHideHelp = v; try { GM_setValue('gt-hide-help', v); } catch (e) {} gtApplyHelp(); }));
+    body.appendChild(opt('Hide native batch tools', "Hide MusicBrainz's own batch-tools table (#batch-tools) on the edit-relationships page", () => gtHideBatch, v => { gtHideBatch = v; try { GM_setValue('gt-hide-batch', v); } catch (e) {} gtApplyBatch(); }));
     body.appendChild(opt('Auto-match on start', 'Open the work matcher and run matching automatically when the page loads', () => gtAutoMatch, v => { gtAutoMatch = v; try { GM_setValue('gt-auto-match', v); } catch (e) {} }));
     body.appendChild(opt('Auto-match on open', 'When you open the work matcher, run matching automatically — off (default): the popup opens with everything unresolved and you click ⚡ Match yourself', () => wmAutoOnOpen, v => { wmAutoOnOpen = v; try { GM_setValue('gt-wm-auto-open', v); } catch (e) {} }));
     popEl.appendChild(body);
@@ -889,7 +890,7 @@
   }
   function injectCloneButton() {
     const content = document.getElementById('content'); if (!content) return false;
-    if (content.querySelector('.gt-toolbar')) { gtApplyHelp(); return true; }
+    if (content.querySelector('.gt-toolbar')) { gtApplyHelp(); gtApplyBatch(); return true; }
     // wait until the relationship editor has rendered (its heading is the readiness signal)
     if (![...document.querySelectorAll('h2')].some(h => /^\s*Release relationships/i.test(h.textContent || ''))) return false;
     const bar = el('div', 'gt-toolbar');
@@ -918,7 +919,7 @@
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
     const tabs = content.querySelector(':scope > .tabs');
     content.insertBefore(bar, tabs ? tabs.nextSibling : content.firstChild);
-    gtApplyHelp();
+    gtApplyHelp(); gtApplyBatch();
     // #372 auto-open + match — but skip it when every recording already has a work (nothing to do)
     if (gtAutoMatch) setTimeout(() => { try { if (wmRecordings().some(r => !r.hasWorkOnPage)) openWorkMatch(true); } catch (e) {} }, 500);   // "Auto-match on start" opens AND runs, regardless of the per-open toggle
     return true;
@@ -1217,9 +1218,11 @@
   // run the work matcher on page load (off by default).
   let gtHideHelp = (() => { try { return GM_getValue('gt-hide-help', true) !== false; } catch (e) { return true; } })();
   let gtAutoMatch = (() => { try { return GM_getValue('gt-auto-match', false) === true; } catch (e) { return false; } })();
+  let gtHideBatch = (() => { try { return GM_getValue('gt-hide-batch', false) === true; } catch (e) { return false; } })();   // hide MB's own batch-tools table (off by default)
   // the two help paragraphs are the only direct-child <p> of #content (the batch-tools hint + the guidelines
   // link) — a stable selector even after we insert our toolbar, since that's a <div>.
   const gtApplyHelp = () => { document.querySelectorAll('#content > p').forEach(p => { p.style.display = gtHideHelp ? 'none' : ''; }); };
+  const gtApplyBatch = () => { const t = document.getElementById('batch-tools'); if (t) t.style.display = gtHideBatch ? 'none' : ''; };
   // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
   // already carries authors inline for searched works)
   const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;

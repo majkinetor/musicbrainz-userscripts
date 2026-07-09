@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.8.234918
+// @version      2026.7.9.020607
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.8.234918 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.8.162833\n  · Art Station v2026.7.8.171920\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.8.234917\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.8.165449");
+  console.log('%c String Theory %c v2026.7.9.020607 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.8.162833\n  · Art Station v2026.7.8.171920\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.9.020606\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.8.165449");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16645,7 +16645,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.8.234917","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.8.234917","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.9.020606","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.9.020606","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -17513,6 +17513,7 @@ ${lines}
     const body = el('div', 'gt-cfg-body');
     const opt = (label, hint, get, set) => { const l = el('label', 'gt-cfg-opt'); l.title = hint; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = get(); cb.onchange = () => set(cb.checked); l.append(cb, el('span', null, label)); return l; };
     body.appendChild(opt('Hide help text', 'Hide the two MusicBrainz help paragraphs at the top of the edit-relationships page', () => gtHideHelp, v => { gtHideHelp = v; try { GM_setValue('gt-hide-help', v); } catch (e) {} gtApplyHelp(); }));
+    body.appendChild(opt('Hide native batch tools', "Hide MusicBrainz's own batch-tools table (#batch-tools) on the edit-relationships page", () => gtHideBatch, v => { gtHideBatch = v; try { GM_setValue('gt-hide-batch', v); } catch (e) {} gtApplyBatch(); }));
     body.appendChild(opt('Auto-match on start', 'Open the work matcher and run matching automatically when the page loads', () => gtAutoMatch, v => { gtAutoMatch = v; try { GM_setValue('gt-auto-match', v); } catch (e) {} }));
     body.appendChild(opt('Auto-match on open', 'When you open the work matcher, run matching automatically — off (default): the popup opens with everything unresolved and you click ⚡ Match yourself', () => wmAutoOnOpen, v => { wmAutoOnOpen = v; try { GM_setValue('gt-wm-auto-open', v); } catch (e) {} }));
     popEl.appendChild(body);
@@ -17524,7 +17525,7 @@ ${lines}
   }
   function injectCloneButton() {
     const content = document.getElementById('content'); if (!content) return false;
-    if (content.querySelector('.gt-toolbar')) { gtApplyHelp(); return true; }
+    if (content.querySelector('.gt-toolbar')) { gtApplyHelp(); gtApplyBatch(); return true; }
     // wait until the relationship editor has rendered (its heading is the readiness signal)
     if (![...document.querySelectorAll('h2')].some(h => /^\s*Release relationships/i.test(h.textContent || ''))) return false;
     const bar = el('div', 'gt-toolbar');
@@ -17553,7 +17554,7 @@ ${lines}
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
     const tabs = content.querySelector(':scope > .tabs');
     content.insertBefore(bar, tabs ? tabs.nextSibling : content.firstChild);
-    gtApplyHelp();
+    gtApplyHelp(); gtApplyBatch();
     // #372 auto-open + match — but skip it when every recording already has a work (nothing to do)
     if (gtAutoMatch) setTimeout(() => { try { if (wmRecordings().some(r => !r.hasWorkOnPage)) openWorkMatch(true); } catch (e) {} }, 500);   // "Auto-match on start" opens AND runs, regardless of the per-open toggle
     return true;
@@ -17852,9 +17853,11 @@ ${lines}
   // run the work matcher on page load (off by default).
   let gtHideHelp = (() => { try { return GM_getValue('gt-hide-help', true) !== false; } catch (e) { return true; } })();
   let gtAutoMatch = (() => { try { return GM_getValue('gt-auto-match', false) === true; } catch (e) { return false; } })();
+  let gtHideBatch = (() => { try { return GM_getValue('gt-hide-batch', false) === true; } catch (e) { return false; } })();   // hide MB's own batch-tools table (off by default)
   // the two help paragraphs are the only direct-child <p> of #content (the batch-tools hint + the guidelines
   // link) — a stable selector even after we insert our toolbar, since that's a <div>.
   const gtApplyHelp = () => { document.querySelectorAll('#content > p').forEach(p => { p.style.display = gtHideHelp ? 'none' : ''; }); };
+  const gtApplyBatch = () => { const t = document.getElementById('batch-tools'); if (t) t.style.display = gtHideBatch ? 'none' : ''; };
   // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
   // already carries authors inline for searched works)
   const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;
