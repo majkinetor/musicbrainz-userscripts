@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.203708
+// @version      2026.7.9.222948
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -20,7 +20,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.33';
+  const VERSION = '2026.7.9.222948';
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -441,6 +441,42 @@
   }
   const applyMd = async parsed => { await resolveArtistsIn(parsed); return diffMd(parsed, false).changes; };   // resolve linked artists, then compute + write (test hook)
 
+  // #395 summarise the accumulated session changes for the edit note — release-level fields by name, and
+  // track / medium / event / label edits as counts.
+  function editNoteStats(changed) {
+    const rel = [], b = { track: 0, medium: 0, event: 0, label: 0 };
+    for (const l of changed.keys()) {
+      if (/^track /.test(l)) b.track++;
+      else if (/^medium /.test(l)) b.medium++;
+      else if (/^event /.test(l)) b.event++;
+      else if (/^label /.test(l)) b.label++;
+      else rel.push(l);
+    }
+    const plural = (n, w) => n + ' ' + w + (n > 1 ? 's' : '');
+    const parts = [];
+    if (rel.length) parts.push(rel.join(', '));
+    if (b.track) parts.push(plural(b.track, 'track field'));
+    if (b.medium) parts.push(plural(b.medium, 'medium field'));
+    if (b.event) parts.push(plural(b.event, 'event field'));
+    if (b.label) parts.push(plural(b.label, 'label field'));
+    return `Edited via Markdown — set ${plural(changed.size, 'field')}: ${parts.join(' · ')}`;
+  }
+  // #395 when Scribe has set at least one field this session, stamp the edit note with the standard header
+  // + a stats line. Re-runnable: replaces our previous block, preserves anything else in the field.
+  function stampEditNote(s) {
+    if (!s.changed.size) return;
+    const ta = document.querySelector('textarea.edit-note, textarea[name="edit-note.text"], textarea[name="edit-note"], textarea[name="edit_note"], #id-edit-note, .edit-note textarea');
+    if (!ta) return;
+    const gi = (typeof GM_info !== 'undefined' && GM_info.script) || {};
+    const homepage = gi.homepageURL || gi.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/scribe/README.md';
+    const header = `${NAME} v${gi.version || VERSION} by ${gi.author || 'majkinetor'} - ${homepage}`;
+    const block = `${header}\n${editNoteStats(s.changed)}`;
+    const esc = NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const cleaned = String(ta.value || '').replace(new RegExp('(?:^|\\n)' + esc + ' v[^\\n]*\\n[^\\n]*', 'g'), '').replace(/\n{3,}/g, '\n\n').trim();
+    const val = cleaned ? cleaned + '\n\n' + block : block;
+    try { const setVal = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set; setVal.call(ta, val); ta.dispatchEvent(new Event('input', { bubbles: true })); ta.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+  }
+
   // Open the release MD in the editor and KEEP it linked: every save applies to the editor,
   // so you can iterate (edit · save · see it apply · edit more · save …) until you Stop.
   let session = null;   // { id, active, lastMd, changed:Map(field→{from,to}), problems:[] }
@@ -476,6 +512,7 @@
         if (changes.length) await refreshApollo();   // make Apollo's mirror reflect the model writes (if Apollo is on)
         for (const c of changes) { const ex = s.changed.get(c.label); s.changed.set(c.label, { from: ex ? ex.from : c.from, to: c.to }); }   // accumulate across the session; keep the original "from"
         s.problems = problems;
+        stampEditNote(s);   // #395 header + stats of what Scribe set, once ≥1 field has changed
         renderSession();
       } catch (e) { renderSession('Apply error: ' + (e.message || e)); }
     }
