@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.8.165449
+// @version      2026.7.9.162603
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -248,7 +248,14 @@ function pcEditNote(urls) {
         'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md';
     const header = (s.name || 'MB Platform Check') + ' v' + (s.version || '?') +
         ' by ' + (s.author || 'majkinetor') + ' - ' + homepage;
-    const lines = [header, '', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + ':'];
+    // Record the link-confidence settings that gated which links were added, so a reviewer can see why
+    // (e.g. strict barcode/format withholding). Lists each enabled check with its mode; 'off' when none.
+    const modeWord = k => GM_getValue(k, 'exists') === 'strict' ? 'strictly' : 'if they exist';
+    const conf = [];
+    if (GM_getValue('pc:respect-format', true))  conf.push('formats ' + modeWord('pc:format-mode'));
+    if (GM_getValue('pc:respect-barcode', true)) conf.push('barcodes ' + modeWord('pc:barcode-mode'));
+    const confLine = 'Link confidence: ' + (conf.length ? conf.join(', ') : 'off');
+    const lines = [header, confLine, '', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + ':'];
     urls.forEach(u => lines.push(u));
     return lines.join('\n');
 }
