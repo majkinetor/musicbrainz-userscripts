@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.9.210729
+// @version      2026.7.9.211201
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1043,6 +1043,9 @@
     "Acoustic Guitar": "acoustic guitar",
     "Double Bass": "double bass",
     "Goblet Drum": "goblet drum",
+    "Darbouka": "darbuka",
+    // #392 goblet drum (Discogs spelling; MB instrument is "darbuka")
+    "Darbuka": "darbuka",
     "Maracas": "maracas",
     "Steel Drum": "steelpan",
     "Steelpan": "steelpan",
