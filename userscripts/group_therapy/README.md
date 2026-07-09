@@ -65,6 +65,10 @@ The menu lists each credit with a **checkbox** (all on by default) — untick an
 
 Copy/Move act on the ticked credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
 
+#### Copy date
+
+If the relationship you right-click carries a **date period** (e.g. a *recorded at “<place>”* with a date), the copy menu also offers **Copy date (D1 → D2)**. It stamps that date onto **every** relationship — all performers/instruments plus the *recording of* work — on the **source track and the selected tracks** (or all tracks if none are ticked). So a single recording's *recorded-at* date fills in the dates for all its performers, and across a live album in one go. Existing dates are overwritten; nothing is submitted — the edits land in the editor for you to review and save.
+
 <img width="650" src="./screenshots/copy.png" /> 
 
 #### From release 
@@ -151,6 +155,7 @@ When (and only when) you actually **use** Group Therapy on a page, it stamps MB'
 | right-click a recording's **checkbox** | copy / move its credits to the ticked recordings (or all tracks if none ticked) |
 | right-click a work's **checkbox** | copy / move that work's credits (writer/composer/…) to the ticked works |
 | right-click a credit's **＋ / pencil** | copy scoped to that role / that one credit |
+| right-click a **dated** rel's pencil → *Copy date* | stamp that date onto every rel on the source + selected tracks |
 | right-click a credit in the copy list | select only that role · **Shift** adds a role to the selection |
 | **[A] / [R]** on a credit (hover) | select all tracks crediting that artist · in the same role |
 | hover an entity name / role label | highlight all matches + show a count tooltip |
