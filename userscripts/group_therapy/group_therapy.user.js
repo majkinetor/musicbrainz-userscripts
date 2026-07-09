@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9.185733
+// @version      2026.7.9.190603
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1725,14 +1725,19 @@
       const total = rows.length;
       let done = rows.filter(r => r._matched || r.hasWorkOnPage || r.linked).length;
       setProgress(done, total); draw();
-      for (const row of rows) {
-        if (cancelled) break;
-        if (row._matched || row.hasWorkOnPage) continue;
+      // #363 match recordings CONCURRENTLY (not one-at-a-time). Each recording's work-title search hits the
+      // editor's /ws/js endpoint, which ISN'T on the /ws/2 rate gate — so running several rows at once lets
+      // those ungated searches overlap and fills the idle time while the gated ISRC lookups are spaced out,
+      // instead of the old serial loop where every row waited on the one before it. wmMatchOne rows are
+      // independent (shared state is only the global gate + abort), so this is safe.
+      const todo = rows.filter(r => !(r._matched || r.hasWorkOnPage));
+      await throttledMap(todo, async row => {
+        if (cancelled || !wmEl) return;
         try { await wmMatchOne(row); } catch (e) {}
-        if (!wmEl) { wmRunning = false; return; }   // dialog closed mid-run
-        if (cancelled) break;
+        if (cancelled || !wmEl) return;
         row._matched = true; done++; setProgress(done, total); draw(); updatePlan();
-      }
+      }, 6);
+      if (!wmEl) { wmRunning = false; return; }   // dialog closed mid-run
       setProgress(done, 0);                 // clears wmRunning → leftover rows show "—", ⚡ Match re-enabled
       // #363 the run is over (finished or cancelled) — drop the AbortController. A cancel leaves it in the
       // aborted state, and wmJson bails on an aborted signal, so keeping it would make the ✎ picker's OWN
