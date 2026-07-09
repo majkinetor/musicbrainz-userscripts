@@ -46,7 +46,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
 | **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
-| **Qobuz** | – | – | API is auth-only; shown read-only when already linked |
+| **Qobuz** | – | – | API is auth-only; shown (and end/removable) when already linked |
 
 > **Album-based** providers (everything except Deezer/Tidal) need the release's album link — either already in MB, or one [Platform Check](../platform_check/README.md) found by barcode, or a URL you paste yourself.
 
