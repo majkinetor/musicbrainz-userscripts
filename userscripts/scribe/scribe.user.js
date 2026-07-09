@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.9
+// @version      2026.7.9.203708
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -173,6 +173,33 @@
     };
     return m;
   }
+  // Build the SAME model as toModel, but from the LIVE release-editor state (KO observables) instead of
+  // WS2 — used on /release/add (no saved release, no MBID) once the form is structurally set up.
+  function modelFromEditor() {
+    const ed = W.MB && W.MB.releaseEditor; if (!ed) throw new Error('release editor not ready');
+    const rel = ed.rootField.release(); if (!rel) throw new Error('no release in the editor');
+    const R = makeRefs();
+    const selText = fid => { const s = [...document.querySelectorAll('select')].find(x => (x.getAttribute('data-bind') || '').includes('value: ' + fid)); return s && s.selectedIndex >= 0 ? (s.options[s.selectedIndex].textContent || '').trim() : ''; };
+    const linked = (kind, id) => { try { return (W.MB.linkedEntities[kind][id] || {}).name || ''; } catch (e) { return ''; } };
+    const fmtDate = d => { if (!d) return ''; const y = u(d.year), mo = u(d.month), da = u(d.day); return (y ? '' + y : '') + (mo ? '-' + String(mo).padStart(2, '0') : '') + (da ? '-' + String(da).padStart(2, '0') : ''); };
+    const cred = acObs => { const ac = u(acObs) || {}; return { lead: '', parts: (ac.names || []).map(n => { const g = gidOf(n.artist); const an = n.artist ? (u(n.artist.name) || '') : ''; const cr = u(n.name) || an; if (!cr && !g) return null; return { label: g ? R.ref(cr, `${MBROOT}/artist/${g}`, an) : cr, join: u(n.joinPhrase) || '' }; }).filter(Boolean) }; };
+    const recRef = rec => { const g = gidOf(rec); return g ? R.ref(u(rec.name) || '', `${MBROOT}/recording/${g}`, u(rec.name) || '') : null; };
+    const names = ((u(rel.artistCredit) || {}).names) || [];
+    const artistNames = names.map(n => (u(n.name) || (n.artist && u(n.artist.name)) || '') + (u(n.joinPhrase) || '')).join('').trim();
+    const title = u(rel.name) || '';
+    return {
+      mbid: null, h1: `${artistNames} — ${title}`,
+      info: { title, disambiguation: u(rel.comment) || '', status: selText('statusID'), packaging: selText('packagingID'),
+        barcode: ((rel.barcode && typeof rel.barcode.value === 'function' ? (u(rel.barcode.value) || '') : '')) || 'none',
+        language: selText('languageID'), script: selText('scriptID'), artist: cred(rel.artistCredit), releaseGroup: null },
+      events: ((typeof rel.events === 'function' && rel.events()) || []).map(ev => ({ date: fmtDate(u(ev.date)), country: linked('area', u(ev.countryID)) })),
+      labels: ((typeof rel.labels === 'function' && rel.labels()) || []).map(li => { const lab = u(li.label), g = gidOf(lab); return { label: g ? R.ref(u(lab.name) || '', `${MBROOT}/label/${g}`, u(lab.name) || '') : null, catno: u(li.catalogNumber) || '' }; }),
+      annotation: (u(rel.annotation) || '').trim(), links: [],
+      media: (rel.mediums() || []).map(med => ({ position: u(med.position), format: linked('medium_format', u(med.formatID)), title: u(med.name) || '',
+        tracks: (med.tracks() || []).map(t => ({ position: u(t.position), title: u(t.name) || '', credit: cred(t.artistCredit), length: u(t.formattedLength) || '', recording: recRef(u(t.recording)) })) })),
+      refs: R.map,
+    };
+  }
   function emit(m) {
     const L = [], P = (...x) => L.push(...x), i = m.info;
     P(`# ${esc(m.h1)}`, '', `<!-- release ${m.mbid} · format v1 · DO NOT EDIT THIS LINE -->`, '');   // H1 is display-only (never split) — no need to escape the — delimiter here
@@ -228,15 +255,17 @@
   // ════════════════════ MB page glue ════════════════════
   const u = v => { try { return typeof v === 'function' ? v() : v; } catch (e) { return undefined; } };
   const releaseMbid = () => (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1] || null;
-  // the release EDITOR only — /release/<mbid>/edit exactly, NOT /edit-relationships or /edit_annotation
-  // (the loose /edit match also fired on edit-relationships, esp. via the String Theory bundle's broad @match)
-  const onEditPage = () => /\/release\/[0-9a-f-]{36}\/edit(?![-\w])/i.test(location.pathname) && releaseMbid();
+  // the release EDITOR: /release/<mbid>/edit (existing) OR /release/add (new) — but NOT /edit-relationships
+  // or /edit_annotation (the loose /edit match also fired there, esp. via the String Theory bundle's broad
+  // @match). /release/add has no MBID, so this no longer requires one (exportMd reads the editor there).
+  const onEditPage = () => /\/release\/(?:add|[0-9a-f-]{36}\/edit)(?![-\w])/i.test(location.pathname);
   async function fetchWs2(id) {
     const inc = 'artist-credits+labels+recordings+release-groups+url-rels+media+annotation';
     const r = await fetch(`/ws/2/release/${id}?inc=${inc}&fmt=json`, { headers: { Accept: 'application/json' } });
     if (!r.ok) throw new Error('WS2 ' + r.status); return r.json();
   }
-  async function exportMd() { const id = releaseMbid(); if (!id) throw new Error('no release id'); return emit(toModel(await fetchWs2(id))); }
+  // existing release → the saved WS2 data; /release/add (no MBID) → the live editor form.
+  async function exportMd() { const id = releaseMbid(); return id ? emit(toModel(await fetchWs2(id))) : emit(modelFromEditor()); }
 
   // Apollo mirrors the model from a snapshot and doesn't observe our model writes, so nudge it
   // to rebuild after we apply (native MB updates on its own). No-op if Apollo isn't installed.
