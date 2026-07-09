@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.1
+// @version      2026.7.9.210729
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3571,6 +3571,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
   ];
 
   // src/dispatch.js
+  var stripDiscogsNum = (s) => String(s || "").replace(/\s+\(\d+\)$/, "");
   function makeIdentifyingClassifier(lat) {
     const identifyingRoots = /* @__PURE__ */ new Set();
     if (lat) {
@@ -3965,7 +3966,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           tickProgress();
           continue;
         }
-        const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+        const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
         await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
         tickProgress();
       }
@@ -3981,7 +3982,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
               continue;
             }
-            const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+            const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
             for (const recEntity of recordingByGid.values()) {
               await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
             }
@@ -4122,7 +4123,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             log.skip(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
             continue;
           }
-          const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+          const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
           if (workEntity.gid) {
             await processOne(workEntity, "artist", "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
           } else {
@@ -4156,7 +4157,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           failed++;
           continue;
         }
-        const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+        const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
         const attrKey = (role.attributes || []).map((a) => a.value || a._type || "").join(",");
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
         if (seenTrackRels.has(trackRelKey)) continue;

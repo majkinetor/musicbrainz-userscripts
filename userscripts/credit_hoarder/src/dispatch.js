@@ -22,6 +22,10 @@ import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
 import { _showBar, _setProgressPct }     from './progress-bar.js';
 
+// #393 Discogs disambiguates same-named entities with a trailing " (N)" (e.g. "Odeon (4)"). MB doesn't use
+// that number, so strip it from a Discogs-sourced credited-as (anv/name) — never from a user's review override.
+const stripDiscogsNum = s => String(s || '').replace(/\s+\(\d+\)$/, '');
+
 // #225: Build a memoized predicate `(typeID) => boolean` that reports whether
 // a link-attribute type is *identifying* — i.e. it lives under MB's
 // "instrument" or "vocal" attribute root — as opposed to a pure modifier
@@ -617,7 +621,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 log.skip(`Skipped ${role.artist.name} (${role.linkType}) — not resolved in review`);
                 skipped++; tickProgress(); continue;
             }
-            const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+            const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
             await processOne(releaseEntity, 'artist', 'release', role.linkType, mbUrl, role.attributes || [], credit);
             tickProgress();
         }
@@ -636,7 +640,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                         log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
                         continue;
                     }
-                    const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+                    const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
                     for (const recEntity of recordingByGid.values()) {
                         if (!applyToRec(recEntity.gid)) continue;   // #113: skip unchecked recordings
                         await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || '*');
@@ -838,7 +842,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     log.skip(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
                     continue;
                 }
-                const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+                const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
                 // Most work-only rels are artist→work; a music publisher is a
                 // label→work "publishing" rel (role carries entityType:'label').
                 const srcType = role.entityType || 'artist';
@@ -880,7 +884,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             }
             if (!applyToRec(recEntity.gid)) continue;   // #113: skip unchecked recordings
 
-            const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
+            const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
             const attrKey = (role.attributes||[]).map(a=>typeof a==='string'?a:(a.value||a._type||'')).join(',');
             const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
             if (seenTrackRels.has(trackRelKey)) continue;
