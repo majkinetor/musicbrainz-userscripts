@@ -1,6 +1,6 @@
 # ISRC Scout <img src="icon.svg" align="left" width="48">
 
-Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz. With ISRC present, finds and adds **streaming links to the recordings** (Deezer, Tidal, Bandcamp, Apple Music).
+Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz. With ISRC present, finds and adds **streaming links to the recordings**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/isrc_scout/isrc_scout.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -20,11 +20,11 @@ https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
 - **[ISRC badge](#isrc-badge)** showing how many are missing
 - **[ISRC](#isrc-editor)** — a per-track table of existing/new ISRCs with live validation
     - **[Import sources](#import-sources)** — fill the missing ISRCs from several providers
-    - **[Delete existing ISRCs](#deleting-existing-isrcs)**, plus bulk fill / export
-    - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting.
+    - **[Delete existing ISRCs](#deleting-existing-isrcs)**
+    - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting
     - **[Submit to MusicBrainz](#submitting)** — one-time OAuth, then submit straight from the editor
-- **[Links](#links)** — find and add streaming links to recordings (Deezer, Tidal, Bandcamp, Apple Music).
-  - Find links based on release external and ISRCs 
+- **[Links](#links)** — find and add streaming links to recordings 
+  - Find links based on release external links and ISRCs 
   - [Batch ending or removing](#ending--removing) link relationship
 - Using release group external links and [Platform Check](../platform_check/README.md) links
 
