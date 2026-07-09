@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.9.210251
+// @version      2026.7.9.211701
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md
 // @match        https://*.musicbrainz.org/release/add*
 // @match        https://*.musicbrainz.org/release/*/edit
-// @match        https://*.musicbrainz.org/release/*/edit_annotation
+// @match        https://*.musicbrainz.org/*/edit_annotation
 // @match        https://*.musicbrainz.org/artist/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
@@ -214,9 +214,13 @@
     inp.style.width = (Math.ceil(_nmMeasCtx.measureText(v).width) + 5) + 'px';
   };
 
+  // #394 any entity's standalone Edit-annotation page — /<type>/<gid>/edit_annotation (artist, recording,
+  // work, event, label, release, …), not just release. The annotation editor is generic (it wraps the
+  // textarea[name="edit-annotation.text"] every entity's page has).
+  const ANNO_PAGE_RE = /^\/[a-z][a-z-]*\/[0-9a-f-]{36}\/edit_annotation/i;
   // FOUC guard (we run at document-start): on the standalone Edit annotation page, hide the native form until our
   // editor mounts (and removes #tc-anno-fouc), so the original interface never flashes. Skipped when off.
-  if (/\/release\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/edit_annotation/.test(location.pathname)
+  if (ANNO_PAGE_RE.test(location.pathname)
       && SETTINGS.apolloEnabled !== false && SETTINGS.modifyAnnotation !== false) {
     const s = document.createElement('style'); s.id = 'tc-anno-fouc'; s.textContent = '#content > form{visibility:hidden}';
     (document.head || document.documentElement).appendChild(s);
@@ -6163,7 +6167,7 @@
   // standalone /release/<mbid>/edit_annotation page: mount our editor on the annotation field, move the
   // Changelog above it (like Disambiguation in /edit). Gated by the same "Modify annotations" setting.
   function applyAnnotationPage() {
-    if (!/\/release\/[0-9a-f-]{36}\/edit_annotation/.test(location.pathname)) return;
+    if (!ANNO_PAGE_RE.test(location.pathname)) return;
     const ta = document.querySelector('textarea[name="edit-annotation.text"]'); if (!ta) return;
     ensureLauncher();   // the floating Original / Apollo switcher + ⚙ settings, same as the release editor
     const form = ta.closest('form'), hide = annoWant();
@@ -6420,7 +6424,7 @@
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
     if (handleEditLinkClose()) { Log.info('Discogs-link edit committed — closing tab'); return; }
     if (await autoConfirmSeed()) return;   // handled the seed-confirmation interstitial (clicked, or option off) — no editor here
-    if (/^\/release\/[0-9a-f-]{36}\/edit_annotation/.test(location.pathname)) {   // standalone Edit annotation page (no releaseEditor)
+    if (ANNO_PAGE_RE.test(location.pathname)) {   // #394 standalone Edit annotation page for ANY entity (no releaseEditor)
       const tryMount = () => { if (document.querySelector('textarea[name="edit-annotation.text"]')) { applyAnnotationPage(); return true; } return false; };
       if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
       return;
