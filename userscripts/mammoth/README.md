@@ -59,7 +59,7 @@ The built-in babies cover the release editor's own controls, but you can put a �
 | **Label** | The popover title (optional — derived from the field's own label if left blank). |
 | **Key** | Storage key (optional). Fields sharing a key share their saved values. **Defaults to the label** if blank; omit both and Mammoth derives a key from the field itself. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
-| **↵ ms** | Press **Enter** this many milliseconds after a value is set, to accept an **autocomplete's** highlighted match. `0`/blank = off (the default). Tune per field — instruments resolve fast (~150 ms), artists search slower and need more. It fires **only while the autocomplete's dropdown is open** (a highlighted option exists), so a mistimed Enter can't leak to a form or dialog that would submit/close on it. |
+| **↵ ms** | Accept an **autocomplete's** top match this many milliseconds after a value is set. `0`/blank = off (the default). Tune per field — instruments resolve fast (~150 ms), artists search slower and need more. It **clicks the top result** rather than pressing Enter, so a mouse hovering the popup can't hijack the pick; and it acts **only while the dropdown is open**, so a mistimed accept can't leak to a form or dialog. |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.184144
+// @version      2026.7.10.185737
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -469,7 +469,7 @@
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
         <div class="mmth-cfgsec">Custom baby fields <button type="button" class="mmth-cf-mode">{ } JSON</button></div>
-        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row. <b>Key</b> shares a saved list between fields (defaults to the label). <b>nudge</b> shifts the 🦣 pin by N px. <b>↵ ms</b> presses Enter that many ms after a value is set (0 = off) to accept an autocomplete's match — instruments need ~150, artists more; it only fires while the dropdown is open, so it can't leak.</div>
+        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row. <b>Key</b> shares a saved list between fields (defaults to the label). <b>nudge</b> shifts the 🦣 pin by N px. <b>↵ ms</b> accepts an autocomplete's top match that many ms after a value is set (0 = off) — instruments need ~150, artists more; it clicks the top result (hover-proof) only while the dropdown is open, so it can't leak.</div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
         <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16, "enterDelay": 150 }]'></textarea>
@@ -543,7 +543,7 @@
           return inp;
         };
         const dly = document.createElement('input'); dly.type = 'number'; dly.className = 'mmth-cf-in mmth-cf-dly'; dly.min = '0'; dly.max = '10000'; dly.step = '50'; dly.style.width = '58px'; dly.placeholder = '↵ ms';
-        dly.title = 'Press Enter this many ms after the value is set (0 / blank = off; ~150 for instruments, more for artists). Fires only while the autocomplete dropdown is open, so it can’t leak to another control.';
+        dly.title = 'Accept the autocomplete’s top match this many ms after the value is set (0 / blank = off; ~150 for instruments, more for artists). Clicks the top result — immune to mouse hover — and only while the dropdown is open, so it can’t leak to another control.';
         dly.value = cf.enterDelay ? cf.enterDelay : '';
         dly.oninput = () => { cf.enterDelay = dly.value === '' ? 0 : Math.max(0, +dly.value || 0); cfApply(); };
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
@@ -1134,29 +1134,30 @@
       if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
       return true;
     }
-    const pressEnter = el => { for (const type of ['keydown', 'keypress', 'keyup']) el.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 })); };
-    // Is the field's autocomplete dropdown actually open right now? We only fire Enter when it is, so a
-    // mistimed Enter can never LEAK to a form/dialog that would submit or close on it — an open autocomplete
-    // consumes (and stops) the Enter. Covers MB's autocomplete2 (aria-expanded / its listbox) + legacy jQuery UI.
-    function acOpen(el) {
-      // MB autocomplete2 auto-highlights the first result and sets aria-activedescendant → the safest "an
-      // option is ready to accept" signal (a bare visible-but-empty listbox appears earlier and must NOT
-      // count, or Enter would fire with nothing to accept and leak).
-      if (el.getAttribute('aria-activedescendant')) return true;
-      if (el.getAttribute('aria-expanded') === 'true') return true;
+    // The visible options in the field's open autocomplete dropdown (MB autocomplete2 listbox, else legacy
+    // jQuery UI menu). Empty ⇒ the dropdown isn't open yet.
+    function acOptions(el) {
       const id = el.getAttribute('aria-owns') || el.getAttribute('aria-controls');
-      if (id) { const m = document.getElementById(id); if (m && m.offsetParent && m.querySelector('li,[role="option"]')) return true; }
-      const box = el.closest('.autocomplete2');
-      if (box && [...box.querySelectorAll('[role="option"], li.option')].some(n => n.offsetParent)) return true;
-      return [...document.querySelectorAll('ul.ui-autocomplete')].some(u => u.offsetParent && u.querySelector('li'));   // legacy jQuery UI
+      const menu = (id && document.getElementById(id)) || el.closest('.autocomplete2');
+      let opts = menu ? [...menu.querySelectorAll('[role="option"], li.option')] : [];
+      if (!opts.length) opts = [...document.querySelectorAll('ul.ui-autocomplete')].filter(u => u.offsetParent).flatMap(u => [...u.querySelectorAll('li')]);
+      return opts.filter(n => n.offsetParent);
     }
-    // p.enterDelay (ms): 0 = never; N>0 = press Enter N ms after the value is set, but ONLY if the field's
-    // autocomplete dropdown is open by then — so it accepts the highlighted match and can't leak elsewhere.
+    // Accept the recalled value in an OPEN autocomplete by CLICKING its TOP option — never a bare Enter,
+    // whose "active" item follows the mouse, so hovering the popup would hijack the pick. A targeted click
+    // is immune to hover and matches MB's own top-ranked result. If the dropdown isn't open yet (no options)
+    // we do nothing, so a mistimed accept can't leak to a form/dialog that would submit or close on it.
+    function acAccept(el) {
+      const opts = acOptions(el); if (!opts.length) return;
+      try { el.focus(); } catch (e) {}
+      for (const type of ['mousedown', 'mouseup', 'click']) opts[0].dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
+    }
+    // p.enterDelay (ms): 0 = never; N>0 = accept the autocomplete's top match N ms after the value is set.
     // Tune per field: instruments resolve fast (~150ms), artists search slower and need more.
     function recallInto(p, rec) {
       const ok = writeField(p.el, rec);
       const ms = Math.max(0, Math.min(10000, p.enterDelay | 0));
-      if (ok && ms > 0) { try { p.el.focus(); } catch (e) {} setTimeout(() => { try { if (p.el.isConnected && acOpen(p.el)) { p.el.focus(); pressEnter(p.el); } } catch (e) {} }, ms); }
+      if (ok && ms > 0) { try { p.el.focus(); } catch (e) {} setTimeout(() => { try { if (p.el.isConnected) acAccept(p.el); } catch (e) {} }, ms); }
       return ok;
     }
     function clearField(el) {
