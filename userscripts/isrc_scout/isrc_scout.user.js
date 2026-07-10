@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10
+// @version      2026.7.10.131921
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1810,7 +1810,7 @@
         disc:   t.media_number || 1,
         pos:    t.track_number || (i + 1),
         dur:    t.duration ? msToMmSs(t.duration * 1000) : '',   // Qobuz duration is in SECONDS
-        url:    '',                                              // per-track Qobuz URL isn't part of the ISRC import
+        url:    t.id ? 'https://open.qobuz.com/track/' + t.id : '',   // #387 per-track link — id-only open form is what MB stores
       };
       try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Qobuz map hiccup for ' + e.isrc + ': ' + errText(err)); }
       try { if (onProgress) onProgress(++n, list.length); } catch (err) {}
@@ -2530,6 +2530,13 @@
         album: true, urlKey: 'beatportId', conc: 99, gap: 0,
         test: u => /(?:^|[./])beatport\.com\/track\//i.test(u),
         resolve: (isrc) => provAlbumUrl('beatport', isrc) },
+      // Qobuz (#353/#387): album-scoped, ISRC-matched like Volumo/Beatport. album/get (with the shared
+      // Platform Check login token) carries every track's ISRC + id; the per-track link is the id-only
+      // open.qobuz.com/track/<id> — recording↔url "purchase for download" (254). Needs the Qobuz login.
+      { code: 'qz', name: 'Qobuz', color: _PROV_COLOR.qobuz, icon: SRC_ICON.qz, linkTypeID: 254,
+        album: true, urlKey: 'qobuzId', conc: 99, gap: 0,
+        test: u => /qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?track\//i.test(u),
+        resolve: (isrc) => provAlbumUrl('qobuz', isrc) },
     ];
 
     let resolving = false;

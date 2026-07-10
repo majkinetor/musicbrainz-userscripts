@@ -46,7 +46,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
 | **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
-| **Qobuz** | ✓¹ | – | ¹ needs a **Qobuz login** in [Platform Check](../platform_check/README.md) (album/get is session-gated); matched by position |
+| **Qobuz** | ✓¹ | ✓¹ | ¹ needs a **Qobuz login** in [Platform Check](../platform_check/README.md) (album/get is session-gated). ISRCs matched by position; per-track link is the id-only `open.qobuz.com/track/<id>`, matched by ISRC |
 
 > **Album-based** providers (everything except Deezer/Tidal) need the release's album link — either already in MB, or one [Platform Check](../platform_check/README.md) found by barcode, or a URL you paste yourself.
 
@@ -161,6 +161,7 @@ ISRC Scout also adds **streaming / store links to recordings** in the background
 | --- | --- | --- |
 | **Deezer**, **Tidal** | by **ISRC** — a global by-ISRC lookup, so it works on any release whose tracks have ISRCs | free streaming / streaming |
 | **Beatport**, **Volumo** | by **album** — the release's Beatport/Volumo album carries every track's **ISRC** (and id), so the per-track URL is matched by ISRC. Both are download stores → *purchase for download* | purchase for download |
+| **Qobuz** | by **album** — `album/get` (with the shared [Platform Check](../platform_check/README.md) login token) carries every track's **ISRC** + id; the per-track link is the id-only `open.qobuz.com/track/<id>`, matched by ISRC. Needs the Qobuz login | purchase for download |
 | **Bandcamp**, **Apple Music** | by **album page** — the release's Bandcamp/Apple album link lists every track URL, matched to the tracklist by **position + title** (a title mismatch is skipped, never guessed) | free streaming / streaming |
 
 A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Beatport/Volumo/Bandcamp/Apple need the release's album link) or the recording is already linked to it.
