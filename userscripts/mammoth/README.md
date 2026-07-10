@@ -66,7 +66,7 @@ Changes apply live (the page is re-scanned), and your list is remembered across 
 
 **Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed). For a **select-style list with no MBID** whose wanted item isn't the top match (e.g. *relationship type*), turn on the field's **`select`** option (the row's checkbox, or JSON `"select": true`). Recall then types the value, waits for the dropdown, and **clicks the option whose name matches** it. Matching by name is order-independent, so MB re-ranking the list by *your* usage can't break it (a fixed index would), and a targeted click can't leak to another control (pressing Enter there submits/closes the dialog). If the field has no dropdown it's a **no-op**, so leaving `select` on does no harm.
 
-The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `key`, `deltax`, `deltav`, `select`, and `mbid`; trailing commas and empty `{}` entries are tolerated:
+The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `key`, `deltax`, `deltav`, `select`, `mbid`, and `enable`; trailing commas and empty `{}` entries are tolerated:
 
 ```json
 [
@@ -74,6 +74,8 @@ The **`{ } JSON`** button (top-right of the section) switches the editor to a JS
   { "selector": "input[id^=\"label-\"]", "label": "Label", "key": "release.label", "mbid": true }
 ]
 ```
+
+**`enable`** defaults to `true`; set `"enable": false` (or click the **◉/○** toggle that appears when you hover a row) to **disable** a field — it's kept in the list (shown dimmed) but gets no pin. Handy for switching a built-in off without deleting it.
 
 **`mbid`** is **JSON-only** (no column in the grid). It enables entity-MBID capture and is meaningful **only on the built-in Label and Artist fields** — there it reads the release editor's model so a saved value keeps the real entity; on any other field it does nothing (falls back to text). It's shipped on for those two built-ins; you normally won't set it yourself.
 
