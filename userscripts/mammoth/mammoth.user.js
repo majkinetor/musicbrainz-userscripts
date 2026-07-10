@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.182128
+// @version      2026.7.10.184144
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -501,7 +501,7 @@
       const wide = name === 'fields'; p.classList.toggle('mmth-cfg-wide', wide);
       if (wide !== wasWide) placePop(p, anchor);
     };
-    tabs.forEach(t => t.onclick = () => showTab(t.dataset.tab));
+    tabs.forEach(t => t.onclick = () => { showTab(t.dataset.tab); SET.lastTab = t.dataset.tab; persistSet(); });   // remember the tab across opens
     // ── Settings pane ──
     const scope = p.querySelector('.mmth-s-scope'); scope.checked = SET.scopePerResource === true;
     scope.onchange = () => { SET.scopePerResource = scope.checked; persistSet(); useScope(); updateScopeChips(); render(); };
@@ -599,7 +599,9 @@
       let copied = false; try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { try { copied = document.execCommand('copy'); } catch (x) {} }
       ioMsg.textContent = `${items.length} item(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
     };
-    showTab(tab === 'io' ? 'io' : 'settings');
+    // open on the explicitly-requested tab (baby field → 'io'), else the last tab used, else Settings
+    const TABS = ['settings', 'fields', 'io'];
+    showTab(TABS.includes(tab) ? tab : (TABS.includes(SET.lastTab) ? SET.lastTab : 'settings'));
     placePop(p, anchor);   // position once; tab switches no longer move it
   }
   function openSyntax(anchor) {
