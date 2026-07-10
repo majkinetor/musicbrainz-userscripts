@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.231154
+// @version      2026.7.11.002326
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -319,7 +319,10 @@
   .mmth-cfgpane > .mmth-cfgsec:first-child { margin-top:2px; }
   /* custom baby fields (config) */
   /* Custom fields — flat, borderless grid */
-  .mmth-cf-top { display:flex; align-items:center; justify-content:space-between; margin:2px 0 8px; }
+  .mmth-cf-top { display:flex; align-items:center; gap:6px; margin:2px 0 8px; }
+  .mmth-cf-total { margin-left:auto; font-size:11px; color:#6f7d75; white-space:nowrap; }
+  .mmth-cf-total b { font-weight:700; color:#2e6b4a; }
+  .mmth-cf-total .mmth-cf-off-n { color:#b06a2c; }
   .mmth-cf-list { display:flex; flex-direction:column; gap:0; margin:0 0 4px; max-height:46vh; overflow-y:auto; overflow-x:hidden; }
   .mmth-cf-list::-webkit-scrollbar { width:8px; }
   .mmth-cf-list::-webkit-scrollbar-thumb { background:#d7e0db; border-radius:4px; }
@@ -352,7 +355,7 @@
   .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
   .mmth-cf-reset { margin-left:6px; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
   .mmth-cf-reset:hover { background:#eef5f0; border-color:#5aa67e; }
-  .mmth-cf-mode { margin-left:auto; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-mode { border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
   .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
   .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:6px; padding:7px; resize:vertical; }
   .mmth-cf-json:focus { outline:none; border-color:#5aa67e; }
@@ -512,7 +515,7 @@
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
-        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-reset" title="Re-add any missing built-in fields (catalog №, status, label, artist, Task…)">↺ Defaults</button><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
+        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-reset" title="Re-add any missing built-in fields (catalog №, status, label, artist, Task…)">↺ Defaults</button><span class="mmth-cf-total"></span><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
         <div class="mmth-cf-list"></div>
         <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
         <div class="mmth-cf-jsonrow" style="display:none"><button type="button" class="mmth-cf-jsonapply">Apply</button><span class="mmth-cf-jsonmsg"></span></div>
@@ -566,13 +569,17 @@
     // ── Fields pane ── custom baby fields: a user-editable list of {match,label,key,dx,entity}. Persisted in
     // SET; each edit re-scans the page (debounced) so pins appear/disappear live. Bad/empty selectors show a
     // "bad selector" / match count so a typo is caught before it litters pins.
-    const cfList = p.querySelector('.mmth-cf-list');
+    const cfList = p.querySelector('.mmth-cf-list'), cfTotal = p.querySelector('.mmth-cf-total');
     const cfCount = sel => { try { return document.querySelectorAll(sel).length; } catch (e) { return -1; } };
     let cfRefreshT = 0;
     const cfApply = () => { persistSet(); clearTimeout(cfRefreshT); cfRefreshT = setTimeout(() => { try { babyMammoths.refresh(); } catch (e) {} }, 400); };
     function renderFields() {
       SET.customFields = SET.customFields || [];
       cfList.textContent = '';
+      if (cfTotal) {
+        const n = SET.customFields.length, off = SET.customFields.filter(c => c && c.enable === false).length;
+        cfTotal.innerHTML = `<b>${n}</b> ${n === 1 ? 'field' : 'fields'}` + (off ? `, <span class="mmth-cf-off-n">${off} disabled</span>` : '');
+      }
       if (!SET.customFields.length) { const e = document.createElement('div'); e.className = 'mmth-cf-empty'; e.textContent = 'No custom fields yet.'; cfList.appendChild(e); }
       SET.customFields.forEach((cf, i) => {
         const row = document.createElement('div'); row.className = 'mmth-cf-row' + (cf.enable === false ? ' mmth-cf-off' : '');
