@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.203010
+// @version      2026.7.10.203717
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -305,7 +305,7 @@
   .mmth-cf-in:focus { outline:none; border-bottom-color:#5aa67e; }
   .mmth-cf-in::placeholder { color:#b7c2bb; }
   .mmth-cf-match { flex:1 1 auto; min-width:90px; }
-  .mmth-cf-in[type=number] { -webkit-appearance:none; -moz-appearance:textfield; appearance:none; text-align:center; }
+  .mmth-cf-in[type=number] { -moz-appearance:textfield; appearance:textfield; text-align:center; }   /* Firefox: textfield (not none) hides the spinner */
   .mmth-cf-in[type=number]::-webkit-inner-spin-button, .mmth-cf-in[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
   .mmth-cf-ent { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#8a968f; white-space:nowrap; cursor:pointer; }
   /* matches count — a compact green pill; grey when 0, red when the selector is invalid */
@@ -356,7 +356,7 @@
   .mmth-ra { cursor:pointer; border:none; background:none; color:#7d8a82; font-size:11px; line-height:1; padding:1px 2px; border-radius:3px; }
   .mmth-ra:hover { background:#cfe9d8; color:#1f5c3d; }
   .mmth-empty { padding:12px 8px; color:#9aa6a0; font-style:italic; text-align:center; }
-  .mmth-pop { position:fixed; z-index:99999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);
+  .mmth-pop { position:fixed; z-index:2147483647; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);   /* max — the config/syntax popup must clear any host modal (GT/ISRC live near max) */
               padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:280px; }
   .mmth-cfg { width:360px; }   /* #304: wider config window so the Import/Export radios sit on one row + a roomier textarea */
   .mmth-cfg.mmth-cfg-wide { width:min(660px,94vw); }   /* Fields tab: roomier so each custom-field row fits one line */
