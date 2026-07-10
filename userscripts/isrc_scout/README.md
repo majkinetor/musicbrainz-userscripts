@@ -53,6 +53,8 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
 
 > **Qobuz needs a login.** Its per-track ISRCs live behind the **session-gated** `album/get` endpoint — sign in once under **Platform Check → ⚙ Setup → Auth → Qobuz account** and Scout reads the shared token. Without it, the Qobuz button stays hidden.
+>
+> Qobuz is also **the one provider that geo-blocks anonymous access** (in some regions even *registration* is — it may take a VPN to create the account). But that's an anonymous-access limitation: **once you're registered and logged in, geo-blocking is no longer a factor** — the `user_auth_token` works from your normal connection, region regardless.
 
 <details>
 <summary><b>Qobuz — the full investigation</b> (so we don't re-litigate it — #353 / #201)</summary>
