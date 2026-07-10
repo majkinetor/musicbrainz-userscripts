@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.144834
+// @version      2026.7.10.163215
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -495,6 +495,35 @@
       .gt-cons-apply:hover{background:#278a4f}
       .gt-cons-apply:disabled{background:#c9ced4;border-color:#c9ced4;cursor:default}
       .gt-cons-plan{color:#556;font-size:12px}
+      /* Date picker (#398) */
+      .gt-dp{width:min(560px,94vw)}
+      .gt-dp-ctrl{padding:10px 14px;border-bottom:1px solid #e7e9ee;display:flex;flex-direction:column;gap:8px}
+      .gt-dp-line{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+      .gt-dp-lbl{font-size:11px;font-weight:700;color:#6a7482;text-transform:uppercase;letter-spacing:.02em;min-width:42px}
+      .gt-dp-date{width:112px;box-sizing:border-box;padding:4px 7px;border:1px solid #cfd4da;border-radius:5px;font:13px inherit;outline:none}
+      .gt-dp-date:focus{border-color:#4a90d9}
+      .gt-dp-date.gt-dp-bad{border-color:#e5534b;background:#fdf3f2}
+      .gt-dp-dash{color:#8892a0}
+      .gt-dp-ended{display:inline-flex;align-items:center;gap:4px;margin-left:6px;color:#556;cursor:pointer}
+      .gt-dp-roles{gap:5px}
+      .gt-dp-hint{color:#9aa0a6;font-style:italic}
+      .gt-dp-chip{display:inline-flex;align-items:center;gap:4px;background:#eef4fb;border:1px solid #cfe0f0;color:#2e6da4;border-radius:12px;padding:2px 8px;font-size:12px;cursor:pointer}
+      .gt-dp-chip:hover{background:#e2edf8}
+      .gt-dp-chipx{color:#8aa8c8;font-weight:700}
+      .gt-dp-chip:hover .gt-dp-chipx{color:#e5534b}
+      .gt-dp-body{padding:6px 10px}
+      .gt-dp-trow{padding:4px 0;border-bottom:1px solid #f1f3f6}
+      .gt-dp-tlab{display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:600}
+      .gt-dp-tpos{min-width:22px;color:#2e6da4;font-weight:700}
+      .gt-dp-ttitle{color:#333;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .gt-dp-clist{margin:2px 0 4px 26px;display:flex;flex-direction:column;gap:1px}
+      .gt-dp-crow{display:flex;align-items:center;gap:7px;padding:2px 4px;border-radius:5px;cursor:pointer}
+      .gt-dp-crow:hover{background:#f4f7fa}
+      .gt-dp-role{color:#556;white-space:nowrap}
+      .gt-dp-role:hover{color:#2e6da4;text-decoration:underline dotted}
+      .gt-dp-cname{color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+      .gt-dp-dated .gt-dp-role,.gt-dp-dated .gt-dp-cname{color:#9aa0a6}
+      .gt-dp-has{color:#b0863a;font-size:11px;white-space:nowrap;background:#faf3e6;border:1px solid #ecdcc0;border-radius:4px;padding:0 5px}
     `;
     document.head.appendChild(s);
   }
@@ -1091,6 +1120,135 @@
   let consEl = null;
   function onConsKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeConsolidate(); } }
   function closeConsolidate() { if (consEl) { consEl.remove(); consEl = null; document.removeEventListener('keydown', onConsKey, true); } }
+
+  // ══ Date picker (#398) ═════════════════════════════════════════════════════
+  // Redesign of "Set missing dates". Right-clicking a dated rel opens a popup listing every credit on the
+  // SELECTED tracks (ticked recordings, or all when none are ticked) as a track→credits tree. The header
+  // carries an EDITABLE date — seeded from the invoking rel, so the tool no longer depends on that rel's
+  // own date — plus the list of ROLES that drive the DEFAULT tick (persisted across sessions: right-click a
+  // credit's role to remember it, click a header chip to drop it). Any credit can also be ticked by hand.
+  // Apply stamps the header date on every ticked, still-UNDATED rel (fill-only — MB's reducer keeps an
+  // existing date, see the note on applyRelDate; already-dated rows are shown with their date, unchanged).
+  const DATE_ROLES_DEFAULT = ['instrument', 'recording', 'recorded at', 'vocals', 'performer'];
+  let gtDateRoles = (() => { try { const raw = GM_getValue('gt-date-roles', ''); if (raw) { const a = typeof raw === 'string' ? JSON.parse(raw) : raw; if (Array.isArray(a)) return a.map(String); } } catch (e) {} return DATE_ROLES_DEFAULT.slice(); })();
+  const saveDateRoles = () => { try { GM_setValue('gt-date-roles', JSON.stringify(gtDateRoles)); } catch (e) {} };
+  // null = empty (clear), undefined = unparsable (keep prior); accepts YYYY, YYYY-MM, YYYY-MM-DD (/ or . too)
+  const dpParseDate = s => { s = (s || '').trim(); if (!s) return null; const m = s.match(/^(\d{1,4})(?:[-/.](\d{1,2}))?(?:[-/.](\d{1,2}))?$/); if (!m) return undefined; const d = { year: +m[1] || null, month: m[2] ? +m[2] : null, day: m[3] ? +m[3] : null }; return (d.year || d.month || d.day) ? d : null; };
+  const dpDateStr = d => { if (!d) return ''; const p = (n, w) => n == null ? '' : String(n).padStart(w, '0'); return [p(d.year, 4), d.month != null ? p(d.month, 2) : '', d.day != null ? p(d.day, 2) : ''].filter(Boolean).join('-'); };
+  const dpDated = r => !!((r.begin_date && r.begin_date.year) || (r.end_date && r.end_date.year) || r.ended);
+  // a credit is a default match when any remembered role token matches its base link-type name OR its full
+  // rendered label (so "instrument" catches "drums (drum set)" via the base, "vocals" catches "background
+  // vocals" via the label; x.includes(base) makes the stored token tolerant of plurals like vocal↔vocals)
+  const dpRoleMatches = r => { const base = ltName(r.linkTypeID).toLowerCase(); const full = (roleLabelOf(r) || '').toLowerCase(); return gtDateRoles.some(x => { x = String(x).toLowerCase(); return !!x && (base === x || full === x || full.includes(x) || x.includes(base)); }); };
+  const dpRows = () => { const all = [...document.querySelectorAll('tr.track')]; const t = all.filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; }); return t.length ? t : all; };
+
+  let dpEl = null;
+  function onDpKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeDatePicker(); } }
+  function closeDatePicker() { if (dpEl) { dpEl.remove(); dpEl = null; document.removeEventListener('keydown', onDpKey, true); } }
+  function openDatePicker(clickedRel) {
+    closeDatePicker(); closeConsolidate(); closePopover();
+    const state = {
+      begin_date: clickedRel && clickedRel.begin_date ? { ...clickedRel.begin_date } : null,
+      end_date: clickedRel && clickedRel.end_date ? { ...clickedRel.end_date } : null,
+      ended: !!(clickedRel && clickedRel.ended),
+    };
+    const skipItem = clickedRel && clickedRel.item;
+    const manual = new Map();   // credit id → bool: user override of the role-driven default tick
+    let uid = 0;
+    const tracks = dpRows().map(tr => {
+      const credits = recordingRels(tr)
+        .filter(r => !r.removed && r.other && r.other.entityType !== 'url' && r.item !== skipItem)
+        .map(r => ({ id: ++uid, rel: r, tr, dated: dpDated(r), name: val(r.other.name) || '?', credit: r.credit && r.credit !== val(r.other.name) ? r.credit : '' }));
+      return { tr, pos: posLabel(tr) || '?', title: val((recordingEntity(tr) || {}).name) || '', credits };
+    }).filter(t => t.credits.length);
+    const allCredits = tracks.flatMap(t => t.credits);
+    const isChecked = c => manual.has(c.id) ? manual.get(c.id) : (dpRoleMatches(c.rel) && !c.dated);
+    const chosen = () => allCredits.filter(isChecked);
+
+    dpEl = el('div', 'gt-cons-ov');
+    const panel = el('div', 'gt-cons gt-dp'), hdr = el('div', 'gt-cons-hdr');
+    hdr.appendChild(el('span', 'gt-cons-title', 'Set relationship dates'));
+    const xb = el('button', 'gt-cons-x', '✕'); xb.type = 'button'; xb.onclick = closeDatePicker; hdr.appendChild(xb);
+
+    const ctrl = el('div', 'gt-dp-ctrl'), dateLine = el('div', 'gt-dp-line');
+    dateLine.appendChild(el('span', 'gt-dp-lbl', 'Date'));
+    const bIn = el('input', 'gt-dp-date'); bIn.type = 'text'; bIn.placeholder = 'YYYY-MM-DD'; bIn.value = dpDateStr(state.begin_date);
+    const eIn = el('input', 'gt-dp-date'); eIn.type = 'text'; eIn.placeholder = 'YYYY-MM-DD'; eIn.value = dpDateStr(state.end_date);
+    const endedL = el('label', 'gt-dp-ended'); const endedCb = el('input'); endedCb.type = 'checkbox'; endedCb.checked = state.ended;
+    endedL.append(endedCb, el('span', null, 'ended'));
+    const commitDates = () => {
+      const b = dpParseDate(bIn.value), e2 = dpParseDate(eIn.value);
+      bIn.classList.toggle('gt-dp-bad', b === undefined); eIn.classList.toggle('gt-dp-bad', e2 === undefined);
+      if (b !== undefined) state.begin_date = b; if (e2 !== undefined) state.end_date = e2; state.ended = endedCb.checked;
+    };
+    bIn.oninput = eIn.oninput = commitDates; endedCb.onchange = commitDates;
+    dateLine.append(bIn, el('span', 'gt-dp-dash', '—'), eIn, endedL);
+    const rolesLine = el('div', 'gt-dp-line gt-dp-roles');
+    ctrl.append(dateLine, rolesLine);
+
+    const body = el('div', 'gt-cons-body gt-dp-body'), foot = el('div', 'gt-cons-foot');
+    const plan = el('div', 'gt-cons-plan'), applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
+    foot.append(plan, applyBtn);
+
+    const refreshCounts = () => { const n = chosen().length; plan.textContent = n ? `${n} relationship${n > 1 ? 's' : ''} selected` : 'nothing selected'; applyBtn.disabled = !n; };
+    const setTrackState = (t, tcb) => { const on = t.credits.filter(isChecked).length; tcb.checked = on === t.credits.length && on > 0; tcb.indeterminate = on > 0 && on < t.credits.length; };
+
+    let renderBody;
+    const renderRoles = () => {
+      rolesLine.textContent = '';
+      rolesLine.appendChild(el('span', 'gt-dp-lbl', 'Roles'));
+      if (!gtDateRoles.length) rolesLine.appendChild(el('span', 'gt-dp-hint', 'none — right-click a role below to add'));
+      gtDateRoles.forEach(r => {
+        const chip = el('span', 'gt-dp-chip', r); chip.title = 'click to remove'; chip.appendChild(el('span', 'gt-dp-chipx', '×'));
+        chip.onclick = () => { gtDateRoles = gtDateRoles.filter(v => v !== r); saveDateRoles(); renderRoles(); renderBody(); };
+        rolesLine.appendChild(chip);
+      });
+    };
+    const addRole = r => { r = String(r).toLowerCase().trim(); if (!r || gtDateRoles.includes(r)) return; gtDateRoles.push(r); saveDateRoles(); renderRoles(); renderBody(); };
+
+    renderBody = () => {
+      body.textContent = '';
+      if (!tracks.length) { body.appendChild(el('div', 'gt-pop-note', 'No datable credits on the selected tracks')); refreshCounts(); return; }
+      tracks.forEach(t => {
+        const trow = el('div', 'gt-dp-trow'), tlab = el('label', 'gt-dp-tlab'), tcb = el('input'); tcb.type = 'checkbox';
+        tlab.append(tcb, el('span', 'gt-dp-tpos', t.pos), el('span', 'gt-dp-ttitle', t.title));
+        trow.appendChild(tlab); setTrackState(t, tcb);
+        tcb.onchange = () => { const want = tcb.checked; t.credits.forEach(c => manual.set(c.id, want)); renderBody(); };
+        const clist = el('div', 'gt-dp-clist');
+        t.credits.forEach(c => {
+          const row = el('label', 'gt-dp-crow' + (c.dated ? ' gt-dp-dated' : '')), cb = el('input'); cb.type = 'checkbox'; cb.checked = isChecked(c);
+          cb.onchange = () => { manual.set(c.id, cb.checked); setTrackState(t, tcb); refreshCounts(); };
+          const role = el('span', 'gt-dp-role', roleLabelOf(c.rel) || ltName(c.rel.linkTypeID));
+          role.title = 'right-click: remember this role for the default selection';
+          role.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); addRole(ltName(c.rel.linkTypeID)); });
+          row.append(cb, role, el('span', 'gt-dp-cname', c.name + (c.credit ? ` (${c.credit})` : '')));
+          if (c.dated) row.append(el('span', 'gt-dp-has', fmtRoDate(c.rel)));
+          clist.appendChild(row);
+        });
+        trow.appendChild(clist); body.appendChild(trow);
+      });
+      refreshCounts();
+    };
+
+    applyBtn.onclick = () => {
+      commitDates();
+      const re = RE(); if (!re) { toast('Editor not ready'); return; }
+      if (!(state.begin_date || state.end_date || state.ended)) { toast('Enter a date first'); return; }
+      const picked = chosen(), undated = picked.filter(c => !c.dated);
+      if (!undated.length) { toast(picked.length ? 'All selected already have dates (unchanged)' : 'Nothing selected'); return; }
+      let n = 0; undated.forEach(c => { try { applyRelDate(re, c.rel, state); n++; } catch (e) { console.warn('[Group Therapy] set-date failed:', e && e.message); } });
+      const dl = fmtRoDate(state) || 'date', skipped = picked.length - undated.length;
+      console.debug(`[Group Therapy] Date picker: set ${dl} on ${n} rel(s); ${skipped} already dated (unchanged)`);
+      if (n) markUsed(`Set date ${dl} on ${n} relationship${n > 1 ? 's' : ''}`);
+      toast(`Set ${dl} on ${n} relationship${n > 1 ? 's' : ''}${skipped ? ` (${skipped} already dated)` : ''} — review & save`);
+      closeDatePicker();
+    };
+
+    panel.append(hdr, ctrl, body, foot); dpEl.appendChild(panel); document.body.appendChild(dpEl);
+    dpEl.addEventListener('mousedown', e => { if (e.target === dpEl) closeDatePicker(); });
+    document.addEventListener('keydown', onDpKey, true);
+    renderRoles(); renderBody();
+  }
   async function applyConsolidation(releases, rows, refresh) {
     const byRel = new Map();
     for (const row of rows) for (const rel of releases) if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { if (!byRel.has(rel.gid)) byRel.set(rel.gid, []); byRel.get(rel.gid).push(row); }
@@ -1907,14 +2065,6 @@
     // driving MB's own edit dialog, which we don't do). url rels can't carry a date period, so they're skipped.
     const clickedRel = (preselect && srcRels.find(s => preselect(s))) || null;
     const hasDate = !!(clickedRel && (clickedRel.begin_date || clickedRel.end_date || clickedRel.ended));
-    const relDated = r => !!((r.begin_date && r.begin_date.year) || (r.end_date && r.end_date.year) || r.ended);
-    // Honour the recording checkboxes INCLUDING the source track (unlike credit copy, which targets the
-    // OTHER tracks and so excludes the source). Ticking only the source ⇒ date this recording's own rels;
-    // ticking nothing ⇒ all tracks. (majkinetor: a single selected track was being ignored.)
-    const dateRows = () => { const t = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; }); return t.length ? t : [...document.querySelectorAll('tr.track')]; };
-    const dateTargets = () => { const out = [], skip = clickedRel && clickedRel.item; dateRows().forEach(tr => tr.querySelectorAll('.relationship-item').forEach(it => { if (it === skip) return; const r = relFromNode(it); if (!r || !looksRel(r) || r._status === 3) return; const other = (r.entity0 && r.entity0.entityType === 'recording') ? r.entity1 : r.entity0; if (!other || other.entityType === 'url') return; if (relDated(r)) return; out.push(r); })); return out; };
-    // Copy date's OWN scope text — distinct from the credit header, which targets the OTHER tracks
-    const dateWhere = () => { const rows = dateRows(); const anyTicked = [...document.querySelectorAll('tr.track input.recording')].some(cb => cb.checked); if (!anyTicked) return `all ${rows.length} tracks`; if (rows.length === 1 && rows[0] === sourceTr) return 'this track'; const pos = new Set(rows.map(trackPosOfRow).filter(p => p != null)); return pos.size ? `track${pos.size > 1 ? 's' : ''} ${ranges(pos)}` : `${rows.length} recording${rows.length > 1 ? 's' : ''}`; };
     const items = [];
     if (!nR) { items.push({ header: 'No credits here' }); }
     else {
@@ -1929,20 +2079,12 @@
             { label: 'R', title: 'select every track crediting this artist in the same role', run: e => { const n = selectByCredit(e.rel.other.gid, e.role); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this role` : 'No other tracks with this role'); } },
           ] },
         copyItem, moveItem);
-      // #385 Set missing dates — only when the clicked rel actually has a date to propagate. Fills the
-      // UNDATED rels only (see relDated / the note on applyRelDate — existing dates can't be changed here).
+      // #398 "Set dates…" — only when the clicked rel carries a date to seed with. Opens the date picker
+      // (editable date + per-credit selection across the selected tracks) instead of blindly filling every
+      // undated rel; the clicked rel merely SEEDS the initial date, the picker owns the rest.
       if (hasDate) {
         const dl = fmtRoDate(clickedRel) || 'date';
-        const dateItem = { label: `Set missing dates (${dl}) → ${dateWhere()}`, sub: String(dateTargets().length), run: () => {
-          const re = RE(); if (!re) { toast('Editor not ready'); return; }
-          const dates = { begin_date: clickedRel.begin_date || null, end_date: clickedRel.end_date || null, ended: !!clickedRel.ended };
-          const targets = dateTargets(); if (!targets.length) { toast('No undated relationships to fill'); return; }
-          let n = 0; targets.forEach(r => { try { applyRelDate(re, r, dates); n++; } catch (e) { console.warn('[Group Therapy] set-date failed on a rel:', e && e.message); } });
-          console.debug(`[Group Therapy] Set missing dates ${dl}: filled ${n}/${targets.length} undated relationship(s) across ${dateRows().length} track(s)`);
-          if (n) markUsed(`Set missing dates ${dl} on ${n} relationship${n > 1 ? 's' : ''} — ${dateWhere()}`);
-          toast(`Set ${dl} on ${n} undated relationship${n > 1 ? 's' : ''} — review & save`);
-        } };
-        items.push(dateItem);
+        items.push({ label: `Set dates from ${dl}…`, run: () => openDatePicker(clickedRel) });
       }
     }
     openMenu(x, y, items);
