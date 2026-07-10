@@ -59,7 +59,7 @@ The built-in babies cover the release editor's own controls, but you can put a �
 | **Label** | The popover title, and the **identity** of the field: two fields with the **same label share one saved list**. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
 | **▼ lvl** (deltav) | Where the pinned-button bar attaches. `0` (default) = floats below the field (absolute — can overlap UI beneath it). `N` > 0 = injected **in the document flow** right after the field's Nth ancestor, so it takes real space and pushes the UI below it down. Bump it until the buttons sit cleanly (e.g. the artist row's autocomplete wrapper is usually `1`–`2`). |
-| **↵** (enter) | On recall, fire a **synthetic Enter** on the field ~200 ms after the value is set. *Best-effort* — helps widgets that react to a scripted keypress; for a plain form field that only commits on a real Enter (the tag box, header search), use `submit` instead (see below). |
+| **↵** (enter) | On recall, simulate **Enter** ~200 ms after the value is set: in a `<textarea>` it inserts a **newline** at the caret; on other fields it fires a best-effort synthetic keypress. To *submit* a form field (tag box, header search), use `submit` instead (see below). |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
