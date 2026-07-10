@@ -55,13 +55,13 @@ The built-in babies cover the release editor's own controls, but you can put a �
 
 | Column | Meaning |
 |---|---|
-| **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). A live *matches N* / *bad selector* readout tells you if it's right. |
+| **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). **Comma-separate** several selectors to cover more than one field with a single row. A live *matches N* / *bad selector* readout tells you if it's right. |
 | **Label** | The popover title (optional — derived from the field's own label if left blank). |
-| **Key** | Storage key (optional). Fields sharing a key share their saved values; omit it and Mammoth derives one from the field. |
+| **Key** | Storage key (optional). Fields sharing a key share their saved values — so a row with several comma-separated selectors and one Key becomes **one baby across all of them**; omit it and Mammoth derives a separate key per field. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
 | **entity** | *Best-effort* — try to remember the selected **MBID** (so a recalled value resolves the real entity). Works only on MusicBrainz autocomplete fields that accept a pasted MBID; plain **text inputs and dropdowns always work** without it. |
 
-Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
+Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`. On the **Fields** tab the config window stays open when you click the page — so you can click into a field to grab its selector without it dismissing (Esc or another tab still closes it).
 
 ## Shortcuts
 
