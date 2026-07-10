@@ -59,8 +59,7 @@ The built-in babies cover the release editor's own controls, but you can put a �
 | **Label** | The popover title (optional — derived from the field's own label if left blank). |
 | **Key** | Storage key (optional). Fields sharing a key share their saved values — so a row with several comma-separated selectors and one Key becomes **one baby across all of them**; omit it and Mammoth derives a separate key per field. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
-| **entity** | *Best-effort* — try to remember the selected **MBID** (so a recalled value resolves the real entity). Works only on MusicBrainz autocomplete fields that accept a pasted MBID; plain **text inputs and dropdowns always work** without it. |
-| **↵** | Press **Enter** after a value is set — lets an autocomplete accept its highlighted match when there's no MBID to paste. The wait is the **Enter delay** setting (default 150 ms; raise it for a slow autocomplete). |
+| **↵** | Press **Enter** after a value is set — lets an autocomplete accept its highlighted match. The wait is the **Enter delay** setting (default 150 ms; raise it for a slow autocomplete). |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 

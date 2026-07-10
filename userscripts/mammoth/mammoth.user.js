@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.180153
+// @version      2026.7.10.180630
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -462,7 +462,7 @@
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
         <div class="mmth-cfgsec">Custom baby fields</div>
-        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>entity</b> tries to remember the selected MBID (best-effort — MB autocomplete fields only); <b>↵</b> presses Enter after setting a value (helps an autocomplete accept its match when there's no MBID). Text inputs and dropdowns always work.</div>
+        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>↵</b> presses Enter after setting a value (helps an autocomplete accept its match). Works on text inputs and dropdowns.</div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
       </div>
@@ -535,19 +535,16 @@
           inp.oninput = () => { cf[key] = type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value; if (key === 'match') paint(); cfApply(); };
           return inp;
         };
-        const ent = document.createElement('input'); ent.type = 'checkbox'; ent.checked = !!cf.entity; ent.onchange = () => { cf.entity = ent.checked; cfApply(); };
-        const entL = document.createElement('label'); entL.className = 'mmth-cf-ent'; entL.title = 'Best-effort: remember the selected MBID (works on MB autocomplete fields only)';
-        const entS = document.createElement('span'); entS.textContent = 'entity'; entL.append(ent, entS);
         const ret = document.createElement('input'); ret.type = 'checkbox'; ret.checked = !!cf.enter; ret.onchange = () => { cf.enter = ret.checked; cfApply(); };
-        const retL = document.createElement('label'); retL.className = 'mmth-cf-ent'; retL.title = 'Press Enter ~150ms after setting a value — lets an autocomplete accept its highlighted match when there is no MBID';
+        const retL = document.createElement('label'); retL.className = 'mmth-cf-ent'; retL.title = 'Press Enter after setting a value (⚙ "Enter delay") — lets an autocomplete accept its highlighted match';
         const retS = document.createElement('span'); retS.textContent = '↵'; retL.append(ret, retS);
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
-        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), entL, retL, cnt, del);
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), retL, cnt, del);
         cfList.appendChild(row); paint();
       });
     }
-    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', entity: false, enter: false }); renderFields(); };
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', enter: false }); renderFields(); };
     renderFields();
     // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
     // default, or a specific field's values when opened from a baby field)
@@ -1032,23 +1029,11 @@
     ];
 
     // #config user-defined baby fields (SET.customFields) merged into the scan alongside PREDEF. A custom
-    // def mirrors PREDEF's shape; a user key is namespaced 'cf:' so it can't collide with a built-in key,
-    // and an entity field gets the best-effort generic MBID reader below.
+    // def mirrors PREDEF's shape; a user key is namespaced 'cf:' so it can't collide with a built-in key.
     const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => ({
       match: c.match, key: c.key ? 'cf:' + String(c.key) : null, label: c.label || '',
-      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, gid: c.entity ? genericEntityGid : null, enter: !!c.enter,
+      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, enter: !!c.enter,
     }));
-    // Best-effort MBID capture for an arbitrary field the user flagged "entity" — no stable DOM contract
-    // exists (the built-ins read MB's Knockout release model directly), so try two generic probes: a nearby
-    // hidden <input> carrying a gid (some MB add-forms), then a walk up the React fiber for a prop/state
-    // object exposing `.gid` / `.entity.gid`. Returns null on miss → captureField falls back to plain text.
-    const MMTH_GID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const gidIn = o => { if (!o || typeof o !== 'object') return null; if (typeof o.gid === 'string' && MMTH_GID_RE.test(o.gid)) return o.gid; if (o.entity && typeof o.entity.gid === 'string' && MMTH_GID_RE.test(o.entity.gid)) return o.entity.gid; return null; };
-    function genericEntityGid(el) {
-      try { const scope = el.closest('td, .row, .form-row, li') || el.parentElement; if (scope) { for (const h of scope.querySelectorAll('input[type="hidden"]')) { const m = (h.value || '').match(MMTH_GID_RE); if (m) return m[0]; } } } catch (e) {}
-      try { const k = Object.keys(el).find(x => x.startsWith('__reactFiber$') || x.startsWith('__reactInternalInstance$')); let f = k && el[k], guard = 0; while (f && guard++ < 40) { const g = gidIn(f.memoizedProps) || gidIn(f.memoizedState); if (g) return g; f = f.return; } } catch (e) {}
-      return null;
-    }
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();

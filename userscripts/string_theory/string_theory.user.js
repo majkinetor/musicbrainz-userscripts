@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.180259
+// @version      2026.7.10.180923
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.10.180259 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.144834\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.180153\n  · Platform Check v2026.7.10.141648");
+  console.log('%c String Theory %c v2026.7.10.180923 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.144834\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.180630\n  · Platform Check v2026.7.10.141648");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -23149,7 +23149,7 @@ ${lines}
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.180153","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.180153","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.180630","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.180630","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -23602,7 +23602,7 @@ ${lines}
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
         <div class="mmth-cfgsec">Custom baby fields</div>
-        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>entity</b> tries to remember the selected MBID (best-effort — MB autocomplete fields only); <b>↵</b> presses Enter after setting a value (helps an autocomplete accept its match when there's no MBID). Text inputs and dropdowns always work.</div>
+        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>↵</b> presses Enter after setting a value (helps an autocomplete accept its match). Works on text inputs and dropdowns.</div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
       </div>
@@ -23675,19 +23675,16 @@ ${lines}
           inp.oninput = () => { cf[key] = type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value; if (key === 'match') paint(); cfApply(); };
           return inp;
         };
-        const ent = document.createElement('input'); ent.type = 'checkbox'; ent.checked = !!cf.entity; ent.onchange = () => { cf.entity = ent.checked; cfApply(); };
-        const entL = document.createElement('label'); entL.className = 'mmth-cf-ent'; entL.title = 'Best-effort: remember the selected MBID (works on MB autocomplete fields only)';
-        const entS = document.createElement('span'); entS.textContent = 'entity'; entL.append(ent, entS);
         const ret = document.createElement('input'); ret.type = 'checkbox'; ret.checked = !!cf.enter; ret.onchange = () => { cf.enter = ret.checked; cfApply(); };
-        const retL = document.createElement('label'); retL.className = 'mmth-cf-ent'; retL.title = 'Press Enter ~150ms after setting a value — lets an autocomplete accept its highlighted match when there is no MBID';
+        const retL = document.createElement('label'); retL.className = 'mmth-cf-ent'; retL.title = 'Press Enter after setting a value (⚙ "Enter delay") — lets an autocomplete accept its highlighted match';
         const retS = document.createElement('span'); retS.textContent = '↵'; retL.append(ret, retS);
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
-        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), entL, retL, cnt, del);
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), retL, cnt, del);
         cfList.appendChild(row); paint();
       });
     }
-    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', entity: false, enter: false }); renderFields(); };
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', enter: false }); renderFields(); };
     renderFields();
     // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
     // default, or a specific field's values when opened from a baby field)
@@ -24172,23 +24169,11 @@ ${lines}
     ];
 
     // #config user-defined baby fields (SET.customFields) merged into the scan alongside PREDEF. A custom
-    // def mirrors PREDEF's shape; a user key is namespaced 'cf:' so it can't collide with a built-in key,
-    // and an entity field gets the best-effort generic MBID reader below.
+    // def mirrors PREDEF's shape; a user key is namespaced 'cf:' so it can't collide with a built-in key.
     const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => ({
       match: c.match, key: c.key ? 'cf:' + String(c.key) : null, label: c.label || '',
-      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, gid: c.entity ? genericEntityGid : null, enter: !!c.enter,
+      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, enter: !!c.enter,
     }));
-    // Best-effort MBID capture for an arbitrary field the user flagged "entity" — no stable DOM contract
-    // exists (the built-ins read MB's Knockout release model directly), so try two generic probes: a nearby
-    // hidden <input> carrying a gid (some MB add-forms), then a walk up the React fiber for a prop/state
-    // object exposing `.gid` / `.entity.gid`. Returns null on miss → captureField falls back to plain text.
-    const MMTH_GID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const gidIn = o => { if (!o || typeof o !== 'object') return null; if (typeof o.gid === 'string' && MMTH_GID_RE.test(o.gid)) return o.gid; if (o.entity && typeof o.entity.gid === 'string' && MMTH_GID_RE.test(o.entity.gid)) return o.entity.gid; return null; };
-    function genericEntityGid(el) {
-      try { const scope = el.closest('td, .row, .form-row, li') || el.parentElement; if (scope) { for (const h of scope.querySelectorAll('input[type="hidden"]')) { const m = (h.value || '').match(MMTH_GID_RE); if (m) return m[0]; } } } catch (e) {}
-      try { const k = Object.keys(el).find(x => x.startsWith('__reactFiber$') || x.startsWith('__reactInternalInstance$')); let f = k && el[k], guard = 0; while (f && guard++ < 40) { const g = gidIn(f.memoizedProps) || gidIn(f.memoizedState); if (g) return g; f = f.return; } } catch (e) {}
-      return null;
-    }
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();

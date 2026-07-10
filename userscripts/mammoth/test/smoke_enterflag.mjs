@@ -32,9 +32,9 @@ const hasRetCb = await page.evaluate(sel => {
   const set = (cls, v) => { const inp = row.querySelector(cls); inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); };   // config inputs are plain DOM
   set('.mmth-cf-match', sel);
   set('.mmth-cf-label', 'Test');
-  const boxes = row.querySelectorAll('.mmth-cf-ent input');   // [entity, ↵]
-  const ret = boxes[1]; ret.checked = true; ret.dispatchEvent(new Event('change', { bubbles: true }));
-  return boxes.length === 2;
+  const ret = row.querySelector('.mmth-cf-ent input');   // the ↵ (press-Enter) flag
+  ret.checked = true; ret.dispatchEvent(new Event('change', { bubbles: true }));
+  return !!ret;
 }, target);
 await page.waitForTimeout(900); // debounced refresh
 
