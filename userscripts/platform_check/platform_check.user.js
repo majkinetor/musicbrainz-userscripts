@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.9
+// @version      2026.7.10
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -780,6 +780,19 @@ providerModal.innerHTML = `
       </div>
       <button id="mb-bp-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
     </div>
+    <div id="mb-qb-acct" style="padding: 4px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333;">
+        <span style="font-weight: 600;">Qobuz account</span>
+        <span id="mb-qb-status" style="font-size: 11px; color: #999; margin-left: auto;"></span>
+      </div>
+      <div style="font-size: 11px; color: #999; margin: 3px 0 7px;">Optional — unlocks per-track data behind Qobuz's session-gated API, so ISRC Scout can import Qobuz ISRCs and Credit Hoarder can read roled Qobuz credits. Only the login token is stored, never your password.</div>
+      <div id="mb-qb-form" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+        <input id="mb-qb-user" type="text" placeholder="email" autocomplete="off" style="flex: 1 1 120px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
+        <input id="mb-qb-pass" type="password" placeholder="password" autocomplete="off" style="flex: 1 1 100px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
+        <button id="mb-qb-login" style="padding: 6px 12px; background: #0070ef; border: none; border-radius: 4px; color: #FFF; font-size: 12px; cursor: pointer;">Log in</button>
+      </div>
+      <button id="mb-qb-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
+    </div>
   </div>
 </div>`;
 
@@ -977,6 +990,25 @@ document.getElementById('mb-bp-login').addEventListener('click', async () => {
     bpRefreshSetupUI(r.ok ? 'signed in ✓ — ↻ to re-scan Beatport' : `failed: ${r.error}`, !r.ok);
 });
 document.getElementById('mb-bp-logout').addEventListener('click', () => { bpWrite(null); document.getElementById('mb-bp-user').value = ''; bpRefreshSetupUI('signed out'); });
+// Qobuz-account UI state (mirrors Beatport)
+function qbRefreshSetupUI(msg, isErr) {
+    const st = document.getElementById('mb-qb-status'), form = document.getElementById('mb-qb-form'), out = document.getElementById('mb-qb-logout');
+    if (!st) return;
+    const inOk = qbLoggedIn();
+    form.style.display = inOk ? 'none' : 'flex';
+    out.style.display = inOk ? 'inline-block' : 'none';
+    st.textContent = msg || (inOk ? 'signed in' : 'not signed in');
+    st.style.color = isErr ? '#BF616A' : (inOk ? '#0a8754' : '#999');
+}
+document.getElementById('mb-qb-login').addEventListener('click', async () => {
+    const u = document.getElementById('mb-qb-user').value.trim(), p = document.getElementById('mb-qb-pass').value;
+    if (!u || !p) { qbRefreshSetupUI('enter email + password', true); return; }
+    qbRefreshSetupUI('signing in…');
+    const r = await qobuzLogin(u, p);
+    document.getElementById('mb-qb-pass').value = '';
+    qbRefreshSetupUI(r.ok ? 'signed in ✓ — ISRC Scout & Credit Hoarder can now use Qobuz' : `failed: ${r.error}`, !r.ok);
+});
+document.getElementById('mb-qb-logout').addEventListener('click', () => { qbWrite(null); document.getElementById('mb-qb-user').value = ''; qbRefreshSetupUI('signed out'); });
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
@@ -995,6 +1027,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     const fmtMarkerMode = GM_getValue('pc:format-marker', 'circle');
     providerModal.querySelectorAll('input[name="format-marker"]').forEach(r => { r.checked = r.value === fmtMarkerMode; });
     bpRefreshSetupUI();
+    qbRefreshSetupUI();
     showSetupView('main');   // #188 always open on the main view
     pcOpenModal(providerModal, provCardEl(), 440, false);
 });
@@ -1252,6 +1285,73 @@ async function beatportToken() {
     if (!j.access_token) { appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn'); return null; }
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
     return j.access_token;
+}
+// ── Qobuz API auth (email + password login; token shared with ISRC Scout + Credit Hoarder) ──
+// Qobuz's per-track data (ISRCs + roled `performers`) lives behind `album/get`, which is
+// session-gated — anonymous requests 404/401 regardless of app_id (see #353). A logged-in
+// user_auth_token unlocks it. We log in with the user's own credentials, store ONLY the token
+// (never the password), and share it — like the Beatport token — via a localStorage key on this
+// origin, so ISRC Scout (ISRCs) and Credit Hoarder (roled credits) can read it without re-auth.
+const QOBUZ = {
+    appId: '712109809',                                  // anonymous web-player app_id (accepted for login + album/get with a token)
+    api:   'https://www.qobuz.com/api.json/0.2',
+    store: 'mbtools:qobuz',
+};
+const qbRead     = () => { try { return JSON.parse(localStorage.getItem(QOBUZ.store) || 'null'); } catch { return null; } };
+const qbWrite    = t  => { try { t ? localStorage.setItem(QOBUZ.store, JSON.stringify(t)) : localStorage.removeItem(QOBUZ.store); } catch {} };
+const qbLoggedIn = () => { const t = qbRead(); return !!(t && t.token); };
+// Compact MD5 (public-domain, Joseph Myers) — Qobuz's user/login wants the password as an MD5 hex
+// digest, which SubtleCrypto can't produce. Only used to sign the login request; nothing is stored.
+function md5(str) {
+    function rl(n, c) { return (n << c) | (n >>> (32 - c)); }
+    function au(x, y) { const l = (x & 0xFFFF) + (y & 0xFFFF); return (((x >> 16) + (y >> 16) + (l >> 16)) << 16) | (l & 0xFFFF); }
+    function cmn(q, a, b, x, s, t) { return au(rl(au(au(a, q), au(x, t)), s), b); }
+    const ff = (a, b, c, d, x, s, t) => cmn((b & c) | (~b & d), a, b, x, s, t);
+    const gg = (a, b, c, d, x, s, t) => cmn((b & d) | (c & ~d), a, b, x, s, t);
+    const hh = (a, b, c, d, x, s, t) => cmn(b ^ c ^ d, a, b, x, s, t);
+    const ii = (a, b, c, d, x, s, t) => cmn(c ^ (b | ~d), a, b, x, s, t);
+    const bytes = unescape(encodeURIComponent(str)), n = bytes.length, x = [];
+    for (let i = 0; i < n; i++) x[i >> 2] |= (bytes.charCodeAt(i) & 0xFF) << ((i % 4) * 8);
+    x[n >> 2] |= 0x80 << ((n % 4) * 8);
+    x[(((n + 8) >> 6) * 16) + 14] = n * 8;
+    let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+    for (let i = 0; i < x.length; i += 16) {
+        const oa = a, ob = b, oc = c, od = d, g = j => x[i + j] | 0;
+        a = ff(a,b,c,d,g(0),7,-680876936);  d = ff(d,a,b,c,g(1),12,-389564586); c = ff(c,d,a,b,g(2),17,606105819);  b = ff(b,c,d,a,g(3),22,-1044525330);
+        a = ff(a,b,c,d,g(4),7,-176418897);  d = ff(d,a,b,c,g(5),12,1200080426); c = ff(c,d,a,b,g(6),17,-1473231341); b = ff(b,c,d,a,g(7),22,-45705983);
+        a = ff(a,b,c,d,g(8),7,1770035416);  d = ff(d,a,b,c,g(9),12,-1958414417); c = ff(c,d,a,b,g(10),17,-42063);    b = ff(b,c,d,a,g(11),22,-1990404162);
+        a = ff(a,b,c,d,g(12),7,1804603682); d = ff(d,a,b,c,g(13),12,-40341101); c = ff(c,d,a,b,g(14),17,-1502002290); b = ff(b,c,d,a,g(15),22,1236535329);
+        a = gg(a,b,c,d,g(1),5,-165796510);  d = gg(d,a,b,c,g(6),9,-1069501632); c = gg(c,d,a,b,g(11),14,643717713); b = gg(b,c,d,a,g(0),20,-373897302);
+        a = gg(a,b,c,d,g(5),5,-701558691);  d = gg(d,a,b,c,g(10),9,38016083);  c = gg(c,d,a,b,g(15),14,-660478335); b = gg(b,c,d,a,g(4),20,-405537848);
+        a = gg(a,b,c,d,g(9),5,568446438);   d = gg(d,a,b,c,g(14),9,-1019803690); c = gg(c,d,a,b,g(3),14,-187363961); b = gg(b,c,d,a,g(8),20,1163531501);
+        a = gg(a,b,c,d,g(13),5,-1444681467); d = gg(d,a,b,c,g(2),9,-51403784);  c = gg(c,d,a,b,g(7),14,1735328473); b = gg(b,c,d,a,g(12),20,-1926607734);
+        a = hh(a,b,c,d,g(5),4,-378558);     d = hh(d,a,b,c,g(8),11,-2022574463); c = hh(c,d,a,b,g(11),16,1839030562); b = hh(b,c,d,a,g(14),23,-35309556);
+        a = hh(a,b,c,d,g(1),4,-1530992060); d = hh(d,a,b,c,g(4),11,1272893353); c = hh(c,d,a,b,g(7),16,-155497632); b = hh(b,c,d,a,g(10),23,-1094730640);
+        a = hh(a,b,c,d,g(13),4,681279174);  d = hh(d,a,b,c,g(0),11,-358537222); c = hh(c,d,a,b,g(3),16,-722521979); b = hh(b,c,d,a,g(6),23,76029189);
+        a = hh(a,b,c,d,g(9),4,-640364487);  d = hh(d,a,b,c,g(12),11,-421815835); c = hh(c,d,a,b,g(15),16,530742520); b = hh(b,c,d,a,g(2),23,-995338651);
+        a = ii(a,b,c,d,g(0),6,-198630844);  d = ii(d,a,b,c,g(7),10,1126891415); c = ii(c,d,a,b,g(14),15,-1416354905); b = ii(b,c,d,a,g(5),21,-57434055);
+        a = ii(a,b,c,d,g(12),6,1700485571); d = ii(d,a,b,c,g(3),10,-1894986606); c = ii(c,d,a,b,g(10),15,-1051523); b = ii(b,c,d,a,g(1),21,-2054922799);
+        a = ii(a,b,c,d,g(8),6,1873313359);  d = ii(d,a,b,c,g(15),10,-30611744); c = ii(c,d,a,b,g(6),15,-1560198380); b = ii(b,c,d,a,g(13),21,1309151649);
+        a = ii(a,b,c,d,g(4),6,-145523070);  d = ii(d,a,b,c,g(11),10,-1120210379); c = ii(c,d,a,b,g(2),15,718787259); b = ii(b,c,d,a,g(9),21,-343485551);
+        a = au(a, oa); b = au(b, ob); c = au(c, oc); d = au(d, od);
+    }
+    const hex = n => { let s = ''; for (let i = 0; i < 4; i++) s += ((n >> (i * 8 + 4)) & 0xF).toString(16) + ((n >> (i * 8)) & 0xF).toString(16); return s; };
+    return hex(a) + hex(b) + hex(c) + hex(d);
+}
+// Full login → { ok } or { ok:false, error }. Stores only the user_auth_token (+ app_id) on success.
+async function qobuzLogin(email, password) {
+    const url = `${QOBUZ.api}/user/login?email=${encodeURIComponent(email)}&password=${md5(password)}&app_id=${QOBUZ.appId}`;
+    const r = await gmGet(url, { headers: { 'X-App-Id': QOBUZ.appId, Accept: 'application/json' } });
+    let j; try { j = JSON.parse(r.responseText || 'null'); } catch { j = null; }
+    const tok = j && j.user_auth_token;
+    if (!tok) {
+        const m = (j && (j.message || j.code)) || (r.status === 401 ? 'invalid email or password' : `HTTP ${r.status}`);
+        appendLog('Qobuz', `login rejected — ${m}`, 'error');
+        return { ok: false, error: String(m) };
+    }
+    qbWrite({ token: tok, appId: QOBUZ.appId });
+    appendLog('Qobuz', 'logged in — token stored for ISRC Scout + Credit Hoarder', 'ok');
+    return { ok: true };
 }
 async function beatportApi(path) {
     const tok = await beatportToken(); if (!tok) return null;
