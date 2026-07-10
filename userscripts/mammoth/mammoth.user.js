@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.181214
+// @version      2026.7.10.182128
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -35,7 +35,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [], enterDelay: 150 };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
   const VERSION = '2026.6.29';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -301,7 +301,6 @@
   .mmth-cf-in { border:1px solid #d7e0db; border-radius:5px; padding:3px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; box-sizing:border-box; min-width:0; }
   .mmth-cf-in:focus { outline:none; border-color:#5aa67e; }
   .mmth-cf-match { flex:1 1 auto; min-width:90px; }
-  .mmth-cf-ent { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#566; white-space:nowrap; cursor:pointer; }
   .mmth-cf-cnt { font-size:11px; color:#8a968f; min-width:52px; text-align:right; white-space:nowrap; }
   .mmth-cf-cnt.mmth-cf-bad { color:#c0392b; }
   .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; }
@@ -467,14 +466,13 @@
         <div class="mmth-cfgsec">General</div>
         <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
-        <label title="How long after a custom field's value is set before the ↵ flag presses Enter — raise it if a slow autocomplete misses the match">Enter delay (ms) <input type="number" class="mmth-s-enterdelay" min="0" max="5000" step="50"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
         <div class="mmth-cfgsec">Custom baby fields <button type="button" class="mmth-cf-mode">{ } JSON</button></div>
-        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>↵</b> presses Enter after setting a value (helps an autocomplete accept its match). Works on text inputs and dropdowns.</div>
+        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row. <b>Key</b> shares a saved list between fields (defaults to the label). <b>nudge</b> shifts the 🦣 pin by N px. <b>↵ ms</b> presses Enter that many ms after a value is set (0 = off) to accept an autocomplete's match — instruments need ~150, artists more; it only fires while the dropdown is open, so it can't leak.</div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
-        <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
+        <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16, "enterDelay": 150 }]'></textarea>
         <div class="mmth-cf-jsonrow" style="display:none"><button type="button" class="mmth-cf-jsonapply">Apply</button><span class="mmth-cf-jsonmsg"></span></div>
       </div>
       <div class="mmth-cfgpane" data-pane="io" style="display:none">
@@ -512,7 +510,6 @@
     const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
     const sort = p.querySelector('.mmth-s-sort'); sort.value = SET.noteSort || 'manual';
     const btnc = p.querySelector('.mmth-s-btnchars'); btnc.value = SET.btnChars || 24;
-    const edly = p.querySelector('.mmth-s-enterdelay'); edly.value = SET.enterDelay == null ? 150 : SET.enterDelay;
     const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
     const hist = p.querySelector('.mmth-s-hist'); hist.value = SET.historySize;
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
@@ -520,7 +517,6 @@
     nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
     sort.onchange = () => { SET.noteSort = sort.value; persistSet(); render(); };
     btnc.onchange = () => { SET.btnChars = Math.max(4, Math.min(80, parseInt(btnc.value, 10) || 24)); btnc.value = SET.btnChars; saveSet(); babyMammoths.relabel(); };
-    edly.onchange = () => { const v = parseInt(edly.value, 10); SET.enterDelay = Math.max(0, Math.min(5000, isNaN(v) ? 150 : v)); edly.value = SET.enterDelay; saveSet(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
@@ -546,21 +542,22 @@
           inp.oninput = () => { cf[key] = type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value; if (key === 'match') paint(); cfApply(); };
           return inp;
         };
-        const ret = document.createElement('input'); ret.type = 'checkbox'; ret.checked = !!cf.enter; ret.onchange = () => { cf.enter = ret.checked; cfApply(); };
-        const retL = document.createElement('label'); retL.className = 'mmth-cf-ent'; retL.title = 'Press Enter after setting a value (⚙ "Enter delay") — lets an autocomplete accept its highlighted match';
-        const retS = document.createElement('span'); retS.textContent = '↵'; retL.append(ret, retS);
+        const dly = document.createElement('input'); dly.type = 'number'; dly.className = 'mmth-cf-in mmth-cf-dly'; dly.min = '0'; dly.max = '10000'; dly.step = '50'; dly.style.width = '58px'; dly.placeholder = '↵ ms';
+        dly.title = 'Press Enter this many ms after the value is set (0 / blank = off; ~150 for instruments, more for artists). Fires only while the autocomplete dropdown is open, so it can’t leak to another control.';
+        dly.value = cf.enterDelay ? cf.enterDelay : '';
+        dly.oninput = () => { cf.enterDelay = dly.value === '' ? 0 : Math.max(0, +dly.value || 0); cfApply(); };
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
-        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), retL, cnt, del);
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key ⇐ label', 'key', '84px'), mk('px', 'dx', '44px', 'number'), dly, cnt, del);
         cfList.appendChild(row); paint();
       });
     }
-    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', enter: false }); renderFields(); };
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', enterDelay: 0 }); renderFields(); };
     renderFields();
     // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
-    // label / key / deltax / enter). Doubles as export (copy the box) and import (paste + Apply).
+    // label / key / deltax / enterDelay). Doubles as export (copy the box) and import (paste + Apply).
     const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add');
-    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.enter) o.enter = true; return o; };
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.enterDelay) o.enterDelay = +cf.enterDelay; return o; };
     const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
     const cfFromJson = txt => {
       const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
@@ -569,7 +566,7 @@
         match: String(o.selector != null ? o.selector : (o.match || '')).trim(),
         label: o.label ? String(o.label) : '', key: o.key ? String(o.key) : '',
         dx: (o.deltax != null && o.deltax !== '') ? +o.deltax : ((o.dx != null && o.dx !== '') ? +o.dx : ''),
-        enter: !!o.enter,
+        enterDelay: (o.enterDelay != null && o.enterDelay !== '') ? (+o.enterDelay || 0) : 0,
       })).filter(c => c.match);
     };
     const applyJson = () => {
@@ -1068,10 +1065,12 @@
 
     // #config user-defined baby fields (SET.customFields) merged into the scan alongside PREDEF. A custom
     // def mirrors PREDEF's shape; a user key is namespaced 'cf:' so it can't collide with a built-in key.
-    const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => ({
-      match: c.match, key: c.key ? 'cf:' + String(c.key) : null, label: c.label || '',
-      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, enter: !!c.enter,
-    }));
+    // Key defaults to the label when not given (fields with the same label then share one saved list).
+    const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => {
+      const k = String(c.key || c.label || '').trim();
+      return { match: c.match, key: k ? 'cf:' + k : null, label: c.label || '',
+        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, enterDelay: c.enterDelay | 0 };
+    });
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();
@@ -1133,14 +1132,31 @@
       if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
       return true;
     }
-    // press Enter on the field — for the "↵" custom-field flag: a recalled text value that has no MBID often
-    // needs an Enter to accept the autocomplete's highlighted match. Delayed so the dropdown has time to
-    // populate after the value is set; the delay is configurable (⚙ "Enter delay", default 150ms) since a
-    // slow autocomplete may need more.
-    const enterDelay = () => Math.max(0, Math.min(5000, SET.enterDelay == null ? 150 : SET.enterDelay | 0));
     const pressEnter = el => { for (const type of ['keydown', 'keypress', 'keyup']) el.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 })); };
-    // recall a saved value into a field, then optionally auto-press Enter (p.enter)
-    function recallInto(p, rec) { const ok = writeField(p.el, rec); if (ok && p.enter) setTimeout(() => { try { pressEnter(p.el); } catch (e) {} }, enterDelay()); return ok; }
+    // Is the field's autocomplete dropdown actually open right now? We only fire Enter when it is, so a
+    // mistimed Enter can never LEAK to a form/dialog that would submit or close on it — an open autocomplete
+    // consumes (and stops) the Enter. Covers MB's autocomplete2 (aria-expanded / its listbox) + legacy jQuery UI.
+    function acOpen(el) {
+      // MB autocomplete2 auto-highlights the first result and sets aria-activedescendant → the safest "an
+      // option is ready to accept" signal (a bare visible-but-empty listbox appears earlier and must NOT
+      // count, or Enter would fire with nothing to accept and leak).
+      if (el.getAttribute('aria-activedescendant')) return true;
+      if (el.getAttribute('aria-expanded') === 'true') return true;
+      const id = el.getAttribute('aria-owns') || el.getAttribute('aria-controls');
+      if (id) { const m = document.getElementById(id); if (m && m.offsetParent && m.querySelector('li,[role="option"]')) return true; }
+      const box = el.closest('.autocomplete2');
+      if (box && [...box.querySelectorAll('[role="option"], li.option')].some(n => n.offsetParent)) return true;
+      return [...document.querySelectorAll('ul.ui-autocomplete')].some(u => u.offsetParent && u.querySelector('li'));   // legacy jQuery UI
+    }
+    // p.enterDelay (ms): 0 = never; N>0 = press Enter N ms after the value is set, but ONLY if the field's
+    // autocomplete dropdown is open by then — so it accepts the highlighted match and can't leak elsewhere.
+    // Tune per field: instruments resolve fast (~150ms), artists search slower and need more.
+    function recallInto(p, rec) {
+      const ok = writeField(p.el, rec);
+      const ms = Math.max(0, Math.min(10000, p.enterDelay | 0));
+      if (ok && ms > 0) { try { p.el.focus(); } catch (e) {} setTimeout(() => { try { if (p.el.isConnected && acOpen(p.el)) { p.el.focus(); pressEnter(p.el); } } catch (e) {} }, ms); }
+      return ok;
+    }
     function clearField(el) {
       if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
       else { setNative(el, ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -1224,7 +1240,7 @@
       const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
       for (const d of PREDEF) document.querySelectorAll(d.match).forEach(el => add(el, d));
       for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // #config user-defined fields (invalid selectors ignored)
-      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', enter: el.dataset.mmthEnter != null }));
+      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', enterDelay: +el.dataset.mmthEnter || 0 }));
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
@@ -1240,7 +1256,7 @@
         const dx = dxRaw != null ? dxRaw : (sel ? 22 : innerIcon ? 24 : 3);
         if (!sel) try { const need = dx + 18; const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < need) el.style.paddingRight = need + 'px'; } catch (e) {}
         const bar = document.createElement('div'); bar.className = 'mmthf-bar';
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, enter: !!def.enter };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, enterDelay: def.enterDelay | 0 };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));

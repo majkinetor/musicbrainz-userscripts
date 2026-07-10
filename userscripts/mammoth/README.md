@@ -57,18 +57,18 @@ The built-in babies cover the release editor's own controls, but you can put a �
 |---|---|
 | **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). **Comma-separate** several selectors to cover more than one field with a single row. A live *matches N* / *bad selector* readout tells you if it's right. |
 | **Label** | The popover title (optional — derived from the field's own label if left blank). |
-| **Key** | Storage key (optional). Fields sharing a key share their saved values — so a row with several comma-separated selectors and one Key becomes **one baby across all of them**; omit it and Mammoth derives a separate key per field. |
+| **Key** | Storage key (optional). Fields sharing a key share their saved values. **Defaults to the label** if blank; omit both and Mammoth derives a key from the field itself. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
-| **↵** | Press **Enter** after a value is set — lets an autocomplete accept its highlighted match. The wait is the **Enter delay** setting (default 150 ms; raise it for a slow autocomplete). |
+| **↵ ms** | Press **Enter** this many milliseconds after a value is set, to accept an **autocomplete's** highlighted match. `0`/blank = off (the default). Tune per field — instruments resolve fast (~150 ms), artists search slower and need more. It fires **only while the autocomplete's dropdown is open** (a highlighted option exists), so a mistimed Enter can't leak to a form or dialog that would submit/close on it. |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
-The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys are `selector`, `label`, `key`, `deltax`, `enter` (only `selector` is required); trailing commas and empty `{}` entries are tolerated:
+The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys are `selector`, `label`, `key`, `deltax`, `enterDelay` (only `selector` is required); trailing commas and empty `{}` entries are tolerated:
 
 ```json
 [
-  { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16 },
-  { "selector": "#country", "key": "ctry", "enter": true }
+  { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16, "enterDelay": 150 },
+  { "selector": "input.relationship-target.lookup-performed", "label": "Artist", "enterDelay": 1000 }
 ]
 ```
 
@@ -116,7 +116,6 @@ Accessed using the `⚙` button.
 | **Items shown** | `6` | How many list rows to render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 | **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
-| **Enter delay** | `150` ms | For a custom field's **↵** flag — how long after the value is set before Enter is pressed (0–5000). Raise it if a slow autocomplete misses the match. |
 
 The `⚙` window has three tabs: **Settings** (above), **[Fields](#custom-fields)** (define your own custom baby fields), and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
 
