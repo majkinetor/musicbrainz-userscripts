@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.153723
+// @version      2026.7.10.154422
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -859,9 +859,12 @@
   // #333: the artist-credit editor is itself a .dialog.popover, but it holds fields we DO pin
   // (ac-source-artist-*). Don't treat such a dialog as blocking, or we'd hide the baby on its
   // own rows (and leave its reserved strip empty). Only block for dialogs without our fields.
+  // #397: same for the Add/Edit relationship dialog when it shows the "Task" field — we pin that,
+  // so hiding all babies would hide the Task pin too. (The relationship dialog and the release-editor
+  // baby fields never share a page, so exempting it can't let release pins float over it.)
   const syncDialog = () => {
     const dlgs = [...document.querySelectorAll('.dialog.popover, .relationship-dialog')];
-    const blocking = dlgs.some(d => !d.querySelector('input[id^="ac-source-artist-"]'));
+    const blocking = dlgs.some(d => !d.querySelector('input[id^="ac-source-artist-"], .attribute-container.text.task input[type="text"]'));
     document.documentElement.classList.toggle('mmthf-dialog', blocking);
   };
   new MutationObserver(() => { injectAll(); syncDialog(); }).observe(document.documentElement, { childList: true, subtree: true });
