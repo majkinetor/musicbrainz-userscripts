@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.195402
+// @version      2026.7.10.200710
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.10.195402 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.144834\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.195347\n  · Platform Check v2026.7.10.141648");
+  console.log('%c String Theory %c v2026.7.10.200710 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.144834\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.200709\n  · Platform Check v2026.7.10.141648");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -23149,7 +23149,7 @@ ${lines}
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.195347","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.195347","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.200709","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.200709","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -23449,6 +23449,8 @@ ${lines}
   .mmth-cf-add:hover { background:#eef5f0; }
   .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
   .mmth-cf-mode { float:right; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:1px 8px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-help { float:right; margin-right:6px; text-decoration:none; color:#2e6b4a; font-weight:700; border:1px solid #cfd9d3; border-radius:5px; padding:1px 8px; font:11px -apple-system,Segoe UI,Arial,sans-serif; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-help:hover { background:#eef5f0; }
   .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
   .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:6px; padding:7px; resize:vertical; }
   .mmth-cf-json:focus { outline:none; border-color:#5aa67e; }
@@ -23608,8 +23610,7 @@ ${lines}
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
-        <div class="mmth-cfgsec">Custom baby fields <button type="button" class="mmth-cf-mode">{ } JSON</button></div>
-        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row. <b>Key</b> shares a saved list between fields (defaults to the label). <b>nudge</b> shifts the 🦣 pin by N px. <b>▼ lvl</b> (deltav): 0 = the buttons float below the field; N&gt;0 injects them in-flow after the Nth ancestor so they push the UI below down instead of overlapping. Tip: on an autocomplete, save the value <i>with its MBID</i> (e.g. <code>handclaps b8d84cec-…</code>) and it resolves the entity on recall; for a no-MBID list whose wanted item isn't the top match (e.g. relationship type) append <code>::N</code> to click the Nth dropdown item. Both are hidden in the list but kept for recall/export.</div>
+        <div class="mmth-cfgsec">Custom baby fields <a href="${HELP_URL}#custom-fields" target="_blank" rel="noopener" class="mmth-cf-help" title="Custom fields — docs">?</a><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
         <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
@@ -24248,7 +24249,7 @@ ${lines}
     // The stored value + export keep it, because saving "name <mbid>" lets an autocomplete resolve the entity
     // straight away (no search / no Enter) — but the raw id is ugly, so hide it in the rows and the buttons.
     const MMTH_MBID_RE = /\s*\(?(?:https?:\/\/(?:beta\.)?musicbrainz\.org\/[a-z-]+\/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?\/?\s*/ig;
-    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/::\d+$/, '').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
+    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\\n/g, ' ').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
     const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = cleanLabel(it.label || it.v); return t.length > n ? t.slice(0, n) + '…' : t; };
 
     const isSelect = el => el.tagName === 'SELECT';
@@ -24292,27 +24293,29 @@ ${lines}
       return opts.filter(n => n.offsetParent);
     }
     const clickOption = opt => { for (const t of ['mousedown', 'mouseup', 'click']) opt.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window })); };
-    // recall a saved value into a field. Two reliable resolvers, opt-in per value (both hidden in display):
+    // recall a saved value into a field. Two opt-in resolvers, both hidden in display:
     //   • "name <mbid>"  — writeField pastes it and MB's autocomplete resolves the entity from the id.
-    //   • "text::N"      — for a select-style autocomplete with no MBID whose wanted item isn't the top match
-    //                      (e.g. relationship type): type `text`, wait for the dropdown, CLICK the Nth option
-    //                      (1-based; a targeted click, so mouse hover / fuzzy ranking can't hijack it).
+    //   • a literal "\n" — "type the text before it, then pick the dropdown item whose name matches" (add it
+    //     with ✎). We CLICK that option — never Enter, which on the relationship-type field falls through and
+    //     submits/closes the dialog. Matching by NAME is order-independent, so MB's usage-frequency reordering
+    //     can't break it (an index can), and a targeted click can't leak to another control.
     function recallInto(p, rec) {
-      const m = /::(\d+)$/.exec(rec && rec.v || '');   // "text::N" — the ::N tail must be joined (no spaces)
-      if (!m) return writeField(p.el, rec);
-      const idx = +m[1] - 1, text = String(rec.v).replace(/::(\d+)$/, '').trim();
-      const ok = writeField(p.el, { v: text, label: text });
-      if (ok) {
-        const el = p.el; let tries = 0; try { el.focus(); } catch (e) {}
-        const tick = () => {
-          if (!el.isConnected) return;
-          const opts = acOptions(el);
-          if (opts.length) { if (opts[idx]) { try { el.focus(); } catch (e) {} clickOption(opts[idx]); } return; }
-          if (++tries < 24) setTimeout(tick, 80);   // poll ~1.9s for the dropdown to open
-        };
-        setTimeout(tick, 80);
-      }
-      return ok;
+      const raw = String(rec && rec.v || '');
+      const nl = raw.indexOf('\\n');
+      if (isSelect(p.el) || nl < 0) return writeField(p.el, rec);   // no marker (or a <select>) → plain paste
+      const el = p.el, text = raw.slice(0, nl).replace(/\s+$/, ''), want = text.trim().toLowerCase();
+      setNative(el, text); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));
+      if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
+      try { el.focus(); } catch (e) {}
+      let tries = 0;
+      const tick = () => {
+        if (!el.isConnected) return;
+        const opts = acOptions(el);
+        if (opts.length) { const pick = opts.find(o => (o.textContent || '').trim().toLowerCase().startsWith(want)); if (pick) { try { el.focus(); } catch (e) {} clickOption(pick); } return; }
+        if (++tries < 24) setTimeout(tick, 80);   // poll ~1.9s for the dropdown to open
+      };
+      setTimeout(tick, 80);
+      return true;
     }
     function clearField(el) {
       if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
