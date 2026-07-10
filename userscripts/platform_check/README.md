@@ -57,6 +57,26 @@ Mouse click works as follows:
 1. **Right click**<br>
     1. Title - Open search for provider
 
+## Providers at a glance
+
+| Provider | Locates via | Barcode | Count-verified | User login |
+| --- | --- | :---: | :---: | :---: |
+| **Discogs** | Discogs API | capture only | ✓ | – |
+| **Bandcamp** | own search → web search | capture only | ✓ | – |
+| **Spotify** | web search | – | ✓ | – |
+| **Apple Music** | iTunes API | – | ✓ | – |
+| **Deezer** | Deezer API | – | ✓ | – |
+| **Tidal** | barcode → API | ✓ | ✓ | – (baked-in app token) |
+| **Qobuz** | barcode → API → web search | ✓ | ✓ | **optional**¹ |
+| **Beatport** | Wikidata / web search | – | ✗ (Cloudflare-walled) | optional² |
+| **Volumo** | barcode → API | ✓ | ✓ | – |
+| **HDtracks** | barcode → API | ✓ | ✓ | – |
+
+¹ **Qobuz login** (⚙ Setup → Auth) makes verification use `album/get` — reliable track count + **barcode** — instead of the geo-flaky, 429-throttled store-page scrape. The same token is shared with **ISRC Scout** (ISRC import) and **Credit Hoarder** (roled credits). Only the token is stored, never your password.
+² **Beatport login** (⚙ Setup → Auth) enables verified Beatport matching (and the `+` insert), and lets ISRC Scout import Beatport ISRCs.
+
+Full detail per provider below.
+
 ## Supported platforms
 
 |  Platform   |                    Search source                    |          Track verify          | Wikidata cross-ref |
@@ -67,7 +87,7 @@ Mouse click works as follows:
 | Apple Music | iTunes Search API (`itunes.apple.com/search`)       | iTunes Lookup API              | P5121              |
 | Deezer      | Deezer API (`api.deezer.com/search/album`)          | Deezer API album detail        | —                  |
 | Tidal       | **barcode** (`/albums?filter[barcodeId]`) → Tidal API searchResults | Tidal API album detail | P4577              |
-| Qobuz       | **barcode** (`album/search?query=<UPC>`) → Qobuz API search → web-search fallback | Qobuz API `album/get` → store-page scrape fallback | — |
+| Qobuz       | **barcode** (`album/search?query=<UPC>`) → Qobuz API search → web-search fallback | Qobuz API `album/get` **(login)** → store-page scrape fallback | — |
 | Beatport    | Wikidata → DDG / Brave (`site:beatport.com/release/`) | — (unverifiable, see below)  | P11312             |
 | Volumo      | **barcode** (`/album_by_icpn`) → Volumo API search  | Volumo API album detail        | —                  |
 | HDtracks    | **barcode** (`/albums/search?q=<UPC>`) → API search | HDtracks API album detail      | —                  |
@@ -86,7 +106,7 @@ Tidal and Beatport specifics:
 1. **Tidal** uses the official API with a baked-in client-credentials app token (catalog access, **no user login**). Track count, year and label are verified like the other API providers.
 1. **Beatport** is **Cloudflare-walled**, so its pages can't be fetched to verify a track count. It resolves via an existing MB relationship, Wikidata (P11312), or a web-search hit (best slug-vs-title match) — but a search-found link is surfaced as an **unverified** match (`?`), and unverified rows are excluded from the `+` insert and `↗` open-all actions.
 1. **Volumo** has a clean, unauthenticated JSON API (no Cloudflare/token). It resolves by the MB rel, then the release **barcode** (exact), then artist+album search, with the track count verified from the album. Like HDtracks, MB doesn't auto-classify volumo.com, so the `+` insert force-sets the **purchase for download** type. (ISRC Scout can import a Volumo release's ISRCs from the link this finds.)
-1. **Qobuz** uses its catalogue API (`api.json/0.2`) with the web player's anonymous `app_id` (`712109809`; the bundled `798273057` needs a user token). It resolves by the MB rel, then the release **barcode** (`album/search?query=<UPC>`, exact), then artist+album API search, with a generic web-search as a last resort — and verifies via `album/get` (track count, year, label, **UPC**). The API is **geo-dependent** (results vary by request IP/country), so where it returns nothing the script falls back to scraping the server-rendered store page (track count from the per-track add-to-cart markers — the page duplicates every track row, so the `track__info` blocks can't be counted directly — plus JSON-LD name/year, label link, `og:title` artist). The API's UPC feeds barcode-confidence; **format** is absent (digital-only). Qobuz throttles aggressively, so the scraper does one `Retry-After` retry and leaves a row retryable rather than caching a false miss.
+1. **Qobuz** uses its catalogue API (`api.json/0.2`) with the web player's `app_id` (`712109809`). **`album/search` works anonymously** — so it resolves by the MB rel, then the release **barcode** (`album/search?query=<UPC>`, exact; zero-padded too, #354), then artist+album API search, with a generic web-search as a last resort. Verification wants **`album/get`** (track count, year, label, **UPC**), but that endpoint is **session-gated** (401/404 anonymously, #353) — so it's used only when you've **signed in to Qobuz** under ⚙ Setup → Auth (the shared token). Signed in, Qobuz verifies reliably via the API; signed out (or if the API returns nothing) it falls back to scraping the server-rendered store page (track count from the per-track add-to-cart markers — the page duplicates every track row, so the `track__info` blocks can't be counted directly — plus JSON-LD name/year, label link, `og:title` artist). The log names the source used: *Verified via API album/get* vs *store page*. The API's UPC feeds barcode-confidence; **format** is absent (digital-only). Qobuz throttles aggressively, so the scraper does one `Retry-After` retry and leaves a row retryable rather than caching a false miss. The same login powers ISRC Scout's Qobuz ISRC import and Credit Hoarder's roled Qobuz credits.
 1. **HDtracks** (high-resolution download store) has a clean, unauthenticated, CORS-open JSON API (no Cloudflare/token). It resolves by the MB rel, then the release **barcode** (`/albums/search?q=<UPC>`, exact), then artist+album search, with the track count verified from the album. The new canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode. MB has no dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)) and doesn't auto-classify the host, so the `+` insert force-sets the relationship type to **purchase for download** (id 74). (ISRC Scout can import an HDtracks release's ISRCs from the link this finds.)
 
 
