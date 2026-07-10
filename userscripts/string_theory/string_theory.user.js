@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.201635
+// @version      2026.7.10.202444
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.10.201635 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.144834\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.201600\n  · Platform Check v2026.7.10.141648");
+  console.log('%c String Theory %c v2026.7.10.202444 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.144834\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.202107\n  · Platform Check v2026.7.10.141648");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -23149,7 +23149,7 @@ ${lines}
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.201600","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.201600","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.202107","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.202107","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -23436,22 +23436,30 @@ ${lines}
   .mmth-cfgsec { font-weight:600; font-size:11px; color:#6f7d75; text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; padding-bottom:2px; border-bottom:1px solid #eef3f0; }
   .mmth-cfgpane > .mmth-cfgsec:first-child { margin-top:2px; }
   /* custom baby fields (config) */
-  .mmth-cf-list { display:flex; flex-direction:column; gap:5px; margin:4px 0 8px; }
-  .mmth-cf-row { display:flex; align-items:center; gap:4px; flex-wrap:nowrap; }
-  .mmth-cf-in { border:1px solid #d7e0db; border-radius:5px; padding:3px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; box-sizing:border-box; min-width:0; }
-  .mmth-cf-in:focus { outline:none; border-color:#5aa67e; }
+  /* Custom fields — flat, borderless grid */
+  .mmth-cf-top { display:flex; align-items:center; justify-content:space-between; margin:2px 0 8px; }
+  .mmth-cf-list { display:flex; flex-direction:column; gap:2px; margin:0 0 4px; }
+  .mmth-cf-row { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; padding:2px 4px; border-radius:6px; }
+  .mmth-cf-row:hover { background:#f4f7f5; }
+  .mmth-cf-in { border:none; border-bottom:1px solid #e2e8e4; border-radius:0; background:transparent; padding:3px 3px; font:12px -apple-system,Segoe UI,Arial,sans-serif; box-sizing:border-box; min-width:0; }
+  .mmth-cf-in:focus { outline:none; border-bottom-color:#5aa67e; }
+  .mmth-cf-in::placeholder { color:#b7c2bb; }
   .mmth-cf-match { flex:1 1 auto; min-width:90px; }
-  .mmth-cf-ent { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#566; white-space:nowrap; cursor:pointer; }
-  .mmth-cf-cnt { font-size:11px; color:#8a968f; min-width:52px; text-align:right; white-space:nowrap; }
-  .mmth-cf-cnt.mmth-cf-bad { color:#c0392b; }
-  .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; }
+  .mmth-cf-in[type=number] { -webkit-appearance:none; -moz-appearance:textfield; appearance:none; text-align:center; }
+  .mmth-cf-in[type=number]::-webkit-inner-spin-button, .mmth-cf-in[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  .mmth-cf-ent { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#8a968f; white-space:nowrap; cursor:pointer; }
+  /* matches count — a compact green pill; grey when 0, red when the selector is invalid */
+  .mmth-cf-cnt { min-width:18px; text-align:center; font:700 10px/16px -apple-system,Segoe UI,Arial,sans-serif; color:#1f7a44; background:#e7f4ec; border-radius:9px; padding:0 5px; }
+  .mmth-cf-cnt:empty { background:none; }
+  .mmth-cf-cnt.mmth-cf-zero { color:#8a968f; background:#eef1ef; }
+  .mmth-cf-cnt.mmth-cf-bad { color:#fff; background:#c0392b; }
+  .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; visibility:hidden; }
+  .mmth-cf-row:hover .mmth-cf-del { visibility:visible; }
   .mmth-cf-del:hover { background:#f0d9d9; }
-  .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 10px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
   .mmth-cf-add:hover { background:#eef5f0; }
   .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
-  .mmth-cf-mode { float:right; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:1px 8px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
-  .mmth-cf-help { float:right; margin-right:6px; text-decoration:none; color:#2e6b4a; font-weight:700; border:1px solid #cfd9d3; border-radius:5px; padding:1px 8px; font:11px -apple-system,Segoe UI,Arial,sans-serif; text-transform:none; letter-spacing:normal; }
-  .mmth-cf-help:hover { background:#eef5f0; }
+  .mmth-cf-mode { margin-left:auto; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
   .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
   .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:6px; padding:7px; resize:vertical; }
   .mmth-cf-json:focus { outline:none; border-color:#5aa67e; }
@@ -23611,9 +23619,8 @@ ${lines}
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
-        <div class="mmth-cfgsec">Custom baby fields <a href="${HELP_URL}#custom-fields" target="_blank" rel="noopener" class="mmth-cf-help" title="Custom fields — docs">?</a><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
+        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
         <div class="mmth-cf-list"></div>
-        <button type="button" class="mmth-cf-add">＋ Add field</button>
         <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
         <div class="mmth-cf-jsonrow" style="display:none"><button type="button" class="mmth-cf-jsonapply">Apply</button><span class="mmth-cf-jsonmsg"></span></div>
       </div>
@@ -23677,29 +23684,29 @@ ${lines}
       SET.customFields.forEach((cf, i) => {
         const row = document.createElement('div'); row.className = 'mmth-cf-row';
         const cnt = document.createElement('span'); cnt.className = 'mmth-cf-cnt';
-        const paint = () => { if (!cf.match) { cnt.textContent = ''; cnt.classList.remove('mmth-cf-bad'); return; } const n = cfCount(cf.match); cnt.textContent = n < 0 ? 'bad selector' : `matches ${n}`; cnt.classList.toggle('mmth-cf-bad', n < 0); };
+        const paint = () => { if (!cf.match) { cnt.textContent = ''; cnt.className = 'mmth-cf-cnt'; cnt.title = ''; return; } const n = cfCount(cf.match); cnt.textContent = n < 0 ? '!' : String(n); cnt.title = n < 0 ? 'invalid selector' : `matches ${n} field(s) now`; cnt.className = 'mmth-cf-cnt' + (n < 0 ? ' mmth-cf-bad' : n === 0 ? ' mmth-cf-zero' : ''); };
         const mk = (ph, key, w, type) => {
           const inp = document.createElement('input'); inp.type = type || 'text'; inp.placeholder = ph; inp.className = 'mmth-cf-in mmth-cf-' + key;
           inp.value = cf[key] != null ? cf[key] : ''; if (w) inp.style.width = w;
           inp.oninput = () => { cf[key] = type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value; if (key === 'match') paint(); cfApply(); };
           return inp;
         };
-        const dvIn = mk('▼ lvl', 'dv', '52px', 'number'); dvIn.title = 'Attach the pinned-button bar in-flow after the Nth ancestor of the field (0 = floating; raise it so the bar pushes the UI below instead of overlapping)'; dvIn.min = '0';
+        const dvIn = mk('lvl', 'dv', '40px', 'number'); dvIn.title = 'Bar level (deltav) — attach the pinned-button bar in-flow after the Nth ancestor of the field (0 = floating; raise it so the bar pushes the UI below instead of overlapping)'; dvIn.min = '0';
         const selCb = document.createElement('input'); selCb.type = 'checkbox'; selCb.checked = !!cf.select; selCb.onchange = () => { cf.select = selCb.checked; cfApply(); };
         const selL = document.createElement('label'); selL.className = 'mmth-cf-ent'; selL.title = 'On recall, click the dropdown option whose name matches the value — for select-style autocompletes (e.g. relationship type) where the wanted item isn’t the top match. No-op if the field has no dropdown.';
         selL.append(selCb, Object.assign(document.createElement('span'), { textContent: 'sel' }));
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
-        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key ⇐ label', 'key', '84px'), mk('px', 'dx', '44px', 'number'), dvIn, selL, cnt, del);
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '96px'), mk('px', 'dx', '40px', 'number'), dvIn, selL, cnt, del);
         cfList.appendChild(row); paint();
       });
     }
-    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', dv: '', select: false }); renderFields(); };
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', dx: '', dv: '', select: false }); renderFields(); };
     renderFields();
     // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
     // label / key / deltax). Doubles as export (copy the box) and import (paste + Apply).
     const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add');
-    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.select) o.select = true; return o; };
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.select) o.select = true; return o; };   // key still emitted only if a legacy config set one; the UI now derives it from the label
     const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
     const cfFromJson = txt => {
       const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
