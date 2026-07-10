@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.10
+// @version      2026.7.10.122215
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -785,7 +785,7 @@ providerModal.innerHTML = `
         <span style="font-weight: 600;">Qobuz account</span>
         <span id="mb-qb-status" style="font-size: 11px; color: #999; margin-left: auto;"></span>
       </div>
-      <div style="font-size: 11px; color: #999; margin: 3px 0 7px;">Optional — unlocks per-track data behind Qobuz's session-gated API, so ISRC Scout can import Qobuz ISRCs and Credit Hoarder can read roled Qobuz credits. Only the login token is stored, never your password.</div>
+      <div style="font-size: 11px; color: #999; margin: 3px 0 7px;">Optional — unlocks Qobuz's session-gated API: <b>reliable</b> Qobuz matching here (track count + barcode via <code>album/get</code>, no store-page scrape), plus Qobuz ISRC import in ISRC Scout and roled Qobuz credits in Credit Hoarder. Only the login token is stored, never your password.</div>
       <div id="mb-qb-form" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
         <input id="mb-qb-user" type="text" placeholder="email" autocomplete="off" style="flex: 1 1 120px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
         <input id="mb-qb-pass" type="password" placeholder="password" autocomplete="off" style="flex: 1 1 100px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
@@ -2208,15 +2208,19 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
 }
 
 // ─── Qobuz ───────────────────────────────────────────────────────────────────
-// Qobuz's catalogue API (api.json/0.2) IS usable unauthenticated with the right
-// app_id — `712109809` (the web player's; `798273057` needs a user token). It
-// returns the UPC, so Qobuz gets barcode-first search + barcode capture like the
-// other API providers. Results are GEO-dependent (by request IP / country), so a
-// region where the API yields nothing falls back to scraping the server-rendered
-// store page. (#201, app_id + URL shapes per chaban-mb / Harmony.)
+// Qobuz's catalogue API (api.json/0.2) with app_id `712109809`: `album/search`
+// works unauthenticated (barcode-first search + UPC capture, like the other API
+// providers), but `album/get` — which also carries `tracks_count` + `upc` for a
+// direct verify — is session-gated (404/401 anonymously, #353). So when the user
+// has logged in via ⚙ Setup → Auth (token in mbtools:qobuz), we attach it and the
+// API path becomes reliable; otherwise Qobuz falls back to scraping the
+// server-rendered store page. (#201/#353, shapes per chaban-mb / Harmony.)
 const QOBUZ_APP_ID = '712109809';
 function qobuzApi(path) {
-    return gmGet(`https://www.qobuz.com/api.json/0.2/${path}${path.includes('?') ? '&' : '?'}app_id=${QOBUZ_APP_ID}`)
+    const headers = { Accept: 'application/json', 'X-App-Id': QOBUZ_APP_ID };
+    const t = qbRead();                                       // #353 the user's stored token unlocks album/get
+    if (t && t.token) headers['X-User-Auth-Token'] = t.token;
+    return gmGet(`https://www.qobuz.com/api.json/0.2/${path}${path.includes('?') ? '&' : '?'}app_id=${QOBUZ_APP_ID}`, { headers })
         .then(r => { if (!r.ok) return null; try { return JSON.parse(r.responseText); } catch { return null; } });
 }
 // the album slug-id is the API's album_id (e.g. .../album/<slug>/vft3hpnx5c3lc)
