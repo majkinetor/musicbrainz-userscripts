@@ -9,15 +9,16 @@
 //                  to find an MB entity already linked to it
 // A `null` return means "no URL identity" → name search + review only.
 
-import { parseDiscogsUrl }     from '../api-discogs.js';
-import { parseTidalArtistUrl } from './tidal.js';
+import { parseDiscogsUrl }      from '../api-discogs.js';
+import { parseTidalArtistUrl }  from './tidal.js';
+import { parseQobuzArtistUrl }  from './qobuz.js';
 
 /** Parse a credited entity's external URL into `{ key, cleanUrl, … }` via
  *  whichever source recognises it, or `null`. Drop-in superset of
  *  `parseDiscogsUrl` (Discogs URLs return the exact same shape). */
 export function parseSourceEntityUrl(url) {
     if (!url) return null;
-    return parseDiscogsUrl(url) || parseTidalArtistUrl(url);
+    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url);
 }
 
 /** The IDB `entity_cache` key for an entity. Normally derived from its source
@@ -45,6 +46,6 @@ export function sourceNameForUrl(url) {
 export function sourceUrlLinkTypeId(url, entityType) {
     const src = sourceNameForUrl(url);
     if (src === 'Tidal') return entityType === 'artist' ? '978' : null;
-    if (src === 'Qobuz') return null;   // Qobuz credits carry no artist URLs
+    if (src === 'Qobuz') return entityType === 'artist' ? '978' : null;   // #353 Qobuz artist page = "streaming" (978), same as Tidal
     return entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
 }

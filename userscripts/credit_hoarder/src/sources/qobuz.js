@@ -216,13 +216,13 @@ export function qobuzToEngine(parsedTracks) {
                         linkType:   plan.rel,
                         entityType: 'artist',
                         attributes: [...(plan.attributes || [])],
-                        artist: { name: credit.name, anv: '', resource_url: '' },
+                        artist: { name: credit.name, anv: '', resource_url: credit.resource_url || '' },   // #353 Qobuz artist id (composer/performer) → exact link
                         track,
                     });
                     continue;
                 }
                 // #311: instrument role → shared resolver (INSTRUMENTS → instrument rel)
-                const rels = getArtistRoles({ name: credit.name, anv: '', role, resource_url: '' });
+                const rels = getArtistRoles({ name: credit.name, anv: '', role, resource_url: credit.resource_url || '' });
                 if (!rels.length) { skipped.push(`track ${track.position}: ${role} — ${credit.name}`); continue; }
                 for (const r of rels) {
                     tracklistRels.push({
@@ -274,13 +274,34 @@ export function qobuzToken() {
     try { const t = JSON.parse(localStorage.getItem(QOBUZ_LS_KEY) || 'null'); return (t && t.token) || null; } catch (e) { return null; }
 }
 
+/** Qobuz artist page — the id-only open form MB stores (like its album/track links). */
+export function qobuzArtistUrl(id) { return `https://open.qobuz.com/artist/${id}`; }
+const QOBUZ_ARTIST_RE = /(?:https?:)?\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?(?:interpreter\/[^/]+\/|artist\/)(\d+)/i;
+/** Parse a Qobuz artist/interpreter URL → `{ key, cleanUrl, id }` for the source
+ *  registry (id-keyed, so the slug/locale/subdomain don't matter), or `null`. */
+export function parseQobuzArtistUrl(url) {
+    const m = QOBUZ_ARTIST_RE.exec(url || '');
+    return m ? { key: `qobuz-artist/${m[1]}`, cleanUrl: qobuzArtistUrl(m[1]), id: m[1] } : null;
+}
+
 /** album/get JSON → the same `[{ index, credits }]` shape as extractQobuzCredits,
  *  built from each item's roled `performers` string, keyed by the real
- *  track_number (items are 1:1 with tracks — no responsive duplicates). */
+ *  track_number (items are 1:1 with tracks — no responsive duplicates).
+ *  #353: `album/get` also exposes structured `composer` + `performer` objects with
+ *  Qobuz artist **ids** — the only credits the API gives an id for (the flat
+ *  `performers` string is names-only). Attach those as a `resource_url` so composer
+ *  credits resolve/link by URL (exact) instead of name-only. */
 export function parseQobuzApiTracks(json) {
     const items = (json && json.tracks && json.tracks.items) || [];
     return items
-        .map((t, i) => ({ index: t.track_number || (i + 1), credits: t.performers ? parseQobuzCreditLine(decodeEntities(t.performers)) : [] }))
+        .map((t, i) => {
+            const credits = t.performers ? parseQobuzCreditLine(decodeEntities(t.performers)) : [];
+            const idByName = {};
+            if (t.composer && t.composer.id)  idByName[t.composer.name]  = t.composer.id;
+            if (t.performer && t.performer.id) idByName[t.performer.name] = t.performer.id;
+            for (const c of credits) { const id = idByName[c.name]; if (id) c.resource_url = qobuzArtistUrl(id); }
+            return { index: t.track_number || (i + 1), credits };
+        })
         .filter(t => t.credits.length)
         .sort((a, b) => a.index - b.index);
 }
