@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.193810
+// @version      2026.7.10.194633
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -469,7 +469,7 @@
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
         <div class="mmth-cfgsec">Custom baby fields <button type="button" class="mmth-cf-mode">{ } JSON</button></div>
-        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row. <b>Key</b> shares a saved list between fields (defaults to the label). <b>nudge</b> shifts the 🦣 pin by N px. <b>▼ lvl</b> (deltav): 0 = the buttons float below the field; N&gt;0 injects them in-flow after the Nth ancestor so they push the UI below down instead of overlapping. Tip: on an autocomplete, save the value <i>with its MBID</i> (e.g. <code>handclaps b8d84cec-…</code>) and it resolves the entity on recall — the id is hidden in the list but kept for recall/export.</div>
+        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row. <b>Key</b> shares a saved list between fields (defaults to the label). <b>nudge</b> shifts the 🦣 pin by N px. <b>▼ lvl</b> (deltav): 0 = the buttons float below the field; N&gt;0 injects them in-flow after the Nth ancestor so they push the UI below down instead of overlapping. Tip: on an autocomplete, save the value <i>with its MBID</i> (e.g. <code>handclaps b8d84cec-…</code>) and it resolves the entity on recall; for a no-MBID list whose wanted item isn't the top match (e.g. relationship type) append <code>::N</code> to click the Nth dropdown item. Both are hidden in the list but kept for recall/export.</div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
         <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
@@ -1108,7 +1108,7 @@
     // The stored value + export keep it, because saving "name <mbid>" lets an autocomplete resolve the entity
     // straight away (no search / no Enter) — but the raw id is ugly, so hide it in the rows and the buttons.
     const MMTH_MBID_RE = /\s*\(?(?:https?:\/\/(?:beta\.)?musicbrainz\.org\/[a-z-]+\/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?\/?\s*/ig;
-    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
+    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\s*::\d+\s*$/, '').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
     const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = cleanLabel(it.label || it.v); return t.length > n ? t.slice(0, n) + '…' : t; };
 
     const isSelect = el => el.tagName === 'SELECT';
@@ -1143,9 +1143,37 @@
       if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
       return true;
     }
-    // recall a saved value into a field. On an autocomplete, saving "name <mbid>" is the reliable way to
-    // resolve the entity — writeField pastes it and MB resolves from the id on its own (no key-press).
-    const recallInto = (p, rec) => writeField(p.el, rec);
+    // the visible options in the field's open dropdown (MB autocomplete2 listbox, else legacy jQuery UI)
+    function acOptions(el) {
+      const id = el.getAttribute('aria-owns') || el.getAttribute('aria-controls');
+      const menu = (id && document.getElementById(id)) || el.closest('.autocomplete2');
+      let opts = menu ? [...menu.querySelectorAll('[role="option"], li.option')] : [];
+      if (!opts.length) opts = [...document.querySelectorAll('ul.ui-autocomplete')].filter(u => u.offsetParent).flatMap(u => [...u.querySelectorAll('li')]);
+      return opts.filter(n => n.offsetParent);
+    }
+    const clickOption = opt => { for (const t of ['mousedown', 'mouseup', 'click']) opt.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window })); };
+    // recall a saved value into a field. Two reliable resolvers, opt-in per value (both hidden in display):
+    //   • "name <mbid>"  — writeField pastes it and MB's autocomplete resolves the entity from the id.
+    //   • "text::N"      — for a select-style autocomplete with no MBID whose wanted item isn't the top match
+    //                      (e.g. relationship type): type `text`, wait for the dropdown, CLICK the Nth option
+    //                      (1-based; a targeted click, so mouse hover / fuzzy ranking can't hijack it).
+    function recallInto(p, rec) {
+      const m = /::(\d+)\s*$/.exec(rec && rec.v || '');
+      if (!m) return writeField(p.el, rec);
+      const idx = +m[1] - 1, text = String(rec.v).replace(/::(\d+)\s*$/, '').trim();
+      const ok = writeField(p.el, { v: text, label: text });
+      if (ok) {
+        const el = p.el; let tries = 0; try { el.focus(); } catch (e) {}
+        const tick = () => {
+          if (!el.isConnected) return;
+          const opts = acOptions(el);
+          if (opts.length) { if (opts[idx]) { try { el.focus(); } catch (e) {} clickOption(opts[idx]); } return; }
+          if (++tries < 24) setTimeout(tick, 80);   // poll ~1.9s for the dropdown to open
+        };
+        setTimeout(tick, 80);
+      }
+      return ok;
+    }
     function clearField(el) {
       if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
       else { setNative(el, ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }

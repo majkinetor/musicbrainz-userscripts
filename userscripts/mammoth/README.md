@@ -63,7 +63,7 @@ The built-in babies cover the release editor's own controls, but you can put a �
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
-**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed). The MBID is **hidden in the list and on the buttons** but kept in the stored value and in export.
+**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed). For a **select-style list with no MBID** whose wanted item isn't the top match (e.g. *relationship type*, where a similarly-named entry ranks first), append **`::N`** — e.g. `produced / producer::2` — and recall types the text, waits for the dropdown, then **clicks the Nth item** (1-based; a targeted click, so fuzzy ranking or a hovering mouse can't hijack it). Both the MBID and the `::N` are **hidden in the list and on the buttons** but kept in the stored value and in export. (Use the row's **✎** to append them to an existing value.)
 
 The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys are `selector`, `label`, `key`, `deltax` (only `selector` is required); trailing commas and empty `{}` entries are tolerated:
 
