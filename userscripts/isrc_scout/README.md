@@ -46,32 +46,31 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
 | **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
-| **Qobuz** | – | – | API is auth-only; shown (and end/removable) when already linked |
+| **Qobuz** | ✓¹ | – | ¹ needs a **Qobuz login** in [Platform Check](../platform_check/README.md) (album/get is session-gated); matched by position |
 
 > **Album-based** providers (everything except Deezer/Tidal) need the release's album link — either already in MB, or one [Platform Check](../platform_check/README.md) found by barcode, or a URL you paste yourself.
 
 Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
 
+> **Qobuz needs a login.** Its per-track ISRCs live behind the **session-gated** `album/get` endpoint — sign in once under **Platform Check → ⚙ Setup → Auth → Qobuz account** and Scout reads the shared token. Without it, the Qobuz button stays hidden.
+
 <details>
-<summary><b>Why Qobuz isn't a Scout source</b> (the full investigation, so we don't re-litigate it — #353 / #201)</summary>
+<summary><b>Qobuz — the full investigation</b> (so we don't re-litigate it — #353 / #201)</summary>
 
-Qobuz was **tried and dropped** from ISRC Scout. The reasoning, verified end-to-end:
+Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant endpoints:
+- **`album/search`** (album-level: `upc`, `label`, `year`, `tracks_count`) — **works anonymously** with the web-player app_id **`712109809`**. This is all [Platform Check](../platform_check/README.md) needs to *locate/verify* a Qobuz release.
+- **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). It is **session-gated**, not geo-gated:
+  - app_id `712109809` → **`404`** for *every* album id anonymously — even ids `album/search` just returned.
+  - the other web app_id `798273057` → **`401` "User authentication is required"**.
+  - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** with full `tracks.items[]` (isrc + performers). Verified end-to-end (16/16 ISRCs matched a known release).
+- The **store page HTML has zero ISRCs** — so there's no anonymous scrape fallback.
 
-- Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant endpoints:
-  - **`album/search`** (album-level: `upc`, `label`, `year`, `tracks_count`) — **works anonymously** with the web-player app_id **`712109809`**. This is all [Platform Check](../platform_check/README.md) needs, so **Qobuz stays a PC provider**.
-  - **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). This is **session-gated**, not just geo-gated:
-    - app_id `712109809` → **`404` "No result matching given argument"** for *every* album id — even ids `album/search`/`getFeatured` had just returned.
-    - the other web app_id `798273057` → **`401` "User authentication is required"**.
-    - no app_id / a bogus one → `400 Invalid or missing app_id` (so `712109809` *is* accepted — the endpoint just needs a **logged-in Qobuz user session** on top).
-- The **store page HTML has zero ISRCs** (it renders the tracklist via `popinAddToCartBtnPlayerTrack<N>` markers but carries no `isrc` field) — so there is **no anonymous scrape fallback** the way Beatport/Volumo have.
-- Confirmed from majkinetor's own browser (Serbia is geo-blocked — can't even register a Qobuz account); chaban-mb *could* get `album/get` to return from their region/session, which is exactly the point: it's **not reliably anonymous**.
+**So Qobuz is a login-gated source.** [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
 
-**The only route to Qobuz ISRCs (and roled credits) is a Qobuz login** — email + password → a `user_auth_token` signed with the `app_id` + `app_secret` from the web bundle, stored locally like the Beatport token. That unlocks `album/get` → per-track ISRCs for Scout *and* roled `performers` for Credit Hoarder. Not built (needs a Qobuz account + storing a login token); captured here for whenever it's wanted.
-
-Other Qobuz gotchas worth remembering:
+Other Qobuz gotchas:
 - **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
 - **Barcode padding** — Qobuz stores the UPC as the 13-digit EAN with a **leading zero** (`0199257198605`), so a barcode-first `album/search` must try the zero-padded form (#354).
-- The slug-less `open.qobuz.com/album/<id>` form an MB rel often carries is an **SPA shell** with no data; fetch the `www.qobuz.com/<store>/album/<slug>/<id>` store URL instead (a wrong slug 301-redirects to the canonical page).
+- The slug-less `open.qobuz.com/album/<id>` form an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.
 
 </details>
 
@@ -94,8 +93,9 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 | **Tidal** | `openapi.tidal.com` | app token (baked in) | Enabled when the release has a Tidal album relationship. Uses Tidal's official API with a built-in client-credentials app token (catalog access, **no user login**); maps each track's ISRC by disc/track number. |
 | **Volumo** | `volumo.com/api/v1` | none | Enabled when the release has a Volumo relationship (or one Platform Check found via barcode). Clean unauthenticated API — one call returns every track's ISRC; no Cloudflare/token. Link-only, like the others. |
 | **HDtracks** | `hdtracks.azurewebsites.net/api/v1` | none | Enabled when the release has an HDtracks relationship (or one Platform Check found via barcode). Clean unauthenticated, CORS-open API — one `/album/<id>` call returns every track's ISRC inline; no per-track fan-out, no token. The album id is a 24-char ObjectId; a barcode/UPC (e.g. from a legacy `valbum_code` rel) is resolved to it via search first. |
+| **Qobuz** | `www.qobuz.com/api.json/0.2` | **login** | Enabled when the release has a Qobuz relationship (or one Platform Check found) **and** you're signed in to Qobuz under [Platform Check](../platform_check/README.md) → ⚙ Setup → Auth. One `album/get` call (with the shared token) returns every track's ISRC; matched by position. A barcode/UPC is resolved to the album id via `album/search` (zero-padded too, #354). Session-gated — see the box above. |
 
-The **Deezer**, **Beatport**, **Tidal**, **Volumo** and **HDtracks** buttons each have a **▾** menu to *import from a custom album URL* — paste any matching album/release URL (or bare id) to import from it, even when the release has no such link. If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, the menu also offers a one-click **"Use the &lt;platform&gt; URL Platform Check found"** option (skipped silently when `platform_check` isn't present). Spotify has no such menu: its import goes through ISRC Hunt, which resolves the MB release *from* the Spotify URL — so a custom or not-yet-in-MB URL does not work.
+The **Deezer**, **Beatport**, **Tidal**, **Volumo**, **HDtracks** and **Qobuz** buttons each have a **▾** menu to *import from a custom album URL* — paste any matching album/release URL (or bare id) to import from it, even when the release has no such link. If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, the menu also offers a one-click **"Use the &lt;platform&gt; URL Platform Check found"** option (skipped silently when `platform_check` isn't present). Spotify has no such menu: its import goes through ISRC Hunt, which resolves the MB release *from* the Spotify URL — so a custom or not-yet-in-MB URL does not work.
 
 > A Platform Check link that PC **withheld for a barcode/format mismatch** is **not** used here by default (#314). In principle an ISRC identifies a *recording* and is independent of the release's barcode/format — but a barcode mismatch can equally mean PC matched the **wrong release** (e.g. a 1-track Beatport single by a same-prefixed artist), whose ISRCs would be wrong. To deliberately read ISRCs from a barcode/format-mismatched edition anyway, enable **⚙ Setup → Ignore Platform Check link confidence**. Genuine content mismatches (wrong track count, etc.) are always skipped, and an in-MB link or a custom URL you paste yourself is unaffected.
 

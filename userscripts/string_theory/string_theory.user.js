@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.122235
+// @version      2026.7.10.123659
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.10.122235 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.9.214354\n  · Group Therapy v2026.7.10\n  · ISRC Scout v2026.7.9.234106\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.10.122215");
+  console.log('%c String Theory %c v2026.7.10.123659 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.9.214354\n  · Group Therapy v2026.7.10\n  · ISRC Scout v2026.7.10\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.10.122215");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -18732,7 +18732,7 @@ ${lines}
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.9.234106","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.9.234106","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.10","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.10","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -18910,6 +18910,8 @@ ${lines}
     vo: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M7.5 8h2l2.5 5.5L14.5 8h2l-3.5 8h-2z"/></svg>',
     // HDtracks: "HD" monogram (clean stand-in — the brand has no public glyph mark)
     hd: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 6h2.4v4h4V6h2.4v12H8.4v-5.6h-4V18H2z"/><path d="M12 6h4.2c3 0 5 2.4 5 6s-2 6-5 6H12zm2.4 2.2v7.6h1.6c1.7 0 2.8-1.5 2.8-3.8s-1.1-3.8-2.8-3.8z"/></svg>',
+    // Qobuz: brand roundel (Q) in currentColor so the toolbar tint applies
+    qz: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.4"/><path d="M14 14l3.5 3.5" stroke-linecap="round"/></svg>',
     // Bandcamp: the brand logomark is a parallelogram
     bc: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 16.5l5-9h15l-5 9z"/></svg>',
     // Apple Music: the Apple logomark
@@ -19172,6 +19174,7 @@ ${lines}
     .ii-tbtn.td  { color: #1f2d3d; border-color: #b5c2d0; }
     .ii-tbtn.vo  { color: #7c4dff; border-color: #cdbcff; }
     .ii-tbtn.hd  { color: #e63329; border-color: #f4b8b3; }
+    .ii-tbtn.qz  { color: #0070ef; border-color: #b3d3fb; }
     /* import-source buttons: independently show icon and/or text (⚙ Setup).
        Default = icons only (toolbar room); both can be on at once. */
     .ii-bico { display: none; line-height: 0; }
@@ -19575,6 +19578,8 @@ ${lines}
     if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))                 return { k: 'beatportId', v: m[1] };
     if ((m = u.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/)))   return { k: 'tidalId', v: m[1] };
     if ((m = u.match(/volumo\.com\/album\/(\d+)/)))                            return { k: 'volumoId', v: m[1] };   // id or leading ICPN
+    // Qobuz album id is the last path segment (…/album/<slug>/<id>, or the slug-less open form …/album/<id>)
+    if ((m = u.match(/qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([a-z0-9]{8,})/i))) return { k: 'qobuzId', v: m[1] };
     // HDtracks: new #/album/<24-hex ObjectId> resolves directly; legacy 5009 rels carry the
     // UPC in valbum_code (fetchHDtracks resolves it via barcode search). Slug-id / artist-page
     // legacy forms have no clean id mapping and are skipped (Platform Check handles by barcode).
@@ -19645,7 +19650,7 @@ ${lines}
         });
       });
       const rels = data.relations || [];
-      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, bandcampUrl: null, appleUrl: null };
+      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, qobuzId: null, bandcampUrl: null, appleUrl: null };
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
@@ -19943,8 +19948,9 @@ ${lines}
     tidal:    { source: 'Tidal',    idField: 'tidalId',    fetcher: fetchTidal,    code: 'td' },
     volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
     hdtracks: { source: 'HDtracks', idField: 'hdtracksId', fetcher: fetchHDtracks, code: 'hd' },
+    qobuz:    { source: 'Qobuz',    idField: 'qobuzId',    fetcher: fetchQobuz,    code: 'qz' },
   };
-  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329', bandcamp: '#1da0c3', apple: '#fc3c44' };
+  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329', qobuz: '#0070ef', bandcamp: '#1da0c3', apple: '#fc3c44' };
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
   Object.keys(ALBUM_PROVIDERS).forEach(k => {
     const p = ALBUM_PROVIDERS[k];
@@ -19953,7 +19959,7 @@ ${lines}
     // on any release. The rest scan the release's album, so they need its link.
     TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' || k === 'tidal' };
   });
-  const TRACK_PROV_ORDER = ['sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks'];
+  const TRACK_PROV_ORDER = ['sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks', 'qobuz'];
   let trackProv = 'sx';                                  // NOT persisted (#181)
   const TPM = () => TRACK_PROV[trackProv];
   // a provider is offered only when it can resolve a source for THIS release
@@ -20463,6 +20469,59 @@ ${lines}
      either an MB rel or the one Platform Check found; Scout never deals with
      barcodes itself, that's Platform Check's job.)
   ═══════════════════════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════════════════════════════
+     QOBUZ (#353) — per-track ISRCs live behind the session-gated album/get,
+     which needs a logged-in user_auth_token. Platform Check owns the login and
+     shares the token via the mbtools:qobuz localStorage key on this origin (the
+     same channel as the Beatport token). Album-based, matched by ISRC/position.
+  ═══════════════════════════════════════════════════════════════════════ */
+  const QOBUZ = { appId: '712109809', api: 'https://www.qobuz.com/api.json/0.2', lsKey: 'mbtools:qobuz' };
+  const qbToken = () => { try { const t = JSON.parse(localStorage.getItem(QOBUZ.lsKey) || 'null'); return (t && t.token) || null; } catch (e) { return null; } };
+  const qbHeaders = tok => ({ 'X-App-Id': QOBUZ.appId, 'X-User-Auth-Token': tok, 'Accept': 'application/json' });
+  async function fetchQobuz(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    const tok = qbToken();
+    if (!tok) throw new Error('Qobuz: not logged in — sign in to Qobuz in Platform Check ⚙ Setup → Auth');
+    let id = String(albumId).trim();
+    // a bare barcode/UPC → resolve to the album id via search (Qobuz stores the 13-digit EAN, so try zero-padded too, #354)
+    if (/^\d+$/.test(id)) {
+      const want = id.replace(/^0+/, '');
+      let hit = null;
+      for (const q of [id, id.length < 13 ? id.padStart(13, '0') : null].filter(Boolean)) {
+        const sr = await gmGet(QOBUZ.api + '/album/search?query=' + encodeURIComponent(q) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
+        let sj; try { sj = JSON.parse(sr.responseText || 'null'); } catch (e) { sj = null; }
+        const items = (sj && sj.albums && sj.albums.items) || [];
+        hit = items.find(a => String(a.upc || '').replace(/^0+/, '') === want) || items[0];
+        if (hit) break;
+      }
+      if (!hit || !hit.id) throw new Error('Qobuz: no album for barcode ' + id);
+      id = hit.id;
+    }
+    const r = await gmGet(QOBUZ.api + '/album/get?album_id=' + encodeURIComponent(id) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
+    if (r.status === 401) throw new Error('Qobuz: session expired — re-login in Platform Check ⚙');
+    if (r.status !== 200) throw new Error('Qobuz ' + r.status + ' for album ' + id);
+    let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Qobuz: malformed JSON'); }
+    const list = (j && j.tracks && j.tracks.items) || [];
+    Log.info('Qobuz album "' + ((j && j.title) || id) + '": ' + list.length + ' track(s)');
+    let n = 0;
+    list.forEach((t, i) => {
+      const e = {
+        isrc:   normalizeIsrc(t.isrc || ''),
+        title:  t.title || '',
+        artist: (t.performer && t.performer.name) || (j.artist && j.artist.name) || '',
+        disc:   t.media_number || 1,
+        pos:    t.track_number || (i + 1),
+        dur:    t.duration ? msToMmSs(t.duration * 1000) : '',   // Qobuz duration is in SECONDS
+        url:    '',                                              // per-track Qobuz URL isn't part of the ISRC import
+      };
+      try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Qobuz map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(++n, list.length); } catch (err) {}
+    });
+    const withIsrc = list.filter(t => isValidIsrc(normalizeIsrc(t.isrc || ''))).length;
+    if (!withIsrc) throw new Error('Qobuz album exposed no ISRCs (session may lack catalogue access)');
+    return { total: list.length, next: null };
+  }
+
   async function fetchVolumo(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
     const idStr = String(albumId);
@@ -20744,8 +20803,9 @@ ${lines}
         <button class="ii-tbtn td ii-only-isrc" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
         <button class="ii-tbtn vo ii-only-isrc" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
         <button class="ii-tbtn hd ii-only-isrc" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
+        <button class="ii-tbtn qz ii-only-isrc" id="ii-qz-all" title="Import ISRCs from Qobuz (needs Qobuz login in Platform Check)"><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
         <span class="ii-urladd ii-only-isrc" id="ii-urladd">
-          <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks) — auto-detected and imported">+</button>
+          <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <button class="ii-tbtn sx ii-only-links" id="ii-links-btn" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
@@ -20929,6 +20989,7 @@ ${lines}
     modal.querySelector('#ii-td-all').addEventListener('click', runTidal);
     modal.querySelector('#ii-vo-all').addEventListener('click', runVolumo);
     modal.querySelector('#ii-hd-all').addEventListener('click', runHDtracks);
+    modal.querySelector('#ii-qz-all').addEventListener('click', runQobuz);
     // Unified "paste a URL" control (#180) — apollo-style unroll. Click the +
     // to reveal the input; paste any streaming album URL; on Enter the platform
     // is auto-detected and imported. Replaces the per-provider ▾ submenus.
@@ -21647,7 +21708,8 @@ ${lines}
      ['Beatport', 'ii-bp-all', 'beatportId'],
      ['Tidal', 'ii-td-all', 'tidalId'],
      ['Volumo', 'ii-vo-all', 'volumoId'],
-     ['HDtracks', 'ii-hd-all', 'hdtracksId']].forEach(([source, id, field]) => {
+     ['HDtracks', 'ii-hd-all', 'hdtracksId'],
+     ['Qobuz', 'ii-qz-all', 'qobuzId']].forEach(([source, id, field]) => {
       const btn = modal.querySelector('#' + id);
       const mbId = RELEASE[field];
       // Spotify imports only via its MB-linked album (ISRC Hunt resolves the
@@ -22602,6 +22664,7 @@ ${lines}
   async function runTidal()    { return runProvider('Tidal',    RELEASE.tidalId,    fetchTidal,    '#ii-td-all'); }
   async function runVolumo()   { return runProvider('Volumo',   RELEASE.volumoId,   fetchVolumo,   '#ii-vo-all'); }
   async function runHDtracks() { return runProvider('HDtracks', RELEASE.hdtracksId, fetchHDtracks, '#ii-hd-all'); }
+  async function runQobuz()    { return runProvider('Qobuz',    RELEASE.qobuzId,    fetchQobuz,    '#ii-qz-all'); }
   // Map a source label to its fetcher (used by the unified URL-paste import).
   function fetcherFor(source) {
     return source === 'Deezer'   ? fetchDeezer
@@ -22610,13 +22673,14 @@ ${lines}
          : source === 'Tidal'    ? fetchTidal
          : source === 'Volumo'   ? fetchVolumo
          : source === 'HDtracks' ? fetchHDtracks
+         : source === 'Qobuz'    ? fetchQobuz
          : null;
   }
 
   /* ── source links & the unified "paste a URL" control (#180) ── */
   // Source name → SRC_ICON key / brand colour, for the URL-add detection feedback.
-  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo', HDtracks: 'hd' };
-  const SRC_COLOR = { dz: '#ef5466', sp: '#1db954', bp: '#0a8754', td: '#1f2d3d', vo: '#7c4dff', hd: '#e63329' };
+  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo', HDtracks: 'hd', Qobuz: 'qz' };
+  const SRC_COLOR = { dz: '#ef5466', sp: '#1db954', bp: '#0a8754', td: '#1f2d3d', vo: '#7c4dff', hd: '#e63329', qz: '#0070ef' };
 
   // If Platform Check (separate userscript) is on the page, read the URL it found
   // for this source from its sidebar anchor (#mb-online-<source>).
@@ -22663,6 +22727,7 @@ ${lines}
     if (/tidal\.com/i.test(s)) return mk('Tidal');
     if (/volumo\.com/i.test(s)) return mk('Volumo');
     if (/hdtracks\.com/i.test(s)) return mk('HDtracks');
+    if (/qobuz\.com/i.test(s)) return mk('Qobuz');
     // Spotify intentionally NOT detected here: its import resolves the MB release
     // FROM the Spotify URL (ISRC Hunt), so a non-MB URL can't work (#180). It's
     // offered only as a provider button when the release has a Spotify MB link.
@@ -22715,6 +22780,11 @@ ${lines}
     if (source === 'Volumo') {
       const m = s.match(/volumo\.com\/album\/(\d+)/);   // id or leading ICPN in the canonical /album/{icpn}-{slug}
       return m ? m[1] : (/^\d+$/.test(s) ? s : null);
+    }
+    if (source === 'Qobuz') {
+      // …/album/<slug>/<id> or the slug-less …/album/<id>; a bare alnum id or a bare barcode also work
+      const m = s.match(/qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([a-z0-9]{8,})/i);
+      return m ? m[1] : (/^[a-z0-9]{8,}$/i.test(s) || /^\d{8,}$/.test(s) ? s : null);
     }
     if (source === 'HDtracks') {
       // new API form #/album/<24-hex ObjectId>; legacy valbum_code=<UPC> resolves
