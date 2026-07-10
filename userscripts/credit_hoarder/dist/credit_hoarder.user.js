@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.9.214354
+// @version      2026.7.10.124606
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -5267,6 +5267,56 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       });
     });
   }
+  var QOBUZ_API = "https://www.qobuz.com/api.json/0.2";
+  var QOBUZ_APP_ID = "712109809";
+  var QOBUZ_LS_KEY = "mbtools:qobuz";
+  function qobuzToken() {
+    try {
+      const t = JSON.parse(localStorage.getItem(QOBUZ_LS_KEY) || "null");
+      return t && t.token || null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function parseQobuzApiTracks(json) {
+    const items = json && json.tracks && json.tracks.items || [];
+    return items.map((t, i) => ({ index: t.track_number || i + 1, credits: t.performers ? parseQobuzCreditLine(decodeEntities(t.performers)) : [] })).filter((t) => t.credits.length).sort((a, b) => a.index - b.index);
+  }
+  function qobuzApiAlbumInfo(json) {
+    if (!json) return "";
+    return [json.title, json.artist && json.artist.name].filter(Boolean).join(", ");
+  }
+  function fetchQobuzApiAlbum(albumId, token) {
+    return new Promise((resolve, reject) => {
+      if (typeof GM_xmlhttpRequest !== "function") {
+        reject(new Error("GM_xmlhttpRequest unavailable"));
+        return;
+      }
+      GM_xmlhttpRequest({
+        method: "GET",
+        url: `${QOBUZ_API}/album/get?album_id=${encodeURIComponent(albumId)}&app_id=${QOBUZ_APP_ID}`,
+        headers: { "X-App-Id": QOBUZ_APP_ID, "X-User-Auth-Token": token, "Accept": "application/json" },
+        timeout: 2e4,
+        onload: (r) => {
+          if (r.status === 401) {
+            reject(new Error("Qobuz session expired \u2014 re-login in Platform Check"));
+            return;
+          }
+          if (r.status < 200 || r.status >= 300) {
+            reject(new Error(`Qobuz album/get returned ${r.status}`));
+            return;
+          }
+          try {
+            resolve(JSON.parse(r.responseText));
+          } catch (e) {
+            reject(new Error("Qobuz album/get: malformed JSON"));
+          }
+        },
+        onerror: () => reject(new Error("Qobuz album/get failed (network)")),
+        ontimeout: () => reject(new Error("Qobuz album/get timed out"))
+      });
+    });
+  }
 
   // src/ui-bar.js
   var _logs2;
@@ -6344,20 +6394,17 @@ ${lines}
       log.error(`Not a Qobuz album URL: ${qobuzUrl}`);
       return Promise.resolve();
     }
-    log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
-    return fetchQobuzAlbumPage(parsed.pageUrl).then((html) => {
-      const albumInfo = extractQobuzAlbumInfo(html);
-      const tracks = extractQobuzCredits(html);
-      _qobuzJson = { pageUrl: parsed.pageUrl, album: albumInfo, tracks };
+    const finish = (via, albumInfo, tracks) => {
+      _qobuzJson = { via, source: via === "API" ? `album/get (${parsed.id})` : parsed.pageUrl, album: albumInfo, tracks };
       const li = document.createElement("li");
       const pre = document.createElement("pre");
       pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(_qobuzJson, null, 2);
-      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Qobuz album"} \xB7 ${tracks.length} tracks \u2014 parsed Qobuz credits</strong></summary></details>`;
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Qobuz album"} \xB7 ${tracks.length} tracks \u2014 parsed Qobuz credits (${via === "API" ? "API" : "page"})</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
       _logs2.appendChild(li);
       if (!tracks.length) {
-        log.warn("No credits found on the Qobuz page \u2014 nothing to import.");
+        log.warn("No Qobuz credits found \u2014 nothing to import.");
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
@@ -6365,14 +6412,27 @@ ${lines}
       log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
       skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
       if (!tracklistRels.length) {
-        log.warn("No importable credits found on the Qobuz page.");
+        log.warn("No importable Qobuz credits found.");
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
       return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
-    }).catch((err) => {
-      log.error(err.message || String(err));
-    });
+    };
+    const scrape = () => {
+      log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
+      return fetchQobuzAlbumPage(parsed.pageUrl).then((html) => finish("page", extractQobuzAlbumInfo(html), extractQobuzCredits(html))).catch((err) => {
+        log.error(err.message || String(err));
+      });
+    };
+    const token = qobuzToken();
+    if (token) {
+      log.info(`Fetching Qobuz credits via album/get (signed in): album ${parsed.id}`);
+      return fetchQobuzApiAlbum(parsed.id, token).then((json) => finish("API", qobuzApiAlbumInfo(json), parseQobuzApiTracks(json))).catch((err) => {
+        log.warn(`Qobuz API failed (${err.message || err}) \u2014 falling back to the store page`);
+        return scrape();
+      });
+    }
+    return scrape();
   }
   function buildTitlesTracklist(mbid) {
     return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then((json) => {

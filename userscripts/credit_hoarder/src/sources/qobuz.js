@@ -13,11 +13,14 @@
 // resolution is name-based (MB search + the review table), the same path
 // unlinked Discogs credits take.
 //
-// The Qobuz API (`album/get`) is NOT an option without auth: it answers
-// 401 "User authentication is required" with an app_id alone. The page
-// scrape is the unauthenticated path. (If a fresh bundle-scraped app_id
-// turns out to unlock catalog reads, swapping fetchers is a 1-function
-// change — the parsed shape below stays.)
+// The Qobuz API (`album/get`) needs auth: it answers 401 with an app_id alone.
+// So there are TWO fetch paths sharing the parser below: (1) the unauthenticated
+// store-page scrape (default), and (2) #353 the authenticated album/get — when
+// the user has signed in to Qobuz via Platform Check, its user_auth_token is
+// shared through the mbtools:qobuz localStorage key and unlocks album/get, whose
+// per-track `performers` string is the SAME roled format as track__info. The
+// engine prefers the API when a token exists (reliable, geo-independent) and
+// falls back to the scrape otherwise. See the API helpers at the bottom.
 
 import { getArtistRoles } from '../mappers.js';
 import { INSTRUMENTS }     from '../data/instruments.js';
@@ -251,6 +254,59 @@ export function fetchQobuzAlbumPage(pageUrl) {
                 : reject(new Error(`Qobuz page returned ${r.status}`)),
             onerror:   () => reject(new Error('Qobuz page fetch failed (network)')),
             ontimeout: () => reject(new Error('Qobuz page fetch timed out')),
+        });
+    });
+}
+
+// ── Authenticated API path (#353) ──────────────────────────────────────────
+// When the user has signed in to Qobuz via Platform Check, its user_auth_token
+// is shared through the mbtools:qobuz localStorage key on this origin. That
+// unlocks album/get, whose per-track `performers` string is the SAME roled
+// format as the store page's track__info — so the existing parser is reused and
+// only the fetch changes. This path is reliable where the scrape is geo-flaky /
+// 429-throttled, and needs no responsive-duplicate marker anchoring.
+const QOBUZ_API = 'https://www.qobuz.com/api.json/0.2';
+const QOBUZ_APP_ID = '712109809';
+const QOBUZ_LS_KEY = 'mbtools:qobuz';
+
+/** The Qobuz user_auth_token Platform Check stored (shared localStorage), or null. */
+export function qobuzToken() {
+    try { const t = JSON.parse(localStorage.getItem(QOBUZ_LS_KEY) || 'null'); return (t && t.token) || null; } catch (e) { return null; }
+}
+
+/** album/get JSON → the same `[{ index, credits }]` shape as extractQobuzCredits,
+ *  built from each item's roled `performers` string, keyed by the real
+ *  track_number (items are 1:1 with tracks — no responsive duplicates). */
+export function parseQobuzApiTracks(json) {
+    const items = (json && json.tracks && json.tracks.items) || [];
+    return items
+        .map((t, i) => ({ index: t.track_number || (i + 1), credits: t.performers ? parseQobuzCreditLine(decodeEntities(t.performers)) : [] }))
+        .filter(t => t.credits.length)
+        .sort((a, b) => a.index - b.index);
+}
+
+/** Album title + artist from album/get JSON, for the diagnostic log. */
+export function qobuzApiAlbumInfo(json) {
+    if (!json) return '';
+    return [json.title, json.artist && json.artist.name].filter(Boolean).join(', ');
+}
+
+/** Fetch album/get with the shared user token → parsed JSON (rejects on auth / other errors). */
+export function fetchQobuzApiAlbum(albumId, token) {
+    return new Promise((resolve, reject) => {
+        if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: `${QOBUZ_API}/album/get?album_id=${encodeURIComponent(albumId)}&app_id=${QOBUZ_APP_ID}`,
+            headers: { 'X-App-Id': QOBUZ_APP_ID, 'X-User-Auth-Token': token, 'Accept': 'application/json' },
+            timeout: 20000,
+            onload: r => {
+                if (r.status === 401) { reject(new Error('Qobuz session expired — re-login in Platform Check')); return; }
+                if (r.status < 200 || r.status >= 300) { reject(new Error(`Qobuz album/get returned ${r.status}`)); return; }
+                try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error('Qobuz album/get: malformed JSON')); }
+            },
+            onerror:   () => reject(new Error('Qobuz album/get failed (network)')),
+            ontimeout: () => reject(new Error('Qobuz album/get timed out')),
         });
     });
 }

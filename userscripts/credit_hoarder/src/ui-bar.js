@@ -45,7 +45,7 @@ import { buildEditNote }                 from './edit-note.js';
 import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources/tidal.js';
-import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine } from './sources/qobuz.js';
+import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine, qobuzToken, fetchQobuzApiAlbum, parseQobuzApiTracks, qobuzApiAlbumInfo } from './sources/qobuz.js';
 
 let _logs;
 let _summary;
@@ -1337,28 +1337,42 @@ function runTidalImport(tidalUrl, getOpts) {
 function runQobuzImport(qobuzUrl, getOpts) {
     const parsed = parseQobuzAlbumUrl(qobuzUrl);
     if (!parsed) { log.error(`Not a Qobuz album URL: ${qobuzUrl}`); return Promise.resolve(); }
-    log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
-    return fetchQobuzAlbumPage(parsed.pageUrl)
-        .then(html => {
-            const albumInfo = extractQobuzAlbumInfo(html);
-            const tracks = extractQobuzCredits(html);
-            _qobuzJson = { pageUrl: parsed.pageUrl, album: albumInfo, tracks };   // Log ▾ → "Copy Qobuz"
-            // Parsed credits (collapsible) — mirrors the Discogs raw-JSON block.
-            const li = document.createElement('li');
-            const pre = document.createElement('pre');
-            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
-            pre.textContent = JSON.stringify(_qobuzJson, null, 2);
-            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || 'Qobuz album'} · ${tracks.length} tracks — parsed Qobuz credits</strong></summary></details>`;
-            li.querySelector('details').appendChild(pre);
-            _logs.appendChild(li);
-            if (!tracks.length) { log.warn('No credits found on the Qobuz page — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
-            log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
-            skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
-            if (!tracklistRels.length) { log.warn('No importable credits found on the Qobuz page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
-        })
-        .catch(err => { log.error(err.message || String(err)); });
+
+    // #353: prefer the authenticated album/get when a Qobuz login token is shared
+    // by Platform Check (reliable, geo-independent) — same parsed shape as the
+    // scrape, so downstream is identical — and fall back to the store-page scrape.
+    const finish = (via, albumInfo, tracks) => {
+        _qobuzJson = { via, source: via === 'API' ? `album/get (${parsed.id})` : parsed.pageUrl, album: albumInfo, tracks };   // Log ▾ → "Copy Qobuz"
+        const li = document.createElement('li');
+        const pre = document.createElement('pre');
+        pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
+        pre.textContent = JSON.stringify(_qobuzJson, null, 2);
+        li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || 'Qobuz album'} · ${tracks.length} tracks — parsed Qobuz credits (${via === 'API' ? 'API' : 'page'})</strong></summary></details>`;
+        li.querySelector('details').appendChild(pre);
+        _logs.appendChild(li);
+        if (!tracks.length) { log.warn('No Qobuz credits found — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+        const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
+        log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+        skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+        if (!tracklistRels.length) { log.warn('No importable Qobuz credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+        return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
+    };
+
+    const scrape = () => {
+        log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
+        return fetchQobuzAlbumPage(parsed.pageUrl)
+            .then(html => finish('page', extractQobuzAlbumInfo(html), extractQobuzCredits(html)))
+            .catch(err => { log.error(err.message || String(err)); });
+    };
+
+    const token = qobuzToken();
+    if (token) {
+        log.info(`Fetching Qobuz credits via album/get (signed in): album ${parsed.id}`);
+        return fetchQobuzApiAlbum(parsed.id, token)
+            .then(json => finish('API', qobuzApiAlbumInfo(json), parseQobuzApiTracks(json)))
+            .catch(err => { log.warn(`Qobuz API failed (${err.message || err}) — falling back to the store page`); return scrape(); });
+    }
+    return scrape();
 }
 
 // Titles "source" (#271): no provider — read the release's own track titles
