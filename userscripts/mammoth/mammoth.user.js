@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.200709
+// @version      2026.7.10.201600
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -301,6 +301,7 @@
   .mmth-cf-in { border:1px solid #d7e0db; border-radius:5px; padding:3px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; box-sizing:border-box; min-width:0; }
   .mmth-cf-in:focus { outline:none; border-color:#5aa67e; }
   .mmth-cf-match { flex:1 1 auto; min-width:90px; }
+  .mmth-cf-ent { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#566; white-space:nowrap; cursor:pointer; }
   .mmth-cf-cnt { font-size:11px; color:#8a968f; min-width:52px; text-align:right; white-space:nowrap; }
   .mmth-cf-cnt.mmth-cf-bad { color:#c0392b; }
   .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; }
@@ -544,18 +545,21 @@
           return inp;
         };
         const dvIn = mk('▼ lvl', 'dv', '52px', 'number'); dvIn.title = 'Attach the pinned-button bar in-flow after the Nth ancestor of the field (0 = floating; raise it so the bar pushes the UI below instead of overlapping)'; dvIn.min = '0';
+        const selCb = document.createElement('input'); selCb.type = 'checkbox'; selCb.checked = !!cf.select; selCb.onchange = () => { cf.select = selCb.checked; cfApply(); };
+        const selL = document.createElement('label'); selL.className = 'mmth-cf-ent'; selL.title = 'On recall, click the dropdown option whose name matches the value — for select-style autocompletes (e.g. relationship type) where the wanted item isn’t the top match. No-op if the field has no dropdown.';
+        selL.append(selCb, Object.assign(document.createElement('span'), { textContent: 'sel' }));
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
-        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key ⇐ label', 'key', '84px'), mk('px', 'dx', '44px', 'number'), dvIn, cnt, del);
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key ⇐ label', 'key', '84px'), mk('px', 'dx', '44px', 'number'), dvIn, selL, cnt, del);
         cfList.appendChild(row); paint();
       });
     }
-    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', dv: '' }); renderFields(); };
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', dv: '', select: false }); renderFields(); };
     renderFields();
     // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
     // label / key / deltax). Doubles as export (copy the box) and import (paste + Apply).
     const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add');
-    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; return o; };
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.select) o.select = true; return o; };
     const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
     const cfFromJson = txt => {
       const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
@@ -565,6 +569,7 @@
         label: o.label ? String(o.label) : '', key: o.key ? String(o.key) : '',
         dx: (o.deltax != null && o.deltax !== '') ? +o.deltax : ((o.dx != null && o.dx !== '') ? +o.dx : ''),
         dv: (o.deltav != null && o.deltav !== '') ? +o.deltav : ((o.dv != null && o.dv !== '') ? +o.dv : ''),
+        select: !!o.select,
       })).filter(c => c.match);
     };
     const applyJson = () => {
@@ -1069,7 +1074,7 @@
     const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => {
       const k = String(c.key || c.label || '').trim();
       return { match: c.match, key: k ? 'cf:' + k : null, label: c.label || '',
-        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0 };
+        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, select: !!c.select };
     });
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
@@ -1109,7 +1114,7 @@
     // The stored value + export keep it, because saving "name <mbid>" lets an autocomplete resolve the entity
     // straight away (no search / no Enter) — but the raw id is ugly, so hide it in the rows and the buttons.
     const MMTH_MBID_RE = /\s*\(?(?:https?:\/\/(?:beta\.)?musicbrainz\.org\/[a-z-]+\/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?\/?\s*/ig;
-    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\\n/g, ' ').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
+    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
     const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = cleanLabel(it.label || it.v); return t.length > n ? t.slice(0, n) + '…' : t; };
 
     const isSelect = el => el.tagName === 'SELECT';
@@ -1153,29 +1158,26 @@
       return opts.filter(n => n.offsetParent);
     }
     const clickOption = opt => { for (const t of ['mousedown', 'mouseup', 'click']) opt.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window })); };
-    // recall a saved value into a field. Two opt-in resolvers, both hidden in display:
-    //   • "name <mbid>"  — writeField pastes it and MB's autocomplete resolves the entity from the id.
-    //   • a literal "\n" — "type the text before it, then pick the dropdown item whose name matches" (add it
-    //     with ✎). We CLICK that option — never Enter, which on the relationship-type field falls through and
-    //     submits/closes the dialog. Matching by NAME is order-independent, so MB's usage-frequency reordering
-    //     can't break it (an index can), and a targeted click can't leak to another control.
+    // recall a saved value into a field. writeField pastes it; on a field flagged `select` (JSON "select":
+    // true) it then CLICKS the dropdown option whose NAME matches — for select-style autocompletes whose
+    // wanted item isn't the top match (e.g. relationship type). Matching by name is order-independent (MB's
+    // usage-frequency reordering can't break it, an index would) and a click can't leak, unlike Enter which
+    // on the relationship-type field submits/closes the dialog. If no dropdown opens (poll times out) it's a
+    // no-op — so enabling it on a field that has none does no harm. ("name <mbid>" still resolves via the id.)
     function recallInto(p, rec) {
-      const raw = String(rec && rec.v || '');
-      const nl = raw.indexOf('\\n');
-      if (isSelect(p.el) || nl < 0) return writeField(p.el, rec);   // no marker (or a <select>) → plain paste
-      const el = p.el, text = raw.slice(0, nl).replace(/\s+$/, ''), want = text.trim().toLowerCase();
-      setNative(el, text); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));
-      if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
+      const ok = writeField(p.el, rec);
+      if (!ok || isSelect(p.el) || !p.select) return ok;   // native <select> / non-select field → just the paste
+      const el = p.el, want = cleanLabel(rec && rec.v).trim().toLowerCase(); if (!want) return ok;
       try { el.focus(); } catch (e) {}
       let tries = 0;
       const tick = () => {
         if (!el.isConnected) return;
         const opts = acOptions(el);
         if (opts.length) { const pick = opts.find(o => (o.textContent || '').trim().toLowerCase().startsWith(want)); if (pick) { try { el.focus(); } catch (e) {} clickOption(pick); } return; }
-        if (++tries < 24) setTimeout(tick, 80);   // poll ~1.9s for the dropdown to open
+        if (++tries < 24) setTimeout(tick, 80);   // poll ~1.9s for the dropdown to open; none ⇒ no-op
       };
       setTimeout(tick, 80);
-      return true;
+      return ok;
     }
     function clearField(el) {
       if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -1266,7 +1268,7 @@
       const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
       for (const d of PREDEF) document.querySelectorAll(d.match).forEach(el => add(el, d));
       for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // #config user-defined fields (invalid selectors ignored)
-      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '' }));
+      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', select: el.dataset.mmthSelect != null }));
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
@@ -1286,7 +1288,7 @@
         // below); N>0 = inject the pinned-button bar IN-FLOW right after the Nth ancestor of the field, so
         // it takes real layout space and pushes the UI below it down instead of overlapping.
         const dv = def.deltav != null ? (+def.deltav || 0) : (el.dataset.mmthDeltav != null ? (+el.dataset.mmthDeltav || 0) : 0);
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv, select: !!def.select };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
