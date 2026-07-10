@@ -56,22 +56,23 @@ The built-in babies cover the release editor's own controls, but you can put a �
 | Column | Meaning |
 |---|---|
 | **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). **Comma-separate** several selectors to cover more than one field with a single row. A live *matches N* / *bad selector* readout tells you if it's right. |
-| **Label** | The popover title (optional — derived from the field's own label if left blank). |
-| **Key** | Storage key (optional). Fields sharing a key share their saved values. **Defaults to the label** if blank; omit both and Mammoth derives a key from the field itself. |
+| **Label** | The popover title, and the **identity** of the field: two fields with the **same label share one saved list**. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
 | **▼ lvl** (deltav) | Where the pinned-button bar attaches. `0` (default) = floats below the field (absolute — can overlap UI beneath it). `N` > 0 = injected **in the document flow** right after the field's Nth ancestor, so it takes real space and pushes the UI below it down. Bump it until the buttons sit cleanly (e.g. the artist row's autocomplete wrapper is usually `1`–`2`). |
-| **sel** (select) | On recall, after typing, **click the dropdown option whose name matches** — for select-style autocompletes (e.g. *relationship type*) where the wanted item isn't the top match. Order-independent and leak-free; a no-op if the field has no dropdown. |
+| **↵** (enter) | On recall, press **Enter** on the field ~200 ms after the value is set — for a field that only commits/submits on Enter (e.g. the **Tag** field). |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
-**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed). For a **select-style list with no MBID** whose wanted item isn't the top match (e.g. *relationship type*), turn on the field's **`select`** option (the row's checkbox, or JSON `"select": true`). Recall then types the value, waits for the dropdown, and **clicks the option whose name matches** it. Matching by name is order-independent, so MB re-ranking the list by *your* usage can't break it (a fixed index would), and a targeted click can't leak to another control (pressing Enter there submits/closes the dialog). If the field has no dropdown it's a **no-op**, so leaving `select` on does no harm.
+**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed).
 
-The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `key`, `deltax`, `deltav`, `select`, `mbid`, and `enable`; trailing commas and empty `{}` entries are tolerated:
+**Fields that need Enter:** some inputs only commit on Enter/submit (e.g. the **Tag** field). Tick the row's **↵** checkbox (or JSON `"enter": true`) and recall presses Enter on the input ~200 ms after setting the value.
+
+The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `deltax`, `deltav`, `enter`, `mbid`, and `enable`; trailing commas and empty `{}` entries are tolerated:
 
 ```json
 [
   { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16 },
-  { "selector": "input[id^=\"label-\"]", "label": "Label", "key": "release.label", "mbid": true }
+  { "selector": "input[id^=\"label-\"]", "label": "Label", "mbid": true }
 ]
 ```
 

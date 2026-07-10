@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.214921
+// @version      2026.7.10.222830
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -69,24 +69,28 @@
   const saveSet = () => { persistSet(); applyHelp(); render(); };
 
   // Built-in "OTB" baby fields — now seeded INTO the config (SET.customFields) so they're visible/editable
-  // in the Fields tab like any custom field. `key` is the stable storage key (kept from the old PREDEF so
-  // saved values still resolve). `mbid:true` (JSON-only flag) enables entity-MBID capture on Label/Artist.
+  // in the Fields tab like any custom field. Storage keys are derived from the LABEL (same-label fields share
+  // one list) — no explicit `key`. `mbid:true` (JSON-only flag) enables entity-MBID capture on Label/Artist.
   const BUILTIN_FIELDS = [
-    { match: 'input[id^="catno-"]', label: 'Catalog number', key: 'release.catno' },
-    { match: '#primary-type', label: 'Primary type', key: 'release.primary_type' },
-    { match: '#packaging', label: 'Packaging', key: 'release.packaging' },
-    { match: '#status', label: 'Status', key: 'release.status' },
-    { match: '#language', label: 'Language', key: 'release.language' },
-    { match: '#script', label: 'Script', key: 'release.script' },
-    { match: 'select[id^="country-"]', label: 'Country', key: 'release.country' },
-    { match: 'input[id^="label-"]', label: 'Label', key: 'release.label', mbid: true },
-    { match: '#ac-source-single-artist, input[id^="ac-source-artist-"]', label: 'Artist', key: 'release.artist', mbid: true },
-    { match: '.attribute-container.text.task input[type="text"]', label: 'Task', key: 'rel.task' },
+    { match: 'input[id^="catno-"]', label: 'Catalog number' },
+    { match: '#primary-type', label: 'Primary type' },
+    { match: '#packaging', label: 'Packaging' },
+    { match: '#status', label: 'Status' },
+    { match: '#language', label: 'Language' },
+    { match: '#script', label: 'Script' },
+    { match: 'select[id^="country-"]', label: 'Country' },
+    { match: 'input[id^="label-"]', label: 'Label', mbid: true },
+    { match: '#ac-source-single-artist, input[id^="ac-source-artist-"]', label: 'Artist', mbid: true },
+    { match: '.attribute-container.text.task input[type="text"]', label: 'Task' },
   ];
+  // one-time migration: old PREDEF/built-in keys → the new label-derived keys, so saved values carry over
+  const KEY_RELABEL = { 'release.catno': 'cf:Catalog number', 'release.primary_type': 'cf:Primary type', 'release.packaging': 'cf:Packaging', 'release.status': 'cf:Status', 'release.language': 'cf:Language', 'release.script': 'cf:Script', 'release.country': 'cf:Country', 'release.label': 'cf:Label', 'release.artist': 'cf:Artist', 'rel.task': 'cf:Task' };
 
   let SET = loadSet();
   // seed the built-ins once (merge-in any not already present by selector; never re-adds after you delete one)
   if (!SET.fieldsSeeded) { const have = new Set((SET.customFields || []).map(c => c && c.match)); SET.customFields = [...BUILTIN_FIELDS.filter(b => !have.has(b.match)).map(b => ({ ...b })), ...(SET.customFields || [])]; SET.fieldsSeeded = true; persistSet(); }
+  // keys are now derived from the label — drop any explicit `key` left over from older seeds / pasted JSON
+  if ((SET.customFields || []).some(c => c && c.key != null)) { SET.customFields.forEach(c => { if (c) delete c.key; }); persistSet(); }
   let STORE = loadStore();
   const dataKey = () => SET.scopePerResource ? SCOPE : GLOBAL_SCOPE;
   let DATA;
@@ -581,34 +585,34 @@
           return inp;
         };
         const dvIn = mk('lvl', 'dv', '34px', 'number'); dvIn.title = 'Bar level (deltav) — attach the pinned-button bar in-flow after the Nth ancestor of the field (0 = floating; raise it so the bar pushes the UI below instead of overlapping)'; dvIn.min = '0';
-        const selCb = document.createElement('input'); selCb.type = 'checkbox'; selCb.checked = !!cf.select; selCb.onchange = () => { cf.select = selCb.checked; cfApply(); };
-        const selL = document.createElement('label'); selL.className = 'mmth-cf-ent'; selL.title = 'Select mode — on recall, type the value then click the dropdown option whose name matches (for select-style autocompletes like relationship type where the wanted item isn’t the top match). No-op if the field has no dropdown. See ? Help for docs.';
-        selL.append(selCb);
+        const enCb = document.createElement('input'); enCb.type = 'checkbox'; enCb.checked = !!cf.enter; enCb.onchange = () => { cf.enter = enCb.checked; cfApply(); };
+        const enL = document.createElement('label'); enL.className = 'mmth-cf-ent'; enL.title = 'Press Enter on the field ~200ms after a value is recalled — for a field that only commits/submits on Enter (e.g. the Tag field).';
+        enL.append(enCb, Object.assign(document.createElement('span'), { textContent: '↵' }));
         const tog = document.createElement('button'); tog.type = 'button'; tog.className = 'mmth-cf-tog'; const off0 = cf.enable === false; tog.textContent = off0 ? '○' : '◉'; tog.title = off0 ? 'Field is off — click to enable' : 'Field is on — click to disable';
         tog.onclick = () => { cf.enable = (cf.enable === false); renderFields(); cfApply(); };
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
-        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('px', 'dx', '34px', 'number'), dvIn, selL, cnt, tog, del);
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('px', 'dx', '34px', 'number'), dvIn, enL, cnt, tog, del);
         cfList.appendChild(row); paint();
       });
     }
-    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.unshift({ match: '', label: '', dx: '', dv: '', select: false }); renderFields(); const first = cfList.querySelector('.mmth-cf-row .mmth-cf-match'); if (first) first.focus(); };
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.unshift({ match: '', label: '', dx: '', dv: '', enter: false }); renderFields(); const first = cfList.querySelector('.mmth-cf-row .mmth-cf-match'); if (first) first.focus(); };
     p.querySelector('.mmth-cf-reset').onclick = () => { SET.customFields = SET.customFields || []; const have = new Set(SET.customFields.map(c => c && c.match)); const missing = BUILTIN_FIELDS.filter(b => !have.has(b.match)).map(b => ({ ...b })); if (missing.length) { SET.customFields = [...missing, ...SET.customFields]; renderFields(); cfApply(); } };
     renderFields();
     // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
     // label / key / deltax). Doubles as export (copy the box) and import (paste + Apply).
     const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add'), resetBtn = p.querySelector('.mmth-cf-reset');
-    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.select) o.select = true; if (cf.mbid) o.mbid = true; if (cf.enable === false) o.enable = false; return o; };   // `key` carried for built-ins (release.*); `mbid` JSON-only (Label/Artist MBID); `enable:false` disables the row
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.enter) o.enter = true; if (cf.mbid) o.mbid = true; if (cf.enable === false) o.enable = false; return o; };   // key is derived from the label; `mbid` JSON-only (Label/Artist MBID); `enter` presses Enter after recall; `enable:false` disables
     const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
     const cfFromJson = txt => {
       const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
       if (!Array.isArray(arr)) throw new Error('expected a JSON array');
       return arr.filter(o => o && typeof o === 'object').map(o => ({
         match: String(o.selector != null ? o.selector : (o.match || '')).trim(),
-        label: o.label ? String(o.label) : '', key: o.key ? String(o.key) : '',
+        label: o.label ? String(o.label) : '',
         dx: (o.deltax != null && o.deltax !== '') ? +o.deltax : ((o.dx != null && o.dx !== '') ? +o.dx : ''),
         dv: (o.deltav != null && o.deltav !== '') ? +o.deltav : ((o.dv != null && o.dv !== '') ? +o.dv : ''),
-        select: !!o.select, mbid: !!o.mbid, enable: o.enable !== false,
+        enter: !!o.enter, mbid: !!o.mbid, enable: o.enable !== false,
       })).filter(c => c.match);
     };
     const applyJson = () => {
@@ -1098,17 +1102,19 @@
       return null;
     };
 
-    // Every baby field — built-in or user — now comes from SET.customFields. An explicit `key` (the built-ins
-    // carry release.* / rel.*) is used verbatim; a user row derives its key from the label, namespaced 'cf:'
-    // so it can't collide. `mbid:true` (JSON only) wires the Label/Artist MBID reader above.
+    // Every baby field — built-in or user — comes from SET.customFields. The storage key is derived from the
+    // LABEL (namespaced 'cf:'), so any two same-label fields share one saved list. `mbid:true` (JSON only)
+    // wires the Label/Artist MBID reader; `enter:true` presses Enter after a recall (see recallInto).
     const customDefs = () => (SET.customFields || []).filter(c => c && c.match && c.enable !== false).map(c => {   // enable:false → not scanned (no pin)
-      const key = c.key ? String(c.key) : (String(c.label || '').trim() ? 'cf:' + String(c.label).trim() : null);
+      const key = String(c.label || '').trim() ? 'cf:' + String(c.label).trim() : null;   // no label → keyFor derives one from the element
       return { match: c.match, key, label: c.label || '',
-        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, select: !!c.select, gid: c.mbid ? builtinGid : null };
+        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, enter: !!c.enter, gid: c.mbid ? builtinGid : null };
     });
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();
+    // migrate saved values from the old built-in keys (release.* / rel.task) to the new label-derived keys
+    { let moved = false; for (const oldK in KEY_RELABEL) { const newK = KEY_RELABEL[oldK]; if (FDATA[oldK] && !FDATA[newK]) { FDATA[newK] = FDATA[oldK]; delete FDATA[oldK]; moved = true; } } if (moved) saveF(); }
 
     const listFor = key => (FDATA[key] = FDATA[key] || []);
     function rememberValue(key, rec) {
@@ -1180,33 +1186,13 @@
       return true;
     }
     // the visible options in the field's open dropdown (MB autocomplete2 listbox, else legacy jQuery UI)
-    function acOptions(el) {
-      const id = el.getAttribute('aria-owns') || el.getAttribute('aria-controls');
-      const menu = (id && document.getElementById(id)) || el.closest('.autocomplete2');
-      let opts = menu ? [...menu.querySelectorAll('[role="option"], li.option')] : [];
-      if (!opts.length) opts = [...document.querySelectorAll('ul.ui-autocomplete')].filter(u => u.offsetParent).flatMap(u => [...u.querySelectorAll('li')]);
-      return opts.filter(n => n.offsetParent);
-    }
-    const clickOption = opt => { for (const t of ['mousedown', 'mouseup', 'click']) opt.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window })); };
-    // recall a saved value into a field. writeField pastes it; on a field flagged `select` (JSON "select":
-    // true) it then CLICKS the dropdown option whose NAME matches — for select-style autocompletes whose
-    // wanted item isn't the top match (e.g. relationship type). Matching by name is order-independent (MB's
-    // usage-frequency reordering can't break it, an index would) and a click can't leak, unlike Enter which
-    // on the relationship-type field submits/closes the dialog. If no dropdown opens (poll times out) it's a
-    // no-op — so enabling it on a field that has none does no harm. ("name <mbid>" still resolves via the id.)
+    const pressEnter = el => { for (const t of ['keydown', 'keypress', 'keyup']) el.dispatchEvent(new KeyboardEvent(t, { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 })); };
+    // recall a saved value into a field. writeField pastes it ("name <mbid>" resolves the entity via the id).
+    // On a field flagged `enter` (the row checkbox / JSON "enter": true) it then presses Enter on the input
+    // ~200ms later — e.g. a tag field that only commits the typed value on Enter/submit.
     function recallInto(p, rec) {
       const ok = writeField(p.el, rec);
-      if (!ok || isSelect(p.el) || !p.select) return ok;   // native <select> / non-select field → just the paste
-      const el = p.el, want = cleanLabel(rec && rec.v).trim().toLowerCase(); if (!want) return ok;
-      try { el.focus(); } catch (e) {}
-      let tries = 0;
-      const tick = () => {
-        if (!el.isConnected) return;
-        const opts = acOptions(el);
-        if (opts.length) { const pick = opts.find(o => (o.textContent || '').trim().toLowerCase().startsWith(want)); if (pick) { try { el.focus(); } catch (e) {} clickOption(pick); } return; }
-        if (++tries < 24) setTimeout(tick, 80);   // poll ~1.9s for the dropdown to open; none ⇒ no-op
-      };
-      setTimeout(tick, 80);
+      if (ok && p.enter) { const el = p.el; setTimeout(() => { if (el.isConnected) { try { el.focus(); } catch (e) {} try { pressEnter(el); } catch (e) {} } }, 200); }
       return ok;
     }
     function clearField(el) {
@@ -1256,7 +1242,7 @@
       .mmthf-seg { display:flex; flex-wrap:wrap; gap:5px; max-width:100%; }
       .mmthf-segb { border:1px solid #cfd9d3 !important; background:#fbfdfc !important; border-radius:7px !important; padding:3px 10px !important; font:12px/1.2 -apple-system,Segoe UI,Arial,sans-serif !important; color:#27483a !important; cursor:pointer; max-width:200px; height:auto !important; min-height:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
       .mmthf-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
-      .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; overflow:hidden; }
+      .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; max-width:calc(100vw - 12px); overflow:hidden; }
       .mmthf-ft { display:flex; align-items:center; gap:1px; padding:3px 5px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
       .mmthf-fb { cursor:pointer; border:none; background:none; font-size:14px; line-height:1; padding:3px 7px; border-radius:5px; color:#566; }
       .mmthf-fb:hover { background:#dcefe2; }
@@ -1307,7 +1293,7 @@
       const map = new Map();
       const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
       for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // built-ins + user fields, all from SET.customFields (invalid selectors ignored)
-      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', select: el.dataset.mmthSelect != null }));
+      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', enter: el.dataset.mmthEnter != null }));
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
@@ -1327,7 +1313,7 @@
         // below); N>0 = inject the pinned-button bar IN-FLOW right after the Nth ancestor of the field, so
         // it takes real layout space and pushes the UI below it down instead of overlapping.
         const dv = def.deltav != null ? (+def.deltav || 0) : (el.dataset.mmthDeltav != null ? (+el.dataset.mmthDeltav || 0) : 0);
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv, select: !!def.select, z: fieldStackZ(el) };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv, enter: !!def.enter, z: fieldStackZ(el) };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
@@ -1433,7 +1419,12 @@
     function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onDown, true); document.removeEventListener('keydown', onKey, true); } }
     function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #305: swallow the outside click (see closePop note above)
     function onKey(e) { if (pop && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); const f = pop._field; closePop(); if (f) focusField(f); } }   // #346: ESC kills the popover (no leak to MB) and returns focus to the field
-    function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
+    function place(el, anchor) {
+      const r = anchor.getBoundingClientRect(), b = el.getBoundingClientRect();   // b: the popover's actual rendered size
+      const w = b.width || el.offsetWidth || 260, h = b.height || el.offsetHeight || 0;
+      el.style.left = Math.max(6, Math.min(innerWidth - w - 6, r.left)) + 'px';    // keep both edges on-screen
+      el.style.top = Math.max(6, Math.min(innerHeight - h - 6, r.bottom + 4)) + 'px';
+    }
     function togglePop(p, atField) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p, atField); }
     function openPop(p, atField) {
       const cur = captureField(p);   // entity fields capture the selected MBID (#296)
