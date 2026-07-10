@@ -14,17 +14,15 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
 <img src=screenshots/options.png width=350/>
 </details>
 
-Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the same notes constantly. Mammoth makes that painless.
-
 ## Features
 
-- **Per-type notes** — keep saved notes and history separate per edit-note type (release / artist / recording…); off by default (see [Settings](#settings)).
-- **History** — remembers the last N submitted edit notes (default 10, up to 50), newest-first and de-duplicated.
-- **[Saved notes](#saved-notes)** — save, pin as quick-buttons, search, sort and reorder your reusable notes.
+- **Per-type notes** — keep saved notes and history separate per edit-note type (release / artist / recording…).
+- **History** — remembers the last N submitted edit notes, newest-first and de-duplicated.
+- **[Saved notes](#saved-notes)** — save, pin as quick-buttons, search, sort and reorder notes.
 - **Import / export** — batch load/export notes per input type; entity fields (Artist/Label) keep their MBID so a re-import resolves the real entity (see [Settings](#settings)).
 - **Compact, one-line rows** — full note on hover; choose how many show before the list scrolls.
 - **Replace or Insert** — left-click does your default, right-click the other; append skips a line already present (see [Shortcuts](#shortcuts)).
-- **Resizable** — the edit-note field is widened and centered; drag the separator to resize field vs. panel (and the field's height); remembered.
+- **Resizable** — the edit-note field is widened and centered; drag the separator to resize
 - **Minimized mode** — collapse the panel to a small icon; hover to peek, click to pin; remembered across pages.
 - **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls (catalogue №, label, artist, status, language, script, country, type, and the relationship dialog's **Task** field), plus **[your own custom fields](#custom-fields)** by CSS selector.
 
@@ -37,9 +35,11 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Mammoth babies
 
-A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, plus the **Task** field in the *Add/Edit relationship* dialog (#397) — are **seeded into the [Babies](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own; they're just there out of the box. The pin opens a compact panel with a toolbar:
+A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, and task fields — are **seeded into the [Babies](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own. 
 
-- `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity
+The pin opens a compact panel with a toolbar:
+
+- `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity; custom fields do not save MBID automatically but can be added manually by editing a note (MBID remains hidden from menu and buttons).
 - `✕` - clear the field
 
 Note actions:
@@ -51,21 +51,21 @@ Note actions:
 
 ### Custom fields
 
-The built-in babies cover the release editor's own controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Babies** tab and **＋ Add field**:
+The built-in babies cover several native controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Babies** tab and **＋ Add field**:
 
 | Column | Meaning |
 |---|---|
 | **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). **Comma-separate** several selectors to cover more than one field with a single row. A live *matches N* / *bad selector* readout tells you if it's right. |
 | **Label** | The popover title, and the **identity** of the field: two fields with the **same label share one saved list**. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
-| **▼ lvl** (deltav) | Where the pinned-button bar attaches. `0` (default) = floats below the field (absolute — can overlap UI beneath it). `N` > 0 = injected **in the document flow** right after the field's Nth ancestor, so it takes real space and pushes the UI below it down. Bump it until the buttons sit cleanly (e.g. the artist row's autocomplete wrapper is usually `1`–`2`). |
-| **↵** (submit) | On recall, **submit the field's form** ~200 ms after the value is set — commits a tag, runs a header search, etc. (like pressing Enter). Tick it only on fields whose form is safe to submit on recall. |
+| **lvl** (deltav) | Where the pinned-button bar attaches. `0` (default) = floats below the field (absolute — can overlap UI beneath it). `N` > 0 = injected **in the document flow** right after the field's Nth ancestor, so it takes real space and pushes the UI below it down. Bump it until the buttons sit cleanly (e.g. the artist row's autocomplete wrapper is usually `1`–`2`). |
+| **↵** (submit) | On recall, **submit the field's form** ~200 ms after the value is set — commits a tag, runs a header search, etc. (like pressing Enter). Select it only on fields whose form is safe to submit on recall. |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
 **Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed).
 
-**Fields that commit on Enter (tags, search):** a plain `<form>` field only commits on a *real* keypress — a scripted Enter can't submit it (browsers ignore untrusted key events). Tick the row's **↵** box (or JSON `"submit": true`) and recall **submits the field's form** ~200 ms after filling it, exactly like clicking its submit button. Works for the tag box (`<form id="tag-form">`) and the header search.
+**Fields that commit on Enter (tags, search):** Check the row's **↵** box (or JSON `"submit": true`) and recall **submits the field's form** ~200 ms after filling it, exactly like clicking its submit button. Works for the tag box (`<form id="tag-form">`) and the header search.
 
 The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `deltax`, `deltav`, `submit`, `mbid`, and `enable`; trailing commas and empty `{}` entries are tolerated:
 
