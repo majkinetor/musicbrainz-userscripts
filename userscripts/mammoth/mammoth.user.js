@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.170313
+// @version      2026.7.10.173155
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -468,7 +468,7 @@
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
         <div class="mmth-cfgsec">Custom baby fields</div>
-        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>entity</b> tries to remember the selected MBID (best-effort — MB autocomplete fields only). Text inputs and dropdowns always work.</div>
+        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>entity</b> tries to remember the selected MBID (best-effort — MB autocomplete fields only); <b>↵</b> presses Enter after setting a value (helps an autocomplete accept its match when there's no MBID). Text inputs and dropdowns always work.</div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
       </div>
@@ -542,13 +542,16 @@
         const ent = document.createElement('input'); ent.type = 'checkbox'; ent.checked = !!cf.entity; ent.onchange = () => { cf.entity = ent.checked; cfApply(); };
         const entL = document.createElement('label'); entL.className = 'mmth-cf-ent'; entL.title = 'Best-effort: remember the selected MBID (works on MB autocomplete fields only)';
         const entS = document.createElement('span'); entS.textContent = 'entity'; entL.append(ent, entS);
+        const ret = document.createElement('input'); ret.type = 'checkbox'; ret.checked = !!cf.enter; ret.onchange = () => { cf.enter = ret.checked; cfApply(); };
+        const retL = document.createElement('label'); retL.className = 'mmth-cf-ent'; retL.title = 'Press Enter ~150ms after setting a value — lets an autocomplete accept its highlighted match when there is no MBID';
+        const retS = document.createElement('span'); retS.textContent = '↵'; retL.append(ret, retS);
         const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
-        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), entL, cnt, del);
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), entL, retL, cnt, del);
         cfList.appendChild(row); paint();
       });
     }
-    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', entity: false }); renderFields(); };
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', entity: false, enter: false }); renderFields(); };
     renderFields();
     // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
     // default, or a specific field's values when opened from a baby field)
@@ -924,15 +927,16 @@
   // badge/pop + babies) hides under it — MB's dialogs/popovers carry no z-index
   // and no backdrop, so they can't otherwise win the stack. Global (runs even
   // when babies are off). #313
-  // #333: the artist-credit editor is itself a .dialog.popover, but it holds fields we DO pin
-  // (ac-source-artist-*). Don't treat such a dialog as blocking, or we'd hide the baby on its
-  // own rows (and leave its reserved strip empty). Only block for dialogs without our fields.
-  // #397: same for the Add/Edit relationship dialog when it shows the "Task" field — we pin that,
-  // so hiding all babies would hide the Task pin too. (The relationship dialog and the release-editor
-  // baby fields never share a page, so exempting it can't let release pins float over it.)
+  // #333/#397/#config: a dialog (.dialog.popover / .relationship-dialog) whose fields we pin must NOT be
+  // treated as blocking, or we'd hide the very baby it hosts. That was a hardcoded allowlist (artist-credit
+  // rows, then the "Task" field) — generalise it: a dialog blocks only if it contains NONE of our baby
+  // fields (`[data-mmthf]`, set by scan() on every pinned field, custom ones included). This is what let
+  // instrument-type relationship dialogs — bass/guitar/… have no Task field — wrongly hide a custom
+  // "Credited as" baby while producer/mixer (which DO have Task) worked. Fields BEHIND a dialog are already
+  // hidden per-pin by fieldOnTop (elementFromPoint), so keeping non-blocking here can't float them over it.
   const syncDialog = () => {
     const dlgs = [...document.querySelectorAll('.dialog.popover, .relationship-dialog')];
-    const blocking = dlgs.some(d => !d.querySelector('input[id^="ac-source-artist-"], .attribute-container.text.task input[type="text"]'));
+    const blocking = dlgs.some(d => !d.querySelector('[data-mmthf]'));
     document.documentElement.classList.toggle('mmthf-dialog', blocking);
   };
   new MutationObserver(() => { injectAll(); syncDialog(); }).observe(document.documentElement, { childList: true, subtree: true });
@@ -1036,7 +1040,7 @@
     // and an entity field gets the best-effort generic MBID reader below.
     const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => ({
       match: c.match, key: c.key ? 'cf:' + String(c.key) : null, label: c.label || '',
-      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, gid: c.entity ? genericEntityGid : null,
+      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, gid: c.entity ? genericEntityGid : null, enter: !!c.enter,
     }));
     // Best-effort MBID capture for an arbitrary field the user flagged "entity" — no stable DOM contract
     // exists (the built-ins read MB's Knockout release model directly), so try two generic probes: a nearby
@@ -1110,6 +1114,13 @@
       if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
       return true;
     }
+    // press Enter on the field — for the "↵" custom-field flag: a recalled text value that has no MBID often
+    // needs an Enter to accept the autocomplete's highlighted match. Delayed (default 150ms) so the dropdown
+    // has time to populate after the value is set; MMTH_ENTER_DELAY is the knob if practice needs a nudge.
+    const MMTH_ENTER_DELAY = 150;
+    const pressEnter = el => { for (const type of ['keydown', 'keypress', 'keyup']) el.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 })); };
+    // recall a saved value into a field, then optionally auto-press Enter (p.enter)
+    function recallInto(p, rec) { const ok = writeField(p.el, rec); if (ok && p.enter) setTimeout(() => { try { pressEnter(p.el); } catch (e) {} }, MMTH_ENTER_DELAY); return ok; }
     function clearField(el) {
       if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
       else { setNative(el, ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -1193,7 +1204,7 @@
       const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
       for (const d of PREDEF) document.querySelectorAll(d.match).forEach(el => add(el, d));
       for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // #config user-defined fields (invalid selectors ignored)
-      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '' }));
+      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', enter: el.dataset.mmthEnter != null }));
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
@@ -1209,7 +1220,7 @@
         const dx = dxRaw != null ? dxRaw : (sel ? 22 : innerIcon ? 24 : 3);
         if (!sel) try { const need = dx + 18; const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < need) el.style.paddingRight = need + 'px'; } catch (e) {}
         const bar = document.createElement('div'); bar.className = 'mmthf-bar';
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, enter: !!def.enter };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
@@ -1256,10 +1267,10 @@
       setReserve(p, items.length > 0);
       if (!items.length) { p.bar.style.display = 'none'; return; }
       const seg = document.createElement('div'); seg.className = 'mmthf-seg';
-      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); recallInto(p, it); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
-    function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) writeField(p.el, d); }
+    function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) recallInto(p, d); }
 
     function fieldOnTop(el, r) {
       const x = r.left + r.width / 2, y = r.top + r.height / 2;
@@ -1345,7 +1356,7 @@
           if (e.key === 'Escape') { e.stopPropagation(); if (fin.value) { fin.value = ''; applyFilter(); } else closePop(); return; }
           if (e.key === 'ArrowDown') { e.preventDefault(); if (rows.length) { hl = (hl + 1) % rows.length; paint(); } return; }
           if (e.key === 'ArrowUp') { e.preventDefault(); if (rows.length) { hl = (hl - 1 + rows.length) % rows.length; paint(); } return; }
-          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { writeField(p.el, items[+r.dataset.i]); closePop(); focusField(p.el); } return; }   // keyboard apply → refocus the field
+          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { recallInto(p, items[+r.dataset.i]); closePop(); focusField(p.el); } return; }   // keyboard apply → refocus the field
         });
         applyFilter();   // highlight the first item so Enter works immediately
         setTimeout(() => { try { fin.focus(); } catch (e) {} }, 0);
@@ -1375,7 +1386,7 @@
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
-          writeField(p.el, it); closePop();   // don't refocus the field on apply — it re-triggers autocomplete
+          recallInto(p, it); closePop();   // don't refocus the field on apply — it re-triggers autocomplete
         });
         const grab = row.querySelector('.mmthf-grab');
         grab.addEventListener('dragstart', e => { _fdrag = { v: it.v }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmthf-dragging'); });
