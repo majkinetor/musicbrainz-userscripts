@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.222830
+// @version      2026.7.10.224431
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -586,7 +586,7 @@
         };
         const dvIn = mk('lvl', 'dv', '34px', 'number'); dvIn.title = 'Bar level (deltav) — attach the pinned-button bar in-flow after the Nth ancestor of the field (0 = floating; raise it so the bar pushes the UI below instead of overlapping)'; dvIn.min = '0';
         const enCb = document.createElement('input'); enCb.type = 'checkbox'; enCb.checked = !!cf.enter; enCb.onchange = () => { cf.enter = enCb.checked; cfApply(); };
-        const enL = document.createElement('label'); enL.className = 'mmth-cf-ent'; enL.title = 'Press Enter on the field ~200ms after a value is recalled — for a field that only commits/submits on Enter (e.g. the Tag field).';
+        const enL = document.createElement('label'); enL.className = 'mmth-cf-ent'; enL.title = 'Fire a synthetic Enter on the field ~200ms after a value is recalled. Best-effort: helps widgets that react to a scripted keypress — but browsers ignore an untrusted Enter, so it can\'t submit a plain form field like the tag box.';
         enL.append(enCb, Object.assign(document.createElement('span'), { textContent: '↵' }));
         const tog = document.createElement('button'); tog.type = 'button'; tog.className = 'mmth-cf-tog'; const off0 = cf.enable === false; tog.textContent = off0 ? '○' : '◉'; tog.title = off0 ? 'Field is off — click to enable' : 'Field is on — click to disable';
         tog.onclick = () => { cf.enable = (cf.enable === false); renderFields(); cfApply(); };
@@ -602,7 +602,7 @@
     // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
     // label / key / deltax). Doubles as export (copy the box) and import (paste + Apply).
     const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add'), resetBtn = p.querySelector('.mmth-cf-reset');
-    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.enter) o.enter = true; if (cf.mbid) o.mbid = true; if (cf.enable === false) o.enable = false; return o; };   // key is derived from the label; `mbid` JSON-only (Label/Artist MBID); `enter` presses Enter after recall; `enable:false` disables
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.enter) o.enter = true; if (cf.submit) o.submit = true; if (cf.mbid) o.mbid = true; if (cf.enable === false) o.enable = false; return o; };   // key is derived from the label; `mbid`/`submit` JSON-only; `enter` presses a synthetic Enter, `submit` submits the field's form, after recall; `enable:false` disables
     const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
     const cfFromJson = txt => {
       const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
@@ -612,7 +612,7 @@
         label: o.label ? String(o.label) : '',
         dx: (o.deltax != null && o.deltax !== '') ? +o.deltax : ((o.dx != null && o.dx !== '') ? +o.dx : ''),
         dv: (o.deltav != null && o.deltav !== '') ? +o.deltav : ((o.dv != null && o.dv !== '') ? +o.dv : ''),
-        enter: !!o.enter, mbid: !!o.mbid, enable: o.enable !== false,
+        enter: !!o.enter, submit: !!o.submit, mbid: !!o.mbid, enable: o.enable !== false,
       })).filter(c => c.match);
     };
     const applyJson = () => {
@@ -1108,7 +1108,7 @@
     const customDefs = () => (SET.customFields || []).filter(c => c && c.match && c.enable !== false).map(c => {   // enable:false → not scanned (no pin)
       const key = String(c.label || '').trim() ? 'cf:' + String(c.label).trim() : null;   // no label → keyFor derives one from the element
       return { match: c.match, key, label: c.label || '',
-        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, enter: !!c.enter, gid: c.mbid ? builtinGid : null };
+        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, enter: !!c.enter, submit: !!c.submit, gid: c.mbid ? builtinGid : null };
     });
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
@@ -1185,14 +1185,33 @@
       if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
       return true;
     }
-    // the visible options in the field's open dropdown (MB autocomplete2 listbox, else legacy jQuery UI)
+    // Best-effort synthetic Enter (keydown/keypress/keyup). Note: an untrusted KeyboardEvent can't
+    // trigger native form submission, so this won't commit a plain <form>+submit field like the tag input.
     const pressEnter = el => { for (const t of ['keydown', 'keypress', 'keyup']) el.dispatchEvent(new KeyboardEvent(t, { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 })); };
+    // Actually submit the field's enclosing <form> — the only reliable way to commit fields the browser
+    // only submits on a real Enter (the tag box `<form id="tag-form">`, the header search form, …).
+    // requestSubmit() runs the form's submit handler + validation exactly like clicking its submit button.
+    const submitField = el => {
+      const form = el.closest('form');
+      if (!form) { pressEnter(el); return; }   // no form → fall back to best-effort Enter
+      if (form.requestSubmit) { form.requestSubmit(); return; }
+      const btn = form.querySelector('button[type="submit"], input[type="submit"]');
+      if (btn) { btn.click(); return; }
+      try { form.submit(); } catch (e) {}
+    };
     // recall a saved value into a field. writeField pastes it ("name <mbid>" resolves the entity via the id).
-    // On a field flagged `enter` (the row checkbox / JSON "enter": true) it then presses Enter on the input
-    // ~200ms later — e.g. a tag field that only commits the typed value on Enter/submit.
+    // Then, ~200ms later: `submit` (JSON-only) submits the field's <form> (commits tag/search-style fields);
+    // `enter` (row checkbox) fires a best-effort synthetic Enter for widgets that react to a scripted keypress.
     function recallInto(p, rec) {
       const ok = writeField(p.el, rec);
-      if (ok && p.enter) { const el = p.el; setTimeout(() => { if (el.isConnected) { try { el.focus(); } catch (e) {} try { pressEnter(el); } catch (e) {} } }, 200); }
+      if (ok && (p.submit || p.enter)) {
+        const el = p.el;
+        setTimeout(() => {
+          if (!el.isConnected) return;
+          try { el.focus(); } catch (e) {}
+          try { if (p.submit) submitField(el); else pressEnter(el); } catch (e) {}
+        }, 200);
+      }
       return ok;
     }
     function clearField(el) {
@@ -1313,7 +1332,7 @@
         // below); N>0 = inject the pinned-button bar IN-FLOW right after the Nth ancestor of the field, so
         // it takes real layout space and pushes the UI below it down instead of overlapping.
         const dv = def.deltav != null ? (+def.deltav || 0) : (el.dataset.mmthDeltav != null ? (+el.dataset.mmthDeltav || 0) : 0);
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv, enter: !!def.enter, z: fieldStackZ(el) };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv, enter: !!def.enter, submit: !!def.submit, z: fieldStackZ(el) };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
