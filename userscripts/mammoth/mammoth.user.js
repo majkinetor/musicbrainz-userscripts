@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.173155
+// @version      2026.7.10.180153
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -35,7 +35,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [], enterDelay: 150 };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
   const VERSION = '2026.6.29';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -390,14 +390,7 @@
   // ── popovers (settings + syntax help) ────────────────────────────────────────
   let pop = null;
   function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onPopDown, true); document.removeEventListener('keydown', onPopKey, true); } }
-  function onPopDown(e) {
-    if (!pop || pop.contains(e.target) || e.target.closest('.mmth-pop-anchor')) return;
-    // On the Fields tab, an outside click is how you reach page fields to grab their selectors — keep the
-    // window open and let the click through (ESC / the anchor / switching tabs still close it).
-    const onTab = pop.querySelector('.mmth-cfgtab.on');
-    if (onTab && onTab.dataset.tab === 'fields') return;
-    e.preventDefault(); e.stopPropagation(); closePop();
-  }
+  function onPopDown(e) { if (pop && !pop.contains(e.target) && !e.target.closest('.mmth-pop-anchor')) { e.preventDefault(); e.stopPropagation(); closePop(); } }
   function onPopKey(e) { if (pop && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #347: ESC closes the settings / syntax popup
   function placePop(p, anchor) {
     const W = p.offsetWidth, H = p.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
@@ -465,6 +458,7 @@
         <div class="mmth-cfgsec">General</div>
         <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
+        <label title="How long after a custom field's value is set before the ↵ flag presses Enter — raise it if a slow autocomplete misses the match">Enter delay (ms) <input type="number" class="mmth-s-enterdelay" min="0" max="5000" step="50"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
         <div class="mmth-cfgsec">Custom baby fields</div>
@@ -507,6 +501,7 @@
     const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
     const sort = p.querySelector('.mmth-s-sort'); sort.value = SET.noteSort || 'manual';
     const btnc = p.querySelector('.mmth-s-btnchars'); btnc.value = SET.btnChars || 24;
+    const edly = p.querySelector('.mmth-s-enterdelay'); edly.value = SET.enterDelay == null ? 150 : SET.enterDelay;
     const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
     const hist = p.querySelector('.mmth-s-hist'); hist.value = SET.historySize;
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
@@ -514,6 +509,7 @@
     nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
     sort.onchange = () => { SET.noteSort = sort.value; persistSet(); render(); };
     btnc.onchange = () => { SET.btnChars = Math.max(4, Math.min(80, parseInt(btnc.value, 10) || 24)); btnc.value = SET.btnChars; saveSet(); babyMammoths.relabel(); };
+    edly.onchange = () => { const v = parseInt(edly.value, 10); SET.enterDelay = Math.max(0, Math.min(5000, isNaN(v) ? 150 : v)); edly.value = SET.enterDelay; saveSet(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
@@ -1115,12 +1111,13 @@
       return true;
     }
     // press Enter on the field — for the "↵" custom-field flag: a recalled text value that has no MBID often
-    // needs an Enter to accept the autocomplete's highlighted match. Delayed (default 150ms) so the dropdown
-    // has time to populate after the value is set; MMTH_ENTER_DELAY is the knob if practice needs a nudge.
-    const MMTH_ENTER_DELAY = 150;
+    // needs an Enter to accept the autocomplete's highlighted match. Delayed so the dropdown has time to
+    // populate after the value is set; the delay is configurable (⚙ "Enter delay", default 150ms) since a
+    // slow autocomplete may need more.
+    const enterDelay = () => Math.max(0, Math.min(5000, SET.enterDelay == null ? 150 : SET.enterDelay | 0));
     const pressEnter = el => { for (const type of ['keydown', 'keypress', 'keyup']) el.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 })); };
     // recall a saved value into a field, then optionally auto-press Enter (p.enter)
-    function recallInto(p, rec) { const ok = writeField(p.el, rec); if (ok && p.enter) setTimeout(() => { try { pressEnter(p.el); } catch (e) {} }, MMTH_ENTER_DELAY); return ok; }
+    function recallInto(p, rec) { const ok = writeField(p.el, rec); if (ok && p.enter) setTimeout(() => { try { pressEnter(p.el); } catch (e) {} }, enterDelay()); return ok; }
     function clearField(el) {
       if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
       else { setNative(el, ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }

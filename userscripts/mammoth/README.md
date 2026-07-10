@@ -60,9 +60,9 @@ The built-in babies cover the release editor's own controls, but you can put a �
 | **Key** | Storage key (optional). Fields sharing a key share their saved values — so a row with several comma-separated selectors and one Key becomes **one baby across all of them**; omit it and Mammoth derives a separate key per field. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
 | **entity** | *Best-effort* — try to remember the selected **MBID** (so a recalled value resolves the real entity). Works only on MusicBrainz autocomplete fields that accept a pasted MBID; plain **text inputs and dropdowns always work** without it. |
-| **↵** | Press **Enter** ~150 ms after a value is set — lets an autocomplete accept its highlighted match when there's no MBID to paste. |
+| **↵** | Press **Enter** after a value is set — lets an autocomplete accept its highlighted match when there's no MBID to paste. The wait is the **Enter delay** setting (default 150 ms; raise it for a slow autocomplete). |
 
-Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`. On the **Fields** tab the config window stays open when you click the page — so you can click into a field to grab its selector without it dismissing (Esc or another tab still closes it).
+Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
 ## Shortcuts
 
@@ -108,6 +108,7 @@ Accessed using the `⚙` button.
 | **Items shown** | `6` | How many list rows to render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 | **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
+| **Enter delay** | `150` ms | For a custom field's **↵** flag — how long after the value is set before Enter is pressed (0–5000). Raise it if a slow autocomplete misses the match. |
 
 The `⚙` window has three tabs: **Settings** (above), **[Fields](#custom-fields)** (define your own custom baby fields), and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
 
