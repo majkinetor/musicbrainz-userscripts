@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10
+// @version      2026.7.10.143850
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -236,6 +236,15 @@
         // recof pencil is handled above (#374 openRecOfMenu) where present; otherwise no recording menu
       }
       return;
+    }
+    // Right-click an artist NAME in a relationship → invoke that rel's pencil (open MB's native edit
+    // dialog) — a bigger, easier target than the small edit icon. Every relationship-item carries a
+    // `button.icon.edit-item`; clicking it opens MB's relationship-dialog (verified). The pencil/× /+
+    // right-clicks above keep their copy/remove menus; this only fires on the entity-name link itself.
+    const nameLink = ev.target.closest && ev.target.closest('.relationship-item a[href*="/artist/"]');
+    if (nameLink) {
+      const pencil = nameLink.closest('.relationship-item').querySelector('button.icon.edit-item');
+      if (pencil) { ev.preventDefault(); ev.stopPropagation(); try { pencil.click(); } catch (e) {} return; }
     }
     const btn = ev.target.closest && ev.target.closest(REMOVE_SEL);
     if (!btn) return;   // not a rel × — let the browser menu through
