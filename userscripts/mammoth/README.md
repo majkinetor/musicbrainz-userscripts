@@ -59,16 +59,17 @@ The built-in babies cover the release editor's own controls, but you can put a �
 | **Label** | The popover title (optional — derived from the field's own label if left blank). |
 | **Key** | Storage key (optional). Fields sharing a key share their saved values. **Defaults to the label** if blank; omit both and Mammoth derives a key from the field itself. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
-| **↵ ms** | Accept an **autocomplete's** top match this many milliseconds after a value is set. `0`/blank = off (the default). Tune per field — instruments resolve fast (~150 ms), artists search slower and need more. It **clicks the top result** rather than pressing Enter, so a mouse hovering the popup can't hijack the pick; and it acts **only while the dropdown is open**, so a mistimed accept can't leak to a form or dialog. |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
-The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys are `selector`, `label`, `key`, `deltax`, `enterDelay` (only `selector` is required); trailing commas and empty `{}` entries are tolerated:
+**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed). The MBID is **hidden in the list and on the buttons** but kept in the stored value and in export.
+
+The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys are `selector`, `label`, `key`, `deltax` (only `selector` is required); trailing commas and empty `{}` entries are tolerated:
 
 ```json
 [
-  { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16, "enterDelay": 150 },
-  { "selector": "input.relationship-target.lookup-performed", "label": "Artist", "enterDelay": 1000 }
+  { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16 },
+  { "selector": "#country", "key": "ctry" }
 ]
 ```
 
