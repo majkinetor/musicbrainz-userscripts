@@ -59,15 +59,15 @@ The built-in babies cover the release editor's own controls, but you can put a �
 | **Label** | The popover title, and the **identity** of the field: two fields with the **same label share one saved list**. |
 | **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
 | **▼ lvl** (deltav) | Where the pinned-button bar attaches. `0` (default) = floats below the field (absolute — can overlap UI beneath it). `N` > 0 = injected **in the document flow** right after the field's Nth ancestor, so it takes real space and pushes the UI below it down. Bump it until the buttons sit cleanly (e.g. the artist row's autocomplete wrapper is usually `1`–`2`). |
-| **↵** (enter) | On recall, simulate **Enter** ~200 ms after the value is set: in a `<textarea>` it inserts a **newline** at the caret; on other fields it fires a best-effort synthetic keypress. To *submit* a form field (tag box, header search), use `submit` instead (see below). |
+| **↵** (submit) | On recall, **submit the field's form** ~200 ms after the value is set — commits a tag, runs a header search, etc. (like pressing Enter). Tick it only on fields whose form is safe to submit on recall. |
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
 **Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed).
 
-**Fields that commit on Enter (tags, search):** a plain `<form>` field only commits on a *real* keypress — a scripted Enter can't submit it. For those, add **`"submit": true`** (JSON only) and recall **submits the field's form** ~200 ms after filling it, exactly like clicking its submit button. Works for the tag box (`<form id="tag-form">`) and the header search. Enable it only on fields whose form is safe to submit on recall.
+**Fields that commit on Enter (tags, search):** a plain `<form>` field only commits on a *real* keypress — a scripted Enter can't submit it (browsers ignore untrusted key events). Tick the row's **↵** box (or JSON `"submit": true`) and recall **submits the field's form** ~200 ms after filling it, exactly like clicking its submit button. Works for the tag box (`<form id="tag-form">`) and the header search.
 
-The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `deltax`, `deltav`, `enter`, `submit`, `mbid`, and `enable`; trailing commas and empty `{}` entries are tolerated:
+The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `deltax`, `deltav`, `submit`, `mbid`, and `enable`; trailing commas and empty `{}` entries are tolerated:
 
 ```json
 [
