@@ -37,7 +37,7 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Mammoth babies
 
-A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, plus the **Task** field in the *Add/Edit relationship* dialog (#397) — are **seeded into the [Fields](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own; they're just there out of the box. The pin opens a compact panel with a toolbar:
+A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, plus the **Task** field in the *Add/Edit relationship* dialog (#397) — are **seeded into the [Babies](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own; they're just there out of the box. The pin opens a compact panel with a toolbar:
 
 - `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity
 - `✕` - clear the field
@@ -51,7 +51,7 @@ Note actions:
 
 ### Custom fields
 
-The built-in babies cover the release editor's own controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Fields** tab and **＋ Add field**:
+The built-in babies cover the release editor's own controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Babies** tab and **＋ Add field**:
 
 | Column | Meaning |
 |---|---|
@@ -122,7 +122,7 @@ Accessed using the `⚙` button.
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 | **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
 
-The `⚙` window has three tabs: **Settings** (above), **[Fields](#custom-fields)** (define your own custom baby fields), and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
+The `⚙` window has three tabs: **Settings** (above), **[Babies](#custom-fields)** (the built-in + your own baby fields), and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
 
 ## Using Mammoth from another userscript
 
