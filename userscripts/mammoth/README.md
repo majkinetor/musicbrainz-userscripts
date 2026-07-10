@@ -37,7 +37,7 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Mammoth babies
 
-A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). Built-in fields: catalogue №, label, artist, status, language, script, country, type — plus the **Task** field in the *Add/Edit relationship* dialog (#397), so you can save and one-click your standardized task names instead of retyping them (one shared list across every relationship type). The pin opens a compact panel with a toolbar:
+A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, plus the **Task** field in the *Add/Edit relationship* dialog (#397) — are **seeded into the [Fields](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own; they're just there out of the box. The pin opens a compact panel with a toolbar:
 
 - `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity
 - `✕` - clear the field
@@ -64,16 +64,18 @@ The built-in babies cover the release editor's own controls, but you can put a �
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
-**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed). For a **select-style list with no MBID** whose wanted item isn't the top match (e.g. *relationship type*), turn on the field's **`select`** option (the **sel** checkbox, or JSON `"select": true`). Recall then types the value, waits for the dropdown, and **clicks the option whose name matches** it. Matching by name is order-independent, so MB re-ranking the list by *your* usage can't break it (a fixed index would), and a targeted click can't leak to another control (pressing Enter there submits/closes the dialog). If the field has no dropdown it's a **no-op**, so leaving `select` on does no harm.
+**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed). For a **select-style list with no MBID** whose wanted item isn't the top match (e.g. *relationship type*), turn on the field's **`select`** option (the row's checkbox, or JSON `"select": true`). Recall then types the value, waits for the dropdown, and **clicks the option whose name matches** it. Matching by name is order-independent, so MB re-ranking the list by *your* usage can't break it (a fixed index would), and a targeted click can't leak to another control (pressing Enter there submits/closes the dialog). If the field has no dropdown it's a **no-op**, so leaving `select` on does no harm.
 
-The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys are `selector`, `label`, `key`, `deltax` (only `selector` is required); trailing commas and empty `{}` entries are tolerated:
+The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `key`, `deltax`, `deltav`, `select`, and `mbid`; trailing commas and empty `{}` entries are tolerated:
 
 ```json
 [
   { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16 },
-  { "selector": "#country", "key": "ctry" }
+  { "selector": "input[id^=\"label-\"]", "label": "Label", "key": "release.label", "mbid": true }
 ]
 ```
+
+**`mbid`** is **JSON-only** (no column in the grid). It enables entity-MBID capture and is meaningful **only on the built-in Label and Artist fields** — there it reads the release editor's model so a saved value keeps the real entity; on any other field it does nothing (falls back to text). It's shipped on for those two built-ins; you normally won't set it yourself.
 
 ## Shortcuts
 

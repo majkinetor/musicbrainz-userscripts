@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.203717
+// @version      2026.7.10.212853
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -68,7 +68,25 @@
   const persistSet = () => { try { GM_setValue(SKEY, JSON.stringify(SET)); } catch (e) {} };           // quiet save (no re-render)
   const saveSet = () => { persistSet(); applyHelp(); render(); };
 
+  // Built-in "OTB" baby fields — now seeded INTO the config (SET.customFields) so they're visible/editable
+  // in the Fields tab like any custom field. `key` is the stable storage key (kept from the old PREDEF so
+  // saved values still resolve). `mbid:true` (JSON-only flag) enables entity-MBID capture on Label/Artist.
+  const BUILTIN_FIELDS = [
+    { match: 'input[id^="catno-"]', label: 'Catalog number', key: 'release.catno' },
+    { match: '#primary-type', label: 'Primary type', key: 'release.primary_type' },
+    { match: '#packaging', label: 'Packaging', key: 'release.packaging' },
+    { match: '#status', label: 'Status', key: 'release.status' },
+    { match: '#language', label: 'Language', key: 'release.language' },
+    { match: '#script', label: 'Script', key: 'release.script' },
+    { match: 'select[id^="country-"]', label: 'Country', key: 'release.country' },
+    { match: 'input[id^="label-"]', label: 'Label', key: 'release.label', mbid: true },
+    { match: '#ac-source-single-artist, input[id^="ac-source-artist-"]', label: 'Artist', key: 'release.artist', mbid: true },
+    { match: '.attribute-container.text.task input[type="text"]', label: 'Task', key: 'rel.task' },
+  ];
+
   let SET = loadSet();
+  // seed the built-ins once (merge-in any not already present by selector; never re-adds after you delete one)
+  if (!SET.fieldsSeeded) { const have = new Set((SET.customFields || []).map(c => c && c.match)); SET.customFields = [...BUILTIN_FIELDS.filter(b => !have.has(b.match)).map(b => ({ ...b })), ...(SET.customFields || [])]; SET.fieldsSeeded = true; persistSet(); }
   let STORE = loadStore();
   const dataKey = () => SET.scopePerResource ? SCOPE : GLOBAL_SCOPE;
   let DATA;
@@ -319,6 +337,8 @@
   .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
   .mmth-cf-add:hover { background:#eef5f0; }
   .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
+  .mmth-cf-reset { margin-left:6px; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-reset:hover { background:#eef5f0; border-color:#5aa67e; }
   .mmth-cf-mode { margin-left:auto; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
   .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
   .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:6px; padding:7px; resize:vertical; }
@@ -479,7 +499,7 @@
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
-        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
+        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-reset" title="Re-add any missing built-in fields (catalog №, status, label, artist, Task…)">↺ Defaults</button><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
         <div class="mmth-cf-list"></div>
         <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
         <div class="mmth-cf-jsonrow" style="display:none"><button type="button" class="mmth-cf-jsonapply">Apply</button><span class="mmth-cf-jsonmsg"></span></div>
@@ -562,11 +582,12 @@
       });
     }
     p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', dx: '', dv: '', select: false }); renderFields(); };
+    p.querySelector('.mmth-cf-reset').onclick = () => { SET.customFields = SET.customFields || []; const have = new Set(SET.customFields.map(c => c && c.match)); const missing = BUILTIN_FIELDS.filter(b => !have.has(b.match)).map(b => ({ ...b })); if (missing.length) { SET.customFields = [...missing, ...SET.customFields]; renderFields(); cfApply(); } };
     renderFields();
     // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
     // label / key / deltax). Doubles as export (copy the box) and import (paste + Apply).
-    const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add');
-    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.select) o.select = true; return o; };   // key still emitted only if a legacy config set one; the UI now derives it from the label
+    const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add'), resetBtn = p.querySelector('.mmth-cf-reset');
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.select) o.select = true; if (cf.mbid) o.mbid = true; return o; };   // `key` carried for built-ins (release.*); `mbid` is JSON-only (no UI checkbox) — Label/Artist MBID capture
     const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
     const cfFromJson = txt => {
       const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
@@ -576,7 +597,7 @@
         label: o.label ? String(o.label) : '', key: o.key ? String(o.key) : '',
         dx: (o.deltax != null && o.deltax !== '') ? +o.deltax : ((o.dx != null && o.dx !== '') ? +o.dx : ''),
         dv: (o.deltav != null && o.deltav !== '') ? +o.deltav : ((o.dv != null && o.dv !== '') ? +o.dv : ''),
-        select: !!o.select,
+        select: !!o.select, mbid: !!o.mbid,
       })).filter(c => c.match);
     };
     const applyJson = () => {
@@ -584,7 +605,7 @@
       catch (e) { jsonMsg.textContent = 'Invalid JSON: ' + (e.message || e); jsonMsg.classList.add('mmth-cf-bad'); return false; }
     };
     const setJsonMode = on => {
-      cfList.style.display = addBtn.style.display = on ? 'none' : '';
+      cfList.style.display = addBtn.style.display = resetBtn.style.display = on ? 'none' : '';
       jsonTa.style.display = jsonRow.style.display = on ? '' : 'none';
       modeBtn.textContent = on ? '▤ Visual' : '{ } JSON';
       if (on) { jsonTa.value = cfToJson(); jsonMsg.textContent = ''; jsonMsg.classList.remove('mmth-cf-bad'); }
@@ -1055,33 +1076,24 @@
       const ns = _unwrap(ac && ac.names); const a = ns && ns[i] && _unwrap(ns[i].artist);
       return (a && a.gid) || null;
     };
-    // Built-in release add/edit targets. `key` is a STABLE, index-free storage key
-    // (catno-0/label-0 are per-medium, but saved values are shared). `gid` (entity
-    // fields) resolves the selected entity's MBID for capture.
-    const PREDEF = [
-      { match: 'input[id^="catno-"]',      key: 'release.catno',        label: 'Catalog number' },
-      { match: '#primary-type',            key: 'release.primary_type', label: 'Primary type' },
-      { match: '#packaging',               key: 'release.packaging',    label: 'Packaging' },
-      { match: '#status',                  key: 'release.status',       label: 'Status' },
-      { match: '#language',                key: 'release.language',     label: 'Language' },
-      { match: '#script',                  key: 'release.script',       label: 'Script' },
-      { match: 'select[id^="country-"]',   key: 'release.country',      label: 'Country' },
-      { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label',  gid: labelGid },
-      { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist', gid: artistGid },
-      { match: 'input[id^="ac-source-artist-"]', key: 'release.artist', label: 'Artist', gid: artistRowGid },   // artist-credit editor bubble rows
-      // #397 the free-text "Task" attribute in the Add/Edit relationship dialog (`.attribute-container.text.task`).
-      // The dialog is a transient popover, but the field-scan MutationObserver picks it up when it opens. One
-      // shared key across every rel type — the point is reusing your standardized task names anywhere.
-      { match: '.attribute-container.text.task input[type="text"]', key: 'rel.task', label: 'Task' },
-    ];
+    // MBID capture for the built-in Label/Artist fields (`mbid:true`). Reads the release editor's model for
+    // the known label/artist inputs; a no-op on any other field (→ text). The generic probe is gone; this is
+    // the specific labelGid/artistGid readers, exposed behind the flag only for the two fields where it works.
+    const builtinGid = el => {
+      const id = String(el.id || '');
+      if (/^label-\d+$/.test(id)) return labelGid(el);
+      if (id === 'ac-source-single-artist') return artistGid(el);
+      if (/^ac-source-artist-/.test(id)) return artistRowGid(el);
+      return null;
+    };
 
-    // #config user-defined baby fields (SET.customFields) merged into the scan alongside PREDEF. A custom
-    // def mirrors PREDEF's shape; a user key is namespaced 'cf:' so it can't collide with a built-in key.
-    // Key defaults to the label when not given (fields with the same label then share one saved list).
+    // Every baby field — built-in or user — now comes from SET.customFields. An explicit `key` (the built-ins
+    // carry release.* / rel.*) is used verbatim; a user row derives its key from the label, namespaced 'cf:'
+    // so it can't collide. `mbid:true` (JSON only) wires the Label/Artist MBID reader above.
     const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => {
-      const k = String(c.key || c.label || '').trim();
-      return { match: c.match, key: k ? 'cf:' + k : null, label: c.label || '',
-        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, select: !!c.select };
+      const key = c.key ? String(c.key) : (String(c.label || '').trim() ? 'cf:' + String(c.label).trim() : null);
+      return { match: c.match, key, label: c.label || '',
+        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, select: !!c.select, gid: c.mbid ? builtinGid : null };
     });
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
@@ -1283,8 +1295,7 @@
     function scan() {
       const map = new Map();
       const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
-      for (const d of PREDEF) document.querySelectorAll(d.match).forEach(el => add(el, d));
-      for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // #config user-defined fields (invalid selectors ignored)
+      for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // built-ins + user fields, all from SET.customFields (invalid selectors ignored)
       document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', select: el.dataset.mmthSelect != null }));
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
