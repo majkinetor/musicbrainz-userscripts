@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.154422
+// @version      2026.7.10.155333
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -1313,10 +1313,12 @@
       // its popover at the field's left edge (which auto-focuses the filter).
       on(document, 'keydown', e => {
         if (e.key !== ',' || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
-        if (pop) { const f = pop.querySelector('.mmthf-filter'); if (f) { e.preventDefault(); f.focus(); if (f.select) f.select(); return; } }
+        // #397: when this handler acts on a baby field, swallow the event so the global edit-note
+        // Ctrl+, handler (bubble phase) doesn't ALSO fire and steal focus to the note panel.
+        if (pop) { const f = pop.querySelector('.mmthf-filter'); if (f) { e.preventDefault(); e.stopPropagation(); f.focus(); if (f.select) f.select(); return; } }
         const el = document.activeElement;
         const p = el && pins.find(pp => pp.el === el);
-        if (p) { e.preventDefault(); openPop(p, true); }   // hotkey → anchor to the field's left edge
+        if (p) { e.preventDefault(); e.stopPropagation(); openPop(p, true); }   // hotkey → anchor to the field's left edge
       }, true);
       // #296: the release editor keeps reflowing for a few hundred ms after load, so
       // the absolutely-positioned overlays would chase the moving fields and visibly
