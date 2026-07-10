@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.180630
+// @version      2026.7.10.181214
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -309,6 +309,15 @@
   .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 10px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
   .mmth-cf-add:hover { background:#eef5f0; }
   .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
+  .mmth-cf-mode { float:right; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:1px 8px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
+  .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:6px; padding:7px; resize:vertical; }
+  .mmth-cf-json:focus { outline:none; border-color:#5aa67e; }
+  .mmth-cf-jsonrow { display:flex; align-items:center; gap:9px; margin-top:6px; }
+  .mmth-cf-jsonapply { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-jsonapply:hover { background:#eef5f0; }
+  .mmth-cf-jsonmsg { font-size:11px; color:#8a968f; }
+  .mmth-cf-jsonmsg.mmth-cf-bad { color:#c0392b; }
   /* #304: import/export pane (the pane IS the flex column — no inner .mmth-io wrapper) */
   .mmth-cfgpane[data-pane="io"] { display:flex; flex-direction:column; gap:8px; }
   .mmth-io-modes { display:flex; flex-flow:row wrap; gap:6px 18px; font-size:12px; align-items:center; }
@@ -461,10 +470,12 @@
         <label title="How long after a custom field's value is set before the ↵ flag presses Enter — raise it if a slow autocomplete misses the match">Enter delay (ms) <input type="number" class="mmth-s-enterdelay" min="0" max="5000" step="50"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
-        <div class="mmth-cfgsec">Custom baby fields</div>
+        <div class="mmth-cfgsec">Custom baby fields <button type="button" class="mmth-cf-mode">{ } JSON</button></div>
         <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Comma-separate</b> several selectors to cover more than one field with one row — give them a shared <b>Key</b> and they draw from the same saved list. <b>nudge</b> shifts the 🦣 pin by N px; <b>↵</b> presses Enter after setting a value (helps an autocomplete accept its match). Works on text inputs and dropdowns.</div>
         <div class="mmth-cf-list"></div>
         <button type="button" class="mmth-cf-add">＋ Add field</button>
+        <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
+        <div class="mmth-cf-jsonrow" style="display:none"><button type="button" class="mmth-cf-jsonapply">Apply</button><span class="mmth-cf-jsonmsg"></span></div>
       </div>
       <div class="mmth-cfgpane" data-pane="io" style="display:none">
         <div class="mmth-io-modes">
@@ -546,6 +557,33 @@
     }
     p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', enter: false }); renderFields(); };
     renderFields();
+    // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
+    // label / key / deltax / enter). Doubles as export (copy the box) and import (paste + Apply).
+    const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add');
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.key) o.key = cf.key; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.enter) o.enter = true; return o; };
+    const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
+    const cfFromJson = txt => {
+      const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
+      if (!Array.isArray(arr)) throw new Error('expected a JSON array');
+      return arr.filter(o => o && typeof o === 'object').map(o => ({
+        match: String(o.selector != null ? o.selector : (o.match || '')).trim(),
+        label: o.label ? String(o.label) : '', key: o.key ? String(o.key) : '',
+        dx: (o.deltax != null && o.deltax !== '') ? +o.deltax : ((o.dx != null && o.dx !== '') ? +o.dx : ''),
+        enter: !!o.enter,
+      })).filter(c => c.match);
+    };
+    const applyJson = () => {
+      try { SET.customFields = cfFromJson(jsonTa.value); jsonMsg.textContent = `${SET.customFields.length} field(s) applied`; jsonMsg.classList.remove('mmth-cf-bad'); renderFields(); cfApply(); return true; }
+      catch (e) { jsonMsg.textContent = 'Invalid JSON: ' + (e.message || e); jsonMsg.classList.add('mmth-cf-bad'); return false; }
+    };
+    const setJsonMode = on => {
+      cfList.style.display = addBtn.style.display = on ? 'none' : '';
+      jsonTa.style.display = jsonRow.style.display = on ? '' : 'none';
+      modeBtn.textContent = on ? '▤ Visual' : '{ } JSON';
+      if (on) { jsonTa.value = cfToJson(); jsonMsg.textContent = ''; jsonMsg.classList.remove('mmth-cf-bad'); }
+    };
+    modeBtn.onclick = () => { const toJson = modeBtn.textContent.indexOf('JSON') >= 0; if (toJson) setJsonMode(true); else if (applyJson()) setJsonMode(false); };
+    p.querySelector('.mmth-cf-jsonapply').onclick = applyJson;
     // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
     // default, or a specific field's values when opened from a baby field)
     const ctx = io || { items: () => DATA.saved.map(s => s.text), add: notes => addSavedNotes(notes), help: 'Import adds to your saved notes; Export copies them all to the clipboard.' };

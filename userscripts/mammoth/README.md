@@ -63,6 +63,15 @@ The built-in babies cover the release editor's own controls, but you can put a ð
 
 Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
+The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box â€” the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys are `selector`, `label`, `key`, `deltax`, `enter` (only `selector` is required); trailing commas and empty `{}` entries are tolerated:
+
+```json
+[
+  { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16 },
+  { "selector": "#country", "key": "ctry", "enter": true }
+]
+```
+
 ## Shortcuts
 
 In the edit-note field (and Mammoth's panel):
