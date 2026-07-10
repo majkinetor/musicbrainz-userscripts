@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.10.125510
+// @version      2026.7.10.125912
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2251,7 +2251,7 @@ async function fetchQobuzMeta(albumUrl) {
     if (id) {
         const signedIn = qbLoggedIn();
         const m = qobuzMetaFromApi(await qobuzApi(`album/get?album_id=${encodeURIComponent(id)}`));
-        if (m && m.tracks) { appendLog('Qobuz', `album/get ok (signed in) — tracks=${m.tracks}, barcode=${m.barcode || '?'}`, 'ok'); return m; }
+        if (m && m.tracks) { m._via = 'api'; return m; }   // tagged so scanQobuz can log the real source (see below)
         // #353 say WHY we're scraping so a logged-in user isn't left wondering: not signed in on
         // THIS origin → prompt; signed in but the API gave nothing → note it (geo / stale session).
         appendLog('Qobuz', signedIn
@@ -2259,7 +2259,9 @@ async function fetchQobuzMeta(albumUrl) {
             : `not signed in to Qobuz on this site — scraping. Log in via ⚙ Setup → Auth for the reliable album/get path (track count + barcode)`,
             signedIn ? 'warn' : 'info');
     }
-    return fetchQobuzScrape(albumUrl);
+    const scraped = await fetchQobuzScrape(albumUrl);
+    if (scraped) scraped._via = 'page';
+    return scraped;
 }
 async function fetchQobuzScrape(albumUrl) {
     let r = await gmGet(qobuzStoreUrl(albumUrl));
@@ -2383,9 +2385,11 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
         return;
     }
     if (meta) {
-        appendLog(label, `Page parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
+        // #353 name the real source — "API album/get" (signed in; carries the barcode) vs "store page" scrape
+        const via = meta._via === 'api' ? 'API album/get' : 'store page';
+        appendLog(label, `Verified via ${via}: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}${meta.barcode ? ` barcode=${meta.barcode}` : ''}`, meta.tracks ? 'ok' : 'warn');
     } else {
-        appendLog(label, `Album page fetch failed`, 'error');
+        appendLog(label, `Album fetch failed`, 'error');
     }
     const tracks = meta?.tracks ?? null;
     const year   = meta?.year   ?? null;
