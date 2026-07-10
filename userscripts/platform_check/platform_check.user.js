@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.10.122215
+// @version      2026.7.10.125510
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1006,7 +1006,7 @@ document.getElementById('mb-qb-login').addEventListener('click', async () => {
     qbRefreshSetupUI('signing in…');
     const r = await qobuzLogin(u, p);
     document.getElementById('mb-qb-pass').value = '';
-    qbRefreshSetupUI(r.ok ? 'signed in ✓ — ISRC Scout & Credit Hoarder can now use Qobuz' : `failed: ${r.error}`, !r.ok);
+    qbRefreshSetupUI(r.ok ? 'signed in ✓ — ↻ to re-scan Qobuz here; ISRC Scout & Credit Hoarder can use it too' : `failed: ${r.error}`, !r.ok);
 });
 document.getElementById('mb-qb-logout').addEventListener('click', () => { qbWrite(null); document.getElementById('mb-qb-user').value = ''; qbRefreshSetupUI('signed out'); });
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
@@ -2246,9 +2246,19 @@ function qobuzStoreUrl(albumUrl) {
 }
 async function fetchQobuzMeta(albumUrl) {
     // Prefer the API (structured + carries the UPC); fall back to scraping the
-    // store page where the API returns nothing (geo) or 429s. #201
+    // store page where the API returns nothing (geo) or 429s. #201/#353
     const id = qobuzAlbumId(albumUrl);
-    if (id) { const m = qobuzMetaFromApi(await qobuzApi(`album/get?album_id=${encodeURIComponent(id)}`)); if (m && m.tracks) return m; }
+    if (id) {
+        const signedIn = qbLoggedIn();
+        const m = qobuzMetaFromApi(await qobuzApi(`album/get?album_id=${encodeURIComponent(id)}`));
+        if (m && m.tracks) { appendLog('Qobuz', `album/get ok (signed in) — tracks=${m.tracks}, barcode=${m.barcode || '?'}`, 'ok'); return m; }
+        // #353 say WHY we're scraping so a logged-in user isn't left wondering: not signed in on
+        // THIS origin → prompt; signed in but the API gave nothing → note it (geo / stale session).
+        appendLog('Qobuz', signedIn
+            ? `album/get returned no data despite being signed in — scraping instead (Qobuz may be geo-restricting this session)`
+            : `not signed in to Qobuz on this site — scraping. Log in via ⚙ Setup → Auth for the reliable album/get path (track count + barcode)`,
+            signedIn ? 'warn' : 'info');
+    }
     return fetchQobuzScrape(albumUrl);
 }
 async function fetchQobuzScrape(albumUrl) {
