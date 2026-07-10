@@ -172,6 +172,7 @@ The **work matcher** popup carries its own controls, also persisted: the **Cutof
 | right-click a relationship's **×** | open the group-delete menu |
 | right-click a recording's **checkbox** | copy / move its credits to the ticked recordings (or all tracks if none ticked) |
 | right-click a work's **checkbox** | copy / move that work's credits (writer/composer/…) to the ticked works |
+| **right-click an entity name** (artist / work / label / place / …) | open that relationship's **edit dialog** (invokes its pencil) — a bigger target than the small edit icon |
 | right-click a credit's **＋ / pencil** | copy scoped to that role / that one credit |
 | right-click a **dated** rel's pencil → *Set missing dates* | fill that date into every undated rel on the source + selected tracks |
 | right-click a credit in the copy list | select only that role · **Shift** adds a role to the selection |

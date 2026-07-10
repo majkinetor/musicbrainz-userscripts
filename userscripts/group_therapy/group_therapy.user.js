@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.143850
+// @version      2026.7.10.144834
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -237,12 +237,13 @@
       }
       return;
     }
-    // Right-click an artist NAME in a relationship → invoke that rel's pencil (open MB's native edit
+    // Right-click any entity NAME in a relationship → invoke that rel's pencil (open MB's native edit
     // dialog) — a bigger, easier target than the small edit icon. Every relationship-item carries a
-    // `button.icon.edit-item`; clicking it opens MB's relationship-dialog (verified). The pencil/× /+
-    // right-clicks above keep their copy/remove menus; this only fires on the entity-name link itself.
-    const nameLink = ev.target.closest && ev.target.closest('.relationship-item a[href*="/artist/"]');
-    if (nameLink) {
+    // `button.icon.edit-item`; clicking it opens MB's relationship-dialog (verified). Runs last, so the
+    // pencil/＋/× (copy/remove) and the recording-of copy menus above keep their behaviour; this only
+    // fills the plain entity-name links (artist/work/label/place/…) that otherwise had no right-click.
+    const nameLink = ev.target.closest && ev.target.closest('.relationship-item a[href]');
+    if (nameLink && /\/(artist|work|label|place|recording|series|release-group|event|instrument|area|genre|url)\/[a-z0-9-]/i.test(nameLink.getAttribute('href') || '')) {
       const pencil = nameLink.closest('.relationship-item').querySelector('button.icon.edit-item');
       if (pencil) { ev.preventDefault(); ev.stopPropagation(); try { pencil.click(); } catch (e) {} return; }
     }
