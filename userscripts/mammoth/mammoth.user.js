@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.194633
+// @version      2026.7.10.195146
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -1108,7 +1108,7 @@
     // The stored value + export keep it, because saving "name <mbid>" lets an autocomplete resolve the entity
     // straight away (no search / no Enter) — but the raw id is ugly, so hide it in the rows and the buttons.
     const MMTH_MBID_RE = /\s*\(?(?:https?:\/\/(?:beta\.)?musicbrainz\.org\/[a-z-]+\/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?\/?\s*/ig;
-    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\s*::\d+\s*$/, '').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
+    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\s*::\s*\d+\s*$/, '').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
     const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = cleanLabel(it.label || it.v); return t.length > n ? t.slice(0, n) + '…' : t; };
 
     const isSelect = el => el.tagName === 'SELECT';
@@ -1158,9 +1158,9 @@
     //                      (e.g. relationship type): type `text`, wait for the dropdown, CLICK the Nth option
     //                      (1-based; a targeted click, so mouse hover / fuzzy ranking can't hijack it).
     function recallInto(p, rec) {
-      const m = /::(\d+)\s*$/.exec(rec && rec.v || '');
+      const m = /\s*::\s*(\d+)\s*$/.exec(rec && rec.v || '');   // "text::N" — whitespace around :: is tolerated
       if (!m) return writeField(p.el, rec);
-      const idx = +m[1] - 1, text = String(rec.v).replace(/::(\d+)\s*$/, '').trim();
+      const idx = +m[1] - 1, text = String(rec.v).replace(/\s*::\s*(\d+)\s*$/, '').trim();
       const ok = writeField(p.el, { v: text, label: text });
       if (ok) {
         const el = p.el; let tries = 0; try { el.focus(); } catch (e) {}
