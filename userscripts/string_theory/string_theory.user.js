@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.175851
+// @version      2026.7.10.232950
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.10.175851 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.175717\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.155333\n  · Platform Check v2026.7.10.141648");
+  console.log('%c String Theory %c v2026.7.10.232950 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.9.211701\n  · Art Station v2026.7.10\n  · Credit Hoarder v2026.7.10.132605\n  · Group Therapy v2026.7.10.175717\n  · ISRC Scout v2026.7.10.131921\n  · Mammoth v2026.7.10.231154\n  · Platform Check v2026.7.10.141648");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -23292,7 +23292,7 @@ ${lines}
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.155333","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.155333","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.231154","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.10.231154","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -23318,7 +23318,7 @@ ${lines}
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309)
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
   const VERSION = '2026.6.29';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -23351,7 +23351,29 @@ ${lines}
   const persistSet = () => { try { GM_setValue(SKEY, JSON.stringify(SET)); } catch (e) {} };           // quiet save (no re-render)
   const saveSet = () => { persistSet(); applyHelp(); render(); };
 
+  // Built-in "OTB" baby fields — now seeded INTO the config (SET.customFields) so they're visible/editable
+  // in the Fields tab like any custom field. Storage keys are derived from the LABEL (same-label fields share
+  // one list) — no explicit `key`. `mbid:true` (JSON-only flag) enables entity-MBID capture on Label/Artist.
+  const BUILTIN_FIELDS = [
+    { match: 'input[id^="catno-"]', label: 'Catalog number' },
+    { match: '#primary-type', label: 'Primary type' },
+    { match: '#packaging', label: 'Packaging' },
+    { match: '#status', label: 'Status' },
+    { match: '#language', label: 'Language' },
+    { match: '#script', label: 'Script' },
+    { match: 'select[id^="country-"]', label: 'Country' },
+    { match: 'input[id^="label-"]', label: 'Label', mbid: true },
+    { match: '#ac-source-single-artist, input[id^="ac-source-artist-"]', label: 'Artist', mbid: true },
+    { match: '.attribute-container.text.task input[type="text"]', label: 'Task' },
+  ];
+  // one-time migration: old PREDEF/built-in keys → the new label-derived keys, so saved values carry over
+  const KEY_RELABEL = { 'release.catno': 'cf:Catalog number', 'release.primary_type': 'cf:Primary type', 'release.packaging': 'cf:Packaging', 'release.status': 'cf:Status', 'release.language': 'cf:Language', 'release.script': 'cf:Script', 'release.country': 'cf:Country', 'release.label': 'cf:Label', 'release.artist': 'cf:Artist', 'rel.task': 'cf:Task' };
+
   let SET = loadSet();
+  // seed the built-ins once (merge-in any not already present by selector; never re-adds after you delete one)
+  if (!SET.fieldsSeeded) { const have = new Set((SET.customFields || []).map(c => c && c.match)); SET.customFields = [...BUILTIN_FIELDS.filter(b => !have.has(b.match)).map(b => ({ ...b })), ...(SET.customFields || [])]; SET.fieldsSeeded = true; persistSet(); }
+  // keys are now derived from the label — drop any explicit `key` left over from older seeds / pasted JSON
+  if ((SET.customFields || []).some(c => c && c.key != null)) { SET.customFields.forEach(c => { if (c) delete c.key; }); persistSet(); }
   let STORE = loadStore();
   const dataKey = () => SET.scopePerResource ? SCOPE : GLOBAL_SCOPE;
   let DATA;
@@ -23578,6 +23600,50 @@ ${lines}
   .mmth-cfgtab.on { color:#1f5c3d; border-bottom-color:#5aa67e; font-weight:600; }
   .mmth-cfgsec { font-weight:600; font-size:11px; color:#6f7d75; text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; padding-bottom:2px; border-bottom:1px solid #eef3f0; }
   .mmth-cfgpane > .mmth-cfgsec:first-child { margin-top:2px; }
+  /* custom baby fields (config) */
+  /* Custom fields — flat, borderless grid */
+  .mmth-cf-top { display:flex; align-items:center; justify-content:space-between; margin:2px 0 8px; }
+  .mmth-cf-list { display:flex; flex-direction:column; gap:0; margin:0 0 4px; max-height:46vh; overflow-y:auto; overflow-x:hidden; }
+  .mmth-cf-list::-webkit-scrollbar { width:8px; }
+  .mmth-cf-list::-webkit-scrollbar-thumb { background:#d7e0db; border-radius:4px; }
+  .mmth-cf-row { display:flex; align-items:center; gap:5px; flex-wrap:nowrap; padding:0 3px; border-radius:5px; }
+  .mmth-cf-row:hover { background:#f4f7f5; }
+  .mmth-cf-in { border:none; border-bottom:1px solid #e2e8e4; border-radius:0; background:transparent; padding:2px 3px; font:11.5px -apple-system,Segoe UI,Arial,sans-serif; box-sizing:border-box; min-width:0; }
+  .mmth-cf-in:focus { outline:none; border-bottom-color:#5aa67e; }
+  .mmth-cf-in::placeholder { color:#b7c2bb; }
+  .mmth-cf-match { flex:1 1 auto; min-width:90px; }
+  .mmth-cf-in[type=number] { border:none; border-bottom:1px solid #e2e8e4; -moz-appearance:textfield; text-align:center; }   /* -moz-appearance:textfield hides FF spinners; keep the flat border (appearance:textfield re-added a native box in Chromium) */
+  .mmth-cf-in[type=number]::-webkit-inner-spin-button, .mmth-cf-in[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  .mmth-cf-sub { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#8a968f; white-space:nowrap; cursor:pointer; }
+  /* matches count — a compact green pill; grey when 0, red when the selector is invalid */
+  .mmth-cf-cnt { min-width:18px; text-align:center; font:700 10px/16px -apple-system,Segoe UI,Arial,sans-serif; color:#1f7a44; background:#e7f4ec; border-radius:9px; padding:0 5px; }
+  .mmth-cf-cnt:empty { background:none; }
+  .mmth-cf-cnt.mmth-cf-zero { color:#8a968f; background:#eef1ef; }
+  .mmth-cf-cnt.mmth-cf-bad { color:#fff; background:#c0392b; }
+  .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; visibility:hidden; }
+  .mmth-cf-row:hover .mmth-cf-del { visibility:visible; }
+  .mmth-cf-del:hover { background:#f0d9d9; }
+  /* enable/disable toggle — shown on row hover, and always on a disabled row so it can be switched back */
+  .mmth-cf-tog { border:none; background:none; cursor:pointer; font-size:11px; line-height:1; padding:2px 3px; border-radius:4px; color:#2e9e5b; visibility:hidden; }
+  .mmth-cf-tog:hover { background:#e7f4ec; }
+  .mmth-cf-row:hover .mmth-cf-tog, .mmth-cf-row.mmth-cf-off .mmth-cf-tog { visibility:visible; }
+  .mmth-cf-row.mmth-cf-off { background:#fafbfa; }
+  .mmth-cf-row.mmth-cf-off .mmth-cf-in, .mmth-cf-row.mmth-cf-off .mmth-cf-cnt, .mmth-cf-row.mmth-cf-off .mmth-cf-sub { opacity:.4; }
+  .mmth-cf-row.mmth-cf-off .mmth-cf-tog { color:#9aa6a0; }
+  .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-add:hover { background:#eef5f0; }
+  .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
+  .mmth-cf-reset { margin-left:6px; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-reset:hover { background:#eef5f0; border-color:#5aa67e; }
+  .mmth-cf-mode { margin-left:auto; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
+  .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:6px; padding:7px; resize:vertical; }
+  .mmth-cf-json:focus { outline:none; border-color:#5aa67e; }
+  .mmth-cf-jsonrow { display:flex; align-items:center; gap:9px; margin-top:6px; }
+  .mmth-cf-jsonapply { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-jsonapply:hover { background:#eef5f0; }
+  .mmth-cf-jsonmsg { font-size:11px; color:#8a968f; }
+  .mmth-cf-jsonmsg.mmth-cf-bad { color:#c0392b; }
   /* #304: import/export pane (the pane IS the flex column — no inner .mmth-io wrapper) */
   .mmth-cfgpane[data-pane="io"] { display:flex; flex-direction:column; gap:8px; }
   .mmth-io-modes { display:flex; flex-flow:row wrap; gap:6px 18px; font-size:12px; align-items:center; }
@@ -23606,9 +23672,10 @@ ${lines}
   .mmth-ra { cursor:pointer; border:none; background:none; color:#7d8a82; font-size:11px; line-height:1; padding:1px 2px; border-radius:3px; }
   .mmth-ra:hover { background:#cfe9d8; color:#1f5c3d; }
   .mmth-empty { padding:12px 8px; color:#9aa6a0; font-style:italic; text-align:center; }
-  .mmth-pop { position:fixed; z-index:99999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);
+  .mmth-pop { position:fixed; z-index:2147483647; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);   /* max — the config/syntax popup must clear any host modal (GT/ISRC live near max) */
               padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:280px; }
-  .mmth-cfg { width:360px; }   /* #304: wider config window so the Import/Export radios sit on one row + a roomier textarea */
+  .mmth-cfg { width:360px; max-height:90vh; overflow:hidden; }   /* #304 wider config window; cap height — the Babies list scrolls internally */
+  .mmth-cfg.mmth-cfg-wide { width:min(660px,94vw); }   /* Fields tab: roomier so each custom-field row fits one line */
   .mmth-pop h4 { margin:-10px -12px 8px; padding:6px 10px; font-size:13px; display:flex; align-items:center; gap:6px; background:#f1f6f3; border-bottom:1px solid #e7eee9; border-radius:8px 8px 0 0; }
   .mmth-tip { color:#8a978f; font-size:11px; margin:0 0 4px 22px; }
   .mmth-pop h4 .mmth-ver { color:#8a978f; font-weight:400; font-size:11px; }
@@ -23616,8 +23683,8 @@ ${lines}
   .mmth-pop h4 .mmth-h4ic { display:inline-flex; width:18px; height:18px; flex:none; }   /* #308 vector mammoth */
   .mmth-badge svg { width:19px; height:19px; }                                            /* #308 vector mammoth */
   .mmth-pop label { display:flex; align-items:center; gap:6px; margin:5px 0; cursor:pointer; }
-  .mmth-pop input[type="number"] { width:46px; border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
-  .mmth-pop select { border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
+  .mmth-pop input[type="number"]:not(.mmth-cf-in) { width:46px; border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
+  .mmth-pop select:not(.mmth-cf-in) { border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
   .mmth-pop code { background:#f1f4f2; border-radius:3px; padding:0 3px; font-size:12px; }
   .mmth-pop .mmth-syn { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:4px 0; }
   .mmth-pop .mmth-sub { font-weight:600; font-size:12px; margin:8px 0 2px; }
@@ -23707,6 +23774,7 @@ ${lines}
       <h4><span class="mmth-h4ic">${MAMMOTH_SVG}</span> Mammoth <span class="mmth-ver">v${scriptVersion()}</span><a href="${HELP_URL}" target="_blank" rel="noopener" title="Open the README">? Help</a></h4>
       <div class="mmth-cfgtabs">
         <button type="button" class="mmth-cfgtab" data-tab="settings">Settings</button>
+        <button type="button" class="mmth-cfgtab" data-tab="fields">Babies</button>
         <button type="button" class="mmth-cfgtab" data-tab="io">Import / Export</button>
       </div>
       <div class="mmth-cfgpane" data-pane="settings">
@@ -23726,6 +23794,12 @@ ${lines}
         <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
       </div>
+      <div class="mmth-cfgpane" data-pane="fields" style="display:none">
+        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-reset" title="Re-add any missing built-in fields (catalog №, status, label, artist, Task…)">↺ Defaults</button><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
+        <div class="mmth-cf-list"></div>
+        <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
+        <div class="mmth-cf-jsonrow" style="display:none"><button type="button" class="mmth-cf-jsonapply">Apply</button><span class="mmth-cf-jsonmsg"></span></div>
+      </div>
       <div class="mmth-cfgpane" data-pane="io" style="display:none">
         <div class="mmth-io-modes">
           <label><input type="radio" name="mmth-iomode" value="line" checked> 1 note per line</label>
@@ -23744,8 +23818,15 @@ ${lines}
     // tab switching — only toggles the pane; position stays put (re-placing here made
     // the window jump because the two tabs differ in height). #304
     const tabs = [...p.querySelectorAll('.mmth-cfgtab')], panes = [...p.querySelectorAll('.mmth-cfgpane')];
-    const showTab = name => { tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === name)); panes.forEach(pn => { pn.style.display = pn.dataset.pane === name ? '' : 'none'; }); };
-    tabs.forEach(t => t.onclick = () => showTab(t.dataset.tab));
+    // Fields (one row per field) and Import/Export (long "name <mbid>" lines) need more horizontal room →
+    // widen the window on those tabs. Re-place only when the wide state actually flips, so it doesn't jump.
+    const showTab = name => {
+      const wasWide = p.classList.contains('mmth-cfg-wide');
+      tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === name)); panes.forEach(pn => { pn.style.display = pn.dataset.pane === name ? '' : 'none'; });
+      const wide = name === 'fields' || name === 'io'; p.classList.toggle('mmth-cfg-wide', wide);
+      if (wide !== wasWide) placePop(p, anchor);
+    };
+    tabs.forEach(t => t.onclick = () => { showTab(t.dataset.tab); SET.lastTab = t.dataset.tab; persistSet(); });   // remember the tab across opens
     // ── Settings pane ──
     const scope = p.querySelector('.mmth-s-scope'); scope.checked = SET.scopePerResource === true;
     scope.onchange = () => { SET.scopePerResource = scope.checked; persistSet(); useScope(); updateScopeChips(); render(); };
@@ -23765,6 +23846,70 @@ ${lines}
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
     babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
+    // ── Fields pane ── custom baby fields: a user-editable list of {match,label,key,dx,entity}. Persisted in
+    // SET; each edit re-scans the page (debounced) so pins appear/disappear live. Bad/empty selectors show a
+    // "bad selector" / match count so a typo is caught before it litters pins.
+    const cfList = p.querySelector('.mmth-cf-list');
+    const cfCount = sel => { try { return document.querySelectorAll(sel).length; } catch (e) { return -1; } };
+    let cfRefreshT = 0;
+    const cfApply = () => { persistSet(); clearTimeout(cfRefreshT); cfRefreshT = setTimeout(() => { try { babyMammoths.refresh(); } catch (e) {} }, 400); };
+    function renderFields() {
+      SET.customFields = SET.customFields || [];
+      cfList.textContent = '';
+      if (!SET.customFields.length) { const e = document.createElement('div'); e.className = 'mmth-cf-empty'; e.textContent = 'No custom fields yet.'; cfList.appendChild(e); }
+      SET.customFields.forEach((cf, i) => {
+        const row = document.createElement('div'); row.className = 'mmth-cf-row' + (cf.enable === false ? ' mmth-cf-off' : '');
+        const cnt = document.createElement('span'); cnt.className = 'mmth-cf-cnt';
+        const paint = () => { if (!cf.match) { cnt.textContent = ''; cnt.className = 'mmth-cf-cnt'; cnt.title = ''; return; } const n = cfCount(cf.match); cnt.textContent = n < 0 ? '!' : String(n); cnt.title = n < 0 ? 'invalid selector' : `matches ${n} field(s) now`; cnt.className = 'mmth-cf-cnt' + (n < 0 ? ' mmth-cf-bad' : n === 0 ? ' mmth-cf-zero' : ''); };
+        const mk = (ph, key, w, type) => {
+          const inp = document.createElement('input'); inp.type = type || 'text'; inp.placeholder = ph; inp.className = 'mmth-cf-in mmth-cf-' + key;
+          inp.value = cf[key] != null ? cf[key] : ''; if (w) inp.style.width = w;
+          inp.oninput = () => { cf[key] = type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value; if (key === 'match') paint(); cfApply(); };
+          return inp;
+        };
+        const dvIn = mk('lvl', 'dv', '34px', 'number'); dvIn.title = 'Bar level (deltav) — attach the pinned-button bar in-flow after the Nth ancestor of the field (0 = floating; raise it so the bar pushes the UI below instead of overlapping)'; dvIn.min = '0';
+        const subCb = document.createElement('input'); subCb.type = 'checkbox'; subCb.checked = !!cf.submit; subCb.onchange = () => { cf.submit = subCb.checked; cfApply(); };
+        const subL = document.createElement('label'); subL.className = 'mmth-cf-sub'; subL.title = 'Submit the field’s form ~200ms after a value is recalled — commits a tag, runs a header search, etc. (like pressing Enter). Only enable it on fields whose form is safe to submit on recall.';
+        subL.append(subCb, Object.assign(document.createElement('span'), { textContent: '↵' }));
+        const tog = document.createElement('button'); tog.type = 'button'; tog.className = 'mmth-cf-tog'; const off0 = cf.enable === false; tog.textContent = off0 ? '○' : '◉'; tog.title = off0 ? 'Field is off — click to enable' : 'Field is on — click to disable';
+        tog.onclick = () => { cf.enable = (cf.enable === false); renderFields(); cfApply(); };
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
+        del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
+        row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('px', 'dx', '34px', 'number'), dvIn, subL, cnt, tog, del);
+        cfList.appendChild(row); paint();
+      });
+    }
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.unshift({ match: '', label: '', dx: '', dv: '', submit: false }); renderFields(); const first = cfList.querySelector('.mmth-cf-row .mmth-cf-match'); if (first) first.focus(); };
+    p.querySelector('.mmth-cf-reset').onclick = () => { SET.customFields = SET.customFields || []; const have = new Set(SET.customFields.map(c => c && c.match)); const missing = BUILTIN_FIELDS.filter(b => !have.has(b.match)).map(b => ({ ...b })); if (missing.length) { SET.customFields = [...missing, ...SET.customFields]; renderFields(); cfApply(); } };
+    renderFields();
+    // JSON text mode — the same list as an editable/copy-pasteable JSON blob (friendly keys: selector /
+    // label / key / deltax). Doubles as export (copy the box) and import (paste + Apply).
+    const jsonTa = p.querySelector('.mmth-cf-json'), jsonMsg = p.querySelector('.mmth-cf-jsonmsg'), jsonRow = p.querySelector('.mmth-cf-jsonrow'), modeBtn = p.querySelector('.mmth-cf-mode'), addBtn = p.querySelector('.mmth-cf-add'), resetBtn = p.querySelector('.mmth-cf-reset');
+    const cfOut = cf => { const o = { selector: cf.match || '' }; if (cf.label) o.label = cf.label; if (cf.dx != null && cf.dx !== '') o.deltax = +cf.dx; if (cf.dv) o.deltav = +cf.dv; if (cf.submit) o.submit = true; if (cf.mbid) o.mbid = true; if (cf.enable === false) o.enable = false; return o; };   // key is derived from the label; `submit` submits the field's form after recall (row ↵ checkbox); `mbid` JSON-only; `enable:false` disables
+    const cfToJson = () => JSON.stringify((SET.customFields || []).map(cfOut), null, 2);
+    const cfFromJson = txt => {
+      const arr = JSON.parse(txt.replace(/,(\s*[}\]])/g, '$1'));   // tolerate trailing commas
+      if (!Array.isArray(arr)) throw new Error('expected a JSON array');
+      return arr.filter(o => o && typeof o === 'object').map(o => ({
+        match: String(o.selector != null ? o.selector : (o.match || '')).trim(),
+        label: o.label ? String(o.label) : '',
+        dx: (o.deltax != null && o.deltax !== '') ? +o.deltax : ((o.dx != null && o.dx !== '') ? +o.dx : ''),
+        dv: (o.deltav != null && o.deltav !== '') ? +o.deltav : ((o.dv != null && o.dv !== '') ? +o.dv : ''),
+        submit: !!(o.submit || o.enter), mbid: !!o.mbid, enable: o.enable !== false,   // legacy `enter` → submit
+      })).filter(c => c.match);
+    };
+    const applyJson = () => {
+      try { SET.customFields = cfFromJson(jsonTa.value); jsonMsg.textContent = `${SET.customFields.length} field(s) applied`; jsonMsg.classList.remove('mmth-cf-bad'); renderFields(); cfApply(); return true; }
+      catch (e) { jsonMsg.textContent = 'Invalid JSON: ' + (e.message || e); jsonMsg.classList.add('mmth-cf-bad'); return false; }
+    };
+    const setJsonMode = on => {
+      cfList.style.display = addBtn.style.display = resetBtn.style.display = on ? 'none' : '';
+      jsonTa.style.display = jsonRow.style.display = on ? '' : 'none';
+      modeBtn.textContent = on ? '▤ Visual' : '{ } JSON';
+      if (on) { jsonTa.value = cfToJson(); jsonMsg.textContent = ''; jsonMsg.classList.remove('mmth-cf-bad'); }
+    };
+    modeBtn.onclick = () => { const toJson = modeBtn.textContent.indexOf('JSON') >= 0; if (toJson) setJsonMode(true); else if (applyJson()) setJsonMode(false); };
+    p.querySelector('.mmth-cf-jsonapply').onclick = applyJson;
     // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
     // default, or a specific field's values when opened from a baby field)
     const ctx = io || { items: () => DATA.saved.map(s => s.text), add: notes => addSavedNotes(notes), help: 'Import adds to your saved notes; Export copies them all to the clipboard.' };
@@ -23783,7 +23928,9 @@ ${lines}
       let copied = false; try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { try { copied = document.execCommand('copy'); } catch (x) {} }
       ioMsg.textContent = `${items.length} item(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
     };
-    showTab(tab === 'io' ? 'io' : 'settings');
+    // open on the explicitly-requested tab (baby field → 'io'), else the last tab used, else Settings
+    const TABS = ['settings', 'fields', 'io'];
+    showTab(TABS.includes(tab) ? tab : (TABS.includes(SET.lastTab) ? SET.lastTab : 'settings'));
     placePop(p, anchor);   // position once; tab switches no longer move it
   }
   function openSyntax(anchor) {
@@ -24139,15 +24286,16 @@ ${lines}
   // badge/pop + babies) hides under it — MB's dialogs/popovers carry no z-index
   // and no backdrop, so they can't otherwise win the stack. Global (runs even
   // when babies are off). #313
-  // #333: the artist-credit editor is itself a .dialog.popover, but it holds fields we DO pin
-  // (ac-source-artist-*). Don't treat such a dialog as blocking, or we'd hide the baby on its
-  // own rows (and leave its reserved strip empty). Only block for dialogs without our fields.
-  // #397: same for the Add/Edit relationship dialog when it shows the "Task" field — we pin that,
-  // so hiding all babies would hide the Task pin too. (The relationship dialog and the release-editor
-  // baby fields never share a page, so exempting it can't let release pins float over it.)
+  // #333/#397/#config: a dialog (.dialog.popover / .relationship-dialog) whose fields we pin must NOT be
+  // treated as blocking, or we'd hide the very baby it hosts. That was a hardcoded allowlist (artist-credit
+  // rows, then the "Task" field) — generalise it: a dialog blocks only if it contains NONE of our baby
+  // fields (`[data-mmthf]`, set by scan() on every pinned field, custom ones included). This is what let
+  // instrument-type relationship dialogs — bass/guitar/… have no Task field — wrongly hide a custom
+  // "Credited as" baby while producer/mixer (which DO have Task) worked. Fields BEHIND a dialog are already
+  // hidden per-pin by fieldOnTop (elementFromPoint), so keeping non-blocking here can't float them over it.
   const syncDialog = () => {
     const dlgs = [...document.querySelectorAll('.dialog.popover, .relationship-dialog')];
-    const blocking = dlgs.some(d => !d.querySelector('input[id^="ac-source-artist-"], .attribute-container.text.task input[type="text"]'));
+    const blocking = dlgs.some(d => !d.querySelector('[data-mmthf]'));
     document.documentElement.classList.toggle('mmthf-dialog', blocking);
   };
   new MutationObserver(() => { injectAll(); syncDialog(); }).observe(document.documentElement, { childList: true, subtree: true });
@@ -24226,29 +24374,30 @@ ${lines}
       const ns = _unwrap(ac && ac.names); const a = ns && ns[i] && _unwrap(ns[i].artist);
       return (a && a.gid) || null;
     };
-    // Built-in release add/edit targets. `key` is a STABLE, index-free storage key
-    // (catno-0/label-0 are per-medium, but saved values are shared). `gid` (entity
-    // fields) resolves the selected entity's MBID for capture.
-    const PREDEF = [
-      { match: 'input[id^="catno-"]',      key: 'release.catno',        label: 'Catalog number' },
-      { match: '#primary-type',            key: 'release.primary_type', label: 'Primary type' },
-      { match: '#packaging',               key: 'release.packaging',    label: 'Packaging' },
-      { match: '#status',                  key: 'release.status',       label: 'Status' },
-      { match: '#language',                key: 'release.language',     label: 'Language' },
-      { match: '#script',                  key: 'release.script',       label: 'Script' },
-      { match: 'select[id^="country-"]',   key: 'release.country',      label: 'Country' },
-      { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label',  gid: labelGid },
-      { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist', gid: artistGid },
-      { match: 'input[id^="ac-source-artist-"]', key: 'release.artist', label: 'Artist', gid: artistRowGid },   // artist-credit editor bubble rows
-      // #397 the free-text "Task" attribute in the Add/Edit relationship dialog (`.attribute-container.text.task`).
-      // The dialog is a transient popover, but the field-scan MutationObserver picks it up when it opens. One
-      // shared key across every rel type — the point is reusing your standardized task names anywhere.
-      { match: '.attribute-container.text.task input[type="text"]', key: 'rel.task', label: 'Task' },
-    ];
+    // MBID capture for the built-in Label/Artist fields (`mbid:true`). Reads the release editor's model for
+    // the known label/artist inputs; a no-op on any other field (→ text). The generic probe is gone; this is
+    // the specific labelGid/artistGid readers, exposed behind the flag only for the two fields where it works.
+    const builtinGid = el => {
+      const id = String(el.id || '');
+      if (/^label-\d+$/.test(id)) return labelGid(el);
+      if (id === 'ac-source-single-artist') return artistGid(el);
+      if (/^ac-source-artist-/.test(id)) return artistRowGid(el);
+      return null;
+    };
 
+    // Every baby field — built-in or user — comes from SET.customFields. The storage key is derived from the
+    // LABEL (namespaced 'cf:'), so any two same-label fields share one saved list. `mbid:true` (JSON only)
+    // wires the Label/Artist MBID reader; `submit:true` submits the field's form after a recall (see recallInto).
+    const customDefs = () => (SET.customFields || []).filter(c => c && c.match && c.enable !== false).map(c => {   // enable:false → not scanned (no pin)
+      const key = String(c.label || '').trim() ? 'cf:' + String(c.label).trim() : null;   // no label → keyFor derives one from the element
+      return { match: c.match, key, label: c.label || '',
+        dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, deltav: (c.dv | 0) || 0, submit: !!c.submit, gid: c.mbid ? builtinGid : null };
+    });
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();
+    // migrate saved values from the old built-in keys (release.* / rel.task) to the new label-derived keys
+    { let moved = false; for (const oldK in KEY_RELABEL) { const newK = KEY_RELABEL[oldK]; if (FDATA[oldK] && !FDATA[newK]) { FDATA[newK] = FDATA[oldK]; delete FDATA[oldK]; moved = true; } } if (moved) saveF(); }
 
     const listFor = key => (FDATA[key] = FDATA[key] || []);
     function rememberValue(key, rec) {
@@ -24259,6 +24408,13 @@ ${lines}
       saveF(); return true;
     }
     const forgetValue = (key, v) => { FDATA[key] = listFor(key).filter(x => x.v !== v); saveF(); };
+    // edit a saved value in place (keeps its ★/default/order) — used to paste/append an MBID onto a value
+    function editValue(key, oldV, newV) {
+      newV = String(newV == null ? '' : newV).trim(); if (!newV) return false;
+      const a = listFor(key); const e = a.find(x => x.v === oldV); if (!e) return false;
+      if (newV !== oldV) { const other = a.findIndex(x => x.v === newV); if (other >= 0 && a[other] !== e) a.splice(other, 1); }   // dedup a collision
+      e.v = newV; e.label = newV; e.ts = Date.now(); saveF(); return true;
+    }
     const togglePin = (key, v) => { const e = listFor(key).find(x => x.v === v); if (e) { e.pinned = !e.pinned; saveF(); } };
     function setDefault(key, v) { const a = listFor(key); const e = a.find(x => x.v === v); if (!e) return; const was = e.default; a.forEach(x => x.default = false); e.default = !was; saveF(); }
     const defaultOf = key => listFor(key).find(x => x.default);
@@ -24273,7 +24429,12 @@ ${lines}
     // #304: caption = the full label, truncated with an ellipsis at the configured
     // length (⚙ "Button label length") — no longer just the first word.
     const btnChars = () => Math.max(4, Math.min(80, SET.btnChars | 0 || 24));
-    const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = (it.label || it.v || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
+    // Strip an MBID (a bare GUID, or a full musicbrainz.org URL ending in one) from a value for DISPLAY only.
+    // The stored value + export keep it, because saving "name <mbid>" lets an autocomplete resolve the entity
+    // straight away (no search / no Enter) — but the raw id is ugly, so hide it in the rows and the buttons.
+    const MMTH_MBID_RE = /\s*\(?(?:https?:\/\/(?:beta\.)?musicbrainz\.org\/[a-z-]+\/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)?\/?\s*/ig;
+    const cleanLabel = s => { const raw = String(s == null ? '' : s); const t = raw.replace(MMTH_MBID_RE, ' ').replace(/\s{2,}/g, ' ').trim(); return t || raw.trim(); };
+    const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = cleanLabel(it.label || it.v); return t.length > n ? t.slice(0, n) + '…' : t; };
 
     const isSelect = el => el.tagName === 'SELECT';
     const isAuto = el => el.classList.contains('ui-autocomplete-input') || el.classList.contains('lookup-performed');
@@ -24306,6 +24467,27 @@ ${lines}
       el.dispatchEvent(new Event('change', { bubbles: true }));
       if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
       return true;
+    }
+    // Submit the field's enclosing <form> — the only reliable way to commit fields the browser only
+    // submits on a real Enter (the tag box `<form id="tag-form">`, the header search form, …). A synthetic
+    // KeyboardEvent can't do it (untrusted). requestSubmit() runs the form's submit handler + validation.
+    const submitField = el => {
+      const form = el.closest('form');
+      if (!form) return;   // nothing to submit
+      if (form.requestSubmit) { form.requestSubmit(); return; }
+      const btn = form.querySelector('button[type="submit"], input[type="submit"]');
+      if (btn) { btn.click(); return; }
+      try { form.submit(); } catch (e) {}
+    };
+    // recall a saved value into a field. writeField pastes it ("name <mbid>" resolves the entity via the id).
+    // A field flagged `submit` (row ↵ checkbox / JSON "submit": true) then submits its <form> ~200ms later.
+    function recallInto(p, rec) {
+      const ok = writeField(p.el, rec);
+      if (ok && p.submit) {
+        const el = p.el;
+        setTimeout(() => { if (el.isConnected) { try { el.focus(); } catch (e) {} try { submitField(el); } catch (e) {} } }, 200);
+      }
+      return ok;
     }
     function clearField(el) {
       if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -24347,11 +24529,14 @@ ${lines}
       html.mmthf-dialog .mmthf-pin, html.mmthf-dialog .mmthf-bar, html.mmthf-dialog .mmthf-pop { opacity:0 !important; pointer-events:none !important; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
       .mmthf-bar { position:absolute; z-index:9996; display:none; }
+      /* deltav>0: the bar is injected in-flow after an ancestor, so it takes real layout space (pushes the
+         UI below it down) instead of floating over it. */
+      .mmthf-bar.mmthf-bar-inflow { position:static !important; z-index:auto; max-width:none !important; margin:5px 0 3px; }
       /* #304: individual rounded "tag" buttons that wrap to new rows — matches the main edit-note pins */
       .mmthf-seg { display:flex; flex-wrap:wrap; gap:5px; max-width:100%; }
       .mmthf-segb { border:1px solid #cfd9d3 !important; background:#fbfdfc !important; border-radius:7px !important; padding:3px 10px !important; font:12px/1.2 -apple-system,Segoe UI,Arial,sans-serif !important; color:#27483a !important; cursor:pointer; max-width:200px; height:auto !important; min-height:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
       .mmthf-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
-      .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; overflow:hidden; }
+      .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; max-width:calc(100vw - 12px); overflow:hidden; }
       .mmthf-ft { display:flex; align-items:center; gap:1px; padding:3px 5px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
       .mmthf-fb { cursor:pointer; border:none; background:none; font-size:14px; line-height:1; padding:3px 7px; border-radius:5px; color:#566; }
       .mmthf-fb:hover { background:#dcefe2; }
@@ -24374,6 +24559,9 @@ ${lines}
       .mmthf-row:hover .mmthf-ind { display:none; }
       .mmthf-ra { width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; }
       .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; }
+      .mmthf-edit-in { flex:1 1 auto; min-width:0; box-sizing:border-box; border:1px solid #5aa67e; border-radius:4px; padding:1px 5px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
+      .mmthf-edit-in:focus { outline:none; }
+      .mmthf-row.mmthf-editing .mmthf-acts, .mmthf-row.mmthf-editing .mmthf-ind { display:none !important; }
       .mmthf-grab { width:14px; text-align:center; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; }
       .mmthf-grab:active { cursor:grabbing; }
       .mmthf-row.mmthf-dragging { opacity:.45; }
@@ -24385,11 +24573,21 @@ ${lines}
       (document.head || document.documentElement).appendChild(s);
     }
 
+    // highest z-index among a field's positioned ancestors — so a pin inside a high-z modal can sit just
+    // above it rather than behind. 0 ⇒ keep the CSS default.
+    function fieldStackZ(el) {
+      let z = 0;
+      for (let n = el.parentElement; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+        const cs = getComputedStyle(n);
+        if (cs.position !== 'static') { const v = parseInt(cs.zIndex, 10); if (!isNaN(v) && v > z) z = v; }
+      }
+      return z;
+    }
     function scan() {
       const map = new Map();
       const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
-      for (const d of PREDEF) document.querySelectorAll(d.match).forEach(el => add(el, d));
-      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '' }));
+      for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // built-ins + user fields, all from SET.customFields (invalid selectors ignored)
+      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '', submit: el.dataset.mmthSubmit != null }));
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
@@ -24405,12 +24603,21 @@ ${lines}
         const dx = dxRaw != null ? dxRaw : (sel ? 22 : innerIcon ? 24 : 3);
         if (!sel) try { const need = dx + 18; const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < need) el.style.paddingRight = need + 'px'; } catch (e) {}
         const bar = document.createElement('div'); bar.className = 'mmthf-bar';
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null };
+        // deltav (def.deltav / data-mmth-deltav): 0 = the default FLOATING bar (absolute, may overlap UI
+        // below); N>0 = inject the pinned-button bar IN-FLOW right after the Nth ancestor of the field, so
+        // it takes real layout space and pushes the UI below it down instead of overlapping.
+        const dv = def.deltav != null ? (+def.deltav || 0) : (el.dataset.mmthDeltav != null ? (+el.dataset.mmthDeltav || 0) : 0);
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv, submit: !!def.submit, z: fieldStackZ(el) };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
         btn.addEventListener('mouseleave', () => el.classList.remove('mmthf-hl'));
-        document.body.appendChild(btn); document.body.appendChild(bar);
+        document.body.appendChild(btn);
+        if (dv > 0) { let a = el; for (let k = 0; k < dv && a.parentElement; k++) a = a.parentElement; bar.classList.add('mmthf-bar-inflow'); (a.parentNode || document.body).insertBefore(bar, a.nextSibling); }
+        else document.body.appendChild(bar);
+        // a field inside a high-z-index modal (e.g. ISRC Scout's #ii-modal @ 999999) would bury the pin — lift
+        // the overlays just above that modal's stacking context. In-flow bars (deltav) inherit it, so skip them.
+        if (p.z) { const Z = 2147483647; btn.style.zIndex = String(Math.min(Z, p.z + 2)); if (dv <= 0) bar.style.zIndex = String(Math.min(Z, p.z + 1)); }
         pins.push(p); refreshState(p); applyDefault(p);
       }
       layout();
@@ -24421,6 +24628,7 @@ ${lines}
     // one reflects on the others.
     function refreshState(p) { for (const q of pins) if (q.key === p.key) { q.btn.classList.toggle('has', listFor(q.key).length > 0); renderBar(q); } }
     function setReserve(p, on) {
+      if (p.deltav > 0) return;   // in-flow bar takes its own space — no strip to reserve
       const host = p.el.closest('td') || p.el;
       const prop = host === p.el ? 'marginBottom' : 'paddingBottom';
       // When the host is a <td> in a MULTI-cell row (artist-credit bubble: Artist /
@@ -24452,10 +24660,10 @@ ${lines}
       setReserve(p, items.length > 0);
       if (!items.length) { p.bar.style.display = 'none'; return; }
       const seg = document.createElement('div'); seg.className = 'mmthf-seg';
-      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${cleanLabel(it.label || it.v)} → click to set`; b.addEventListener('click', e => { e.preventDefault(); recallInto(p, it); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
-    function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) writeField(p.el, d); }
+    function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) recallInto(p, d); }
 
     function fieldOnTop(el, r) {
       const x = r.left + r.width / 2, y = r.top + r.height / 2;
@@ -24485,8 +24693,9 @@ ${lines}
         let vis = r.width > 0 && r.height > 0 && el.offsetParent !== null && !el.disabled;
         if (vis) vis = fieldOnTop(el, r);
         p.btn.style.display = vis ? 'flex' : 'none';
-        const hasBar = vis && !!p.bar.firstChild && gapClear(el, p.bar, r);
-        p.bar.style.display = hasBar ? 'block' : 'none';
+        // in-flow bar (deltav>0): the browser lays it out — just show/hide it with the field.
+        if (p.deltav > 0) { p.bar.style.display = (vis && !!p.bar.firstChild) ? 'block' : 'none'; }
+        else { const hasBar = vis && !!p.bar.firstChild && gapClear(el, p.bar, r); p.bar.style.display = hasBar ? 'block' : 'none'; }
         if (!vis) continue;
         // position in DOCUMENT coords (position:absolute) so the overlays scroll WITH
         // the page natively — no per-frame JS reposition, so no scroll lag. getBounding
@@ -24494,7 +24703,8 @@ ${lines}
         const sx = window.scrollX, sy = window.scrollY;
         p.btn.style.top = (r.top + sy + (r.height - 16) / 2) + 'px';
         p.btn.style.left = (r.right + sx - 16 - p.dx) + 'px';
-        if (hasBar) { p.bar.style.top = (r.bottom + sy + 3) + 'px'; p.bar.style.left = (r.left + sx) + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
+        if (p.deltav > 0) continue;   // in-flow bar needs no absolute placement / strip reserve
+        if (p.bar.style.display !== 'none') { p.bar.style.top = (r.bottom + sy + 3) + 'px'; p.bar.style.left = (r.left + sx) + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
         sizeReserve(p);   // #304: match the field's reserved strip to the (possibly multi-row) bar height
       }
       if (pins.some(p => p.dead)) pins = pins.filter(p => !p.dead);
@@ -24503,18 +24713,24 @@ ${lines}
     function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onDown, true); document.removeEventListener('keydown', onKey, true); } }
     function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #305: swallow the outside click (see closePop note above)
     function onKey(e) { if (pop && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); const f = pop._field; closePop(); if (f) focusField(f); } }   // #346: ESC kills the popover (no leak to MB) and returns focus to the field
-    function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
+    function place(el, anchor) {
+      const r = anchor.getBoundingClientRect(), b = el.getBoundingClientRect();   // b: the popover's actual rendered size
+      const w = b.width || el.offsetWidth || 260, h = b.height || el.offsetHeight || 0;
+      el.style.left = Math.max(6, Math.min(innerWidth - w - 6, r.left)) + 'px';    // keep both edges on-screen
+      el.style.top = Math.max(6, Math.min(innerHeight - h - 6, r.bottom + 4)) + 'px';
+    }
     function togglePop(p, atField) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p, atField); }
     function openPop(p, atField) {
       const cur = captureField(p);   // entity fields capture the selected MBID (#296)
       const items = listFor(p.key);   // raw order — drag (⠿) reorders it freely, like the edit-note panel
       const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn; el._field = p.el;
+      if (p.z) el.style.zIndex = String(Math.min(2147483647, p.z + 3));   // sit above the field's modal (see fieldStackZ)
       const rowHtml = (it, i) => {
         const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
         const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}">${it.default ? '◉' : '◯'}</button>`;
-        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
+        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-edit" title="Edit value (paste/append its MBID)">✎</button><button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
         const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
-        return `<div class="mmthf-row" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${ind}${acts}</div>`;
+        return `<div class="mmthf-row" data-i="${i}" title="${esc(it.label || it.v)}"><span class="mmthf-rtxt">${esc(cleanLabel(it.label || it.v))}</span>${ind}${acts}</div>`;
       };
       // the filter box is always shown (whenever there's a saved value to filter)
       const searchOn = items.length > 0;
@@ -24541,7 +24757,7 @@ ${lines}
           if (e.key === 'Escape') { e.stopPropagation(); if (fin.value) { fin.value = ''; applyFilter(); } else closePop(); return; }
           if (e.key === 'ArrowDown') { e.preventDefault(); if (rows.length) { hl = (hl + 1) % rows.length; paint(); } return; }
           if (e.key === 'ArrowUp') { e.preventDefault(); if (rows.length) { hl = (hl - 1 + rows.length) % rows.length; paint(); } return; }
-          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { writeField(p.el, items[+r.dataset.i]); closePop(); focusField(p.el); } return; }   // keyboard apply → refocus the field
+          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { recallInto(p, items[+r.dataset.i]); closePop(); focusField(p.el); } return; }   // keyboard apply → refocus the field
         });
         applyFilter();   // highlight the first item so Enter works immediately
         setTimeout(() => { try { fin.focus(); } catch (e) {} }, 0);
@@ -24567,11 +24783,12 @@ ${lines}
       el.querySelectorAll('.mmthf-row').forEach(row => {
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
-          if (e.target.closest('.mmthf-grab')) return;
+          if (e.target.closest('.mmthf-grab') || e.target.closest('.mmthf-edit-in')) return;   // dragging / mid-edit
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
+          if (e.target.closest('.mmthf-edit')) { startEditRow(row, p, it); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
-          writeField(p.el, it); closePop();   // don't refocus the field on apply — it re-triggers autocomplete
+          recallInto(p, it); closePop();   // don't refocus the field on apply — it re-triggers autocomplete
         });
         const grab = row.querySelector('.mmthf-grab');
         grab.addEventListener('dragstart', e => { _fdrag = { v: it.v }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmthf-dragging'); });
@@ -24584,6 +24801,24 @@ ${lines}
       setTimeout(() => { document.addEventListener('click', onDown, true); document.addEventListener('keydown', onKey, true); }, 0);
     }
     const reopen = p => { const af = pop ? pop._atField : false; closePop(); openPop(p, af); };   // keep the same anchor across a reopen
+    // inline-edit a saved value (to paste/append its MBID). Enter commits + reopens (stripped rows), Esc
+    // cancels, blur commits silently (no reopen — avoids racing an outside-click close).
+    function startEditRow(row, p, it) {
+      const rtxt = row.querySelector('.mmthf-rtxt'); if (!rtxt || row.querySelector('.mmthf-edit-in')) return;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'mmthf-edit-in'; inp.spellcheck = false; inp.value = it.v;
+      rtxt.replaceWith(inp); row.classList.add('mmthf-editing');
+      let done = false;
+      const commit = () => { if (done) return; done = true; if (inp.value.trim() && inp.value.trim() !== it.v) editValue(p.key, it.v, inp.value); };
+      inp.addEventListener('mousedown', e => e.stopPropagation());
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('keydown', e => {
+        e.stopPropagation();
+        if (e.key === 'Enter') { e.preventDefault(); commit(); refreshState(p); reopen(p); }
+        else if (e.key === 'Escape') { e.preventDefault(); done = true; reopen(p); }
+      });
+      inp.addEventListener('blur', () => { commit(); refreshState(p); });
+      setTimeout(() => { try { inp.focus(); inp.select(); } catch (e) {} }, 0);
+    }
 
     const relayout = () => { syncDialog(); if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
     function start() {
@@ -24630,7 +24865,7 @@ ${lines}
       pins.forEach(p => { try { setReserve(p, false); } catch (e) {} p.btn.remove(); p.bar.remove(); delete p.el.dataset.mmthf; });
       pins = [];
     }
-    return { start, stop, toggle(on) { on ? start() : stop(); }, relabel() { pins.forEach(p => renderBar(p)); } };
+    return { start, stop, toggle(on) { on ? start() : stop(); }, relabel() { pins.forEach(p => renderBar(p)); }, refresh() { if (running) { stop(); start(); } } };   // refresh: re-scan after custom fields change
   }
 })();
 });
