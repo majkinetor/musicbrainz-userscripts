@@ -53,6 +53,8 @@ Note actions:
 
 The built-in babies cover several native controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Babies** tab and **＋ Add field**:
 
+<img src=./screenshots/custom-fields.png width=600 />
+
 | Column | Meaning |
 |---|---|
 | **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). **Comma-separate** several selectors to cover more than one field with a single row. A live *matches N* / *bad selector* readout tells you if it's right. |
