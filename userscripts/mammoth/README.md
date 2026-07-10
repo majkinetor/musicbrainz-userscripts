@@ -26,7 +26,7 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 - **Replace or Insert** — left-click does your default, right-click the other; append skips a line already present (see [Shortcuts](#shortcuts)).
 - **Resizable** — the edit-note field is widened and centered; drag the separator to resize field vs. panel (and the field's height); remembered.
 - **Minimized mode** — collapse the panel to a small icon; hover to peek, click to pin; remembered across pages.
-- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls (catalogue №, label, artist, status, language, script, country, type, and the relationship dialog's **Task** field).
+- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls (catalogue №, label, artist, status, language, script, country, type, and the relationship dialog's **Task** field), plus **[your own custom fields](#custom-fields)** by CSS selector.
 
 ## Saved notes
 
@@ -48,6 +48,20 @@ Note actions:
  - `◉` marks one entry as the **default** (auto-fills the field when it's empty)
  - `🗑` delete note
  - `⠿` drag to reorder
+
+### Custom fields
+
+The built-in babies cover the release editor's own controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Fields** tab and **＋ Add field**:
+
+| Column | Meaning |
+|---|---|
+| **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). A live *matches N* / *bad selector* readout tells you if it's right. |
+| **Label** | The popover title (optional — derived from the field's own label if left blank). |
+| **Key** | Storage key (optional). Fields sharing a key share their saved values; omit it and Mammoth derives one from the field. |
+| **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
+| **entity** | *Best-effort* — try to remember the selected **MBID** (so a recalled value resolves the real entity). Works only on MusicBrainz autocomplete fields that accept a pasted MBID; plain **text inputs and dropdowns always work** without it. |
+
+Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
 
 ## Shortcuts
 
@@ -94,7 +108,7 @@ Accessed using the `⚙` button.
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 | **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
 
-The `⚙` window has two tabs: **Settings** (above) and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
+The `⚙` window has three tabs: **Settings** (above), **[Fields](#custom-fields)** (define your own custom baby fields), and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
 
 ## Using Mammoth from another userscript
 

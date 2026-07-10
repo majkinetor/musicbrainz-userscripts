@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.155333
+// @version      2026.7.10.164006
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -35,7 +35,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309)
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
   const VERSION = '2026.6.29';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -295,6 +295,20 @@
   .mmth-cfgtab.on { color:#1f5c3d; border-bottom-color:#5aa67e; font-weight:600; }
   .mmth-cfgsec { font-weight:600; font-size:11px; color:#6f7d75; text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; padding-bottom:2px; border-bottom:1px solid #eef3f0; }
   .mmth-cfgpane > .mmth-cfgsec:first-child { margin-top:2px; }
+  /* custom baby fields (config) */
+  .mmth-cf-list { display:flex; flex-direction:column; gap:5px; margin:4px 0 8px; }
+  .mmth-cf-row { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+  .mmth-cf-in { border:1px solid #d7e0db; border-radius:5px; padding:3px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; box-sizing:border-box; }
+  .mmth-cf-in:focus { outline:none; border-color:#5aa67e; }
+  .mmth-cf-match { flex:1 1 150px; min-width:120px; }
+  .mmth-cf-ent { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#566; white-space:nowrap; cursor:pointer; }
+  .mmth-cf-cnt { font-size:11px; color:#8a968f; min-width:58px; text-align:right; }
+  .mmth-cf-cnt.mmth-cf-bad { color:#c0392b; }
+  .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; }
+  .mmth-cf-del:hover { background:#f0d9d9; }
+  .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 10px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-add:hover { background:#eef5f0; }
+  .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
   /* #304: import/export pane (the pane IS the flex column — no inner .mmth-io wrapper) */
   .mmth-cfgpane[data-pane="io"] { display:flex; flex-direction:column; gap:8px; }
   .mmth-io-modes { display:flex; flex-flow:row wrap; gap:6px 18px; font-size:12px; align-items:center; }
@@ -424,6 +438,7 @@
       <h4><span class="mmth-h4ic">${MAMMOTH_SVG}</span> Mammoth <span class="mmth-ver">v${scriptVersion()}</span><a href="${HELP_URL}" target="_blank" rel="noopener" title="Open the README">? Help</a></h4>
       <div class="mmth-cfgtabs">
         <button type="button" class="mmth-cfgtab" data-tab="settings">Settings</button>
+        <button type="button" class="mmth-cfgtab" data-tab="fields">Fields</button>
         <button type="button" class="mmth-cfgtab" data-tab="io">Import / Export</button>
       </div>
       <div class="mmth-cfgpane" data-pane="settings">
@@ -442,6 +457,12 @@
         <div class="mmth-cfgsec">General</div>
         <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
+      </div>
+      <div class="mmth-cfgpane" data-pane="fields" style="display:none">
+        <div class="mmth-cfgsec">Custom baby fields</div>
+        <div class="mmth-tip" style="margin:0 0 6px">Add Mammoth field-memory to any control by its CSS selector (Inspect the element → Copy selector). <b>Key</b> shares saved values between fields; <b>nudge</b> shifts the 🦣 pin by N px; <b>entity</b> tries to remember the selected MBID (best-effort — MB autocomplete fields only). Text inputs and dropdowns always work.</div>
+        <div class="mmth-cf-list"></div>
+        <button type="button" class="mmth-cf-add">＋ Add field</button>
       </div>
       <div class="mmth-cfgpane" data-pane="io" style="display:none">
         <div class="mmth-io-modes">
@@ -482,6 +503,38 @@
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
     babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
+    // ── Fields pane ── custom baby fields: a user-editable list of {match,label,key,dx,entity}. Persisted in
+    // SET; each edit re-scans the page (debounced) so pins appear/disappear live. Bad/empty selectors show a
+    // "bad selector" / match count so a typo is caught before it litters pins.
+    const cfList = p.querySelector('.mmth-cf-list');
+    const cfCount = sel => { try { return document.querySelectorAll(sel).length; } catch (e) { return -1; } };
+    let cfRefreshT = 0;
+    const cfApply = () => { persistSet(); clearTimeout(cfRefreshT); cfRefreshT = setTimeout(() => { try { babyMammoths.refresh(); } catch (e) {} }, 400); };
+    function renderFields() {
+      SET.customFields = SET.customFields || [];
+      cfList.textContent = '';
+      if (!SET.customFields.length) { const e = document.createElement('div'); e.className = 'mmth-cf-empty'; e.textContent = 'No custom fields yet.'; cfList.appendChild(e); }
+      SET.customFields.forEach((cf, i) => {
+        const row = document.createElement('div'); row.className = 'mmth-cf-row';
+        const cnt = document.createElement('span'); cnt.className = 'mmth-cf-cnt';
+        const paint = () => { if (!cf.match) { cnt.textContent = ''; cnt.classList.remove('mmth-cf-bad'); return; } const n = cfCount(cf.match); cnt.textContent = n < 0 ? 'bad selector' : `matches ${n}`; cnt.classList.toggle('mmth-cf-bad', n < 0); };
+        const mk = (ph, key, w, type) => {
+          const inp = document.createElement('input'); inp.type = type || 'text'; inp.placeholder = ph; inp.className = 'mmth-cf-in mmth-cf-' + key;
+          inp.value = cf[key] != null ? cf[key] : ''; if (w) inp.style.width = w;
+          inp.oninput = () => { cf[key] = type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value; if (key === 'match') paint(); cfApply(); };
+          return inp;
+        };
+        const ent = document.createElement('input'); ent.type = 'checkbox'; ent.checked = !!cf.entity; ent.onchange = () => { cf.entity = ent.checked; cfApply(); };
+        const entL = document.createElement('label'); entL.className = 'mmth-cf-ent'; entL.title = 'Best-effort: remember the selected MBID (works on MB autocomplete fields only)';
+        const entS = document.createElement('span'); entS.textContent = 'entity'; entL.append(ent, entS);
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
+        del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
+        row.append(mk('CSS selector (required)', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('Key', 'key', '72px'), mk('px', 'dx', '44px', 'number'), entL, cnt, del);
+        cfList.appendChild(row); paint();
+      });
+    }
+    p.querySelector('.mmth-cf-add').onclick = () => { SET.customFields = SET.customFields || []; SET.customFields.push({ match: '', label: '', key: '', dx: '', entity: false }); renderFields(); };
+    renderFields();
     // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
     // default, or a specific field's values when opened from a baby field)
     const ctx = io || { items: () => DATA.saved.map(s => s.text), add: notes => addSavedNotes(notes), help: 'Import adds to your saved notes; Export copies them all to the clipboard.' };
@@ -963,6 +1016,24 @@
       { match: '.attribute-container.text.task input[type="text"]', key: 'rel.task', label: 'Task' },
     ];
 
+    // #config user-defined baby fields (SET.customFields) merged into the scan alongside PREDEF. A custom
+    // def mirrors PREDEF's shape; a user key is namespaced 'cf:' so it can't collide with a built-in key,
+    // and an entity field gets the best-effort generic MBID reader below.
+    const customDefs = () => (SET.customFields || []).filter(c => c && c.match).map(c => ({
+      match: c.match, key: c.key ? 'cf:' + String(c.key) : null, label: c.label || '',
+      dx: (c.dx != null && c.dx !== '') ? +c.dx : undefined, gid: c.entity ? genericEntityGid : null,
+    }));
+    // Best-effort MBID capture for an arbitrary field the user flagged "entity" — no stable DOM contract
+    // exists (the built-ins read MB's Knockout release model directly), so try two generic probes: a nearby
+    // hidden <input> carrying a gid (some MB add-forms), then a walk up the React fiber for a prop/state
+    // object exposing `.gid` / `.entity.gid`. Returns null on miss → captureField falls back to plain text.
+    const MMTH_GID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const gidIn = o => { if (!o || typeof o !== 'object') return null; if (typeof o.gid === 'string' && MMTH_GID_RE.test(o.gid)) return o.gid; if (o.entity && typeof o.entity.gid === 'string' && MMTH_GID_RE.test(o.entity.gid)) return o.entity.gid; return null; };
+    function genericEntityGid(el) {
+      try { const scope = el.closest('td, .row, .form-row, li') || el.parentElement; if (scope) { for (const h of scope.querySelectorAll('input[type="hidden"]')) { const m = (h.value || '').match(MMTH_GID_RE); if (m) return m[0]; } } } catch (e) {}
+      try { const k = Object.keys(el).find(x => x.startsWith('__reactFiber$') || x.startsWith('__reactInternalInstance$')); let f = k && el[k], guard = 0; while (f && guard++ < 40) { const g = gidIn(f.memoizedProps) || gidIn(f.memoizedState); if (g) return g; f = f.return; } } catch (e) {}
+      return null;
+    }
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();
@@ -1106,6 +1177,7 @@
       const map = new Map();
       const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
       for (const d of PREDEF) document.querySelectorAll(d.match).forEach(el => add(el, d));
+      for (const d of customDefs()) { try { document.querySelectorAll(d.match).forEach(el => add(el, d)); } catch (e) {} }   // #config user-defined fields (invalid selectors ignored)
       document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '' }));
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
@@ -1347,6 +1419,6 @@
       pins.forEach(p => { try { setReserve(p, false); } catch (e) {} p.btn.remove(); p.bar.remove(); delete p.el.dataset.mmthf; });
       pins = [];
     }
-    return { start, stop, toggle(on) { on ? start() : stop(); }, relabel() { pins.forEach(p => renderBar(p)); } };
+    return { start, stop, toggle(on) { on ? start() : stop(); }, relabel() { pins.forEach(p => renderBar(p)); }, refresh() { if (running) { stop(); start(); } } };   // refresh: re-scan after custom fields change
   }
 })();
