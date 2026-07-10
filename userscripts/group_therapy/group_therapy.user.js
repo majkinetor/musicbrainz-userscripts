@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.163215
+// @version      2026.7.10.165522
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1236,9 +1236,12 @@
       if (!(state.begin_date || state.end_date || state.ended)) { toast('Enter a date first'); return; }
       const picked = chosen(), undated = picked.filter(c => !c.dated);
       if (!undated.length) { toast(picked.length ? 'All selected already have dates (unchanged)' : 'Nothing selected'); return; }
-      let n = 0; undated.forEach(c => { try { applyRelDate(re, c.rel, state); n++; } catch (e) { console.warn('[Group Therapy] set-date failed:', e && e.message); } });
+      // c.rel is recordingRels' STRIPPED view (item/linkTypeID/dates but NO entity0/entity1) — applyRelDate
+      // needs the raw fiber rel to match MB's reducer, so re-resolve it from the live .relationship-item node.
+      // (#398 fix: apply was a silent no-op because the stripped rel had no entities to route the update.)
+      let n = 0, miss = 0; undated.forEach(c => { try { const real = c.rel.item && relFromNode(c.rel.item); if (real) { applyRelDate(re, real, state); n++; } else miss++; } catch (e) { miss++; console.warn('[Group Therapy] set-date failed:', e && e.message); } });
       const dl = fmtRoDate(state) || 'date', skipped = picked.length - undated.length;
-      console.debug(`[Group Therapy] Date picker: set ${dl} on ${n} rel(s); ${skipped} already dated (unchanged)`);
+      console.debug(`[Group Therapy] Date picker: set ${dl} on ${n} rel(s); ${skipped} already dated, ${miss} unresolved`);
       if (n) markUsed(`Set date ${dl} on ${n} relationship${n > 1 ? 's' : ''}`);
       toast(`Set ${dl} on ${n} relationship${n > 1 ? 's' : ''}${skipped ? ` (${skipped} already dated)` : ''} — review & save`);
       closeDatePicker();

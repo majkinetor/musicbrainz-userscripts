@@ -71,6 +71,19 @@ if (dated.length) {
   });
   console.log('date picker:', JSON.stringify(popup, null, 2));
   await page.screenshot({ path: 'userscripts/group_therapy/dev/_smoke398.png', clip: await page.evaluate(() => { const p = document.querySelector('.gt-dp').getBoundingClientRect(); return { x: p.x - 8, y: p.y - 8, width: p.width + 16, height: Math.min(p.height + 16, 1000) }; }) });
+
+  // verify Apply actually stages dates: count recording rels with a begin_date before/after clicking Apply
+  const datedCount = () => page.evaluate(() => {
+    const relOf = item => { for (const k in item) if (k.startsWith('__reactFiber')) { let f = item[k], g = 0; while (f && g++ < 40) { const r = f.memoizedProps && f.memoizedProps.relationship; if (r && r.linkTypeID != null) return r; f = f.return; } } return null; };
+    let n = 0; document.querySelectorAll('.relationship-item').forEach(it => { const r = relOf(it); if (r && r.begin_date && r.begin_date.year) n++; }); return n;
+  });
+  const before = await datedCount();
+  await page.evaluate(() => document.querySelector('.gt-dp .gt-cons-apply')?.click());
+  await page.waitForTimeout(2500);
+  const after = await datedCount();
+  const toast = await page.evaluate(() => document.querySelector('.gt-toast')?.textContent || '');
+  const err = await page.evaluate(() => (window.MB && window.MB.relationshipEditor && window.MB.relationshipEditor.state.reducerError) || null);
+  console.log(`APPLY: rels with begin_date ${before} -> ${after} (expect +${popup.checked}) | toast: "${toast}" | reducerError: ${err}`);
 }
 console.log('pageerrors:', errs.length ? errs.slice(0, 5) : 'none');
 await ctx.close();
