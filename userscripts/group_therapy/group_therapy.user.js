@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.10.165522
+// @version      2026.7.10.175717
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -212,6 +212,14 @@
     if (recCb) { const tr = recCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY); } return; }
     const workCb = ev.target.closest && ev.target.closest('input.work');
     if (workCb) { ev.preventDefault(); openWorkMenu(workCb, ev.clientX, ev.clientY); return; }
+    // #399 right-click an entity NAME (or anywhere in a rel item that isn't an action control) → open that
+    // rel's edit dialog by clicking its pencil. Runs FIRST (before the recording-of / copy menus below) so a
+    // name always opens the dialog — previously a recording→work rel's work name fell to openRecOfMenu, and a
+    // NEW work's name (no /entity/<gid> href) matched nothing at all. We key off the item + "not a button/
+    // checkbox" instead of the href, so it works for new entities too. The ×/pencil/＋/checkbox still reach
+    // their own handlers below (right-click the PENCIL for the recording-of copy menu; the name → dialog).
+    const nameItem = ev.target.closest && !ev.target.closest('button, input') && ev.target.closest('.relationship-item');
+    if (nameItem) { const pencil = nameItem.querySelector('button.icon.edit-item'); if (pencil) { ev.preventDefault(); ev.stopPropagation(); try { pencil.click(); } catch (e) {} return; } }
     // #374 right-click a "recording of" rel (or its pencil) → copy its attributes + dates onto the selected
     // recordings' own recording-of rels (or all if none selected). Handled before the credit +/pencil below.
     const roItem = ev.target.closest && !ev.target.closest(REMOVE_SEL) && ev.target.closest('.relationship-item');   // not the × — that keeps its delete menu (#374 review)
@@ -236,16 +244,6 @@
         // recof pencil is handled above (#374 openRecOfMenu) where present; otherwise no recording menu
       }
       return;
-    }
-    // Right-click any entity NAME in a relationship → invoke that rel's pencil (open MB's native edit
-    // dialog) — a bigger, easier target than the small edit icon. Every relationship-item carries a
-    // `button.icon.edit-item`; clicking it opens MB's relationship-dialog (verified). Runs last, so the
-    // pencil/＋/× (copy/remove) and the recording-of copy menus above keep their behaviour; this only
-    // fills the plain entity-name links (artist/work/label/place/…) that otherwise had no right-click.
-    const nameLink = ev.target.closest && ev.target.closest('.relationship-item a[href]');
-    if (nameLink && /\/(artist|work|label|place|recording|series|release-group|event|instrument|area|genre|url)\/[a-z0-9-]/i.test(nameLink.getAttribute('href') || '')) {
-      const pencil = nameLink.closest('.relationship-item').querySelector('button.icon.edit-item');
-      if (pencil) { ev.preventDefault(); ev.stopPropagation(); try { pencil.click(); } catch (e) {} return; }
     }
     const btn = ev.target.closest && ev.target.closest(REMOVE_SEL);
     if (!btn) return;   // not a rel × — let the browser menu through
