@@ -26,7 +26,7 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 - **Replace or Insert** — left-click does your default, right-click the other; append skips a line already present (see [Shortcuts](#shortcuts)).
 - **Resizable** — the edit-note field is widened and centered; drag the separator to resize field vs. panel (and the field's height); remembered.
 - **Minimized mode** — collapse the panel to a small icon; hover to peek, click to pin; remembered across pages.
-- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls (catalogue №, label, artist, status, language, script, country, type).
+- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls (catalogue №, label, artist, status, language, script, country, type, and the relationship dialog's **Task** field).
 
 ## Saved notes
 
@@ -37,7 +37,7 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Mammoth babies
 
-A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The pin opens a compact panel with a toolbar:
+A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). Built-in fields: catalogue №, label, artist, status, language, script, country, type — plus the **Task** field in the *Add/Edit relationship* dialog (#397), so you can save and one-click your standardized task names instead of retyping them (one shared list across every relationship type). The pin opens a compact panel with a toolbar:
 
 - `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity
 - `✕` - clear the field

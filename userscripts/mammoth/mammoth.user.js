@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.3
+// @version      2026.7.10.153723
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -954,6 +954,10 @@
       { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label',  gid: labelGid },
       { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist', gid: artistGid },
       { match: 'input[id^="ac-source-artist-"]', key: 'release.artist', label: 'Artist', gid: artistRowGid },   // artist-credit editor bubble rows
+      // #397 the free-text "Task" attribute in the Add/Edit relationship dialog (`.attribute-container.text.task`).
+      // The dialog is a transient popover, but the field-scan MutationObserver picks it up when it opens. One
+      // shared key across every rel type — the point is reusing your standardized task names anywhere.
+      { match: '.attribute-container.text.task input[type="text"]', key: 'rel.task', label: 'Task' },
     ];
 
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
