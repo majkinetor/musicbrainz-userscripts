@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.10.191024
+// @version      2026.7.10.192104
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -1081,6 +1081,13 @@
       saveF(); return true;
     }
     const forgetValue = (key, v) => { FDATA[key] = listFor(key).filter(x => x.v !== v); saveF(); };
+    // edit a saved value in place (keeps its ★/default/order) — used to paste/append an MBID onto a value
+    function editValue(key, oldV, newV) {
+      newV = String(newV == null ? '' : newV).trim(); if (!newV) return false;
+      const a = listFor(key); const e = a.find(x => x.v === oldV); if (!e) return false;
+      if (newV !== oldV) { const other = a.findIndex(x => x.v === newV); if (other >= 0 && a[other] !== e) a.splice(other, 1); }   // dedup a collision
+      e.v = newV; e.label = newV; e.ts = Date.now(); saveF(); return true;
+    }
     const togglePin = (key, v) => { const e = listFor(key).find(x => x.v === v); if (e) { e.pinned = !e.pinned; saveF(); } };
     function setDefault(key, v) { const a = listFor(key); const e = a.find(x => x.v === v); if (!e) return; const was = e.default; a.forEach(x => x.default = false); e.default = !was; saveF(); }
     const defaultOf = key => listFor(key).find(x => x.default);
@@ -1204,6 +1211,9 @@
       .mmthf-row:hover .mmthf-ind { display:none; }
       .mmthf-ra { width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; }
       .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; }
+      .mmthf-edit-in { flex:1 1 auto; min-width:0; box-sizing:border-box; border:1px solid #5aa67e; border-radius:4px; padding:1px 5px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
+      .mmthf-edit-in:focus { outline:none; }
+      .mmthf-row.mmthf-editing .mmthf-acts, .mmthf-row.mmthf-editing .mmthf-ind { display:none !important; }
       .mmthf-grab { width:14px; text-align:center; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; }
       .mmthf-grab:active { cursor:grabbing; }
       .mmthf-row.mmthf-dragging { opacity:.45; }
@@ -1343,7 +1353,7 @@
       const rowHtml = (it, i) => {
         const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
         const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}">${it.default ? '◉' : '◯'}</button>`;
-        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
+        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-edit" title="Edit value (paste/append its MBID)">✎</button><button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
         const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
         return `<div class="mmthf-row" data-i="${i}" title="${esc(it.label || it.v)}"><span class="mmthf-rtxt">${esc(cleanLabel(it.label || it.v))}</span>${ind}${acts}</div>`;
       };
@@ -1398,9 +1408,10 @@
       el.querySelectorAll('.mmthf-row').forEach(row => {
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
-          if (e.target.closest('.mmthf-grab')) return;
+          if (e.target.closest('.mmthf-grab') || e.target.closest('.mmthf-edit-in')) return;   // dragging / mid-edit
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
+          if (e.target.closest('.mmthf-edit')) { startEditRow(row, p, it); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
           recallInto(p, it); closePop();   // don't refocus the field on apply — it re-triggers autocomplete
         });
@@ -1415,6 +1426,24 @@
       setTimeout(() => { document.addEventListener('click', onDown, true); document.addEventListener('keydown', onKey, true); }, 0);
     }
     const reopen = p => { const af = pop ? pop._atField : false; closePop(); openPop(p, af); };   // keep the same anchor across a reopen
+    // inline-edit a saved value (to paste/append its MBID). Enter commits + reopens (stripped rows), Esc
+    // cancels, blur commits silently (no reopen — avoids racing an outside-click close).
+    function startEditRow(row, p, it) {
+      const rtxt = row.querySelector('.mmthf-rtxt'); if (!rtxt || row.querySelector('.mmthf-edit-in')) return;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'mmthf-edit-in'; inp.spellcheck = false; inp.value = it.v;
+      rtxt.replaceWith(inp); row.classList.add('mmthf-editing');
+      let done = false;
+      const commit = () => { if (done) return; done = true; if (inp.value.trim() && inp.value.trim() !== it.v) editValue(p.key, it.v, inp.value); };
+      inp.addEventListener('mousedown', e => e.stopPropagation());
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('keydown', e => {
+        e.stopPropagation();
+        if (e.key === 'Enter') { e.preventDefault(); commit(); refreshState(p); reopen(p); }
+        else if (e.key === 'Escape') { e.preventDefault(); done = true; reopen(p); }
+      });
+      inp.addEventListener('blur', () => { commit(); refreshState(p); });
+      setTimeout(() => { try { inp.focus(); inp.select(); } catch (e) {} }, 0);
+    }
 
     const relayout = () => { syncDialog(); if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
     function start() {
