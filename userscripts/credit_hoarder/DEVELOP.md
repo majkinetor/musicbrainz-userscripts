@@ -301,3 +301,12 @@ First-run on a many-entity release legitimately takes minutes (rate-limited pref
 ### A fixture stalls forever in headed mode
 
 Open `test/logs/<latest>_<mbid>.log`. The last line in "Userscript import log" tells you the last thing the script did before stalling. Browser console + page errors are below.
+
+## Implementation details
+
+1. **IndexedDB cache** — resolved source URL → MB MBID mappings persist across sessions.
+1. **Rate-limit handling** — all MB WS2 requests share one throttle; on 429/503 every in-flight worker idles until the `Retry-After` window elapses (cooperative backoff).
+1. **unsafeWindow** — uses `@grant unsafeWindow` to reach MB's real page `window`, where `MB.relationshipEditor` lives.
+1. **BroadcastChannel** — same-origin cross-tab messaging for the entity-creation → review-table feedback loop, and for the Tidal credits-tab harvest.
+1. **Provider sources** — Discogs via `api.discogs.com` (token from MB's stored Discogs URL); Tidal via an anonymously-opened credits tab harvested cross-tab; Qobuz via the authenticated `album/get` when signed in through Platform Check, else the server-rendered store page.
+1. Resolution/review engine initially based on the Discogs Importer, itself based on the userscripts of *mattgoldspink*, *vzell*, *kellnerd*.

@@ -6,15 +6,15 @@ Import track and release credits from streaming and database providers into Musi
     - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](./CHANGELOG.md)
 
-> Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md)
->
-> Companion: **[Group Therapy](../group_therapy/README.md)** adds general relationship-editor helpers — batch group-delete, hover-highlight, and copy/move credits between recordings, works and releases. (These used to live in Credit Hoarder and now have their own script.)
-
-<img width="600" src="./screenshots/bar.png" />
-
 <img width="600" src="./screenshots/review_table.png" />
 
 The script presents itself on the **Edit relationships** screen of a MusicBrainz release when there's something to import — a linked provider (or one [Platform Check](../platform_check/README.md) found), **or** track titles that name a remixer (the **Titles** source). On a release with neither it stays out of the way. Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for the general guidelines.
+
+> [!NOTE] Discogs Importer
+> Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md)
+
+> [!TIP] Group Therapy
+> **[Group Therapy](../group_therapy/README.md)** adds general relationship-editor helpers — batch group-delete, hover-highlight, and copy/move credits between recordings, works and releases.
 
 ## Workflow
 
@@ -36,6 +36,8 @@ The script presents itself on the **Edit relationships** screen of a MusicBrainz
 
 The UI strip at the top of the page with the source picker, the option toggles, log output, a documentation link, and Copy-log buttons. Options are saved in localStorage and persist across sessions.
 
+<img width="600" src="./screenshots/bar.png" />
+
 - **Source picker** — an **Import credits:** label followed by one brand icon per source available on the release (Discogs, Tidal, Qobuz, and the title-derived **Titles** source). **Left-click** an icon to import from that source; **right-click** to open the source's page. Several sources can be run in one session — the edits stack and are submitted together.
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
@@ -43,9 +45,10 @@ The UI strip at the top of the page with the source picker, the option toggles, 
     - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach.
     - `when missing` — create a work for every recording without one, regardless of credits.
     - `never` — never create a work, even when there are credits.
-- **Dedup**
+- **Options**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).
+  
 ### Credit Review Table
 
 A single-row-per-entity table for confirming source ↔ MusicBrainz matches before dispatch.
@@ -71,7 +74,7 @@ Efficiency features:
     - **Only one side** returns a hit → auto-accepted only when strong (unique exact-name match OR a direct source↔MB URL relation).
     - **They disagree** → left unresolved for manual review.
 - **Entity creation**
-    - `+` opens MB's create page pre-filled (name, sort name, type, source URL); after save the tab closes itself and the row auto-selects the new entity.
+    - `+` opens MB's create page pre-filled (name, sort name, type, source URL); after save the tab closes itself and the row auto-selects the new entity. Right-click does it in the background.
     - `▾` opens advanced creation options (where the provider supports it, e.g. Discogs): set disambiguation by the role or from text selected in the source profile, take the real name from the source profile.
 - **Refresh from MB** — 🔄 deletes the existing cache and re-resolves every entity against fresh MB data.
 - **Credited as** — a per-entity override that sets `entity1_credit` on every dispatched rel for that entity (if the entity already exists in relationships, the most common *credited as* value is used). Helper buttons **[MB]** and **[source]** set the value to the MB or source name quickly.
@@ -87,12 +90,6 @@ The dispatch-based, zero-dialog import. Idempotent — skips relationships that 
 - Work-level: lyrics, composer, writer (with work auto-creation per the chosen *Create works* option), …
 - Detailed statistics in the edit note. When several sources are run on one release before submitting, each source's stats **stack** under one shared header (newest on top, one block per source). A credit a previous source already staged is reported as *already added this session* — distinct from *already in MB* — so e.g. Discogs shows "10 added" and a following Tidal run shows "2 added, 4 already added this session" rather than a misleading combined total.
 
-> **Looking for hover-highlight and batch-remove?** Those page-wide relationship-editor helpers moved to the **[Group Therapy](../group_therapy/README.md)** userscript (along with copy/move credits). Install it alongside Credit Hoarder.
-
-## Shortcuts
-
-In the review table's create-artist popup: `Enter` confirms, `Esc` closes. In a search box, `Enter` runs the search.
-
 ## Diagnostics
 
 The log panel records every step. The log menu offers **Copy log** (includes the raw source data), **Copy without JSON**, and per-provider raw/parsed copies (**Copy Discogs / Tidal / Qobuz**) for filing issues — each labelled by the source it came from.
@@ -101,12 +98,12 @@ The log panel records every step. The log menu offers **Copy log** (includes the
 
 Providers differ in how rich their credits are and — crucially — whether they expose a stable **artist identity** that resolves to MB exactly, or only a **name** that has to be searched and confirmed.
 
-| Provider | Credits exposed | Artist identity | How it's fetched | Auth |
-|---|---|---|---|---|
-| **Discogs** | Fullest — performers + instruments, engineering, production, artwork, mastering, … | Discogs **artist IDs** → exact MB resolution via URL relationships | Discogs API | none |
-| **Tidal** | Per-track: Producer, Mixing/Recording/Sound Engineer, Composer, Lyricist, Writer, Orchestrator, (Music) Publisher. **Plus release-level credits** from the Info tab — instruments, vocals, conductor, artwork, etc. (album-wide credits Tidal only lists once) | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab (per-track **and** the Info tab's "Additional Credits"), relayed back cross-tab | none |
-| **Qobuz** | Composer, Lyricist, Producer, Publisher, performers | mostly **names only**, but via `album/get` the **composer** (and main artist) carry a Qobuz artist **id** → an `open.qobuz.com/artist/<id>` link for exact resolution / addable "streaming" link; the other roles have no id in the API, so they resolve by MB **name search + your review** | authenticated `album/get` when signed in to Qobuz via [Platform Check](../platform_check/README.md) (reliable, geo-independent, and the source of the composer id); otherwise the server-rendered store page (names only) | optional [Qobuz login](../platform_check/README.md) — makes the fetch reliable **and** unlocks the composer artist link |
-| **Titles** | **Remixers only**, derived from the release's own track titles — no external provider | **names only** — resolved by MB **name search + your review** | reads the track titles already on the MB release | none |
+| Provider    | Credits exposed                                                                                                                                                                                                     | Artist identity                                                                                                                                                                                                                                                                              | How it's fetched                                                                                                                                                                                                          | Auth                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Discogs** | Fullest — performers + instruments, engineering, production, artwork, mastering, …                                                                                                                                  | Discogs **artist IDs** → exact MB resolution via URL relationships                                                                                                                                                                                                                           | Discogs API                                                                                                                                                                                                               | none                                                                                                                    |
+| **Tidal**   | Per-track: Producer, Mixing/Recording/Sound Engineer, Composer, Lyricist, Writer, Orchestrator, (Music) Publisher. **Plus release-level credits** from the Info tab — instruments, vocals, conductor, artwork, etc. | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships                                                                                                                                                                                                          | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab (per-track **and** the Info tab's "Additional Credits"), relayed back cross-tab                                                             | none                                                                                                                    |
+| **Qobuz**   | Composer, Lyricist, Producer, Publisher, performers                                                                                                                                                                 | mostly **names only**, but via `album/get` the **composer** (and main artist) carry a Qobuz artist **id** → an `open.qobuz.com/artist/<id>` link for exact resolution / addable "streaming" link; the other roles have no id in the API, so they resolve by MB **name search + your review** | authenticated `album/get` when signed in to Qobuz via [Platform Check](../platform_check/README.md) (reliable, geo-independent, and the source of the composer id); otherwise the server-rendered store page (names only) | optional [Qobuz login](../platform_check/README.md) — makes the fetch reliable **and** unlocks the composer artist link |
+| **Titles**  | **Remixers only**, derived from the release's own track titles — no external provider                                                                                                                               | **names only** — resolved by MB **name search + your review**                                                                                                                                                                                                                                | reads the track titles already on the MB release                                                                                                                                                                          | none                                                                                                                    |
 
 The **Titles** source parses remixer credits straight from the track-title disambiguation convention, for releases where the remix is named in the title but no provider lists it. A track titled *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)* or *Cut (Remixed by Someone)* contributes a **remixer** relationship for that recording. Only the reliable *named-remix* convention fires — anonymous descriptors like *(Extended Mix)*, *(Radio Edit)*, *(Original Mix)* or a bare *(Remix)* (edits/versions of the original, not a remix by a named artist) are ignored, and *(Mixed by …)* is left alone (that's an engineer). It's offered (its own icon in the source row) only when the titles actually contain a named remix, probed when the page loads. Everything still goes through the review table before it's committed. Because these remixers carry no source URL, your review picks for them are cached **per release** (keyed by the release and the parsed name) — so re-running the Titles source on the same release reuses your matches instead of re-asking, while a bare name like *Friends* never leaks a resolution onto a different release.
 
@@ -121,28 +118,25 @@ Notes & limitations:
 
 ### Role mapping (streaming providers)
 
-| Provider role | MusicBrainz relationship |
-|---|---|
-| Composer, Lyricist, Writer, Orchestrator | **work** rel (works are created on demand, as in the Discogs flow) |
-| Producer, Mixing Engineer (→ *mix*), Recording Engineer (→ *recording*), Sound Engineer (→ *sound*) | **recording** rel |
-| Assistant Mixing / Recording / Sound Engineer | same **recording** rel as above, with the MB **assistant** attribute ticked (MB has no separate "assistant engineer" relationship) |
-| Instruments, Vocals, Background Vocals, Conductor (release-level) | **recording** rel (resolved through the shared instrument/role tables, same as Discogs) |
-| Artwork (release-level) | **release** rel (artwork) |
-| Music Publisher | **label → work** *publishing* rel — the publisher is resolved as an MB **label** (by name) and linked to each track's work. `Copyright Control` placeholder is dropped |
-| Current Distributor | **label → release** *distributed* rel — the distributor is resolved as an MB **label** (by name) |
+| Provider role                                                                                       | MusicBrainz relationship                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Composer, Lyricist, Writer, Orchestrator                                                            | **work** rel (works are created on demand, as in the Discogs flow)                                                                                                     |
+| Producer, Mixing Engineer (→ *mix*), Recording Engineer (→ *recording*), Sound Engineer (→ *sound*) | **recording** rel                                                                                                                                                      |
+| Assistant Mixing / Recording / Sound Engineer                                                       | same **recording** rel as above, with the MB **assistant** attribute ticked (MB has no separate "assistant engineer" relationship)                                     |
+| Instruments, Vocals, Background Vocals, Conductor (release-level)                                   | **recording** rel (resolved through the shared instrument/role tables, same as Discogs)                                                                                |
+| Artwork (release-level)                                                                             | **release** rel (artwork)                                                                                                                                              |
+| Music Publisher                                                                                     | **label → work** *publishing* rel — the publisher is resolved as an MB **label** (by name) and linked to each track's work. `Copyright Control` placeholder is dropped |
+| Current Distributor                                                                                 | **label → release** *distributed* rel — the distributor is resolved as an MB **label** (by name)                                                                       |
 
 Tidal roles surfaced in the log but **not** imported: *Primary/Main/Featured Artist* and *Record Label* (the release's own artist credit / label, set elsewhere, not a relationship); and *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, *Studio Personnel* (no clean MB target). All appear in the skipped list so nothing is silently dropped.
 
+## Shortcuts
+
+| Key     | Action                               |
+| ------- | ------------------------------------ |
+| `Enter` | run the search, confirm artist popup |
+| `Esc`   | close artist popup                   |
+
 ## Notes
 
-1. **IndexedDB cache** — resolved source URL → MB MBID mappings persist across sessions.
-1. **Rate-limit handling** — all MB WS2 requests share one throttle; on 429/503 every in-flight worker idles until the `Retry-After` window elapses (cooperative backoff).
-1. **unsafeWindow** — uses `@grant unsafeWindow` to reach MB's real page `window`, where `MB.relationshipEditor` lives.
-1. **BroadcastChannel** — same-origin cross-tab messaging for the entity-creation → review-table feedback loop, and for the Tidal credits-tab harvest.
-1. **Provider sources** — Discogs via `api.discogs.com` (token from MB's stored Discogs URL); Tidal via an anonymously-opened credits tab harvested cross-tab; Qobuz via the authenticated `album/get` when signed in through Platform Check, else the server-rendered store page.
-1. Resolution/review engine initially based on the Discogs Importer, itself based on the userscripts of *mattgoldspink*, *vzell*, *kellnerd*.
-
-
-## Development
-
-See [DEVELOP.md](./DEVELOP.md) for prerequisites, install steps, the dev loop, testing, and contributor workflow.
+-  [Development documentation](./DEVELOP.md).
