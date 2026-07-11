@@ -30,7 +30,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 
 Beautification of native page, external links redesign, markdown annotation editor, release cover and array batch removal tools.
 
-<img width="1200" src="./screenshots/release.png" /><br>
+<img width="1200" src="./screenshots/release.png" />
 
 - **External links** moved to a right column with a **dead-link checker**; **right-click** a favicon/type to edit it.
 - **[Markdown annotation editor](#annotation-editor)** in *Additional information*.
@@ -88,7 +88,7 @@ Extremely fast and confident artist matching via multiple mechanisms, advanced t
 
 Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
 
-<img width="1200" src="./screenshots/recordings.png" /><br>
+<img width="1200" src="./screenshots/recordings.png" />
 
 
 - **[Auto match artist](#recording-matching)** based on release group or name and Cutoff settings

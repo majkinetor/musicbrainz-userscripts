@@ -110,7 +110,7 @@ With more than 10 releases in a group you must pick releases to be consolidated 
 
 The **◎ Match works…** button links each recording on the release to an existing MusicBrainz work, so a release of standards or a hits compilation **reuses** the works that already exist instead of creating duplicates. It opens a review table — one row per recording, track on the left, matched work on the right.
 
-<img width="800" src="./screenshots/match-works.png" /><br>
+<img width="800" src="./screenshots/match-works.png" />
 
 The hard part is disambiguation — a bare title like *Beat It* matches many works. Two signals drive it:
 

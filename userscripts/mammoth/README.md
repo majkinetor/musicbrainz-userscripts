@@ -6,7 +6,7 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
     - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](./CHANGELOG.md)
 
-<img src=./screenshots/main.png width=600 />
+<img src="./screenshots/main.png" width=600 />
 
 ## Features
 
@@ -31,7 +31,7 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
 
 A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, and task fields — are **seeded into the [Babies](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own. 
 
-<img src=./screenshots/babies.png width=600 /><br>
+<img src="./screenshots/babies.png" width=600 />
 
 The pin opens a compact panel with a toolbar:
 
@@ -47,13 +47,13 @@ Note actions:
 
 Pinned buttons wrap to new rows, labelled with the value truncated to the configured length — see **[Settings] - "Button label length"**:
 
-<img src=./screenshots/big-buttons.png width=600 /><br>
+<img src="./screenshots/big-buttons.png" width=600 />
 
 ### Custom fields
 
 The built-in babies cover several native controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Babies** tab and **＋ Add field**:
 
-<img src=./screenshots/custom-fields.png width=600 />
+<img src="./screenshots/custom-fields.png" width=600 />
 
 | Column | Meaning |
 |---|---|
@@ -87,7 +87,7 @@ The **`{ } JSON`** button (top-right of the section) switches the editor to a JS
 
 Accessed using the `⚙` button. 
 
-<img src=screenshots/options.png width=350/>
+<img src="screenshots/options.png" width=350/>
 
 | Setting | Default | Notes |
 |---|---|---|
