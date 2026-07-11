@@ -8,23 +8,17 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
 
 <img src=./screenshots/main.png width=600 />
 
-<details><summary>More screenshots</summary>
-<img src=./screenshots/babies.png width=600 /><br>
-<img src=./screenshots/big-buttons.png width=600 /><br>
-<img src=screenshots/options.png width=350/>
-</details>
-
 ## Features
 
+- **[Saved notes](#saved-notes)** — save, pin as quick-buttons, search, sort and reorder edit notes.
+- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls with **[custom fields](#custom-fields)** by CSS selector.
 - **Per-type notes** — keep saved notes and history separate per edit-note type (release / artist / recording…).
 - **History** — remembers the last N submitted edit notes, newest-first and de-duplicated.
-- **[Saved notes](#saved-notes)** — save, pin as quick-buttons, search, sort and reorder notes.
 - **Import / export** — batch load/export notes per input type; entity fields (Artist/Label) keep their MBID so a re-import resolves the real entity (see [Settings](#settings)).
-- **Compact, one-line rows** — full note on hover; choose how many show before the list scrolls.
 - **Replace or Insert** — left-click does your default, right-click the other; append skips a line already present (see [Shortcuts](#shortcuts)).
+- **Compact** — one-line rows, full note on hover; choose how many show before the list scrolls.
 - **Resizable** — the edit-note field is widened and centered; drag the separator to resize
 - **Minimized mode** — collapse the panel to a small icon; hover to peek, click to pin; remembered across pages.
-- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls (catalogue №, label, artist, status, language, script, country, type, and the relationship dialog's **Task** field), plus **[your own custom fields](#custom-fields)** by CSS selector.
 
 ## Saved notes
 
@@ -37,6 +31,8 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
 
 A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, and task fields — are **seeded into the [Babies](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own. 
 
+<img src=./screenshots/babies.png width=600 /><br>
+
 The pin opens a compact panel with a toolbar:
 
 - `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity; custom fields do not save MBID automatically but can be added manually by editing a note (MBID remains hidden from menu and buttons).
@@ -44,10 +40,14 @@ The pin opens a compact panel with a toolbar:
 
 Note actions:
 
- - `★` pins a value as an always-visible **button under the field** (rounded "tag" buttons that wrap to new rows, labelled with the value truncated to the configured length — see **`⚙` "Button label length"**)
+ - `★` pins a value as an always-visible **button under the field** 
  - `◉` marks one entry as the **default** (auto-fills the field when it's empty)
  - `🗑` delete note
  - `⠿` drag to reorder
+
+Pinned buttons wrap to new rows, labelled with the value truncated to the configured length — see **[Settings] - "Button label length"**:
+
+<img src=./screenshots/big-buttons.png width=600 /><br>
 
 ### Custom fields
 
@@ -83,37 +83,11 @@ The **`{ } JSON`** button (top-right of the section) switches the editor to a JS
 
 **`mbid`** is **JSON-only** (no column in the grid). It enables entity-MBID capture and is meaningful **only on the built-in Label and Artist fields** — there it reads the release editor's model so a saved value keeps the real entity; on any other field it does nothing (falls back to text). It's shipped on for those two built-ins; you normally won't set it yourself.
 
-## Shortcuts
-
-In the edit-note field (and Mammoth's panel):
-
-| Key | Action |
-|---|---|
-| `Ctrl`/`⌘` + `Enter` | Submit the edit (clicks the page's *Enter edit* / submit button) |
-| `Ctrl`/`⌘` + `↑` / `↓` | Cycle through your saved notes, replacing the field |
-| `Ctrl`/`⌘` + `B` | Wrap the selection — or the word at the caret — in **bold** markup |
-| `Ctrl`/`⌘` + `I` | Wrap the selection — or the word at the caret — in *italic* markup |
-| `Ctrl`/`⌘` + `,` | Focus the note search box |
-
-On a saved-note row or a pinned quick-button:
-
-| Action | Result |
-|---|---|
-| click | apply with your default (replace / append) |
-| right-click | apply the other way |
-| `Ctrl`/`⌘` + click | replace the field **and submit** the edit (parity with `Ctrl`/`⌘` + `Enter`) |
-
-In the note search box:
-
-| Key | Action |
-|---|---|
-| `↑` / `↓` | Move the highlighted match |
-| `Enter` | Apply the highlighted match (or the first if none) |
-| `Esc` | Clear the search |
-
 ## Settings 
 
 Accessed using the `⚙` button. 
+
+<img src=screenshots/options.png width=350/>
 
 | Setting | Default | Notes |
 |---|---|---|
@@ -168,3 +142,30 @@ The popover always carries a filter box for the saved values. `Ctrl`/`Cmd`+`,` w
 
 Works on `<input>`, `<select>`, `<textarea>`. Stored under its own key mammoth-fields:data (separate from edit-note history).
 
+## Shortcuts
+
+In the edit-note field (and Mammoth's panel):
+
+| Key | Action |
+|---|---|
+| `Ctrl`/`⌘` + `Enter` | Submit the edit (clicks the page's *Enter edit* / submit button) |
+| `Ctrl`/`⌘` + `↑` / `↓` | Cycle through your saved notes, replacing the field |
+| `Ctrl`/`⌘` + `B` | Wrap the selection — or the word at the caret — in **bold** markup |
+| `Ctrl`/`⌘` + `I` | Wrap the selection — or the word at the caret — in *italic* markup |
+| `Ctrl`/`⌘` + `,` | Focus the note search box |
+
+On a saved-note row or a pinned quick-button:
+
+| Action | Result |
+|---|---|
+| click | apply with your default (replace / append) |
+| right-click | apply the other way |
+| `Ctrl`/`⌘` + click | replace the field **and submit** the edit (parity with `Ctrl`/`⌘` + `Enter`) |
+
+In the note search box:
+
+| Key | Action |
+|---|---|
+| `↑` / `↓` | Move the highlighted match |
+| `Enter` | Apply the highlighted match (or the first if none) |
+| `Esc` | Clear the search |
