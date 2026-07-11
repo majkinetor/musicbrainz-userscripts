@@ -18,6 +18,17 @@ set -e
 
 STAGED=$(git diff --cached --name-only)
 
+# platform icons (#404) — when the shared icon set changes, re-inline it into every
+# script carrying a `// <ST-ICONS>` marker and re-stage them. Runs FIRST so the bundle
+# rebuild below sees any synced members (STAGED is refreshed afterwards).
+if printf '%s\n' "$STAGED" | grep -qE '^dev/platform-icons\.mjs$'; then
+    echo "[pre-commit] syncing shared platform icons…"
+    node dev/sync-icons.mjs >/dev/null
+    ICON_FILES=$(grep -rl '// <ST-ICONS>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$ICON_FILES" ] && git add $ICON_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # discogs_credits — esbuild bundle
 if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\.mjs)'; then
     echo "[pre-commit] rebuilding userscripts/discogs_credits/dist/…"
