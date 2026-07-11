@@ -10,12 +10,6 @@ A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reor
 
 ![](./screens/screenshot.png)
 
-<details><summary>More Screenshots</summary>
-  
-![](./screens/screenshot2.png)
-![](./screens/screenshot3.png)
-</details>
-
 It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an event's **Event art** tab (`/event/<gid>/event-art`), replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
 
 ## Features
@@ -27,6 +21,15 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 - **[Add images](#add-images)** — file drop, URL (Enhanced Cover Art Uploads), MH Covers, and reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** — navigate, zoom, mouse-follow pan, slideshow, set type/comment, delete.
 - **[File names ⇄ types](#file-names--types)** — cover types and file names round-trip, so a downloaded archive re-adds with types intact.
+- Paraallel operations on final commit
+
+Group by type view:
+
+![](./screens/screenshot2.png)
+
+Detailed view (supports Mammoth in comment section):
+
+![](./screens/screenshot3.png)
 
 ## Single or bulk actions
 
@@ -34,8 +37,9 @@ Works on one cover or the whole selection:
 
 - **Set type** — tick checkboxes for one or more types, or **right-click a type to set *only* that one and close**.
 - **Set comment** — auto-focuses the next comment field on `<ENTER>`.
-- **Remove** and **Download** as a zip archive — files named by type so they round-trip (see [File names ⇄ types](#file-names--types)), plus a `README.md` manifest.
-- **Reports** in HTML or Markdown — inline, captioned, or a **Detailed table** (position · type-named file · resolution · size) that doubles as the archive `README.md`.
+- **Remove**  — mark for removal.
+- **Download** — as a zip archive, files named by type so they round-trip (see [File names ⇄ types](#file-names--types))
+- **Reports** in HTML or Markdown — inline, captioned, or a detailed table (position · type-named file · resolution · size) that doubles as the archive `README.md`.
 
 ## Add images
 
@@ -85,39 +89,6 @@ where `none` is used where no type is given
 
 **Example**: `09 front,sticker Front cover with the sticker.jpg`.
 
-## Keyboard shortcuts
-
-**Gallery** (when a cover is focused — arrow to it first):
-
-| Key | Action |
-|---|---|
-| `←` `→` `↑` `↓` | move the cursor between covers |
-| `Enter` | open the focused cover full-screen |
-| `Space` | select / deselect the focused cover |
-| `Delete` | mark the focused cover for removal (undo in the grid) |
-
-**Full-screen viewer:**
-
-| Key | Action |
-|---|---|
-| `←` `→` | previous / next cover |
-| `↑` `↓` | zoom in / out |
-| `Enter` | edit the comment |
-| `D` | download the original |
-| `Delete` | mark the cover for removal |
-| `P` | play / pause the slideshow |
-| `Esc` | close (dismisses an open popover or comment edit first) |
-
-**Mouse:**
-
-| Gesture | Action |
-|---|---|
-| right-click / right-drag | select / paint-select covers |
-| scroll wheel over the size slider | resize thumbnails |
-| **hold right-click + scroll wheel** (anywhere in the gallery) | resize thumbnails |
-| full-screen, zoomed: **move the mouse** | pan the image (follow-pan; on by default — see Setup). Off → click-and-drag to pan |
-| full-screen: **scroll wheel** | zoom toward the cursor |
-
 ## Comment memory (Mammoth)
 
 The comment field in the **detailed view** carries the `mmth-pin` class, so if you also run [Mammoth](../mammoth), its **baby field-memory** attaches to it automatically — a small 🦣 pin lets you save and recall past comments (key `art-station-comment`). No configuration; it's Mammoth's [documented cross-userscript convention](../mammoth/README.md#using-mammoth-from-another-userscript). Art Station's own `comment…` preset list still works independently when Mammoth isn't installed.
@@ -160,36 +131,39 @@ window.ArtStation?.registerProvider({
 - If a manager isolates `window` between userscripts, register via the event fallback instead: `document.dispatchEvent(new CustomEvent('artstation:register-provider', { detail: provider }))`.
 - When Art Station isn't installed, `window.ArtStation` is simply absent, so the `?.` call is a no-op.
 
-## Server communication (internals)
+## Shortcuts
 
-*Reference for maintainers — the low-level MusicBrainz / archive.org traffic behind **Enter edit**. Below, `<art>` is `cover-art` on releases and `event-art` on events, and `<mbid>` is the release/event MBID.*
+**Gallery** (when a cover is focused — arrow to it first):
 
-Art Station never screen-drives MB's edit UI. For each edit it reads the relevant edit **form once** for its hidden fields (CSRF token, the type-id vocabulary) and POSTs the same fields the form itself would, with `credentials: same-origin`. `getPostForm(url)` GETs the page and returns the parsed `<form>` (action + hidden inputs); `copyHidden()` copies those into the request body.
+| Key | Action |
+|---|---|
+| `←` `→` `↑` `↓` | move the cursor between covers |
+| `Enter` | open the focused cover full-screen |
+| `Space` | select / deselect the focused cover |
+| `Delete` | mark the focused cover for removal (undo in the grid) |
 
-### Sourcing art from a provider
+**Full-screen viewer:**
 
-The **Source** popover doesn't touch MB directly. It seeds ROpdebee's *Enhanced Cover Art Uploads* by setting its `x_seed.image.0.url` params on a **hidden `/release/<mbid>/add-cover-art` iframe**, then polls the ECAU-restructured page for the resulting preview blob (giving up after 45 s) and harvests it into the gallery as a staged new cover. ECAU performs the actual fetch; nothing is submitted at this stage.
+| Key | Action |
+|---|---|
+| `←` `→` | previous / next cover |
+| `↑` `↓` | zoom in / out |
+| `Enter` | edit the comment |
+| `D` | download the original |
+| `Delete` | mark the cover for removal |
+| `P` | play / pause the slideshow |
+| `Esc` | close (dismisses an open popover or comment edit first) |
 
-### Uploading a new cover — 3-step pipeline per image
+**Mouse:**
 
-`uploadStep` → `registerStep`:
+| Gesture | Action |
+|---|---|
+| right-click / right-drag | select / paint-select covers |
+| scroll wheel over the size slider | resize thumbnails |
+| **hold right-click + scroll wheel** (anywhere in the gallery) | resize thumbnails |
+| full-screen, zoomed: **move the mouse** | pan the image (follow-pan; on by default — see Setup). Off → click-and-drag to pan |
+| full-screen: **scroll wheel** | zoom toward the cursor |
 
-1. **Sign** — `GET /ws/js/<art>-upload/<mbid>?mime_type=<mime>` → `{ action, image_id, formdata, nonce }`. Reserves an id and fetches an Internet Archive S3 policy. Concurrent sign calls for the same release **race and 500**, so signing is **serialised through a gate** (`_signGate`) and retries transient 5xx/429 with backoff + jitter.
-2. **Upload** — `POST <action>` (an archive.org S3 URL) as **multipart**: the returned `formdata` policy fields + the file. Uses `XMLHttpRequest` (for upload progress + a 5-min timeout); the live XHR is registered on the run's `AbortController` so **Cancel** aborts it mid-upload. Runs in **parallel** (concurrency 4).
-3. **Register** — `POST /release/<mbid>/add-<art>` with `add-<art>.id` (= `image_id`), `.nonce`, `.mime_type`, `.position`, `.type_id` (repeated per type), `.comment`, `.edit_note`. Creates the *add artwork* edit. Also runs in **parallel** (#362).
+## Notes
 
-### Ordering — the reorder edit
-
-`add-<art>.position` only places the whole upload as **one group**, so it does *not* reliably interleave several new covers (or a new cover slotted among existing ones). A single **reorder** edit fixes it:
-
-> `POST /release/<mbid>/reorder-<art>` — the full artwork list: `reorder-<art>.artwork.<n>.id` + `.artwork.<n>.position` for every non-deleted cover, new ones referenced by their post-upload `image_id`.
-
-It runs **last**, after every register, and is **re-run whenever a failed upload is retried** (it re-reads `MODEL` live, so a late success lands in the right slot). Because the reorder is authoritative for order, the register step doesn't need to be sequential.
-
-### Other edits
-
-- **Retype / comment** — `POST /release/<mbid>/edit-<art>/<id>` with `edit-<art>.type_id` / `.comment`.
-- **Remove** — `POST /release/<mbid>/remove-<art>/<id>` (a 404 is treated as *already removed*, not an error).
-
-Every edit body also carries `.edit_note` (crediting Art Station and the image's source, if any) and `.make_votable=1` when that box is ticked. **Dry run** prints each request's method / URL / body instead of POSTing.
-
+- [Development documentation](./DEVELOP.md)
