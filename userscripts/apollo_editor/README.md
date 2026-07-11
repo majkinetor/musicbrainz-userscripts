@@ -9,7 +9,7 @@ UI and tools for advanced adding and editing of a MusicBrainz release.
 
 When you add a release, each track's artist may be set as **plain text with no MBID**, and the recordings are unset. Linking them one by one — searching, picking, occasionally splitting *A feat. B* into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist and recording set in one pass and lets you apply the confident matches with one click.
 
-It replaces the native **Tracklist** and **Recordings** editors with two clean, consistent tables with dozen of features. It also makes **Release Information** tab more functional by suppresing help bubbles and external icons moved to right column. When adding new releases, **Duplicates** tab provides similarity check.
+It replaces the native **Tracklist** and **Recordings** editors with two clean, consistent tables with dozens of features. It also makes the **Release Information** tab more functional by suppressing help bubbles and moving external icons to the right column. When adding new releases, the **Duplicates** tab provides a similarity check.
 
 Each takeover is optional and you can flip back to the native editor at any time with the **Original / Apollo** switcher button.
 
@@ -55,7 +55,7 @@ Extremely fast and confident artist matching via multiple mechanisms, advanced t
   - **Create** unresolved artist (in the background) with multiple fields pre-set (sort, type, external link)
   - **Hover actions**
     - **Split** an artist with a **join-phrase selector**
-    - **Delete** splitted artist
+    - **Delete** split artist
     - **Reorder** artist within split
   - **Aliases** and disambiguation shown in search results and selection
   - **Artist type** icon with a direct link to the artist
@@ -73,13 +73,13 @@ Extremely fast and confident artist matching via multiple mechanisms, advanced t
   - Pending changes (recordings, artists)
   - [Enlarge Punctuation](#enlarge-punctuation)
   - [Join-phrase spacing](#join-phrase-spacing)
-  - Splitted and splittable tracks
-  - Tracks that "Guess case" can afect
+  - Split and splittable tracks
+  - Tracks that "Guess case" can affect
 - **Expand all media** when release has them collapsed
   - left-click expands single media
   - right-click expands all media
-- Table apperience customization: layout, alternate row colors, grid lines
-- Pregap, data track and disck id support
+- Table appearance customization: layout, alternate row colors, grid lines
+- Pregap, data track and disc id support
 - Revert/Clear all inputs
 
 ## Recordings
@@ -115,7 +115,7 @@ When release is added, MusicBrainz's **Duplicates** tab lists existing releases 
 <img width="1200" src="./screenshots/duplicates.png" />
 
 - A **Similarity** column scores how closely each existing release matches the one you're entering — a folded-title ratio, softened by an **artist** mismatch (×0.75) and a **track-count** gap
-- **Click a score** to expand a **track-by-track comparison** beneath the row: each track's *Release* (the existing release) vs *Seeded* (what you're entering) **artist**, **title** and **length**, grouped by medium and with [detailed highlighting](#recordings-editor).
+- **Click a score** to expand a **track-by-track comparison** beneath the row: each track's *Release* (the existing release) vs *Seeded* (what you're entering) **artist**, **title** and **length**, grouped by medium and with [detailed highlighting](#enable-detailed-highlighting).
 
 The score is computed from the data shown in the native row (no extra requests); the comparison fetches the existing release's tracklist on demand when you open it.
 
@@ -134,7 +134,7 @@ Edits the [annotation](https://musicbrainz.org/doc/Annotation) as **Markdown** w
 - **Markup** —  switch between editing as Markdown and the MusicBrainz markup
 - **Help** — hover for a syntax and shortcut cheatsheet.
 - **Maximize** — expand the editor to fill the screen (Esc restores)
-- **History** — the annotation's previous versions; select one to display its rendered annotation, with a **↶ revert** button that loads that version back into the editor wit markup reconstructed from the rendered HTML
+- **History** — the annotation's previous versions; select one to display its rendered annotation, with a **↶ revert** button that loads that version back into the editor with markup reconstructed from the rendered HTML
 
 **Editing**
 
@@ -145,7 +145,7 @@ Edits the [annotation](https://musicbrainz.org/doc/Annotation) as **Markdown** w
 
 The Markdown ↔ MB conversion covers links, bold/italic, headings, nested bullet/numbered lists, fenced ` ``` ` ↔ 8‑space code, rules, and encodes a non‑link `[x]` so MusicBrainz doesn't read it as a broken link.
 
-### Tools
+## Tools
 
 Native tools are hidden and replaced by a configurable **Tools** bar. It is highly customizable, supports all native tools, some 3rd party tools and adds few new ones.
 
@@ -153,14 +153,14 @@ Native tools are hidden and replaced by a configurable **Tools** bar. It is high
 
 The **Tools ▾** label opens a menu of the tools that *haven't* been put on the bar. Picking a tool from that menu uses it right away; a tool with parameters joins the bar **for the current session** so its controls are reachable — it returns to the menu next time (use Customize to keep it). Parameterless tools (e.g. *Guess feat.*) just fire on click.
 
-**Customizetion** lets you:
+**Customization** lets you:
 
 - **Show tool on the bar** — select which tools sit on the bar and leave the rest in the **Tools ▾** menu
 - **Reorder** — drag the handle to set the order 
 - **Icon / text** — toggle the `[icon]` and `[text]` segments to show either or both
 
->[!TIP] Collapsing a tool's parameters
->Right-click a tool's name to collapse it to just the name (dotted underline); its parameters then **fly out on hover** (and stay open while you're typing in them). Right-click again to pin them back inline. The collapsed/expanded choice is remembered per tool.
+> [!TIP]
+> **Collapsing a tool's parameters** — right-click a tool's name to collapse it to just the name (dotted underline); its parameters then **fly out on hover** (and stay open while you're typing in them). Right-click again to pin them back inline. The collapsed/expanded choice is remembered per tool.
 
 Besides the integrated tools, there are a few new ones:
 
@@ -171,7 +171,7 @@ External tools (need another userscript):
 
 - **Guess punctuation** — runs kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation) (curly quotes, dashes, ellipses…) over the release. **Requires that script installed** — the tool only appears when it is.
 
-#### Tools integration
+### Tools integration
 
 Apollo can surface a fire-and-forget button that *another* userscript adds to the page, so you can use it without leaving the Apollo view. Such a tool behaves like any built-in one: it shows in the **Tools ▾** menu and in **Customize…**, where you can pin it to the bar, reorder it, and choose icon/text (the choice persists). It only appears while the providing script is present. Two ways in:
 
@@ -217,7 +217,7 @@ When the release carries a **Discogs link** (read from the page), Apollo uses it
 
 Before the name search, each track artist is matched by its Discogs URL (taken from the release's Discogs tracklist) against MusicBrainz's URL relationships — a strong, human-verified signal. A single linked MB artist is applied directly with a teal **DISC** badge; several linked artists are offered as candidates to pick from.
 
-#### Addding link
+#### Adding link
 
 For a slot whose Discogs URL is known, the artist-type icon becomes an actionable Discogs icon when there's something to do — click it to act:
   - unresolved slot → **teal 🔗**: creates the artist seeded with the Discogs link (same as `＋`);
@@ -232,7 +232,7 @@ Already-linked artists are verified for free via MusicBrainz's internal entity e
 
 Apollo fetches **every recording in the release group in one request**, indexes them by title, and matches each track **locally** — choosing the highest-confidence candidate (title + artist + length). It only falls back to a per-track MusicBrainz lookup for the tracks the release group can't satisfy. A full release therefore matches in roughly one fetch rather than one request per track.
 
-A *Credited as* values on track and recording don't influence matching.
+*Credited as* values on track and recording don't influence matching.
 
 **Confidence levels**:
 
@@ -282,7 +282,7 @@ If any of the following options is on, script replaces the native interface elem
 
 - [Modify Release Information](#release-information)
 - [Modify Tracklist](#tracklist)
-- [Modify Recordings](#recordings-editor)
+- [Modify Recordings](#recordings)
 - [Modify Duplicates](#duplicates) 
 - [Modify annotations with Markdown](#annotation-editor) 
 - [Modify header and footer](#modify-header-and-footer)
@@ -331,7 +331,7 @@ Applied to **both** tables (Tracklist and Recordings).
 |---|---|---|
 | **Row layout** | normal | Row density: `compact` (tight) · `normal` · `cozy` (airy). |
 | **Alternate row colors** | Off | Tints every other row (and deepens the matched-box green on alternate rows). |
-| **Show grid** | Off | Togle grid lines on rows and/or columns |
+| **Show grid** | Off | Toggle grid lines on rows and/or columns |
 | **Enlarge punctuation** | On | How much to enlarge in pixels| 
 
 ## Keyboard 
@@ -347,8 +347,8 @@ By default, moving between cells keeps the **caret column** where it was (clampe
 
 ### Enlarge punctuation
 
-- Every character that is confusable(a straight `'` `"` `-`, a curly `’`, an en/em dash) is **enlarged**. 
-- Every invisible (a no-break or zero-width space, a tab etc.) is rendered as a visible glyph.
+- Every character that is confusable (a straight `'` `"` `-`, a curly `’`, an en/em dash) is **enlarged**.
+- Every invisible character (a no-break or zero-width space, a tab etc.) is rendered as a visible glyph.
 - Tooltip shows its Unicode name and exact codepoint
  
 Control enlargement size via the _Appearance → Enlarge punctuation by N px_ setting (`0` = off, the master switch).
@@ -370,13 +370,12 @@ These are remembered automatically as you use the UI:
 - **Column widths** — drag a column border to resize; reset/auto-fit via the **Resize Columns** tool.
 - **Suggestions collapsed** — the picker remembers whether its *suggestions* section is collapsed.
 - **Tools bar** — which tools are on the bar, their order, each tool's icon/text choice, and whether its parameters are collapsed.
-- **Apply mode**, **Cuttoff**, and all dialog options above — saved on change.
+- **Apply mode**, **Cutoff**, and all dialog options above — saved on change.
 
 [Tracklist]: #tracklist
 [Recordings]: #recordings
 [Settings]: #settings
 [Duplicates]: #duplicates
 [Matching]: #matching
-[Settings]: #settings
 [Release Information]: #release-information
 [Tools]: #tools
