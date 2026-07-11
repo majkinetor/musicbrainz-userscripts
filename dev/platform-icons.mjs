@@ -60,9 +60,14 @@ export const PLATFORM_ICONS = {
 export function stIcon(name, size = 16) {
     const i = PLATFORM_ICONS[name];
     if (!i) return '';
-    // Only touch the ROOT <svg> tag's width/height — child elements (e.g. Deezer's
-    // equalizer <rect width height>) must keep theirs.
-    return i.svg.replace(/<svg\b([^>]*)>/, (_m, a) => `<svg${a.replace(/\s(?:width|height)="[^"]*"/g, '')} width="${size}" height="${size}">`);
+    // Only touch the ROOT <svg>'s width/height — child elements (e.g. Deezer's equalizer
+    // <rect width height>) keep theirs. Also ensure an xmlns, so the SVG works as a
+    // `data:image/svg+xml` <img src> (Art Station), not only inline in HTML.
+    return i.svg.replace(/<svg\b([^>]*)>/, (_m, a) => {
+        const attrs = a.replace(/\s(?:width|height)="[^"]*"/g, '');
+        const ns = /\bxmlns=/.test(attrs) ? '' : ' xmlns="http://www.w3.org/2000/svg"';
+        return `<svg${attrs}${ns} width="${size}" height="${size}">`;
+    });
 }
 
 /** Brand accent colour for a platform (for text/borders), or '' if unknown. */
