@@ -30,6 +30,7 @@ export function buildEditNote(sourceUrl, opts, extraLines) {
     const cleanSource = String(sourceUrl || '').split(/[?#]/)[0];
     const sourceName = /tidal\.com/i.test(cleanSource) ? 'Tidal'
                      : /qobuz\.com/i.test(cleanSource) ? 'Qobuz'
+                     : /deezer\.com/i.test(cleanSource) ? 'Deezer'
                      : 'Discogs';
     const lines = [
         header,

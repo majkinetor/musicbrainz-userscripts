@@ -18,6 +18,12 @@ assert.deepEqual(parseDeezerCreditLine('Composers: No Info'), []);   // placehol
 assert.deepEqual(parseDeezerCreditLine('Composers:  '), []);         // empty → none
 assert.deepEqual(parseDeezerCreditLine('Unmapped: Someone'), []);    // unknown label → dropped
 assert.deepEqual(parseDeezerCreditLine('Producers: Someone'), [{ name: 'Someone', roles: ['producer'] }]); // best-effort other label
+// #401: multi-group line "Label: names / Label: names" — same person under two labels → one entry, both roles
+assert.deepEqual(parseDeezerCreditLine('Writer: Raúl Saladem Marrugo / Composers: Raúl Saladem Marrugo'),
+    [{ name: 'Raúl Saladem Marrugo', roles: ['writer', 'composer'] }]);
+assert.deepEqual(parseDeezerCreditLine('Writer: A, B / Composers: C'),
+    [{ name: 'A', roles: ['writer'] }, { name: 'B', roles: ['writer'] }, { name: 'C', roles: ['composer'] }]);
+assert.deepEqual(parseDeezerCreditLine('Mystery: X / Composers: Y'), [{ name: 'Y', roles: ['composer'] }]); // unknown group skipped, rest kept
 
 // entity decode
 assert.equal(decodeEntities('Beyonc&#039; &amp; Co'), "Beyonc' & Co");

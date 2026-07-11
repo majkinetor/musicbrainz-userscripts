@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.11.162024
+// @version      2026.7.11.193450
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3096,7 +3096,7 @@
     const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
     const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
     const cleanSource = String(sourceUrl || "").split(/[?#]/)[0];
-    const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : "Discogs";
+    const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : /deezer\.com/i.test(cleanSource) ? "Deezer" : "Discogs";
     const lines = [
       header,
       "",
@@ -5363,11 +5363,21 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var DEEZER_NO_INFO_RE = /^\s*no\s*info\s*$/i;
   function parseDeezerCreditLine(line) {
     const text = decodeEntities2(String(line)).trim();
-    const m = /^([^:]+):\s*(.*)$/.exec(text);
-    if (!m) return [];
-    const plan = DEEZER_LABEL_MAP[m[1].trim()];
-    if (!plan) return [];
-    return m[2].split(",").map((s) => s.trim()).filter((name) => name && !DEEZER_NO_INFO_RE.test(name)).map((name) => ({ name, roles: [plan.rel] }));
+    const byName = /* @__PURE__ */ new Map();
+    for (const group of text.split(" / ")) {
+      const m = /^([^:]+):\s*(.*)$/.exec(group.trim());
+      if (!m) continue;
+      const plan = DEEZER_LABEL_MAP[m[1].trim()];
+      if (!plan) continue;
+      for (const raw of m[2].split(",")) {
+        const name = raw.trim();
+        if (!name || DEEZER_NO_INFO_RE.test(name)) continue;
+        if (!byName.has(name)) byName.set(name, []);
+        const roles = byName.get(name);
+        if (!roles.includes(plan.rel)) roles.push(plan.rel);
+      }
+    }
+    return [...byName].map(([name, roles]) => ({ name, roles }));
   }
   function extractDeezerCredits(html) {
     const posByTrack = /* @__PURE__ */ new Map();

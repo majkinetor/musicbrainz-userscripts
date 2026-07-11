@@ -63,21 +63,31 @@ export function parseDeezerAlbumUrl(url) {
 const DEEZER_NO_INFO_RE = /^\s*no\s*info\s*$/i;
 
 /**
- * Parse one contributors line ("Composers: A. B, C. D") into
- * `[{ name, roles: [rel] }]`. The label before ":" maps to an MB rel via
- * `DEEZER_LABEL_MAP`; the remainder is a comma-separated list of names. An
- * unknown label or "No Info" yields `[]`.
+ * Parse one contributors line into `[{ name, roles: [rel…] }]`. A line is one or
+ * more `Label: names` groups joined by ` / ` — e.g. a single `Composers: E. Davis`,
+ * or `Writer: Raúl Marrugo / Composers: Raúl Marrugo` (#401). Each label maps to an
+ * MB rel via `DEEZER_LABEL_MAP`; names within a group are comma-separated. Credits
+ * are keyed by name, so a person listed under several labels (Writer *and* Composer)
+ * yields ONE entry with both roles rather than a garbled `Name / Composers: Name`.
+ * Unknown labels and "No Info" placeholders are dropped.
  */
 export function parseDeezerCreditLine(line) {
     const text = decodeEntities(String(line)).trim();
-    const m = /^([^:]+):\s*(.*)$/.exec(text);
-    if (!m) return [];
-    const plan = DEEZER_LABEL_MAP[m[1].trim()];
-    if (!plan) return [];
-    return m[2].split(',')
-        .map(s => s.trim())
-        .filter(name => name && !DEEZER_NO_INFO_RE.test(name))
-        .map(name => ({ name, roles: [plan.rel] }));
+    const byName = new Map();   // name → ordered, de-duped rel list
+    for (const group of text.split(' / ')) {
+        const m = /^([^:]+):\s*(.*)$/.exec(group.trim());
+        if (!m) continue;
+        const plan = DEEZER_LABEL_MAP[m[1].trim()];
+        if (!plan) continue;
+        for (const raw of m[2].split(',')) {
+            const name = raw.trim();
+            if (!name || DEEZER_NO_INFO_RE.test(name)) continue;
+            if (!byName.has(name)) byName.set(name, []);
+            const roles = byName.get(name);
+            if (!roles.includes(plan.rel)) roles.push(plan.rel);
+        }
+    }
+    return [...byName].map(([name, roles]) => ({ name, roles }));
 }
 
 /**
