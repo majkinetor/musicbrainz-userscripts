@@ -41,12 +41,11 @@ String Theory bundles:
   · Platform Check v2026.7.1.2
 ```
 
-
 ## Other recommended userscripts
 
 - [Art Station Picker](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/as_picker/README.md)
 - [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc)
-- [Enhanced Cover Art Uploads]([https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads))
+- [Enhanced Cover Art Uploads](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads)
 
 ## How it's built
 
