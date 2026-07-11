@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.11.123818
+// @version      2026.7.11.124346
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -630,6 +630,7 @@
       catch (e) { jsonMsg.textContent = 'Invalid JSON: ' + (e.message || e); jsonMsg.classList.add('mmth-cf-bad'); return false; }
     };
     const setJsonMode = on => {
+      if (on) { const h = cfList.offsetHeight; if (h > 0) jsonTa.style.height = h + 'px'; }   // match the visual list's height (measure while it's still shown)
       cfList.style.display = addBtn.style.display = resetBtn.style.display = on ? 'none' : '';
       jsonTa.style.display = jsonRow.style.display = on ? '' : 'none';
       modeBtn.textContent = on ? '▤ Visual' : '{ } JSON';
