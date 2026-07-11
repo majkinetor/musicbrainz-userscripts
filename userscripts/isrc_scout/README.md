@@ -8,12 +8,6 @@ Shows the release's existing ISRCs and lets you fill in the missing ones from se
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=edit_note_content&conditions.1.operator=includes&conditions.1.args.0=ISRC+Scout)
 
 ![screenshot](./screenshots/isrc.png)
-<details><summary>More Screenshots</summary>
-
-<img width="1000" src="./screenshots/options.png" /><br> 
-
-https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
-</details>
 
 ## Features
 
@@ -53,29 +47,10 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 
 Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
 
-> **Qobuz needs a login.** Its per-track ISRCs live behind the **session-gated** `album/get` endpoint — sign in once under **Platform Check → ⚙ Setup → Auth → Qobuz account** and Scout reads the shared token. Without it, the Qobuz button stays hidden.
+> [!NOTE] Qobuz auth in Platform Check
+> Qobuz per-track ISRCs live behind the session-gated `album/get` endpoint — sign in once under **Platform Check → ⚙ Setup → Auth → Qobuz account** and Scout reads the shared token. Without it, the Qobuz button stays hidden.
 >
-> Qobuz is also **the one provider that geo-blocks anonymous access** (in some regions even *registration* is — it may take a VPN to create the account). But that's an anonymous-access limitation: **once you're registered and logged in, geo-blocking is no longer a factor** — the `user_auth_token` works from your normal connection, region regardless.
-
-<details>
-<summary><b>Qobuz — the full investigation</b> (so we don't re-litigate it — #353 / #201)</summary>
-
-Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant endpoints:
-- **`album/search`** (album-level: `upc`, `label`, `year`, `tracks_count`) — **works anonymously** with the web-player app_id **`712109809`**. This is all [Platform Check](../platform_check/README.md) needs to *locate/verify* a Qobuz release.
-- **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). It is **session-gated**, not geo-gated:
-  - app_id `712109809` → **`404`** for *every* album id anonymously — even ids `album/search` just returned.
-  - the other web app_id `798273057` → **`401` "User authentication is required"**.
-  - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** with full `tracks.items[]` (isrc + performers). Verified end-to-end (16/16 ISRCs matched a known release).
-- The **store page HTML has zero ISRCs** — so there's no anonymous scrape fallback.
-
-**So Qobuz is a login-gated source.** [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
-
-Other Qobuz gotchas:
-- **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
-- **Barcode padding** — Qobuz stores the UPC as the 13-digit EAN with a **leading zero** (`0199257198605`), so a barcode-first `album/search` must try the zero-padded form (#354).
-- The slug-less `open.qobuz.com/album/<id>` form an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.
-
-</details>
+> Qobuz is also the one provider that geo-blocks anonymous access (it takes a VPN to create the account). Once you're registered and logged in, geo-blocking is no longer a factor.
 
 ## ISRC badge
 
@@ -87,6 +62,12 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 
 ### Import sources
 
+Header toolbar lists available ISRC import sources for the current release. Sources can be generic or depend on appropriate external links and can additionally come via custom URL.
+
+If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, it will be offered too here (highlighted). External links from release group can also be offered, depending on that [option][Settings].
+
+Button `(+)` lets you import from an URL — paste any album URL to import from it, even when the release has no such link. 
+
 | Button | Source | Auth | Notes |
 | --- | --- | --- | --- |
 | **⟳ SoundExchange** | [SoundExchange](https://isrc.soundexchange.com/) | none | Searches each track by title/artist, shows candidate ISRCs per row, auto-fills confident matches into empty fields. Searches are capped at **30 at a time** so SoundExchange doesn't block us — remaining tracks show a *"Not searched — click to load the next 30"* message; click any one to continue.|
@@ -96,13 +77,10 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 | **Tidal** | `openapi.tidal.com` | app token (baked in) | Enabled when the release has a Tidal album relationship. Uses Tidal's official API with a built-in client-credentials app token (catalog access, **no user login**); maps each track's ISRC by disc/track number. |
 | **Volumo** | `volumo.com/api/v1` | none | Enabled when the release has a Volumo relationship (or one Platform Check found via barcode). Clean unauthenticated API — one call returns every track's ISRC; no Cloudflare/token. Link-only, like the others. |
 | **HDtracks** | `hdtracks.azurewebsites.net/api/v1` | none | Enabled when the release has an HDtracks relationship (or one Platform Check found via barcode). Clean unauthenticated, CORS-open API — one `/album/<id>` call returns every track's ISRC inline; no per-track fan-out, no token. The album id is a 24-char ObjectId; a barcode/UPC (e.g. from a legacy `valbum_code` rel) is resolved to it via search first. |
-| **Qobuz** | `www.qobuz.com/api.json/0.2` | **login** | Enabled when the release has a Qobuz relationship (or one Platform Check found) **and** you're signed in to Qobuz under [Platform Check](../platform_check/README.md) → ⚙ Setup → Auth. One `album/get` call (with the shared token) returns every track's ISRC; matched by position. A barcode/UPC is resolved to the album id via `album/search` (zero-padded too, #354). Session-gated — see the box above. |
+| **Qobuz** | `www.qobuz.com/api.json/0.2` | **login** | Enabled when the release has a Qobuz relationship (or one Platform Check found) **and** you're signed in to Qobuz under [Platform Check](../platform_check/README.md) → ⚙ Setup → Auth. One `album/get` call (with the shared token) returns every track's ISRC; matched by position. A barcode/UPC is resolved to the album id via `album/search` (zero-padded). Session-gated — see above. |
 
-The **Deezer**, **Beatport**, **Tidal**, **Volumo**, **HDtracks** and **Qobuz** buttons each have a **▾** menu to *import from a custom album URL* — paste any matching album/release URL (or bare id) to import from it, even when the release has no such link. If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, the menu also offers a one-click **"Use the &lt;platform&gt; URL Platform Check found"** option (skipped silently when `platform_check` isn't present). Spotify has no such menu: its import goes through ISRC Hunt, which resolves the MB release *from* the Spotify URL — so a custom or not-yet-in-MB URL does not work.
-
-> A Platform Check link that PC **withheld for a barcode/format mismatch** is **not** used here by default (#314). In principle an ISRC identifies a *recording* and is independent of the release's barcode/format — but a barcode mismatch can equally mean PC matched the **wrong release** (e.g. a 1-track Beatport single by a same-prefixed artist), whose ISRCs would be wrong. To deliberately read ISRCs from a barcode/format-mismatched edition anyway, enable **⚙ Setup → Ignore Platform Check link confidence**. Genuine content mismatches (wrong track count, etc.) are always skipped, and an in-MB link or a custom URL you paste yourself is unaffected.
-
-The import-source buttons can show as **brand icons, text labels, or both** — toggle under **⚙ Setup → Import-source buttons** (defaults to icons, to keep the toolbar compact). The **⟳ SoundExchange** *exact title/artist/release* toggles are collapsed behind a small **exact ▾** control (state remembered) for the same reason.
+> [!NOTE] Platform Check links
+> A Platform Check link that PC **withheld for a barcode/format mismatch** is **not** used here by default (#314). In principle an ISRC identifies a *recording* and is independent of the release's barcode/format — but a barcode mismatch can equally mean PC matched the **wrong release** (e.g. a 1-track Beatport single by a same-prefixed artist), whose ISRCs would be wrong. To deliberately read ISRCs from a barcode/format-mismatched edition anyway, enable **⚙ [Setup] → Ignore Platform Check link confidence**. Genuine content mismatches (wrong track count, etc.) are always skipped, and an in-MB link or a custom URL you paste yourself is unaffected.
 
 #### Spotify 
 
@@ -118,6 +96,8 @@ Uses Tidal's official API (`openapi.tidal.com`) with a baked-in client-credentia
 
 ### Per-track helpers
 
+<img width="1000" src="./screenshots/isrc-tracks.png" />
+
 - **+1** — fill with the previous track's ISRC incremented by one.
 - **ISRC lookup**<br>
 Displays track metadata from the ISRC provider. It takes the ISRC in the row (entered or existing) and looks it up **on the selected provider**, showing that track's metadata (title · artist · length, mismatches highlighted) next to the row. It's menu lets you choose an available provider: SoundExchange (default) plus every other provider available for the release. Picking one re-skins **all** per-track buttons to that provider's icon (global for the release, not remembered). **Right-click** a button to inoke on all tracks. Providers with a global by-ISRC endpoint (**SoundExchange**, **Deezer**, **Tidal**) work on any release; the album-based ones (**HDtracks / Volumo / Beatport**) read the release's album (so they need its link, in MB or found by Platform Check) and match by ISRC.
@@ -128,7 +108,7 @@ To avoid overloading ISRC providers, lookup is not called automatically as you t
 
 #### Match checks & highlighting
 
-Every SoundExchange result is checked against the MB track and **mismatching fields are highlighted in red** (wavy underline, with a tooltip):
+Every ISRC result is checked against the MB track and **mismatching fields are highlighted in red** (wavy underline, with a tooltip):
 
 | Field | Check |
 | --- | --- |
@@ -143,7 +123,7 @@ A result that passes all checks is the **best** match (blue, auto-filled when th
 
 Check the box next to any existing ISRC and click **🗑 Delete checked**. Deletion goes through the MusicBrainz recording-edit form using your logged-in session (ISRC removal isn't a WS2 operation), and each removal is verified via the web service. Creates normal "Remove ISRC" edits — so you must be logged into musicbrainz.org.
 
-### Bulk / Export (⇪)
+### Bulk / Export
 
 - **Paste** one ISRC per line in track order (blank line skips a track), or target specific tracks: `3=USABC1234567`, `USABC1234567 | 1.3` (medium.track), or `1.3 USABC1234567`.
 - **Apply to empty fields** / **Apply (overwrite)**.
@@ -155,6 +135,8 @@ ISRC Scout also adds **streaming / store links to recordings** in the background
 
 - **Linked** — what the recording already links to on MusicBrainz (brand-coloured icon per provider). This includes **every** provider it links to, not just the ones ISRC Scout can add — see [other linked providers](#other-linked-providers) below.
 - **Add** — links found but not yet on MB.
+
+<img width="1000" src="./screenshots/links.png" />
 
 ### Providers
 
@@ -193,6 +175,27 @@ These end / remove actions work on **any** linked provider — including the [ot
 
 Releases in a release group are often split by platform (one edition carries the Deezer link, another Spotify/Tidal, another Bandcamp). Since the recordings are shared, **⚙ → "Use providers from the whole release group"** (off by default) fills in any provider link the current edition is missing from its **sibling releases** — for both ISRC import and track links. A small **purple dot** marks links pulled this way, with a tooltip naming the sibling release.
 
+## Submitting
+
+ISRC submission to MusicBrainz **requires OAuth**:
+
+1. In the editor click **⚙ Setup → Authorize**. A MusicBrainz tab opens, approve, done.
+2. Fill in ISRCs, click **Submit to MusicBrainz**.
+
+Credentials and tokens are stored in the userscript's local storage (`GM_setValue`). **Sign out** in Setup clears the stored token.
+
+## Settings
+
+<img width="1000" src="./screenshots/options.png" />
+
+- Authorize on MusicBrainz
+- Import-source buttons: show icons/text<br>
+The import-source buttons can show as brand icons, text labels, or both (defaults to icons, to keep the toolbar compact).
+- Use providers from the whole release group<br>
+Fill provider links from releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.
+- Ignore Platform Check link confidence<br>
+Import from a Platform-Check link even when PC withheld it for a barcode/format mismatch. Off by default — a mismatch can mean PC matched the wrong release, so its ISRCs would be wrong (#314)
+
 ## Shortcuts
 
 Keyboard, in the editor / Links modal:
@@ -215,13 +218,23 @@ Modifier-clicks on the **Links tab** Add / Linked icons (see [links tab](#links)
 | `Ctrl`/`⌘` + middle-click | — | Remove every link on that track |
 | `Alt` + middle-click | — | Remove that provider across all tracks |
 
-## Submitting
+## Notes
 
-ISRC submission to MusicBrainz **requires OAuth**:
+### Qobuz — the full investigation
 
-1. In the editor click **⚙ Setup → Authorize**. A MusicBrainz tab opens, approve, done.
-2. Fill in ISRCs, click **Submit to MusicBrainz**.
+#353 / #201
 
-Credentials and tokens are stored in the userscript's local storage (`GM_setValue`). **Sign out** in Setup clears the stored token.
+Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant endpoints:
+- **`album/search`** (album-level: `upc`, `label`, `year`, `tracks_count`) — **works anonymously** with the web-player app_id **`712109809`**. This is all [Platform Check](../platform_check/README.md) needs to *locate/verify* a Qobuz release.
+- **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). It is **session-gated**, not geo-gated:
+  - app_id `712109809` → **`404`** for *every* album id anonymously — even ids `album/search` just returned.
+  - the other web app_id `798273057` → **`401` "User authentication is required"**.
+  - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** with full `tracks.items[]` (isrc + performers). Verified end-to-end (16/16 ISRCs matched a known release).
+- The **store page HTML has zero ISRCs** — so there's no anonymous scrape fallback.
 
+**So Qobuz is a login-gated source.** [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
 
+Other Qobuz gotchas:
+- **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
+- **Barcode padding** — Qobuz stores the UPC as the 13-digit EAN with a **leading zero** (`0199257198605`), so a barcode-first `album/search` must try the zero-padded form (#354).
+- The slug-less `open.qobuz.com/album/<id>` form an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.
