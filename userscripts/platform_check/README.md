@@ -13,6 +13,15 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 <img width="400" src="./screenshots/config.png" />
 </details>
 
+## Features
+
+- **Header info** — MB's release year, format, label and track count in the dashboard header.
+- **[Insert links to release](#inserting-links)** — open the release's edit page and insert one or all confirmed platform links (fills the edit note for you).
+- **Open all found** (`↗`) — open each confirmed (`✓`) platform page not yet in MB in its own tab (plus the Discogs master). Mismatches (`~`) and unverifiable (`?`) links are skipped. *(Watch for pop-up blocking.)*
+- **Options** — toggle each supported platform independently, and reorder providers.
+- **Refresh** (`↻`) — clear the cache for the current release and re-run every enabled scanner.
+- **Diagnostic log** (`ⓘ`) — every scanner step is logged, with per-source filter chips to isolate a single platform's chain.
+
 ## Overview
 
 The userscript runs on `musicbrainz.org/release/*` and tries to locate each release on a supported set of platforms. When the release already has a platform URL in MB's URL relationships it is used directly. Otherwise, it falls back to a chain of sources — platform APIs, Wikidata, then generic web search — and verifies each candidate by track-count and title-similarity match against MB's data.
@@ -26,12 +35,14 @@ Link availability is determined by the icon and text color:
 3. Faded - link is not found
 4. Circled - link exists in MB relationships
 
-Mouse click works as follows:
+On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
+
+Matched links can be **inserted to the release** by opening its *edit* page and populating one or more links:
 
 1. **Left click**<br>
     1. Title - Open link if found, open search for provider if not found (use [↗] button in the footer to open all)
-    1. Icon - Add link to the MB relationships (use [+] button in the footer to add all)
-1. **Right click**<br>
+    2. Icon - Add link to the MB relationships (use [+] button in the footer to add all)
+2. **Right click**<br>
     1. Title - Open search for provider
 
 Setup option **Compact unmatched providers** (#355) keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search, exactly like clicking its row. Rows rise with a subtle fade so the panel doesn't jump as results stream in. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
@@ -230,24 +241,6 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Login:** —
 - **Method:** MB → barcode → LS
 - **Notes:** canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode. No dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)), so the `+` insert force-sets **purchase for download** (id 74). ISRC Scout can import an HDtracks release's ISRCs from the link this finds.
-
-## Features
-
-- **Header info** — MB's release year, format, label and track count in the dashboard header.
-- **[Insert links to release](#inserting-links)** — open the release's edit page and insert one or all confirmed platform links (fills the edit note for you).
-- **Open all found** (`↗`) — open each confirmed (`✓`) platform page not yet in MB in its own tab (plus the Discogs master). Mismatches (`~`) and unverifiable (`?`) links are skipped. *(Watch for pop-up blocking.)*
-- **Options** — toggle each supported platform independently, and reorder providers.
-- **Refresh** (`↻`) — clear the cache for the current release and re-run every enabled scanner.
-- **Diagnostic log** (`ⓘ`) — every scanner step is logged, with per-source filter chips to isolate a single platform's chain.
-
-## Inserting links
-
-**Insert links to release** opens the release's *edit* page and inserts one or more links:
-
-- `+` click — batch-insert all links that have the `✓` marker.
-- `✓` click — insert only the link next to that marker.
-
-On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
 
 ## Shortcuts
 
