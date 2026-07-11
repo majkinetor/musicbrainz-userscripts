@@ -26,14 +26,16 @@ if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\
 fi
 
 # string_theory — unified bundle. Rebuild when any listed constituent's userscript
-# changes, or when the bundler / icon / members list itself changes. The member list
-# is read from members.txt so there's a single source of truth.
+# changes, or when the bundler / icon / members list itself changes. A member's
+# README.md change also triggers it — build.mjs regenerates the unified DOCS.md
+# (#403). The member list is read from members.txt so there's a single source of truth.
 ST_MEMBERS=$(sed 's/#.*//' userscripts/string_theory/members.txt 2>/dev/null | tr -d '[:blank:]' | grep -v '^$' | paste -sd '|' -)
 if [ -n "$ST_MEMBERS" ] && { printf '%s\n' "$STAGED" | grep -qE "^userscripts/($ST_MEMBERS)/.+\.user\.js$" \
+   || printf '%s\n' "$STAGED" | grep -qE "^userscripts/($ST_MEMBERS)/README\.md$" \
    || printf '%s\n' "$STAGED" | grep -qE '^userscripts/string_theory/(build\.mjs|icon\.svg|members\.txt)$'; }; then
     echo "[pre-commit] rebuilding userscripts/string_theory/…"
     node userscripts/string_theory/build.mjs >/dev/null
-    git add userscripts/string_theory/string_theory.user.js
+    git add userscripts/string_theory/string_theory.user.js userscripts/string_theory/DOCS.md
 fi
 
 # Add new userscript builds here as they gain custom build scripts.

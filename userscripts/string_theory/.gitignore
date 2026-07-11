@@ -1,0 +1,5 @@
+# Docs build tooling deps (marked); reused Chromium comes from apollo_editor
+node_modules/
+
+# Transient HTML used by build-pdf.mjs while printing DOCS.pdf
+.docs-print.html

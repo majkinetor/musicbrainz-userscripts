@@ -1,0 +1,13 @@
+{
+  "name": "string-theory-docs",
+  "private": true,
+  "type": "module",
+  "description": "Build tooling for the String Theory bundle + unified docs (DOCS.md / DOCS.pdf).",
+  "scripts": {
+    "docs": "node build.mjs",
+    "docs:pdf": "node build.mjs && node build-pdf.mjs"
+  },
+  "devDependencies": {
+    "marked": "^14.1.4"
+  }
+}

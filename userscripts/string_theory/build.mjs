@@ -122,3 +122,88 @@ const startupLog = `try {\n  console.log('%c String Theory %c v${version} ', 'ba
 writeFileSync(OUT, `${metaBlock}\n\n${banner}\n${startupLog}\n\n${bodies}\n`);
 console.log(`✓ ${NAME} v${version} → ${OUT}`);
 console.log(`  ${MEMBERS.length} scripts (newest constituent v${newestMember}) · ${out.filter(([k]) => k === 'match').length} @match · ${out.filter(([k]) => k === 'grant').length} @grant · ${out.filter(([k]) => k === 'connect').length} @connect`);
+
+// ── unified documentation (#403) ──────────────────────────────────────────────
+// Concatenate every member's README into one DOCS.md, stamped with the build date.
+// Each member README is written relative to ITS OWN folder, so links/images are
+// re-pointed to `../<member>/…` to resolve from the string_theory folder, and its
+// headings are demoted one level so the merged doc has a single H1 and each member
+// is an H2. Code fences are left untouched (no heading/link rewriting inside them).
+const DOCS_OUT = resolve(HERE, 'DOCS.md');
+const buildDate = `${_n.getFullYear()}-${_p(_n.getMonth() + 1)}-${_p(_n.getDate())} ${_p(_n.getHours())}:${_p(_n.getMinutes())}`;
+const stripImg    = s => s.replace(/<img[^>]*>/gi, '').replace(/\s{2,}/g, ' ').trim();
+// GitHub's heading→anchor slug, and its collision suffixing (the 2nd "Features" → features-1, 3rd → features-2).
+const ghSlug      = s => s.toLowerCase().replace(/<[^>]+>/g, '').replace(/[^\w\s-]/g, '').trim().replace(/\s/g, '-');   // \s (not \s+): GitHub does NOT collapse the gap a removed "&" / "/" leaves ("A & B" → a--b)
+const makeSlugger = () => { const seen = new Map(); return t => { const b = ghSlug(t); const k = seen.get(b) || 0; seen.set(b, k + 1); return k ? `${b}-${k}` : b; }; };
+// Apply fn to everything OUTSIDE fenced code blocks. Only a fence at line start (≤3-space
+// indent) opens a block — an inline `` ``` `` in prose (e.g. Apollo's "fenced ``` ↔ code") is
+// NOT a fence, so it can't mis-pair with a real block and swallow content.
+function outsideCode(md, fn) {
+  const FENCE = /^[ \t]{0,3}(```+|~~~+)[^\n]*\n[\s\S]*?^[ \t]{0,3}\1[^\n]*$/gm;
+  let out = '', last = 0, m;
+  while ((m = FENCE.exec(md)) !== null) {
+    out += fn(md.slice(last, m.index)) + m[0];   // non-code, then the fenced block verbatim
+    last = FENCE.lastIndex;
+  }
+  return out + fn(md.slice(last));
+}
+const demote      = md => md.replace(/^(#{1,6})(\s)/gm, (_m, h, s) => (h.length < 6 ? '#' + h : h) + s);
+const fixPath     = (p, member) => /^(https?:|mailto:|#|\/|\.\.\/)/i.test(p) ? p : `../${member}/${p.replace(/^\.\//, '')}`;
+const remapAnchor = (a, map) => (map[a] != null ? map[a] : a);   // in-member slug → doc-wide slug
+function rewriteLinks(md, member, map) {
+  return md
+    .replace(/\]\((#[^)\s]+)(\s+[^)]*)?\)/g, (_m, a, t) => `](#${remapAnchor(a.slice(1), map)}${t || ''})`)   // ](#anchor) → doc-wide
+    .replace(/\]\(([^)\s]+)(\s+[^)]*)?\)/g, (_m, p, t) => `](${fixPath(p, member)}${t || ''})`)                // ](path) → ../member/
+    .replace(/\b(src|href)=("|')([^"']+)\2/gi, (_m, a, q, p) => `${a}=${q}${fixPath(p, member)}${q}`);          // html src/href
+}
+// Reference-style links (`[text][label]`, `[label]`, defined by `[label]: url`) have DOCUMENT-GLOBAL
+// labels, so two members both defining `[Features]:` collide. Resolve each member's reference links to
+// INLINE links from that member's own definitions (anchors remapped), then drop the definitions — so no
+// reference labels survive to collide. Handles full [text][label], collapsed [text][], and shortcut [label].
+function inlineRefs(md, member, map) {
+  const defs = {};
+  md = md.replace(/^[ \t]*\[([^\]]+)\]:[ \t]*(\S+)(?:[ \t]+.*)?$/gm, (_m, label, target) => {
+    defs[label.trim().toLowerCase()] = target.startsWith('#') ? `#${remapAnchor(target.slice(1), map)}` : fixPath(target, member);
+    return '';   // drop the definition line
+  });
+  const ref = (text, label) => { const d = defs[(label || text).trim().toLowerCase()]; return d != null ? `[${text}](${d})` : null; };
+  return outsideCode(md, seg => seg
+    .replace(/\[([^\]]+)\]\[([^\]]*)\]/g, (m, text, label) => ref(text, label) ?? m)           // [text][label] / [text][]
+    .replace(/(!?)\[([^\]]+)\](?![([:])/g, (m, bang, text) => (bang ? m : (ref(text, text) ?? m))));   // shortcut [label]
+}
+
+// One document-wide slugger, fed headings in render order so collision suffixes match GitHub's.
+const gslug = makeSlugger();
+gslug('String Theory — Unified Documentation');   // reserve the doc's own H1
+gslug('Table of contents');
+const sections = [];
+for (const n of MEMBERS) {
+  let md;
+  try { md = readFileSync(resolve(ROOT, `userscripts/${n}/README.md`), 'utf8'); }
+  catch (e) { console.warn(`  ⚠ no README for "${n}" — skipped in DOCS.md`); continue; }
+  md = md.replace(/\r\n/g, '\n');
+  const heads = [...md.matchAll(/^#{1,6}\s+(.+?)\s*$/gm)].map(m => m[1]);
+  const title = stripImg(heads[0] || n) || n;
+  // map each in-member heading slug → its doc-wide slug (same heading order → 1:1 with the doc slugger)
+  const localSlug = makeSlugger();
+  const map = {};
+  heads.forEach((h, i) => { map[localSlug(h)] = i === 0 ? gslug(title) : gslug(h); });   // H1 → the H2 title we emit
+  md = md.replace(/^#\s+.+\n?/m, '');                       // drop the member's own H1
+  md = inlineRefs(md, n, map);                              // ref-links → inline (whole-body: defs live at the bottom)
+  const body = outsideCode(md, seg => rewriteLinks(demote(seg), n, map)).trim();
+  sections.push({ title, slug: map[ghSlug(heads[0])], body });
+}
+const toc = sections.map((s, i) => `${i + 1}. [${s.title}](#${s.slug})`).join('\n');
+const docHead =
+`# String Theory — Unified Documentation
+
+> **Documentation built:** ${buildDate}  ·  bundle v${version} — generated by \`userscripts/string_theory/build.mjs\`, do **not** edit by hand.
+>
+> Combined manual for the ${sections.length} userscripts bundled into String Theory. Each is also installable on its own; see the [String Theory README](./README.md) for install and how the bundle works.
+
+## Table of contents
+
+${toc}`;
+const docBody = sections.map(s => `## ${s.title}\n\n${s.body}`).join('\n\n---\n\n');
+writeFileSync(DOCS_OUT, `${docHead}\n\n---\n\n${docBody}\n`);
+console.log(`  docs → ${DOCS_OUT} (${sections.length} READMEs, built ${buildDate})`);

@@ -191,8 +191,18 @@ function main() {
   for (const e of edits) writeFileSync(e.file, e.content);
   git('add', ...edits.map(e => e.file));
   // Rebuild the bundle from the just-written (version-bumped) members so the release ships a current
-  // String Theory, then stage it. (The pre-commit hook also rebuilds it — this makes it explicit.)
-  if (hasBundle) { run('node', [`userscripts/${BUNDLE}/build.mjs`]); git('add', `userscripts/${BUNDLE}/string_theory.user.js`); }
+  // String Theory + unified docs, then stage them. (The pre-commit hook also rebuilds these — explicit here.)
+  if (hasBundle) {
+    run('node', [`userscripts/${BUNDLE}/build.mjs`]);
+    const stage = [`userscripts/${BUNDLE}/string_theory.user.js`, `userscripts/${BUNDLE}/DOCS.md`];
+    // #403: regenerate the PDF manual too. Best-effort — it needs `marked` installed in that folder
+    // and the Chromium apollo_editor's Playwright uses; a failure here must never block a release.
+    if (existsSync(resolve(ROOT, `userscripts/${BUNDLE}/build-pdf.mjs`))) {
+      try { run('node', [`userscripts/${BUNDLE}/build-pdf.mjs`]); stage.push(`userscripts/${BUNDLE}/DOCS.pdf`); console.log('  ✓ regenerated DOCS.pdf'); }
+      catch (e) { console.warn(`  ⚠ DOCS.pdf skipped (${String(e.message).split('\n')[0]}); run \`pnpm --dir userscripts/${BUNDLE} install\` first to enable it`); }
+    }
+    git('add', ...stage.filter(f => existsSync(resolve(ROOT, f))));
+  }
   git('commit', '-m', `changelog: release ${tag}`);
   git('push', 'github', 'main');
   git('checkout', 'stable');
