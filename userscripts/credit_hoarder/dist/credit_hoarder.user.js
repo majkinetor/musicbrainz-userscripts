@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.10.132605
-// @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
+// @version      2026.7.11.162024
+// @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
 // @match        https://*.musicbrainz.org/release/*/edit-relationships
@@ -18,6 +18,8 @@
 // @grant        GM_xmlhttpRequest
 // @connect      qobuz.com
 // @connect      www.qobuz.com
+// @connect      deezer.com
+// @connect      www.deezer.com
 // @grant        GM_openInTab
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -307,7 +309,8 @@
       return {
         discogs: href((rel) => rel.target?.sidebar_name === "Discogs"),
         tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || "")),
-        qobuz: href((rel) => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || ""))
+        qobuz: href((rel) => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || "")),
+        deezer: href((rel) => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || ""))
       };
     });
   }
@@ -2641,6 +2644,7 @@
   function sourceNameForUrl(url) {
     if (/tidal\.com\//i.test(url || "")) return "Tidal";
     if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
+    if (/deezer\.com\//i.test(url || "")) return "Deezer";
     return "Discogs";
   }
   function sourceUrlLinkTypeId(url, entityType) {
@@ -5337,16 +5341,109 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${stagedPart}${dedupPart}, ${skipped} skipped, ${failed} failed${selNote}</strong>`);
   }
 
+  // src/sources/deezer.js
+  function decodeEntities2(s) {
+    return String(s).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&#039;/g, "'").replace(/&apos;/g, "'");
+  }
+  var DEEZER_LABEL_MAP = {
+    "Composers": { rel: "composer" },
+    "Composer": { rel: "composer" },
+    "Authors": { rel: "lyricist" },
+    "Author": { rel: "lyricist" },
+    "Writers": { rel: "writer" },
+    "Writer": { rel: "writer" },
+    "Producers": { rel: "producer" },
+    "Producer": { rel: "producer" }
+  };
+  var DEEZER_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/i;
+  function parseDeezerAlbumUrl(url) {
+    const m = DEEZER_ALBUM_RE.exec(url || "");
+    return m ? { id: m[1], pageUrl: `https://www.deezer.com/us/album/${m[1]}` } : null;
+  }
+  var DEEZER_NO_INFO_RE = /^\s*no\s*info\s*$/i;
+  function parseDeezerCreditLine(line) {
+    const text = decodeEntities2(String(line)).trim();
+    const m = /^([^:]+):\s*(.*)$/.exec(text);
+    if (!m) return [];
+    const plan = DEEZER_LABEL_MAP[m[1].trim()];
+    if (!plan) return [];
+    return m[2].split(",").map((s) => s.trim()).filter((name) => name && !DEEZER_NO_INFO_RE.test(name)).map((name) => ({ name, roles: [plan.rel] }));
+  }
+  function extractDeezerCredits(html) {
+    const posByTrack = /* @__PURE__ */ new Map();
+    const posRe = /itemid="\/[a-z]{2}\/track\/(\d+)"[\s\S]{0,600}?data-target="position">\s*(\d+)/gi;
+    let pm;
+    while ((pm = posRe.exec(html)) !== null) {
+      const id = pm[1];
+      if (!posByTrack.has(id)) posByTrack.set(id, parseInt(pm[2], 10));
+    }
+    const out = [];
+    const credRe = /naboo_datagrid_contributors_(\d+)"[\s\S]{0,400}?data-target="contributors">([^<]*)</gi;
+    let cm;
+    while ((cm = credRe.exec(html)) !== null) {
+      const id = cm[1];
+      const pos = posByTrack.get(id);
+      if (!pos) continue;
+      const credits = parseDeezerCreditLine(cm[2]);
+      if (credits.length) out.push({ index: pos, credits });
+    }
+    return out.sort((a, b) => a.index - b.index);
+  }
+  function extractDeezerAlbumInfo(html) {
+    const og = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] || "";
+    return decodeEntities2(og);
+  }
+  function deezerToEngine(parsedTracks) {
+    const tracklistRels = [];
+    const tracklist = [];
+    const skipped = [];
+    for (const t of parsedTracks) {
+      const track = { position: String(t.index), title: "", type_: "track" };
+      tracklist.push(track);
+      for (const credit of t.credits) {
+        for (const rel of credit.roles) {
+          tracklistRels.push({
+            linkType: rel,
+            entityType: "artist",
+            attributes: [],
+            artist: { name: credit.name, anv: "", resource_url: "" },
+            track
+          });
+        }
+      }
+    }
+    return { tracklistRels, tracklist, skipped };
+  }
+  function fetchDeezerAlbumPage(pageUrl) {
+    return new Promise((resolve, reject) => {
+      if (typeof GM_xmlhttpRequest !== "function") {
+        reject(new Error("GM_xmlhttpRequest unavailable"));
+        return;
+      }
+      GM_xmlhttpRequest({
+        method: "GET",
+        url: pageUrl,
+        headers: { "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.8" },
+        timeout: 2e4,
+        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve(r.responseText) : reject(new Error(`Deezer page returned ${r.status}`)),
+        onerror: () => reject(new Error("Deezer page fetch failed (network)")),
+        ontimeout: () => reject(new Error("Deezer page fetch timed out"))
+      });
+    });
+  }
+
   // src/ui-bar.js
   var _logs2;
   var _summary;
   var _discogsJson = null;
   var _tidalJson = null;
   var _qobuzJson = null;
+  var _deezerJson = null;
   var SRC_ICON = {
     Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
     Tidal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
     Qobuz: '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    Deezer: '<svg viewBox="0 0 24 24" width="14" height="14" fill="#a238ff"><path d="M17.6 6.3h4.2v2.1h-4.2zM11.7 9.1h4.2v2.1h-4.2zM17.6 9.1h4.2v2.1h-4.2zM5.8 11.9h4.2V14H5.8zM11.7 11.9h4.2V14h-4.2zM17.6 11.9h4.2V14h-4.2zM0 14.7h4.2v2.1H0zM5.8 14.7h4.2v2.1H5.8zM11.7 14.7h4.2v2.1h-4.2zM17.6 14.7h4.2v2.1h-4.2z"/></svg>',
     // #271: the "Titles" source derives remixer credits from the track titles
     // themselves — no provider. A small text/lines glyph.
     Titles: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>'
@@ -5729,6 +5826,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g) => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g) => runQobuzImport(sources.qobuz, g) });
+    if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g) => runDeezerImport(sources.deezer, g) });
     if ((meta.titlesRemixCount || 0) > 0) {
       importSources.push({ name: "Titles", url: "", run: (g) => runTitlesImport(g) });
     }
@@ -5741,6 +5839,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       Discogs: `<img src="${DISCOGS_LOGO_URL}" alt="Discogs" class="discogs-logo">`,
       Tidal: '<svg viewBox="0 0 24 24" fill="#000" aria-label="Tidal"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
       Qobuz: '<svg viewBox="0 0 24 24" aria-label="Qobuz"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+      Deezer: SRC_ICON.Deezer,
       Titles: SRC_ICON.Titles
     };
     const srcButtons = [];
@@ -6054,6 +6153,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (discogsUrl) logMenu.appendChild(mkMenuItem("Copy Discogs", "Copy the raw Discogs JSON for this release", (b, l) => bar._copy?.discogs(b, l)));
     if (sources.tidal) logMenu.appendChild(mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l)));
     if (sources.qobuz) logMenu.appendChild(mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l)));
+    if (sources.deezer) logMenu.appendChild(mkMenuItem("Copy Deezer", "Copy the parsed Deezer credits for this release", (b, l) => bar._copy?.deezer(b, l)));
     document.body.appendChild(logMenu);
     function openLogMenu() {
       const open = logMenu.classList.toggle("open");
@@ -6240,6 +6340,9 @@ ${lines}
         },
         qobuz: (item, label) => {
           if (_qobuzJson) copyToClipboard(JSON.stringify(_qobuzJson, null, 2), item, label);
+        },
+        deezer: (item, label) => {
+          if (_deezerJson) copyToClipboard(JSON.stringify(_deezerJson, null, 2), item, label);
         }
       };
       bar._setProgress = (pct, text) => {
@@ -6452,6 +6555,42 @@ ${lines}
       });
     }
     return scrape();
+  }
+  function runDeezerImport(deezerUrl, getOpts) {
+    const parsed = parseDeezerAlbumUrl(deezerUrl);
+    if (!parsed) {
+      log.error(`Not a Deezer album URL: ${deezerUrl}`);
+      return Promise.resolve();
+    }
+    log.info(`Fetching Deezer album page: ${parsed.pageUrl}`);
+    return fetchDeezerAlbumPage(parsed.pageUrl).then((html) => {
+      const albumInfo = extractDeezerAlbumInfo(html);
+      const tracks = extractDeezerCredits(html);
+      _deezerJson = { source: parsed.pageUrl, album: albumInfo, tracks };
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.textContent = JSON.stringify(_deezerJson, null, 2);
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Deezer album"} \xB7 ${tracks.length} tracks \u2014 parsed Deezer credits (page)</strong></summary></details>`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      if (!tracks.length) {
+        log.warn("No Deezer credits found \u2014 nothing to import.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
+        return;
+      }
+      const { tracklistRels, tracklist, skipped } = deezerToEngine(tracks);
+      log.info(`Deezer credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+      skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (!tracklistRels.length) {
+        log.warn("No importable Deezer credits found.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
+        return;
+      }
+      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
   }
   function buildTitlesTracklist(mbid) {
     return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then((json) => {
@@ -6741,7 +6880,7 @@ ${lines}
       getSourceUrlsForRelease(m[1]).catch(() => ({})),
       probeTitleRemixes(m[1])
     ]).then(([sources, remix]) => {
-      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz);
+      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer);
       const remixCount = remix?.count || 0;
       if (!hasProvider && remixCount === 0) return;
       insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });
