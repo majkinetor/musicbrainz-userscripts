@@ -487,13 +487,10 @@
     /* In-MB marker (#180): a provider button gets a ring around its icon + a
        brand tint when the release already has that platform's URL in MB; an
        un-tinted/un-ringed button means the link was found by Platform Check. */
-    #ii-tools.ii-show-icons .ii-tbtn.ii-mb .ii-bico {
-      box-shadow: 0 0 0 1.5px currentColor; border-radius: 50%; padding: 2px; }
-    .ii-tbtn.ii-mb { background: currentColor; }
-    .ii-tbtn.ii-mb .ii-bico, .ii-tbtn.ii-mb .ii-blabel { filter: none; }
-    .ii-tbtn.ii-mb .ii-blabel, #ii-tools.ii-show-icons .ii-tbtn.ii-mb .ii-bico svg { color: #fff; }
-    .ii-tbtn.ii-mb .ii-blabel { color: #fff; }
-    .ii-tbtn.ii-mb:hover { filter: brightness(1.08); }
+    /* MB-linked: a strong brand ring on the WHITE button (#404) — the shared icons are
+       now full-colour, so a brand FILL would hide them (e.g. green Spotify on green). */
+    .ii-tbtn.ii-mb { border-color: currentColor; box-shadow: 0 0 0 1px currentColor; }
+    .ii-tbtn.ii-mb:hover { background: #f1f3f5; }
     /* Unified "paste a URL" control (#180), apollo "+"-unroll style: a small
        round button that expands to an input on click; auto-detects the platform. */
     .ii-urladd { display: inline-flex; align-items: center; gap: 5px; }
