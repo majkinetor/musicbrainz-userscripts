@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-11 21:29 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-11 21:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -46,7 +46,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 
 Beautification of native page, external links redesign, markdown annotation editor, release cover and array batch removal tools.
 
-<img width="1200" src="../apollo_editor/screenshots/release.png" /><br>
+<img width="1200" src="../apollo_editor/screenshots/release.png" />
 
 - **External links** moved to a right column with a **dead-link checker**; **right-click** a favicon/type to edit it.
 - **[Markdown annotation editor](#annotation-editor)** in *Additional information*.
@@ -104,7 +104,7 @@ Extremely fast and confident artist matching via multiple mechanisms, advanced t
 
 Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
 
-<img width="1200" src="../apollo_editor/screenshots/recordings.png" /><br>
+<img width="1200" src="../apollo_editor/screenshots/recordings.png" />
 
 
 - **[Auto match artist](#recording-matching)** based on release group or name and Cutoff settings
@@ -778,6 +778,7 @@ The **date picker** ([#398](https://github.com/majkinetor/musicbrainz-userscript
 - **Credits** — tick any credit by hand (the roles list is only the starting point); a **track checkbox** toggles all of its credits. Already-dated credits are shown greyed with their existing date.
 - **Apply** stamps the header date onto every ticked, still-undated credit. Nothing is submitted — the edits land in the editor for you to review and save.
 
+> [!NOTE] 
 > **Fills blanks only — it can't overwrite or remove a date.** MusicBrainz's editor reducer merges a relationship update and keeps any existing non-empty date, so a date sent through it is only applied where there was none (which is why already-dated credits are shown but left unchanged). Overwriting or clearing a date would require driving MB's own edit dialog (which we deliberately don't do). See [#385](https://github.com/majkinetor/musicbrainz-userscripts/issues/385) for the details.
 
 <img width="650" src="../group_therapy/screenshots/copy.png" /> 
@@ -820,7 +821,7 @@ With more than 10 releases in a group you must pick releases to be consolidated 
 
 The **◎ Match works…** button links each recording on the release to an existing MusicBrainz work, so a release of standards or a hits compilation **reuses** the works that already exist instead of creating duplicates. It opens a review table — one row per recording, track on the left, matched work on the right.
 
-<img width="800" src="../group_therapy/screenshots/match-works.png" /><br>
+<img width="800" src="../group_therapy/screenshots/match-works.png" />
 
 The hard part is disambiguation — a bare title like *Beat It* matches many works. Two signals drive it:
 
@@ -1154,7 +1155,7 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
     - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](../mammoth/CHANGELOG.md)
 
-<img src=./screenshots/main.png width=600 />
+<img src="../mammoth/screenshots/main.png" width=600 />
 
 ### Features
 
@@ -1179,7 +1180,7 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
 
 A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, and task fields — are **seeded into the [Babies](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own. 
 
-<img src=./screenshots/babies.png width=600 /><br>
+<img src="../mammoth/screenshots/babies.png" width=600 />
 
 The pin opens a compact panel with a toolbar:
 
@@ -1195,13 +1196,13 @@ Note actions:
 
 Pinned buttons wrap to new rows, labelled with the value truncated to the configured length — see **[Settings] - "Button label length"**:
 
-<img src=./screenshots/big-buttons.png width=600 /><br>
+<img src="../mammoth/screenshots/big-buttons.png" width=600 />
 
 #### Custom fields
 
 The built-in babies cover several native controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Babies** tab and **＋ Add field**:
 
-<img src=./screenshots/custom-fields.png width=600 />
+<img src="../mammoth/screenshots/custom-fields.png" width=600 />
 
 | Column | Meaning |
 |---|---|
@@ -1235,7 +1236,7 @@ The **`{ } JSON`** button (top-right of the section) switches the editor to a JS
 
 Accessed using the `⚙` button. 
 
-<img src=screenshots/options.png width=350/>
+<img src="../mammoth/screenshots/options.png" width=350/>
 
 | Setting | Default | Notes |
 |---|---|---|
