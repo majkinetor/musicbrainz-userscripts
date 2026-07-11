@@ -36,6 +36,7 @@ export function idbKeyForEntity(entity) {
 export function sourceNameForUrl(url) {
     if (/tidal\.com\//i.test(url || '')) return 'Tidal';
     if (/qobuz\.com\//i.test(url || '')) return 'Qobuz';
+    if (/deezer\.com\//i.test(url || '')) return 'Deezer';
     return 'Discogs';
 }
 

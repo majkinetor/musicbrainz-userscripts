@@ -28,7 +28,7 @@ The script presents itself on the **Edit relationships** screen of a MusicBrainz
 
 ## Features
 
-- **[Import bar](#import-bar)** — pick a source (Discogs / Tidal / Qobuz / Titles) and the import options (per-track credits, move-to-tracks, create-works, dedup).
+- **[Import bar](#import-bar)** — pick a source (Discogs / Tidal / Qobuz / Deezer / Titles) and the import options (per-track credits, move-to-tracks, create-works, dedup).
 - **[Credit Review Table](#credit-review-table)** — confirm each source ↔ MusicBrainz match before dispatch: parallel lookup, inline search, auto-match, entity creation.
 - **[Instant Fill](#instant-fill)** — write the confirmed relationships into the MB relationship editor in one pass.
 
@@ -38,7 +38,7 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 
 <img width="600" src="./screenshots/bar.png" />
 
-- **Source picker** — an **Import credits:** label followed by one brand icon per source available on the release (Discogs, Tidal, Qobuz, and the title-derived **Titles** source). **Left-click** an icon to import from that source; **right-click** to open the source's page. Several sources can be run in one session — the edits stack and are submitted together.
+- **Source picker** — an **Import credits:** label followed by one brand icon per source available on the release (Discogs, Tidal, Qobuz, Deezer, and the title-derived **Titles** source). **Left-click** an icon to import from that source; **right-click** to open the source's page. Several sources can be run in one session — the edits stack and are submitted together.
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
 - **Create works** — mode picker:
@@ -59,7 +59,7 @@ A single-row-per-entity table for confirming source ↔ MusicBrainz matches befo
 - 🟡 name differs — resolved via URL but the MB name doesn't match the source (worth verifying)
 - 🔴 needs attention — not resolved
 
-**Source-URL link state** (for providers that expose an artist URL — Discogs, Tidal; not Qobuz) appears as a single chip per row:
+**Source-URL link state** (for providers that expose an artist URL — Discogs, Tidal; not Qobuz or Deezer) appears as a single chip per row:
 - ✓ source URL already linked
 - 🔗 add the source link — click opens MB's edit page pre-filled
 - ⚠ linked to a different MB entity
@@ -67,7 +67,7 @@ A single-row-per-entity table for confirming source ↔ MusicBrainz matches befo
 Efficiency features:
 
 - **Parallel lookup** — all artists, labels and places are checked against MB through a shared throttle.
-- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `url` / `name+url` / `user`). Sources that expose a per-credit URL (Discogs, Tidal) cache globally by that URL; **name-only** credits (Qobuz, the title-derived remixers) cache **per release** — keyed by the release and the name — so re-running the same release reuses your picks without a bare name leaking a resolution onto a different release.
+- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `url` / `name+url` / `user`). Sources that expose a per-credit URL (Discogs, Tidal) cache globally by that URL; **name-only** credits (Qobuz, Deezer, the title-derived remixers) cache **per release** — keyed by the release and the name — so re-running the same release reuses your picks without a bare name leaking a resolution onto a different release.
 - **Inline MB search** — a live search field on every row; type a name or paste an MBID / MB URL.
 - **Auto-match** — name search and source-URL lookup run in parallel; auto-resolution only when trustworthy:
     - **Both agree** on the same MB entity → resolved with high confidence.
@@ -92,7 +92,7 @@ The dispatch-based, zero-dialog import. Idempotent — skips relationships that 
 
 ## Diagnostics
 
-The log panel records every step. The log menu offers **Copy log** (includes the raw source data), **Copy without JSON**, and per-provider raw/parsed copies (**Copy Discogs / Tidal / Qobuz**) for filing issues — each labelled by the source it came from.
+The log panel records every step. The log menu offers **Copy log** (includes the raw source data), **Copy without JSON**, and per-provider raw/parsed copies (**Copy Discogs / Tidal / Qobuz / Deezer**) for filing issues — each labelled by the source it came from.
 
 ## Providers
 
@@ -103,6 +103,7 @@ Providers differ in how rich their credits are and — crucially — whether the
 | **Discogs** | Fullest — performers + instruments, engineering, production, artwork, mastering, …                                                                                                                                  | Discogs **artist IDs** → exact MB resolution via URL relationships                                                                                                                                                                                                                           | Discogs API                                                                                                                                                                                                               | none                                                                                                                    |
 | **Tidal**   | Per-track: Producer, Mixing/Recording/Sound Engineer, Composer, Lyricist, Writer, Orchestrator, (Music) Publisher. **Plus release-level credits** from the Info tab — instruments, vocals, conductor, artwork, etc. | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships                                                                                                                                                                                                          | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab (per-track **and** the Info tab's "Additional Credits"), relayed back cross-tab                                                             | none                                                                                                                    |
 | **Qobuz**   | Composer, Lyricist, Producer, Publisher, performers                                                                                                                                                                 | mostly **names only**, but via `album/get` the **composer** (and main artist) carry a Qobuz artist **id** → an `open.qobuz.com/artist/<id>` link for exact resolution / addable "streaming" link; the other roles have no id in the API, so they resolve by MB **name search + your review** | authenticated `album/get` when signed in to Qobuz via [Platform Check](../platform_check/README.md) (reliable, geo-independent, and the source of the composer id); otherwise the server-rendered store page (names only) | optional [Qobuz login](../platform_check/README.md) — makes the fetch reliable **and** unlocks the composer artist link |
+| **Deezer**  | **Composers only** — the per-track "Composers" line (co-writers comma-separated)                                                                                                                                     | **names only** — resolved by MB **name search + your review** (Deezer exposes no artist id for composers, and often abbreviates: "E. Davis", "Richards")                                                                                                                                     | the album page HTML (`deezer.com/us/album/<id>`) server-renders the composer line — a single unauthenticated page fetch (the public JSON API exposes no songwriter credits)                                               | none                                                                                                                    |
 | **Titles**  | **Remixers only**, derived from the release's own track titles — no external provider                                                                                                                               | **names only** — resolved by MB **name search + your review**                                                                                                                                                                                                                                | reads the track titles already on the MB release                                                                                                                                                                          | none                                                                                                                    |
 
 The **Titles** source parses remixer credits straight from the track-title disambiguation convention, for releases where the remix is named in the title but no provider lists it. A track titled *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)* or *Cut (Remixed by Someone)* contributes a **remixer** relationship for that recording. Only the reliable *named-remix* convention fires — anonymous descriptors like *(Extended Mix)*, *(Radio Edit)*, *(Original Mix)* or a bare *(Remix)* (edits/versions of the original, not a remix by a named artist) are ignored, and *(Mixed by …)* is left alone (that's an engineer). It's offered (its own icon in the source row) only when the titles actually contain a named remix, probed when the page loads. Everything still goes through the review table before it's committed. Because these remixers carry no source URL, your review picks for them are cached **per release** (keyed by the release and the parsed name) — so re-running the Titles source on the same release reuses your matches instead of re-asking, while a bare name like *Friends* never leaks a resolution onto a different release.

@@ -46,6 +46,7 @@ import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources/tidal.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine, qobuzToken, fetchQobuzApiAlbum, parseQobuzApiTracks, qobuzApiAlbumInfo } from './sources/qobuz.js';
+import { parseDeezerAlbumUrl, fetchDeezerAlbumPage, extractDeezerCredits, extractDeezerAlbumInfo, deezerToEngine } from './sources/deezer.js';
 
 let _logs;
 let _summary;
@@ -56,6 +57,8 @@ let _discogsJson = null;
 let _tidalJson = null;
 // Parsed Qobuz credits of the current run — same contract for "Copy Qobuz".
 let _qobuzJson = null;
+// Parsed Deezer credits of the current run — same contract for "Copy Deezer".
+let _deezerJson = null;
 
 // Per-source brand glyphs (#193) — shared by the split Import button, the
 // "Importing…" state, and the review "Start import" button, so the chosen
@@ -64,6 +67,7 @@ const SRC_ICON = {
     Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
     Tidal:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
     Qobuz:   '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    Deezer:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="#a238ff"><path d="M17.6 6.3h4.2v2.1h-4.2zM11.7 9.1h4.2v2.1h-4.2zM17.6 9.1h4.2v2.1h-4.2zM5.8 11.9h4.2V14H5.8zM11.7 11.9h4.2V14h-4.2zM17.6 11.9h4.2V14h-4.2zM0 14.7h4.2v2.1H0zM5.8 14.7h4.2v2.1H5.8zM11.7 14.7h4.2v2.1h-4.2zM17.6 14.7h4.2v2.1h-4.2z"/></svg>',
     // #271: the "Titles" source derives remixer credits from the track titles
     // themselves — no provider. A small text/lines glyph.
     Titles:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>',
@@ -462,6 +466,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
+    if (sources.deezer) importSources.push({ name: 'Deezer', url: sources.deezer, run: g => runDeezerImport(sources.deezer, g) });
     // #271: "Titles" — derive remixer credits from the track titles. Offered
     // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
     // CH doesn't surface an action with nothing behind it. Pushed LAST so it
@@ -481,6 +486,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         Discogs: `<img src="${DISCOGS_LOGO_URL}" alt="Discogs" class="discogs-logo">`,
         Tidal:   '<svg viewBox="0 0 24 24" fill="#000" aria-label="Tidal"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
         Qobuz:   '<svg viewBox="0 0 24 24" aria-label="Qobuz"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+        Deezer:  SRC_ICON.Deezer,
         Titles:  SRC_ICON.Titles,
     };
     const srcButtons = [];
@@ -875,6 +881,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (discogsUrl)    logMenu.appendChild(mkMenuItem('Copy Discogs', 'Copy the raw Discogs JSON for this release',           (b, l) => bar._copy?.discogs(b, l)));
     if (sources.tidal) logMenu.appendChild(mkMenuItem('Copy Tidal',   'Copy the raw Tidal credits harvest for this release',  (b, l) => bar._copy?.tidal(b, l)));
     if (sources.qobuz) logMenu.appendChild(mkMenuItem('Copy Qobuz',   'Copy the parsed Qobuz credits for this release',       (b, l) => bar._copy?.qobuz(b, l)));
+    if (sources.deezer) logMenu.appendChild(mkMenuItem('Copy Deezer', 'Copy the parsed Deezer credits for this release',      (b, l) => bar._copy?.deezer(b, l)));
     document.body.appendChild(logMenu);
 
     // Open the extra-actions menu (positioned under the split button).
@@ -1113,6 +1120,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             discogs: (item, label) => { if (_discogsJson) copyToClipboard(JSON.stringify(_discogsJson, null, 2), item, label); },
             tidal:   (item, label) => { if (_tidalJson)   copyToClipboard(JSON.stringify(_tidalJson,   null, 2), item, label); },
             qobuz:   (item, label) => { if (_qobuzJson)   copyToClipboard(JSON.stringify(_qobuzJson,   null, 2), item, label); },
+            deezer:  (item, label) => { if (_deezerJson)  copyToClipboard(JSON.stringify(_deezerJson,  null, 2), item, label); },
         };
 
         // Expose progress update hook. `dispatchAllRelationships` pushes the
@@ -1373,6 +1381,37 @@ function runQobuzImport(qobuzUrl, getOpts) {
             .catch(err => { log.warn(`Qobuz API failed (${err.message || err}) — falling back to the store page`); return scrape(); });
     }
     return scrape();
+}
+
+// Deezer import (#401): the public JSON API exposes no songwriter credits, but
+// the album page HTML server-renders a per-track "Composers" line — so a single
+// cross-origin page fetch is enough, no tab, no auth. Names only, composer role
+// only, so every credit resolves via name search + the review table (the Qobuz
+// shape).
+function runDeezerImport(deezerUrl, getOpts) {
+    const parsed = parseDeezerAlbumUrl(deezerUrl);
+    if (!parsed) { log.error(`Not a Deezer album URL: ${deezerUrl}`); return Promise.resolve(); }
+    log.info(`Fetching Deezer album page: ${parsed.pageUrl}`);
+    return fetchDeezerAlbumPage(parsed.pageUrl)
+        .then(html => {
+            const albumInfo = extractDeezerAlbumInfo(html);
+            const tracks = extractDeezerCredits(html);
+            _deezerJson = { source: parsed.pageUrl, album: albumInfo, tracks };   // Log ▾ → "Copy Deezer"
+            const li = document.createElement('li');
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
+            pre.textContent = JSON.stringify(_deezerJson, null, 2);
+            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || 'Deezer album'} · ${tracks.length} tracks — parsed Deezer credits (page)</strong></summary></details>`;
+            li.querySelector('details').appendChild(pre);
+            _logs.appendChild(li);
+            if (!tracks.length) { log.warn('No Deezer credits found — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            const { tracklistRels, tracklist, skipped } = deezerToEngine(tracks);
+            log.info(`Deezer credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+            skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            if (!tracklistRels.length) { log.warn('No importable Deezer credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
 }
 
 // Titles "source" (#271): no provider — read the release's own track titles
