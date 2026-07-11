@@ -42,6 +42,17 @@ bodyHtml = bodyHtml.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (_m, d, inner) => `<
 const GH_BLOB = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
 bodyHtml = bodyHtml.replace(/href="\.\.\/([^"#]+)"/g, (_m, p) => `href="${GH_BLOB}${p}"`);
 
+// GitHub admonitions (`> [!NOTE] optional title`) — marked has no support, so it renders the
+// literal `[!NOTE]` in a plain blockquote. Convert to a styled callout: pull the type + optional
+// custom title off the blockquote's first line, and tag the blockquote with an `adm adm-<type>` class.
+bodyHtml = bodyHtml.replace(
+  /<blockquote>\s*<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t]*([^\n<]*)\n?/gi,
+  (_m, type, title) => {
+    const t = type.toLowerCase();
+    const label = (title || '').trim() || (t[0].toUpperCase() + t.slice(1));
+    return `<blockquote class="adm adm-${t}"><p class="adm-title">${label}</p><p>`;
+  });
+
 // Minimal GitHub-ish print stylesheet. Images in DOCS.md are `../<member>/…` — a
 // temp HTML written INTO this folder makes those resolve to the real files.
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -57,6 +68,14 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   pre { background: #f6f8fa; border-radius: 6px; padding: 12px; overflow: auto; page-break-inside: avoid; }
   pre code { background: none; padding: 0; }
   blockquote { margin: .6em 0; padding: .2em 1em; color: #57606a; border-left: 3px solid #d0d7de; background: #f6f8fa; }
+  .adm { color: #1f2328; border-left-width: 4px; border-radius: 0 6px 6px 0; padding: 6px 14px; page-break-inside: avoid; }
+  .adm .adm-title { font-weight: 700; margin: 2px 0 4px; }
+  .adm p:last-child { margin-bottom: 2px; }
+  .adm-note { border-left-color: #0969da; }      .adm-note .adm-title { color: #0969da; }
+  .adm-tip { border-left-color: #1a7f37; }       .adm-tip .adm-title { color: #1a7f37; }
+  .adm-important { border-left-color: #8250df; } .adm-important .adm-title { color: #8250df; }
+  .adm-warning { border-left-color: #9a6700; }   .adm-warning .adm-title { color: #9a6700; }
+  .adm-caution { border-left-color: #cf222e; }   .adm-caution .adm-title { color: #cf222e; }
   table { border-collapse: collapse; margin: .8em 0; font-size: .95em; page-break-inside: avoid; }
   th, td { border: 1px solid #d0d7de; padding: 5px 11px; }
   th { background: #f6f8fa; } tr:nth-child(2n) td { background: #f6f8fa; }
