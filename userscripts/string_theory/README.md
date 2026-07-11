@@ -7,7 +7,6 @@
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=by+majkinetor&conditions.1.field=edit_note_author&conditions.1.operator=%21%3D&conditions.1.name=majkinetor&conditions.1.args.0=1601832&field=Please+choose+a+condition)
 
-
 > [!IMPORTANT]
 > Install String Theory **instead of** the individual scripts it contains — never both, or each would run twice on the pages they share.
 >
@@ -27,7 +26,7 @@
 
 - The bundled scripts are listed in [`members.txt`](./members.txt)
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
- 
+
 Version details are printed in Console:
 
 ```
@@ -41,6 +40,13 @@ String Theory bundles:
   · Mammoth v2026.7.2.6
   · Platform Check v2026.7.1.2
 ```
+
+
+## Other recommended userscripts
+
+- [Art Station Picker](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/as_picker/README.md)
+- [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc)
+- [Enhanced Cover Art Uploads]([https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads))
 
 ## How it's built
 
