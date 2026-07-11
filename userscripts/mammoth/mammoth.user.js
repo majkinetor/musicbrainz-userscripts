@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.11.002326
+// @version      2026.7.11.123818
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -411,8 +411,11 @@
   .mmth-toast { position:fixed; z-index:100000; background:#2c3a33; color:#fff; padding:6px 12px; border-radius:6px; font:13px sans-serif; box-shadow:0 4px 14px rgba(0,0,0,.25); left:50%; top:14px; transform:translateX(-50%); }
   /* While an MB dialog/popover is open, hide Mammoth's panel (incl. the minimized
      badge) and its popovers — MB's dialogs carry no z-index, so our UI would float
-     on top of them. visibility keeps the docked panel's layout (no jump). #313 */
-  html.mmthf-dialog .mmth-side, html.mmthf-dialog .mmth-badge, html.mmthf-dialog .mmth-pop { visibility:hidden !important; pointer-events:none !important; }
+     on top of them. visibility keeps the docked panel's layout (no jump). #313
+     Uses mmthf-anydialog (set for ANY open dialog), not mmthf-dialog (blocking
+     only): a dialog that HOSTS babies is non-blocking so its own pins stay, but the
+     main panel/badge must still hide under it (else it floats over — #400). */
+  html.mmthf-anydialog .mmth-side, html.mmthf-anydialog .mmth-badge, html.mmthf-anydialog .mmth-pop { visibility:hidden !important; pointer-events:none !important; }
   `;
   (function () { const s = document.createElement('style'); s.textContent = css; (document.head || document.documentElement).appendChild(s); })();
   // #268: only the release editor wants its edit-note .half-width column widened to
@@ -1020,7 +1023,8 @@
   const syncDialog = () => {
     const dlgs = [...document.querySelectorAll('.dialog.popover, .relationship-dialog')];
     const blocking = dlgs.some(d => !d.querySelector('[data-mmthf]'));
-    document.documentElement.classList.toggle('mmthf-dialog', blocking);
+    document.documentElement.classList.toggle('mmthf-dialog', blocking);        // baby pins: hide only when a dialog hosts none of ours
+    document.documentElement.classList.toggle('mmthf-anydialog', dlgs.length > 0);  // main panel/badge: hide under ANY open dialog (#400)
   };
   new MutationObserver(() => { injectAll(); syncDialog(); }).observe(document.documentElement, { childList: true, subtree: true });
   syncDialog();
