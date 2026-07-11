@@ -66,10 +66,11 @@ const DEEZER_NO_INFO_RE = /^\s*no\s*info\s*$/i;
  * Parse one contributors line into `[{ name, roles: [rel…] }]`. A line is one or
  * more `Label: names` groups joined by ` / ` — e.g. a single `Composers: E. Davis`,
  * or `Writer: Raúl Marrugo / Composers: Raúl Marrugo` (#401). Each label maps to an
- * MB rel via `DEEZER_LABEL_MAP`; names within a group are comma-separated. Credits
- * are keyed by name, so a person listed under several labels (Writer *and* Composer)
- * yields ONE entry with both roles rather than a garbled `Name / Composers: Name`.
- * Unknown labels and "No Info" placeholders are dropped.
+ * MB rel via `DEEZER_LABEL_MAP`; names within a group are separated by a comma OR
+ * ` - ` (space-hyphen-space, so hyphenated names like "Malcolm-Marx" stay intact) —
+ * e.g. `Composers: Ben Malone - Alya Malcolm-Marx - Harry Parsons`. Credits are keyed
+ * by name, so a person listed under several labels (Writer *and* Composer) yields ONE
+ * entry with both roles. Unknown labels and "No Info" placeholders are dropped.
  */
 export function parseDeezerCreditLine(line) {
     const text = decodeEntities(String(line)).trim();
@@ -79,7 +80,7 @@ export function parseDeezerCreditLine(line) {
         if (!m) continue;
         const plan = DEEZER_LABEL_MAP[m[1].trim()];
         if (!plan) continue;
-        for (const raw of m[2].split(',')) {
+        for (const raw of m[2].split(/\s*,\s*|\s+-\s+/)) {
             const name = raw.trim();
             if (!name || DEEZER_NO_INFO_RE.test(name)) continue;
             if (!byName.has(name)) byName.set(name, []);

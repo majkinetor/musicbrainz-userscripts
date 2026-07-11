@@ -24,6 +24,13 @@ assert.deepEqual(parseDeezerCreditLine('Writer: Raúl Saladem Marrugo / Composer
 assert.deepEqual(parseDeezerCreditLine('Writer: A, B / Composers: C'),
     [{ name: 'A', roles: ['writer'] }, { name: 'B', roles: ['writer'] }, { name: 'C', roles: ['composer'] }]);
 assert.deepEqual(parseDeezerCreditLine('Mystery: X / Composers: Y'), [{ name: 'Y', roles: ['composer'] }]); // unknown group skipped, rest kept
+// #401: names within a group separated by " - " (space-hyphen-space); hyphenated names ("Malcolm-Marx") stay intact
+assert.deepEqual(parseDeezerCreditLine('Composers: Ben Malone - Alya Malcolm-Marx - Harry Parsons - Sophie Bialostocki'), [
+    { name: 'Ben Malone', roles: ['composer'] },
+    { name: 'Alya Malcolm-Marx', roles: ['composer'] },
+    { name: 'Harry Parsons', roles: ['composer'] },
+    { name: 'Sophie Bialostocki', roles: ['composer'] },
+]);
 
 // entity decode
 assert.equal(decodeEntities('Beyonc&#039; &amp; Co'), "Beyonc' & Co");
