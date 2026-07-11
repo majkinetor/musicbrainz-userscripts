@@ -7,18 +7,6 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - [Changelog](./CHANGELOG.md)
 - [View Users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Group+Therapy)
 
-
-<details><summary>Screenshots</summary>
-<img width="650" src="./screenshots/copy.png" /> 
-<img width="500" src="./screenshots/remove.png" /><br>
-<img width="500" src="./screenshots/remove-work.png" /><br>
-<img width="500" src="./screenshots/copy-release.png" /><br>
-<img width="800" src="./screenshots/consolidation.png" /><br>
-<img width="500" src="./screenshots/highlight.png" /><br>
-<img width="650" src="./screenshots/edit-note.png" /><br>
-<img width="800" src="./screenshots/match-works.png" /><br>
-</details>
-
 **Note**: [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc) is valuable companion script.
 
 ## Features
@@ -30,6 +18,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - Match recordings to existing works (ISRC + ranked title search) and stage the *performance* relationships
 - Set a date across a release's credits — a picker to choose the date + exactly which credits get it
 - Works on existing and newly-added relationships
+- Right-click entity to open its editor
 
 ## Batch delete
 
@@ -46,11 +35,13 @@ If you've **selected recordings/works** (ticked their checkboxes), the group opt
 
 <img width="500" src="./screenshots/remove.png" />
 
+It works exactly the same on works:
+
 <img width="500" src="./screenshots/remove-work.png" />
 
 ### Copy / Move
 
-Tick the destination recordings (MB's own recording checkboxes) — **or tick none, which means every other track** — then
+Select the destination recordings (MB's own recording checkboxes) — **or none, which means every other track** — then
 
 #### From recording/work
 
@@ -157,7 +148,7 @@ When (and only when) you actually **use** Group Therapy on a page, it stamps MB'
 
 <img width="650" src="./screenshots/edit-note.png" />
 
-## Options
+## Settings
 
 Open the **⚙ settings** popover from the toolbar. Every option is remembered per-browser (via the userscript manager).
 
