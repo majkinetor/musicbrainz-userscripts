@@ -15,29 +15,29 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 ## Features
 
-- **Header info** — MB's release year, format, label and track count in the dashboard header.
-- **[Insert links to release](#inserting-links)** — open the release's edit page and insert one or all confirmed platform links (fills the edit note for you).
-- **Open all found** (`↗`) — open each confirmed (`✓`) platform page not yet in MB in its own tab (plus the Discogs master). Mismatches (`~`) and unverifiable (`?`) links are skipped. *(Watch for pop-up blocking.)*
-- **Options** — toggle each supported platform independently, and reorder providers.
-- **Refresh** (`↻`) — clear the cache for the current release and re-run every enabled scanner.
-- **Diagnostic log** (`ⓘ`) — every scanner step is logged, with per-source filter chips to isolate a single platform's chain.
+- **Multiple [platforms](#platforms)** supported with customizable position and visiblity
+- **Header info** — MB's release year, format, label and track count in the dashboard header
+- **Insert links to release** — open the release's edit page and insert one or all confirmed platform links
+- **Open all found** — open each confirmed platform page not yet in MB in its own tab (plus the Discogs master) Mismatches and unverifiable links are skipped. *(Watch for pop-up blocking.)*
+- **Options** — detailed appereance, authentication, link confidence settings etc.
+- **Diagnostic log** — per-source filter chips to isolate a single platform's chain
 
 ## Overview
 
-The userscript runs on `musicbrainz.org/release/*` and tries to locate each release on a supported set of platforms. When the release already has a platform URL in MB's URL relationships it is used directly. Otherwise, it falls back to a chain of sources — platform APIs, Wikidata, then generic web search — and verifies each candidate by track-count and title-similarity match against MB's data.
+The userscript runs on `musicbrainz.org/release/*` and tries to locate each release on a supported set of [platforms](#platforms). When the release already has a platform URL in MB's URL relationships it is used directly. Otherwise, it falls back to a chain of sources — platform APIs, Wikidata, then generic web search.
 
-Once a URL is settled, the script fetches the platform's metadata (track count, year, label, format where available) and shows it alongside the MB-side numbers so you can see at a glance whether a candidate looks right. Results are cached per release so revisiting a page does no outbound traffic until you click ↻.
+Once a URL is settled, the script fetches the platform's metadata (track count, year, label, format where available) and shows it alongside the MB-side numbers so you can see at a glance whether a candidate looks right. Results are cached per release so revisiting a page does no outbound traffic until you click ↻. 
 
 Link availability is determined by the icon and text color:
 
-1. Color - link is found
-2. Gray - link is found but details do not match
-3. Faded - link is not found
-4. Circled - link exists in MB relationships
+| Color   | Meaning                             |
+| ------- | ----------------------------------- |
+| Colored | link found                          |
+| Gray    | link found but details do not match |
+| Faded   | link not found                      |
+| Circled | link exists in MB relationships     |
 
-On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
-
-Matched links can be **inserted to the release** by opening its *edit* page and populating one or more links:
+Matched links that are not already associated (colored & not circled) can be **inserted to the release** (or release group with Discogs) by opening its *edit* page and populating one or more links:
 
 1. **Left click**<br>
     1. Title - Open link if found, open search for provider if not found (use [↗] button in the footer to open all)
@@ -45,13 +45,13 @@ Matched links can be **inserted to the release** by opening its *edit* page and 
 2. **Right click**<br>
     1. Title - Open search for provider
 
-Setup option **Compact unmatched providers** (#355) keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search, exactly like clicking its row. Rows rise with a subtle fade so the panel doesn't jump as results stream in. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
+Setup option **Compact unmatched providers** keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search, exactly like clicking its row. Rows rise with a subtle fade so the panel doesn't jump as results stream in. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
 
 ### Barcode matching
 
 When the MB release has a barcode (read from the release page, with the MB API as a fallback), providers that support a barcode lookup try it **first** for an exact match before any text search.
 
-This avoids the ambiguity of title/artist search when a barcode is available, and prefers the *exact* edition over a Wikidata/search match that may be a different barcode. Stores index the same GTIN under different zero-paddings (a 12-digit UPC-A, a 13-digit EAN with a leading `0`, a 14-digit form), so when the exact-barcode lookup misses, it retries with the other paddings (same GTIN — leading zeros are insignificant) before falling back to search (#354). A returned album's own barcode is verified against the query where the API exposes it, since Deezer occasionally hands back an unrelated album for a barcode it doesn't have (#356).
+This avoids the ambiguity of title/artist search when a barcode is available, and prefers the *exact* edition over a Wikidata/search match that may be a different barcode. Platforms index the same GTIN under different zero-paddings (a 12-digit UPC-A, a 13-digit EAN with a leading `0`, a 14-digit form), so when the exact-barcode lookup misses, it is retried with the other paddings (by adding leading zeros which do not change GTIN) before falling back to search (#354). A returned album's own barcode is verified against the query where the API exposes it, since Deezer occasionally hands back an unrelated album for a barcode it doesn't have (#356).
 
 MusicBrainz treats a different barcode as a different release, so a found link with a mismatching barcode is the wrong entity per the [URL style guidelines](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to).
 
@@ -67,28 +67,30 @@ Platform Check now (#182):
 
 ### Format matching
 
-MusicBrainz treats a different format as a different release, so a digital-store link doesn't belong on a CD/Vinyl release per the same [URL guidelines](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to). Only **Bandcamp** and **Discogs** expose a real format; every other provider is a digital-only storefront, so an absent format counts as **Digital**. Platform Check adds a setup option **"Use format for link confidence"** (on by default, in *if they exist* mode) with two modes (#182):
+MusicBrainz treats a different format as a different release, so a digital-store link doesn't belong on a CD/Vinyl release per the same [URL guidelines](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to). Only **Bandcamp** and **Discogs** expose a real format; every other provider is a digital-only storefront, so an absent format counts as **Digital**. 
+
+Platform Check has a setup option **"Use format for link confidence"** (on by default, in *if they exist* mode) with two modes (#182):
 
 - **if they exist** — withhold from `+`/`↗` only links whose format is *known and incompatible* with the MB release (e.g. a Spotify/Apple/Tidal link on a CD release)
 - **strictly** — also withhold links whose format can't be determined
 - A **violet bar on the left edge** marks incompatible rows while the option is on (digital-on-physical is common enough to be noise otherwise). Bandcamp/Discogs editions that *include* MB's medium (e.g. Bandcamp "Digital, CD" on a CD release) are compatible and pass.
 
-**Format marker (#350).** Each release's format is shown as a compact **4-quadrant circle**: Vinyl (top-right), Cassette (top-left), CD (bottom-left), Digital (bottom-right); the present family/families are coloured and the full format is in the tooltip. Any format collapses to those four (optical discs — DVD/SACD/Blu-ray — fold into CD), and a multi-format Discogs/Bandcamp match becomes one glyph instead of a long text list. Switch to text using **Setup → Appearance → Format marker: Circle | Text**.
+Each release's format is shown as a compact **4-quadrant circle**: Vinyl (top-right), Cassette (top-left), CD (bottom-left), Digital (bottom-right). The present family/families are coloured and the full format is in the tooltip. Any format collapses to those four (optical discs — DVD/SACD/Blu-ray — fold into CD), and a multi-format Discogs/Bandcamp match becomes one glyph instead of a long text list. Switch to text using **Setup → Appearance → Format marker: Text**.
 
-## Providers at a glance
+## Platforms
 
-| Provider | Barcode | Track count | Wikidata | Login |
-| --- | :---: | :---: | :---: | :---: |
-| [Discogs](#discogs) | capture | ✓ | – | – |
-| [Bandcamp](#bandcamp) | capture | ✓ | – | – |
-| [Spotify](#spotify) | via SAMBL | ✓ | P2205 | – |
-| [Apple Music](#apple-music) | lookup | ✓ | P5121 | – |
-| [Deezer](#deezer) | lookup | ✓ | – | – |
-| [Tidal](#tidal) | ✓ | ✓ | P4577 | baked-in token |
-| [Qobuz](#qobuz) | ✓ | ✓ | – | optional¹ |
-| [Beatport](#beatport) | – | ✗ | P11312 | optional² |
-| [Volumo](#volumo) | ✓ | ✓ | – | – |
-| [HDtracks](#hdtracks) | ✓ | ✓ | – | – |
+| Provider                    |  Barcode  | Track count | Wikidata |     Login      |
+| --------------------------- | :-------: | :---------: | :------: | :------------: |
+| [Discogs](#discogs)         |  capture  |     ✓      |    –     |       –        |
+| [Bandcamp](#bandcamp)       |  capture  |     ✓      |    –     |       –        |
+| [Spotify](#spotify)         | via SAMBL |     ✓      |  P2205   |       –        |
+| [Apple Music](#apple-music) |  lookup   |     ✓      |  P5121   |       –        |
+| [Deezer](#deezer)           |  lookup   |     ✓      |    –     |       –        |
+| [Tidal](#tidal)             |    ✓     |     ✓      |  P4577   | baked-in token |
+| [Qobuz](#qobuz)             |    ✓     |     ✓      |    –     |   optional¹    |
+| [Beatport](#beatport)       |     –     |     ✗      |  P11312  |   optional²    |
+| [Volumo](#volumo)           |    ✓     |     ✓      |    –     |       –        |
+| [HDtracks](#hdtracks)       |    ✓     |     ✓      |    –     |       –        |
 
 **Barcode** legend: `✓` = barcode-first lookup **and** the found item's barcode captured for confidence · `lookup` = barcode-first lookup only (found barcode not exposed) · `capture` = no barcode search, but the found barcode is captured · `via SAMBL` = the barcode-exact album comes from the SAMBL resolver · `–` = neither.
 
