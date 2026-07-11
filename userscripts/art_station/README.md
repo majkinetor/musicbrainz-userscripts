@@ -58,7 +58,7 @@ Works on one cover or the whole selection:
 - Set comment and type.
 - `<Delete>` key to remove the image.
 
-See [Keyboard shortcuts](#keyboard-shortcuts) for the full key/mouse list.
+See [Shortcuts](#shortcuts) for the full key/mouse list.
 
 ## File names ⇄ types
 

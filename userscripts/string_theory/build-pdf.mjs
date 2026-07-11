@@ -28,7 +28,19 @@ const { chromium } = require('playwright');
 
 const md = readFileSync(DOCS_MD, 'utf8');
 marked.setOptions({ gfm: true, breaks: false });
-const bodyHtml = marked.parse(md);
+let bodyHtml = marked.parse(md);
+
+// Make links clickable in the PDF:
+// 1. add heading ids (marked adds none) — GitHub-accurate slug + collision suffix,
+//    matching DOCS.md's anchors, so the TOC and cross-refs jump within the PDF;
+// 2. rewrite the doc's relative `../<member>/…` LINKS to absolute GitHub URLs (a PDF
+//    can't follow a repo-relative path). Image src stays relative so it embeds locally.
+const ghSlug = s => s.toLowerCase().replace(/<[^>]+>/g, '').replace(/[^\w\s-]/g, '').trim().replace(/\s/g, '-');
+const makeSlugger = () => { const seen = new Map(); return t => { const b = ghSlug(t); const k = seen.get(b) || 0; seen.set(b, k + 1); return k ? `${b}-${k}` : b; }; };
+const slug = makeSlugger();
+bodyHtml = bodyHtml.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (_m, d, inner) => `<h${d} id="${slug(inner.replace(/<[^>]+>/g, ''))}">${inner}</h${d}>`);
+const GH_BLOB = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+bodyHtml = bodyHtml.replace(/href="\.\.\/([^"#]+)"/g, (_m, p) => `href="${GH_BLOB}${p}"`);
 
 // Minimal GitHub-ish print stylesheet. Images in DOCS.md are `../<member>/…` — a
 // temp HTML written INTO this folder makes those resolve to the real files.
