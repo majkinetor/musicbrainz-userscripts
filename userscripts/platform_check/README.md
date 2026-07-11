@@ -103,16 +103,19 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 ### Discogs
 
 - **API** — `api.discogs.com`
-    - Search: `/database/search`
-    - Album: release-detail endpoint (track count)
-    - Barcode: `?barcode=<UPC>` (barcode-first); found barcode captured from the release's `identifiers`
+    - Search: `/database/search?q=`
+    - Album: `/releases/<id>` (track count)
+    - Barcode: `/database/search?barcode=<UPC>` (barcode-first); found barcode captured from the release's `identifiers`
 - **Local search:** Discogs API search
 - **Global search:** —
 - **Track verify:** Discogs API release detail
 - **Wikidata cross-ref:** —
 - **Login:** —
 - **Method:** MB → barcode → LS
-- **Notes:** **Format-aware** — when MB's format is CD, the first attempt looks for a CD release so a vinyl entry can't shadow an existing CD one; if that returns nothing it retries without the format filter. Also checks whether any Discogs **master** is already linked on MB's **release group**. Exposes a real **format** and always keeps its full row.
+- **Notes:**
+    - **Format-aware** — when MB's format is CD, the first attempt looks for a CD release so a vinyl entry can't shadow an existing CD one; if that returns nothing it retries without the format filter.
+    - Checks whether any Discogs **master** is already linked on MB's **release group**.
+    - Exposes a real **format** and always keeps its full row.
 
 ### Bandcamp
 
@@ -143,13 +146,14 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Wikidata cross-ref:** P2205
 - **Login:** —
 - **Method:** GS (+ SAMBL barcode resolver)
-- **Notes:** [SAMBL](https://sambl.lioncat6.com) (`/api/find?query=<UPC>&type=upc`) runs in parallel; its unique contribution is the exact-barcode Spotify album (Spotify has no other unauthenticated UPC route).
+- **Notes:**
+    - [SAMBL](https://sambl.lioncat6.com) (`/api/find?query=<UPC>&type=upc`) runs in parallel; its unique contribution is the exact-barcode Spotify album (Spotify has no other unauthenticated UPC route).
 
 ### Apple Music
 
 - **API** — iTunes
-    - Search: `itunes.apple.com/search`
-    - Album: `itunes.apple.com/lookup`
+    - Search: `itunes.apple.com/search?term=`
+    - Album: `itunes.apple.com/lookup?id=<ID>`
     - Barcode: `itunes.apple.com/lookup?upc=<UPC>` (barcode-first; retried with other zero-paddings, #354). The found barcode is **not** exposed, so no capture for confidence.
 - **Local search:** iTunes Search API
 - **Global search:** —
@@ -157,12 +161,13 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Wikidata cross-ref:** P5121
 - **Login:** —
 - **Method:** barcode → LS
-- **Notes:** digital-only storefront (format counts as Digital).
+- **Notes:**
+    - Digital-only storefront (format counts as Digital).
 
 ### Deezer
 
 - **API** — `api.deezer.com`
-    - Search: `/search/album`
+    - Search: `/search/album?q=`
     - Album: `/album/<id>`
     - Barcode: `/album/upc:<UPC>` (barcode-first; retried with other zero-paddings, #354). The returned album's barcode is verified against the query, since `album/upc:` occasionally hands back an unrelated album (#356).
 - **Local search:** Deezer API search
@@ -171,13 +176,14 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Wikidata cross-ref:** —
 - **Login:** —
 - **Method:** barcode → LS
-- **Notes:** barcode used for lookup + sanity-check, but the found value isn't surfaced as a dashboard capture.
+- **Notes:**
+    - Barcode used for lookup + sanity-check, but the found value isn't surfaced as a dashboard capture.
 
 ### Tidal
 
 - **API** — `openapi.tidal.com/v2` (baked-in client-credentials app token — catalog access, **no user login**)
-    - Search: `searchResults`
-    - Album: album detail (count / year / label)
+    - Search: `/searchResults`
+    - Album: `/albums/<id>` (count / year / label)
     - Barcode: `/albums?filter[barcodeId]=<UPC>` (barcode-first; found barcode captured)
 - **Local search:** Tidal API search
 - **Global search:** —
@@ -198,7 +204,9 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Wikidata cross-ref:** —
 - **Login:** **optional** — signed in, verification uses `album/get` (reliable count + UPC); the shared token also powers ISRC Scout's Qobuz ISRC import and Credit Hoarder's roled Qobuz credits. Qobuz geo-blocks *anonymous* access only (footnote ¹).
 - **Method:** MB → barcode → LS → GS
-- **Notes:** throttles aggressively — the scraper does one `Retry-After` retry and leaves a row retryable rather than caching a false miss. **Format** is absent (digital-only).
+- **Notes:**
+    - Throttles aggressively — the scraper does one `Retry-After` retry and leaves a row retryable rather than caching a false miss.
+    - **Format** is absent (digital-only).
 
 ### Beatport
 
@@ -212,13 +220,14 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Wikidata cross-ref:** P11312
 - **Login:** **optional** — enables verified matching + the `+` insert, and lets ISRC Scout import Beatport ISRCs.
 - **Method:** MB → Wikidata (P11312) → GS
-- **Notes:** the one provider that can't self-verify without a login.
+- **Notes:**
+    - The one provider that can't self-verify without a login.
 
 ### Volumo
 
 - **API** — `volumo.com/api/v1` (clean, unauthenticated JSON — no Cloudflare/token)
-    - Search: album search
-    - Album: album (track count)
+    - Search: `/search?query=`
+    - Album: `/albums/<id>` (track count)
     - Barcode: `/album_by_icpn/<UPC>` (barcode-first, exact; found barcode captured)
 - **Local search:** Volumo API search
 - **Global search:** —
@@ -226,13 +235,15 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Wikidata cross-ref:** —
 - **Login:** —
 - **Method:** MB → barcode → LS
-- **Notes:** MB doesn't auto-classify `volumo.com`, so the `+` insert force-sets the **purchase for download** type. ISRC Scout can import a Volumo release's ISRCs from the link this finds.
+- **Notes:**
+    - MB doesn't auto-classify `volumo.com`, so the `+` insert force-sets the **purchase for download** type.
+    - ISRC Scout can import a Volumo release's ISRCs from the link this finds.
 
 ### HDtracks
 
 - **API** — high-resolution store API (clean, unauthenticated, CORS-open — no Cloudflare/token)
     - Search: `/albums/search?q=`
-    - Album: album (track count)
+    - Album: `/albums/search?q=` (track count from the search result)
     - Barcode: `/albums/search?q=<UPC>` (barcode-first, exact; found barcode captured)
 - **Local search:** HDtracks API search
 - **Global search:** —
@@ -240,7 +251,10 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Wikidata cross-ref:** —
 - **Login:** —
 - **Method:** MB → barcode → LS
-- **Notes:** canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode. No dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)), so the `+` insert force-sets **purchase for download** (id 74). ISRC Scout can import an HDtracks release's ISRCs from the link this finds.
+- **Notes:**
+    - Canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode.
+    - No dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)), so the `+` insert force-sets **purchase for download** (id 74).
+    - ISRC Scout can import an HDtracks release's ISRCs from the link this finds.
 
 ## Shortcuts
 
