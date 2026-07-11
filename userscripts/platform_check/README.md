@@ -15,11 +15,11 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 ## Features
 
-- **Multiple [platforms](#platforms)** supported with customizable position and visiblity
+- **Multiple [platforms](#platforms)** supported with customizable position and visibility
 - **Header info** — MB's release year, format, label and track count in the dashboard header
 - **Insert links to release** — open the release's edit page and insert one or all confirmed platform links
 - **Open all found** — open each confirmed platform page not yet in MB in its own tab (plus the Discogs master) Mismatches and unverifiable links are skipped. *(Watch for pop-up blocking.)*
-- **Options** — detailed appereance, authentication, link confidence settings etc.
+- **Options** — detailed appearance, authentication, link confidence settings etc.
 - **Diagnostic log** — per-source filter chips to isolate a single platform's chain
 
 ## Overview

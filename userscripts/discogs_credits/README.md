@@ -1,6 +1,6 @@
 # Import Discogs Credits <img src="icon.png" align="left" width="48">
 
-UI for importing Discogs credits as MusicBrainz release relationships and few general import helpers.
+UI for importing Discogs credits as MusicBrainz release relationships and a few general import helpers.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/discogs_credits/dist/discogs_credits.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/discogs_credits/dist/discogs_credits.user.js)
 - [View changelog](./CHANGELOG.md)
@@ -14,10 +14,10 @@ The workflow is as follows:
 
 1. Script first gets all entities (artists, places, labels) and present them in the *Entity Review Table*.
     1. Each Discogs entity is matched by name and Discogs URL
-    1. Perfect hits are automatically selected, while ambiguous or non existent entities are left for the user to resolve or ignore
+    1. Perfect hits are automatically selected, while ambiguous or non-existent entities are left for the user to resolve or ignore
 1. After the data in the review table is confirmed, *Instant Fill* is initiated
     1. Entities that have their MB ID resolved will be associated to release or track depending on options, others are skipped but reported in log
-    1. Some relationship are added to the work instead of the track. Non existent work can automatically be created depending on option. If the work doesn't exist, relationship will not be added and will be reported in log
+    1. Some relationships are added to the work instead of the track. Non-existent work can automatically be created depending on option. If the work doesn't exist, relationship will not be added and will be reported in log
 1. At the end and after potential manual interventions, user confirms the edit
 
 <img width="800" src="./screenshot.png" />

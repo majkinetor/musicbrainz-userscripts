@@ -21,7 +21,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 - **[Add images](#add-images)** — file drop, URL (Enhanced Cover Art Uploads), MH Covers, and reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** — navigate, zoom, mouse-follow pan, slideshow, set type/comment, delete.
 - **[File names ⇄ types](#file-names--types)** — cover types and file names round-trip, so a downloaded archive re-adds with types intact.
-- Paraallel operations on final commit
+- Parallel operations on final commit
 
 Group by type view:
 
@@ -76,7 +76,7 @@ Cover types and file names round-trip, so a downloaded archive can be re-added l
 The following types are matched by their name:
 
 - Release: `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`, `runout`, `track`, `top`, `bottom`, `raw`, `unedited`, `watermark`
-- Event: `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch`                                            |
+- Event: `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch`
 
 Matching is word-boundaried and order-aware, so `back cover` → **Back** (not Front) and an album titled *Super Disco Pirata* → no type.
 

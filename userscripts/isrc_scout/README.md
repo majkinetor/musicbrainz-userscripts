@@ -237,4 +237,4 @@ Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant
 Other Qobuz gotchas:
 - **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
 - **Barcode padding** — Qobuz stores the UPC as the 13-digit EAN with a **leading zero** (`0199257198605`), so a barcode-first `album/search` must try the zero-padded form (#354).
-- The slug-less `open.qobuz.com/album/<id>` form an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.
+- The slug-less `open.qobuz.com/album/<id>` form that an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.

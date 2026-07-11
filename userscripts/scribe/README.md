@@ -19,8 +19,8 @@ Edit a whole release as one Markdown document (see [the release editor](#edit-a-
 
 1. Start the helper (`scribe.exe …`).
     1. Optionally, set **helper port** / **token** to match (and rebind the field hotkey).
-3. **Edit one field** — focus a text field, press **Ctrl+Alt+E** → it opens in your editor (edit notes / annotations as `.md`); **save** to update it (trailing newline trimmed). **Esc** disconnects it. Link several at once and bounce between them.
-4. **Edit a whole release** — on a release **Edit** page, click the bottom-left **✎** button (appears when the helper is running) or press **Ctrl+Alt+R**; see [the release editor](#edit-a-whole-release).
+2. **Edit one field** — focus a text field, press **Ctrl+Alt+E** → it opens in your editor (edit notes / annotations as `.md`); **save** to update it (trailing newline trimmed). **Esc** disconnects it. Link several at once and bounce between them.
+3. **Edit a whole release** — on a release **Edit** page, click the bottom-left **✎** button (appears when the helper is running) or press **Ctrl+Alt+R**; see [the release editor](#edit-a-whole-release).
 
 ## Running the helper
 

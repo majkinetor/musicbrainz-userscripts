@@ -128,7 +128,7 @@ Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz'
    #your-dialog .mmth-vsep { display: none; }
    ```
 
-To get Mammoth baby on edit utilize `mmth-pin` class:
+To get a Mammoth baby on your own field, add the `mmth-pin` class:
 
 ```html
 <input class="mmth-pin" data-mmth-key="my-cat-no" data-mmth-label="Catalogue №">

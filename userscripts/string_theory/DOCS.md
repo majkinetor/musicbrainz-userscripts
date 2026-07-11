@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-11 21:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-11 21:29 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -413,7 +413,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 - **[Add images](#add-images)** — file drop, URL (Enhanced Cover Art Uploads), MH Covers, and reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** — navigate, zoom, mouse-follow pan, slideshow, set type/comment, delete.
 - **[File names ⇄ types](#file-names--types)** — cover types and file names round-trip, so a downloaded archive re-adds with types intact.
-- Paraallel operations on final commit
+- Parallel operations on final commit
 
 Group by type view:
 
@@ -468,7 +468,7 @@ Cover types and file names round-trip, so a downloaded archive can be re-added l
 The following types are matched by their name:
 
 - Release: `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`, `runout`, `track`, `top`, `bottom`, `raw`, `unedited`, `watermark`
-- Event: `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch`                                            |
+- Event: `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch`
 
 Matching is word-boundaried and order-aware, so `back cover` → **Back** (not Front) and an album titled *Super Disco Pirata* → no type.
 
@@ -717,7 +717,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - [Changelog](../group_therapy/CHANGELOG.md)
 - [View Users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Group+Therapy)
 
-**Note**: [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc) is valuable companion script.
+**Note**: [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc) is a valuable companion script.
 
 ### Features
 
@@ -801,7 +801,7 @@ The **Vertical:** section in the toolbar copies credits between the release and 
 
 Each credit's link type is mapped to the **destination's entity type by name** (e.g. artist-recording *producer* ↔ artist-release *producer*); a role with no equivalent for that entity is skipped and counted. **Move** also removes the source rels. As always, nothing is submitted — the changes land in the editor for you to review and save.
 
-##### Relase Group Consolidation
+##### Release Group Consolidation
 
 The **▦ Consolidate RG…** button (next to *Copy from release…*) can spread release-level credits across **every** release in the group at once. It reads all the releases in parallel and builds a **role × release matrix**: one row per distinct credit, one column per release — labelled A, B, C… with a compact **format badge** (Digital / Vinyl / CD / Cassette) — and a green cell wherever the credit already exists.
 
@@ -1142,7 +1142,7 @@ Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant
 Other Qobuz gotchas:
 - **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
 - **Barcode padding** — Qobuz stores the UPC as the 13-digit EAN with a **leading zero** (`0199257198605`), so a barcode-first `album/search` must try the zero-padded form (#354).
-- The slug-less `open.qobuz.com/album/<id>` form an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.
+- The slug-less `open.qobuz.com/album/<id>` form that an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.
 
 ---
 
@@ -1276,7 +1276,7 @@ Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz'
    #your-dialog .mmth-vsep { display: none; }
    ```
 
-To get Mammoth baby on edit utilize `mmth-pin` class:
+To get a Mammoth baby on your own field, add the `mmth-pin` class:
 
 ```html
 <input class="mmth-pin" data-mmth-key="my-cat-no" data-mmth-label="Catalogue №">
@@ -1337,11 +1337,11 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 ### Features
 
-- **Multiple [platforms](#platforms)** supported with customizable position and visiblity
+- **Multiple [platforms](#platforms)** supported with customizable position and visibility
 - **Header info** — MB's release year, format, label and track count in the dashboard header
 - **Insert links to release** — open the release's edit page and insert one or all confirmed platform links
 - **Open all found** — open each confirmed platform page not yet in MB in its own tab (plus the Discogs master) Mismatches and unverifiable links are skipped. *(Watch for pop-up blocking.)*
-- **Options** — detailed appereance, authentication, link confidence settings etc.
+- **Options** — detailed appearance, authentication, link confidence settings etc.
 - **Diagnostic log** — per-source filter chips to isolate a single platform's chain
 
 ### Overview
