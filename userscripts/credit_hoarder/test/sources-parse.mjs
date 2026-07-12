@@ -199,20 +199,26 @@ assert.deepEqual(qEng.tracklistRels.map(r => [r.track.position, r.linkType, r.ar
 ]);
 assert.ok(qEng.tracklistRels.every(r => r.artist.resource_url === '' && r.entityType === 'artist'));
 
-// #411: an UNLINKED comma-separated credit is split into one artist per name (same role each);
-// a LINKED credit (resource_url) is a single artist and is NOT split.
+// #411: a comma-packed credit of multi-word personal names is split into one artist per name
+// (same role each), dropping any Qobuz combined-artist URL — even when linked (that URL 404s).
+// Names whose leading segment is a single token, and band-joiner names, are left whole.
 const qSplit = qobuzToEngine([
     { index: 1, credits: [
-        { name: 'E. Themba, T.J. Masingi', roles: ['Composer', 'Lyricist'] },                          // two writers, unlinked → split
-        { name: 'Foo, Inc.', roles: ['Producer'], resource_url: 'https://open.qobuz.com/artist/7' },   // linked → NOT split
+        { name: 'E. Themba, T.J. Masingi', roles: ['Composer', 'Lyricist'] },                                        // two writers, unlinked → split
+        { name: 'Jeremy Mage, Dean Jones', roles: ['Composer'], resource_url: 'https://open.qobuz.com/artist/14949480' }, // combined-artist URL → split, URL dropped
+        { name: 'Foo, Inc.', roles: ['Producer'], resource_url: 'https://open.qobuz.com/artist/7' },                 // leading single token → NOT split
+        { name: 'Earth, Wind & Fire', roles: ['Producer'] },                                                          // band joiner "&" → NOT split
     ] },
 ]);
 assert.deepEqual(qSplit.tracklistRels.map(r => [r.linkType, r.artist.name, r.artist.resource_url]), [
-    ['composer', 'E. Themba',     ''],
-    ['composer', 'T.J. Masingi',  ''],
-    ['lyricist', 'E. Themba',     ''],
-    ['lyricist', 'T.J. Masingi',  ''],
-    ['producer', 'Foo, Inc.',     'https://open.qobuz.com/artist/7'],
+    ['composer', 'E. Themba',        ''],
+    ['composer', 'T.J. Masingi',     ''],
+    ['lyricist', 'E. Themba',        ''],
+    ['lyricist', 'T.J. Masingi',     ''],
+    ['composer', 'Jeremy Mage',      ''],
+    ['composer', 'Dean Jones',       ''],
+    ['producer', 'Foo, Inc.',        'https://open.qobuz.com/artist/7'],
+    ['producer', 'Earth, Wind & Fire', ''],
 ]);
 
 // og:title → album info
