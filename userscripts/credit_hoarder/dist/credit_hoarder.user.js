@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.12.181541
+// @version      2026.7.12.191135
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -5522,6 +5522,39 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     entitySrc.forEach((set, k) => entitySources.set(k, [...set]));
     return { companies, artistRoles, tracklistRels, tracklist, processTracklist, relSrc, entitySources };
   }
+  var _resultKey = (r) => r && r.entity && (r.entity.resource_url || r.entity._syntheticKey) || `_nourl_${r && (r.entity && r.entity.name || r.displayName) || ""}`;
+  var _roleKey = (ro) => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join("");
+  function mergeResolvedResults(allResults, entitySources) {
+    const byMbid = /* @__PURE__ */ new Map(), mergeMap = /* @__PURE__ */ new Map(), out = [];
+    for (const r of allResults || []) {
+      if (!r) continue;
+      const mb = r.type === "resolved" ? r.mbUrl : null;
+      const rk = _resultKey(r);
+      if (!mb || !byMbid.has(mb)) {
+        if (mb) {
+          byMbid.set(mb, r);
+          mergeMap.set(rk, [rk]);
+        }
+        out.push(r);
+        continue;
+      }
+      const rep = byMbid.get(mb), repKey = _resultKey(rep);
+      const seen = new Set((rep._roles || []).map(_roleKey));
+      rep._roles = (rep._roles || []).concat((r._roles || []).filter((ro) => {
+        const k = _roleKey(ro);
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      }));
+      if (entitySources) {
+        const u = new Set(entitySources.get(repKey) || []);
+        (entitySources.get(rk) || []).forEach((s) => u.add(s));
+        entitySources.set(repKey, [...u]);
+      }
+      mergeMap.get(repKey).push(rk);
+    }
+    return { results: out, mergeMap };
+  }
 
   // src/ui-bar.js
   var _logs2;
@@ -6942,6 +6975,13 @@ ${lines}
     }
     let capturedResults = null;
     let capturedConfirmedMap = null;
+    let _reviewMergeMap = null;
+    const mergeForReview = (results) => {
+      if (!entitySources) return results;
+      const m = mergeResolvedResults(results, entitySources);
+      _reviewMergeMap = m.mergeMap;
+      return m.results;
+    };
     return runPreflight().then((allResults) => {
       if (isCancelled()) return;
       annotateRoles(allResults);
@@ -6952,7 +6992,7 @@ ${lines}
         return;
       }
       document.querySelector(".discogs-bar")?.classList.add("is-reviewing");
-      return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+      return showReviewTable(mergeForReview(capturedResults), rolesMap, companiesRolesMap, {
         // Mount the Start-import button + unresolved message in the
         // always-visible header rather than below the table (#139).
         // Resolved via the DOM (there's one bar) — `runImport` is a
@@ -6974,7 +7014,7 @@ ${lines}
         onRefresh: () => runPreflight(true).then((freshResults) => {
           annotateRoles(freshResults);
           capturedResults = freshResults;
-          return freshResults;
+          return mergeForReview(freshResults);
         }),
         // Let `cancelRun` unblock this review promise (resolve → null)
         // so the chain unwinds cleanly instead of leaking a pending
@@ -6989,6 +7029,13 @@ ${lines}
       if (_bar) _bar._reviewAbort = null;
       if (isCancelled()) return;
       if (!confirmedMap) return;
+      if (_reviewMergeMap) _reviewMergeMap.forEach((members, repKey) => {
+        const mb = confirmedMap.get(repKey);
+        if (!mb) return;
+        members.forEach((k) => {
+          if (!confirmedMap.has(k)) confirmedMap.set(k, mb);
+        });
+      });
       capturedConfirmedMap = confirmedMap;
       document.querySelector(".discogs-bar")?.classList.remove("is-reviewing");
       document.querySelector(".discogs-bar")?._setUnresolved?.(confirmedMap.unresolvedCount || 0);

@@ -1,6 +1,6 @@
 // #408 unit test — mergeHarvests dedup + provenance.
 import assert from 'node:assert';
-import { mergeHarvests, entityKeyOf, relKeyOf } from '../src/consolidate.js';
+import { mergeHarvests, entityKeyOf, relKeyOf, mergeResolvedResults } from '../src/consolidate.js';
 
 const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artist', attributes: attrs || [], artist: { name, anv: '', resource_url: url || '' }, track: { position: String(pos), title: '', type_: 'track' } });
 
@@ -42,6 +42,34 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.equal(m.companies.length, 1, 'same label from 2 sources deduped');
     assert.deepEqual(m.tracklist.map(t => t.position).sort(), ['1', '2', '3'], 'tracklist unioned by position');
     assert.equal(m.processTracklist, false, 'processTracklist false when no source set it');
+}
+
+// mergeResolvedResults: two sources resolve the SAME person to the SAME MBID → one row,
+// combined roles, unioned source badges; and the mergeMap covers both source keys.
+{
+    const tidalUrl = 'https://tidal.com/artist/9', qobuzUrl = 'https://open.qobuz.com/artist/5';
+    const mb = '//musicbrainz.org/artist/abc';
+    const results = [
+        { type: 'resolved', mbUrl: mb, entity: { name: 'Reggie', resource_url: tidalUrl }, _roles: [{ linkType: 'composer', displayLabel: 'composer', trackPos: '15', trackTitle: '' }] },
+        { type: 'resolved', mbUrl: mb, entity: { name: 'Reggie', resource_url: qobuzUrl }, _roles: [{ linkType: 'producer', displayLabel: 'producer', trackPos: '15', trackTitle: '' }] },
+    ];
+    const es = new Map([[tidalUrl, ['Tidal']], [qobuzUrl, ['Qobuz']]]);
+    const { results: out, mergeMap } = mergeResolvedResults(results, es);
+    assert.equal(out.length, 1, 'same-MBID rows across sources collapse to one');
+    assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['composer', 'producer'], 'roles from both sources combined');
+    assert.deepEqual((es.get(tidalUrl) || []).sort(), ['Qobuz', 'Tidal'], 'source badges unioned onto the kept row');
+    assert.deepEqual(mergeMap.get(tidalUrl).sort(), [qobuzUrl, tidalUrl].sort(), 'mergeMap covers every merged source url');
+}
+
+// A different MBID stays a separate row; an attention (unresolved) row is never merged.
+{
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/a', entity: { resource_url: 'u1' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/b', entity: { resource_url: 'u2' }, _roles: [] },
+        { type: 'attention', entity: { resource_url: 'u3' }, _roles: [] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 3, 'distinct MBIDs + an unresolved row all kept');
 }
 
 console.log('consolidate: all assertions passed');

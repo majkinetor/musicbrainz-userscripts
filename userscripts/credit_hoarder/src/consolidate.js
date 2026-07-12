@@ -70,3 +70,27 @@ export function mergeHarvests(harvests) {
     const entitySources = new Map(); entitySrc.forEach((set, k) => entitySources.set(k, [...set]));
     return { companies, artistRoles, tracklistRels, tracklist, processTracklist, relSrc, entitySources };
 }
+
+// #408: two sources give DIFFERENT source URLs for the same person, so they can't be merged before
+// resolution — but once preflight resolves both to the SAME MB entity (mbUrl), collapse them into
+// one review row: combine each source's roles, union the source badges (mutates `entitySources`).
+// Returns { results, mergeMap } where mergeMap maps a kept row's entity key to EVERY member's key —
+// the caller points all those source URLs at the MBID so dispatch applies every source's roles
+// (identical (artist, role, track) edits dedupe at dispatch).
+const _resultKey = r => (r && r.entity && (r.entity.resource_url || r.entity._syntheticKey)) || `_nourl_${(r && ((r.entity && r.entity.name) || r.displayName)) || ''}`;
+const _roleKey = ro => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join('');
+export function mergeResolvedResults(allResults, entitySources) {
+    const byMbid = new Map(), mergeMap = new Map(), out = [];
+    for (const r of (allResults || [])) {
+        if (!r) continue;
+        const mb = r.type === 'resolved' ? r.mbUrl : null;
+        const rk = _resultKey(r);
+        if (!mb || !byMbid.has(mb)) { if (mb) { byMbid.set(mb, r); mergeMap.set(rk, [rk]); } out.push(r); continue; }
+        const rep = byMbid.get(mb), repKey = _resultKey(rep);
+        const seen = new Set((rep._roles || []).map(_roleKey));
+        rep._roles = (rep._roles || []).concat((r._roles || []).filter(ro => { const k = _roleKey(ro); if (seen.has(k)) return false; seen.add(k); return true; }));
+        if (entitySources) { const u = new Set(entitySources.get(repKey) || []); (entitySources.get(rk) || []).forEach(s => u.add(s)); entitySources.set(repKey, [...u]); }
+        mergeMap.get(repKey).push(rk);
+    }
+    return { results: out, mergeMap };
+}

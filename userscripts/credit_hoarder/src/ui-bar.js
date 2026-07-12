@@ -47,7 +47,7 @@ import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources/tidal.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine, qobuzToken, fetchQobuzApiAlbum, parseQobuzApiTracks, qobuzApiAlbumInfo } from './sources/qobuz.js';
 import { parseDeezerAlbumUrl, fetchDeezerAlbumPage, extractDeezerCredits, extractDeezerAlbumInfo, deezerToEngine } from './sources/deezer.js';
-import { mergeHarvests } from './consolidate.js';
+import { mergeHarvests, mergeResolvedResults } from './consolidate.js';
 
 let _logs;
 let _summary;
@@ -1732,6 +1732,15 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
 
             let capturedResults = null; // shared across promise chain
             let capturedConfirmedMap = null;
+            let _reviewMergeMap = null;   // #408: repKey → member keys, for the post-review confirm expansion
+            // #408: on an "Import all" run, collapse rows that resolved to the SAME MB entity across
+            // sources (Tidal + Qobuz for one artist → one row) — combine roles + union source badges.
+            const mergeForReview = (results) => {
+                if (!entitySources) return results;   // single-source run — no merge
+                const m = mergeResolvedResults(results, entitySources);
+                _reviewMergeMap = m.mergeMap;
+                return m.results;
+            };
 
             return runPreflight().then(allResults => {
                 // Cancelled during preflight — the source picker is already back;
@@ -1750,7 +1759,7 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                 // #139: the review wait isn't an active import phase — hide the
                 // "Importing…" button + percentage while the user reviews.
                 document.querySelector('.discogs-bar')?.classList.add('is-reviewing');
-                return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+                return showReviewTable(mergeForReview(capturedResults), rolesMap, companiesRolesMap, {
                     // Mount the Start-import button + unresolved message in the
                     // always-visible header rather than below the table (#139).
                     // Resolved via the DOM (there's one bar) — `runImport` is a
@@ -1771,7 +1780,7 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     onRefresh: () => runPreflight(true).then(freshResults => {
                         annotateRoles(freshResults);
                         capturedResults = freshResults;
-                        return freshResults;
+                        return mergeForReview(freshResults);   // #408: keep the review deduped after a refresh
                     }),
                     // Let `cancelRun` unblock this review promise (resolve → null)
                     // so the chain unwinds cleanly instead of leaking a pending
@@ -1784,6 +1793,14 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     if (_bar) _bar._reviewAbort = null;   // review resolved — drop the abort hook
                     if (isCancelled()) return;   // cancelled mid-review — don't dispatch
                     if (!confirmedMap) return;   // #216: review skipped (nothing to import)
+                    // #408: the review showed ONE row per MBID, so only the representative source URL got
+                    // confirmed. Point every merged-away source URL at the same MBID too, so dispatch
+                    // resolves each source's rels — every source's roles apply, and identical
+                    // (artist, role, track) edits dedupe at dispatch (relAlreadyExists).
+                    if (_reviewMergeMap) _reviewMergeMap.forEach((members, repKey) => {
+                        const mb = confirmedMap.get(repKey); if (!mb) return;
+                        members.forEach(k => { if (!confirmedMap.has(k)) confirmedMap.set(k, mb); });
+                    });
                     capturedConfirmedMap = confirmedMap;
                     // #139: dispatch is starting — a real import phase again, so
                     // restore the "Importing…" button + percentage.
