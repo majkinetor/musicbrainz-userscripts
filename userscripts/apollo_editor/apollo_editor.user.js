@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.173512
+// @version      2026.7.12.191414
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -198,7 +198,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -1483,26 +1483,57 @@
     .tc-srbtn:hover{background:#efeaf9;border-color:#bcaae6}
     .tc-srbtn.on{background:#6f42c1;color:#fff;border-color:#5f3ec0}
     .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:#fff1f0}
+    /* #409 chain mode — the read-only chain chip replaces the search/replace inputs */
+    .tc-sro-chain .tc-sr-find,.tc-sro-chain .tc-sr-rep,.tc-sro-chain .tc-sr-re{display:none}
+    .tc-sr-chainchip{display:none;align-items:center;gap:6px;border:1px solid #c9b8ee;background:#f6f2fe;border-radius:4px;padding:3px 6px 3px 9px;color:#5f3ec0;font:bold 12px Arial;white-space:nowrap}
+    .tc-sro-chain .tc-sr-chainchip{display:inline-flex}
+    .tc-sr-chainx{border:none;background:none;color:#9a7fd0;cursor:pointer;font-size:12px;line-height:1;padding:0 2px}
+    .tc-sr-chainx:hover{color:#c0392b}
     .tc-sr-star{color:#e0a800;font-size:13px;line-height:1;padding:3px 8px}   /* #375 fav-star button opens Saved & History */
     .tc-sr-star:hover{color:#c69500;background:#fff8e6;border-color:#e6cf8a}
     .tc-srtpl{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
     .tc-srtpl-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:#fff;z-index:1}
     .tc-srtpl-hdt{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0}
-    .tc-srtpl-savebtn{margin-left:auto;cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
+    .tc-srtpl-savebtn{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
     .tc-srtpl-savebtn:hover{background:#e6f6e6;border-color:#a9dca9}
-    .tc-srtpl-savewrap{display:flex;align-items:center;gap:6px;margin-left:auto;flex:1}
+    .tc-srtpl-savewrap{display:flex;align-items:center;gap:6px;flex:1}
     .tc-srtpl-saveok{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:2px 8px}
     .tc-srtpl-saveok:hover{background:#e6f6e6}
+    /* #409 redesign: Import/Export button pinned right; JSON textarea; section headers right-aligned */
+    .tc-srtpl-iobtn{margin-left:auto;cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#5f3ec0;font:600 11px Arial;border-radius:4px;padding:3px 10px;white-space:nowrap}
+    .tc-srtpl-iobtn:hover{background:#f0ebfb;border-color:#bcaae6}
+    .tc-srtpl-impok{margin-left:auto}
+    .tc-srtpl-io{width:calc(100% - 24px);margin:10px 12px;min-height:260px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:8px;font:12px ui-monospace,Consolas,Menlo,monospace;color:#333;resize:vertical}
+    .tc-srtpl-io:focus{outline:none;border-color:#8a72c8}
     .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
-    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa}
-    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 18px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
+    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa;text-align:right}
+    .tc-srtpl-sectog:hover{color:#6f42c1;background:#f3eefb}
+    .tc-srtpl-caret{display:inline-block;color:#b9a4e0;font-size:9px}
+    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 24px 82px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
+    .tc-srtpl-defrow{background:#fffaef}
+    .tc-srtpl-def{visibility:hidden;border:none;background:none;color:#c9bde6;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    .tc-srtpl-row:hover .tc-srtpl-def,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-def{visibility:visible}.tc-srtpl-def:hover{color:#e8a800}
+    .tc-srtpl-def.on{visibility:visible;color:#e8a800}
     .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:#f0ebfb}
     .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
     .tc-srtpl-re{font:bold 10px Arial;color:#6f42c1;text-align:center}
-    .tc-srtpl-tail{text-align:center}
+    .tc-srtpl-tail{display:inline-flex;gap:5px;align-items:center;justify-content:flex-end}
     .tc-srtpl-x{visibility:hidden;border:none;background:none;color:#cc6699;cursor:pointer;font-size:12px;padding:0;line-height:1}
     .tc-srtpl-row:hover .tc-srtpl-x,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-x{visibility:visible}.tc-srtpl-x:hover{color:#c0392b}
+    /* #409 chains */
+    .tc-srtpl-chainadd{visibility:hidden;border:none;background:none;color:#7d4fd0;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    .tc-srtpl-row:hover .tc-srtpl-chainadd,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-chainadd{visibility:visible}.tc-srtpl-chainadd:hover{color:#5f3ec0}
+    .tc-srtpl-rename{visibility:hidden;border:none;background:none;color:#7d4fd0;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    .tc-srtpl-row:hover .tc-srtpl-rename,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-rename{visibility:visible}.tc-srtpl-rename:hover{color:#5f3ec0}
+    .tc-srtpl-renameinp{width:100%;box-sizing:border-box;border:1px solid #8a72c8;border-radius:3px;padding:1px 5px;font:600 12px Arial;color:#4b3a82}
+    .tc-srtpl-renameinp:focus{outline:none;border-color:#6f42c1}
+    .tc-srtpl-chnm{color:#5f3ec0}
+    .tc-srtpl-chm{font-family:Arial !important;color:#8a7bb0 !important;font-style:italic}
+    .tc-srtpl-cpick{position:absolute;z-index:5;background:#fff;border:1px solid #c9b8ee;border-radius:6px;box-shadow:0 6px 18px rgba(40,20,80,.22);padding:4px;min-width:130px}
+    .tc-srtpl-cpick-row{padding:4px 9px;cursor:pointer;border-radius:4px;color:#4b3a82;white-space:nowrap}
+    .tc-srtpl-cpick-row:hover{background:#f0ebfb}
+    .tc-srtpl-cpick-empty{padding:6px 9px;color:#999;font-style:italic;white-space:nowrap}
     .tc-srtpl-name{flex:1;min-width:120px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial}
     .tc-srtpl-name:focus{border-color:#8a72c8;outline:none}
     .tc-toolopts label,.tc-opt label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
@@ -2644,6 +2675,7 @@
     // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
     // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
     if (!_labelsAutoMatchedOnce) { _labelsAutoMatchedOnce = true; matchReleaseLabels().catch(e => Log.warn('label auto-match failed', e.message)); }
+    srApplyDefaultOnStart();   // #410: run the marked default S&R once, now the tracklist is rendered
   }
   async function rebuild(noMatch) {
     MODEL = buildShell();
@@ -2902,7 +2934,7 @@
   function runActiveTool() { const act = SETTINGS.lastTool; if (!act) return; if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium()); runAction(act); }
   // #280: a pinned tool's panel icon runs its primary action (what the row-1 button did)
   function triggerTool(act) {
-    if (act === 'sr') { const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender(); if (f) f.focus(); return; }
+    if (act === 'sr') { _srChain = null; const box = document.querySelector('.tc-sro'); if (box) { box.classList.remove('tc-sro-chain'); } const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender(); if (f) f.focus(); return; }
     if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
     runAction(act);   // guesscase → guess-case all · cols → Fit
   }
@@ -2944,9 +2976,12 @@
       const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
       re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
-      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved & recent patterns (or press ↓ in the search field)';
-      star.onclick = () => openSrTemplates(find, find, rep, re);
+      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved patterns, chains & recent (or press ↓ in the search field)';
+      // #409: in chain mode `find` is hidden (display:none → a 0,0 rect that flung the popup to the
+      // corner). Anchor to whatever's actually visible — the chain chip, else the ★ button.
+      star.onclick = () => { const b = star.closest('.tc-sro'); const anchor = (find.offsetParent !== null) ? find : ((b && b.querySelector('.tc-sr-chainchip')) || star); openSrTemplates(anchor, find, rep, re); };
       box.append(find, rep, re, star); host.appendChild(box);
+      if (_srChain) srShowChain(_srChain);   // #409: restore the chain chip if a chain was active
     } else if (act === 'cols') {
       const box = document.createElement('span'); box.className = 'tc-colso';
       const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
@@ -3094,6 +3129,21 @@
   }
   // in literal mode the replacement is literal too — escape `$` so "$1" inserts "$1", not a backref
   const srRepl = replace => srRegexOn() ? replace : replace.replace(/\$/g, '$$$$');
+
+  // ── #409 S&R chains ───────────────────────────────────────────────────────
+  // A "chain" is a named template whose `members` array lists other (non-chain) template
+  // names, applied in order as one action — so "All Quotes" runs Quotes then Single quote
+  // in a single click. Chains live in the same srTemplates list; `members` marks a chain.
+  // Each member carries its OWN `re` flag (regex or literal), independent of the global RE
+  // toggle, so a chain mixing a regex and a literal pattern behaves as saved.
+  function srIsChain(t) { return !!(t && Array.isArray(t.members)); }   // hoisted: used by srSeedTemplates() at init
+  const srReFor = (find, re, ci, g) => { const flags = (g ? 'g' : '') + (ci ? 'i' : ''); try { return new RegExp(re ? find : find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags); } catch (e) { return null; } };
+  const srReplFor = (replace, re) => re ? String(replace) : String(replace).replace(/\$/g, '$$$$');
+  // resolve a chain's member names to their (non-chain) pattern entries, in order
+  function srChainPatterns(chain) {
+    const byName = new Map(srTemplates().filter(t => !srIsChain(t)).map(t => [t.name, t]));
+    return (chain.members || []).map(n => byName.get(n)).filter(Boolean);
+  }
   let _srSnap = null;
   function srActivate() { _srSnap = MODEL ? MODEL.tracks.map(t => t.title) : []; if (MODEL) MODEL.tracks.forEach(t => { delete t._srLastResult; }); }
   function srLive(find, replace, ci) {
@@ -3106,7 +3156,7 @@
     MODEL.tracks.forEach((t, i) => {
       // #375: if the title changed since our last replace (a manual edit, Guess Case, etc.), re-base the
       // snapshot to it — otherwise we'd replace from the stale original and clobber the manual change.
-      if (t._srLastResult != null && t.title !== t._srLastResult) _srSnap[i] = t.title;
+      if (t._srLastResult == null || t.title !== t._srLastResult) _srSnap[i] = t.title;   // #409: re-base to the CURRENT title on a manual edit — incl. before the first replace (was stale until re-activation)
       const base = _srSnap[i] != null ? _srSnap[i] : t.title;
       const nt = re ? base.replace(re, repl) : base;
       if (nt !== base) changed++;
@@ -3117,6 +3167,97 @@
     rerender(); toast(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
     srRememberLast(find, replace);
   }
+  // #409: apply every member pattern of a chain, in order, CUMULATIVELY (each pattern sees the
+  // previous one's output) — recomputed from the snapshot like srLive, so it stays non-compounding
+  // across re-applies. Members use their own per-pattern `re` flag.
+  function srApplyChain(chain) {
+    if (!MODEL) return;
+    if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
+    const pats = srChainPatterns(chain); let changed = 0;
+    MODEL.tracks.forEach((t, i) => {
+      if (t._srLastResult == null || t.title !== t._srLastResult) _srSnap[i] = t.title;   // #409: re-base to the CURRENT title on a manual edit — incl. before the first replace (was stale until re-activation)
+      const base = _srSnap[i] != null ? _srSnap[i] : t.title;
+      let text = base;
+      for (const p of pats) { const re = p.find ? srReFor(p.find, p.re, true, true) : null; if (re) text = text.replace(re, srReplFor(p.replace, p.re)); }
+      if (text !== base) changed++;
+      if (text !== t.title) { setTitle(t, text); t.title = text; t.guessTitle = guessTitleStr(t); }
+      t._srLastResult = t.title;
+      t._srFlash = !!(pats.length && text !== base);
+    });
+    rerender(); toast(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced (${chain.name})` : `${chain.name}: no matches`);
+  }
+  // create an empty chain; returns false on a bad/duplicate name
+  function srAddChain(name) {
+    name = (name || '').trim(); if (!name) return false;
+    const list = srTemplates(); if (list.some(t => t.name === name)) return false;   // no name clash with a pattern or chain
+    list.push({ name, members: [] }); saveSettings(); return true;
+  }
+  // toggle a (non-chain) template's membership in a chain
+  function srChainToggle(chainName, itemName) {
+    const c = srTemplates().find(t => srIsChain(t) && t.name === chainName); if (!c) return;
+    c.members = c.members || [];
+    const i = c.members.indexOf(itemName);
+    if (i >= 0) c.members.splice(i, 1); else c.members.push(itemName);
+    saveSettings();
+  }
+  // #410: the "default" S&R — one pattern OR chain marked default (name in SETTINGS.srDefault),
+  // applied automatically the first time the Tracklist opens this session. Setting a new default
+  // toggles the old one off (only one).
+  const srDefaultName = () => SETTINGS.srDefault || '';
+  function srSetDefault(name) { SETTINGS.srDefault = (SETTINGS.srDefault === name) ? '' : name; saveSettings(); }
+  // Apply a default item (called on Tracklist open + when the user clicks it). A chain runs all its
+  // members + enters chain mode; a pattern fills the fields, sets RE to its own flag, and replaces.
+  function srApplyDefaultItem(item) {
+    if (srIsChain(item)) { srApplyChain(item); srShowChain(item.name); return; }
+    SETTINGS.srRegex = !!item.re; saveSettings();
+    const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'), reBtn = document.querySelector('.tc-sr-re');
+    if (f) { f.value = item.find; f.placeholder = srRegexOn() ? 'search (regex)' : 'search'; }
+    if (r) r.value = item.replace;
+    if (reBtn) reBtn.classList.toggle('on', !!item.re);
+    srLive(item.find, item.replace, true);
+  }
+  let _srDefaultAppliedOnce = false;
+  // Apply the marked default once per session, when the Tracklist first renders.
+  function srApplyDefaultOnStart() {
+    if (_srDefaultAppliedOnce) return;
+    const name = srDefaultName(); if (!name) { _srDefaultAppliedOnce = true; return; }
+    const item = srTemplates().find(t => t.name === name); if (!item) { _srDefaultAppliedOnce = true; return; }
+    // Don't consume the one-shot until the tracklist is actually loaded — a first render with an
+    // empty/lazy model would "apply" to nothing and then never retry. Try again on the next render.
+    if (!MODEL || !MODEL.tracks || !MODEL.tracks.length) return;
+    _srDefaultAppliedOnce = true;
+    // Force a FRESH snapshot of the real titles: the S&R tool is on the bar by default, so its
+    // buildToolParams already called srActivate() BEFORE the model existed — leaving a stale/empty
+    // snapshot that srApplyChain/srLive would then reuse (→ "no match", or a no-op for a pattern).
+    srActivate();
+    try { srApplyDefaultItem(item); Log.info('Applied default S&R:', name); } catch (e) { Log.warn('default S&R failed', e.message); }
+  }
+  // #409: chain "mode" — a chain isn't editable (it's several patterns), so when one is applied the
+  // search/replace inputs are swapped for a read-only chip showing the chain name (✕ exits back to S&R).
+  let _srChain = null;
+  function srShowChain(name) {
+    _srChain = name;
+    const box = document.querySelector('.tc-sro'); if (!box) return;
+    box.classList.add('tc-sro-chain');
+    let chip = box.querySelector('.tc-sr-chainchip');
+    if (!chip) {
+      chip = document.createElement('span'); chip.className = 'tc-sr-chainchip';
+      const lbl = document.createElement('span'); lbl.className = 'tc-sr-chainlbl';
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-sr-chainx'; x.textContent = '✕'; x.title = 'Exit chain — back to search / replace'; x.onclick = srExitChain;
+      chip.append(lbl, x); box.insertBefore(chip, box.firstChild);
+    }
+    chip.querySelector('.tc-sr-chainlbl').textContent = '⛓ ' + name;
+    chip.title = 'S&R chain "' + name + '" (read-only — several patterns)';
+  }
+  function srExitChain() {
+    _srChain = null;
+    const box = document.querySelector('.tc-sro'); if (!box) return;
+    box.classList.remove('tc-sro-chain');
+    const f = box.querySelector('.tc-sr-find'), r = box.querySelector('.tc-sr-rep');
+    if (f) f.value = ''; if (r) r.value = '';
+    srActivate(); if (MODEL) MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender();
+    if (f) f.focus();
+  }
   // #152 — named search/replace templates, persisted in settings. "_Last" is a special auto-kept entry
   // (the most recent pattern) that sorts first because "_" precedes letters.
   function srTemplates() { if (!Array.isArray(SETTINGS.srTemplates)) SETTINGS.srTemplates = []; return SETTINGS.srTemplates; }
@@ -3125,12 +3266,23 @@
   function srSeedTemplates() {
     // migrate the legacy "_Last" entry out of Saved (history lives in srHistory now)
     if (srTemplates().some(t => t.name === '_Last')) SETTINGS.srTemplates = srTemplates().filter(t => t.name !== '_Last');
-    if ((SETTINGS.srSeedV || 0) >= 1) { saveSettings(); return; }   // seed version bump re-seeds once even for users who had the buggy `_Last`-blocked run
-    SETTINGS.srSeedV = 1;
-    // seed only when there are no USER (non-"_") templates — an existing `_Last` no longer blocks it
-    if (!srTemplates().some(t => t.name && t.name[0] !== '_')) {
-      srTemplates().push({ name: 'Quotes', find: '"(.+?)"', replace: '“$1”', re: true });
-      srTemplates().push({ name: 'Single quote', find: "'", replace: '’', re: false });
+    // v1 — seed the two quote patterns (once)
+    if ((SETTINGS.srSeedV || 0) < 1) {
+      // seed only when there are no USER (non-"_") templates — an existing `_Last` no longer blocks it
+      if (!srTemplates().some(t => t.name && t.name[0] !== '_')) {
+        srTemplates().push({ name: 'Quotes', find: '"(.+?)"', replace: '“$1”', re: true });
+        srTemplates().push({ name: 'Single quote', find: "'", replace: '’', re: false });
+      }
+      SETTINGS.srSeedV = 1;
+    }
+    // v2 (#409) — seed the "All Quotes" chain that runs both quote patterns, once, and only if
+    // both members exist and no chain named "All Quotes" is already present.
+    if ((SETTINGS.srSeedV || 0) < 2) {
+      const names = new Set(srTemplates().map(t => t.name));
+      if (names.has('Quotes') && names.has('Single quote') && !srTemplates().some(t => srIsChain(t) && t.name === 'All Quotes')) {
+        srTemplates().push({ name: 'All Quotes', members: ['Quotes', 'Single quote'] });
+      }
+      SETTINGS.srSeedV = 2;
     }
     saveSettings();
   }
@@ -3162,6 +3314,18 @@
     saveSettings(); return true;
   }
   function srRemoveTemplate(name) { SETTINGS.srTemplates = srTemplates().filter(t => t.name !== name); saveSettings(); }
+  // #409: rename a pattern or chain in place. Keeps chain memberships pointing at the renamed
+  // pattern. Rejects an empty name or a clash with an existing pattern/chain.
+  function srRenameTemplate(oldName, newName) {
+    newName = (newName || '').trim(); if (!newName) return false;
+    if (newName === oldName) return true;
+    const list = srTemplates();
+    if (list.some(t => t.name === newName)) return false;
+    const t = list.find(x => x.name === oldName); if (!t) return false;
+    t.name = newName;
+    list.filter(srIsChain).forEach(c => { if (Array.isArray(c.members)) c.members = c.members.map(m => (m === oldName ? newName : m)); });
+    saveSettings(); return true;
+  }
   // the Templates popup — sorted list (｢_Last｣ first), click a row to load+apply, ✕ to remove,
   // and a "new template" section (shown only when the search field is non-empty). #152
   let _srPop = null, _srPopOff = null;
@@ -3180,41 +3344,134 @@
       if (reBtn) { reBtn.classList.toggle('on', !!re); findEl.placeholder = srRegexOn() ? 'search (regex)' : 'search'; }
       srLive(findEl.value, repEl.value, true); closeSrTemplates(); findEl.focus();
     };
+    // #409 redesign: Import / Export — a JSON view of the saved patterns + chains + the default
+    // marker (NOT history). Export = read the textarea; Import = paste + ✓ Import (replaces the set).
+    const showImportExport = () => {
+      pop.innerHTML = ''; navRows = []; sel = -1;
+      const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
+      const back = document.createElement('button'); back.type = 'button'; back.className = 'tc-srtpl-savebtn'; back.textContent = '‹ Back'; back.onclick = () => render();
+      const ttl = document.createElement('span'); ttl.className = 'tc-srtpl-hdt'; ttl.textContent = 'Import / Export';
+      const imp = document.createElement('button'); imp.type = 'button'; imp.className = 'tc-srtpl-saveok tc-srtpl-impok'; imp.textContent = '✓ Import'; imp.title = 'Replace your saved patterns & chains with the JSON below';
+      hd.append(back, ttl, imp); pop.appendChild(hd);
+      const ta = document.createElement('textarea'); ta.className = 'tc-srtpl-io'; ta.spellcheck = false;
+      ta.value = JSON.stringify({ templates: srTemplates().filter(t => t.name && t.name[0] !== '_'), default: srDefaultName() }, null, 2);
+      ta.onclick = e => e.stopPropagation(); ta.onkeydown = e => e.stopPropagation();
+      pop.appendChild(ta);
+      imp.onclick = () => {
+        let data; try { data = JSON.parse(ta.value); } catch (e) { toast('Invalid JSON: ' + e.message); return; }
+        const raw = Array.isArray(data) ? data : (data.templates || []);
+        if (!Array.isArray(raw)) { toast('JSON needs a "templates" array'); return; }
+        const clean = raw.filter(t => t && t.name).map(t => Array.isArray(t.members)
+          ? { name: String(t.name), members: t.members.map(String) }
+          : { name: String(t.name), find: String(t.find || ''), replace: String(t.replace || ''), re: !!t.re });
+        SETTINGS.srTemplates = clean;
+        const def = !Array.isArray(data) ? data.default : '';
+        SETTINGS.srDefault = (def && clean.some(t => t.name === def)) ? String(def) : '';
+        saveSettings();
+        toast('Imported ' + clean.length + ' pattern' + (clean.length === 1 ? '' : 's') + ' / chain(s)');
+        render();
+      };
+    };
     const mkRow = (cells, onClick, extras) => {
-      const row = document.createElement('div'); row.className = 'tc-srtpl-row';
+      const row = document.createElement('div'); row.className = 'tc-srtpl-row' + (extras && extras.isDefault ? ' tc-srtpl-defrow' : '');
       cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.title = c.txt; row.appendChild(s); });
       const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = extras && extras.re ? 'RE' : ''; row.appendChild(rec);
       const tail = document.createElement('span'); tail.className = 'tc-srtpl-tail';
+      // #410: mark this pattern/chain as the default (runs on Tracklist open). Filled ◉ + always
+      // visible when it IS the default; a faint ○ on hover otherwise.
+      if (extras && extras.onDefault) { const d = document.createElement('button'); d.type = 'button'; d.className = 'tc-srtpl-def' + (extras.isDefault ? ' on' : ''); d.textContent = extras.isDefault ? '◉' : '○'; d.title = extras.isDefault ? 'Default — runs on Tracklist open · click to unset' : 'Set as default — runs on Tracklist open'; d.onclick = e => { e.stopPropagation(); extras.onDefault(); }; tail.appendChild(d); }
+      // #409: hover action — add this (non-chain) pattern to a chain
+      if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.title = 'Add / remove this pattern in a chain'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
+      // #409: hover action — rename this pattern / chain in place
+      if (extras && extras.onRename) { const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'tc-srtpl-rename'; ed.textContent = '✎'; ed.title = 'Rename'; ed.onclick = e => { e.stopPropagation(); startRename(row, extras.renameValue, extras.onRename); }; tail.appendChild(ed); }
       if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
       row.appendChild(tail);
       row.onclick = onClick; row.onmousemove = () => { sel = navRows.indexOf(row); highlight(); };
       navRows.push(row); return row;
     };
+    // #409: inline rename — turn the row's name cell into a text field; Enter/blur commits.
+    const startRename = (row, curName, cb) => {
+      const nmCell = row.querySelector('.tc-srtpl-nm'); if (!nmCell) return;
+      const prev = nmCell.textContent;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tc-srtpl-renameinp'; inp.value = curName || '';
+      nmCell.textContent = ''; nmCell.appendChild(inp); inp.focus(); inp.select();
+      let done = false;
+      const finish = (commit) => {
+        if (done) return; done = true;
+        if (commit && cb(inp.value)) { render(); return; }
+        if (commit) toast('Name is empty or already used');
+        nmCell.textContent = prev;
+      };
+      inp.onclick = e => e.stopPropagation();
+      inp.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } };
+      inp.onblur = () => finish(true);
+    };
+    // #409: a small inline picker (child of the popup, so it doesn't trigger the outside-close)
+    // listing every chain with a ✓/○ membership toggle for the given pattern.
+    const openChainPicker = (btn, itemName) => {
+      const ex = pop.querySelector('.tc-srtpl-cpick'); if (ex) { ex.remove(); if (ex._for === itemName) return; }
+      const chains = srTemplates().filter(srIsChain).sort((a, b) => a.name.localeCompare(b.name));
+      const menu = document.createElement('div'); menu.className = 'tc-srtpl-cpick'; menu._for = itemName;
+      if (!chains.length) { const e = document.createElement('div'); e.className = 'tc-srtpl-cpick-empty'; e.textContent = 'No chains yet — use ＋ Add chain'; menu.appendChild(e); }
+      else chains.forEach(c => { const isM = (c.members || []).includes(itemName); const row = document.createElement('div'); row.className = 'tc-srtpl-cpick-row'; row.textContent = (isM ? '✓ ' : '○ ') + c.name; row.onclick = e => { e.stopPropagation(); srChainToggle(c.name, itemName); render(); }; menu.appendChild(row); });
+      pop.appendChild(menu);
+      const br = btn.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+      menu.style.left = Math.max(4, br.right - pr.left - menu.offsetWidth) + 'px';
+      menu.style.top = (br.bottom - pr.top + 2) + 'px';
+    };
     const render = () => {
       pop.innerHTML = ''; navRows = []; sel = -1;
       // header: "Saved" + inline "Save current" that unrolls a name field
       const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
-      const title = document.createElement('span'); title.textContent = 'Saved'; title.className = 'tc-srtpl-hdt'; hd.appendChild(title);
+      // #409 redesign: no "Patterns" label; action buttons on the LEFT, Import/Export on the RIGHT.
       const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'tc-srtpl-savebtn'; saveBtn.textContent = '＋ Save current';
       const wrap = document.createElement('span'); wrap.className = 'tc-srtpl-savewrap'; wrap.style.display = 'none';
       const nm = document.createElement('input'); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
       const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.title = 'Save';
+      // #409: "Add chain" button next to "Save current", each unrolling its own name field
+      const chainBtn = document.createElement('button'); chainBtn.type = 'button'; chainBtn.className = 'tc-srtpl-savebtn tc-srtpl-chainbtn'; chainBtn.textContent = '＋ Add chain'; chainBtn.title = 'Create a chain that runs several saved patterns in one click';
+      const cwrap = document.createElement('span'); cwrap.className = 'tc-srtpl-savewrap'; cwrap.style.display = 'none';
+      const cnm = document.createElement('input'); cnm.type = 'text'; cnm.className = 'tc-srtpl-name'; cnm.placeholder = 'name this chain';
+      const cok = document.createElement('button'); cok.type = 'button'; cok.className = 'tc-srtpl-saveok'; cok.textContent = '✓'; cok.title = 'Create chain';
+      const resetHd = () => { saveBtn.style.display = ''; chainBtn.style.display = ''; wrap.style.display = 'none'; cwrap.style.display = 'none'; };
       const doSave = () => { if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); };
-      ok.onclick = doSave;
-      nm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doSave(); } else if (e.key === 'Escape') { e.preventDefault(); wrap.style.display = 'none'; saveBtn.style.display = ''; } };
-      saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
-      wrap.append(nm, ok); hd.append(saveBtn, wrap); pop.appendChild(hd);
-      // saved (named) templates — internal "_"-prefixed names never show here
-      const saved = srTemplates().filter(t => t.name && t.name[0] !== '_').sort((a, b) => a.name.localeCompare(b.name));
-      if (saved.length) saved.forEach(t => pop.appendChild(mkRow(
-        [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
-        () => applyEntry(t.find, t.replace, t.re), { re: t.re, onRemove: () => { srRemoveTemplate(t.name); render(); } })));
-      else { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
-      // history — the 5 most-recent
+      const doAddChain = () => { if (srAddChain(cnm.value)) render(); else toast('Name is empty or already used'); };
+      ok.onclick = doSave; cok.onclick = doAddChain;
+      nm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doSave(); } else if (e.key === 'Escape') { e.preventDefault(); resetHd(); } };
+      cnm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doAddChain(); } else if (e.key === 'Escape') { e.preventDefault(); resetHd(); } };
+      saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
+      chainBtn.onclick = () => { saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; cwrap.style.display = ''; cnm.value = ''; setTimeout(() => cnm.focus(), 0); };
+      // #409 redesign: Import/Export button, pushed to the right edge of the header.
+      const ioBtn = document.createElement('button'); ioBtn.type = 'button'; ioBtn.className = 'tc-srtpl-iobtn'; ioBtn.textContent = 'Import/Export'; ioBtn.title = 'Import or export your saved patterns & chains as JSON (history is not included)';
+      ioBtn.onclick = () => showImportExport();
+      wrap.append(nm, ok); cwrap.append(cnm, cok); hd.append(saveBtn, chainBtn, wrap, cwrap, ioBtn); pop.appendChild(hd);
+      // #409: Chains first — click to run all their member patterns in order; ✕ removes the chain
+      const chains = srTemplates().filter(srIsChain).sort((a, b) => a.name.localeCompare(b.name));
+      if (chains.length) {
+        const sec = document.createElement('div'); sec.className = 'tc-srtpl-sec'; sec.textContent = 'Chains'; pop.appendChild(sec);
+        chains.forEach(c => { const mem = (c.members || []); const summary = mem.length ? mem.join(' → ') : '(empty — add patterns with ⛓)';
+          pop.appendChild(mkRow(
+            [{ cls: 'tc-srtpl-nm tc-srtpl-chnm', txt: '⛓ ' + c.name }, { cls: 'tc-srtpl-f tc-srtpl-chm', txt: summary }, { cls: 'tc-srtpl-r', txt: '' }],
+            () => { if (!mem.length) { toast('Empty chain — add patterns to it first (⛓ on a saved row)'); return; } srApplyChain(c); srShowChain(c.name); closeSrTemplates(); },
+            { isDefault: srDefaultName() === c.name, onDefault: () => { srSetDefault(c.name); render(); }, onRename: (v) => srRenameTemplate(c.name, v), renameValue: c.name, onRemove: () => { srRemoveTemplate(c.name); render(); } })); });
+      }
+      // saved (named, non-chain) templates — internal "_"-prefixed names never show here
+      const saved = srTemplates().filter(t => !srIsChain(t) && t.name && t.name[0] !== '_').sort((a, b) => a.name.localeCompare(b.name));
+      if (saved.length) { const sec = document.createElement('div'); sec.className = 'tc-srtpl-sec'; sec.textContent = 'Saved'; pop.appendChild(sec);
+        saved.forEach(t => pop.appendChild(mkRow(
+          [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
+          () => applyEntry(t.find, t.replace, t.re), { re: t.re, isDefault: srDefaultName() === t.name, onDefault: () => { srSetDefault(t.name); render(); }, onAddChain: (btn) => openChainPicker(btn, t.name), onRename: (v) => srRenameTemplate(t.name, v), renameValue: t.name, onRemove: () => { srRemoveTemplate(t.name); render(); } }))); }
+      else if (!chains.length) { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
+      // history — the 5 most-recent, COLLAPSED by default (#409): the header is a toggle; rows render
+      // only when expanded (so they stay out of keyboard nav while collapsed).
       const hist = srHistoryList();
       if (hist.length) {
-        const div = document.createElement('div'); div.className = 'tc-srtpl-sec'; div.textContent = 'History'; pop.appendChild(div);
-        hist.slice(0, 5).forEach(h => pop.appendChild(mkRow(
+        const open = SETTINGS.srHistoryOpen === true;
+        const div = document.createElement('div'); div.className = 'tc-srtpl-sec tc-srtpl-sectog'; div.style.cursor = 'pointer';
+        div.innerHTML = `<span class="tc-srtpl-caret">${open ? '▾' : '▸'}</span> History`;
+        div.onclick = () => { SETTINGS.srHistoryOpen = !open; saveSettings(); render(); };
+        pop.appendChild(div);
+        if (open) hist.slice(0, 5).forEach(h => pop.appendChild(mkRow(
           [{ cls: 'tc-srtpl-nm tc-srtpl-hnm', txt: '' }, { cls: 'tc-srtpl-f', txt: h.find }, { cls: 'tc-srtpl-r', txt: h.replace }],
           () => applyEntry(h.find, h.replace, h.re), { re: h.re })));
       }
