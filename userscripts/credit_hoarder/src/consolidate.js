@@ -72,21 +72,45 @@ export function mergeHarvests(harvests) {
 }
 
 // #408: two sources give DIFFERENT source URLs for the same person, so they can't be merged before
-// resolution — but once preflight resolves both to the SAME MB entity (mbUrl), collapse them into
-// one review row: combine each source's roles, union the source badges (mutates `entitySources`).
-// Returns { results, mergeMap } where mergeMap maps a kept row's entity key to EVERY member's key —
-// the caller points all those source URLs at the MBID so dispatch applies every source's roles
-// (identical (artist, role, track) edits dedupe at dispatch).
+// resolution. Collapse them into one review row:
+//   - same resolved MB entity (mbUrl) → merge (the safe, primary case);
+//   - an UNRESOLVED row whose name matches a UNIQUELY-resolved row of that name → merge into it
+//     (adopting the MBID) — e.g. "Alan Morrallee" resolved from Tidal but not Qobuz;
+//   - same-name rows that never resolved → merge together.
+// Combining a group: roles are unioned, source badges unioned (mutates `entitySources`), and the
+// rep adopts a resolution if any member had one. mergeMap maps the kept row's key → EVERY member's
+// key, so the caller points every source URL at the MBID for dispatch.
 const _resultKey = r => (r && r.entity && (r.entity.resource_url || r.entity._syntheticKey)) || `_nourl_${(r && ((r.entity && r.entity.name) || r.displayName)) || ''}`;
+const _resultName = r => (r && ((r.entity && r.entity.name) || r.displayName)) || '';
 const _roleKey = ro => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join('');
 export function mergeResolvedResults(allResults, entitySources) {
-    const byMbid = new Map(), mergeMap = new Map(), out = [];
-    for (const r of (allResults || [])) {
-        if (!r) continue;
-        const mb = r.type === 'resolved' ? r.mbUrl : null;
-        const rk = _resultKey(r);
-        if (!mb || !byMbid.has(mb)) { if (mb) { byMbid.set(mb, r); mergeMap.set(rk, [rk]); } out.push(r); continue; }
-        const rep = byMbid.get(mb), repKey = _resultKey(rep);
+    const rows = (allResults || []).filter(Boolean);
+    // name → set of resolved mbUrls, so an unresolved row can be routed to its resolved twin — but
+    // only when that name resolves to exactly ONE MBID (ambiguous names are left alone).
+    const nameMbids = new Map();
+    for (const r of rows) {
+        if (r.type !== 'resolved' || !r.mbUrl) continue;
+        const fn = fold(_resultName(r)); if (!fn) continue;
+        if (!nameMbids.has(fn)) nameMbids.set(fn, new Set());
+        nameMbids.get(fn).add(r.mbUrl);
+    }
+    const keyFor = r => {
+        if (r.type === 'resolved' && r.mbUrl) return 'mb:' + r.mbUrl;
+        const fn = fold(_resultName(r)); if (!fn) return null;   // no name → never group
+        const set = nameMbids.get(fn);
+        if (set && set.size === 1) return 'mb:' + [...set][0];   // unresolved → its unique resolved twin
+        return 'nm:' + fn;                                        // same-name, none resolved → group together
+    };
+    const byKey = new Map(), mergeMap = new Map(), out = [];
+    for (const r of rows) {
+        const gk = keyFor(r), rk = _resultKey(r);
+        if (!gk || !byKey.has(gk)) { if (gk) { byKey.set(gk, r); mergeMap.set(rk, [rk]); } out.push(r); continue; }
+        const rep = byKey.get(gk), repKey = _resultKey(rep);
+        // rep was unresolved but this member is resolved → adopt the resolution onto the kept row.
+        if ((rep.type !== 'resolved' || !rep.mbUrl) && r.type === 'resolved' && r.mbUrl) {
+            rep.type = 'resolved'; rep.mbUrl = r.mbUrl; rep.mbName = r.mbName; rep.mbDisambig = r.mbDisambig;
+            rep.entityType = r.entityType || rep.entityType; rep.logEntry = r.logEntry || rep.logEntry;
+        }
         const seen = new Set((rep._roles || []).map(_roleKey));
         rep._roles = (rep._roles || []).concat((r._roles || []).filter(ro => { const k = _roleKey(ro); if (seen.has(k)) return false; seen.add(k); return true; }));
         if (entitySources) { const u = new Set(entitySources.get(repKey) || []); (entitySources.get(rk) || []).forEach(s => u.add(s)); entitySources.set(repKey, [...u]); }

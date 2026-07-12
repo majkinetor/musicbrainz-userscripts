@@ -61,15 +61,54 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.deepEqual(mergeMap.get(tidalUrl).sort(), [qobuzUrl, tidalUrl].sort(), 'mergeMap covers every merged source url');
 }
 
-// A different MBID stays a separate row; an attention (unresolved) row is never merged.
+// Distinct MBIDs stay separate rows.
 {
     const results = [
-        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/a', entity: { resource_url: 'u1' }, _roles: [] },
-        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/b', entity: { resource_url: 'u2' }, _roles: [] },
-        { type: 'attention', entity: { resource_url: 'u3' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/a', entity: { resource_url: 'u1', name: 'A' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/b', entity: { resource_url: 'u2', name: 'B' }, _roles: [] },
     ];
     const { results: out } = mergeResolvedResults(results, new Map());
-    assert.equal(out.length, 3, 'distinct MBIDs + an unresolved row all kept');
+    assert.equal(out.length, 2, 'distinct MBIDs stay separate');
+}
+
+// #408 (Alan Morrallee): one source resolved the name, the other didn't → the unresolved row is
+// routed to its resolved same-name twin, adopts the MBID, and its roles + source merge in.
+{
+    const tidal = 'https://tidal.com/artist/1', qobuz = 'https://open.qobuz.com/artist/2';
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/alan', entity: { resource_url: tidal, name: 'Alan Morrallee' }, _roles: [{ linkType: 'producer', displayLabel: 'producer', trackPos: '8', trackTitle: '' }] },
+        { type: 'attention', entity: { resource_url: qobuz, name: 'Alan Morrallee' }, _roles: [{ linkType: 'composer', displayLabel: 'composer', trackPos: '8', trackTitle: '' }] },
+    ];
+    const es = new Map([[tidal, ['Tidal']], [qobuz, ['Qobuz']]]);
+    const { results: out, mergeMap } = mergeResolvedResults(results, es);
+    assert.equal(out.length, 1, 'unresolved same-name row merges into the resolved one');
+    assert.equal(out[0].type, 'resolved', 'kept row is resolved (adopted the MBID)');
+    assert.equal(out[0].mbUrl, '//musicbrainz.org/artist/alan');
+    assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['composer', 'producer'], 'roles merged across resolved + unresolved');
+    assert.deepEqual((es.get(tidal) || []).sort(), ['Qobuz', 'Tidal'], 'sources unioned');
+    assert.deepEqual(mergeMap.get(tidal).sort(), [qobuz, tidal].sort(), 'both source urls in the mergeMap');
+}
+
+// Two same-name rows that NEVER resolved still merge (one review row to resolve once).
+{
+    const results = [
+        { type: 'attention', entity: { resource_url: 'x1', name: 'Jane' }, _roles: [{ linkType: 'composer', displayLabel: 'composer', trackPos: '1', trackTitle: '' }] },
+        { type: 'attention', entity: { resource_url: 'x2', name: 'Jane' }, _roles: [{ linkType: 'lyricist', displayLabel: 'lyricist', trackPos: '1', trackTitle: '' }] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 1, 'same-name unresolved rows merge');
+    assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['composer', 'lyricist']);
+}
+
+// Ambiguous: a name resolving to TWO different MBIDs is left alone (unresolved twin not forced).
+{
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/j1', entity: { resource_url: 'a', name: 'John Smith' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/j2', entity: { resource_url: 'b', name: 'John Smith' }, _roles: [] },
+        { type: 'attention', entity: { resource_url: 'c', name: 'John Smith' }, _roles: [] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 3, 'ambiguous same-name (2 MBIDs) → nothing force-merged');
 }
 
 console.log('consolidate: all assertions passed');
