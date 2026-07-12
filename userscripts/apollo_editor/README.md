@@ -324,7 +324,7 @@ The interface modifications (everything above except *Auto confirm*) are toggled
 
 | Option | Default | What it does |
 |---|---|---|
-| **Auto-match on start**| Off<br>Off<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads<br>**Label** - When the release's label name has exactly **one** exact MusicBrainz match, selects it automatically on load. Ambiguous names (e.g. *Columbia* → several labels) and names with no exact hit are left for you to pick|
+| **Auto-match on start**| Off<br>Off<br>On<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads<br>**Label** - When the release's label name has exactly **one** exact MusicBrainz match, selects it automatically on load. Ambiguous names (e.g. *Columbia* → several labels) and names with no exact hit are left for you to pick<br>**Artist** - Same for the release **Artist** field: a seeded/typed release artist with exactly **one** exact MusicBrainz match is selected automatically on load; ambiguous or no-hit names are left for you to pick|
 | **Discogs artist link matching**| On | When the release has a Discogs link, match track artists by their [Discogs URL](#discogs-artist-links) (before the name search) and offer to add/create missing links|
 |**Length tolerance**|5| Allow a length gap within N seconds (use `0` for exact)|
 |**Title tolerance**|1| Allow up to N differing characters in the title (use `0` for exact)|

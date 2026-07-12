@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-12 21:39 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-12 21:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -340,7 +340,7 @@ The interface modifications (everything above except *Auto confirm*) are toggled
 
 | Option | Default | What it does |
 |---|---|---|
-| **Auto-match on start**| Off<br>Off<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads<br>**Label** - When the release's label name has exactly **one** exact MusicBrainz match, selects it automatically on load. Ambiguous names (e.g. *Columbia* → several labels) and names with no exact hit are left for you to pick|
+| **Auto-match on start**| Off<br>Off<br>On<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads<br>**Label** - When the release's label name has exactly **one** exact MusicBrainz match, selects it automatically on load. Ambiguous names (e.g. *Columbia* → several labels) and names with no exact hit are left for you to pick<br>**Artist** - Same for the release **Artist** field: a seeded/typed release artist with exactly **one** exact MusicBrainz match is selected automatically on load; ambiguous or no-hit names are left for you to pick|
 | **Discogs artist link matching**| On | When the release has a Discogs link, match track artists by their [Discogs URL](#discogs-artist-links) (before the name search) and offer to add/create missing links|
 |**Length tolerance**|5| Allow a length gap within N seconds (use `0` for exact)|
 |**Title tolerance**|1| Allow up to N differing characters in the title (use `0` for exact)|
@@ -663,7 +663,7 @@ Efficiency features:
 
 Triggered by **⚛ All** when a release has more than one source. Instead of running each provider separately and resolving the same people over and over, it harvests every source, merges the results into a **single** review table, and dispatches once.
 
-- **De-duplication happens twice.** First before resolution — identical credits (same entity, role, attributes and track position) collapse to one row, so the same person credited by Tidal *and* Qobuz isn't resolved twice. Then after resolution — rows are merged by MB entity (MBID), and an unresolved credit is folded into a resolved row of the **same name** when that name resolves to exactly one MBID. Different roles for the same person stay as separate rows.
+- **De-duplication happens twice.** First before resolution — identical credits (same entity, role, attributes and track position) collapse to one row, so the same person credited by Tidal *and* Qobuz isn't resolved twice. Then after resolution — rows are merged by MB entity (MBID), and an unresolved credit is folded into a resolved row of the **same name** when that name resolves to exactly one MBID.
 - **Typo tolerance.** An unresolved credit that is a tight, length-guarded edit-distance typo of a **uniquely-resolved** name is folded onto that MBID (e.g. *Mark Barott* → *Mark Barrott*). Short names get no fuzz, and a typo that's ambiguous between two resolved names is left alone.
 - **Source column.** The leftmost column shows a brand badge per provider that credited the row — **coloured** when that provider supplied an artist URL (click it to open the provider page), **greyed** when the credit was name-only. So you can see at a glance that, say, *Alan Morrallee* came from both Tidal and Qobuz.
 - **Add all links.** When a merged row carries artist URLs from several providers, the 🔗 add-link button shows the count and seeds **every** provider URL into MB's edit page at once (extras can be trimmed in MB's dialog); creating a new artist likewise seeds all of them.
