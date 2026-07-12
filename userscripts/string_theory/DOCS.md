@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-12 19:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-12 19:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -180,13 +180,23 @@ The **Tools ▾** label opens a menu of the tools that *haven't* been put on the
 
 Besides the integrated tools, there are a few new ones:
 
-- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them from the **★** popup. Each saved pattern row has hover actions: **⛓** add/remove it in a chain, **✎** rename, **✕** delete.
-    - **Chains** — combine several saved patterns into a named **chain** that runs them all in one click, in order (e.g. *All Quotes* = *Quotes* then *Single quote*). Use **＋ Add chain** to create one, then **⛓** on a pattern to add it (a pattern can belong to several chains). While a chain is applied the search/replace fields show a read-only chain chip (**✕** exits back to normal S&R). One *All Quotes* chain is seeded by default.
-    - **Default** — mark one pattern **or** chain as the default with **◉**; it's shown highlighted in the list and is applied automatically the first time you open the Tracklist in a session (with the usual "N titles replaced" toast).
-    - **Import / Export** — the button in the popup header opens a JSON view of your saved patterns + chains + the default marker (history excluded); paste and **✓ Import** to replace the set. The **History** section (recent patterns) is collapsed by default — click it to expand.
-- **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
+#### Search & Replace
 
-External tools (need another userscript):
+Search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them from the **★** popup. Last 5 historic items are saved automatically. Each saved pattern row has hover actions: **⛓** add/remove it in a chain, **✎** rename, **✕** delete.
+
+- **Chains** — combine several saved patterns into a named **chain** that runs them all in one click, in order (e.g. *All Quotes* = *Quotes* then *Single quote*). Use **＋ Add chain** to create one, then **⛓** on a pattern to add it (a pattern can belong to several chains).
+- **Default** — mark one pattern **or** chain as the default with **◉**; it's shown highlighted in the list and is applied automatically the first time you open the Tracklist in a session (with the usual "N titles replaced" toast).
+- **Import / Export** — the button in the popup header opens a JSON view of your saved patterns + chains + the default marker (history excluded); paste and **✓ Import** to replace the set. The **History** section (recent patterns) is collapsed by default — click it to expand.
+
+<img width="600" src="../apollo_editor/screenshots/search.png" />
+
+#### Resize Columns 
+
+Set column sizes to predefined variants (Fit, Centered, Default).
+
+#### External tools 
+
+Those tools need 3rd party userscript:
 
 - **Guess punctuation** — runs kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation) (curly quotes, dashes, ellipses…) over the release. **Requires that script installed** — the tool only appears when it is.
 

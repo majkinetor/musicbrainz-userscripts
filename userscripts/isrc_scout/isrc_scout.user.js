@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.164148
+// @version      2026.7.12.193936
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -481,6 +481,9 @@
     #ii-tools.ii-show-text .ii-blabel { display: inline; }
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
+    /* #406: a collection is running — fade the whole button in/out so it's clearly in progress */
+    #ii-submit.ii-collecting { animation: ii-btn-pulse 1.1s ease-in-out infinite; }
+    @keyframes ii-btn-pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
     .ii-tbtn.ghost { border-color: transparent; }
     /* #302: a small purple dot marks a provider whose link was pulled from another
        release in the group (not this release). Same dot on RG-sourced add candidates. */
@@ -3380,10 +3383,14 @@
     const parts = [];
     if (_validIsrcCount) parts.push(_validIsrcCount + ' ISRC' + (_validIsrcCount === 1 ? '' : 's'));
     if (linkN)           parts.push(linkN + ' link' + (linkN === 1 ? '' : 's'));
-    submitBtn.textContent = 'Submit to MusicBrainz' + (parts.length ? ' (' + parts.join(' · ') + ')' : '');
+    // #406: while a collection (ISRC import / Find links / SoundExchange) is running, show it ON the
+    // button — a trailing "…" plus a fading pulse — so a stuck-but-ongoing item is visibly in progress.
+    const busy = collecting();
+    submitBtn.textContent = 'Submit to MusicBrainz' + (parts.length ? ' (' + parts.join(' · ') + ')' : '') + (busy ? ' …' : '');
+    submitBtn.classList.toggle('ii-collecting', busy);
     // Enabled when there's something to submit OR a collection is still running (so it's
     // never grayed mid-import/mid-resolve — the count fills in live as results arrive).
-    submitBtn.disabled = parts.length === 0 && !collecting();
+    submitBtn.disabled = parts.length === 0 && !busy;
   }
 
   // If every track has a valid ISRC and they form one perfect +1 run (same first
