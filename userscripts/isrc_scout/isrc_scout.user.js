@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.145252
+// @version      2026.7.12.151301
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2697,6 +2697,7 @@
         else addOne(idx, p, url);
       });
       el.replaceWith(a);
+      updateAddBtn();   // #406: bump the live "N link(s)" count on the Submit button as each candidate resolves
     }
 
     // On a successful add: drop the candidate from the ADD column and add a
@@ -2967,12 +2968,14 @@
     async function resolve() {
       if (resolving) return;
       resolving = true;
+      beginCollect();   // #406: keep Submit live while resolving, don't gray it out
       const btn = modal.querySelector('#ii-links-btn');
       if (btn) { btn.disabled = true; btn.dataset.busy = '1'; }
       try {
         await Promise.all(PROV.map(resolveProvider));   // #307: providers run in parallel
       } finally {
         resolving = false;
+        endCollect();
         if (btn) { btn.disabled = false; delete btn.dataset.busy; }
         updateAddBtn();
       }
@@ -3352,15 +3355,27 @@
   }
 
   // #406: the one Submit button covers BOTH pending ISRCs and resolved streaming links,
-  // so its count/enabled state is the sum. `updateSummary` (ISRC side) and TrackLinks'
-  // `updateAddBtn` (links side) each call this after they recompute their half.
+  // so it shows the breakdown ("(2 ISRCs · 1 link)") and stays live while a collection —
+  // an ISRC import or 🔗 Find links — is running, rather than graying out until it lands
+  // (majkinetor follow-up). `updateSummary` (ISRC side) and TrackLinks' `updateAddBtn`
+  // (links side) each call this after recomputing their half; the collection wrappers
+  // call it on start/finish.
   let _validIsrcCount = 0;
+  // Count of in-flight collections (ISRC imports + Find links). >0 ⇒ keep Submit live.
+  let _collecting = 0;
+  const beginCollect = () => { _collecting++; refreshSubmitBtn(); };
+  const endCollect   = () => { if (_collecting > 0) _collecting--; refreshSubmitBtn(); };
+  function collecting() { return _collecting > 0 || _sxRunning; }
   function refreshSubmitBtn() {
     if (!submitBtn || !modal) return;
     const linkN = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
-    const total = _validIsrcCount + linkN;
-    submitBtn.textContent = 'Submit to MusicBrainz' + (total ? ' (' + total + ')' : '');
-    submitBtn.disabled = total === 0;
+    const parts = [];
+    if (_validIsrcCount) parts.push(_validIsrcCount + ' ISRC' + (_validIsrcCount === 1 ? '' : 's'));
+    if (linkN)           parts.push(linkN + ' link' + (linkN === 1 ? '' : 's'));
+    submitBtn.textContent = 'Submit to MusicBrainz' + (parts.length ? ' (' + parts.join(' · ') + ')' : '');
+    // Enabled when there's something to submit OR a collection is still running (so it's
+    // never grayed mid-import/mid-resolve — the count fills in live as results arrive).
+    submitBtn.disabled = parts.length === 0 && !collecting();
   }
 
   // If every track has a valid ISRC and they form one perfect +1 run (same first
@@ -3761,6 +3776,7 @@
     const btn = modal && modal.querySelector('#ii-sx-all'); if (btn) btn.disabled = false;
     if (progEl) { progEl.textContent = ''; progEl.classList.remove('err'); }
     if (reason) Log.info('SoundExchange: cancelled all queued work (' + reason + ')');
+    refreshSubmitBtn();   // #406: SX aborted → re-evaluate the Submit button
   }
   // SoundExchange blocked us — either a rate limit (HTTP 429) or a captcha (HTTP
   // 202 {"searchCaptcha": true}, #157). Either way: stop the bulk run, abort
@@ -3769,6 +3785,7 @@
   function sxBlocked(err) {
     _sxEpoch++;                              // stop the running loops — don't issue any more requests
     _sxRunning = false; _vq.running = false;
+    refreshSubmitBtn();                      // #406: SX blocked → re-evaluate Submit
     abortInflight('soundexchange');
     const btn = modal && modal.querySelector('#ii-sx-all'); if (btn) btn.disabled = false;
     if (err && err.captcha) {
@@ -3817,6 +3834,7 @@
   async function processNextSxBatch() {
     if (_sxRunning) return;
     _sxRunning = true;
+    refreshSubmitBtn();   // #406: SoundExchange counts as collecting → keep Submit live
     const myEpoch = _sxEpoch;   // a clear / close / 429 bumps this → bail without writing stale results (#126/#127)
     const btn = modal.querySelector('#ii-sx-all');
     btn.disabled = true;
@@ -3875,6 +3893,7 @@
     }
     btn.disabled = false;
     _sxRunning = false;
+    refreshSubmitBtn();   // #406: SX finished → re-evaluate Submit (stays enabled only if something's pending)
   }
 
   /* ── streaming-source import (Deezer / Spotify) ── */
@@ -3913,6 +3932,8 @@
 
   let _stream = null;   // current import: { label, albumId, fetcher, cursor, counts }
   async function runStreamingSource(label, albumId, fetcher, resume) {
+    beginCollect();   // #406: Submit stays live during the import (count fills in as ISRCs land)
+    try {
     if (!resume || !_stream) {
       _stream = { label, albumId, fetcher, cursor: 0, counts: { filled: 0, already: 0, skipped: 0, unmatched: 0 } };
     }
@@ -3956,6 +3977,9 @@
       Log.info(label + ' done — ' + parts.join(', '));
       try { setProg(label + ' done — ' + parts.join(' · ')); }
       catch (e) { Log.warn(label + ': imported OK, but a UI update hiccuped: ' + errText(e)); }
+    }
+    } finally {
+      endCollect();   // #406: balance beginCollect() — runs on the catch's early return, pause, and normal end alike
     }
   }
 
