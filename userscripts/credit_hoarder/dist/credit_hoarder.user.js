@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.12.194956
+// @version      2026.7.12.201106
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3462,7 +3462,19 @@ ${ourBlock}` : ourBlock;
           const tdSrc = document.createElement("td");
           tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
           const names = entitySources.get(_entityKey) || [];
-          tdSrc.innerHTML = names.map((nm) => `<span class="discogs-src-badge" title="${nm}" style="display:inline-flex;vertical-align:middle;margin:0 1px;">${sourceBadgeIcon(nm)}</span>`).join("") || '<span style="color:#bbb;">\u2014</span>';
+          const srcUrls = r._mergeUrls || (discogsHref ? [discogsHref] : []);
+          if (!names.length) {
+            tdSrc.innerHTML = '<span style="color:#bbb;">\u2014</span>';
+          } else names.forEach((nm) => {
+            const url = srcUrls.find((u) => sourceNameForUrl(u) === nm) || null;
+            const span = document.createElement("span");
+            span.className = "discogs-src-badge";
+            span.style.cssText = "display:inline-flex;vertical-align:middle;margin:0 2px;" + (url ? "cursor:pointer;" : "filter:grayscale(1);opacity:0.45;");
+            span.title = url ? `${nm} \u2014 click to open ${url}` : `${nm} \u2014 name-only credit (no link)`;
+            span.innerHTML = sourceBadgeIcon(nm);
+            if (url) span.addEventListener("click", () => window.open(url, "_blank", "noopener,noreferrer"));
+            tdSrc.appendChild(span);
+          });
           tr.appendChild(tdSrc);
         }
         const tdDiscogs = document.createElement("td");
@@ -3890,8 +3902,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 linkSlot.textContent = "";
                 linkSlot.style.color = "";
                 const addLinkBtn = document.createElement("button");
-                addLinkBtn.textContent = "\u{1F517}";
-                addLinkBtn.title = `Add ${srcName} link to MB ${entityType}  \xB7  right-click: add it silently in the background`;
+                const _addCount = r._mergeUrls && r._mergeUrls.length ? r._mergeUrls.filter((u) => sourceUrlLinkTypeId(u, entityType)).length : 0;
+                addLinkBtn.textContent = "\u{1F517}" + (_addCount > 1 ? " " + _addCount : "");
+                addLinkBtn.title = (_addCount > 1 ? `Add ${_addCount} source links to MB ${entityType}` : `Add ${srcName} link to MB ${entityType}`) + `  \xB7  right-click: add ${_addCount > 1 ? "them" : "it"} silently in the background`;
                 addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:#e8771d;";
                 const openLinkEdit = (background) => {
                   const urls = r._mergeUrls && r._mergeUrls.length ? r._mergeUrls : [discogsHref];
@@ -5592,7 +5605,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     }
     for (const rep of out) {
       const keys = mergeMap.get(_resultKey(rep));
-      if (keys && keys.length > 1) rep._mergeUrls = keys.filter((k) => /^https?:\/\//i.test(k));
+      rep._mergeUrls = (keys || []).filter((k) => /^https?:\/\//i.test(k));
     }
     return { results: out, mergeMap };
   }

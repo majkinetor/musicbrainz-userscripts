@@ -463,11 +463,24 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             });
 
             // ── Col 0 (#408 consolidated): Source badges ───────────────────────
+            // Coloured when the entity carries that provider's URL (click → open the provider page);
+            // greyed when the source only gave a name-only credit (no link to add/open).
             if (entitySources) {
                 const tdSrc = document.createElement('td');
                 tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
                 const names = entitySources.get(_entityKey) || [];
-                tdSrc.innerHTML = names.map(nm => `<span class="discogs-src-badge" title="${nm}" style="display:inline-flex;vertical-align:middle;margin:0 1px;">${sourceBadgeIcon(nm)}</span>`).join('') || '<span style="color:#bbb;">—</span>';
+                const srcUrls = r._mergeUrls || (discogsHref ? [discogsHref] : []);
+                if (!names.length) { tdSrc.innerHTML = '<span style="color:#bbb;">—</span>'; }
+                else names.forEach(nm => {
+                    const url = srcUrls.find(u => sourceNameForUrl(u) === nm) || null;
+                    const span = document.createElement('span');
+                    span.className = 'discogs-src-badge';
+                    span.style.cssText = 'display:inline-flex;vertical-align:middle;margin:0 2px;' + (url ? 'cursor:pointer;' : 'filter:grayscale(1);opacity:0.45;');
+                    span.title = url ? `${nm} — click to open ${url}` : `${nm} — name-only credit (no link)`;
+                    span.innerHTML = sourceBadgeIcon(nm);
+                    if (url) span.addEventListener('click', () => window.open(url, '_blank', 'noopener,noreferrer'));
+                    tdSrc.appendChild(span);
+                });
                 tr.appendChild(tdSrc);
             }
 
@@ -1055,8 +1068,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             linkSlot.textContent = '';
                             linkSlot.style.color = '';
                             const addLinkBtn = document.createElement('button');
-                            addLinkBtn.textContent = '\ud83d\udd17'; // \ud83d\udd17
-                            addLinkBtn.title = `Add ${srcName} link to MB ${entityType}  ·  right-click: add it silently in the background`;
+                            // #408: on a consolidated row, show how many source links this will add.
+                            const _addCount = (r._mergeUrls && r._mergeUrls.length) ? r._mergeUrls.filter(u => sourceUrlLinkTypeId(u, entityType)).length : 0;
+                            addLinkBtn.textContent = '\ud83d\udd17' + (_addCount > 1 ? ' ' + _addCount : '');
+                            addLinkBtn.title = (_addCount > 1 ? `Add ${_addCount} source links to MB ${entityType}` : `Add ${srcName} link to MB ${entityType}`) + `  ·  right-click: add ${_addCount > 1 ? 'them' : 'it'} silently in the background`;
                             addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#e8771d;'; // Discogs orange accent
                             // #273: left-click = foreground (focus-return recheck); right-click =
                             // background via GM_openInTab + auto-submit, rechecked on `edit-committed`.
