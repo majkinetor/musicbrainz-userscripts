@@ -59,6 +59,7 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['composer', 'producer'], 'roles from both sources combined');
     assert.deepEqual((es.get(tidalUrl) || []).sort(), ['Qobuz', 'Tidal'], 'source badges unioned onto the kept row');
     assert.deepEqual(mergeMap.get(tidalUrl).sort(), [qobuzUrl, tidalUrl].sort(), 'mergeMap covers every merged source url');
+    assert.deepEqual((out[0]._mergeUrls || []).sort(), [qobuzUrl, tidalUrl].sort(), 'merged row carries all source URLs (for add-all-links)');
 }
 
 // Distinct MBIDs stay separate rows.

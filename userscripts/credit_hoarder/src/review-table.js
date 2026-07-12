@@ -1061,9 +1061,22 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             // #273: left-click = foreground (focus-return recheck); right-click =
                             // background via GM_openInTab + auto-submit, rechecked on `edit-committed`.
                             const openLinkEdit = (background) => {
-                                const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
-                                if (!ltId) return;
-                                const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(`Added ${srcName} link`) });
+                                // #408: a consolidated row can carry several source URLs (one artist
+                                // linked on Tidal AND Qobuz) — add them ALL, each with its own link
+                                // type, in a single edit (any unwanted one can be removed in the MB
+                                // dialog). Non-merged rows keep the single-URL behaviour.
+                                const urls = (r._mergeUrls && r._mergeUrls.length) ? r._mergeUrls : [discogsHref];
+                                const p = new URLSearchParams();
+                                let n = 0;
+                                for (const u of urls) {
+                                    const lt = sourceUrlLinkTypeId(u, entityType);
+                                    if (!lt) continue;
+                                    p.set(`edit-${entityType}.url.${n}.text`, u);
+                                    p.set(`edit-${entityType}.url.${n}.link_type_id`, lt);
+                                    n++;
+                                }
+                                if (!n) return;
+                                p.set(`edit-${entityType}.edit_note`, buildCreateNote(n > 1 ? `Added ${n} source links` : `Added ${srcName} link`));
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                                 const editUrl = `https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`;
                                 if (background && typeof GM_openInTab === 'function') {
@@ -1194,6 +1207,20 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // and the "Create (adv)" popup flow (issue #5).
                 function openCreateTab({ name, disambiguation, background } = {}) {
                     const finalName = (name || displayName).trim();
+                    // #408: seed EVERY source URL (a merged row may carry several — Tidal + Qobuz…),
+                    // each with its own link type. Non-merged rows seed just their one URL as before.
+                    const seedUrls = (params, et) => {
+                        const urls = (r._mergeUrls && r._mergeUrls.length) ? r._mergeUrls : [discogsHref];
+                        let n = 0;
+                        for (const u of urls) {
+                            if (!u) continue;
+                            const lt = sourceUrlLinkTypeId(u, et);
+                            if (!lt) continue;
+                            params[`edit-${et}.url.${n}.text`]         = u;
+                            params[`edit-${et}.url.${n}.link_type_id`] = lt;
+                            n++;
+                        }
+                    };
                     let createUrl;
                     let createParams;
                     if (entityType === 'artist') {
@@ -1202,23 +1229,15 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             'edit-artist.sort_name': guessSortName(finalName),
                             'edit-artist.type_id':   '1',
                         };
-                        const ltArtist = sourceUrlLinkTypeId(discogsHref, 'artist');
-                        if (discogsHref && ltArtist) {
-                            createParams['edit-artist.url.0.text']         = discogsHref;
-                            createParams['edit-artist.url.0.link_type_id'] = ltArtist;
-                        }
+                        seedUrls(createParams, 'artist');
                         if (disambiguation) createParams['edit-artist.comment'] = disambiguation;
                         createParams['edit-artist.edit_note'] = buildCreateNote();   // proper attribution on the created entity
                         createUrl = 'https://musicbrainz.org/artist/create';
                     } else {
-                        const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
                         createParams = {
                             [`edit-${entityType}.name`]:                finalName,
                         };
-                        if (discogsHref && ltId) {
-                            createParams[`edit-${entityType}.url.0.text`]         = discogsHref;
-                            createParams[`edit-${entityType}.url.0.link_type_id`] = ltId;
-                        }
+                        seedUrls(createParams, entityType);
                         if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
                         createParams[`edit-${entityType}.edit_note`] = buildCreateNote();   // proper attribution on the created entity
                         createUrl = `https://musicbrainz.org/${entityType}/create`;

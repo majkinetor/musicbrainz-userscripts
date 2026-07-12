@@ -116,5 +116,11 @@ export function mergeResolvedResults(allResults, entitySources) {
         if (entitySources) { const u = new Set(entitySources.get(repKey) || []); (entitySources.get(rk) || []).forEach(s => u.add(s)); entitySources.set(repKey, [...u]); }
         mergeMap.get(repKey).push(rk);
     }
+    // #408: attach every real source URL of a merged row so "add link" / "create artist" can add
+    // them all (one artist may carry a Tidal URL, a Qobuz URL, …). Only rows that merged >1 source.
+    for (const rep of out) {
+        const keys = mergeMap.get(_resultKey(rep));
+        if (keys && keys.length > 1) rep._mergeUrls = keys.filter(k => /^https?:\/\//i.test(k));
+    }
     return { results: out, mergeMap };
 }
