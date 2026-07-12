@@ -64,7 +64,13 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 
 Header toolbar lists available ISRC import sources for the current release. Sources can be generic or depend on appropriate external links and can additionally come via custom URL.
 
-If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, it will be offered too here (highlighted). External links from release group can also be offered, depending on that [option][Settings].
+<img width="800" src="./screenshots/toolbar.png" />
+
+On above screenshots there are 3 types of sources represented by provider icon markings:
+
+1. With border - from external links in release
+2. No border - from [Platform Check](../platform_check/README.md) (must be installed)
+3. Blue dot - from release group (with [option][Settings] *Use providers from the whole release group*)
 
 Button `(+)` lets you import from an URL — paste any album URL to import from it, even when the release has no such link. 
 
@@ -238,3 +244,5 @@ Other Qobuz gotchas:
 - **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
 - **Barcode padding** — Qobuz stores the UPC as the 13-digit EAN with a **leading zero** (`0199257198605`), so a barcode-first `album/search` must try the zero-padded form (#354).
 - The slug-less `open.qobuz.com/album/<id>` form that an MB rel often carries is an **SPA shell** with no data; the album id is the last path segment either way.
+
+[Settings]: #settings
