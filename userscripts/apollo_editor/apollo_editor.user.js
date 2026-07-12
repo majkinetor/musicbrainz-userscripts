@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12
+// @version      2026.7.12.171908
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -198,7 +198,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -303,6 +303,53 @@
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
     list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
     _cache.set(k, list); return list;
+  }
+
+  /* ── label auto-match (#407) ──────────────────────────────────────────────
+   * The release-info Label field is seeded (from Discogs, or typed) as plain text
+   * with no MBID — the single most common thing majkinetor forgets to resolve. When
+   * the name has exactly ONE exact MB label, select it automatically; when it's
+   * ambiguous (e.g. "Columbia" → several) or has no exact hit, leave it for a human.
+   * Labels live in the KO release model — `release().labels()[i].label` is an
+   * observable holding the label entity, so we set it directly (verified: this also
+   * fills the #label-N input and is picked up on submit). */
+  async function searchLabel(name, limit) {
+    limit = limit || 8;
+    const k = 'label:' + fold(name) + '|' + limit; if (!fold(name)) return [];
+    if (_cache.has(k)) return _cache.get(k);
+    let list = [];
+    try { const j = await fetch(`${ORIGIN}/ws/js/label?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
+    catch (e) { Log.warn('label search failed:', name, e.message); }
+    list = list.filter(c => c && (c.name || '').trim());
+    _cache.set(k, list); return list;
+  }
+  let _labelsAutoMatchedOnce = false;
+  // Resolve every still-unset release label whose name has a unique exact MB hit.
+  async function matchReleaseLabels() {
+    if (SETTINGS.autoMatchLabel === false) return;
+    const rel = release(); if (!rel) return;
+    const labels = u(rel.labels) || [];
+    if (!labels.length) return;
+    let linked = 0, lastName = '';
+    for (const lf of labels) {
+      if (!lf || typeof lf.label !== 'function') continue;
+      const cur = lf.label();
+      const name = cur && cur.name;
+      if (!name || (cur && cur.gid)) continue;   // empty slot, or already resolved → leave it
+      let hits = [];
+      try { hits = await searchLabel(name); } catch (e) { Log.warn('label search failed', name, e.message); continue; }
+      const exact = hits.filter(c => sameName(c.name, name));
+      if (exact.length !== 1) { Log.info('Label:', name, exact.length ? ('— ' + exact.length + ' exact matches (ambiguous) — left unset') : '— no exact MB match — left unset'); continue; }
+      const hit = exact[0];
+      try {
+        let ent = hit;
+        try { if (window.MB && typeof MB.entity === 'function') ent = MB.entity(hit, 'label'); } catch (e) {}
+        lf.label(ent);
+        linked++; lastName = hit.name;
+        Log.info('Label match:', name, '→', hit.name, '(' + hit.gid + ')');
+      } catch (e) { Log.warn('label set failed', name, e.message); }
+    }
+    if (linked) toast(linked === 1 ? ('✓ Label matched: ' + lastName) : ('✓ Auto-matched ' + linked + ' labels'));
   }
   // full alias arrays for display (the js search only carries primaryAlias, often empty). One WS2
   // search per query returns every result's aliases with locale — no per-artist fetch. Cached.
@@ -1655,7 +1702,7 @@
       </div>
       <div class="tc-tab-pane" data-pane="matching" hidden>
         <div class="tc-s-group">
-          <div class="tc-s-row"><b class="tc-s-sub">Auto-match on start</b><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label></div>
+          <div class="tc-s-row"><b class="tc-s-sub">Auto-match on start</b><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names (e.g. Columbia) are left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label></div>
           <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
           <div class="tc-s-sub">Recording</div>
           <div class="tc-s-group">
@@ -1694,12 +1741,13 @@
     const showTab = name => { _cfgTab = name; tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name)); panes.forEach(p => { p.hidden = p.dataset.pane !== name; }); place(); };
     tabBtns.forEach(b => b.onclick = () => showTab(b.dataset.tab));
     showTab(_cfgTab);
-    const am = s.querySelector('#tc-s-automatch'), amRec = s.querySelector('#tc-s-automatchrec'), alt = s.querySelector('#tc-s-alt'), gridcols = s.querySelector('#tc-s-gridcols'), gridrows = s.querySelector('#tc-s-gridrows');
-    am.checked = SETTINGS.autoMatch !== false; amRec.checked = !!SETTINGS.autoMatchRec; alt.checked = !!SETTINGS.altRows; gridcols.checked = !!SETTINGS.gridCols; gridrows.checked = SETTINGS.gridRows !== false;
+    const am = s.querySelector('#tc-s-automatch'), amRec = s.querySelector('#tc-s-automatchrec'), amLbl = s.querySelector('#tc-s-automatchlabel'), alt = s.querySelector('#tc-s-alt'), gridcols = s.querySelector('#tc-s-gridcols'), gridrows = s.querySelector('#tc-s-gridrows');
+    am.checked = SETTINGS.autoMatch !== false; amRec.checked = !!SETTINGS.autoMatchRec; amLbl.checked = SETTINGS.autoMatchLabel !== false; alt.checked = !!SETTINGS.altRows; gridcols.checked = !!SETTINGS.gridCols; gridrows.checked = SETTINGS.gridRows !== false;
     const curLayout = SETTINGS.layout || 'normal';
     s.querySelectorAll('input[name="tc-s-layout"]').forEach(rb => { rb.checked = rb.value === curLayout; rb.onchange = () => { if (rb.checked) { SETTINGS.layout = rb.value; saveSettings(); applyViewClasses(); } }; });
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     amRec.onchange = () => { SETTINGS.autoMatchRec = amRec.checked; saveSettings(); };
+    amLbl.onchange = () => { SETTINGS.autoMatchLabel = amLbl.checked; saveSettings(); };
     const dmatch = s.querySelector('#tc-s-discogsmatch'); if (dmatch) { dmatch.checked = SETTINGS.discogsUrlMatch !== false; dmatch.onchange = () => { SETTINGS.discogsUrlMatch = dmatch.checked; saveSettings(); }; }
     const lentol = s.querySelector('#tc-s-lentol'), titletol = s.querySelector('#tc-s-titletol'), igc = s.querySelector('#tc-s-ignorecase'), igp = s.querySelector('#tc-s-ignorepunct');
     lentol.value = SETTINGS.recLenTol != null ? SETTINGS.recLenTol : 5; titletol.value = SETTINGS.recTitleTol || 0; igc.checked = SETTINGS.recIgnoreCase !== false; igp.checked = !!SETTINGS.recIgnorePunct;
@@ -2576,6 +2624,9 @@
     rerender();   // show the tables instantly
     if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else { updateStatus('auto-match off — click Match'); tagDiscogsForAll(); }   // #227: tag 'set' artists even when not matching
     enrichResolvedAliases();   // batch-fetch aliases for resolved artists (existing releases too)
+    // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
+    // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
+    if (!_labelsAutoMatchedOnce) { _labelsAutoMatchedOnce = true; matchReleaseLabels().catch(e => Log.warn('label auto-match failed', e.message)); }
   }
   async function rebuild(noMatch) {
     MODEL = buildShell();
