@@ -1,5 +1,12 @@
 # Group Therapy
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### Features
+
+1. Right-click an entity name opens its relationship edit dialog ([#399](https://github.com/majkinetor/musicbrainz-userscripts/issues/399))
+1. Select tracks/roles/credits when setting missing date ([#398](https://github.com/majkinetor/musicbrainz-userscripts/issues/398))
+
 ## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
 
 ### Features

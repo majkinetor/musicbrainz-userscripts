@@ -1,5 +1,11 @@
 # Import Discogs Credits Changelog
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### Features
+
+1. Removal of "(N)" from Discogs credits ([#393](https://github.com/majkinetor/musicbrainz-userscripts/issues/393))
+
 ## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
 
 - Small improvements

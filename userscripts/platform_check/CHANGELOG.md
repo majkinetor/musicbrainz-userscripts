@@ -1,5 +1,13 @@
 # Platform Check Changelog
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### Features
+
+1. Consistent platform icons ([#404](https://github.com/majkinetor/musicbrainz-userscripts/issues/404))
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Authenticated Qobuz support ([#353](https://github.com/majkinetor/musicbrainz-userscripts/issues/353))
+
 ## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
 
 ### Fixes

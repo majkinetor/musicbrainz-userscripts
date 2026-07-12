@@ -1,5 +1,51 @@
 # String Theory Changelog
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Show markdown in all annotation editors ([#394](https://github.com/majkinetor/musicbrainz-userscripts/issues/394))
+1. Batch remove dates/labels in Release Info ([#391](https://github.com/majkinetor/musicbrainz-userscripts/issues/391))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Consistent platform icons ([#404](https://github.com/majkinetor/musicbrainz-userscripts/issues/404))
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Dragging full screen cover adds a copy to the gallery as new upload ([#396](https://github.com/majkinetor/musicbrainz-userscripts/issues/396))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Option to return back to initial import menu ([#405](https://github.com/majkinetor/musicbrainz-userscripts/issues/405))
+1. Consistent platform icons ([#404](https://github.com/majkinetor/musicbrainz-userscripts/issues/404))
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Deezer support ([#401](https://github.com/majkinetor/musicbrainz-userscripts/issues/401))
+1. Removal of "(N)" from Discogs credits ([#393](https://github.com/majkinetor/musicbrainz-userscripts/issues/393))
+1. Authenticated Qobuz support ([#353](https://github.com/majkinetor/musicbrainz-userscripts/issues/353))
+1. Discogs instrument not recognized ([#392](https://github.com/majkinetor/musicbrainz-userscripts/issues/392))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Right-click an entity name opens its relationship edit dialog ([#399](https://github.com/majkinetor/musicbrainz-userscripts/issues/399))
+1. Select tracks/roles/credits when setting missing date ([#398](https://github.com/majkinetor/musicbrainz-userscripts/issues/398))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Consistent platform icons ([#404](https://github.com/majkinetor/musicbrainz-userscripts/issues/404))
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Authenticated Qobuz support ([#353](https://github.com/majkinetor/musicbrainz-userscripts/issues/353))
+
+### [Mammoth](../mammoth/CHANGELOG.md)
+
+1. Unlimited babies ([#400](https://github.com/majkinetor/musicbrainz-userscripts/issues/400))
+1. Support for the "Task" field in the "Add relationship" dialog ([#397](https://github.com/majkinetor/musicbrainz-userscripts/issues/397))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Consistent platform icons ([#404](https://github.com/majkinetor/musicbrainz-userscripts/issues/404))
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Authenticated Qobuz support ([#353](https://github.com/majkinetor/musicbrainz-userscripts/issues/353))
+
 ## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

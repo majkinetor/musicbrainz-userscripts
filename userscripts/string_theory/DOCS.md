@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-12 13:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-12 14:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1334,10 +1334,6 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 <img width="200" src="../platform_check/screenshots/dashboard-2-rows.png" /><img width="200" src="../platform_check/screenshots/dashboard-1-row-no-names.png" /><img width="200" src="../platform_check/screenshots/dashboard-1-row-compact.png" />
 
-<details><summary>More screenshots</summary>
-<img width="400" src="../platform_check/screenshots/config.png" />
-</details>
-
 ### Features
 
 - **Multiple [platforms](#platforms)** supported with customizable position and visibility
@@ -1582,6 +1578,10 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
     - Canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode.
     - No dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)), so the `+` insert force-sets **purchase for download** (id 74).
     - ISRC Scout can import an HDtracks release's ISRCs from the link this finds.
+
+### Settings
+
+<img width="400" src="../platform_check/screenshots/config.png" />
 
 ### Shortcuts
 
