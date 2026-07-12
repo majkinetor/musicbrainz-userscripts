@@ -164,7 +164,9 @@ The **Tools ▾** label opens a menu of the tools that *haven't* been put on the
 
 Besides the integrated tools, there are a few new ones:
 
-- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them.
+- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them from the **★** popup. Each saved pattern row has hover actions: **⛓** add/remove it in a chain, **✎** rename, **✕** delete.
+    - **Chains** — combine several saved patterns into a named **chain** that runs them all in one click, in order (e.g. *All Quotes* = *Quotes* then *Single quote*). Use **＋ Add chain** to create one, then **⛓** on a pattern to add it (a pattern can belong to several chains). While a chain is applied the search/replace fields show a read-only chain chip (**✕** exits back to normal S&R). One *All Quotes* chain is seeded by default.
+    - **Default** — mark one pattern **or** chain as the default with **◉**; it's shown highlighted in the list and is applied automatically the first time you open the Tracklist in a session (with the usual "N titles replaced" toast).
 - **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
 
 External tools (need another userscript):

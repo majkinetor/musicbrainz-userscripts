@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.12.183039
+// @version      2026.7.12.183547
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -69,13 +69,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.12.183039 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.12.182921\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.12\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.12.164148\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.12");
+  console.log('%c String Theory %c v2026.7.12.183547 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.12.183415\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.12\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.12.164148\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.12.182921","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.12.182921","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.12.183415","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.12.183415","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -259,7 +259,7 @@ try {
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -1562,7 +1562,11 @@ try {
     .tc-srtpl-saveok:hover{background:#e6f6e6}
     .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
     .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa}
-    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 60px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
+    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 24px 82px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
+    .tc-srtpl-defrow{background:#fffaef}
+    .tc-srtpl-def{visibility:hidden;border:none;background:none;color:#c9bde6;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    .tc-srtpl-row:hover .tc-srtpl-def,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-def{visibility:visible}.tc-srtpl-def:hover{color:#e8a800}
+    .tc-srtpl-def.on{visibility:visible;color:#e8a800}
     .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:#f0ebfb}
     .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
@@ -2724,6 +2728,7 @@ try {
     // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
     // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
     if (!_labelsAutoMatchedOnce) { _labelsAutoMatchedOnce = true; matchReleaseLabels().catch(e => Log.warn('label auto-match failed', e.message)); }
+    srApplyDefaultOnStart();   // #410: run the marked default S&R once, now the tracklist is rendered
   }
   async function rebuild(noMatch) {
     MODEL = buildShell();
@@ -3248,6 +3253,30 @@ try {
     if (i >= 0) c.members.splice(i, 1); else c.members.push(itemName);
     saveSettings();
   }
+  // #410: the "default" S&R — one pattern OR chain marked default (name in SETTINGS.srDefault),
+  // applied automatically the first time the Tracklist opens this session. Setting a new default
+  // toggles the old one off (only one).
+  const srDefaultName = () => SETTINGS.srDefault || '';
+  function srSetDefault(name) { SETTINGS.srDefault = (SETTINGS.srDefault === name) ? '' : name; saveSettings(); }
+  // Apply a default item (called on Tracklist open + when the user clicks it). A chain runs all its
+  // members + enters chain mode; a pattern fills the fields, sets RE to its own flag, and replaces.
+  function srApplyDefaultItem(item) {
+    if (srIsChain(item)) { srApplyChain(item); srShowChain(item.name); return; }
+    SETTINGS.srRegex = !!item.re; saveSettings();
+    const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'), reBtn = document.querySelector('.tc-sr-re');
+    if (f) { f.value = item.find; f.placeholder = srRegexOn() ? 'search (regex)' : 'search'; }
+    if (r) r.value = item.replace;
+    if (reBtn) reBtn.classList.toggle('on', !!item.re);
+    srLive(item.find, item.replace, true);
+  }
+  let _srDefaultAppliedOnce = false;
+  // Apply the marked default once per session, when the Tracklist first renders.
+  function srApplyDefaultOnStart() {
+    if (_srDefaultAppliedOnce) return; _srDefaultAppliedOnce = true;
+    const name = srDefaultName(); if (!name) return;
+    const item = srTemplates().find(t => t.name === name); if (!item) return;
+    try { srApplyDefaultItem(item); Log.info('Applied default S&R:', name); } catch (e) { Log.warn('default S&R failed', e.message); }
+  }
   // #409: chain "mode" — a chain isn't editable (it's several patterns), so when one is applied the
   // search/replace inputs are swapped for a read-only chip showing the chain name (✕ exits back to S&R).
   let _srChain = null;
@@ -3361,10 +3390,13 @@ try {
       srLive(findEl.value, repEl.value, true); closeSrTemplates(); findEl.focus();
     };
     const mkRow = (cells, onClick, extras) => {
-      const row = document.createElement('div'); row.className = 'tc-srtpl-row';
+      const row = document.createElement('div'); row.className = 'tc-srtpl-row' + (extras && extras.isDefault ? ' tc-srtpl-defrow' : '');
       cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.title = c.txt; row.appendChild(s); });
       const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = extras && extras.re ? 'RE' : ''; row.appendChild(rec);
       const tail = document.createElement('span'); tail.className = 'tc-srtpl-tail';
+      // #410: mark this pattern/chain as the default (runs on Tracklist open). Filled ◉ + always
+      // visible when it IS the default; a faint ○ on hover otherwise.
+      if (extras && extras.onDefault) { const d = document.createElement('button'); d.type = 'button'; d.className = 'tc-srtpl-def' + (extras.isDefault ? ' on' : ''); d.textContent = extras.isDefault ? '◉' : '○'; d.title = extras.isDefault ? 'Default — runs on Tracklist open · click to unset' : 'Set as default — runs on Tracklist open'; d.onclick = e => { e.stopPropagation(); extras.onDefault(); }; tail.appendChild(d); }
       // #409: hover action — add this (non-chain) pattern to a chain
       if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.title = 'Add / remove this pattern in a chain'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
       // #409: hover action — rename this pattern / chain in place
@@ -3435,14 +3467,14 @@ try {
           pop.appendChild(mkRow(
             [{ cls: 'tc-srtpl-nm tc-srtpl-chnm', txt: '⛓ ' + c.name }, { cls: 'tc-srtpl-f tc-srtpl-chm', txt: summary }, { cls: 'tc-srtpl-r', txt: '' }],
             () => { if (!mem.length) { toast('Empty chain — add patterns to it first (⛓ on a saved row)'); return; } srApplyChain(c); srShowChain(c.name); closeSrTemplates(); },
-            { onRename: (v) => srRenameTemplate(c.name, v), renameValue: c.name, onRemove: () => { srRemoveTemplate(c.name); render(); } })); });
+            { isDefault: srDefaultName() === c.name, onDefault: () => { srSetDefault(c.name); render(); }, onRename: (v) => srRenameTemplate(c.name, v), renameValue: c.name, onRemove: () => { srRemoveTemplate(c.name); render(); } })); });
       }
       // saved (named, non-chain) templates — internal "_"-prefixed names never show here
       const saved = srTemplates().filter(t => !srIsChain(t) && t.name && t.name[0] !== '_').sort((a, b) => a.name.localeCompare(b.name));
       if (saved.length) { const sec = document.createElement('div'); sec.className = 'tc-srtpl-sec'; sec.textContent = 'Saved'; pop.appendChild(sec);
         saved.forEach(t => pop.appendChild(mkRow(
           [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
-          () => applyEntry(t.find, t.replace, t.re), { re: t.re, onAddChain: (btn) => openChainPicker(btn, t.name), onRename: (v) => srRenameTemplate(t.name, v), renameValue: t.name, onRemove: () => { srRemoveTemplate(t.name); render(); } }))); }
+          () => applyEntry(t.find, t.replace, t.re), { re: t.re, isDefault: srDefaultName() === t.name, onDefault: () => { srSetDefault(t.name); render(); }, onAddChain: (btn) => openChainPicker(btn, t.name), onRename: (v) => srRenameTemplate(t.name, v), renameValue: t.name, onRemove: () => { srRemoveTemplate(t.name); render(); } }))); }
       else if (!chains.length) { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
       // history — the 5 most-recent
       const hist = srHistoryList();
