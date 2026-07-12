@@ -164,8 +164,10 @@ The **Tools ▾** label opens a menu of the tools that *haven't* been put on the
 
 Besides the integrated tools, there are a few new ones:
 
-- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them.
+- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them. Create chains of patterns.
 - **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
+
+<img width="600" src="./screenshots/search.png" />
 
 External tools (need another userscript):
 
