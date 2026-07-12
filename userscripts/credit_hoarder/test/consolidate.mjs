@@ -42,6 +42,16 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.equal(m.companies.length, 1, 'same label from 2 sources deduped');
     assert.deepEqual(m.tracklist.map(t => t.position).sort(), ['1', '2', '3'], 'tracklist unioned by position');
     assert.equal(m.processTracklist, false, 'processTracklist false when no source set it');
+    // #408 follow-up: companies get provenance too (so their Source column shows a badge, not "—"),
+    // keyed by resource_url exactly like the review row's _entityKey.
+    assert.deepEqual((m.entitySources.get('https://www.discogs.com/label/1') || []).sort(), ['Discogs', 'Tidal'], 'company sources tracked + unioned');
+}
+
+// A name-only company (no resource_url) is keyed by _nourl_<name>, matching the review row.
+{
+    const d = { sourceName: 'Discogs', companies: [{ name: 'The Carvery', entity_type_name: 'label' }] };
+    const m = mergeHarvests([d]);
+    assert.deepEqual(m.entitySources.get('_nourl_The Carvery') || [], ['Discogs'], 'name-only company keyed by _nourl_<name>');
 }
 
 // mergeResolvedResults: two sources resolve the SAME person to the SAME MBID → one row,

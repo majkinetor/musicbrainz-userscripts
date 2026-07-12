@@ -221,6 +221,25 @@ assert.deepEqual(qSplit.tracklistRels.map(r => [r.linkType, r.artist.name, r.art
     ['producer', 'Earth, Wind & Fire', ''],
 ]);
 
+// #411: Tidal packs producers into one "&" credit with a combined artist id
+// ("Jason Jaknunas & Pierre Chrétien", id 12766381) → split into individuals, id dropped.
+// A genuine "&" band with a single-token part ("Earth, Wind & Fire") is left whole.
+const tSplit = tidalToEngine([
+    { num: '1', title: 'Dog eat dog', tidalTrackId: 't1', credits: [
+        { role: 'Producer', names: [{ name: 'Jason Jaknunas & Pierre Chrétien', tidalId: '12766381' }] },  // combined → split, id dropped
+        { role: 'Composer', names: [{ name: 'Pierre Chrétien', tidalId: '14009392' }] },                    // single linked → kept with URL
+    ] },
+    { num: '2', title: 'Groove', tidalTrackId: 't2', credits: [
+        { role: 'Producer', names: [{ name: 'Earth, Wind & Fire', tidalId: '999' }] },                      // band "&" w/ single-token part → NOT split
+    ] },
+]);
+assert.deepEqual(tSplit.tracklistRels.map(r => [r.linkType, r.artist.name, r.artist.resource_url]), [
+    ['producer', 'Jason Jaknunas',   ''],
+    ['producer', 'Pierre Chrétien',  ''],
+    ['composer', 'Pierre Chrétien',  'https://tidal.com/artist/14009392'],
+    ['producer', 'Earth, Wind & Fire', 'https://tidal.com/artist/999'],
+]);
+
 // og:title → album info
 assert.equal(extractQobuzAlbumInfo('<meta property="og:title" content="Walatu Walasa, Wulomei - Qobuz"/>'),
     'Walatu Walasa, Wulomei');

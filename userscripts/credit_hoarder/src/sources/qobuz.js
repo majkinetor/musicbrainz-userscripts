@@ -22,8 +22,9 @@
 // engine prefers the API when a token exists (reliable, geo-independent) and
 // falls back to the scrape otherwise. See the API helpers at the bottom.
 
-import { getArtistRoles } from '../mappers.js';
-import { INSTRUMENTS }     from '../data/instruments.js';
+import { getArtistRoles }    from '../mappers.js';
+import { INSTRUMENTS }       from '../data/instruments.js';
+import { splitCombinedNames } from './split-names.js';   // #411 shared multi-artist splitter
 
 /** Role vocabulary seen in Qobuz `performers` strings → MB relationship plan.
  *  Qobuz's vocabulary varies by album — some use camelCase tokens
@@ -192,25 +193,6 @@ export function extractQobuzAlbumInfo(html) {
  * placeholder, which is dropped outright. Null-mapped roles (MainArtist,
  * FeaturedArtist, AssociatedPerformer, …) are skipped silently.
  */
-// #411: Qobuz sometimes packs several writers into one credit ("E. Themba, T.J. Masingi",
-// "Jeremy Mage, Dean Jones"), which then resolves to nothing. This happens even when the
-// credit carries a resource_url — Qobuz mints a *combined-artist* id for the pair that maps
-// to no single MB artist (it 404s on lookup), so we split regardless of the URL and drop it.
-//
-// The guard against shredding legitimate comma-bearing names:
-//   - a band/ensemble joiner ("Earth, Wind & Fire", "Crosby, Stills & Nash") → keep whole;
-//   - only split when EVERY comma segment reads as an independent multi-word personal name
-//     (contains a space). That splits "Jeremy Mage, Dean Jones" but leaves "Last, First"
-//     classical credits ("Bach, Johann Sebastian"), "Tyler, The Creator" and "Foo, Inc."
-//     intact — their leading segment is a single token.
-function splitQobuzNames(name) {
-    if (!name || !name.includes(',')) return [name];
-    if (/\s&\s|\s\band\b\s/i.test(name)) return [name];
-    const parts = name.split(/\s*,\s*/).map(s => s.trim()).filter(Boolean);
-    if (parts.length < 2 || !parts.every(p => /\s/.test(p))) return [name];
-    return parts;
-}
-
 export function qobuzToEngine(parsedTracks) {
     const tracklistRels = [];
     const tracklist = [];
@@ -223,7 +205,7 @@ export function qobuzToEngine(parsedTracks) {
                 if (credit.name && !/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: (no role) — ${credit.name}`);
                 continue;
             }
-            const names = splitQobuzNames(credit.name);   // #411 (splits combined-artist credits, drops the bogus URL)
+            const names = splitCombinedNames(credit.name);   // #411 (splits combined-artist credits, drops the bogus URL)
             for (const role of credit.roles) {
                 if (role === 'MusicPublisher' || role === 'Music Publisher') {
                     if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: Music Publisher — ${credit.name}`);

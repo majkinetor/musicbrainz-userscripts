@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.12.213920
+// @version      2026.7.12.222226
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2012,6 +2012,14 @@
     }, []) || [];
   }
 
+  // src/sources/split-names.js
+  function splitCombinedNames(name) {
+    if (!name || !/[,&]/.test(name)) return [name];
+    const parts = name.split(/\s*,\s*|\s*&\s*/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length < 2 || !parts.every((p) => /\s/.test(p))) return [name];
+    return parts;
+  }
+
   // src/sources/tidal.js
   var TIDAL_PERTRACK_BRIDGE = {
     "Vocal": "Vocals",
@@ -2207,9 +2215,13 @@
           }
           continue;
         }
+        const names = c.names.flatMap((n) => {
+          const parts = splitCombinedNames(n.name);
+          return parts.length > 1 ? parts.map((nm) => ({ name: nm, tidalId: null })) : [n];
+        });
         const mapping = TIDAL_ROLE_MAP[base];
         if (mapping) {
-          for (const n of c.names) {
+          for (const n of names) {
             tracklistRels.push({
               linkType: mapping.rel,
               entityType: "artist",
@@ -2226,11 +2238,11 @@
           continue;
         }
         if (TIDAL_PERTRACK_SKIP.has(base)) {
-          for (const n of c.names) skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
+          for (const n of names) skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
           continue;
         }
         const discogsRole = TIDAL_PERTRACK_BRIDGE[base] || base;
-        for (const n of c.names) {
+        for (const n of names) {
           const artist = {
             id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
             name: n.name,
@@ -2282,7 +2294,11 @@
       const base = tidalRoleBase(c.role);
       const assistant = base !== c.role;
       const discogsRole = TIDAL_RELEASE_ROLE_MAP[base] || base;
-      for (const n of c.names || []) {
+      const relNames = (c.names || []).flatMap((n) => {
+        const parts = splitCombinedNames(n.name);
+        return parts.length > 1 ? parts.map((nm) => ({ name: nm, tidalId: null })) : [n];
+      });
+      for (const n of relNames) {
         artists.push({
           id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
           name: n.name,
@@ -2496,13 +2512,6 @@
     const og = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] || "";
     return decodeEntities(og.replace(/ - Qobuz$/, ""));
   }
-  function splitQobuzNames(name) {
-    if (!name || !name.includes(",")) return [name];
-    if (/\s&\s|\s\band\b\s/i.test(name)) return [name];
-    const parts = name.split(/\s*,\s*/).map((s) => s.trim()).filter(Boolean);
-    if (parts.length < 2 || !parts.every((p) => /\s/.test(p))) return [name];
-    return parts;
-  }
   function qobuzToEngine(parsedTracks) {
     const tracklistRels = [];
     const tracklist = [];
@@ -2515,7 +2524,7 @@
           if (credit.name && !/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: (no role) \u2014 ${credit.name}`);
           continue;
         }
-        const names = splitQobuzNames(credit.name);
+        const names = splitCombinedNames(credit.name);
         for (const role of credit.roles) {
           if (role === "MusicPublisher" || role === "Music Publisher") {
             if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: Music Publisher \u2014 ${credit.name}`);
@@ -5543,6 +5552,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           seenCo.add(ck);
           companies.push(c);
         }
+        const ek = entityKeyOf(c);
+        if (!entitySrc.has(ek)) entitySrc.set(ek, /* @__PURE__ */ new Set());
+        entitySrc.get(ek).add(src);
       });
       (h.tracklist || []).forEach((t) => {
         const pos = String(t && t.position != null ? t.position : "");

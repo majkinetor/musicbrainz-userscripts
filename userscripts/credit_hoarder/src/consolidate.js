@@ -61,7 +61,15 @@ export function mergeHarvests(harvests) {
         if (h.processTracklist) processTracklist = true;
         (h.artistRoles || []).forEach(r => arD.add(r, src));
         (h.tracklistRels || []).forEach(r => trD.add(r, src));
-        (h.companies || []).forEach(c => { const ck = c.resource_url || `co:${fold(c.entity_type_name)}|${fold(c.name)}`; if (ck && !seenCo.has(ck)) { seenCo.add(ck); companies.push(c); } });
+        (h.companies || []).forEach(c => {
+            const ck = c.resource_url || `co:${fold(c.entity_type_name)}|${fold(c.name)}`;
+            if (ck && !seenCo.has(ck)) { seenCo.add(ck); companies.push(c); }
+            // record provenance for company rows too (labels/places) so their Source column shows
+            // a provider badge instead of "—" (#408 follow-up). Keyed like the review row's _entityKey.
+            const ek = entityKeyOf(c);
+            if (!entitySrc.has(ek)) entitySrc.set(ek, new Set());
+            entitySrc.get(ek).add(src);
+        });
         (h.tracklist || []).forEach(t => { const pos = String(t && t.position != null ? t.position : ''); const key = pos || `#${tracklist.length}`; if (!seenPos.has(key)) { seenPos.add(key); tracklist.push(t); } });
     }
 

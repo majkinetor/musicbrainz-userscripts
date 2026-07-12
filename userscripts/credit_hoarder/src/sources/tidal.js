@@ -23,6 +23,7 @@
 // same-origin only; GM storage is per-script and shared across origins.
 
 import { getArtistRoles } from '../mappers.js';
+import { splitCombinedNames } from './split-names.js';   // #411 shared multi-artist splitter
 
 // #310: per-track roles NOT in TIDAL_ROLE_MAP fall back to the shared resolver
 // (getArtistRoles → ENTITY_TYPE_MAP / INSTRUMENTS) — the same path the
@@ -330,11 +331,19 @@ export function tidalToEngine(tracks) {
                 }
                 continue;
             }
+            // #411: Tidal packs several people into one credit with a combined-artist id
+            // ("Jason Jaknunas & Pierre Chrétien", id 12766381) that resolves to nothing.
+            // Split those into individual name-only credits (the combined id is dropped);
+            // genuine "&"/comma band names are left whole by the shared guard.
+            const names = c.names.flatMap(n => {
+                const parts = splitCombinedNames(n.name);
+                return parts.length > 1 ? parts.map(nm => ({ name: nm, tidalId: null })) : [n];
+            });
             // Fast path: roles with a direct MB plan (rel + attributes, e.g. Lead
             // Vocalist → vocal[lead vocals]; correct work/recording targeting). #257
             const mapping = TIDAL_ROLE_MAP[base];
             if (mapping) {
-                for (const n of c.names) {
+                for (const n of names) {
                     tracklistRels.push({
                         linkType: mapping.rel,
                         entityType: 'artist',
@@ -354,11 +363,11 @@ export function tidalToEngine(tracks) {
             // editor, …). A few names are bridged to the Discogs vocabulary; genuinely
             // unmappable / release-level roles are reported, not imported.
             if (TIDAL_PERTRACK_SKIP.has(base)) {
-                for (const n of c.names) skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
+                for (const n of names) skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
                 continue;
             }
             const discogsRole = TIDAL_PERTRACK_BRIDGE[base] || base;
-            for (const n of c.names) {
+            for (const n of names) {
                 const artist = {
                     id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
                     name:         n.name,
@@ -422,7 +431,12 @@ export function tidalReleaseArtists(releaseCredits) {
         const base       = tidalRoleBase(c.role);
         const assistant  = base !== c.role;
         const discogsRole = TIDAL_RELEASE_ROLE_MAP[base] || base;
-        for (const n of (c.names || [])) {
+        // #411: split a combined-artist release credit ("A & B") into individuals, dropping the id
+        const relNames = (c.names || []).flatMap(n => {
+            const parts = splitCombinedNames(n.name);
+            return parts.length > 1 ? parts.map(nm => ({ name: nm, tidalId: null })) : [n];
+        });
+        for (const n of relNames) {
             artists.push({
                 id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
                 name:         n.name,
