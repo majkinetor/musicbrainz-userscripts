@@ -91,6 +91,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     }
 
     return new Promise(resolve => {
+        // `opts.registerAbort` — hand the caller (ui-bar's cancelRun) a way to
+        // resolve this promise with `null`, so a mid-review cancel unwinds the
+        // import chain cleanly (null ⇒ "review skipped, don't dispatch") instead
+        // of leaving it pending forever. Resolving twice is a no-op, so a normal
+        // Start-import resolve later still wins if this was never called.
+        opts?.registerAbort?.(() => resolve(null));
         // Per-row state: resource_url -> { mbUrl, mbName, mbDisambig, confirmed, via }.
         // `confirmed = true` means the user is happy with this match (or it
         // auto-matched cleanly). Mutations from user picks / undo / IDB

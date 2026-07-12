@@ -1,5 +1,16 @@
 # Art Station Changelog
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### Features
+
+1. Consistent platform icons ([#404](https://github.com/majkinetor/musicbrainz-userscripts/issues/404))
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+
+### Fixes
+
+1. Dragging full screen cover adds a copy to the gallery as new upload ([#396](https://github.com/majkinetor/musicbrainz-userscripts/issues/396))
+
 ## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
 
 ### Features

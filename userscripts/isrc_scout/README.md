@@ -62,7 +62,7 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 
 ### Import sources
 
-Header toolbar lists available ISRC import sources for the current release. Sources can be generic or depend on appropriate external links and can additionally come via custom URL.
+Header toolbar lists available ISRC import sources for the current release. Sources can be generic or depend on appropriate external links and can additionally come via custom URL. 
 
 <img width="800" src="./screenshots/toolbar.png" />
 
@@ -71,6 +71,8 @@ On above screenshots there are 3 types of sources represented by provider icon m
 1. With border - from external links in release
 2. No border - from [Platform Check](../platform_check/README.md) (must be installed)
 3. Blue dot - from release group (with [option][Settings] *Use providers from the whole release group*)
+
+Circled providers are from the release, non circled from Platform Check, and blue dot in right upper corner represents provider from the release group.
 
 Button `(+)` lets you import from an URL — paste any album URL to import from it, even when the release has no such link. 
 

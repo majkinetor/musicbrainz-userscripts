@@ -1,5 +1,20 @@
 # Credit Hoarder Changelog
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### Features
+
+1. Option to return back to initial import menu ([#405](https://github.com/majkinetor/musicbrainz-userscripts/issues/405))
+1. Consistent platform icons ([#404](https://github.com/majkinetor/musicbrainz-userscripts/issues/404))
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Deezer support ([#401](https://github.com/majkinetor/musicbrainz-userscripts/issues/401))
+1. Removal of "(N)" from Discogs credits ([#393](https://github.com/majkinetor/musicbrainz-userscripts/issues/393))
+1. Authenticated Qobuz support ([#353](https://github.com/majkinetor/musicbrainz-userscripts/issues/353))
+
+### Fixes
+
+1. Discogs instrument not recognized ([#392](https://github.com/majkinetor/musicbrainz-userscripts/issues/392))
+
 ## [2026.7.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.2)
 
 - Small improvements

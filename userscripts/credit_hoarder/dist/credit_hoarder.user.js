@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.11.212028
+// @version      2026.7.12
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3203,6 +3203,7 @@ ${ourBlock}` : ourBlock;
       }
     }
     return new Promise((resolve) => {
+      opts?.registerAbort?.(() => resolve(null));
       const rowState = /* @__PURE__ */ new Map();
       const rowSearchInputs = /* @__PURE__ */ new Map();
       const linkState = /* @__PURE__ */ new Map();
@@ -5368,7 +5369,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       if (!m) continue;
       const plan = DEEZER_LABEL_MAP[m[1].trim()];
       if (!plan) continue;
-      for (const raw of m[2].split(",")) {
+      for (const raw of m[2].split(/\s*,\s*|\s+-\s+/)) {
         const name = raw.trim();
         if (!name || DEEZER_NO_INFO_RE.test(name)) continue;
         if (!byName.has(name)) byName.set(name, []);
@@ -5454,7 +5455,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (!i) return "";
     size = size || 16;
     return i.svg.replace(/<svg\b([^>]*)>/, function(m, a) {
-      return "<svg" + a.replace(/\s(?:width|height)="[^"]*"/g, "") + ' width="' + size + '" height="' + size + '">';
+      a = a.replace(/\s(?:width|height)="[^"]*"/g, "");
+      var ns = /\bxmlns=/.test(a) ? "" : ' xmlns="http://www.w3.org/2000/svg"';
+      return "<svg" + a + ns + ' width="' + size + '" height="' + size + '">';
     });
   }
   var SRC_ICON = {
@@ -5836,15 +5839,16 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     document.head.appendChild(style);
     const bar = document.createElement("div");
     bar.className = "discogs-bar";
+    bar._runToken = 0;
     const row1 = document.createElement("div");
     row1.className = "discogs-bar-row1";
     const importSources = [];
-    if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
-    if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g) => runTidalImport(sources.tidal, g) });
-    if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g) => runQobuzImport(sources.qobuz, g) });
-    if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g) => runDeezerImport(sources.deezer, g) });
+    if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g, c) => runImport(discogsUrl, g, c) });
+    if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g, c) => runTidalImport(sources.tidal, g, c) });
+    if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g, c) => runQobuzImport(sources.qobuz, g, c) });
+    if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g, c) => runDeezerImport(sources.deezer, g, c) });
     if ((meta.titlesRemixCount || 0) > 0) {
-      importSources.push({ name: "Titles", url: "", run: (g) => runTitlesImport(g) });
+      importSources.push({ name: "Titles", url: "", run: (g, c) => runTitlesImport(g, c) });
     }
     const importLabel = document.createElement("span");
     importLabel.className = "discogs-import-label";
@@ -5869,7 +5873,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       b.dataset.src = s.name;
       b.title = s.url ? `Import credits from ${s.name}  \xB7  right-click to open the ${s.name} page` : "Import remixer credits derived from the track titles";
       b.addEventListener("click", () => {
-        if (!importing) startImport(b, s.url, s.run);
+        if (importing) {
+          if (b.classList.contains("importing")) cancelRun();
+          return;
+        }
+        startImport(b, s.url, s.run);
       });
       if (s.url) b.addEventListener("contextmenu", (e) => {
         e.preventDefault();
@@ -6226,12 +6234,42 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       statusEl.style.display = msg ? "" : "none";
       statusEl.classList.toggle("discogs-bar-status-final", !!msg);
     };
+    function cancelRun() {
+      bar._runToken++;
+      importing = false;
+      if (typeof bar._reviewAbort === "function") {
+        const abort = bar._reviewAbort;
+        bar._reviewAbort = null;
+        abort();
+      }
+      srcButtons.forEach((b) => {
+        b.classList.remove("importing");
+        b.style.display = "";
+        b.title = b._restoreTitle || b.title;
+      });
+      progressPct.style.display = "none";
+      progressPct.textContent = "0%";
+      bar.classList.remove("is-importing", "is-reviewing", "is-pinned");
+      _hideBar();
+      reviewSlot.replaceChildren();
+      actionSlot.replaceChildren();
+      setReviewContainer(reviewSlot);
+      bar._setStopMessage("Import cancelled \u2014 pick a source to start again.");
+      bar._pin();
+      delete bar._setProgress;
+    }
     function startImport(srcBtn, sourceUrl, runner) {
+      const myToken = ++bar._runToken;
+      const cancelled = () => bar._runToken !== myToken;
       importing = true;
       srcButtons.forEach((b) => {
         const active = b === srcBtn;
         b.classList.toggle("importing", active);
         b.style.display = active ? "" : "none";
+        if (active) {
+          b._restoreTitle = b.title;
+          b.title = `Cancel this ${srcBtn.dataset.src} import and return to the source picker`;
+        }
       });
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
@@ -6384,11 +6422,16 @@ ${lines}
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         log.info(html);
       });
-      runner(getOpts).finally(() => {
+      runner(getOpts, cancelled).finally(() => {
+        if (cancelled()) {
+          delete bar._setProgress;
+          return;
+        }
         importing = false;
         srcButtons.forEach((b) => {
           b.classList.remove("importing");
           b.style.display = "";
+          b.title = b._restoreTitle || b.title;
         });
         progressPct.textContent = "100%";
         setTimeout(() => {
@@ -6425,7 +6468,7 @@ ${lines}
     } catch (e) {
     }
   })();
-  function runImport(discogsUrl, getOpts) {
+  function runImport(discogsUrl, getOpts, cancelled) {
     const initial = getOpts();
     const { processTracklist } = initial;
     return getDiscogsReleaseData(discogsUrl).then((json) => {
@@ -6480,10 +6523,10 @@ ${lines}
         }
         log.info(`Found ${tracklistRels.length} tracklist relationships`);
       }
-      return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts });
+      return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts, cancelled });
     });
   }
-  function runTidalImport(tidalUrl, getOpts) {
+  function runTidalImport(tidalUrl, getOpts, cancelled) {
     log.info(`Opening the Tidal credits tab \u2014 it closes itself once harvested (a few seconds)\u2026`);
     return harvestTidalAlbum(tidalUrl).then((harvest) => {
       _tidalJson = harvest;
@@ -6521,12 +6564,12 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist, getOpts });
+      return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist, getOpts, cancelled });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
   }
-  function runQobuzImport(qobuzUrl, getOpts) {
+  function runQobuzImport(qobuzUrl, getOpts, cancelled) {
     const parsed = parseQobuzAlbumUrl(qobuzUrl);
     if (!parsed) {
       log.error(`Not a Qobuz album URL: ${qobuzUrl}`);
@@ -6554,7 +6597,7 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
+      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts, cancelled });
     };
     const scrape = () => {
       log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
@@ -6572,7 +6615,7 @@ ${lines}
     }
     return scrape();
   }
-  function runDeezerImport(deezerUrl, getOpts) {
+  function runDeezerImport(deezerUrl, getOpts, cancelled) {
     const parsed = parseDeezerAlbumUrl(deezerUrl);
     if (!parsed) {
       log.error(`Not a Deezer album URL: ${deezerUrl}`);
@@ -6603,7 +6646,7 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts });
+      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts, cancelled });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
@@ -6631,7 +6674,7 @@ ${lines}
     if (!mbid) return Promise.resolve({ count: 0, tracklist: [] });
     return buildTitlesTracklist(mbid).then((tracklist) => ({ count: deriveRemixRoles(tracklist).length, tracklist })).catch(() => ({ count: 0, tracklist: [] }));
   }
-  function runTitlesImport(getOpts) {
+  function runTitlesImport(getOpts, cancelled) {
     const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
     if (!m) {
       log.error("Not on a release page \u2014 cannot read track titles.");
@@ -6646,12 +6689,13 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No remixes found in titles");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: "", processTracklist: true, getOpts });
+      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: "", processTracklist: true, getOpts, cancelled });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
   }
-  function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
+  function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled }) {
+    const isCancelled = () => typeof cancelled === "function" && cancelled();
     const allArtistRoles = artistRoles.concat(tracklistRels);
     const uniqueArtists = [];
     const seenResourceUrls = /* @__PURE__ */ new Set();
@@ -6737,6 +6781,7 @@ ${lines}
     let capturedResults = null;
     let capturedConfirmedMap = null;
     return runPreflight().then((allResults) => {
+      if (isCancelled()) return;
       annotateRoles(allResults);
       capturedResults = allResults;
       if (!allResults.length) {
@@ -6764,9 +6809,19 @@ ${lines}
           annotateRoles(freshResults);
           capturedResults = freshResults;
           return freshResults;
-        })
+        }),
+        // Let `cancelRun` unblock this review promise (resolve → null)
+        // so the chain unwinds cleanly instead of leaking a pending
+        // promise when the user cancels mid-review.
+        registerAbort: (fn) => {
+          const b = document.querySelector(".discogs-bar");
+          if (b) b._reviewAbort = fn;
+        }
       });
     }).then((confirmedMap) => {
+      const _bar = document.querySelector(".discogs-bar");
+      if (_bar) _bar._reviewAbort = null;
+      if (isCancelled()) return;
       if (!confirmedMap) return;
       capturedConfirmedMap = confirmedMap;
       document.querySelector(".discogs-bar")?.classList.remove("is-reviewing");

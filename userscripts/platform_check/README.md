@@ -9,10 +9,6 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 <img width="200" src="./screenshots/dashboard-2-rows.png" /><img width="200" src="./screenshots/dashboard-1-row-no-names.png" /><img width="200" src="./screenshots/dashboard-1-row-compact.png" />
 
-<details><summary>More screenshots</summary>
-<img width="400" src="./screenshots/config.png" />
-</details>
-
 ## Features
 
 - **Multiple [platforms](#platforms)** supported with customizable position and visibility
@@ -257,6 +253,10 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
     - Canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode.
     - No dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)), so the `+` insert force-sets **purchase for download** (id 74).
     - ISRC Scout can import an HDtracks release's ISRCs from the link this finds.
+
+## Settings
+
+<img width="400" src="./screenshots/config.png" />
 
 ## Shortcuts
 

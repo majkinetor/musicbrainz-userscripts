@@ -1,5 +1,13 @@
 # Apollo Editor Changelog
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### Features
+
+1. Documentation clean up and reorganizition  ([#402](https://github.com/majkinetor/musicbrainz-userscripts/issues/402))
+1. Show markdown in all annotation editors ([#394](https://github.com/majkinetor/musicbrainz-userscripts/issues/394))
+1. Batch remove dates/labels in Release Info ([#391](https://github.com/majkinetor/musicbrainz-userscripts/issues/391))
+
 ## [2026.7.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.9)
 
 ### Features

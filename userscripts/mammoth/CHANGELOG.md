@@ -1,5 +1,12 @@
 # Mammoth Changelog
 
+## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
+
+### Features
+
+1. Unlimited babies ([#400](https://github.com/majkinetor/musicbrainz-userscripts/issues/400))
+1. Support for the "Task" field in the "Add relationship" dialog ([#397](https://github.com/majkinetor/musicbrainz-userscripts/issues/397))
+
 ## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
 
 ### Features
