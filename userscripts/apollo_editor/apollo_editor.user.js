@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.183415
+// @version      2026.7.12.184344
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1494,13 +1494,19 @@
     .tc-srtpl{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
     .tc-srtpl-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:#fff;z-index:1}
     .tc-srtpl-hdt{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0}
-    .tc-srtpl-savebtn{margin-left:auto;cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
+    .tc-srtpl-savebtn{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
     .tc-srtpl-savebtn:hover{background:#e6f6e6;border-color:#a9dca9}
-    .tc-srtpl-savewrap{display:flex;align-items:center;gap:6px;margin-left:auto;flex:1}
+    .tc-srtpl-savewrap{display:flex;align-items:center;gap:6px;flex:1}
     .tc-srtpl-saveok{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:2px 8px}
     .tc-srtpl-saveok:hover{background:#e6f6e6}
+    /* #409 redesign: Import/Export button pinned right; JSON textarea; section headers right-aligned */
+    .tc-srtpl-iobtn{margin-left:auto;cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#5f3ec0;font:600 11px Arial;border-radius:4px;padding:3px 10px;white-space:nowrap}
+    .tc-srtpl-iobtn:hover{background:#f0ebfb;border-color:#bcaae6}
+    .tc-srtpl-impok{margin-left:auto}
+    .tc-srtpl-io{width:calc(100% - 24px);margin:10px 12px;min-height:260px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:8px;font:12px ui-monospace,Consolas,Menlo,monospace;color:#333;resize:vertical}
+    .tc-srtpl-io:focus{outline:none;border-color:#8a72c8}
     .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
-    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa}
+    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa;text-align:right}
     .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 24px 82px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
     .tc-srtpl-defrow{background:#fffaef}
     .tc-srtpl-def{visibility:hidden;border:none;background:none;color:#c9bde6;cursor:pointer;font-size:12px;padding:0;line-height:1}
@@ -3328,6 +3334,34 @@
       if (reBtn) { reBtn.classList.toggle('on', !!re); findEl.placeholder = srRegexOn() ? 'search (regex)' : 'search'; }
       srLive(findEl.value, repEl.value, true); closeSrTemplates(); findEl.focus();
     };
+    // #409 redesign: Import / Export — a JSON view of the saved patterns + chains + the default
+    // marker (NOT history). Export = read the textarea; Import = paste + ✓ Import (replaces the set).
+    const showImportExport = () => {
+      pop.innerHTML = ''; navRows = []; sel = -1;
+      const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
+      const back = document.createElement('button'); back.type = 'button'; back.className = 'tc-srtpl-savebtn'; back.textContent = '‹ Back'; back.onclick = () => render();
+      const ttl = document.createElement('span'); ttl.className = 'tc-srtpl-hdt'; ttl.textContent = 'Import / Export';
+      const imp = document.createElement('button'); imp.type = 'button'; imp.className = 'tc-srtpl-saveok tc-srtpl-impok'; imp.textContent = '✓ Import'; imp.title = 'Replace your saved patterns & chains with the JSON below';
+      hd.append(back, ttl, imp); pop.appendChild(hd);
+      const ta = document.createElement('textarea'); ta.className = 'tc-srtpl-io'; ta.spellcheck = false;
+      ta.value = JSON.stringify({ templates: srTemplates().filter(t => t.name && t.name[0] !== '_'), default: srDefaultName() }, null, 2);
+      ta.onclick = e => e.stopPropagation(); ta.onkeydown = e => e.stopPropagation();
+      pop.appendChild(ta);
+      imp.onclick = () => {
+        let data; try { data = JSON.parse(ta.value); } catch (e) { toast('Invalid JSON: ' + e.message); return; }
+        const raw = Array.isArray(data) ? data : (data.templates || []);
+        if (!Array.isArray(raw)) { toast('JSON needs a "templates" array'); return; }
+        const clean = raw.filter(t => t && t.name).map(t => Array.isArray(t.members)
+          ? { name: String(t.name), members: t.members.map(String) }
+          : { name: String(t.name), find: String(t.find || ''), replace: String(t.replace || ''), re: !!t.re });
+        SETTINGS.srTemplates = clean;
+        const def = !Array.isArray(data) ? data.default : '';
+        SETTINGS.srDefault = (def && clean.some(t => t.name === def)) ? String(def) : '';
+        saveSettings();
+        toast('Imported ' + clean.length + ' pattern' + (clean.length === 1 ? '' : 's') + ' / chain(s)');
+        render();
+      };
+    };
     const mkRow = (cells, onClick, extras) => {
       const row = document.createElement('div'); row.className = 'tc-srtpl-row' + (extras && extras.isDefault ? ' tc-srtpl-defrow' : '');
       cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.title = c.txt; row.appendChild(s); });
@@ -3379,7 +3413,7 @@
       pop.innerHTML = ''; navRows = []; sel = -1;
       // header: "Saved" + inline "Save current" that unrolls a name field
       const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
-      const title = document.createElement('span'); title.textContent = 'Patterns'; title.className = 'tc-srtpl-hdt'; hd.appendChild(title);
+      // #409 redesign: no "Patterns" label; action buttons on the LEFT, Import/Export on the RIGHT.
       const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'tc-srtpl-savebtn'; saveBtn.textContent = '＋ Save current';
       const wrap = document.createElement('span'); wrap.className = 'tc-srtpl-savewrap'; wrap.style.display = 'none';
       const nm = document.createElement('input'); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
@@ -3397,7 +3431,10 @@
       cnm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doAddChain(); } else if (e.key === 'Escape') { e.preventDefault(); resetHd(); } };
       saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
       chainBtn.onclick = () => { saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; cwrap.style.display = ''; cnm.value = ''; setTimeout(() => cnm.focus(), 0); };
-      wrap.append(nm, ok); cwrap.append(cnm, cok); hd.append(saveBtn, chainBtn, wrap, cwrap); pop.appendChild(hd);
+      // #409 redesign: Import/Export button, pushed to the right edge of the header.
+      const ioBtn = document.createElement('button'); ioBtn.type = 'button'; ioBtn.className = 'tc-srtpl-iobtn'; ioBtn.textContent = 'Import/Export'; ioBtn.title = 'Import or export your saved patterns & chains as JSON (history is not included)';
+      ioBtn.onclick = () => showImportExport();
+      wrap.append(nm, ok); cwrap.append(cnm, cok); hd.append(saveBtn, chainBtn, wrap, cwrap, ioBtn); pop.appendChild(hd);
       // #409: Chains first — click to run all their member patterns in order; ✕ removes the chain
       const chains = srTemplates().filter(srIsChain).sort((a, b) => a.name.localeCompare(b.name));
       if (chains.length) {
