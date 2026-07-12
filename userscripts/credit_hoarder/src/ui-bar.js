@@ -1266,7 +1266,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         keysToRemove.forEach(k => localStorage.removeItem(k));
     } catch(e) {}
 })();
-function runImport(discogsUrl, getOpts, cancelled) {
+function runImport(discogsUrl, getOpts, cancelled, collect) {
     // Initial snapshot — used for the preflight phase (per-track decision is
     // baked in here because it controls which entities are resolved). The
     // OTHER options (move-to-tracks, create-works, dedup) are re-read just
@@ -1340,7 +1340,9 @@ function runImport(discogsUrl, getOpts, cancelled) {
                 log.info(`Found ${tracklistRels.length} tracklist relationships`);
             }
 
-            return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts, cancelled });
+            // #408: consolidated import collects each source's engine parts (no pipeline yet).
+            const parts = { companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         });
 }
 
@@ -1349,7 +1351,7 @@ function runImport(discogsUrl, getOpts, cancelled) {
 // the exact same pipeline as Discogs. Linked credits carry a Tidal artist
 // URL, so preflight resolves them via MB's Tidal URL rels — same exactness
 // as Discogs resolution.
-function runTidalImport(tidalUrl, getOpts, cancelled) {
+function runTidalImport(tidalUrl, getOpts, cancelled, collect) {
     log.info(`Opening the Tidal credits tab — it closes itself once harvested (a few seconds)…`);
     return harvestTidalAlbum(tidalUrl)
         .then(harvest => {
@@ -1387,7 +1389,8 @@ function runTidalImport(tidalUrl, getOpts, cancelled) {
             (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
             if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist, getOpts, cancelled });
+            const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }
@@ -1396,7 +1399,7 @@ function runTidalImport(tidalUrl, getOpts, cancelled) {
 // (one `track__info` line per track), so a single cross-origin page fetch is
 // enough — no companion tab, no auth. Names only (Qobuz exposes no artist
 // links), so every credit resolves via name search + the review table.
-function runQobuzImport(qobuzUrl, getOpts, cancelled) {
+function runQobuzImport(qobuzUrl, getOpts, cancelled, collect) {
     const parsed = parseQobuzAlbumUrl(qobuzUrl);
     if (!parsed) { log.error(`Not a Qobuz album URL: ${qobuzUrl}`); return Promise.resolve(); }
 
@@ -1417,7 +1420,8 @@ function runQobuzImport(qobuzUrl, getOpts, cancelled) {
         log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
         skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
         if (!tracklistRels.length) { log.warn('No importable Qobuz credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-        return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts, cancelled });
+        const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
+        return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     };
 
     const scrape = () => {
@@ -1442,7 +1446,7 @@ function runQobuzImport(qobuzUrl, getOpts, cancelled) {
 // cross-origin page fetch is enough, no tab, no auth. Names only, composer role
 // only, so every credit resolves via name search + the review table (the Qobuz
 // shape).
-function runDeezerImport(deezerUrl, getOpts, cancelled) {
+function runDeezerImport(deezerUrl, getOpts, cancelled, collect) {
     const parsed = parseDeezerAlbumUrl(deezerUrl);
     if (!parsed) { log.error(`Not a Deezer album URL: ${deezerUrl}`); return Promise.resolve(); }
     log.info(`Fetching Deezer album page: ${parsed.pageUrl}`);
@@ -1463,7 +1467,8 @@ function runDeezerImport(deezerUrl, getOpts, cancelled) {
             log.info(`Deezer credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
             skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (!tracklistRels.length) { log.warn('No importable Deezer credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts, cancelled });
+            const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }
@@ -1509,7 +1514,7 @@ export function probeTitleRemixes(mbid) {
         .catch(() => ({ count: 0, tracklist: [] }));
 }
 
-function runTitlesImport(getOpts, cancelled) {
+function runTitlesImport(getOpts, cancelled, collect) {
     const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
     if (!m) { log.error('Not on a release page — cannot read track titles.'); return Promise.resolve(); }
     log.info('Reading track titles from MusicBrainz to derive remixer credits…');
@@ -1522,7 +1527,8 @@ function runTitlesImport(getOpts, cancelled) {
                 document.querySelector('.discogs-bar')?._setStopMessage?.('No remixes found in titles');
                 return;
             }
-            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: '', processTracklist: true, getOpts, cancelled });
+            const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: '', processTracklist: true };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }

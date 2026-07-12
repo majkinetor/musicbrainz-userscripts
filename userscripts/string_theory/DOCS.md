@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-12 16:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-12 18:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -970,7 +970,13 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 
 Header toolbar lists available ISRC import sources for the current release. Sources can be generic or depend on appropriate external links and can additionally come via custom URL. 
 
-If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, it will be offered too here (highlighted). External links from release group can also be offered, depending on that [option][Settings].
+<img width="800" src="../isrc_scout/screenshots/toolbar.png" />
+
+On above screenshots there are 3 types of sources represented by provider icon markings:
+
+1. With border - from external links in release
+2. No border - from [Platform Check](../platform_check/README.md) (must be installed)
+3. Blue dot - from release group (with [option](#settings-2) *Use providers from the whole release group*)
 
 Circled providers are from the release, non circled from Platform Check, and blue dot in right upper corner represents provider from the release group.
 

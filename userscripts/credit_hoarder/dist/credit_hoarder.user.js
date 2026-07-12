@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.12
+// @version      2026.7.12.180814
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -6468,7 +6468,7 @@ ${lines}
     } catch (e) {
     }
   })();
-  function runImport(discogsUrl, getOpts, cancelled) {
+  function runImport(discogsUrl, getOpts, cancelled, collect) {
     const initial = getOpts();
     const { processTracklist } = initial;
     return getDiscogsReleaseData(discogsUrl).then((json) => {
@@ -6523,10 +6523,11 @@ ${lines}
         }
         log.info(`Found ${tracklistRels.length} tracklist relationships`);
       }
-      return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts, cancelled });
+      const parts = { companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     });
   }
-  function runTidalImport(tidalUrl, getOpts, cancelled) {
+  function runTidalImport(tidalUrl, getOpts, cancelled, collect) {
     log.info(`Opening the Tidal credits tab \u2014 it closes itself once harvested (a few seconds)\u2026`);
     return harvestTidalAlbum(tidalUrl).then((harvest) => {
       _tidalJson = harvest;
@@ -6564,12 +6565,13 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist, getOpts, cancelled });
+      const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
   }
-  function runQobuzImport(qobuzUrl, getOpts, cancelled) {
+  function runQobuzImport(qobuzUrl, getOpts, cancelled, collect) {
     const parsed = parseQobuzAlbumUrl(qobuzUrl);
     if (!parsed) {
       log.error(`Not a Qobuz album URL: ${qobuzUrl}`);
@@ -6597,7 +6599,8 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts, cancelled });
+      const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     };
     const scrape = () => {
       log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
@@ -6615,7 +6618,7 @@ ${lines}
     }
     return scrape();
   }
-  function runDeezerImport(deezerUrl, getOpts, cancelled) {
+  function runDeezerImport(deezerUrl, getOpts, cancelled, collect) {
     const parsed = parseDeezerAlbumUrl(deezerUrl);
     if (!parsed) {
       log.error(`Not a Deezer album URL: ${deezerUrl}`);
@@ -6646,7 +6649,8 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts, cancelled });
+      const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
@@ -6674,7 +6678,7 @@ ${lines}
     if (!mbid) return Promise.resolve({ count: 0, tracklist: [] });
     return buildTitlesTracklist(mbid).then((tracklist) => ({ count: deriveRemixRoles(tracklist).length, tracklist })).catch(() => ({ count: 0, tracklist: [] }));
   }
-  function runTitlesImport(getOpts, cancelled) {
+  function runTitlesImport(getOpts, cancelled, collect) {
     const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
     if (!m) {
       log.error("Not on a release page \u2014 cannot read track titles.");
@@ -6689,7 +6693,8 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No remixes found in titles");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: "", processTracklist: true, getOpts, cancelled });
+      const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: "", processTracklist: true };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
