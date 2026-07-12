@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.175750
+// @version      2026.7.12.182921
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1501,7 +1501,7 @@
     .tc-srtpl-saveok:hover{background:#e6f6e6}
     .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
     .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa}
-    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 40px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
+    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 60px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
     .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:#f0ebfb}
     .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
@@ -1512,6 +1512,10 @@
     /* #409 chains */
     .tc-srtpl-chainadd{visibility:hidden;border:none;background:none;color:#7d4fd0;cursor:pointer;font-size:12px;padding:0;line-height:1}
     .tc-srtpl-row:hover .tc-srtpl-chainadd,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-chainadd{visibility:visible}.tc-srtpl-chainadd:hover{color:#5f3ec0}
+    .tc-srtpl-rename{visibility:hidden;border:none;background:none;color:#7d4fd0;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    .tc-srtpl-row:hover .tc-srtpl-rename,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-rename{visibility:visible}.tc-srtpl-rename:hover{color:#5f3ec0}
+    .tc-srtpl-renameinp{width:100%;box-sizing:border-box;border:1px solid #8a72c8;border-radius:3px;padding:1px 5px;font:600 12px Arial;color:#4b3a82}
+    .tc-srtpl-renameinp:focus{outline:none;border-color:#6f42c1}
     .tc-srtpl-chnm{color:#5f3ec0}
     .tc-srtpl-chm{font-family:Arial !important;color:#8a7bb0 !important;font-style:italic}
     .tc-srtpl-cpick{position:absolute;z-index:5;background:#fff;border:1px solid #c9b8ee;border-radius:6px;box-shadow:0 6px 18px rgba(40,20,80,.22);padding:4px;min-width:130px}
@@ -2960,7 +2964,9 @@
       re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
       const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved patterns, chains & recent (or press ↓ in the search field)';
-      star.onclick = () => openSrTemplates(find, find, rep, re);
+      // #409: in chain mode `find` is hidden (display:none → a 0,0 rect that flung the popup to the
+      // corner). Anchor to whatever's actually visible — the chain chip, else the ★ button.
+      star.onclick = () => { const b = star.closest('.tc-sro'); const anchor = (find.offsetParent !== null) ? find : ((b && b.querySelector('.tc-sr-chainchip')) || star); openSrTemplates(anchor, find, rep, re); };
       box.append(find, rep, re, star); host.appendChild(box);
       if (_srChain) srShowChain(_srChain);   // #409: restore the chain chip if a chain was active
     } else if (act === 'cols') {
@@ -3137,7 +3143,7 @@
     MODEL.tracks.forEach((t, i) => {
       // #375: if the title changed since our last replace (a manual edit, Guess Case, etc.), re-base the
       // snapshot to it — otherwise we'd replace from the stale original and clobber the manual change.
-      if (t._srLastResult != null && t.title !== t._srLastResult) _srSnap[i] = t.title;
+      if (t._srLastResult == null || t.title !== t._srLastResult) _srSnap[i] = t.title;   // #409: re-base to the CURRENT title on a manual edit — incl. before the first replace (was stale until re-activation)
       const base = _srSnap[i] != null ? _srSnap[i] : t.title;
       const nt = re ? base.replace(re, repl) : base;
       if (nt !== base) changed++;
@@ -3156,7 +3162,7 @@
     if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
     const pats = srChainPatterns(chain); let changed = 0;
     MODEL.tracks.forEach((t, i) => {
-      if (t._srLastResult != null && t.title !== t._srLastResult) _srSnap[i] = t.title;
+      if (t._srLastResult == null || t.title !== t._srLastResult) _srSnap[i] = t.title;   // #409: re-base to the CURRENT title on a manual edit — incl. before the first replace (was stale until re-activation)
       const base = _srSnap[i] != null ? _srSnap[i] : t.title;
       let text = base;
       for (const p of pats) { const re = p.find ? srReFor(p.find, p.re, true, true) : null; if (re) text = text.replace(re, srReplFor(p.replace, p.re)); }
@@ -3263,6 +3269,18 @@
     saveSettings(); return true;
   }
   function srRemoveTemplate(name) { SETTINGS.srTemplates = srTemplates().filter(t => t.name !== name); saveSettings(); }
+  // #409: rename a pattern or chain in place. Keeps chain memberships pointing at the renamed
+  // pattern. Rejects an empty name or a clash with an existing pattern/chain.
+  function srRenameTemplate(oldName, newName) {
+    newName = (newName || '').trim(); if (!newName) return false;
+    if (newName === oldName) return true;
+    const list = srTemplates();
+    if (list.some(t => t.name === newName)) return false;
+    const t = list.find(x => x.name === oldName); if (!t) return false;
+    t.name = newName;
+    list.filter(srIsChain).forEach(c => { if (Array.isArray(c.members)) c.members = c.members.map(m => (m === oldName ? newName : m)); });
+    saveSettings(); return true;
+  }
   // the Templates popup — sorted list (｢_Last｣ first), click a row to load+apply, ✕ to remove,
   // and a "new template" section (shown only when the search field is non-empty). #152
   let _srPop = null, _srPopOff = null;
@@ -3288,10 +3306,29 @@
       const tail = document.createElement('span'); tail.className = 'tc-srtpl-tail';
       // #409: hover action — add this (non-chain) pattern to a chain
       if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.title = 'Add / remove this pattern in a chain'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
+      // #409: hover action — rename this pattern / chain in place
+      if (extras && extras.onRename) { const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'tc-srtpl-rename'; ed.textContent = '✎'; ed.title = 'Rename'; ed.onclick = e => { e.stopPropagation(); startRename(row, extras.renameValue, extras.onRename); }; tail.appendChild(ed); }
       if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
       row.appendChild(tail);
       row.onclick = onClick; row.onmousemove = () => { sel = navRows.indexOf(row); highlight(); };
       navRows.push(row); return row;
+    };
+    // #409: inline rename — turn the row's name cell into a text field; Enter/blur commits.
+    const startRename = (row, curName, cb) => {
+      const nmCell = row.querySelector('.tc-srtpl-nm'); if (!nmCell) return;
+      const prev = nmCell.textContent;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tc-srtpl-renameinp'; inp.value = curName || '';
+      nmCell.textContent = ''; nmCell.appendChild(inp); inp.focus(); inp.select();
+      let done = false;
+      const finish = (commit) => {
+        if (done) return; done = true;
+        if (commit && cb(inp.value)) { render(); return; }
+        if (commit) toast('Name is empty or already used');
+        nmCell.textContent = prev;
+      };
+      inp.onclick = e => e.stopPropagation();
+      inp.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } };
+      inp.onblur = () => finish(true);
     };
     // #409: a small inline picker (child of the popup, so it doesn't trigger the outside-close)
     // listing every chain with a ✓/○ membership toggle for the given pattern.
@@ -3337,14 +3374,14 @@
           pop.appendChild(mkRow(
             [{ cls: 'tc-srtpl-nm tc-srtpl-chnm', txt: '⛓ ' + c.name }, { cls: 'tc-srtpl-f tc-srtpl-chm', txt: summary }, { cls: 'tc-srtpl-r', txt: '' }],
             () => { if (!mem.length) { toast('Empty chain — add patterns to it first (⛓ on a saved row)'); return; } srApplyChain(c); srShowChain(c.name); closeSrTemplates(); },
-            { onRemove: () => { srRemoveTemplate(c.name); render(); } })); });
+            { onRename: (v) => srRenameTemplate(c.name, v), renameValue: c.name, onRemove: () => { srRemoveTemplate(c.name); render(); } })); });
       }
       // saved (named, non-chain) templates — internal "_"-prefixed names never show here
       const saved = srTemplates().filter(t => !srIsChain(t) && t.name && t.name[0] !== '_').sort((a, b) => a.name.localeCompare(b.name));
       if (saved.length) { const sec = document.createElement('div'); sec.className = 'tc-srtpl-sec'; sec.textContent = 'Saved'; pop.appendChild(sec);
         saved.forEach(t => pop.appendChild(mkRow(
           [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
-          () => applyEntry(t.find, t.replace, t.re), { re: t.re, onAddChain: (btn) => openChainPicker(btn, t.name), onRemove: () => { srRemoveTemplate(t.name); render(); } }))); }
+          () => applyEntry(t.find, t.replace, t.re), { re: t.re, onAddChain: (btn) => openChainPicker(btn, t.name), onRename: (v) => srRenameTemplate(t.name, v), renameValue: t.name, onRemove: () => { srRemoveTemplate(t.name); render(); } }))); }
       else if (!chains.length) { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
       // history — the 5 most-recent
       const hist = srHistoryList();
