@@ -192,6 +192,15 @@ export function extractQobuzAlbumInfo(html) {
  * placeholder, which is dropped outright. Null-mapped roles (MainArtist,
  * FeaturedArtist, AssociatedPerformer, …) are skipped silently.
  */
+// #411: Qobuz sometimes packs several writers into one credit ("E. Themba, T.J. Masingi"),
+// which then resolves to nothing. A *linked* credit (resource_url) is a single artist, so only
+// split UNLINKED, comma-separated names — each becomes its own name-only credit with the same role.
+function splitQobuzNames(name, hasUrl) {
+    if (hasUrl || !name || !name.includes(',')) return [name];
+    const parts = name.split(/\s*,\s*/).map(s => s.trim()).filter(Boolean);
+    return parts.length ? parts : [name];
+}
+
 export function qobuzToEngine(parsedTracks) {
     const tracklistRels = [];
     const tracklist = [];
@@ -204,34 +213,39 @@ export function qobuzToEngine(parsedTracks) {
                 if (credit.name && !/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: (no role) — ${credit.name}`);
                 continue;
             }
+            const names = splitQobuzNames(credit.name, !!credit.resource_url);   // #411
             for (const role of credit.roles) {
                 if (role === 'MusicPublisher' || role === 'Music Publisher') {
                     if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: Music Publisher — ${credit.name}`);
                     continue;
                 }
-                if (Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, role)) {
-                    const plan = QOBUZ_ROLE_MAP[role];
-                    if (!plan) continue;   // Main Artist & friends — never imported
-                    tracklistRels.push({
-                        linkType:   plan.rel,
-                        entityType: 'artist',
-                        attributes: [...(plan.attributes || [])],
-                        artist: { name: credit.name, anv: '', resource_url: credit.resource_url || '' },   // #353 Qobuz artist id (composer/performer) → exact link
-                        track,
-                    });
-                    continue;
-                }
-                // #311: instrument role → shared resolver (INSTRUMENTS → instrument rel)
-                const rels = getArtistRoles({ name: credit.name, anv: '', role, resource_url: credit.resource_url || '' });
-                if (!rels.length) { skipped.push(`track ${track.position}: ${role} — ${credit.name}`); continue; }
-                for (const r of rels) {
-                    tracklistRels.push({
-                        linkType:   r.linkType,
-                        entityType: 'artist',
-                        attributes: r.attributes || [],
-                        artist:     r.artist,
-                        track,
-                    });
+                for (const nm of names) {
+                    // when a credit was split into several people none of them is the linked one
+                    const url = names.length > 1 ? '' : (credit.resource_url || '');
+                    if (Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, role)) {
+                        const plan = QOBUZ_ROLE_MAP[role];
+                        if (!plan) continue;   // Main Artist & friends — never imported
+                        tracklistRels.push({
+                            linkType:   plan.rel,
+                            entityType: 'artist',
+                            attributes: [...(plan.attributes || [])],
+                            artist: { name: nm, anv: '', resource_url: url },   // #353 Qobuz artist id (composer/performer) → exact link
+                            track,
+                        });
+                        continue;
+                    }
+                    // #311: instrument role → shared resolver (INSTRUMENTS → instrument rel)
+                    const rels = getArtistRoles({ name: nm, anv: '', role, resource_url: url });
+                    if (!rels.length) { skipped.push(`track ${track.position}: ${role} — ${nm}`); continue; }
+                    for (const r of rels) {
+                        tracklistRels.push({
+                            linkType:   r.linkType,
+                            entityType: 'artist',
+                            attributes: r.attributes || [],
+                            artist:     r.artist,
+                            track,
+                        });
+                    }
                 }
             }
         }

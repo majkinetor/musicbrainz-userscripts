@@ -9,7 +9,7 @@ import { parseRemixTitle, deriveRemixRoles } from '../src/derive/remix.js';
 // ── Qobuz credit line (verbatim from album vft3hpnx5c3lc, track 1) ──────────
 const line1 = 'Copyright Control, MusicPublisher - Kwadwo Donkoh, Producer - Wulomei, MainArtist - Nii Tei Ashitey, Composer, Lyricist';
 assert.deepEqual(parseQobuzCreditLine(line1), [
-    { name: 'Copyright Control', roles: ['MusicPublisher'] },
+    // "Copyright Control" is a copyright notice → dropped by QOBUZ_NOTICE_RE (see parser).
     { name: 'Kwadwo Donkoh',     roles: ['Producer'] },
     { name: 'Wulomei',           roles: ['MainArtist'] },
     { name: 'Nii Tei Ashitey',   roles: ['Composer', 'Lyricist'] },
@@ -198,6 +198,22 @@ assert.deepEqual(qEng.tracklistRels.map(r => [r.track.position, r.linkType, r.ar
     ['2', 'mix',      'Some Engineer'],
 ]);
 assert.ok(qEng.tracklistRels.every(r => r.artist.resource_url === '' && r.entityType === 'artist'));
+
+// #411: an UNLINKED comma-separated credit is split into one artist per name (same role each);
+// a LINKED credit (resource_url) is a single artist and is NOT split.
+const qSplit = qobuzToEngine([
+    { index: 1, credits: [
+        { name: 'E. Themba, T.J. Masingi', roles: ['Composer', 'Lyricist'] },                          // two writers, unlinked → split
+        { name: 'Foo, Inc.', roles: ['Producer'], resource_url: 'https://open.qobuz.com/artist/7' },   // linked → NOT split
+    ] },
+]);
+assert.deepEqual(qSplit.tracklistRels.map(r => [r.linkType, r.artist.name, r.artist.resource_url]), [
+    ['composer', 'E. Themba',     ''],
+    ['composer', 'T.J. Masingi',  ''],
+    ['lyricist', 'E. Themba',     ''],
+    ['lyricist', 'T.J. Masingi',  ''],
+    ['producer', 'Foo, Inc.',     'https://open.qobuz.com/artist/7'],
+]);
 
 // og:title → album info
 assert.equal(extractQobuzAlbumInfo('<meta property="og:title" content="Walatu Walasa, Wulomei - Qobuz"/>'),
