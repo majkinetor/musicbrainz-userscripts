@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.173512
+// @version      2026.7.12.175750
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1483,6 +1483,12 @@
     .tc-srbtn:hover{background:#efeaf9;border-color:#bcaae6}
     .tc-srbtn.on{background:#6f42c1;color:#fff;border-color:#5f3ec0}
     .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:#fff1f0}
+    /* #409 chain mode — the read-only chain chip replaces the search/replace inputs */
+    .tc-sro-chain .tc-sr-find,.tc-sro-chain .tc-sr-rep,.tc-sro-chain .tc-sr-re{display:none}
+    .tc-sr-chainchip{display:none;align-items:center;gap:6px;border:1px solid #c9b8ee;background:#f6f2fe;border-radius:4px;padding:3px 6px 3px 9px;color:#5f3ec0;font:bold 12px Arial;white-space:nowrap}
+    .tc-sro-chain .tc-sr-chainchip{display:inline-flex}
+    .tc-sr-chainx{border:none;background:none;color:#9a7fd0;cursor:pointer;font-size:12px;line-height:1;padding:0 2px}
+    .tc-sr-chainx:hover{color:#c0392b}
     .tc-sr-star{color:#e0a800;font-size:13px;line-height:1;padding:3px 8px}   /* #375 fav-star button opens Saved & History */
     .tc-sr-star:hover{color:#c69500;background:#fff8e6;border-color:#e6cf8a}
     .tc-srtpl{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
@@ -1495,14 +1501,23 @@
     .tc-srtpl-saveok:hover{background:#e6f6e6}
     .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
     .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa}
-    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 18px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
+    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 40px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
     .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:#f0ebfb}
     .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
     .tc-srtpl-re{font:bold 10px Arial;color:#6f42c1;text-align:center}
-    .tc-srtpl-tail{text-align:center}
+    .tc-srtpl-tail{display:inline-flex;gap:5px;align-items:center;justify-content:flex-end}
     .tc-srtpl-x{visibility:hidden;border:none;background:none;color:#cc6699;cursor:pointer;font-size:12px;padding:0;line-height:1}
     .tc-srtpl-row:hover .tc-srtpl-x,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-x{visibility:visible}.tc-srtpl-x:hover{color:#c0392b}
+    /* #409 chains */
+    .tc-srtpl-chainadd{visibility:hidden;border:none;background:none;color:#7d4fd0;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    .tc-srtpl-row:hover .tc-srtpl-chainadd,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-chainadd{visibility:visible}.tc-srtpl-chainadd:hover{color:#5f3ec0}
+    .tc-srtpl-chnm{color:#5f3ec0}
+    .tc-srtpl-chm{font-family:Arial !important;color:#8a7bb0 !important;font-style:italic}
+    .tc-srtpl-cpick{position:absolute;z-index:5;background:#fff;border:1px solid #c9b8ee;border-radius:6px;box-shadow:0 6px 18px rgba(40,20,80,.22);padding:4px;min-width:130px}
+    .tc-srtpl-cpick-row{padding:4px 9px;cursor:pointer;border-radius:4px;color:#4b3a82;white-space:nowrap}
+    .tc-srtpl-cpick-row:hover{background:#f0ebfb}
+    .tc-srtpl-cpick-empty{padding:6px 9px;color:#999;font-style:italic;white-space:nowrap}
     .tc-srtpl-name{flex:1;min-width:120px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial}
     .tc-srtpl-name:focus{border-color:#8a72c8;outline:none}
     .tc-toolopts label,.tc-opt label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
@@ -2902,7 +2917,7 @@
   function runActiveTool() { const act = SETTINGS.lastTool; if (!act) return; if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium()); runAction(act); }
   // #280: a pinned tool's panel icon runs its primary action (what the row-1 button did)
   function triggerTool(act) {
-    if (act === 'sr') { const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender(); if (f) f.focus(); return; }
+    if (act === 'sr') { _srChain = null; const box = document.querySelector('.tc-sro'); if (box) { box.classList.remove('tc-sro-chain'); } const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender(); if (f) f.focus(); return; }
     if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
     runAction(act);   // guesscase → guess-case all · cols → Fit
   }
@@ -2944,9 +2959,10 @@
       const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
       re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
-      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved & recent patterns (or press ↓ in the search field)';
+      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved patterns, chains & recent (or press ↓ in the search field)';
       star.onclick = () => openSrTemplates(find, find, rep, re);
       box.append(find, rep, re, star); host.appendChild(box);
+      if (_srChain) srShowChain(_srChain);   // #409: restore the chain chip if a chain was active
     } else if (act === 'cols') {
       const box = document.createElement('span'); box.className = 'tc-colso';
       const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
@@ -3094,6 +3110,21 @@
   }
   // in literal mode the replacement is literal too — escape `$` so "$1" inserts "$1", not a backref
   const srRepl = replace => srRegexOn() ? replace : replace.replace(/\$/g, '$$$$');
+
+  // ── #409 S&R chains ───────────────────────────────────────────────────────
+  // A "chain" is a named template whose `members` array lists other (non-chain) template
+  // names, applied in order as one action — so "All Quotes" runs Quotes then Single quote
+  // in a single click. Chains live in the same srTemplates list; `members` marks a chain.
+  // Each member carries its OWN `re` flag (regex or literal), independent of the global RE
+  // toggle, so a chain mixing a regex and a literal pattern behaves as saved.
+  function srIsChain(t) { return !!(t && Array.isArray(t.members)); }   // hoisted: used by srSeedTemplates() at init
+  const srReFor = (find, re, ci, g) => { const flags = (g ? 'g' : '') + (ci ? 'i' : ''); try { return new RegExp(re ? find : find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags); } catch (e) { return null; } };
+  const srReplFor = (replace, re) => re ? String(replace) : String(replace).replace(/\$/g, '$$$$');
+  // resolve a chain's member names to their (non-chain) pattern entries, in order
+  function srChainPatterns(chain) {
+    const byName = new Map(srTemplates().filter(t => !srIsChain(t)).map(t => [t.name, t]));
+    return (chain.members || []).map(n => byName.get(n)).filter(Boolean);
+  }
   let _srSnap = null;
   function srActivate() { _srSnap = MODEL ? MODEL.tracks.map(t => t.title) : []; if (MODEL) MODEL.tracks.forEach(t => { delete t._srLastResult; }); }
   function srLive(find, replace, ci) {
@@ -3117,6 +3148,65 @@
     rerender(); toast(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
     srRememberLast(find, replace);
   }
+  // #409: apply every member pattern of a chain, in order, CUMULATIVELY (each pattern sees the
+  // previous one's output) — recomputed from the snapshot like srLive, so it stays non-compounding
+  // across re-applies. Members use their own per-pattern `re` flag.
+  function srApplyChain(chain) {
+    if (!MODEL) return;
+    if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
+    const pats = srChainPatterns(chain); let changed = 0;
+    MODEL.tracks.forEach((t, i) => {
+      if (t._srLastResult != null && t.title !== t._srLastResult) _srSnap[i] = t.title;
+      const base = _srSnap[i] != null ? _srSnap[i] : t.title;
+      let text = base;
+      for (const p of pats) { const re = p.find ? srReFor(p.find, p.re, true, true) : null; if (re) text = text.replace(re, srReplFor(p.replace, p.re)); }
+      if (text !== base) changed++;
+      if (text !== t.title) { setTitle(t, text); t.title = text; t.guessTitle = guessTitleStr(t); }
+      t._srLastResult = t.title;
+      t._srFlash = !!(pats.length && text !== base);
+    });
+    rerender(); toast(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced (${chain.name})` : `${chain.name}: no matches`);
+  }
+  // create an empty chain; returns false on a bad/duplicate name
+  function srAddChain(name) {
+    name = (name || '').trim(); if (!name) return false;
+    const list = srTemplates(); if (list.some(t => t.name === name)) return false;   // no name clash with a pattern or chain
+    list.push({ name, members: [] }); saveSettings(); return true;
+  }
+  // toggle a (non-chain) template's membership in a chain
+  function srChainToggle(chainName, itemName) {
+    const c = srTemplates().find(t => srIsChain(t) && t.name === chainName); if (!c) return;
+    c.members = c.members || [];
+    const i = c.members.indexOf(itemName);
+    if (i >= 0) c.members.splice(i, 1); else c.members.push(itemName);
+    saveSettings();
+  }
+  // #409: chain "mode" — a chain isn't editable (it's several patterns), so when one is applied the
+  // search/replace inputs are swapped for a read-only chip showing the chain name (✕ exits back to S&R).
+  let _srChain = null;
+  function srShowChain(name) {
+    _srChain = name;
+    const box = document.querySelector('.tc-sro'); if (!box) return;
+    box.classList.add('tc-sro-chain');
+    let chip = box.querySelector('.tc-sr-chainchip');
+    if (!chip) {
+      chip = document.createElement('span'); chip.className = 'tc-sr-chainchip';
+      const lbl = document.createElement('span'); lbl.className = 'tc-sr-chainlbl';
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-sr-chainx'; x.textContent = '✕'; x.title = 'Exit chain — back to search / replace'; x.onclick = srExitChain;
+      chip.append(lbl, x); box.insertBefore(chip, box.firstChild);
+    }
+    chip.querySelector('.tc-sr-chainlbl').textContent = '⛓ ' + name;
+    chip.title = 'S&R chain "' + name + '" (read-only — several patterns)';
+  }
+  function srExitChain() {
+    _srChain = null;
+    const box = document.querySelector('.tc-sro'); if (!box) return;
+    box.classList.remove('tc-sro-chain');
+    const f = box.querySelector('.tc-sr-find'), r = box.querySelector('.tc-sr-rep');
+    if (f) f.value = ''; if (r) r.value = '';
+    srActivate(); if (MODEL) MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender();
+    if (f) f.focus();
+  }
   // #152 — named search/replace templates, persisted in settings. "_Last" is a special auto-kept entry
   // (the most recent pattern) that sorts first because "_" precedes letters.
   function srTemplates() { if (!Array.isArray(SETTINGS.srTemplates)) SETTINGS.srTemplates = []; return SETTINGS.srTemplates; }
@@ -3125,12 +3215,23 @@
   function srSeedTemplates() {
     // migrate the legacy "_Last" entry out of Saved (history lives in srHistory now)
     if (srTemplates().some(t => t.name === '_Last')) SETTINGS.srTemplates = srTemplates().filter(t => t.name !== '_Last');
-    if ((SETTINGS.srSeedV || 0) >= 1) { saveSettings(); return; }   // seed version bump re-seeds once even for users who had the buggy `_Last`-blocked run
-    SETTINGS.srSeedV = 1;
-    // seed only when there are no USER (non-"_") templates — an existing `_Last` no longer blocks it
-    if (!srTemplates().some(t => t.name && t.name[0] !== '_')) {
-      srTemplates().push({ name: 'Quotes', find: '"(.+?)"', replace: '“$1”', re: true });
-      srTemplates().push({ name: 'Single quote', find: "'", replace: '’', re: false });
+    // v1 — seed the two quote patterns (once)
+    if ((SETTINGS.srSeedV || 0) < 1) {
+      // seed only when there are no USER (non-"_") templates — an existing `_Last` no longer blocks it
+      if (!srTemplates().some(t => t.name && t.name[0] !== '_')) {
+        srTemplates().push({ name: 'Quotes', find: '"(.+?)"', replace: '“$1”', re: true });
+        srTemplates().push({ name: 'Single quote', find: "'", replace: '’', re: false });
+      }
+      SETTINGS.srSeedV = 1;
+    }
+    // v2 (#409) — seed the "All Quotes" chain that runs both quote patterns, once, and only if
+    // both members exist and no chain named "All Quotes" is already present.
+    if ((SETTINGS.srSeedV || 0) < 2) {
+      const names = new Set(srTemplates().map(t => t.name));
+      if (names.has('Quotes') && names.has('Single quote') && !srTemplates().some(t => srIsChain(t) && t.name === 'All Quotes')) {
+        srTemplates().push({ name: 'All Quotes', members: ['Quotes', 'Single quote'] });
+      }
+      SETTINGS.srSeedV = 2;
     }
     saveSettings();
   }
@@ -3185,31 +3286,66 @@
       cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.title = c.txt; row.appendChild(s); });
       const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = extras && extras.re ? 'RE' : ''; row.appendChild(rec);
       const tail = document.createElement('span'); tail.className = 'tc-srtpl-tail';
+      // #409: hover action — add this (non-chain) pattern to a chain
+      if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.title = 'Add / remove this pattern in a chain'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
       if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
       row.appendChild(tail);
       row.onclick = onClick; row.onmousemove = () => { sel = navRows.indexOf(row); highlight(); };
       navRows.push(row); return row;
     };
+    // #409: a small inline picker (child of the popup, so it doesn't trigger the outside-close)
+    // listing every chain with a ✓/○ membership toggle for the given pattern.
+    const openChainPicker = (btn, itemName) => {
+      const ex = pop.querySelector('.tc-srtpl-cpick'); if (ex) { ex.remove(); if (ex._for === itemName) return; }
+      const chains = srTemplates().filter(srIsChain).sort((a, b) => a.name.localeCompare(b.name));
+      const menu = document.createElement('div'); menu.className = 'tc-srtpl-cpick'; menu._for = itemName;
+      if (!chains.length) { const e = document.createElement('div'); e.className = 'tc-srtpl-cpick-empty'; e.textContent = 'No chains yet — use ＋ Add chain'; menu.appendChild(e); }
+      else chains.forEach(c => { const isM = (c.members || []).includes(itemName); const row = document.createElement('div'); row.className = 'tc-srtpl-cpick-row'; row.textContent = (isM ? '✓ ' : '○ ') + c.name; row.onclick = e => { e.stopPropagation(); srChainToggle(c.name, itemName); render(); }; menu.appendChild(row); });
+      pop.appendChild(menu);
+      const br = btn.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+      menu.style.left = Math.max(4, br.right - pr.left - menu.offsetWidth) + 'px';
+      menu.style.top = (br.bottom - pr.top + 2) + 'px';
+    };
     const render = () => {
       pop.innerHTML = ''; navRows = []; sel = -1;
       // header: "Saved" + inline "Save current" that unrolls a name field
       const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
-      const title = document.createElement('span'); title.textContent = 'Saved'; title.className = 'tc-srtpl-hdt'; hd.appendChild(title);
+      const title = document.createElement('span'); title.textContent = 'Patterns'; title.className = 'tc-srtpl-hdt'; hd.appendChild(title);
       const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'tc-srtpl-savebtn'; saveBtn.textContent = '＋ Save current';
       const wrap = document.createElement('span'); wrap.className = 'tc-srtpl-savewrap'; wrap.style.display = 'none';
       const nm = document.createElement('input'); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
       const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.title = 'Save';
+      // #409: "Add chain" button next to "Save current", each unrolling its own name field
+      const chainBtn = document.createElement('button'); chainBtn.type = 'button'; chainBtn.className = 'tc-srtpl-savebtn tc-srtpl-chainbtn'; chainBtn.textContent = '＋ Add chain'; chainBtn.title = 'Create a chain that runs several saved patterns in one click';
+      const cwrap = document.createElement('span'); cwrap.className = 'tc-srtpl-savewrap'; cwrap.style.display = 'none';
+      const cnm = document.createElement('input'); cnm.type = 'text'; cnm.className = 'tc-srtpl-name'; cnm.placeholder = 'name this chain';
+      const cok = document.createElement('button'); cok.type = 'button'; cok.className = 'tc-srtpl-saveok'; cok.textContent = '✓'; cok.title = 'Create chain';
+      const resetHd = () => { saveBtn.style.display = ''; chainBtn.style.display = ''; wrap.style.display = 'none'; cwrap.style.display = 'none'; };
       const doSave = () => { if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); };
-      ok.onclick = doSave;
-      nm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doSave(); } else if (e.key === 'Escape') { e.preventDefault(); wrap.style.display = 'none'; saveBtn.style.display = ''; } };
-      saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
-      wrap.append(nm, ok); hd.append(saveBtn, wrap); pop.appendChild(hd);
-      // saved (named) templates — internal "_"-prefixed names never show here
-      const saved = srTemplates().filter(t => t.name && t.name[0] !== '_').sort((a, b) => a.name.localeCompare(b.name));
-      if (saved.length) saved.forEach(t => pop.appendChild(mkRow(
-        [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
-        () => applyEntry(t.find, t.replace, t.re), { re: t.re, onRemove: () => { srRemoveTemplate(t.name); render(); } })));
-      else { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
+      const doAddChain = () => { if (srAddChain(cnm.value)) render(); else toast('Name is empty or already used'); };
+      ok.onclick = doSave; cok.onclick = doAddChain;
+      nm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doSave(); } else if (e.key === 'Escape') { e.preventDefault(); resetHd(); } };
+      cnm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doAddChain(); } else if (e.key === 'Escape') { e.preventDefault(); resetHd(); } };
+      saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
+      chainBtn.onclick = () => { saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; cwrap.style.display = ''; cnm.value = ''; setTimeout(() => cnm.focus(), 0); };
+      wrap.append(nm, ok); cwrap.append(cnm, cok); hd.append(saveBtn, chainBtn, wrap, cwrap); pop.appendChild(hd);
+      // #409: Chains first — click to run all their member patterns in order; ✕ removes the chain
+      const chains = srTemplates().filter(srIsChain).sort((a, b) => a.name.localeCompare(b.name));
+      if (chains.length) {
+        const sec = document.createElement('div'); sec.className = 'tc-srtpl-sec'; sec.textContent = 'Chains'; pop.appendChild(sec);
+        chains.forEach(c => { const mem = (c.members || []); const summary = mem.length ? mem.join(' → ') : '(empty — add patterns with ⛓)';
+          pop.appendChild(mkRow(
+            [{ cls: 'tc-srtpl-nm tc-srtpl-chnm', txt: '⛓ ' + c.name }, { cls: 'tc-srtpl-f tc-srtpl-chm', txt: summary }, { cls: 'tc-srtpl-r', txt: '' }],
+            () => { if (!mem.length) { toast('Empty chain — add patterns to it first (⛓ on a saved row)'); return; } srApplyChain(c); srShowChain(c.name); closeSrTemplates(); },
+            { onRemove: () => { srRemoveTemplate(c.name); render(); } })); });
+      }
+      // saved (named, non-chain) templates — internal "_"-prefixed names never show here
+      const saved = srTemplates().filter(t => !srIsChain(t) && t.name && t.name[0] !== '_').sort((a, b) => a.name.localeCompare(b.name));
+      if (saved.length) { const sec = document.createElement('div'); sec.className = 'tc-srtpl-sec'; sec.textContent = 'Saved'; pop.appendChild(sec);
+        saved.forEach(t => pop.appendChild(mkRow(
+          [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
+          () => applyEntry(t.find, t.replace, t.re), { re: t.re, onAddChain: (btn) => openChainPicker(btn, t.name), onRemove: () => { srRemoveTemplate(t.name); render(); } }))); }
+      else if (!chains.length) { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
       // history — the 5 most-recent
       const hist = srHistoryList();
       if (hist.length) {
