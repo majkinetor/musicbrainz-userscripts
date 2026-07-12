@@ -39,6 +39,7 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 <img width="600" src="./screenshots/bar.png" />
 
 - **Source picker** — an **Import credits:** label followed by one brand icon per source available on the release (Discogs, Tidal, Qobuz, Deezer, and the title-derived **Titles** source). **Left-click** an icon to import from that source; **right-click** to open the source's page. Several sources can be run in one session — the edits stack and are submitted together.
+- **⚛ All** (consolidated import) — shown when **more than one** source is available. Harvests every source, merges their credits into **one** de-duplicated review table (see [Consolidated import](#consolidated-import)), and dispatches once. Clicking any source icon (or ⚛ All again) while a preflight/review is open cancels it and returns you to the picker.
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
 - **Create works** — mode picker:
@@ -80,6 +81,17 @@ Efficiency features:
 - **Credited as** — a per-entity override that sets `entity1_credit` on every dispatched rel for that entity (if the entity already exists in relationships, the most common *credited as* value is used). Helper buttons **[MB]** and **[source]** set the value to the MB or source name quickly.
 - **MB roles** — each artist's header carries an **MB roles** toggle; clicking it fetches that artist's existing MB relationship categories (`producer`, `mix`, `mastering`, `instrument`, …) as tags, so you can sanity-check the source role against the artist's known roles. On request only (one extra request per artist), cached for the session.
 - **Preflight diagnostics** — a collapsed `<details>` block below the main log with a per-worker / per-request trace, for when something feels slow.
+
+### Consolidated import
+
+Triggered by **⚛ All** when a release has more than one source. Instead of running each provider separately and resolving the same people over and over, it harvests every source, merges the results into a **single** review table, and dispatches once.
+
+- **De-duplication happens twice.** First before resolution — identical credits (same entity, role, attributes and track position) collapse to one row, so the same person credited by Tidal *and* Qobuz isn't resolved twice. Then after resolution — rows are merged by MB entity (MBID), and an unresolved credit is folded into a resolved row of the **same name** when that name resolves to exactly one MBID. Different roles for the same person stay as separate rows.
+- **Typo tolerance.** An unresolved credit that is a tight, length-guarded edit-distance typo of a **uniquely-resolved** name is folded onto that MBID (e.g. *Mark Barott* → *Mark Barrott*). Short names get no fuzz, and a typo that's ambiguous between two resolved names is left alone.
+- **Source column.** The leftmost column shows a brand badge per provider that credited the row — **coloured** when that provider supplied an artist URL (click it to open the provider page), **greyed** when the credit was name-only. So you can see at a glance that, say, *Alan Morrallee* came from both Tidal and Qobuz.
+- **Add all links.** When a merged row carries artist URLs from several providers, the 🔗 add-link button shows the count and seeds **every** provider URL into MB's edit page at once (extras can be trimmed in MB's dialog); creating a new artist likewise seeds all of them.
+- **Edit note** records the real sources, e.g. `Source: Import all (Tidal, Qobuz, Deezer)`.
+- The **Log ▾** menu gains **Copy all** — the combined harvest JSON for the whole run.
 
 ### Instant Fill
 
