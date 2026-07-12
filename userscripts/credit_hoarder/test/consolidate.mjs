@@ -112,4 +112,42 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.equal(out.length, 3, 'ambiguous same-name (2 MBIDs) → nothing force-merged');
 }
 
+// #408 (typo merge): an unresolved credit that is a single-char typo of a uniquely-resolved name
+// ("Mark Barott" vs "Mark Barrott") routes to that MBID and merges.
+{
+    const tidal = 'https://tidal.com/artist/1', qobuz = 'https://open.qobuz.com/artist/2';
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/mark', entity: { resource_url: tidal, name: 'Mark Barrott' }, _roles: [{ linkType: 'producer', displayLabel: 'producer', trackPos: '3', trackTitle: '' }] },
+        { type: 'attention', entity: { resource_url: qobuz, name: 'Mark Barott' }, _roles: [{ linkType: 'remixer', displayLabel: 'remixer', trackPos: '3', trackTitle: '' }] },
+    ];
+    const es = new Map([[tidal, ['Tidal']], [qobuz, ['Qobuz']]]);
+    const { results: out, mergeMap } = mergeResolvedResults(results, es);
+    assert.equal(out.length, 1, 'typo name merges into its uniquely-resolved twin');
+    assert.equal(out[0].mbUrl, '//musicbrainz.org/artist/mark', 'typo row adopts the resolved MBID');
+    assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['producer', 'remixer'], 'roles merged across typo pair');
+    assert.deepEqual(mergeMap.get(tidal).sort(), [qobuz, tidal].sort(), 'both urls in mergeMap');
+}
+
+// #408 (typo guard): short names must NOT fuzzy-merge (too collision-prone) — "Joan" vs "John".
+{
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/john', entity: { resource_url: 'a', name: 'John' }, _roles: [] },
+        { type: 'attention', entity: { resource_url: 'b', name: 'Joan' }, _roles: [] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 2, 'short-name single-edit difference stays separate');
+}
+
+// #408 (typo ambiguity): a typo within tolerance of TWO different resolved names (exact to neither)
+// is left alone.
+{
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/1', entity: { resource_url: 'a', name: 'Roberto Fonseca' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/2', entity: { resource_url: 'b', name: 'Roberta Fonseca' }, _roles: [] },
+        { type: 'attention', entity: { resource_url: 'c', name: 'Robertt Fonseca' }, _roles: [] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 3, 'typo within tolerance of two resolved names → nothing force-merged');
+}
+
 console.log('consolidate: all assertions passed');

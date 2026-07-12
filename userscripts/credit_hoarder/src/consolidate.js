@@ -83,6 +83,26 @@ export function mergeHarvests(harvests) {
 const _resultKey = r => (r && r.entity && (r.entity.resource_url || r.entity._syntheticKey)) || `_nourl_${(r && ((r.entity && r.entity.name) || r.displayName)) || ''}`;
 const _resultName = r => (r && ((r.entity && r.entity.name) || r.displayName)) || '';
 const _roleKey = ro => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join('');
+
+// Levenshtein distance, bounded: returns -1 as soon as the minimum possible distance exceeds `max`
+// (so long non-matches bail cheap). Used to catch typo'd credits ("Mark Barott" vs "Mark Barrott").
+const boundedLev = (a, b, max) => {
+    if (Math.abs(a.length - b.length) > max) return -1;
+    const dp = Array.from({ length: a.length + 1 }, (_, i) => i);
+    for (let j = 1; j <= b.length; j++) {
+        let prev = dp[0]; dp[0] = j; let rowMin = dp[0];
+        for (let i = 1; i <= a.length; i++) {
+            const tmp = dp[i];
+            dp[i] = Math.min(dp[i] + 1, dp[i - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+            prev = tmp; if (dp[i] < rowMin) rowMin = dp[i];
+        }
+        if (rowMin > max) return -1;
+    }
+    return dp[a.length] <= max ? dp[a.length] : -1;
+};
+// Tight, length-guarded tolerance: no fuzz for short names (too collision-prone), 1 edit for
+// mid-length, 2 for long. "mark barrott" (12) → 1, so a single-char typo merges; "john"/"joan" (4) → 0.
+const fuzzyMax = len => len <= 6 ? 0 : len <= 12 ? 1 : 2;
 export function mergeResolvedResults(allResults, entitySources) {
     const rows = (allResults || []).filter(Boolean);
     // name → set of resolved mbUrls, so an unresolved row can be routed to its resolved twin — but
@@ -94,11 +114,28 @@ export function mergeResolvedResults(allResults, entitySources) {
         if (!nameMbids.has(fn)) nameMbids.set(fn, new Set());
         nameMbids.get(fn).add(r.mbUrl);
     }
+    // Names that resolve to exactly ONE MBID — the only safe fuzzy-merge targets.
+    const uniqResolved = [];
+    nameMbids.forEach((set, nm) => { if (set.size === 1) uniqResolved.push([nm, [...set][0]]); });
+    // An unresolved name that is a tight typo of exactly ONE uniquely-resolved name → route to its
+    // MBID (#408). Returns null if zero, or if two DIFFERENT resolved names are both within tolerance
+    // (ambiguous — leave it alone rather than guess).
+    const fuzzyResolvedMatch = fn => {
+        let hit = null;
+        for (const [nm, url] of uniqResolved) {
+            if (boundedLev(fn, nm, fuzzyMax(Math.max(fn.length, nm.length))) < 0) continue;
+            if (hit && hit !== url) return null;
+            hit = url;
+        }
+        return hit;
+    };
     const keyFor = r => {
         if (r.type === 'resolved' && r.mbUrl) return 'mb:' + r.mbUrl;
         const fn = fold(_resultName(r)); if (!fn) return null;   // no name → never group
         const set = nameMbids.get(fn);
         if (set && set.size === 1) return 'mb:' + [...set][0];   // unresolved → its unique resolved twin
+        const fuzzy = fuzzyResolvedMatch(fn);                    // unresolved → typo of a unique resolved twin
+        if (fuzzy) return 'mb:' + fuzzy;
         return 'nm:' + fn;                                        // same-name, none resolved → group together
     };
     const byKey = new Map(), mergeMap = new Map(), out = [];

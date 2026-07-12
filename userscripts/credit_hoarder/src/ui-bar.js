@@ -546,7 +546,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         allBtn.title = `Import from all ${importSources.length} sources at once — merged & de-duplicated into one review`;
         allBtn.addEventListener('click', () => {
             if (importing) { if (allBtn.classList.contains('importing')) cancelRun(); return; }
-            startImport(allBtn, '', (g, c) => runConsolidatedImport(importSources, g, c));
+            startImport(allBtn, '', (g, c) => runConsolidatedImport(importSources, g, c), `Import all (${importSources.map(s => s.name).join(', ')})`);
         });
         srcButtons.push(allBtn);
         srcIcons.appendChild(allBtn);
@@ -1022,7 +1022,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // `srcBtn`/`restoreLabel` drive the button state, `sourceUrl` feeds the
     // edit note, `runner(getOpts)` is the source-specific import entry
     // (`runImport` for Discogs, `runTidalImport` for Tidal).
-    function startImport(srcBtn, sourceUrl, runner) {
+    function startImport(srcBtn, sourceUrl, runner, sourceLabel) {
         // This run owns a fresh token; `cancelled()` becomes true the moment
         // anything (a re-click that calls cancelRun, or a later run) bumps it.
         const myToken = ++bar._runToken;
@@ -1231,7 +1231,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         });
         const _click = getOpts();
         const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
-        const editNote = buildEditNote(sourceUrl, opts);
+        const editNote = buildEditNote(sourceUrl, opts, undefined, sourceLabel);
         editNote.split('\n').forEach(line => {
             if (!line.trim()) return;
             // Make URLs clickable in the log
@@ -1594,13 +1594,14 @@ async function runConsolidatedImport(importSources, getOpts, cancelled) {
         companies: merged.companies, artistRoles: merged.artistRoles, tracklistRels: merged.tracklistRels,
         tracklist: merged.tracklist, sourceUrl: '', processTracklist: merged.tracklistRels.length > 0 || merged.processTracklist,
         getOpts, cancelled, entitySources: merged.entitySources,
+        sourceLabel: `Import all (${harvests.map(h => h.sourceName).join(', ')})`,   // #408: edit note names the real sources
     });
 }
 
 // The source-agnostic pipeline (#193): unique-entity collection → preflight
 // resolution → review table → confirmed-IDB sweep → dispatch. Extracted from
 // runImport unchanged so every source feeds the same engine.
-function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources }) {
+function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources, sourceLabel }) {
             const isCancelled = () => (typeof cancelled === 'function') && cancelled();
             // Collect all unique artist entities referenced across release-level and tracklist roles
             const allArtistRoles = artistRoles.concat(tracklistRels);
@@ -1858,6 +1859,7 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                         dedupeEquivalenceSets: live.dedupeEquivalenceSets,
                         dedupeDuplicateRoles:  live.dedupeDuplicateRoles,
                         creditOverrides: capturedConfirmedMap?.creditOverrides,
+                        sourceLabel,   // #408: consolidated runs label the edit note "Import all (…)"
                     };
                     return dispatchAllRelationships(companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, sourceUrl, dedupOpts);
                 });

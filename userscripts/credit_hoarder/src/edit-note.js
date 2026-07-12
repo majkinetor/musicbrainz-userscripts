@@ -16,7 +16,7 @@
  * (keeps `@homepageURL` in `src/meta.txt` in sync; never let "undefined"
  * appear in an edit note — issue #7).
  */
-export function buildEditNote(sourceUrl, opts, extraLines) {
+export function buildEditNote(sourceUrl, opts, extraLines, sourceLabel) {
     const s = GM_info.script;
     // Strip the query string AND location.hash before stripping the
     // /edit-relationships suffix: on a seeded edit page the URL carries a huge
@@ -36,9 +36,11 @@ export function buildEditNote(sourceUrl, opts, extraLines) {
         header,
         '',
         'Release URL: ' + mbUrl,
-        // No source URL → the title-derived "Titles" source (#271): credits come
-        // from the release's own track titles, not an external page.
-        cleanSource ? sourceName + ' URL: ' + cleanSource : 'Source: track titles',
+        // #408: a consolidated "Import all" run passes an explicit source label (it has no single
+        // URL). Otherwise: the source URL's provider, or the title-derived "Titles" source (#271).
+        sourceLabel ? 'Source: ' + sourceLabel
+            : cleanSource ? sourceName + ' URL: ' + cleanSource
+            : 'Source: track titles',
     ];
     if (opts) lines.push('Options: ' + opts);
     if (extraLines) lines.push(...(Array.isArray(extraLines) ? extraLines : [extraLines]));

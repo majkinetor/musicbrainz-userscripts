@@ -931,7 +931,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             ? `, ${existedStaged} already added this session`
             : '';
         const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed${recSelectionActive ? ` (applied to ${checkedRecGids.size} of ${recordingByGid.size} selected recordings)` : ''}`;
-        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
+        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);   // #408: consolidated runs label the source
         // Preserve any note another script already wrote — append ours instead
         // of overwriting (issue #174). Read the live textarea value as the base.
         const existingNote = document.querySelector(SELECTORS.EditNote)?.value || '';

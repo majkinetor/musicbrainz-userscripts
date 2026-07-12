@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.12.203449
+// @version      2026.7.12.205835
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3098,7 +3098,7 @@
   }
 
   // src/edit-note.js
-  function buildEditNote(sourceUrl, opts, extraLines) {
+  function buildEditNote(sourceUrl, opts, extraLines, sourceLabel) {
     const s = GM_info.script;
     const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
     const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
@@ -3109,9 +3109,9 @@
       header,
       "",
       "Release URL: " + mbUrl,
-      // No source URL → the title-derived "Titles" source (#271): credits come
-      // from the release's own track titles, not an external page.
-      cleanSource ? sourceName + " URL: " + cleanSource : "Source: track titles"
+      // #408: a consolidated "Import all" run passes an explicit source label (it has no single
+      // URL). Otherwise: the source URL's provider, or the title-derived "Titles" source (#271).
+      sourceLabel ? "Source: " + sourceLabel : cleanSource ? sourceName + " URL: " + cleanSource : "Source: track titles"
     ];
     if (opts) lines.push("Options: " + opts);
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
@@ -5373,7 +5373,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const editNoteDedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
       const editNoteStagedPart = existedStaged > 0 ? `, ${existedStaged} already added this session` : "";
       const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed${recSelectionActive ? ` (applied to ${checkedRecGids.size} of ${recordingByGid.size} selected recordings)` : ""}`;
-      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
+      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);
       const existingNote = document.querySelector(SELECTORS.EditNote)?.value || "";
       const note = combineEditNote(existingNote, ourNote);
       re.dispatch({ type: "update-edit-note", editNote: note });
@@ -5560,6 +5560,24 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var _resultKey = (r) => r && r.entity && (r.entity.resource_url || r.entity._syntheticKey) || `_nourl_${r && (r.entity && r.entity.name || r.displayName) || ""}`;
   var _resultName = (r) => r && (r.entity && r.entity.name || r.displayName) || "";
   var _roleKey = (ro) => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join("");
+  var boundedLev = (a, b, max) => {
+    if (Math.abs(a.length - b.length) > max) return -1;
+    const dp = Array.from({ length: a.length + 1 }, (_, i) => i);
+    for (let j = 1; j <= b.length; j++) {
+      let prev = dp[0];
+      dp[0] = j;
+      let rowMin = dp[0];
+      for (let i = 1; i <= a.length; i++) {
+        const tmp = dp[i];
+        dp[i] = Math.min(dp[i] + 1, dp[i - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = tmp;
+        if (dp[i] < rowMin) rowMin = dp[i];
+      }
+      if (rowMin > max) return -1;
+    }
+    return dp[a.length] <= max ? dp[a.length] : -1;
+  };
+  var fuzzyMax = (len) => len <= 6 ? 0 : len <= 12 ? 1 : 2;
   function mergeResolvedResults(allResults, entitySources) {
     const rows = (allResults || []).filter(Boolean);
     const nameMbids = /* @__PURE__ */ new Map();
@@ -5570,12 +5588,27 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       if (!nameMbids.has(fn)) nameMbids.set(fn, /* @__PURE__ */ new Set());
       nameMbids.get(fn).add(r.mbUrl);
     }
+    const uniqResolved = [];
+    nameMbids.forEach((set, nm) => {
+      if (set.size === 1) uniqResolved.push([nm, [...set][0]]);
+    });
+    const fuzzyResolvedMatch = (fn) => {
+      let hit = null;
+      for (const [nm, url] of uniqResolved) {
+        if (boundedLev(fn, nm, fuzzyMax(Math.max(fn.length, nm.length))) < 0) continue;
+        if (hit && hit !== url) return null;
+        hit = url;
+      }
+      return hit;
+    };
     const keyFor = (r) => {
       if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       const fn = fold(_resultName(r));
       if (!fn) return null;
       const set = nameMbids.get(fn);
       if (set && set.size === 1) return "mb:" + [...set][0];
+      const fuzzy = fuzzyResolvedMatch(fn);
+      if (fuzzy) return "mb:" + fuzzy;
       return "nm:" + fn;
     };
     const byKey = /* @__PURE__ */ new Map(), mergeMap = /* @__PURE__ */ new Map(), out = [];
@@ -6082,7 +6115,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           if (allBtn.classList.contains("importing")) cancelRun();
           return;
         }
-        startImport(allBtn, "", (g, c) => runConsolidatedImport(importSources, g, c));
+        startImport(allBtn, "", (g, c) => runConsolidatedImport(importSources, g, c), `Import all (${importSources.map((s) => s.name).join(", ")})`);
       });
       srcButtons.push(allBtn);
       srcIcons.appendChild(allBtn);
@@ -6460,7 +6493,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       bar._pin();
       delete bar._setProgress;
     }
-    function startImport(srcBtn, sourceUrl, runner) {
+    function startImport(srcBtn, sourceUrl, runner, sourceLabel) {
       const myToken = ++bar._runToken;
       const cancelled = () => bar._runToken !== myToken;
       importing = true;
@@ -6622,7 +6655,7 @@ ${lines}
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
-      const editNote = buildEditNote(sourceUrl, opts);
+      const editNote = buildEditNote(sourceUrl, opts, void 0, sourceLabel);
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
@@ -6949,10 +6982,12 @@ ${lines}
       processTracklist: merged.tracklistRels.length > 0 || merged.processTracklist,
       getOpts,
       cancelled,
-      entitySources: merged.entitySources
+      entitySources: merged.entitySources,
+      sourceLabel: `Import all (${harvests.map((h) => h.sourceName).join(", ")})`
+      // #408: edit note names the real sources
     });
   }
-  function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources }) {
+  function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources, sourceLabel }) {
     const isCancelled = () => typeof cancelled === "function" && cancelled();
     const allArtistRoles = artistRoles.concat(tracklistRels);
     const uniqueArtists = [];
@@ -7130,7 +7165,9 @@ ${lines}
       const dedupOpts = {
         dedupeEquivalenceSets: live.dedupeEquivalenceSets,
         dedupeDuplicateRoles: live.dedupeDuplicateRoles,
-        creditOverrides: capturedConfirmedMap?.creditOverrides
+        creditOverrides: capturedConfirmedMap?.creditOverrides,
+        sourceLabel
+        // #408: consolidated runs label the edit note "Import all (…)"
       };
       return dispatchAllRelationships(companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, sourceUrl, dedupOpts);
     });
