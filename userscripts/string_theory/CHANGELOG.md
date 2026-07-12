@@ -1,5 +1,22 @@
 # String Theory Changelog
 
+## [2026.7.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12.2)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Default S&R ([#410](https://github.com/majkinetor/musicbrainz-userscripts/issues/410))
+1. S&R chains ([#409](https://github.com/majkinetor/musicbrainz-userscripts/issues/409))
+1. Auto match labels and artists ([#407](https://github.com/majkinetor/musicbrainz-userscripts/issues/407))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Split combined multi-artist credits (Qobuz & Tidal) ([#411](https://github.com/majkinetor/musicbrainz-userscripts/issues/411))
+1. Consolidated review table ([#408](https://github.com/majkinetor/musicbrainz-userscripts/issues/408))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. One submit button for both isrcs and links ([#406](https://github.com/majkinetor/musicbrainz-userscripts/issues/406))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-12 22:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-12 22:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -669,6 +669,8 @@ Triggered by **⚛ All** when a release has more than one source. Instead of run
 - **Add all links.** When a merged row carries artist URLs from several providers, the 🔗 add-link button shows the count and seeds **every** provider URL into MB's edit page at once (extras can be trimmed in MB's dialog); creating a new artist likewise seeds all of them.
 - **Edit note** records the real sources, e.g. `Source: Import all (Tidal, Qobuz, Deezer)`.
 - The **Log ▾** menu gains **Copy all** — the combined harvest JSON for the whole run.
+
+<img width="1000" src="../credit_hoarder/screenshots/multi.png" />
 
 #### Instant Fill
 

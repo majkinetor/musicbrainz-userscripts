@@ -1,5 +1,13 @@
 # Apollo Editor Changelog
 
+## [2026.7.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12.2)
+
+### Features
+
+1. Default S&R ([#410](https://github.com/majkinetor/musicbrainz-userscripts/issues/410))
+1. S&R chains ([#409](https://github.com/majkinetor/musicbrainz-userscripts/issues/409))
+1. Auto match labels and artists ([#407](https://github.com/majkinetor/musicbrainz-userscripts/issues/407))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features

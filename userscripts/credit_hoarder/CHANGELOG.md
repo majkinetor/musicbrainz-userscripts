@@ -1,5 +1,12 @@
 # Credit Hoarder Changelog
 
+## [2026.7.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12.2)
+
+### Features
+
+1. Split combined multi-artist credits (Qobuz & Tidal) ([#411](https://github.com/majkinetor/musicbrainz-userscripts/issues/411))
+1. Consolidated review table ([#408](https://github.com/majkinetor/musicbrainz-userscripts/issues/408))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features

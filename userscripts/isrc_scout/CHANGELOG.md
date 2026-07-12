@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.7.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12.2)
+
+### Features
+
+1. One submit button for both isrcs and links ([#406](https://github.com/majkinetor/musicbrainz-userscripts/issues/406))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features
