@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.185919
+// @version      2026.7.12.191414
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -198,7 +198,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -1507,6 +1507,8 @@
     .tc-srtpl-io:focus{outline:none;border-color:#8a72c8}
     .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
     .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa;text-align:right}
+    .tc-srtpl-sectog:hover{color:#6f42c1;background:#f3eefb}
+    .tc-srtpl-caret{display:inline-block;color:#b9a4e0;font-size:9px}
     .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 24px 82px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
     .tc-srtpl-defrow{background:#fffaef}
     .tc-srtpl-def{visibility:hidden;border:none;background:none;color:#c9bde6;cursor:pointer;font-size:12px;padding:0;line-height:1}
@@ -3460,11 +3462,16 @@
           [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
           () => applyEntry(t.find, t.replace, t.re), { re: t.re, isDefault: srDefaultName() === t.name, onDefault: () => { srSetDefault(t.name); render(); }, onAddChain: (btn) => openChainPicker(btn, t.name), onRename: (v) => srRenameTemplate(t.name, v), renameValue: t.name, onRemove: () => { srRemoveTemplate(t.name); render(); } }))); }
       else if (!chains.length) { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
-      // history — the 5 most-recent
+      // history — the 5 most-recent, COLLAPSED by default (#409): the header is a toggle; rows render
+      // only when expanded (so they stay out of keyboard nav while collapsed).
       const hist = srHistoryList();
       if (hist.length) {
-        const div = document.createElement('div'); div.className = 'tc-srtpl-sec'; div.textContent = 'History'; pop.appendChild(div);
-        hist.slice(0, 5).forEach(h => pop.appendChild(mkRow(
+        const open = SETTINGS.srHistoryOpen === true;
+        const div = document.createElement('div'); div.className = 'tc-srtpl-sec tc-srtpl-sectog'; div.style.cursor = 'pointer';
+        div.innerHTML = `<span class="tc-srtpl-caret">${open ? '▾' : '▸'}</span> History`;
+        div.onclick = () => { SETTINGS.srHistoryOpen = !open; saveSettings(); render(); };
+        pop.appendChild(div);
+        if (open) hist.slice(0, 5).forEach(h => pop.appendChild(mkRow(
           [{ cls: 'tc-srtpl-nm tc-srtpl-hnm', txt: '' }, { cls: 'tc-srtpl-f', txt: h.find }, { cls: 'tc-srtpl-r', txt: h.replace }],
           () => applyEntry(h.find, h.replace, h.re), { re: h.re })));
       }
