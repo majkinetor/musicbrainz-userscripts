@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.12.140200
+// @version      2026.7.12.145449
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -69,8 +69,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.12.140200 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.12\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.12\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.12\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.12");
+  console.log('%c String Theory %c v2026.7.12.145449 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.12\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.12\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.12.145252\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -19187,7 +19187,7 @@ ${lines}
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.12","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.12","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.12.145252","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.12.145252","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -19690,8 +19690,7 @@ ${lines}
        monochrome = already linked on MB; brand colour = resolved + addable. */
     .ii-tl-linked, .ii-tl-add { display: flex; align-items: center; gap: 9px; min-height: 18px; }
     .ii-tl-add { flex-wrap: wrap; }
-    .ii-tl-linked { flex-wrap: nowrap; }                                             /* #389 keep all linked providers on one row */
-    td:has(> .ii-only-links > .ii-tl-linked) { min-width: 190px; }                   /* #389 widen the Linked column so the row fits */
+    .ii-tl-linked { flex-wrap: wrap; }                                               /* #389 one row when it fits (the wide col #406 gives it); wrap, never overflow into ADD */
     .ii-tl-add:empty::before, .ii-tl-linked:empty::before { content: '—'; color: #d0d4d9; }
     .ii-tl { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
     .ii-tl svg { width: 16px; height: 16px; display: block; }
@@ -21283,8 +21282,7 @@ ${lines}
         <span class="ii-summary ii-only-links" id="ii-summary-links"></span>
         <button class="ii-tbtn ii-only-isrc" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
         <button class="ii-tbtn ghost" id="ii-note-toggle" title="Edit note">✎ Edit note</button>
-        <button class="ii-tbtn primary ii-only-isrc" id="ii-submit">Submit to MusicBrainz</button>
-        <button class="ii-tbtn primary ii-only-links" id="ii-addlinks-btn" style="display:none" title="Add every resolved (coloured) streaming link to MusicBrainz in one background batch">➕ Add links</button>
+        <button class="ii-tbtn primary" id="ii-submit" title="Submit everything pending — entered ISRCs and resolved streaming links — in one go, then close">Submit to MusicBrainz</button>
       </div>
     `;
 
@@ -21337,7 +21335,8 @@ ${lines}
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
     modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
-    modal.querySelector('#ii-addlinks-btn').addEventListener('click', () => TrackLinks.addAll());      // #219: batch-add (B)
+    // #406: no separate "Add links" button — the single Submit button below adds every
+    // resolved link together with any pending ISRCs (right-click a candidate still adds one).
     modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);   // bulk SoundExchange — unchanged (#181)
 
     // Track-ISRC-provider menu (#181): the per-track [SX] buttons carry a ▾ that
@@ -21464,7 +21463,7 @@ ${lines}
       if (urlWrap.contains(e.target)) return;
       if (!urlInput.value.trim()) closeUrlAdd();
     });
-    submitBtn.addEventListener('click', doSubmit);
+    submitBtn.addEventListener('click', doSubmitAll);
 
     // delete-existing wiring (checkboxes are delegated)
     modal.querySelector('#ii-delete').addEventListener('click', doDelete);
@@ -21525,7 +21524,11 @@ ${lines}
     modal.querySelectorAll('.ii-tab').forEach(t => t.classList.toggle('on', t.dataset.scope === scope));
     const cg = modal.querySelector('#ii-colgroup');
     if (cg) cg.innerHTML = (scope === 'links')
-      ? '<col style="width:32px"><col><col style="width:44px"><col style="width:150px"><col style="width:230px">'
+      // #406: the LINKED column holds every existing streaming link (7+ on a well-linked
+      // release). At 150px they overflowed rightward *under the ADD header*, looking like
+      // addable candidates. Give LINKED room for ~8 icons on one row (and it wraps, not
+      // overflows, beyond that) so existing links stay in their own column.
+      ? '<col style="width:32px"><col><col style="width:44px"><col style="width:212px"><col style="width:196px">'
       : '<col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">';
   }
 
@@ -21918,18 +21921,22 @@ ${lines}
     }
     // Submit a batch of add items in one POST; spin → linked, or restore on failure.
     async function addBatch(items, confirmMsg) {
-      if (!items.length) return;
-      if (confirmMsg && !confirm(confirmMsg)) return;
+      if (!items.length) return { ok: 0, fail: 0 };
+      if (confirmMsg && !confirm(confirmMsg)) return { ok: 0, fail: 0 };
       items.forEach(it => { const el = cell(it.idx, it.p.code); if (el) { el.className = 'ii-tl spin'; el.dataset.code = it.p.code; } });
+      let ok = 0, fail = 0;
       try {
         await submitRels(items.map(it => ({ recGid: RELEASE.tracks[it.idx].recId, url: it.url, linkTypeID: it.p.linkTypeID })), noteFor(items.map(it => it.p)));
         items.forEach(it => markLinked(it.idx, it.p, it.url));
+        ok = items.length;
         Log.info('Linked ' + items.length + ' track-link' + (items.length === 1 ? '' : 's') + ' on MusicBrainz');
       } catch (e) {
+        fail = items.length;
         Log.err('Add links failed: ' + errText(e));
         items.forEach(it => makeNew(it.idx, it.p, it.url));   // restore the add affordances
       }
       updateAddBtn();
+      return { ok, fail };
     }
     // right-click a candidate → add just that one
     const addOne = (idx, p, url) => addBatch([{ idx, p, url }]);
@@ -21938,13 +21945,12 @@ ${lines}
     // alt-click → add every resolved link for THIS provider across all tracks
     const addProvider = code => addBatch(newItems('.ii-tl-add .ii-tl.new[data-code="' + code + '"]'));
     // footer button → add everything resolved (no confirm — auto-applied edits)
+    // Add every resolved candidate in one batch. Returns { ok, fail } so the unified
+    // Submit (#406) can report/act on the outcome.
     async function addAll() {
       const items = newItems('.ii-tl-add .ii-tl.new');
-      if (!items.length) return;
-      const btn = modal.querySelector('#ii-addlinks-btn');
-      if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
-      await addBatch(items);
-      if (btn) btn.disabled = false;
+      if (!items.length) return { ok: 0, fail: 0 };
+      return addBatch(items);
     }
 
     // ── DELETE (symmetric to add). Removing a relationship needs its internal id,
@@ -22074,11 +22080,7 @@ ${lines}
       if (sum) sum.innerHTML = '<b>' + total + '</b> tracks · <b>' + linked + '</b> link' + (linked === 1 ? '' : 's') +
         (m ? ' · <span style="color:#fd7e14">' + m + ' track' + (m === 1 ? '' : 's') + ' with none</span>' : '') +
         (n ? ' · <span style="color:#198754">' + n + ' to add</span>' : '');
-      const btn = modal.querySelector('#ii-addlinks-btn');
-      if (!btn) return;
-      btn.style.display = n ? '' : 'none';
-      btn.textContent = '➕ Add ' + n + ' link' + (n === 1 ? '' : 's');
-      btn.disabled = !n;
+      refreshSubmitBtn();   // #406: resolved links feed the shared Submit-to-MusicBrainz count
     }
 
     // Throttled resolve pass: for every track with an ISRC and no existing link on
@@ -22502,8 +22504,20 @@ ${lines}
       (missing ? ' · ' + missing + ' still missing' : '') +
       (seq ? ' <span class="ii-seq-badge" title="Every track\'s ISRC is the previous one + 1: ' +
         esc(seq.from) + ' → ' + esc(seq.to) + '">⛓ sequential ' + esc(seq.from) + ' → ' + esc(seq.to) + '</span>' : '');
-    submitBtn.textContent = 'Submit to MusicBrainz' + (valid ? ' (' + valid + ')' : '');
-    submitBtn.disabled = valid === 0;
+    _validIsrcCount = valid;
+    refreshSubmitBtn();   // #406: label/enable reflect ISRCs + resolved links together
+  }
+
+  // #406: the one Submit button covers BOTH pending ISRCs and resolved streaming links,
+  // so its count/enabled state is the sum. `updateSummary` (ISRC side) and TrackLinks'
+  // `updateAddBtn` (links side) each call this after they recompute their half.
+  let _validIsrcCount = 0;
+  function refreshSubmitBtn() {
+    if (!submitBtn || !modal) return;
+    const linkN = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
+    const total = _validIsrcCount + linkN;
+    submitBtn.textContent = 'Submit to MusicBrainz' + (total ? ' (' + total + ')' : '');
+    submitBtn.disabled = total === 0;
   }
 
   // If every track has a valid ISRC and they form one perfect +1 run (same first
@@ -23288,47 +23302,80 @@ ${lines}
     }, 1000);
   }
 
-  /* ── submit ── */
-  async function doSubmit() {
+  /* ── submit (#406: ONE button for everything pending — ISRCs *and* links) ──
+     Adding ISRCs used to close the window while adding links was a separate button
+     that didn't, so it was easy to submit one and forget the other. This submits
+     BOTH — every entered ISRC and every resolved streaming link — in one action,
+     then closes. Either half can be empty; it does whatever's actually changed. */
+  async function doSubmitAll() {
+    // 1) pending ISRC additions (valid, not a cross-track duplicate, not already present)
     const map = {};
-    let count = 0;
+    let isrcCount = 0;
     const dupSet = highlightDuplicates();   // never submit an ISRC that's on >1 recording
     RELEASE.tracks.forEach(t => {
       const v = normalizeIsrc(t.pending);
       if (!v || !isValidIsrc(v) || !t.recId) return;
       if (t.existing.includes(v) || dupSet.has(v)) return;
       (map[t.recId] = map[t.recId] || []).push(v);
-      count++;
+      isrcCount++;
     });
-    if (!count) { toast('Nothing valid to submit (duplicates are blocked)', 'err'); return; }
-    if (!Auth.isAuthorized()) {
+    // 2) resolved, addable streaming links (from 🔗 Find links)
+    const linkCount = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
+
+    if (!isrcCount && !linkCount) { toast('Nothing to submit — enter ISRCs or 🔗 Find links first', 'err'); return; }
+    // ISRC additions need OAuth; link edits ride the logged-in MB session. Only block
+    // on authorization when there are ISRCs — links alone can still go through.
+    if (isrcCount && !Auth.isAuthorized()) {
       togglePane('ii-setup-pane');
       toast('Authorize first (⚙ Setup)', 'err');
       return;
     }
+
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting…';
-    const note = getEditNote();
-    Log.info('Submitting ' + count + ' ISRC(s) across ' + Object.keys(map).length + ' recording(s)', map);
-    Log.info('Edit note: ' + note.replace(/\n/g, ' '));
-    try {
-      await submitIsrcs(map, note);
-      Log.info('Submit OK');
-      toast('Submitted ' + count + ' ISRC' + (count === 1 ? '' : 's') + ' ✓', 'ok');
-      // move submitted into "existing", clear pending
-      RELEASE.tracks.forEach(t => {
-        const v = normalizeIsrc(t.pending);
-        if (v && map[t.recId] && map[t.recId].includes(v)) { t.existing.push(v); t.pending = ''; }
-      });
-      renderTracks();
-      updateBtnStatus();
+    let isrcOk = true, linkOk = true, linkAdded = 0;
+
+    if (isrcCount) {
+      const note = getEditNote();
+      Log.info('Submitting ' + isrcCount + ' ISRC(s) across ' + Object.keys(map).length + ' recording(s)', map);
+      Log.info('Edit note: ' + note.replace(/\n/g, ' '));
+      try {
+        await submitIsrcs(map, note);
+        Log.info('ISRC submit OK');
+        // move submitted into "existing", clear pending
+        RELEASE.tracks.forEach(t => {
+          const v = normalizeIsrc(t.pending);
+          if (v && map[t.recId] && map[t.recId].includes(v)) { t.existing.push(v); t.pending = ''; }
+        });
+      } catch (e) {
+        isrcOk = false;
+        Log.err('ISRC submit failed: ' + e.message);
+        toast('ISRC submit failed: ' + e.message, 'err');
+      }
+    }
+
+    if (linkCount) {
+      try {
+        const res = await TrackLinks.addAll();   // add every resolved link in one batch
+        linkAdded = res ? res.ok : 0;
+        if (res && res.fail) linkOk = false;
+      } catch (e) {
+        linkOk = false;
+        Log.err('Link add failed: ' + e.message);
+        toast('Link add failed: ' + e.message, 'err');
+      }
+    }
+
+    renderTracks();   // reflect new existing ISRCs + newly-linked providers (also refreshes the button)
+    updateBtnStatus();   // keep the floating page button's ISRC count in sync (modal closes over it)
+    if (isrcOk && linkOk) {
+      const parts = [];
+      if (isrcCount) parts.push(isrcCount + ' ISRC' + (isrcCount === 1 ? '' : 's'));
+      if (linkAdded) parts.push(linkAdded + ' link' + (linkAdded === 1 ? '' : 's'));
+      toast('Submitted ' + parts.join(' + ') + ' ✓', 'ok');
       // no errors — close the editor (the ✓ toast lives on <body> and stays visible)
       _setTimeout(closeModal, 800);
-    } catch (e) {
-      Log.err('Submit failed: ' + e.message);
-      toast('Submit failed: ' + e.message, 'err');
     }
-    updateSummary();   // restores "Submit to MusicBrainz (N)" + disabled state
   }
 
   /* ── delete existing ISRCs (via the recording-edit website form + session cookie) ── */
