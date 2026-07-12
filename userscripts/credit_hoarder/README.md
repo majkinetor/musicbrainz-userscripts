@@ -93,6 +93,8 @@ Triggered by **⚛ All** when a release has more than one source. Instead of run
 - **Edit note** records the real sources, e.g. `Source: Import all (Tidal, Qobuz, Deezer)`.
 - The **Log ▾** menu gains **Copy all** — the combined harvest JSON for the whole run.
 
+<img width="1000" src="./screenshots/multi.png" />
+
 ### Instant Fill
 
 The dispatch-based, zero-dialog import. Idempotent — skips relationships that already exist on the target or were dispatched earlier in the same session.
