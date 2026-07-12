@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.160614
+// @version      2026.7.12.164148
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -212,7 +212,10 @@
     qz: stIcon('qobuz', 16),  bc: stIcon('bandcamp', 16), am: stIcon('apple', 16),
   };
 
-  const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
+  // MBIDs are canonically lowercase, but MB serves an upper-/mixed-case URL as-is
+  // (no redirect), so match case-insensitively and normalise — otherwise a link like
+  // /release/Eb13342a-… left `mbid` undefined and the whole button never injected.
+  const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/i)?.[1]?.toLowerCase();
   if (!mbid) return;
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -4390,7 +4393,7 @@
   }
   // Only the release *overview* page (`/release/<mbid>`) — not its subpages
   // (/edit, /edit-relationships, /aliases, /tags, …) which also match `release/*`.
-  const IS_OVERVIEW = /^\/release\/[a-f0-9-]{36}\/?$/.test(location.pathname);
+  const IS_OVERVIEW = /^\/release\/[a-f0-9-]{36}\/?$/i.test(location.pathname);   // case-insensitive: MB serves mixed-case MBID URLs as-is
   whenDomReady(() => {
     if (!IS_OVERVIEW) return;
     if (!injectButton()) {

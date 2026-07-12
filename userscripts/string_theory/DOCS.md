@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-12 16:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-12 19:14 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -33,7 +33,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 
 - **[Tracklist](#tracklist)** — clean artist-picker table with confidence highlighting, change-all-matching scope, split/alias-aware credits, track actions, reordering and keyboard navigation.
 - **[Recordings](#recordings)** — side-by-side *Track ↔ Recording* comparison with per-row confidence, character-level diff highlighting, and a suggestion/ISRC-aware recording picker.
-- **[Matching](#matching)** — one-click auto-match of artists and recordings, using the whole release group, with configurable tolerance.
+- **[Matching](#matching)** — one-click auto-match of artists, recordings and the release label, using the whole release group, with configurable tolerance.
 - **[Tools](#tools)** — configurable **Tools** bar (choose/reorder, icon or text, hover-flyout params) plus extra tools, and Revert/Clear for one track or all.
 - **[Release Information](#release-information)** — Markdown annotation editor, external links in a right column with a dead-link checker, and a front-cover thumbnail.
 - **[Duplicates](#duplicates)** — a red→green **Similarity** score per existing release, expandable to a track-by-track comparison.
@@ -180,7 +180,10 @@ The **Tools ▾** label opens a menu of the tools that *haven't* been put on the
 
 Besides the integrated tools, there are a few new ones:
 
-- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them.
+- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them from the **★** popup. Each saved pattern row has hover actions: **⛓** add/remove it in a chain, **✎** rename, **✕** delete.
+    - **Chains** — combine several saved patterns into a named **chain** that runs them all in one click, in order (e.g. *All Quotes* = *Quotes* then *Single quote*). Use **＋ Add chain** to create one, then **⛓** on a pattern to add it (a pattern can belong to several chains). While a chain is applied the search/replace fields show a read-only chain chip (**✕** exits back to normal S&R). One *All Quotes* chain is seeded by default.
+    - **Default** — mark one pattern **or** chain as the default with **◉**; it's shown highlighted in the list and is applied automatically the first time you open the Tracklist in a session (with the usual "N titles replaced" toast).
+    - **Import / Export** — the button in the popup header opens a JSON view of your saved patterns + chains + the default marker (history excluded); paste and **✓ Import** to replace the set. The **History** section (recent patterns) is collapsed by default — click it to expand.
 - **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
 
 External tools (need another userscript):
@@ -327,7 +330,7 @@ The interface modifications (everything above except *Auto confirm*) are toggled
 
 | Option | Default | What it does |
 |---|---|---|
-| **Auto-match on start**| On<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads|
+| **Auto-match on start**| Off<br>Off<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads<br>**Label** - When the release's label name has exactly **one** exact MusicBrainz match, selects it automatically on load. Ambiguous names (e.g. *Columbia* → several labels) and names with no exact hit are left for you to pick|
 | **Discogs artist link matching**| On | When the release has a Discogs link, match track artists by their [Discogs URL](#discogs-artist-links) (before the name search) and offer to add/create missing links|
 |**Length tolerance**|5| Allow a length gap within N seconds (use `0` for exact)|
 |**Title tolerance**|1| Allow up to N differing characters in the title (use `0` for exact)|
@@ -970,7 +973,13 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 
 Header toolbar lists available ISRC import sources for the current release. Sources can be generic or depend on appropriate external links and can additionally come via custom URL. 
 
-If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, it will be offered too here (highlighted). External links from release group can also be offered, depending on that [option][Settings].
+<img width="800" src="../isrc_scout/screenshots/toolbar.png" />
+
+On above screenshots there are 3 types of sources represented by provider icon markings:
+
+1. With border - from external links in release
+2. No border - from [Platform Check](../platform_check/README.md) (must be installed)
+3. Blue dot - from release group (with [option](#settings-2) *Use providers from the whole release group*)
 
 Circled providers are from the release, non circled from Platform Check, and blue dot in right upper corner represents provider from the release group.
 

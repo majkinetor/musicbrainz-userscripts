@@ -17,7 +17,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 
 - **[Tracklist]** — clean artist-picker table with confidence highlighting, change-all-matching scope, split/alias-aware credits, track actions, reordering and keyboard navigation.
 - **[Recordings]** — side-by-side *Track ↔ Recording* comparison with per-row confidence, character-level diff highlighting, and a suggestion/ISRC-aware recording picker.
-- **[Matching]** — one-click auto-match of artists and recordings, using the whole release group, with configurable tolerance.
+- **[Matching]** — one-click auto-match of artists, recordings and the release label, using the whole release group, with configurable tolerance.
 - **[Tools]** — configurable **Tools** bar (choose/reorder, icon or text, hover-flyout params) plus extra tools, and Revert/Clear for one track or all.
 - **[Release Information]** — Markdown annotation editor, external links in a right column with a dead-link checker, and a front-cover thumbnail.
 - **[Duplicates]** — a red→green **Similarity** score per existing release, expandable to a track-by-track comparison.
@@ -164,7 +164,10 @@ The **Tools ▾** label opens a menu of the tools that *haven't* been put on the
 
 Besides the integrated tools, there are a few new ones:
 
-- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them. Create chains of patterns.
+- **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them from the **★** popup. Each saved pattern row has hover actions: **⛓** add/remove it in a chain, **✎** rename, **✕** delete.
+    - **Chains** — combine several saved patterns into a named **chain** that runs them all in one click, in order (e.g. *All Quotes* = *Quotes* then *Single quote*). Use **＋ Add chain** to create one, then **⛓** on a pattern to add it (a pattern can belong to several chains). While a chain is applied the search/replace fields show a read-only chain chip (**✕** exits back to normal S&R). One *All Quotes* chain is seeded by default.
+    - **Default** — mark one pattern **or** chain as the default with **◉**; it's shown highlighted in the list and is applied automatically the first time you open the Tracklist in a session (with the usual "N titles replaced" toast).
+    - **Import / Export** — the button in the popup header opens a JSON view of your saved patterns + chains + the default marker (history excluded); paste and **✓ Import** to replace the set. The **History** section (recent patterns) is collapsed by default — click it to expand.
 - **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
 
 <img width="600" src="./screenshots/search.png" />
@@ -313,7 +316,7 @@ The interface modifications (everything above except *Auto confirm*) are toggled
 
 | Option | Default | What it does |
 |---|---|---|
-| **Auto-match on start**| On<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads|
+| **Auto-match on start**| Off<br>Off<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads<br>**Label** - When the release's label name has exactly **one** exact MusicBrainz match, selects it automatically on load. Ambiguous names (e.g. *Columbia* → several labels) and names with no exact hit are left for you to pick|
 | **Discogs artist link matching**| On | When the release has a Discogs link, match track artists by their [Discogs URL](#discogs-artist-links) (before the name search) and offer to add/create missing links|
 |**Length tolerance**|5| Allow a length gap within N seconds (use `0` for exact)|
 |**Title tolerance**|1| Allow up to N differing characters in the title (use `0` for exact)|
