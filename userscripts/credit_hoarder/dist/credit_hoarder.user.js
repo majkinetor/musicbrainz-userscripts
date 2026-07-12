@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.12.180814
+// @version      2026.7.12.181541
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3170,6 +3170,8 @@ ${ourBlock}` : ourBlock;
     const headerSlot = opts?.headerSlot || null;
     const importSourceName = opts?.sourceName || "Discogs";
     const sourceIcon = opts?.sourceIcon || "";
+    const entitySources = opts?.entitySources || null;
+    const sourceBadgeIcon = opts?.sourceBadgeIcon || (() => "");
     const _preloadedNames = /* @__PURE__ */ new Map();
     const _nullNames = allResults.filter((r) => r.type === "resolved" && r.mbUrl && !r.mbName);
     for (const r of _nullNames) {
@@ -3419,7 +3421,7 @@ ${ourBlock}` : ourBlock;
       const thead = document.createElement("thead");
       const hr = document.createElement("tr");
       hr.style.background = "#f5e8a0";
-      [importSourceName + " entity", "MB match / search"].forEach((col) => {
+      [...entitySources ? ["Source"] : [], importSourceName + " entity", "MB match / search"].forEach((col) => {
         const th = document.createElement("th");
         th.style.cssText = "text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;";
         th.textContent = col;
@@ -3456,6 +3458,13 @@ ${ourBlock}` : ourBlock;
           via: isResolved ? r.logEntry?.via || null : null,
           fromCache: isResolved ? r.logEntry?.fromCache || false : false
         });
+        if (entitySources) {
+          const tdSrc = document.createElement("td");
+          tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
+          const names = entitySources.get(_entityKey) || [];
+          tdSrc.innerHTML = names.map((nm) => `<span class="discogs-src-badge" title="${nm}" style="display:inline-flex;vertical-align:middle;margin:0 1px;">${sourceBadgeIcon(nm)}</span>`).join("") || '<span style="color:#bbb;">\u2014</span>';
+          tr.appendChild(tdSrc);
+        }
         const tdDiscogs = document.createElement("td");
         tdDiscogs.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
         const nameRow = document.createElement("div");
@@ -5442,6 +5451,78 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     });
   }
 
+  // src/consolidate.js
+  var fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+  var entityKeyOf = (a) => a && a.resource_url ? a.resource_url : `_nourl_${a && (a.name || a.id) || ""}`;
+  var attrsSig = (rel) => JSON.stringify(
+    (rel.attributes || []).map((x) => x && typeof x === "object" && x._type ? `${x._type}:${x.value}` : String(x)).sort()
+  );
+  var relKeyOf = (rel) => [
+    entityKeyOf(rel.artist),
+    rel.linkType || "",
+    attrsSig(rel),
+    rel.track ? String(rel.track.position != null ? rel.track.position : "") : ""
+  ].join("");
+  function mergeHarvests(harvests) {
+    const mkDedup = () => {
+      const seen = /* @__PURE__ */ new Map(), order = [];
+      return {
+        add(rel, source) {
+          const k = relKeyOf(rel);
+          if (!seen.has(k)) {
+            seen.set(k, { rel, sources: /* @__PURE__ */ new Set() });
+            order.push(k);
+          }
+          seen.get(k).sources.add(source);
+        },
+        drain(relSrc2, entitySrc2) {
+          const arr = [];
+          for (const k of order) {
+            const e = seen.get(k);
+            arr.push(e.rel);
+            relSrc2.set(k, [...e.sources]);
+            const ek = entityKeyOf(e.rel.artist);
+            if (!entitySrc2.has(ek)) entitySrc2.set(ek, /* @__PURE__ */ new Set());
+            e.sources.forEach((s) => entitySrc2.get(ek).add(s));
+          }
+          return arr;
+        }
+      };
+    };
+    const relSrc = /* @__PURE__ */ new Map(), entitySrc = /* @__PURE__ */ new Map();
+    const arD = mkDedup(), trD = mkDedup();
+    const companies = [], seenCo = /* @__PURE__ */ new Set();
+    const tracklist = [], seenPos = /* @__PURE__ */ new Set();
+    let processTracklist = false;
+    for (const h of harvests || []) {
+      if (!h) continue;
+      const src = h.sourceName || "Source";
+      if (h.processTracklist) processTracklist = true;
+      (h.artistRoles || []).forEach((r) => arD.add(r, src));
+      (h.tracklistRels || []).forEach((r) => trD.add(r, src));
+      (h.companies || []).forEach((c) => {
+        const ck = c.resource_url || `co:${fold(c.entity_type_name)}|${fold(c.name)}`;
+        if (ck && !seenCo.has(ck)) {
+          seenCo.add(ck);
+          companies.push(c);
+        }
+      });
+      (h.tracklist || []).forEach((t) => {
+        const pos = String(t && t.position != null ? t.position : "");
+        const key = pos || `#${tracklist.length}`;
+        if (!seenPos.has(key)) {
+          seenPos.add(key);
+          tracklist.push(t);
+        }
+      });
+    }
+    const artistRoles = arD.drain(relSrc, entitySrc);
+    const tracklistRels = trD.drain(relSrc, entitySrc);
+    const entitySources = /* @__PURE__ */ new Map();
+    entitySrc.forEach((set, k) => entitySources.set(k, [...set]));
+    return { companies, artistRoles, tracklistRels, tracklist, processTracklist, relSrc, entitySources };
+  }
+
   // src/ui-bar.js
   var _logs2;
   var _summary;
@@ -5449,6 +5530,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var _tidalJson = null;
   var _qobuzJson = null;
   var _deezerJson = null;
+  var _consolidatedJson = null;
   var ST_ICONS = { "musicbrainz": { "color": "#eb743b", "svg": '<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5)"><path d="m13 1-12 7v14l12 7z" fill="#ba478f"/><path d="m14 1 12 7v14l-12 7z" fill="#eb743b"/></g></svg>' }, "discogs": { "color": "#333333", "svg": '<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><circle cx="512" cy="512" r="512" fill="#333"/><path fill="#fff" d="M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z"/></svg>' }, "spotify": { "color": "#1DB954", "svg": '<svg viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>' }, "apple": { "color": "#FA243C", "svg": '<svg viewBox="0 0 24 24" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' }, "deezer": { "color": "#A238FF", "svg": '<svg viewBox="0 0 24 24" fill="#A238FF"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></svg>' }, "tidal": { "color": "#000000", "svg": '<svg viewBox="0 0 24 24" fill="#000000"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>' }, "qobuz": { "color": "#0070ef", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' }, "beatport": { "color": "#0a8754", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0a8754"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>' }, "bandcamp": { "color": "#629AA9", "svg": '<svg viewBox="0 0 24 24" fill="#629AA9"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' }, "volumo": { "color": "#7c4dff", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' }, "hdtracks": { "color": "#e63329", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' }, "soundexchange": { "color": "#6f42c1", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "globe": { "color": "#6f7d75", "svg": '<svg viewBox="0 0 24 24" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' } };
   function stIcon(name, size) {
     var i = ST_ICONS[name];
@@ -5664,6 +5746,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
         .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
+        /* #408 "Import all" \u2014 wider pill with a glyph + label, brand-orange so it reads as the primary action */
+        .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
+        .discogs-src-all:hover { background: #e8771d; color: #fff; border-color: #e8771d; }
+        .discogs-src-all .discogs-all-glyph { font-size: 1rem; line-height: 1; }
+        .discogs-bar-badge, .discogs-src-badge svg { width: 15px; height: 15px; }
         .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
         .discogs-bar-row2 {
             display: flex;
@@ -5843,12 +5930,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     const row1 = document.createElement("div");
     row1.className = "discogs-bar-row1";
     const importSources = [];
-    if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g, c) => runImport(discogsUrl, g, c) });
-    if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g, c) => runTidalImport(sources.tidal, g, c) });
-    if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g, c) => runQobuzImport(sources.qobuz, g, c) });
-    if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g, c) => runDeezerImport(sources.deezer, g, c) });
+    if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g, c, collect) => runImport(discogsUrl, g, c, collect) });
+    if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g, c, collect) => runTidalImport(sources.tidal, g, c, collect) });
+    if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g, c, collect) => runQobuzImport(sources.qobuz, g, c, collect) });
+    if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
     if ((meta.titlesRemixCount || 0) > 0) {
-      importSources.push({ name: "Titles", url: "", run: (g, c) => runTitlesImport(g, c) });
+      importSources.push({ name: "Titles", url: "", run: (g, c, collect) => runTitlesImport(g, c, collect) });
     }
     const importLabel = document.createElement("span");
     importLabel.className = "discogs-import-label";
@@ -5886,6 +5973,24 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       srcButtons.push(b);
       srcIcons.appendChild(b);
     });
+    if (importSources.length > 1) {
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = "discogs-src-ico discogs-src-all";
+      allBtn._icon = '<span class="discogs-all-glyph">\u269B</span><span class="discogs-all-lbl">All</span>';
+      allBtn.innerHTML = allBtn._icon;
+      allBtn.dataset.src = "All";
+      allBtn.title = `Import from all ${importSources.length} sources at once \u2014 merged & de-duplicated into one review`;
+      allBtn.addEventListener("click", () => {
+        if (importing) {
+          if (allBtn.classList.contains("importing")) cancelRun();
+          return;
+        }
+        startImport(allBtn, "", (g, c) => runConsolidatedImport(importSources, g, c));
+      });
+      srcButtons.push(allBtn);
+      srcIcons.appendChild(allBtn);
+    }
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
@@ -6178,6 +6283,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (sources.tidal) logMenu.appendChild(mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l)));
     if (sources.qobuz) logMenu.appendChild(mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l)));
     if (sources.deezer) logMenu.appendChild(mkMenuItem("Copy Deezer", "Copy the parsed Deezer credits for this release", (b, l) => bar._copy?.deezer(b, l)));
+    if (importSources.length > 1) logMenu.appendChild(mkMenuItem("Copy all", 'Copy the combined JSON of an "Import all" run \u2014 every source plus the merged, de-duplicated result (#408)', (b, l) => bar._copy?.all(b, l)));
     document.body.appendChild(logMenu);
     function openLogMenu() {
       const open = logMenu.classList.toggle("open");
@@ -6397,7 +6503,11 @@ ${lines}
         },
         deezer: (item, label) => {
           if (_deezerJson) copyToClipboard(JSON.stringify(_deezerJson, null, 2), item, label);
+        },
+        all: (item, label) => {
+          if (_consolidatedJson) copyToClipboard(JSON.stringify(_consolidatedJson, null, 2), item, label);
         }
+        // #408
       };
       bar._setProgress = (pct, text) => {
         if (pct !== null && pct >= 100) _hideBar();
@@ -6699,7 +6809,54 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
-  function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled }) {
+  async function runConsolidatedImport(importSources, getOpts, cancelled) {
+    const isCancelled = () => typeof cancelled === "function" && cancelled();
+    log.info(`Import all: harvesting ${importSources.length} sources\u2026`);
+    const harvests = [];
+    for (const s of importSources) {
+      if (isCancelled()) return;
+      try {
+        const parts = await s.run(getOpts, cancelled, true);
+        const n = (parts?.artistRoles?.length || 0) + (parts?.tracklistRels?.length || 0) + (parts?.companies?.length || 0);
+        if (parts && n) {
+          harvests.push({ ...parts, sourceName: s.name });
+          log.info(`${s.name}: ${n} credit(s) collected`);
+        } else log.info(`${s.name}: no importable credits`);
+      } catch (e) {
+        log.warn(`${s.name} failed: ${e.message || e}`);
+      }
+    }
+    if (isCancelled()) return;
+    if (!harvests.length) {
+      log.warn("Import all: no credits from any source.");
+      document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
+      return;
+    }
+    const merged = mergeHarvests(harvests);
+    const total = merged.artistRoles.length + merged.tracklistRels.length;
+    log.info(`Import all: <strong>${total}</strong> unique credit(s) from ${harvests.length} source(s) after de-duplication.`);
+    _consolidatedJson = {
+      via: "consolidated",
+      sources: harvests.map((h) => h.sourceName),
+      discogs: _discogsJson,
+      tidal: _tidalJson,
+      qobuz: _qobuzJson,
+      deezer: _deezerJson,
+      merged: { companies: merged.companies, artistRoles: merged.artistRoles, tracklistRels: merged.tracklistRels }
+    };
+    return runSourcePipeline({
+      companies: merged.companies,
+      artistRoles: merged.artistRoles,
+      tracklistRels: merged.tracklistRels,
+      tracklist: merged.tracklist,
+      sourceUrl: "",
+      processTracklist: merged.tracklistRels.length > 0 || merged.processTracklist,
+      getOpts,
+      cancelled,
+      entitySources: merged.entitySources
+    });
+  }
+  function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources }) {
     const isCancelled = () => typeof cancelled === "function" && cancelled();
     const allArtistRoles = artistRoles.concat(tracklistRels);
     const uniqueArtists = [];
@@ -6805,9 +6962,13 @@ ${lines}
         // must say "No Qobuz page", not "No Discogs page". The
         // URL-less Titles source (#271) reports as 'Titles' so the
         // review table drops Discogs-specific wording/elements.
-        sourceName: sourceUrl ? sourceNameForUrl(sourceUrl) : "Titles",
+        sourceName: entitySources ? "multiple sources" : sourceUrl ? sourceNameForUrl(sourceUrl) : "Titles",
         sourceIcon: sourceUrl ? srcIconByUrl(sourceUrl) : SRC_ICON.Titles || "",
         // #193 — shown on the "Start import" button
+        // #408: per-entity source provenance → the review table renders a Source column
+        // (brand-icon badges). Present only on an "Import all" run.
+        entitySources,
+        sourceBadgeIcon: (name) => SRC_ICON[name] || "",
         // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
         // every entity via MB API. Used when a cached MBID is stale.
         onRefresh: () => runPreflight(true).then((freshResults) => {

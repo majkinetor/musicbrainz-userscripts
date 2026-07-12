@@ -55,6 +55,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     // `opts.sourceIcon` — the source's brand glyph (HTML), shown on the Start-import
     // button so the chosen source stays visible through the review phase (#193).
     const sourceIcon = opts?.sourceIcon || '';
+    // #408: on an "Import all" run, a per-entity provenance map + an icon lookup drive a
+    // leading "Source" column (brand-icon badges). Absent on single-source runs → no column.
+    const entitySources = opts?.entitySources || null;
+    const sourceBadgeIcon = opts?.sourceBadgeIcon || (() => '');
 
     // Pre-load missing names into a Map — IDB first, then MB WS2 fetch.
     const _preloadedNames = new Map();
@@ -399,7 +403,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const thead = document.createElement('thead');
         const hr = document.createElement('tr');
         hr.style.background = '#f5e8a0';
-        [importSourceName + ' entity', 'MB match / search'].forEach(col => {
+        [...(entitySources ? ['Source'] : []), importSourceName + ' entity', 'MB match / search'].forEach(col => {
             const th = document.createElement('th');
             th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;';
             th.textContent = col;
@@ -457,6 +461,15 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 via:       isResolved ? (r.logEntry?.via       || null)  : null,
                 fromCache: isResolved ? (r.logEntry?.fromCache || false) : false,
             });
+
+            // ── Col 0 (#408 consolidated): Source badges ───────────────────────
+            if (entitySources) {
+                const tdSrc = document.createElement('td');
+                tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
+                const names = entitySources.get(_entityKey) || [];
+                tdSrc.innerHTML = names.map(nm => `<span class="discogs-src-badge" title="${nm}" style="display:inline-flex;vertical-align:middle;margin:0 1px;">${sourceBadgeIcon(nm)}</span>`).join('') || '<span style="color:#bbb;">—</span>';
+                tr.appendChild(tdSrc);
+            }
 
             // ── Col 1: Discogs ─────────────────────────────────────────────────
             const tdDiscogs = document.createElement('td');
