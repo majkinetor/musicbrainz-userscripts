@@ -453,6 +453,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // Build the bar
     const bar = document.createElement('div');
     bar.className = 'discogs-bar';
+    // Monotonic token identifying the current import run. `startImport` bumps it
+    // and captures the value; `cancelRun` bumps it again to invalidate an
+    // in-flight run so its async chain (preflight / review) unwinds without
+    // dispatching. Read by the pipeline via the `cancelled()` closure.
+    bar._runToken = 0;
 
     // ── Row 1: import button + logo + source URL (Proposal C of #77) ───
     // Maintainer asked for the Import button on the LEFT so the eye
@@ -468,17 +473,17 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // source, right-click to open its page. Replaces the old split Import button
     // + submenu, and folds in the source icons that used to sit on the right.
     const importSources = [];
-    if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
-    if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
-    if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
-    if (sources.deezer) importSources.push({ name: 'Deezer', url: sources.deezer, run: g => runDeezerImport(sources.deezer, g) });
+    if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: (g, c) => runImport(discogsUrl, g, c) });
+    if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: (g, c) => runTidalImport(sources.tidal, g, c) });
+    if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: (g, c) => runQobuzImport(sources.qobuz, g, c) });
+    if (sources.deezer) importSources.push({ name: 'Deezer', url: sources.deezer, run: (g, c) => runDeezerImport(sources.deezer, g, c) });
     // #271: "Titles" — derive remixer credits from the track titles. Offered
     // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
     // CH doesn't surface an action with nothing behind it. Pushed LAST so it
     // shows in the submenu when a provider is linked and is the sole/default
     // action when none is.
     if ((meta.titlesRemixCount || 0) > 0) {
-        importSources.push({ name: 'Titles', url: '', run: g => runTitlesImport(g) });
+        importSources.push({ name: 'Titles', url: '', run: (g, c) => runTitlesImport(g, c) });
     }
     const importLabel = document.createElement('span');
     importLabel.className = 'discogs-import-label';
@@ -509,7 +514,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         b.title = s.url
             ? `Import credits from ${s.name}  ·  right-click to open the ${s.name} page`
             : 'Import remixer credits derived from the track titles';
-        b.addEventListener('click', () => { if (!importing) startImport(b, s.url, s.run); });
+        b.addEventListener('click', () => {
+            // Mid-run, clicking the active source (the only one still shown)
+            // cancels the preflight/review and restores the source picker so you
+            // can pick a different source without reloading the page.
+            if (importing) { if (b.classList.contains('importing')) cancelRun(); return; }
+            startImport(b, s.url, s.run);
+        });
         if (s.url) b.addEventListener('contextmenu', e => { e.preventDefault(); window.open(s.url, '_blank', 'noopener,noreferrer'); });
         srcButtons.push(b);
         srcIcons.appendChild(b);
@@ -952,20 +963,56 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         statusEl.classList.toggle('discogs-bar-status-final', !!msg);
     };
 
+    // Abort the in-flight run and restore the bar to its initial state — the
+    // full source picker with every import choice — so the user can pick a
+    // different source (or the same one again) without reloading the page.
+    // Triggered by clicking the active source icon mid-run. Works in either
+    // phase: it invalidates the run token (so a still-running preflight bails
+    // before it reaches the review table) and resolves the pending review
+    // promise (so the review chain unwinds without dispatching).
+    function cancelRun() {
+        bar._runToken++;                 // invalidate the current run's token
+        importing = false;
+        // Unblock the review-table promise if we're mid-review.
+        if (typeof bar._reviewAbort === 'function') { const abort = bar._reviewAbort; bar._reviewAbort = null; abort(); }
+        // Restore every source icon (the active run had hidden the others).
+        srcButtons.forEach(b => { b.classList.remove('importing'); b.style.display = ''; b.title = b._restoreTitle || b.title; });
+        // Drop the run chrome: progress %, pinned/importing/reviewing states,
+        // the marquee bar, and the review table + its header-mounted button.
+        progressPct.style.display = 'none';
+        progressPct.textContent = '0%';
+        bar.classList.remove('is-importing', 'is-reviewing', 'is-pinned');
+        _hideBar();
+        reviewSlot.replaceChildren();
+        actionSlot.replaceChildren();
+        setReviewContainer(reviewSlot);   // re-arm the (now empty) review host for the next run
+        bar._setStopMessage('Import cancelled — pick a source to start again.');
+        bar._pin();
+        delete bar._setProgress;
+    }
+
     // Shared import-run scaffolding — both source buttons funnel through here.
     // `srcBtn`/`restoreLabel` drive the button state, `sourceUrl` feeds the
     // edit note, `runner(getOpts)` is the source-specific import entry
     // (`runImport` for Discogs, `runTidalImport` for Tidal).
     function startImport(srcBtn, sourceUrl, runner) {
+        // This run owns a fresh token; `cancelled()` becomes true the moment
+        // anything (a re-click that calls cancelRun, or a later run) bumps it.
+        const myToken = ++bar._runToken;
+        const cancelled = () => bar._runToken !== myToken;
         // #272: during a run only the active source icon shows — you can't start
         // another import anyway — so hide the others and mark the active one.
         // (Left-click is gated by `importing`; the active icon stays interactive
-        // so right-click still opens its page.)
+        // so right-click still opens its page — and a click on it now cancels.)
         importing = true;
         srcButtons.forEach(b => {
             const active = b === srcBtn;
             b.classList.toggle('importing', active);
             b.style.display = active ? '' : 'none';
+            if (active) {
+                b._restoreTitle = b.title;
+                b.title = `Cancel this ${srcBtn.dataset.src} import and return to the source picker`;
+            }
         });
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
@@ -1163,9 +1210,12 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
             log.info(html);
         });
-        runner(getOpts).finally(() => {
+        runner(getOpts, cancelled).finally(() => {
+            // Cancelled runs are torn down by `cancelRun` (and this token is stale
+            // once a new run started) — don't fight its fresh state.
+            if (cancelled()) { delete bar._setProgress; return; }
             importing = false;
-            srcButtons.forEach(b => { b.classList.remove('importing'); b.style.display = ''; });
+            srcButtons.forEach(b => { b.classList.remove('importing'); b.style.display = ''; b.title = b._restoreTitle || b.title; });
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
@@ -1216,7 +1266,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         keysToRemove.forEach(k => localStorage.removeItem(k));
     } catch(e) {}
 })();
-function runImport(discogsUrl, getOpts) {
+function runImport(discogsUrl, getOpts, cancelled) {
     // Initial snapshot — used for the preflight phase (per-track decision is
     // baked in here because it controls which entities are resolved). The
     // OTHER options (move-to-tracks, create-works, dedup) are re-read just
@@ -1290,7 +1340,7 @@ function runImport(discogsUrl, getOpts) {
                 log.info(`Found ${tracklistRels.length} tracklist relationships`);
             }
 
-            return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts });
+            return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts, cancelled });
         });
 }
 
@@ -1299,7 +1349,7 @@ function runImport(discogsUrl, getOpts) {
 // the exact same pipeline as Discogs. Linked credits carry a Tidal artist
 // URL, so preflight resolves them via MB's Tidal URL rels — same exactness
 // as Discogs resolution.
-function runTidalImport(tidalUrl, getOpts) {
+function runTidalImport(tidalUrl, getOpts, cancelled) {
     log.info(`Opening the Tidal credits tab — it closes itself once harvested (a few seconds)…`);
     return harvestTidalAlbum(tidalUrl)
         .then(harvest => {
@@ -1337,7 +1387,7 @@ function runTidalImport(tidalUrl, getOpts) {
             (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
             if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist, getOpts });
+            return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }
@@ -1346,7 +1396,7 @@ function runTidalImport(tidalUrl, getOpts) {
 // (one `track__info` line per track), so a single cross-origin page fetch is
 // enough — no companion tab, no auth. Names only (Qobuz exposes no artist
 // links), so every credit resolves via name search + the review table.
-function runQobuzImport(qobuzUrl, getOpts) {
+function runQobuzImport(qobuzUrl, getOpts, cancelled) {
     const parsed = parseQobuzAlbumUrl(qobuzUrl);
     if (!parsed) { log.error(`Not a Qobuz album URL: ${qobuzUrl}`); return Promise.resolve(); }
 
@@ -1367,7 +1417,7 @@ function runQobuzImport(qobuzUrl, getOpts) {
         log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
         skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
         if (!tracklistRels.length) { log.warn('No importable Qobuz credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-        return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
+        return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts, cancelled });
     };
 
     const scrape = () => {
@@ -1392,7 +1442,7 @@ function runQobuzImport(qobuzUrl, getOpts) {
 // cross-origin page fetch is enough, no tab, no auth. Names only, composer role
 // only, so every credit resolves via name search + the review table (the Qobuz
 // shape).
-function runDeezerImport(deezerUrl, getOpts) {
+function runDeezerImport(deezerUrl, getOpts, cancelled) {
     const parsed = parseDeezerAlbumUrl(deezerUrl);
     if (!parsed) { log.error(`Not a Deezer album URL: ${deezerUrl}`); return Promise.resolve(); }
     log.info(`Fetching Deezer album page: ${parsed.pageUrl}`);
@@ -1413,7 +1463,7 @@ function runDeezerImport(deezerUrl, getOpts) {
             log.info(`Deezer credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
             skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (!tracklistRels.length) { log.warn('No importable Deezer credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts });
+            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }
@@ -1459,7 +1509,7 @@ export function probeTitleRemixes(mbid) {
         .catch(() => ({ count: 0, tracklist: [] }));
 }
 
-function runTitlesImport(getOpts) {
+function runTitlesImport(getOpts, cancelled) {
     const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
     if (!m) { log.error('Not on a release page — cannot read track titles.'); return Promise.resolve(); }
     log.info('Reading track titles from MusicBrainz to derive remixer credits…');
@@ -1472,7 +1522,7 @@ function runTitlesImport(getOpts) {
                 document.querySelector('.discogs-bar')?._setStopMessage?.('No remixes found in titles');
                 return;
             }
-            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: '', processTracklist: true, getOpts });
+            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: '', processTracklist: true, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }
@@ -1480,7 +1530,8 @@ function runTitlesImport(getOpts) {
 // The source-agnostic pipeline (#193): unique-entity collection → preflight
 // resolution → review table → confirmed-IDB sweep → dispatch. Extracted from
 // runImport unchanged so every source feeds the same engine.
-function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
+function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled }) {
+            const isCancelled = () => (typeof cancelled === 'function') && cancelled();
             // Collect all unique artist entities referenced across release-level and tracklist roles
             const allArtistRoles = artistRoles.concat(tracklistRels);
             const uniqueArtists = [];
@@ -1613,6 +1664,9 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
             let capturedConfirmedMap = null;
 
             return runPreflight().then(allResults => {
+                // Cancelled during preflight — the source picker is already back;
+                // bail before mounting a review table for an abandoned run.
+                if (isCancelled()) return;
                 annotateRoles(allResults);
                 capturedResults = allResults;
                 // #216: nothing to review (no entities resolved/unresolved) — stop
@@ -1645,9 +1699,16 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                         capturedResults = freshResults;
                         return freshResults;
                     }),
+                    // Let `cancelRun` unblock this review promise (resolve → null)
+                    // so the chain unwinds cleanly instead of leaking a pending
+                    // promise when the user cancels mid-review.
+                    registerAbort: (fn) => { const b = document.querySelector('.discogs-bar'); if (b) b._reviewAbort = fn; },
                 });
             })
                 .then(confirmedMap => {
+                    const _bar = document.querySelector('.discogs-bar');
+                    if (_bar) _bar._reviewAbort = null;   // review resolved — drop the abort hook
+                    if (isCancelled()) return;   // cancelled mid-review — don't dispatch
                     if (!confirmedMap) return;   // #216: review skipped (nothing to import)
                     capturedConfirmedMap = confirmedMap;
                     // #139: dispatch is starting — a real import phase again, so
