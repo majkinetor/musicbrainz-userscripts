@@ -1,7 +1,7 @@
-// #412 (Apollo) — pulse the Apollo toolbar while MB is submitting the edit.
-// The release editor emits no loading-message, so the trigger is the Enter-edit CLICK. This
-// injects a harmless "Enter edit" button into MB's footer (div.buttons) and clicks it — Apollo's
-// capture-phase listener flags body.tc-saving without anything actually submitting.
+// #412 (Apollo) — pulse the pinned COMPACT-NAV bar while MB is submitting the edit.
+// The release editor emits no loading-message, and the button the user clicks is the compact-nav
+// "✓ Enter edit" (#tc-nav-wiz .tc-nav-wbtn), not the footer. Clicking it must flag body.tc-saving
+// and pulse #tc-nav-bar. We stub the wiz button's native-forwarding by clicking it directly.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
@@ -17,41 +17,29 @@ await page.addInitScript(() => { window.GM_getValue = (k, d) => d; window.GM_set
 await page.goto(`https://musicbrainz.org/release/${REL}/edit`, { waitUntil: 'domcontentloaded' });
 if (page.url().includes('/login')) { console.error('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
 await page.waitForFunction(() => { try { const e = window.MB && window.MB.releaseEditor; return e && e.rootField && e.rootField.release && e.rootField.release(); } catch { return false; } }, null, { timeout: 120000 }).catch(() => {});
+// ensure compact nav is on so #tc-nav-bar is built
+await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('apolloEditor.settings.v1') || '{}'); s.apolloEnabled = true; s.compactNav = true; localStorage.setItem('apolloEditor.settings.v1', JSON.stringify(s)); });
 await page.addScriptTag({ content: CODE });
-await page.waitForSelector('#tc-bar', { timeout: 30000 }).catch(() => {});
+await page.waitForSelector('#tc-nav-bar', { timeout: 30000 }).catch(() => {});
 await page.waitForTimeout(1500);
 
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
-ck(await page.$('#tc-bar') !== null, 'Apollo #tc-bar toolbar mounted');
+ck(await page.$('#tc-nav-bar') !== null, 'Apollo compact nav bar (#tc-nav-bar) mounted');
+ck(await page.$('#tc-nav-wiz .tc-nav-wbtn') !== null, 'compact nav has a wiz submit button (Enter edit)');
 ck(!(await page.evaluate(() => document.body.classList.contains('tc-saving'))), 'not saving at rest');
 
-// locate MB's real Enter-edit button, confirm it sits in a footer div.buttons, and inject a
-// harmless twin next to it so clicking triggers Apollo's detector without submitting.
-const setup = await page.evaluate(() => {
-  const real = [...document.querySelectorAll('button')].find(b => /^\s*enter edit\s*$/i.test(b.textContent || ''));
-  if (!real) return { ok: false, why: 'no real Enter edit button' };
-  const footer = real.closest('div.buttons');
-  if (!footer) return { ok: false, why: 'Enter edit not in a div.buttons footer' };
-  const t = document.createElement('button');
-  t.type = 'button'; t.id = 'tc-test-enter'; t.textContent = 'Enter edit';
-  footer.appendChild(t);
-  return { ok: true };
-});
-ck(setup.ok, `test Enter-edit button placed in MB's footer (${setup.why || 'ok'})`);
-
-await page.evaluate(() => document.getElementById('tc-test-enter').click());   // DOM click → captures regardless of visibility
+// remove the wiz button's own onclick (which forwards to MB's native submit) so nothing submits;
+// Apollo's saving flash is on a document capture-phase listener, so it still fires on the click.
+await page.evaluate(() => { document.querySelector('#tc-nav-wiz .tc-nav-wbtn').onclick = null; });
+await page.evaluate(() => document.querySelector('#tc-nav-wiz .tc-nav-wbtn').click());
 await page.waitForTimeout(300);
 const on = await page.evaluate(() => {
-  const bar = document.querySelector('#tc-bar');
+  const bar = document.querySelector('#tc-nav-bar');
   return { body: document.body.classList.contains('tc-saving'), anim: getComputedStyle(bar).animationName };
 });
-ck(on.body, 'body.tc-saving set when the Enter-edit button is clicked');
-ck(on.anim === 'tc-saving-pulse', `#tc-bar pulses (animation=${on.anim})`);
-
-// loading-message backstop still works
-await page.evaluate(() => { document.body.classList.remove('tc-saving'); const s = document.createElement('span'); s.className = 'loading-message'; s.textContent = 'Submitting edits...'; s.id = 'fake-lm'; document.body.appendChild(s); });
-await page.waitForTimeout(300);
-ck(await page.evaluate(() => document.body.classList.contains('tc-saving')), 'loading-message backstop also flags saving');
+ck(on.body, 'body.tc-saving set when the compact-nav Enter edit is clicked');
+ck(on.anim === 'tc-saving-pulse', `#tc-nav-bar pulses (animation=${on.anim})`);
+await page.screenshot({ path: 'C:/Work/mb-userscripts/userscripts/apollo_editor/test/logs/_412_flash.png', clip: { x: 0, y: 0, width: 1600, height: 110 } }).catch(() => {});
 
 ck(errs.filter(e => !/ResizeObserver/.test(e)).length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
