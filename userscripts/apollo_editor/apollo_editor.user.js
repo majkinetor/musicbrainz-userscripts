@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.13.201335
+// @version      2026.7.13.202029
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1206,7 +1206,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.13.201335';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.13.202029';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -5607,10 +5607,11 @@
 
   // #412: pulse the pinned compact-nav bar while MB is submitting the edit — a big edit can take a
   // while. The RELEASE editor emits no `loading-message` (it just disables the button and POSTs), so
-  // the trigger is the Enter-edit CLICK. The button the user actually presses is the compact-nav one
-  // (`#tc-nav-wiz .tc-nav-wbtn`, e.g. "✓ Enter edit"), NOT the native footer — so watch that. A
-  // successful submit navigates away and the pulse goes with it; a watchdog clears it if a validation
-  // error keeps us on the page. Also handle the native footer (compact nav off).
+  // the trigger is the Enter-edit CLICK — specifically the compact-nav button the user presses
+  // (`#tc-nav-wiz .tc-nav-wbtn`, e.g. "✓ Enter edit"), or the native footer when the compact nav is
+  // off. A successful submit navigates away and the pulse goes with it; a watchdog clears it if a
+  // validation error keeps us on the page. (No DOM-scanning backstop — the release editor keeps a
+  // hidden submit template around that would false-trigger the moment there are changes.)
   let _saveWd = null;
   function startSaveFlash() {
     document.body.classList.add('tc-saving');
@@ -5626,11 +5627,6 @@
       const f = navFooterEl();
       if (f && f.contains(b) && /^\s*(finish|enter edit)\s*$/i.test(b.textContent || '')) startSaveFlash();
     }, true);
-    // Backstop for any page that DOES surface a loading-message (relationship-editor style).
-    const obs = new MutationObserver(() => {
-      if ([...document.querySelectorAll('.loading-message, .submitting')].some(el => /submit/i.test(el.textContent || ''))) startSaveFlash();
-    });
-    obs.observe(document.body, { childList: true, subtree: true });
   }
 
   /* ── Release information takeover (#129): tidy the first tab — hide the help bubble, clean the
