@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.12.2
+// @version      2026.7.13.134517
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -5889,6 +5889,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
         .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
+        /* #412: while MusicBrainz is submitting the staged edits (can be slow for hundreds),
+           tint the whole bar blue and pulse it so it's obvious the save is in flight. */
+        .discogs-bar.is-saving { border-left-color: #1c6fd6; animation: discogs-bar-saving 1.1s ease-in-out infinite; }
+        @keyframes discogs-bar-saving { 0%,100% { background: #fff; } 50% { background: #e9f2fe; } }
+        .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; }
         /* #408 "Import all" \u2014 wider pill with a glyph + label, brand-orange so it reads as the primary action */
         .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
         .discogs-src-all:hover { background: #e8771d; color: #fff; border-color: #e8771d; }
@@ -6708,6 +6713,22 @@ ${lines}
       anchor.insertBefore(bar, anchor.firstChild);
     }
     insertBar();
+    (function watchSubmit() {
+      const findMsg = () => [...document.querySelectorAll(".loading-message, .submitting")].find((el) => /submit/i.test(el.textContent || ""));
+      const set = (on) => {
+        if (!!bar._saving === on) return;
+        bar._saving = on;
+        bar.classList.toggle("is-saving", on);
+        if (on) {
+          bar._pin?.();
+          _showBar();
+          bar._setStopMessage("\u23F3 Submitting edits to MusicBrainz\u2026");
+        } else bar._setStopMessage("");
+      };
+      const obs = new MutationObserver(() => set(!!findMsg()));
+      obs.observe(document.body, { childList: true, subtree: true });
+      set(!!findMsg());
+    })();
   }
   (function cleanupLocalStorage() {
     try {

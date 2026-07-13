@@ -280,6 +280,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
         .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
+        /* #412: while MusicBrainz is submitting the staged edits (can be slow for hundreds),
+           tint the whole bar blue and pulse it so it's obvious the save is in flight. */
+        .discogs-bar.is-saving { border-left-color: #1c6fd6; animation: discogs-bar-saving 1.1s ease-in-out infinite; }
+        @keyframes discogs-bar-saving { 0%,100% { background: #fff; } 50% { background: #e9f2fe; } }
+        .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; }
         /* #408 "Import all" — wider pill with a glyph + label, brand-orange so it reads as the primary action */
         .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
         .discogs-src-all:hover { background: #e8771d; color: #fff; border-color: #e8771d; }
@@ -1281,6 +1286,26 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         anchor.insertBefore(bar, anchor.firstChild);
     }
     insertBar();
+
+    // #412: reflect MB's submit on the toolbar. Clicking "Enter edit" applies the whole
+    // staged batch — hundreds of edits on a big release — and MB only shows a small
+    // `<span class="loading-message">Submitting edits…</span>` by the button. Watch for it and
+    // put the bar into a pulsing "is-saving" state. No teardown needed: a successful submit
+    // navigates away; if it fails MB removes the message and we drop back out.
+    (function watchSubmit() {
+        const findMsg = () => [...document.querySelectorAll('.loading-message, .submitting')]
+            .find(el => /submit/i.test(el.textContent || ''));
+        const set = on => {
+            if (!!bar._saving === on) return;
+            bar._saving = on;
+            bar.classList.toggle('is-saving', on);
+            if (on) { bar._pin?.(); _showBar(); bar._setStopMessage('⏳ Submitting edits to MusicBrainz…'); }
+            else bar._setStopMessage('');
+        };
+        const obs = new MutationObserver(() => set(!!findMsg()));
+        obs.observe(document.body, { childList: true, subtree: true });
+        set(!!findMsg());   // in case a submit is already in flight when the bar mounts
+    })();
 }
 (function cleanupLocalStorage() {
     try {
