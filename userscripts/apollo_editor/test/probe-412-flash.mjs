@@ -1,7 +1,7 @@
 // #412 (Apollo) — pulse the Apollo toolbar while MB is submitting the edit.
-// Loads a real /edit page, lets Apollo mount its #tc-bar, then simulates MB's submit by
-// injecting `<span class="loading-message">Submitting edits...</span>`; asserts body.tc-saving
-// toggles and #tc-bar carries the tc-saving-pulse animation, and clears when the message goes.
+// The release editor emits no loading-message, so the trigger is the Enter-edit CLICK. This
+// injects a harmless "Enter edit" button into MB's footer (div.buttons) and clicks it — Apollo's
+// capture-phase listener flags body.tc-saving without anything actually submitting.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
@@ -25,24 +25,33 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
 ck(await page.$('#tc-bar') !== null, 'Apollo #tc-bar toolbar mounted');
 ck(!(await page.evaluate(() => document.body.classList.contains('tc-saving'))), 'not saving at rest');
 
-// simulate MB submit
-await page.evaluate(() => {
-  const s = document.createElement('span');
-  s.className = 'loading-message'; s.textContent = 'Submitting edits...'; s.id = 'fake-submit';
-  (document.querySelector('#page') || document.body).appendChild(s);
+// locate MB's real Enter-edit button, confirm it sits in a footer div.buttons, and inject a
+// harmless twin next to it so clicking triggers Apollo's detector without submitting.
+const setup = await page.evaluate(() => {
+  const real = [...document.querySelectorAll('button')].find(b => /^\s*enter edit\s*$/i.test(b.textContent || ''));
+  if (!real) return { ok: false, why: 'no real Enter edit button' };
+  const footer = real.closest('div.buttons');
+  if (!footer) return { ok: false, why: 'Enter edit not in a div.buttons footer' };
+  const t = document.createElement('button');
+  t.type = 'button'; t.id = 'tc-test-enter'; t.textContent = 'Enter edit';
+  footer.appendChild(t);
+  return { ok: true };
 });
+ck(setup.ok, `test Enter-edit button placed in MB's footer (${setup.why || 'ok'})`);
+
+await page.evaluate(() => document.getElementById('tc-test-enter').click());   // DOM click → captures regardless of visibility
 await page.waitForTimeout(300);
 const on = await page.evaluate(() => {
   const bar = document.querySelector('#tc-bar');
   return { body: document.body.classList.contains('tc-saving'), anim: getComputedStyle(bar).animationName };
 });
-ck(on.body, 'body.tc-saving set when MB starts submitting');
+ck(on.body, 'body.tc-saving set when the Enter-edit button is clicked');
 ck(on.anim === 'tc-saving-pulse', `#tc-bar pulses (animation=${on.anim})`);
-await page.screenshot({ path: 'C:/Work/mb-userscripts/userscripts/apollo_editor/test/logs/_412_flash.png', clip: { x: 0, y: 0, width: 1600, height: 120 } }).catch(() => {});
 
-await page.evaluate(() => document.getElementById('fake-submit')?.remove());
+// loading-message backstop still works
+await page.evaluate(() => { document.body.classList.remove('tc-saving'); const s = document.createElement('span'); s.className = 'loading-message'; s.textContent = 'Submitting edits...'; s.id = 'fake-lm'; document.body.appendChild(s); });
 await page.waitForTimeout(300);
-ck(!(await page.evaluate(() => document.body.classList.contains('tc-saving'))), 'flag clears when the submit message goes');
+ck(await page.evaluate(() => document.body.classList.contains('tc-saving')), 'loading-message backstop also flags saving');
 
 ck(errs.filter(e => !/ResizeObserver/.test(e)).length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
