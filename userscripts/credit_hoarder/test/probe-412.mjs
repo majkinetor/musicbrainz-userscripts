@@ -34,11 +34,21 @@ await page.evaluate(() => {
 await page.waitForTimeout(300);
 const saving = await page.evaluate(() => {
     const bar = document.querySelector('.discogs-bar');
+    const row1 = bar.querySelector('.discogs-bar-row1');
     const st = bar.querySelector('.discogs-bar-status-final');
-    return { cls: bar.classList.contains('is-saving'), status: st && st.textContent, statusShown: st && st.style.display !== 'none' };
+    return {
+        cls: bar.classList.contains('is-saving'),
+        pinned: bar.classList.contains('is-pinned'),
+        row1Fixed: getComputedStyle(row1).position === 'fixed',
+        row1Animated: getComputedStyle(row1).animationName === 'discogs-bar-saving',
+        status: st && st.textContent, statusShown: st && st.style.display !== 'none',
+    };
 });
 ck(saving.cls, 'bar gains .is-saving when MB starts submitting');
+ck(saving.pinned && saving.row1Fixed, 'bar is pinned — row1 fixed at the top of the viewport');
+ck(saving.row1Animated, 'the PINNED row1 (not the scrolled-away container) is the one pulsing');
 ck(/submitting/i.test(saving.status || ''), `status shows submitting ("${saving.status}")`);
+await page.screenshot({ path: 'C:/Work/mb-userscripts/userscripts/credit_hoarder/test/logs/_412_saving.png', clip: { x: 0, y: 0, width: 1600, height: 90 } }).catch(() => {});
 
 // remove the message (failure path / navigation-less end) → saving clears
 await page.evaluate(() => document.getElementById('fake-submit')?.remove());

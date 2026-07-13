@@ -281,10 +281,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
         /* #412: while MusicBrainz is submitting the staged edits (can be slow for hundreds),
-           tint the whole bar blue and pulse it so it's obvious the save is in flight. */
-        .discogs-bar.is-saving { border-left-color: #1c6fd6; animation: discogs-bar-saving 1.1s ease-in-out infinite; }
-        @keyframes discogs-bar-saving { 0%,100% { background: #fff; } 50% { background: #e9f2fe; } }
-        .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; }
+           pulse the toolbar blue. Target ROW1 — that's the strip pinned (position:fixed) at
+           the top of the viewport while the page is scrolled down to the submit button, i.e.
+           the part actually on screen. The outer container is usually scrolled out of view. */
+        .discogs-bar.is-saving { border-left-color: #1c6fd6; }
+        .discogs-bar.is-saving .discogs-bar-row1 { animation: discogs-bar-saving 1.1s ease-in-out infinite; border-bottom-color: #1c6fd6; }
+        @keyframes discogs-bar-saving { 0%,100% { background: #fdf8f0; } 50% { background: #d6e6fe; } }
+        .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; font-weight: 600; }
         /* #408 "Import all" — wider pill with a glyph + label, brand-orange so it reads as the primary action */
         .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
         .discogs-src-all:hover { background: #e8771d; color: #fff; border-color: #e8771d; }
@@ -1299,7 +1302,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             if (!!bar._saving === on) return;
             bar._saving = on;
             bar.classList.toggle('is-saving', on);
-            if (on) { bar._pin?.(); _showBar(); bar._setStopMessage('⏳ Submitting edits to MusicBrainz…'); }
+            // Pin so row1 is fixed at the top of the viewport (the user is scrolled down at
+            // the submit button), and show the status where "Done: N added" normally sits.
+            if (on) { bar.classList.add('is-pinned'); bar._pin?.(); _showBar(); bar._setStopMessage('⏳ Submitting edits to MusicBrainz…'); }
             else bar._setStopMessage('');
         };
         const obs = new MutationObserver(() => set(!!findMsg()));
