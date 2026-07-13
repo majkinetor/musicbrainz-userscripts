@@ -288,6 +288,16 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-bar.is-saving .discogs-bar-row1 { animation: discogs-bar-saving 1.1s ease-in-out infinite; border-bottom-color: #1c6fd6; }
         @keyframes discogs-bar-saving { 0%,100% { background: #fdf8f0; } 50% { background: #d6e6fe; } }
         .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; font-weight: 600; }
+        /* #412: a toolbar "Enter edit" that fires MB's native submit, so you don't have to
+           scroll to the bottom after an import. Shown once an import finishes, removed on
+           return-to-source. Green to read as the positive/submit action (matches MB). */
+        .discogs-enter-edit {
+            flex-shrink: 0; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+            color: #fff; background: #4b8f29; border: 1px solid #3d7a1f; border-radius: 0.25rem;
+            padding: 0.14rem 0.6rem;
+        }
+        .discogs-enter-edit:hover { background: #57a230; }
+        .discogs-bar.is-saving .discogs-enter-edit { opacity: 0.6; pointer-events: none; }
         /* #408 "Import all" — wider pill with a glyph + label, brand-orange so it reads as the primary action */
         .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
         .discogs-src-all:hover { background: #e8771d; color: #fff; border-color: #e8771d; }
@@ -654,9 +664,30 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     docsLink.title = 'Open the script\'s README in a new tab';
     docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
 
+    // #412: a toolbar "Enter edit" so the user can submit right after an import without
+    // scrolling to MB's button at the bottom (mirrors Apollo's top Edit). It clicks the
+    // native submit; the #412 saving pulse then reflects the in-flight submit. Hidden until
+    // an import finishes, and removed when the user returns to source selection.
+    const enterEditBtn = document.createElement('button');
+    enterEditBtn.type = 'button';
+    enterEditBtn.className = 'discogs-enter-edit';
+    enterEditBtn.textContent = 'Enter edit';
+    enterEditBtn.title = 'Submit the staged edits to MusicBrainz — clicks the native "Enter edit" button at the bottom of the page';
+    enterEditBtn.style.display = 'none';
+    const findNativeSubmit = () => document.querySelector('button.submit.positive')
+        || [...document.querySelectorAll('button[type="submit"], button.submit')].find(b => /enter edit/i.test(b.textContent || ''));
+    enterEditBtn.addEventListener('click', () => {
+        const submit = findNativeSubmit();
+        if (!submit) { bar._setStopMessage('Could not find MusicBrainz\'s "Enter edit" button — scroll down and submit manually.'); return; }
+        submit.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        submit.click();
+    });
+    bar._showEnterEdit = () => { if (findNativeSubmit()) enterEditBtn.style.display = ''; };
+    bar._hideEnterEdit = () => { enterEditBtn.style.display = 'none'; };
+
     // #272: source icons moved to the left ("Import credits: …") — the right
     // cluster keeps just the Log toggle and Help.
-    rightGroup.append(logSplit, docsLink);
+    rightGroup.append(enterEditBtn, logSplit, docsLink);
 
     row1.appendChild(rightGroup);
 
@@ -1021,6 +1052,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         reviewSlot.replaceChildren();
         actionSlot.replaceChildren();
         setReviewContainer(reviewSlot);   // re-arm the (now empty) review host for the next run
+        bar._hideEnterEdit();   // #412: back at source selection → drop the submit button
         bar._setStopMessage('Import cancelled — pick a source to start again.');
         bar._pin();
         delete bar._setProgress;
@@ -1052,6 +1084,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
 
+        bar._hideEnterEdit();   // #412: a fresh run starts — drop any prior submit button until it finishes
         // Pin the toolbar for the import AND keep it pinned afterwards (#118).
         bar.classList.add('is-importing', 'is-pinned');
         bar._pin();
@@ -1265,6 +1298,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 _hideBar();
                 // (no clear here) — leave the last status line in place so the
                 // "Done: N added…" summary stays visible in the toolbar.
+                bar._showEnterEdit();   // #412: offer one-click submit now the edits are staged
                 bar._pin();   // re-measure the spacer for the badge-bearing header height
             }, 2000);
             delete bar._setProgress;

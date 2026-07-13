@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.13.140903
+// @version      2026.7.13.194930
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -5897,6 +5897,16 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-bar.is-saving .discogs-bar-row1 { animation: discogs-bar-saving 1.1s ease-in-out infinite; border-bottom-color: #1c6fd6; }
         @keyframes discogs-bar-saving { 0%,100% { background: #fdf8f0; } 50% { background: #d6e6fe; } }
         .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; font-weight: 600; }
+        /* #412: a toolbar "Enter edit" that fires MB's native submit, so you don't have to
+           scroll to the bottom after an import. Shown once an import finishes, removed on
+           return-to-source. Green to read as the positive/submit action (matches MB). */
+        .discogs-enter-edit {
+            flex-shrink: 0; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+            color: #fff; background: #4b8f29; border: 1px solid #3d7a1f; border-radius: 0.25rem;
+            padding: 0.14rem 0.6rem;
+        }
+        .discogs-enter-edit:hover { background: #57a230; }
+        .discogs-bar.is-saving .discogs-enter-edit { opacity: 0.6; pointer-events: none; }
         /* #408 "Import all" \u2014 wider pill with a glyph + label, brand-orange so it reads as the primary action */
         .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
         .discogs-src-all:hover { background: #e8771d; color: #fff; border-color: #e8771d; }
@@ -6201,7 +6211,29 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     docsLink.textContent = "? Help";
     docsLink.title = "Open the script's README in a new tab";
     docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
-    rightGroup.append(logSplit, docsLink);
+    const enterEditBtn = document.createElement("button");
+    enterEditBtn.type = "button";
+    enterEditBtn.className = "discogs-enter-edit";
+    enterEditBtn.textContent = "Enter edit";
+    enterEditBtn.title = 'Submit the staged edits to MusicBrainz \u2014 clicks the native "Enter edit" button at the bottom of the page';
+    enterEditBtn.style.display = "none";
+    const findNativeSubmit = () => document.querySelector("button.submit.positive") || [...document.querySelectorAll('button[type="submit"], button.submit')].find((b) => /enter edit/i.test(b.textContent || ""));
+    enterEditBtn.addEventListener("click", () => {
+      const submit = findNativeSubmit();
+      if (!submit) {
+        bar._setStopMessage(`Could not find MusicBrainz's "Enter edit" button \u2014 scroll down and submit manually.`);
+        return;
+      }
+      submit.scrollIntoView({ behavior: "smooth", block: "center" });
+      submit.click();
+    });
+    bar._showEnterEdit = () => {
+      if (findNativeSubmit()) enterEditBtn.style.display = "";
+    };
+    bar._hideEnterEdit = () => {
+      enterEditBtn.style.display = "none";
+    };
+    rightGroup.append(enterEditBtn, logSplit, docsLink);
     row1.appendChild(rightGroup);
     bar.appendChild(row1);
     const stickySpacer = document.createElement("div");
@@ -6511,6 +6543,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       reviewSlot.replaceChildren();
       actionSlot.replaceChildren();
       setReviewContainer(reviewSlot);
+      bar._hideEnterEdit();
       bar._setStopMessage("Import cancelled \u2014 pick a source to start again.");
       bar._pin();
       delete bar._setProgress;
@@ -6530,6 +6563,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       });
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
+      bar._hideEnterEdit();
       bar.classList.add("is-importing", "is-pinned");
       bar._pin();
       _showBar();
@@ -6702,6 +6736,7 @@ ${lines}
         setTimeout(() => {
           bar.classList.remove("is-importing");
           _hideBar();
+          bar._showEnterEdit();
           bar._pin();
         }, 2e3);
         delete bar._setProgress;

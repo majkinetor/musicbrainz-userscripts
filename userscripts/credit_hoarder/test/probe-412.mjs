@@ -55,6 +55,33 @@ await page.evaluate(() => document.getElementById('fake-submit')?.remove());
 await page.waitForTimeout(300);
 ck(!(await page.evaluate(() => document.querySelector('.discogs-bar').classList.contains('is-saving'))), 'bar drops .is-saving when the submit message goes');
 
+// ── toolbar "Enter edit" button (#412 follow-up) ────────────────────────────
+// hidden at rest; _showEnterEdit reveals it only when a native submit exists; clicking it
+// clicks the native "Enter edit" (we stub the native one so nothing actually submits).
+const ee = await page.evaluate(() => {
+    // neutralise any real submit button, then inject a stubbed native one
+    document.querySelectorAll('button.submit.positive').forEach(b => b.remove());
+    const nat = document.createElement('button');
+    nat.className = 'submit positive'; nat.type = 'button'; nat.textContent = 'Enter edit';
+    nat.addEventListener('click', () => { window.__nativeSubmitClicked = true; });
+    document.querySelector('#content')?.appendChild(nat);
+    const bar = document.querySelector('.discogs-bar');
+    const btn = bar.querySelector('.discogs-enter-edit');
+    const hiddenAtRest = btn.style.display === 'none';
+    bar._showEnterEdit();
+    const shown = btn.style.display !== 'none';
+    btn.click();
+    const clicked = !!window.__nativeSubmitClicked;
+    bar._hideEnterEdit();
+    const hiddenAgain = btn.style.display === 'none';
+    return { present: !!btn, hiddenAtRest, shown, clicked, hiddenAgain };
+});
+ck(ee.present, 'toolbar has an "Enter edit" button');
+ck(ee.hiddenAtRest, 'Enter edit hidden until an import finishes');
+ck(ee.shown, '_showEnterEdit reveals it when MB\'s submit button is present');
+ck(ee.clicked, 'clicking it clicks MB\'s native "Enter edit"');
+ck(ee.hiddenAgain, '_hideEnterEdit removes it on return-to-source');
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close(); process.exit(fail ? 1 : 0);
