@@ -33,11 +33,9 @@
 
 .PARAMETER Credential
     MusicBrainz account (UserName = editor name). When omitted, the config's CredentialsFile
-    (an Export-Clixml'd credential) is used; when that's absent too, you are prompted.
-    For an unattended scheduled task:
-        Get-Credential | Export-Clixml $HOME\mb.cred          # one time, as the task's user
-        # then either point CredentialsFile at it in the config, or pass it explicitly:
-        .\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
+    is used; if that file doesn't exist yet, you are prompted ONCE and it is created there
+    (DPAPI-encrypted), so later runs are unattended. With no CredentialsFile either, you are
+    simply prompted each run.
 
 .PARAMETER CreateMissing
     When a configured collection name doesn't exist on the account, create it (a private
@@ -93,7 +91,15 @@ if (-not $PSBoundParameters.ContainsKey('CreateMissing') -and $null -ne $cfg.Cre
 # --- Auth ------------------------------------------------------------------
 if (-not $Credential -and $cfg.CredentialsFile) {
     if (Test-Path -LiteralPath $cfg.CredentialsFile) { $Credential = Import-Clixml -LiteralPath $cfg.CredentialsFile }
-    else { Write-Warning "CredentialsFile not found: $($cfg.CredentialsFile) - create it with: Get-Credential | Export-Clixml '$($cfg.CredentialsFile)'" }
+    else {
+        # first run: ask once and save to the configured path, so later runs are unattended
+        Write-Host "CredentialsFile not found: $($cfg.CredentialsFile) - enter the MusicBrainz login once, it will be saved there." -ForegroundColor Yellow
+        $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)'
+        $dir = Split-Path -Parent $cfg.CredentialsFile
+        if ($dir -and -not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+        $Credential | Export-Clixml -LiteralPath $cfg.CredentialsFile
+        Write-Host "Saved to $($cfg.CredentialsFile) (DPAPI-encrypted, this Windows user only)."
+    }
 }
 if (-not $Credential) { $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)' }
 Set-MBUserAgent $UserAgent

@@ -31,15 +31,15 @@ may be added over time.
 ## Usage
 
 ```powershell
-# one time, as the user the task runs under (CredentialsFile points here):
-Get-Credential | Export-Clixml $HOME\mb.cred
-
 # dry run — prints the full plan, changes nothing:
 .\collection_sync.ps1 -WhatIf
 
 # for real (credential + CreateMissing come from the config):
 .\collection_sync.ps1
 ```
+
+The first run asks for the MusicBrainz login and saves it to `CredentialsFile`
+(DPAPI-encrypted, readable only by the same Windows user) — every later run is unattended.
 
 Scheduled task action:
 
@@ -53,9 +53,8 @@ when it was last mirrored.
 
 ## Notes
 
-- **Auth** — a regular MusicBrainz account (`Get-Credential`: editor name + password). The
-  credential file written by `Export-Clixml` is DPAPI-encrypted, readable only by the same
-  Windows user on the same machine.
+- **Auth** — a regular MusicBrainz account (editor name + password). Resolution order:
+  `-Credential` parameter → `CredentialsFile` (auto-created on first run) → prompt.
 - **Tags pointing at merged releases** — when a release was merged on MusicBrainz after your
   files were tagged, the sync resolves the tagged MBID to its merge target automatically and
   logs a `~ ... re-tag '<folder>'` hint; refresh those folders in Picard when convenient.
