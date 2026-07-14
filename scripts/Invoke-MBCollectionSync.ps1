@@ -33,9 +33,9 @@
         .\Invoke-MBCollectionSync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
 
 .PARAMETER CreateMissing
-    When a configured collection name doesn't exist on the account, create it (as a public
-    Release collection) instead of skipping the entry. Creation goes through the website
-    form (the WS2 API cannot create collections), using the same credential.
+    When a configured collection name doesn't exist on the account, create it (a private
+    Release collection - MB's default) instead of skipping the entry. Creation goes through
+    the website form (the WS2 API cannot create collections), using the same credential.
 
 .PARAMETER UserAgent
     User-Agent for MusicBrainz requests.

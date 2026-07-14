@@ -147,14 +147,16 @@ function Invoke-MBApi {
 }
 
 function Get-MBUserCollection {
-    <#.SYNOPSIS List an editor's collections (default: the Connect-MB user; private ones included when authed).#>
+    <#.SYNOPSIS List an editor's collections (default: the Connect-MB user, incl. private ones).#>
     param([string] $Editor)
-    if (-not $Editor) {
-        if (-not $script:MBCredential) { throw 'Pass -Editor, or authenticate with Connect-MB first.' }
-        $Editor = $script:MBCredential.UserName
-    }
-    $enc = [uri]::EscapeDataString($Editor)
-    $resp = Invoke-MBApi -Path "collection?editor=$enc&limit=100&fmt=json"
+    $own = $script:MBCredential -and (-not $Editor -or $Editor -eq $script:MBCredential.UserName)
+    if (-not $Editor -and -not $own) { throw 'Pass -Editor, or authenticate with Connect-MB first.' }
+    # Own collections MUST go through the auth-challenging endpoint: the public
+    # editor= browse never triggers the Digest 401 handshake, so PowerShell never sends the
+    # credential and PRIVATE collections stay invisible (which made sync re-create them).
+    $path = if ($own) { 'collection?limit=100&fmt=json' }
+            else      { "collection?editor=$([uri]::EscapeDataString($Editor))&limit=100&fmt=json" }
+    $resp = Invoke-MBApi -Path $path
     if ($resp.PSObject.Properties.Name -contains 'collections') { return @($resp.collections) }
     return @()
 }
