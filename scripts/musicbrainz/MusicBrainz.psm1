@@ -1,40 +1,89 @@
 <#
 .SYNOPSIS
-    Minimal MusicBrainz web-service helpers used by the collection tooling.
+    General-purpose MusicBrainz helpers for PowerShell.
 
 .DESCRIPTION
+    Standalone module — no assumptions about the calling script. Callers identify
+    themselves via Set-MBUserAgent / Set-MBClient (sensible generic defaults apply).
+
     Provides:
+      * Connect-MB              - authenticate once (verifies the account, stores the credential
+                                  module-wide); afterwards no function needs -Credential.
       * Invoke-MBApi            - throttled (1 req/s) request helper with retry/backoff and a
                                   persisted web session (Cloudflare clearance), GET/PUT/DELETE.
       * Get-MBUserCollection    - list an editor's collections (public + private when authed).
-      * Resolve-MBCollectionId  - map a collection NAME to its MBID for an editor.
-      * Get-MBCollectionInfo     - collection metadata (name, entity-type, counts).
-      * Get-MBCollectionReleaseId - every release MBID in a release collection (paged).
+      * Get-MBCollection        - one collection, by MBID or by name: (Get-MBCollection 'x').id
+      * Get-MBCollectionRelease - every release in a release collection (full objects, paged).
       * Add-MBCollectionRelease / Remove-MBCollectionRelease - edit a release collection
                                   (batched 400/req; requires authentication + a client id).
-      * Get-MBReleaseTitle       - a release's title (for human-readable output).
+      * Get-MBRelease            - a release by MBID (generic; pick fields off the object).
       * Get-MBReleaseIdFromFile  - read MUSICBRAINZ_ALBUMID from an audio file (TagLibSharp,
                                   auto-provisioned into .\lib on first use).
+      * New-MBCollection         - create a collection. The WS2 API cannot create collections,
+                                  so this logs into the WEBSITE (cookie session) and submits
+                                  the /collection/create form. Returns the new MBID.
 
-    Authentication (for the editing functions) is HTTP Digest with a MusicBrainz account:
-    pass a [pscredential] whose UserName is the editor name.
+    Interactive use:
+        Import-Module .\MusicBrainz.psm1
+        Connect-MB                       # prompts, verifies, remembers
+        Get-MBUserCollection             # your collections
+        Get-MBCollectionRelease (Get-MBCollection 'library').id | % title
+
+    Authentication is HTTP Digest with a MusicBrainz account ([pscredential] whose UserName is
+    the editor name). Call Connect-MB once, or pass -Credential explicitly per call — an
+    explicit -Credential always wins over the stored one. New-MBCollection uses the same
+    credential for its website login.
 #>
 
-$script:MBBase        = 'https://musicbrainz.org/ws/2'
-$script:MBClient      = 'Invoke-MBCollectionSync-1.0'
-$script:MBUserAgent   = 'MBCollectionSync/1.0 ( https://github.com/majkinetor )'
-$script:MBLastRequest = [datetime]::MinValue
-$script:MBSession     = $null
+$script:MBBase               = 'https://musicbrainz.org/ws/2'
+$script:MBClient             = 'PowerShell-MusicBrainz/1.0'
+$script:MBUserAgent          = 'PowerShell-MusicBrainz/1.0 ( https://github.com/majkinetor )'
+$script:MBLastRequestTime    = [datetime]::MinValue
+$script:MBSession            = $null
+# MusicBrainz allows ~1 request/second — consecutive API requests are spaced at least this far apart.
+$script:MBMinRequestInterval = [timespan]::FromMilliseconds(1100)
 # MusicBrainz behind Cloudflare intermittently answers a valid request with "400 Invalid mbid"
 # in streaks that can run a couple of minutes; a generous retry budget (~5 min) rides them out.
 # A genuinely bad (wrong-format) MBID never gets a real 400, so retrying can't mask a real error.
-$script:MBMinInterval = [timespan]::FromMilliseconds(1100)
-$script:MBMaxAttempts = 14
+$script:MBMaxRequestAttempts = 14
 
 function Set-MBUserAgent {
     <#.SYNOPSIS Override the User-Agent sent with every request.#>
     param([Parameter(Mandatory)][string] $UserAgent)
     $script:MBUserAgent = $UserAgent
+}
+
+function Set-MBClient {
+    <#.SYNOPSIS Override the client id MusicBrainz records on collection edits (client= query).#>
+    param([Parameter(Mandatory)][string] $Client)
+    $script:MBClient = $Client
+}
+
+$script:MBCredential = $null
+
+function Connect-MB {
+    <#
+    .SYNOPSIS Authenticate to MusicBrainz once; later calls need no -Credential.
+    .DESCRIPTION Prompts for the account when no credential is given (interactive use:
+                 Import-Module ...; Connect-MB; Get-MBUserCollection). Verifies the login
+                 against an authenticated endpoint before storing it module-wide.
+    #>
+    param([pscredential] $Credential)
+    if (-not $Credential) { $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)' }
+    # verification: /ws/2/collection without editor= requires auth and returns OWN collections
+    $resp = Invoke-MBApi -Path 'collection?fmt=json' -Credential $Credential
+    $script:MBCredential = $Credential
+    $n = @($resp.collections).Count
+    Write-Host "Connected to MusicBrainz as '$($Credential.UserName)' ($n collection(s))."
+}
+
+function Get-MBStoredCredential {
+    # (internal) explicit credential wins; else the Connect-MB one; else $null / throw.
+    param([pscredential] $Credential, [switch] $Require)
+    if ($Credential) { return $Credential }
+    if ($script:MBCredential) { return $script:MBCredential }
+    if ($Require) { throw 'Not authenticated - run Connect-MB first (or pass -Credential).' }
+    return $null
 }
 
 function Invoke-MBApi {
@@ -51,11 +100,12 @@ function Invoke-MBApi {
         [pscredential] $Credential
     )
     $url = if ($Path -match '^https?://') { $Path } else { "$script:MBBase/$Path" }
+    if (-not $Credential -and $script:MBCredential) { $Credential = $script:MBCredential }
 
-    for ($attempt = 1; $attempt -le $script:MBMaxAttempts; $attempt++) {
-        $wait = $script:MBMinInterval - ([datetime]::UtcNow - $script:MBLastRequest)
+    for ($attempt = 1; $attempt -le $script:MBMaxRequestAttempts; $attempt++) {
+        $wait = $script:MBMinRequestInterval - ([datetime]::UtcNow - $script:MBLastRequestTime)
         if ($wait -gt [timespan]::Zero) { Start-Sleep -Milliseconds ([int]$wait.TotalMilliseconds) }
-        $script:MBLastRequest = [datetime]::UtcNow
+        $script:MBLastRequestTime = [datetime]::UtcNow
 
         $params = @{
             Uri         = $url
@@ -85,9 +135,9 @@ function Invoke-MBApi {
             # are transient; a genuine 404 (or anything else) is thrown immediately.
             $transient = ($status -in 429, 500, 502, 503, 504) -or
                          ($status -eq 400 -and $body -match 'Invalid mbid')
-            if ($transient -and $attempt -lt $script:MBMaxAttempts) {
+            if ($transient -and $attempt -lt $script:MBMaxRequestAttempts) {
                 $delay = [math]::Min(30, 4 * $attempt) + (Get-Random -Minimum 0.0 -Maximum 1.0)
-                Write-Warning ("MB HTTP $status on attempt $attempt/$($script:MBMaxAttempts) - retrying in {0:N1}s..." -f $delay)
+                Write-Warning ("MB HTTP $status on attempt $attempt/$($script:MBMaxRequestAttempts) - retrying in {0:N1}s..." -f $delay)
                 Start-Sleep -Seconds $delay
                 continue
             }
@@ -97,83 +147,83 @@ function Invoke-MBApi {
 }
 
 function Get-MBUserCollection {
-    <#.SYNOPSIS List an editor's collections. Pass -Credential to include private ones.#>
+    <#.SYNOPSIS List an editor's collections (default: the Connect-MB user; private ones included when authed).#>
     param(
-        [Parameter(Mandatory)][string] $Editor,
+        [string] $Editor,
         [pscredential] $Credential
     )
+    if (-not $Editor) {
+        $c = Get-MBStoredCredential -Credential $Credential
+        if (-not $c) { throw 'Pass -Editor, or authenticate with Connect-MB first.' }
+        $Editor = $c.UserName
+    }
     $enc = [uri]::EscapeDataString($Editor)
     $resp = Invoke-MBApi -Path "collection?editor=$enc&limit=100&fmt=json" -Credential $Credential
     if ($resp.PSObject.Properties.Name -contains 'collections') { return @($resp.collections) }
     return @()
 }
 
-function Resolve-MBCollectionId {
-    <#.SYNOPSIS Map a release-collection NAME to its MBID for an editor.#>
+function Get-MBCollection {
+    <#
+    .SYNOPSIS A collection by MBID or by NAME — e.g. (Get-MBCollection 'library').id
+    .DESCRIPTION An MBID fetches directly; anything else is matched by exact name against the
+                 editor's collections (default editor: the Connect-MB user). Name matches can
+                 return several objects if the editor reuses a name — the caller decides.
+    #>
     param(
-        [Parameter(Mandatory)][string] $Name,
-        [Parameter(Mandatory)][string] $Editor,
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline)][string] $Collection,
+        [string] $Editor,
         [pscredential] $Credential
     )
-    $cols  = Get-MBUserCollection -Editor $Editor -Credential $Credential
-    $match = @($cols | Where-Object { $_.name -eq $Name })
-    if ($match.Count -eq 0) {
-        $known = ($cols | ForEach-Object { $_.name }) -join ', '
-        throw "No collection named '$Name' for editor '$Editor'. Known: $known"
+    process {
+        if ($Collection -match '^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$') {
+            # ${} braces required: in PS7 a trailing '?' is parsed as part of the variable name
+            return Invoke-MBApi -Path "collection/${Collection}?fmt=json" -Credential $Credential
+        }
+        Get-MBUserCollection -Editor $Editor -Credential $Credential | Where-Object { $_.name -eq $Collection }
     }
-    if ($match.Count -gt 1) { throw "Editor '$Editor' has more than one collection named '$Name'." }
-    if ($match[0].'entity-type' -ne 'release') {
-        throw "Collection '$Name' holds '$($match[0].'entity-type')' entities, not releases."
-    }
-    return $match[0].id
 }
 
-function Get-MBCollectionInfo {
-    <#.SYNOPSIS Collection metadata (name, entity-type, item count).#>
+function Get-MBCollectionRelease {
+    <#
+    .SYNOPSIS Every release in a release collection (full objects), paged 100/req.
+    .PARAMETER Inc Optional inc= sub-query (e.g. 'artist-credits').
+    #>
     param(
         [Parameter(Mandatory)][string] $CollectionId,
+        [string] $Inc = '',
         [pscredential] $Credential
     )
-    # ${} braces required: in PS7 a trailing '?' is parsed as part of the variable name
-    Invoke-MBApi -Path "collection/${CollectionId}?fmt=json" -Credential $Credential
-}
-
-function Get-MBCollectionReleaseId {
-    <#.SYNOPSIS Every release MBID in a release collection (lower-cased), paged 100/req.#>
-    param(
-        [Parameter(Mandatory)][string] $CollectionId,
-        [pscredential] $Credential
-    )
-    $meta  = Get-MBCollectionInfo -CollectionId $CollectionId -Credential $Credential
+    $meta  = Get-MBCollection -Collection $CollectionId -Credential $Credential
     $total = [int]$meta.'release-count'
-    $ids   = [System.Collections.Generic.List[string]]::new()
     $limit = 100; $offset = 0
     while ($offset -lt $total) {
-        $page = Invoke-MBApi -Path "release?collection=$CollectionId&limit=$limit&offset=$offset&fmt=json" -Credential $Credential
+        $q = "release?collection=$CollectionId&limit=$limit&offset=$offset&fmt=json"
+        if ($Inc) { $q += "&inc=$Inc" }
+        $page = Invoke-MBApi -Path $q -Credential $Credential
         $batch = @($page.releases)
         if ($batch.Count -eq 0) { break }
-        foreach ($r in $batch) { $ids.Add(([string]$r.id).ToLower()) }
+        $batch
         $offset += $limit
     }
-    return $ids
 }
 
 function Add-MBCollectionRelease {
-    <#.SYNOPSIS Add releases to a collection (batched 400/req). Requires -Credential.#>
+    <#.SYNOPSIS Add releases to a collection (batched 400/req). Needs Connect-MB or -Credential.#>
     param(
         [Parameter(Mandatory)][string] $CollectionId,
         [Parameter(Mandatory)][string[]] $ReleaseId,
-        [Parameter(Mandatory)][pscredential] $Credential
+        [pscredential] $Credential
     )
     Invoke-MBCollectionEdit -Method PUT -CollectionId $CollectionId -ReleaseId $ReleaseId -Credential $Credential
 }
 
 function Remove-MBCollectionRelease {
-    <#.SYNOPSIS Remove releases from a collection (batched 400/req). Requires -Credential.#>
+    <#.SYNOPSIS Remove releases from a collection (batched 400/req). Needs Connect-MB or -Credential.#>
     param(
         [Parameter(Mandatory)][string] $CollectionId,
         [Parameter(Mandatory)][string[]] $ReleaseId,
-        [Parameter(Mandatory)][pscredential] $Credential
+        [pscredential] $Credential
     )
     Invoke-MBCollectionEdit -Method DELETE -CollectionId $CollectionId -ReleaseId $ReleaseId -Credential $Credential
 }
@@ -184,8 +234,9 @@ function Invoke-MBCollectionEdit {
         [Parameter(Mandatory)][ValidateSet('PUT', 'DELETE')][string] $Method,
         [Parameter(Mandatory)][string] $CollectionId,
         [Parameter(Mandatory)][string[]] $ReleaseId,
-        [Parameter(Mandatory)][pscredential] $Credential
+        [pscredential] $Credential
     )
+    $Credential = Get-MBStoredCredential -Credential $Credential -Require
     for ($i = 0; $i -lt $ReleaseId.Count; $i += 400) {
         $chunk = $ReleaseId[$i..([math]::Min($i + 399, $ReleaseId.Count - 1))]
         $list  = ($chunk -join ';')
@@ -194,14 +245,22 @@ function Invoke-MBCollectionEdit {
     }
 }
 
-function Get-MBReleaseTitle {
-    <#.SYNOPSIS A release's title (falls back to the MBID on error).#>
+function Get-MBRelease {
+    <#
+    .SYNOPSIS Fetch a release by MBID. Generic lookup — pick what you need from the object
+              (e.g. Get-MBRelease $id | % title).
+    .PARAMETER Inc Optional inc= sub-query (e.g. 'artist-credits+labels+recordings').
+    #>
     param(
-        [Parameter(Mandatory)][string] $Id,
+        [Parameter(Mandatory, ValueFromPipeline)][string] $Id,
+        [string] $Inc = '',
         [pscredential] $Credential
     )
-    try { return (Invoke-MBApi -Path "release/${Id}?fmt=json" -Credential $Credential).title }
-    catch { return $Id }
+    process {
+        $q = "release/${Id}?fmt=json"
+        if ($Inc) { $q += "&inc=$Inc" }
+        Invoke-MBApi -Path $q -Credential $Credential
+    }
 }
 
 # --- Audio-tag reading (MUSICBRAINZ_ALBUMID) via TagLibSharp -----------------
@@ -244,7 +303,139 @@ function Get-MBReleaseIdFromFile {
     return $id.Trim().ToLower()
 }
 
+# --- Website form automation (collection creation) --------------------------
+# The WS2 API can only add/remove releases in EXISTING collections; creating one goes through
+# the website's /collection/create form. These helpers log in with a cookie session, parse the
+# form (fields + CSRF), and re-POST it. HTML-scraping — more brittle than WS2, kept separate.
+
+$script:MBWebSession = $null
+
+function ConvertFrom-MBForm {
+    # (internal) Extract a form's field name/value map from HTML. The form is selected by
+    # $ActionMatch against its action attribute, or — for forms with no action (they post to
+    # self) — by $FieldMarker, a regex the form's BODY must match (e.g. a known field name).
+    # Reads inputs (hidden/text/checked boxes), textareas, and selects (selected/first option).
+    param([string] $Html, [string] $ActionMatch, [string] $FieldMarker)
+    $scope = $null
+    if ($ActionMatch) {
+        $fm = [regex]::Match($Html, "<form[^>]*action=""[^""]*$([regex]::Escape($ActionMatch))[^""]*""[\s\S]*?</form>", 'IgnoreCase')
+        if ($fm.Success) { $scope = $fm.Value }
+    }
+    if (-not $scope -and $FieldMarker) {
+        foreach ($fm in [regex]::Matches($Html, '<form\b[\s\S]*?</form>', 'IgnoreCase')) {
+            if ($fm.Value -match $FieldMarker) { $scope = $fm.Value; break }
+        }
+    }
+    if (-not $scope) { $scope = $Html }
+    $fields = [ordered]@{}
+
+    foreach ($m in [regex]::Matches($scope, '<input\b[^>]*>', 'IgnoreCase')) {
+        $tag  = $m.Value
+        $name = ([regex]::Match($tag, 'name="([^"]*)"', 'IgnoreCase')).Groups[1].Value
+        if (-not $name) { continue }
+        $type = ([regex]::Match($tag, 'type="([^"]*)"', 'IgnoreCase')).Groups[1].Value.ToLower()
+        $val  = ([regex]::Match($tag, 'value="([^"]*)"', 'IgnoreCase')).Groups[1].Value
+        if ($type -in 'checkbox', 'radio') { if ($tag -notmatch '\bchecked\b') { continue } }
+        if ($type -eq 'submit') { continue }
+        $fields[$name] = [System.Net.WebUtility]::HtmlDecode($val)
+    }
+    foreach ($m in [regex]::Matches($scope, '<textarea\b[^>]*>([\s\S]*?)</textarea>', 'IgnoreCase')) {
+        $name = ([regex]::Match($m.Value, 'name="([^"]*)"', 'IgnoreCase')).Groups[1].Value
+        if ($name) { $fields[$name] = [System.Net.WebUtility]::HtmlDecode($m.Groups[1].Value) }
+    }
+    foreach ($m in [regex]::Matches($scope, '<select\b[^>]*name="([^"]*)"[\s\S]*?</select>', 'IgnoreCase')) {
+        $name = $m.Groups[1].Value
+        $sel  = [regex]::Match($m.Value, '<option[^>]*\bselected\b[^>]*value="([^"]*)"', 'IgnoreCase')
+        if (-not $sel.Success) { $sel = [regex]::Match($m.Value, '<option[^>]*value="([^"]*)"', 'IgnoreCase') }
+        if ($sel.Success) { $fields[$name] = [System.Net.WebUtility]::HtmlDecode($sel.Groups[1].Value) }
+    }
+    return $fields
+}
+
+function Get-MBFormSelectOptions {
+    # (internal) All {Value, Text} options of the <select> named like *$NameSuffix in $Html.
+    param([string] $Html, [string] $NameSuffix)
+    $sel = [regex]::Match($Html, "<select\b[^>]*name=""[^""]*$([regex]::Escape($NameSuffix))""[\s\S]*?</select>", 'IgnoreCase')
+    if (-not $sel.Success) { return @() }
+    foreach ($o in [regex]::Matches($sel.Value, '<option[^>]*value="([^"]*)"[^>]*>([\s\S]*?)</option>', 'IgnoreCase')) {
+        [pscustomobject]@{
+            Value = [System.Net.WebUtility]::HtmlDecode($o.Groups[1].Value)
+            Text  = [System.Net.WebUtility]::HtmlDecode(($o.Groups[2].Value -replace '<[^>]+>', '')).Trim()
+        }
+    }
+}
+
+function Connect-MBWebsite {
+    <#.SYNOPSIS Log into musicbrainz.org (cookie session) for form-based edits.#>
+    param([pscredential] $Credential)
+    $Credential = Get-MBStoredCredential -Credential $Credential -Require
+    if ($script:MBWebSession) { return $script:MBWebSession }
+    $ua = @{ 'User-Agent' = $script:MBUserAgent }
+    $login = Invoke-WebRequest -Uri 'https://musicbrainz.org/login' -SessionVariable s -Headers $ua -UseBasicParsing
+    $form  = ConvertFrom-MBForm -Html $login.Content -ActionMatch '/login'
+    $form['username']    = $Credential.UserName
+    $form['password']    = $Credential.GetNetworkCredential().Password
+    $form['remember_me'] = '1'
+    $resp = Invoke-WebRequest -Uri 'https://musicbrainz.org/login' -Method POST -Body $form `
+                -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
+    if ($resp.Content -match 'name="password"' -and $resp.Content -match 'action="[^"]*/login"') {
+        throw "MusicBrainz website login failed for '$($Credential.UserName)'."
+    }
+    $script:MBWebSession = $s
+    return $s
+}
+
+function New-MBCollection {
+    <#
+    .SYNOPSIS Create a MusicBrainz collection via the website form. Returns the new MBID.
+    .PARAMETER Name        Collection name.
+    .PARAMETER Credential  MusicBrainz account (used for the website login).
+    .PARAMETER Type        Collection type by label, e.g. 'Release', 'Owned music', 'Wishlist'.
+    .PARAMETER Description Optional description.
+    #>
+    param(
+        [Parameter(Mandatory)][string] $Name,
+        [pscredential] $Credential,
+        [string] $Type = 'Release',
+        [string] $Description = ''
+    )
+    $Credential = Get-MBStoredCredential -Credential $Credential -Require
+    $s   = Connect-MBWebsite -Credential $Credential
+    $ua  = @{ 'User-Agent' = $script:MBUserAgent }
+    $url = 'https://musicbrainz.org/collection/create'
+    $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
+    # the create form posts to self (no action attribute) — select it by its field names
+    $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/collection/create' -FieldMarker 'name="edit-list\.'
+    if ($form.Count -eq 0) { throw 'Could not read the collection create form (login expired?).' }
+
+    $nameKey = @($form.Keys | Where-Object { $_ -match '\.name$' })[0]
+    $typeKey = @($form.Keys | Where-Object { $_ -match '\.type_id$' })[0]
+    $descKey = @($form.Keys | Where-Object { $_ -match '\.description$' })[0]
+    if (-not $nameKey -or -not $typeKey) { throw "Unexpected create-form fields: $($form.Keys -join ', ')" }
+
+    # Resolve the requested type LABEL to its option id. Option texts read "Release collection",
+    # "Owned music", "Wishlist", ... — accept the exact label or "<Type> collection".
+    $opts  = @(Get-MBFormSelectOptions -Html $page.Content -NameSuffix '.type_id')
+    $match = @($opts | Where-Object { $_.Text -ieq $Type -or $_.Text -ieq "$Type collection" })
+    if ($match.Count -eq 0) { throw "Collection type '$Type' not found. Available: $(($opts | ForEach-Object Text) -join ', ')" }
+    $form[$typeKey] = $match[0].Value
+    $form[$nameKey] = $Name
+    if ($descKey) { $form[$descKey] = $Description }
+
+    $resp = Invoke-WebRequest -Uri $url -Method POST -Body $form -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
+    # success redirects to /collection/<mbid>
+    $final = ''
+    try { $final = [string]$resp.BaseResponse.RequestMessage.RequestUri } catch { }
+    $m = [regex]::Match($final, '/collection/([0-9a-fA-F-]{36})')
+    if ($m.Success) { return $m.Groups[1].Value.ToLower() }
+    # fallback: look the name up via the API
+    $col = Get-MBUserCollection -Editor $Credential.UserName -Credential $Credential | Where-Object { $_.name -eq $Name } | Select-Object -First 1
+    if ($col) { return ([string]$col.id).ToLower() }
+    throw "Collection creation for '$Name' did not return a collection page (form rejected?)."
+}
+
 Export-ModuleMember -Function `
-    Set-MBUserAgent, Invoke-MBApi, Get-MBUserCollection, Resolve-MBCollectionId, `
-    Get-MBCollectionInfo, Get-MBCollectionReleaseId, Add-MBCollectionRelease, `
-    Remove-MBCollectionRelease, Get-MBReleaseTitle, Initialize-MBTagLib, Get-MBReleaseIdFromFile
+    Connect-MB, Set-MBUserAgent, Set-MBClient, Invoke-MBApi, Get-MBUserCollection, `
+    Get-MBCollection, Get-MBCollectionRelease, Add-MBCollectionRelease, `
+    Remove-MBCollectionRelease, Get-MBRelease, Initialize-MBTagLib, Get-MBReleaseIdFromFile, `
+    Connect-MBWebsite, New-MBCollection

@@ -32,6 +32,11 @@
         Get-Credential | Export-Clixml $HOME\mb.cred          # one time, as the task's user
         .\Invoke-MBCollectionSync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
 
+.PARAMETER CreateMissing
+    When a configured collection name doesn't exist on the account, create it (as a public
+    Release collection) instead of skipping the entry. Creation goes through the website
+    form (the WS2 API cannot create collections), using the same credential.
+
 .PARAMETER UserAgent
     User-Agent for MusicBrainz requests.
 
@@ -39,13 +44,14 @@
     .\Invoke-MBCollectionSync.ps1 -WhatIf
 
 .EXAMPLE
-    .\Invoke-MBCollectionSync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
+    .\Invoke-MBCollectionSync.ps1 -Credential (Import-Clixml $HOME\mb.cred) -CreateMissing
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(
     [string] $ConfigPath = (Join-Path $PSScriptRoot 'Invoke-MBCollectionSync.config'),
     [pscredential] $Credential,
+    [switch] $CreateMissing,
     [string] $UserAgent = 'MBCollectionSync/1.0 ( https://github.com/majkinetor )'
 )
 
@@ -73,6 +79,8 @@ if (-not $entries) { throw "No usable entries in $ConfigPath." }
 # --- Auth ------------------------------------------------------------------
 if (-not $Credential) { $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)' }
 Set-MBUserAgent $UserAgent
+Set-MBClient 'Invoke-MBCollectionSync-1.0'   # recorded by MB on collection edits
+Connect-MB -Credential $Credential           # verifies the login + stores it for all module calls
 $editor = $Credential.UserName
 
 Write-Host "MusicBrainz collection sync  -  editor '$editor'  -  $($entries.Count) collection(s)"
@@ -84,8 +92,20 @@ foreach ($e in $entries) {
 
     if (-not (Test-Path -LiteralPath $e.Path)) { Write-Warning "Folder not found - skipping: $($e.Path)"; continue }
 
-    try { $colId = Resolve-MBCollectionId -Name $e.Name -Editor $editor -Credential $Credential }
-    catch { Write-Warning $_.Exception.Message; continue }
+    # resolve the configured NAME to a release collection (policy lives here, not in the module)
+    $col = @(Get-MBCollection $e.Name)
+    if ($col.Count -gt 1)  { Write-Warning "More than one collection named '$($e.Name)' - skipping."; continue }
+    if ($col.Count -eq 1 -and $col[0].'entity-type' -ne 'release') {
+        Write-Warning "Collection '$($e.Name)' holds '$($col[0].'entity-type')' entities, not releases - skipping."; continue
+    }
+    $colId = if ($col.Count -eq 1) { $col[0].id } else { $null }
+    if (-not $colId) {
+        if (-not $CreateMissing) { Write-Warning "No collection named '$($e.Name)' - skipping (use -CreateMissing to create it)."; continue }
+        if (-not $PSCmdlet.ShouldProcess($e.Name, 'create collection')) { continue }   # -WhatIf: nothing to diff yet
+        Write-Host "  Collection doesn't exist - creating it..." -ForegroundColor Yellow
+        try { $colId = New-MBCollection -Name $e.Name; Write-Host "  Created collection '$($e.Name)'." }
+        catch { Write-Warning "  creation failed: $($_.Exception.Message)"; continue }
+    }
     Write-Host "  Collection MBID: $colId"
 
     # --- scan folders: one MUSICBRAINZ_ALBUMID per audio-bearing folder ----
@@ -106,7 +126,7 @@ foreach ($e in $entries) {
 
     # --- current collection contents ---------------------------------------
     $currentSet = [System.Collections.Generic.HashSet[string]]::new()
-    foreach ($id in (Get-MBCollectionReleaseId -CollectionId $colId -Credential $Credential)) { [void]$currentSet.Add($id) }
+    foreach ($r in (Get-MBCollectionRelease -CollectionId $colId)) { [void]$currentSet.Add(([string]$r.id).ToLower()) }
     Write-Host "  Collection currently holds $($currentSet.Count) release(s)."
 
     $toAdd    = @($desired    | Where-Object { -not $currentSet.Contains($_) })
@@ -120,7 +140,7 @@ foreach ($e in $entries) {
             Write-Host "  + Adding $($toAdd.Count):" -ForegroundColor Yellow
             $toAdd | ForEach-Object { Write-Host "      + $_" }
             if ($PSCmdlet.ShouldProcess($e.Name, "add $($toAdd.Count) release(s)")) {
-                Add-MBCollectionRelease -CollectionId $colId -ReleaseId $toAdd -Credential $Credential
+                Add-MBCollectionRelease -CollectionId $colId -ReleaseId $toAdd
                 $grandAdded += $toAdd.Count
             }
         }
@@ -128,7 +148,7 @@ foreach ($e in $entries) {
             Write-Host "  - Removing $($toRemove.Count):" -ForegroundColor Yellow
             $toRemove | ForEach-Object { Write-Host "      - $_" }
             if ($PSCmdlet.ShouldProcess($e.Name, "remove $($toRemove.Count) release(s)")) {
-                Remove-MBCollectionRelease -CollectionId $colId -ReleaseId $toRemove -Credential $Credential
+                Remove-MBCollectionRelease -CollectionId $colId -ReleaseId $toRemove
                 $grandRemoved += $toRemove.Count
             }
         }
