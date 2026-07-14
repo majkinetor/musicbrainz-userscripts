@@ -189,7 +189,10 @@ function Get-MBCollectionRelease {
         [Parameter(Mandatory)][string] $CollectionId,
         [string] $Inc = ''
     )
-    $meta  = Get-MBCollection -Collection $CollectionId
+    $meta  = Get-MBCollection -Id $CollectionId
+    # a failed lookup must throw, not silently look like an empty collection (a full mirror
+    # would otherwise treat every existing entry as removable)
+    if (-not $meta -or $null -eq $meta.'release-count') { throw "Could not read collection $CollectionId (no release-count)." }
     $total = [int]$meta.'release-count'
     $limit = 100; $offset = 0
     while ($offset -lt $total) {
