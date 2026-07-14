@@ -3,6 +3,3 @@
 
 # Your real sync config (keep the .example in git, not local paths/collections)
 collection_sync/collection_sync.config.ps1
-
-# TagLibSharp auto-provisioned by the MusicBrainz module
-musicbrainz/lib/

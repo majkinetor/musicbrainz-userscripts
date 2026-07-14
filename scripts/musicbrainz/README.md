@@ -23,7 +23,7 @@ Get-MBCollectionRelease $library.id | % title
 | `New-MBCollection` | Create a collection (`-Type 'Release'` by default). The WS2 API can't create collections, so this submits the website form with the same credential |
 | `Set-MBCollection` | Edit a collection's `-Name` / `-Description` (website form; type, privacy and collaborators preserved) |
 | `Get-MBRelease` | A release by MBID (optional `-Inc 'artist-credits+labels+…'`) |
-| `Get-MBReleaseIdFromFile` | Read `MUSICBRAINZ_ALBUMID` from an audio file's tags (TagLibSharp, auto-downloaded into `lib/` on first use) |
+| `Get-MBReleaseIdFromFile` | Read `MUSICBRAINZ_ALBUMID` from an audio file's tags ([TagLibSharp](https://github.com/mono/taglib-sharp), LGPL — ships in `lib/`; delete the DLL to re-download it fresh on next use) |
 | `Connect-MBWebsite` | Cookie login to musicbrainz.org for form-based operations (used by `New-MBCollection`) |
 | `Set-MBUserAgent` / `Set-MBClient` | Identify your application (User-Agent header / the `client=` id MB records on collection edits) |
 
