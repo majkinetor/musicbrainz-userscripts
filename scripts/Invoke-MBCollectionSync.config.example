@@ -1,9 +1,0 @@
-# Invoke-MBCollectionSync config.
-# One entry per line:  <collection name> : <folder>
-# The name is everything before the first ':'; the folder is the rest (drive letters like m:\ are fine).
-# Lines starting with '#' and blank lines are ignored.
-#
-# Copy this file to  Invoke-MBCollectionSync.config  and edit for your library.
-
-various artists : m:\audio\various artists
-albums          : m:\audio\albums

@@ -14,23 +14,24 @@
     Everything it does is printed. It runs once and exits -- designed for Task Scheduler.
     Removals are guarded by ShouldProcess, so -WhatIf shows the plan without changing anything.
 
-    Config format (one entry per line; '#' comments and blank lines ignored):
+    The config is a .ps1 that returns a hashtable (extensible - more options may appear
+    later); `collections` lists the name/folder pairs to mirror:
 
-        # <collection name> : <folder>
-        various artists : m:\audio\various artists
-        albums          : m:\audio\albums
-
-    The name is everything before the first ':'; the folder is the rest (so drive letters
-    like 'm:\...' are fine).
+        @{
+            collections = @(
+                @{ name = 'various artists'; path = 'm:\audio\various artists' }
+                @{ name = 'albums';          path = 'm:\audio\albums' }
+            )
+        }
 
 .PARAMETER ConfigPath
-    Path to the config file. Default: Invoke-MBCollectionSync.config next to this script.
+    Path to the config script. Default: collection_sync.config.ps1 next to this script.
 
 .PARAMETER Credential
     MusicBrainz account (UserName = editor name). Prompted if omitted. For an unattended
     scheduled task, save it once and pass it in, e.g.:
         Get-Credential | Export-Clixml $HOME\mb.cred          # one time, as the task's user
-        .\Invoke-MBCollectionSync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
+        .\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
 
 .PARAMETER CreateMissing
     When a configured collection name doesn't exist on the account, create it (a private
@@ -41,45 +42,46 @@
     User-Agent for MusicBrainz requests.
 
 .EXAMPLE
-    .\Invoke-MBCollectionSync.ps1 -WhatIf
+    .\collection_sync.ps1 -WhatIf
 
 .EXAMPLE
-    .\Invoke-MBCollectionSync.ps1 -Credential (Import-Clixml $HOME\mb.cred) -CreateMissing
+    .\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred) -CreateMissing
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(
-    [string] $ConfigPath = (Join-Path $PSScriptRoot 'Invoke-MBCollectionSync.config'),
+    [string] $ConfigPath = (Join-Path $PSScriptRoot 'collection_sync.config.ps1'),
     [pscredential] $Credential,
     [switch] $CreateMissing,
-    [string] $UserAgent = 'MBCollectionSync/1.0 ( https://github.com/majkinetor )'
+    [string] $UserAgent = 'collection_sync/1.0 ( https://github.com/majkinetor )'
 )
 
 $ErrorActionPreference = 'Stop'
-Import-Module (Join-Path $PSScriptRoot 'musicbrainz\MusicBrainz.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot '..\musicbrainz\MusicBrainz.psm1') -Force
 
 # Audio extensions that may carry a MUSICBRAINZ_ALBUMID tag.
 $AudioExt = '.flac', '.mp3', '.m4a', '.ogg', '.opus', '.wma', '.ape', '.wav', '.aiff', '.aif', '.dsf', '.wv'
 
 function Write-Head { param([string] $Text) Write-Host "`n$Text" -ForegroundColor Cyan }
 
-# --- Config ----------------------------------------------------------------
+# --- Config: a .ps1 returning @{ collections = @( @{ name; path } ... ) } ---
 if (-not (Test-Path -LiteralPath $ConfigPath)) {
-    throw "Config not found: $ConfigPath  (see Invoke-MBCollectionSync.config.example)"
+    throw "Config not found: $ConfigPath  (see collection_sync.config.example.ps1)"
 }
-$entries = foreach ($line in Get-Content -LiteralPath $ConfigPath) {
-    $t = $line.Trim()
-    if (-not $t -or $t.StartsWith('#')) { continue }
-    $i = $t.IndexOf(':')
-    if ($i -lt 1) { Write-Warning "Ignoring malformed config line: $line"; continue }
-    [pscustomobject]@{ Name = $t.Substring(0, $i).Trim(); Path = $t.Substring($i + 1).Trim() }
+$cfg = & $ConfigPath
+if ($cfg -isnot [System.Collections.IDictionary] -or -not $cfg.collections) {
+    throw "Config must return a hashtable with a 'collections' list ($ConfigPath)."
 }
-if (-not $entries) { throw "No usable entries in $ConfigPath." }
+$entries = foreach ($c in @($cfg.collections)) {
+    if (-not $c.name -or -not $c.path) { Write-Warning "Ignoring collections entry without name/path: $($c | ConvertTo-Json -Compress -Depth 3)"; continue }
+    [pscustomobject]@{ Name = [string]$c.name; Path = [string]$c.path }
+}
+if (-not $entries) { throw "No usable 'collections' entries in $ConfigPath." }
 
 # --- Auth ------------------------------------------------------------------
 if (-not $Credential) { $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)' }
 Set-MBUserAgent $UserAgent
-Set-MBClient 'Invoke-MBCollectionSync-1.0'   # recorded by MB on collection edits
+Set-MBClient 'collection_sync-1.0'   # recorded by MB on collection edits
 Connect-MB -Credential $Credential           # verifies the login + stores it for all module calls
 $editor = $Credential.UserName
 
