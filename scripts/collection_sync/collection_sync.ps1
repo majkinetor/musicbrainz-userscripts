@@ -200,6 +200,14 @@ foreach ($e in $entries) {
             }
         }
     }
+
+    # --- stamp the description with the sync date + item count --------------
+    $finalCount = $currentSet.Count + $toAdd.Count - $toRemove.Count
+    $stamp = "Synced on $(Get-Date -Format 'yyyy-MM-dd HH:mm') - $finalCount release(s)"
+    if ($PSCmdlet.ShouldProcess($e.Name, "set description '$stamp'")) {
+        try { Set-MBCollection $colId -Description $stamp; Write-Host "  $stamp" }
+        catch { Write-Warning "  description update failed: $($_.Exception.Message)" }
+    }
 }
 
 Write-Host "`nDone. Added $grandAdded, removed $grandRemoved across $($entries.Count) collection(s)." -ForegroundColor Green

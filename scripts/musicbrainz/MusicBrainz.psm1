@@ -11,8 +11,9 @@
                                   module-wide); afterwards no function needs -Credential.
       * Invoke-MBApi            - throttled (1 req/s) request helper with retry/backoff and a
                                   persisted web session (Cloudflare clearance), GET/PUT/DELETE.
-      * Get-MBUserCollection    - list an editor's collections (public + private when authed).
-      * Get-MBCollection        - one collection, by MBID or by name: (Get-MBCollection 'x').id
+      * Get-MBCollection        - collections: all of an editor's without -Id (private included
+                                  for the Connect-MB user), one by MBID or name with -Id:
+                                  $library = Get-MBCollection 'library'
       * Get-MBCollectionRelease - every release in a release collection (full objects, paged).
       * Add-MBCollectionRelease / Remove-MBCollectionRelease - edit a release collection
                                   (batched 400/req; requires authentication + a client id).
@@ -22,12 +23,15 @@
       * New-MBCollection         - create a collection. The WS2 API cannot create collections,
                                   so this logs into the WEBSITE (cookie session) and submits
                                   the /collection/create form. Returns the new MBID.
+      * Set-MBCollection         - edit a collection's name/description (same website-form
+                                  mechanism; type/privacy/collaborators preserved).
 
     Interactive use:
         Import-Module .\MusicBrainz.psm1
-        Connect-MB                       # prompts, verifies, remembers
-        Get-MBUserCollection             # your collections
-        Get-MBCollectionRelease (Get-MBCollection 'library').id | % title
+        Connect-MB                                 # prompts, verifies, remembers
+        Get-MBCollection                           # ALL your collections (incl. private)
+        $library = Get-MBCollection 'library'      # one, by name (or MBID)
+        Get-MBCollectionRelease $library.id | % title
 
     Authentication is HTTP Digest with a MusicBrainz account ([pscredential] whose UserName is
     the editor name). Call Connect-MB once — the credential is held module-wide and every
@@ -66,7 +70,7 @@ function Connect-MB {
     .SYNOPSIS Authenticate to MusicBrainz. The credential is held module-wide; every other
               function uses it from there.
     .DESCRIPTION Prompts for the account when no credential is given (interactive use:
-                 Import-Module ...; Connect-MB; Get-MBUserCollection). Verifies the login
+                 Import-Module ...; Connect-MB; Get-MBCollection). Verifies the login
                  against an authenticated endpoint; a failed verification leaves the module
                  unauthenticated.
     #>
@@ -146,38 +150,33 @@ function Invoke-MBApi {
     }
 }
 
-function Get-MBUserCollection {
-    <#.SYNOPSIS List an editor's collections (default: the Connect-MB user, incl. private ones).#>
-    param([string] $Editor)
-    $own = $script:MBCredential -and (-not $Editor -or $Editor -eq $script:MBCredential.UserName)
-    if (-not $Editor -and -not $own) { throw 'Pass -Editor, or authenticate with Connect-MB first.' }
-    # Own collections MUST go through the auth-challenging endpoint: the public
-    # editor= browse never triggers the Digest 401 handshake, so PowerShell never sends the
-    # credential and PRIVATE collections stay invisible (which made sync re-create them).
-    $path = if ($own) { 'collection?limit=100&fmt=json' }
-            else      { "collection?editor=$([uri]::EscapeDataString($Editor))&limit=100&fmt=json" }
-    $resp = Invoke-MBApi -Path $path
-    if ($resp.PSObject.Properties.Name -contains 'collections') { return @($resp.collections) }
-    return @()
-}
-
 function Get-MBCollection {
     <#
-    .SYNOPSIS A collection by MBID or by NAME — e.g. (Get-MBCollection 'library').id
-    .DESCRIPTION An MBID fetches directly; anything else is matched by exact name against the
-                 editor's collections (default editor: the Connect-MB user). Name matches can
-                 return several objects if the editor reuses a name — the caller decides.
+    .SYNOPSIS Collections. Without -Id: ALL of an editor's collections (default: the
+              Connect-MB user, incl. private). With -Id (an MBID or a name): just that one —
+              e.g. $library = Get-MBCollection 'library'
+    .DESCRIPTION An MBID fetches directly; a name is matched exactly against the editor's
+                 collections and can return several objects if the editor reuses a name.
     #>
     param(
-        [Parameter(Mandatory, Position = 0, ValueFromPipeline)][string] $Collection,
+        [Parameter(Position = 0, ValueFromPipeline)][string] $Id,
         [string] $Editor
     )
     process {
-        if ($Collection -match '^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$') {
+        if ($Id -match '^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$') {
             # ${} braces required: in PS7 a trailing '?' is parsed as part of the variable name
-            return Invoke-MBApi -Path "collection/${Collection}?fmt=json"
+            return Invoke-MBApi -Path "collection/${Id}?fmt=json"
         }
-        Get-MBUserCollection -Editor $Editor | Where-Object { $_.name -eq $Collection }
+        $own = $script:MBCredential -and (-not $Editor -or $Editor -eq $script:MBCredential.UserName)
+        if (-not $Editor -and -not $own) { throw 'Pass -Editor, or authenticate with Connect-MB first.' }
+        # Own collections MUST go through the auth-challenging endpoint: the public
+        # editor= browse never triggers the Digest 401 handshake, so PowerShell never sends the
+        # credential and PRIVATE collections stay invisible (which made sync re-create them).
+        $path = if ($own) { 'collection?limit=100&fmt=json' }
+                else      { "collection?editor=$([uri]::EscapeDataString($Editor))&limit=100&fmt=json" }
+        $resp = Invoke-MBApi -Path $path
+        $all  = if ($resp.PSObject.Properties.Name -contains 'collections') { @($resp.collections) } else { @() }
+        if ($Id) { $all | Where-Object { $_.name -eq $Id } } else { $all }
     }
 }
 
@@ -420,13 +419,52 @@ function New-MBCollection {
     $m = [regex]::Match($final, '/collection/([0-9a-fA-F-]{36})')
     if ($m.Success) { return $m.Groups[1].Value.ToLower() }
     # fallback: look the name up via the API
-    $col = Get-MBUserCollection | Where-Object { $_.name -eq $Name } | Select-Object -First 1
+    $col = Get-MBCollection $Name | Select-Object -First 1
     if ($col) { return ([string]$col.id).ToLower() }
     throw "Collection creation for '$Name' did not return a collection page (form rejected?)."
 }
 
+function Set-MBCollection {
+    <#
+    .SYNOPSIS Edit a collection's name and/or description via the website edit form; every
+              other field (type, privacy, collaborators) is preserved. Needs Connect-MB.
+    .PARAMETER Id          The collection, as an MBID or a (unique) name.
+    .PARAMETER Name        New collection name (omit to keep).
+    .PARAMETER Description New description (omit to keep; empty string clears it).
+    #>
+    param(
+        [Parameter(Mandatory, Position = 0)][string] $Id,
+        [string] $Name,
+        [string] $Description
+    )
+    Assert-MBConnected
+    if ($Id -notmatch '^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$') {
+        $col = @(Get-MBCollection $Id)
+        if ($col.Count -ne 1) { throw "Collection '$Id' resolves to $($col.Count) collections." }
+        $Id = $col[0].id
+    }
+    $s   = Connect-MBWebsite
+    $ua  = @{ 'User-Agent' = $script:MBUserAgent }
+    $url = "https://musicbrainz.org/collection/$Id/edit"
+    $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
+    $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch "/collection/$Id/edit" -FieldMarker 'name="edit-list\.'
+    if ($form.Count -eq 0) { throw "Could not read the edit form for collection $Id (is it yours?)." }
+
+    $nameKey = @($form.Keys | Where-Object { $_ -match '\.name$' })[0]
+    $descKey = @($form.Keys | Where-Object { $_ -match '\.description$' })[0]
+    if ($PSBoundParameters.ContainsKey('Name')) {
+        if (-not $nameKey) { throw 'No name field on the collection edit form.' }
+        $form[$nameKey] = $Name
+    }
+    if ($PSBoundParameters.ContainsKey('Description')) {
+        if (-not $descKey) { throw 'No description field on the collection edit form.' }
+        $form[$descKey] = $Description
+    }
+    $null = Invoke-WebRequest -Uri $url -Method POST -Body $form -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
+}
+
 Export-ModuleMember -Function `
-    Connect-MB, Set-MBUserAgent, Set-MBClient, Invoke-MBApi, Get-MBUserCollection, `
+    Connect-MB, Set-MBUserAgent, Set-MBClient, Invoke-MBApi, `
     Get-MBCollection, Get-MBCollectionRelease, Add-MBCollectionRelease, `
     Remove-MBCollectionRelease, Get-MBRelease, Initialize-MBTagLib, Get-MBReleaseIdFromFile, `
-    Connect-MBWebsite, New-MBCollection
+    Connect-MBWebsite, New-MBCollection, Set-MBCollection

@@ -47,6 +47,10 @@ Scheduled task action:
 pwsh -NoProfile -File C:\...\scripts\collection_sync\collection_sync.ps1
 ```
 
+After each collection is trued up, its **description** is stamped with the sync date and
+item count (`Synced on 2026-07-14 15:30 - 2092 release(s)`), so the collection page shows
+when it was last mirrored.
+
 ## Notes
 
 - **Auth** — a regular MusicBrainz account (`Get-Credential`: editor name + password). The

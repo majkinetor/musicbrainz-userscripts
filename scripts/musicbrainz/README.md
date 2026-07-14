@@ -6,9 +6,9 @@ module with no ties to any particular script, equally usable for interactive exp
 ```powershell
 Import-Module .\MusicBrainz.psm1
 Connect-MB                                    # prompts, verifies, remembers
-Get-MBUserCollection                          # your collections (incl. private)
-(Get-MBCollection 'library').id               # collection by name → MBID
-Get-MBCollectionRelease (Get-MBCollection 'library').id | % title
+Get-MBCollection                              # ALL your collections (incl. private)
+$library = Get-MBCollection 'library'         # one, by name (or MBID)
+Get-MBCollectionRelease $library.id | % title
 ```
 
 ## Functions
@@ -17,11 +17,11 @@ Get-MBCollectionRelease (Get-MBCollection 'library').id | % title
 |---|---|
 | `Connect-MB` | Authenticate once (prompts if no `-Credential`); verified against the API and held module-wide — no other function takes a credential |
 | `Invoke-MBApi` | Low-level `/ws/2` request: throttled (~1 req/s), retry with backoff on transient errors, persisted session; `GET`/`PUT`/`DELETE` |
-| `Get-MBUserCollection` | List an editor's collections — your own (default, incl. private) or `-Editor <name>` (public) |
-| `Get-MBCollection` | One collection, by MBID **or by name** |
+| `Get-MBCollection` | Collections — all of an editor's without `-Id` (your own by default, incl. private; `-Editor <name>` for others), or one by MBID **or name** with `-Id` |
 | `Get-MBCollectionRelease` | Every release in a release collection (full objects, paged; optional `-Inc`) |
 | `Add-MBCollectionRelease` / `Remove-MBCollectionRelease` | Edit a release collection (batched 400/request) |
 | `New-MBCollection` | Create a collection (`-Type 'Release'` by default). The WS2 API can't create collections, so this submits the website form with the same credential |
+| `Set-MBCollection` | Edit a collection's `-Name` / `-Description` (website form; type, privacy and collaborators preserved) |
 | `Get-MBRelease` | A release by MBID (optional `-Inc 'artist-credits+labels+…'`) |
 | `Get-MBReleaseIdFromFile` | Read `MUSICBRAINZ_ALBUMID` from an audio file's tags (TagLibSharp, auto-downloaded into `lib/` on first use) |
 | `Connect-MBWebsite` | Cookie login to musicbrainz.org for form-based operations (used by `New-MBCollection`) |
