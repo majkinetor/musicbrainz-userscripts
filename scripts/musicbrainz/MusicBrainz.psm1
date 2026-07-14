@@ -145,7 +145,9 @@ function Invoke-MBApi {
                 $resp = Invoke-RestMethod @params
             }
             if ($VerbosePreference -ne 'SilentlyContinue') {
-                $body = try { ($resp | ConvertTo-Json -Compress -Depth 3) } catch { [string]$resp }
+                $body = if ($resp -is [xml]) { $resp.OuterXml }                                    # PUT/DELETE answer with XML
+                        elseif ($resp -is [string]) { $resp }
+                        else { try { ConvertTo-Json -InputObject $resp -Compress -Depth 3 3>$null } catch { [string]$resp } }   # 3>$null: the depth-truncation warning is expected noise
                 if ($body.Length -gt 300) { $body = $body.Substring(0, 300) + '...' }
                 Write-Verbose ("MB <- OK in {0}ms: {1}" -f $sw.ElapsedMilliseconds, $body)
             }
@@ -401,13 +403,17 @@ function Connect-MBWebsite {
     $form['username']    = $Credential.UserName
     $form['password']    = $Credential.GetNetworkCredential().Password
     $form['remember_me'] = '1'
+    # browser-like headers — a bare POST can trip bot protection that a GET does not
+    $post = $ua + @{ 'Referer' = "$script:MBServer/login"; 'Origin' = $script:MBServer; 'Accept' = 'text/html,application/xhtml+xml' }
     $resp = Invoke-WebRequest -Uri "$script:MBServer/login" -Method POST -Body $form `
-                -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
+                -WebSession $s -Headers $post -UseBasicParsing -MaximumRedirection 5
     # a logged-in page always carries the /logout menu link; surface MB's own error if not
     if ($resp.Content -notmatch 'href="/logout"') {
         $err = ([regex]::Matches($resp.Content, '<(?:p|div|span)[^>]*class="[^"]*error[^"]*"[^>]*>([\s\S]*?)</(?:p|div|span)>') |
                 ForEach-Object { ($_.Groups[1].Value -replace '<[^>]+>', '').Trim() }) -join ' | '
-        throw "MusicBrainz website login failed for '$($Credential.UserName)'$(if ($err) { ": $err" })."
+        $finalUrl = ''; try { $finalUrl = [string]$resp.BaseResponse.RequestMessage.RequestUri } catch { }
+        Write-Verbose ("MBWeb <- login response: url='{0}' title='{1}' first 200 chars: {2}" -f $finalUrl, (Get-MBPageTitle $resp.Content), (($resp.Content -replace '\s+', ' ').Substring(0, [math]::Min(200, $resp.Content.Length))))
+        throw "MusicBrainz website login failed for '$($Credential.UserName)'$(if ($err) { ": $err" }) (page: '$(Get-MBPageTitle $resp.Content)', url: $finalUrl)."
     }
     Write-Verbose 'MBWeb <- login OK (logout link present)'
     $script:MBWebSession = $s
