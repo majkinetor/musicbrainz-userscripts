@@ -113,6 +113,10 @@ function Invoke-MBApi {
         [ValidateSet('GET', 'PUT', 'DELETE')][string] $Method = 'GET'
     )
     $url = if ($Path -match '^https?://') { $Path } else { "$script:MBBase/$Path" }
+    # Cache-buster: identical browse URLs get served from an edge cache (observed: 40-80ms
+    # responses with a stale release-count vs 200-300ms fresh ones), which made a collection
+    # look like it never changed. A unique query value forces a fresh response.
+    if ($Method -eq 'GET') { $url += ($url.Contains('?') ? '&' : '?') + "_=$([datetime]::UtcNow.Ticks)" }
     $Credential = $script:MBCredential
 
     for ($attempt = 1; $attempt -le $script:MBMaxRequestAttempts; $attempt++) {
@@ -123,7 +127,7 @@ function Invoke-MBApi {
         $params = @{
             Uri         = $url
             Method      = $Method
-            Headers     = @{ 'User-Agent' = $script:MBUserAgent }
+            Headers     = @{ 'User-Agent' = $script:MBUserAgent; 'Cache-Control' = 'no-cache' }
             ErrorAction = 'Stop'
         }
         if ($Credential) { $params.Credential = $Credential }
@@ -377,6 +381,12 @@ function Get-MBFormSelectOptions {
     }
 }
 
+function Get-MBPageTitle {
+    # (internal) <title> of an HTML page — for diagnostics when a form isn't where expected.
+    param([string] $Html)
+    [System.Net.WebUtility]::HtmlDecode(([regex]::Match($Html, '<title>([^<]*)</title>').Groups[1].Value))
+}
+
 function Connect-MBWebsite {
     <#.SYNOPSIS Log into musicbrainz.org (cookie session) for form-based edits. Uses the Connect-MB credential.#>
     param()
@@ -384,17 +394,22 @@ function Connect-MBWebsite {
     $Credential = $script:MBCredential
     if ($script:MBWebSession) { return $script:MBWebSession }
     Write-Verbose "MBWeb -> GET $script:MBServer/login + POST (user=$($Credential.UserName))"
-    $ua = @{ 'User-Agent' = $script:MBUserAgent }
-    $login = Invoke-WebRequest -Uri "$script:MBServer/login" -SessionVariable s -Headers $ua -UseBasicParsing
+    $ua = @{ 'User-Agent' = $script:MBUserAgent; 'Cache-Control' = 'no-cache' }
+    $login = Invoke-WebRequest -Uri "$script:MBServer/login?_=$([datetime]::UtcNow.Ticks)" -SessionVariable s -Headers $ua -UseBasicParsing
     $form  = ConvertFrom-MBForm -Html $login.Content -ActionMatch '/login'
+    if (-not $form.Contains('csrf_token')) { throw "Login page carried no csrf_token (fields: $($form.Keys -join ', ')) - cached/unexpected page?" }
     $form['username']    = $Credential.UserName
     $form['password']    = $Credential.GetNetworkCredential().Password
     $form['remember_me'] = '1'
     $resp = Invoke-WebRequest -Uri "$script:MBServer/login" -Method POST -Body $form `
                 -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
-    if ($resp.Content -match 'name="password"' -and $resp.Content -match 'action="[^"]*/login"') {
-        throw "MusicBrainz website login failed for '$($Credential.UserName)'."
+    # a logged-in page always carries the /logout menu link; surface MB's own error if not
+    if ($resp.Content -notmatch 'href="/logout"') {
+        $err = ([regex]::Matches($resp.Content, '<(?:p|div|span)[^>]*class="[^"]*error[^"]*"[^>]*>([\s\S]*?)</(?:p|div|span)>') |
+                ForEach-Object { ($_.Groups[1].Value -replace '<[^>]+>', '').Trim() }) -join ' | '
+        throw "MusicBrainz website login failed for '$($Credential.UserName)'$(if ($err) { ": $err" })."
     }
+    Write-Verbose 'MBWeb <- login OK (logout link present)'
     $script:MBWebSession = $s
     return $s
 }
@@ -414,12 +429,12 @@ function New-MBCollection {
     )
     Assert-MBConnected
     $s   = Connect-MBWebsite
-    $ua  = @{ 'User-Agent' = $script:MBUserAgent }
+    $ua  = @{ 'User-Agent' = $script:MBUserAgent; 'Cache-Control' = 'no-cache' }
     $url = "$script:MBServer/collection/create"
-    $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
+    $page = Invoke-WebRequest -Uri "$url`?_=$([datetime]::UtcNow.Ticks)" -WebSession $s -Headers $ua -UseBasicParsing
     # the create form posts to self (no action attribute) — select it by its field names
     $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/collection/create' -FieldMarker 'name="edit-list\.'
-    if ($form.Count -eq 0) { throw 'Could not read the collection create form (login expired?).' }
+    if ($form.Count -eq 0) { throw "Could not read the collection create form (login expired? page: '$(Get-MBPageTitle $page.Content)')." }
 
     $nameKey = @($form.Keys | Where-Object { $_ -match '\.name$' })[0]
     $typeKey = @($form.Keys | Where-Object { $_ -match '\.type_id$' })[0]
@@ -468,14 +483,14 @@ function Set-MBCollection {
         $Id = $col[0].id
     }
     $s   = Connect-MBWebsite
-    $ua  = @{ 'User-Agent' = $script:MBUserAgent }
+    $ua  = @{ 'User-Agent' = $script:MBUserAgent; 'Cache-Control' = 'no-cache' }
     # the details form is on the "Edit" TAB (/own_collection/edit); plain /edit is the
     # release-removal view and carries no edit-list fields
     $url = "$script:MBServer/collection/$Id/own_collection/edit"
     Write-Verbose "MBWeb -> GET $url (read edit form)"
-    $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
+    $page = Invoke-WebRequest -Uri "$url`?_=$([datetime]::UtcNow.Ticks)" -WebSession $s -Headers $ua -UseBasicParsing
     $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/own_collection/edit' -FieldMarker 'name="edit-list\.'
-    if ($form.Count -eq 0) { throw "Could not read the edit form for collection $Id (is it yours?)." }
+    if ($form.Count -eq 0) { throw "Could not read the edit form for collection $Id (is it yours? page: '$(Get-MBPageTitle $page.Content)')." }
 
     $nameKey = @($form.Keys | Where-Object { $_ -match '\.name$' })[0]
     $descKey = @($form.Keys | Where-Object { $_ -match '\.description$' })[0]
