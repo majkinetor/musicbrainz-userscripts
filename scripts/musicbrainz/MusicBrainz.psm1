@@ -448,9 +448,11 @@ function Set-MBCollection {
     }
     $s   = Connect-MBWebsite
     $ua  = @{ 'User-Agent' = $script:MBUserAgent }
-    $url = "https://musicbrainz.org/collection/$Id/edit"
+    # the details form is on the "Edit" TAB (/own_collection/edit); plain /edit is the
+    # release-removal view and carries no edit-list fields
+    $url = "https://musicbrainz.org/collection/$Id/own_collection/edit"
     $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
-    $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch "/collection/$Id/edit" -FieldMarker 'name="edit-list\.'
+    $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/own_collection/edit' -FieldMarker 'name="edit-list\.'
     if ($form.Count -eq 0) { throw "Could not read the edit form for collection $Id (is it yours?)." }
 
     $nameKey = @($form.Keys | Where-Object { $_ -match '\.name$' })[0]
