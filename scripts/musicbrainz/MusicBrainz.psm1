@@ -30,9 +30,9 @@
         Get-MBCollectionRelease (Get-MBCollection 'library').id | % title
 
     Authentication is HTTP Digest with a MusicBrainz account ([pscredential] whose UserName is
-    the editor name). Call Connect-MB once, or pass -Credential explicitly per call — an
-    explicit -Credential always wins over the stored one. New-MBCollection uses the same
-    credential for its website login.
+    the editor name). Call Connect-MB once — the credential is held module-wide and every
+    function uses it from there; none take a -Credential parameter. New-MBCollection uses the
+    same credential for its website login.
 #>
 
 $script:MBBase               = 'https://musicbrainz.org/ws/2'
@@ -63,44 +63,44 @@ $script:MBCredential = $null
 
 function Connect-MB {
     <#
-    .SYNOPSIS Authenticate to MusicBrainz once; later calls need no -Credential.
+    .SYNOPSIS Authenticate to MusicBrainz. The credential is held module-wide; every other
+              function uses it from there.
     .DESCRIPTION Prompts for the account when no credential is given (interactive use:
                  Import-Module ...; Connect-MB; Get-MBUserCollection). Verifies the login
-                 against an authenticated endpoint before storing it module-wide.
+                 against an authenticated endpoint; a failed verification leaves the module
+                 unauthenticated.
     #>
     param([pscredential] $Credential)
     if (-not $Credential) { $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)' }
-    # verification: /ws/2/collection without editor= requires auth and returns OWN collections
-    $resp = Invoke-MBApi -Path 'collection?fmt=json' -Credential $Credential
     $script:MBCredential = $Credential
+    try {
+        # verification: /ws/2/collection without editor= requires auth and returns OWN collections
+        $resp = Invoke-MBApi -Path 'collection?fmt=json'
+    }
+    catch { $script:MBCredential = $null; throw }
     $n = @($resp.collections).Count
     Write-Host "Connected to MusicBrainz as '$($Credential.UserName)' ($n collection(s))."
 }
 
-function Get-MBStoredCredential {
-    # (internal) explicit credential wins; else the Connect-MB one; else $null / throw.
-    param([pscredential] $Credential, [switch] $Require)
-    if ($Credential) { return $Credential }
-    if ($script:MBCredential) { return $script:MBCredential }
-    if ($Require) { throw 'Not authenticated - run Connect-MB first (or pass -Credential).' }
-    return $null
+function Assert-MBConnected {
+    # (internal) guard for functions that require authentication.
+    if (-not $script:MBCredential) { throw 'Not authenticated - run Connect-MB first.' }
 }
 
 function Invoke-MBApi {
     <#
     .SYNOPSIS Throttled MusicBrainz request with retry/backoff and a persisted session.
+              Uses the Connect-MB credential automatically when present.
     .PARAMETER Path A path relative to /ws/2 (e.g. "collection/<id>?fmt=json") or a full URL.
     .PARAMETER Method GET (default), PUT or DELETE.
-    .PARAMETER Credential Account credential for authenticated (editing) requests.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string] $Path,
-        [ValidateSet('GET', 'PUT', 'DELETE')][string] $Method = 'GET',
-        [pscredential] $Credential
+        [ValidateSet('GET', 'PUT', 'DELETE')][string] $Method = 'GET'
     )
     $url = if ($Path -match '^https?://') { $Path } else { "$script:MBBase/$Path" }
-    if (-not $Credential -and $script:MBCredential) { $Credential = $script:MBCredential }
+    $Credential = $script:MBCredential
 
     for ($attempt = 1; $attempt -le $script:MBMaxRequestAttempts; $attempt++) {
         $wait = $script:MBMinRequestInterval - ([datetime]::UtcNow - $script:MBLastRequestTime)
@@ -148,17 +148,13 @@ function Invoke-MBApi {
 
 function Get-MBUserCollection {
     <#.SYNOPSIS List an editor's collections (default: the Connect-MB user; private ones included when authed).#>
-    param(
-        [string] $Editor,
-        [pscredential] $Credential
-    )
+    param([string] $Editor)
     if (-not $Editor) {
-        $c = Get-MBStoredCredential -Credential $Credential
-        if (-not $c) { throw 'Pass -Editor, or authenticate with Connect-MB first.' }
-        $Editor = $c.UserName
+        if (-not $script:MBCredential) { throw 'Pass -Editor, or authenticate with Connect-MB first.' }
+        $Editor = $script:MBCredential.UserName
     }
     $enc = [uri]::EscapeDataString($Editor)
-    $resp = Invoke-MBApi -Path "collection?editor=$enc&limit=100&fmt=json" -Credential $Credential
+    $resp = Invoke-MBApi -Path "collection?editor=$enc&limit=100&fmt=json"
     if ($resp.PSObject.Properties.Name -contains 'collections') { return @($resp.collections) }
     return @()
 }
@@ -172,15 +168,14 @@ function Get-MBCollection {
     #>
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline)][string] $Collection,
-        [string] $Editor,
-        [pscredential] $Credential
+        [string] $Editor
     )
     process {
         if ($Collection -match '^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$') {
             # ${} braces required: in PS7 a trailing '?' is parsed as part of the variable name
-            return Invoke-MBApi -Path "collection/${Collection}?fmt=json" -Credential $Credential
+            return Invoke-MBApi -Path "collection/${Collection}?fmt=json"
         }
-        Get-MBUserCollection -Editor $Editor -Credential $Credential | Where-Object { $_.name -eq $Collection }
+        Get-MBUserCollection -Editor $Editor | Where-Object { $_.name -eq $Collection }
     }
 }
 
@@ -191,16 +186,15 @@ function Get-MBCollectionRelease {
     #>
     param(
         [Parameter(Mandatory)][string] $CollectionId,
-        [string] $Inc = '',
-        [pscredential] $Credential
+        [string] $Inc = ''
     )
-    $meta  = Get-MBCollection -Collection $CollectionId -Credential $Credential
+    $meta  = Get-MBCollection -Collection $CollectionId
     $total = [int]$meta.'release-count'
     $limit = 100; $offset = 0
     while ($offset -lt $total) {
         $q = "release?collection=$CollectionId&limit=$limit&offset=$offset&fmt=json"
         if ($Inc) { $q += "&inc=$Inc" }
-        $page = Invoke-MBApi -Path $q -Credential $Credential
+        $page = Invoke-MBApi -Path $q
         $batch = @($page.releases)
         if ($batch.Count -eq 0) { break }
         $batch
@@ -209,23 +203,21 @@ function Get-MBCollectionRelease {
 }
 
 function Add-MBCollectionRelease {
-    <#.SYNOPSIS Add releases to a collection (batched 400/req). Needs Connect-MB or -Credential.#>
+    <#.SYNOPSIS Add releases to a collection (batched 400/req). Needs Connect-MB.#>
     param(
         [Parameter(Mandatory)][string] $CollectionId,
-        [Parameter(Mandatory)][string[]] $ReleaseId,
-        [pscredential] $Credential
+        [Parameter(Mandatory)][string[]] $ReleaseId
     )
-    Invoke-MBCollectionEdit -Method PUT -CollectionId $CollectionId -ReleaseId $ReleaseId -Credential $Credential
+    Invoke-MBCollectionEdit -Method PUT -CollectionId $CollectionId -ReleaseId $ReleaseId
 }
 
 function Remove-MBCollectionRelease {
-    <#.SYNOPSIS Remove releases from a collection (batched 400/req). Needs Connect-MB or -Credential.#>
+    <#.SYNOPSIS Remove releases from a collection (batched 400/req). Needs Connect-MB.#>
     param(
         [Parameter(Mandatory)][string] $CollectionId,
-        [Parameter(Mandatory)][string[]] $ReleaseId,
-        [pscredential] $Credential
+        [Parameter(Mandatory)][string[]] $ReleaseId
     )
-    Invoke-MBCollectionEdit -Method DELETE -CollectionId $CollectionId -ReleaseId $ReleaseId -Credential $Credential
+    Invoke-MBCollectionEdit -Method DELETE -CollectionId $CollectionId -ReleaseId $ReleaseId
 }
 
 function Invoke-MBCollectionEdit {
@@ -233,15 +225,13 @@ function Invoke-MBCollectionEdit {
     param(
         [Parameter(Mandatory)][ValidateSet('PUT', 'DELETE')][string] $Method,
         [Parameter(Mandatory)][string] $CollectionId,
-        [Parameter(Mandatory)][string[]] $ReleaseId,
-        [pscredential] $Credential
+        [Parameter(Mandatory)][string[]] $ReleaseId
     )
-    $Credential = Get-MBStoredCredential -Credential $Credential -Require
+    Assert-MBConnected
     for ($i = 0; $i -lt $ReleaseId.Count; $i += 400) {
         $chunk = $ReleaseId[$i..([math]::Min($i + 399, $ReleaseId.Count - 1))]
         $list  = ($chunk -join ';')
-        $null  = Invoke-MBApi -Method $Method -Credential $Credential `
-                    -Path "collection/$CollectionId/releases/$list`?client=$($script:MBClient)"
+        $null  = Invoke-MBApi -Method $Method -Path "collection/$CollectionId/releases/$list`?client=$($script:MBClient)"
     }
 }
 
@@ -253,13 +243,12 @@ function Get-MBRelease {
     #>
     param(
         [Parameter(Mandatory, ValueFromPipeline)][string] $Id,
-        [string] $Inc = '',
-        [pscredential] $Credential
+        [string] $Inc = ''
     )
     process {
         $q = "release/${Id}?fmt=json"
         if ($Inc) { $q += "&inc=$Inc" }
-        Invoke-MBApi -Path $q -Credential $Credential
+        Invoke-MBApi -Path $q
     }
 }
 
@@ -366,9 +355,10 @@ function Get-MBFormSelectOptions {
 }
 
 function Connect-MBWebsite {
-    <#.SYNOPSIS Log into musicbrainz.org (cookie session) for form-based edits.#>
-    param([pscredential] $Credential)
-    $Credential = Get-MBStoredCredential -Credential $Credential -Require
+    <#.SYNOPSIS Log into musicbrainz.org (cookie session) for form-based edits. Uses the Connect-MB credential.#>
+    param()
+    Assert-MBConnected
+    $Credential = $script:MBCredential
     if ($script:MBWebSession) { return $script:MBWebSession }
     $ua = @{ 'User-Agent' = $script:MBUserAgent }
     $login = Invoke-WebRequest -Uri 'https://musicbrainz.org/login' -SessionVariable s -Headers $ua -UseBasicParsing
@@ -388,19 +378,18 @@ function Connect-MBWebsite {
 function New-MBCollection {
     <#
     .SYNOPSIS Create a MusicBrainz collection via the website form. Returns the new MBID.
+              Needs Connect-MB (the same credential logs into the website).
     .PARAMETER Name        Collection name.
-    .PARAMETER Credential  MusicBrainz account (used for the website login).
     .PARAMETER Type        Collection type by label, e.g. 'Release', 'Owned music', 'Wishlist'.
     .PARAMETER Description Optional description.
     #>
     param(
         [Parameter(Mandatory)][string] $Name,
-        [pscredential] $Credential,
         [string] $Type = 'Release',
         [string] $Description = ''
     )
-    $Credential = Get-MBStoredCredential -Credential $Credential -Require
-    $s   = Connect-MBWebsite -Credential $Credential
+    Assert-MBConnected
+    $s   = Connect-MBWebsite
     $ua  = @{ 'User-Agent' = $script:MBUserAgent }
     $url = 'https://musicbrainz.org/collection/create'
     $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
@@ -429,7 +418,7 @@ function New-MBCollection {
     $m = [regex]::Match($final, '/collection/([0-9a-fA-F-]{36})')
     if ($m.Success) { return $m.Groups[1].Value.ToLower() }
     # fallback: look the name up via the API
-    $col = Get-MBUserCollection -Editor $Credential.UserName -Credential $Credential | Where-Object { $_.name -eq $Name } | Select-Object -First 1
+    $col = Get-MBUserCollection | Where-Object { $_.name -eq $Name } | Select-Object -First 1
     if ($col) { return ([string]$col.id).ToLower() }
     throw "Collection creation for '$Name' did not return a collection page (form rejected?)."
 }

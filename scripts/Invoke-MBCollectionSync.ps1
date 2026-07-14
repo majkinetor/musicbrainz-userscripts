@@ -110,6 +110,7 @@ foreach ($e in $entries) {
 
     # --- scan folders: one MUSICBRAINZ_ALBUMID per audio-bearing folder ----
     $desired  = [System.Collections.Generic.HashSet[string]]::new()
+    $idFolder = @{}   # release MBID -> folder name (for readable add logs)
     $untagged = [System.Collections.Generic.List[string]]::new()
     $folders  = @($e.Path) + @(Get-ChildItem -LiteralPath $e.Path -Recurse -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName)
     $scanned  = 0
@@ -119,14 +120,20 @@ foreach ($e in $entries) {
         if (-not $audio) { continue }
         $scanned++
         $id = Get-MBReleaseIdFromFile -Path $audio.FullName
-        if ($id) { [void]$desired.Add($id) } else { $untagged.Add($dir) }
+        if ($id) { [void]$desired.Add($id); if (-not $idFolder.ContainsKey($id)) { $idFolder[$id] = Split-Path -Leaf $dir } }
+        else { $untagged.Add($dir) }
     }
     Write-Host "  Scanned $scanned release folder(s) -> $($desired.Count) distinct tagged release(s)."
     foreach ($u in $untagged) { Write-Warning "  no MUSICBRAINZ_ALBUMID: $u" }
 
     # --- current collection contents ---------------------------------------
     $currentSet = [System.Collections.Generic.HashSet[string]]::new()
-    foreach ($r in (Get-MBCollectionRelease -CollectionId $colId)) { [void]$currentSet.Add(([string]$r.id).ToLower()) }
+    $idTitle    = @{}   # release MBID -> MB title (for readable remove logs — no folder on disk)
+    foreach ($r in (Get-MBCollectionRelease -CollectionId $colId)) {
+        $rid = ([string]$r.id).ToLower()
+        [void]$currentSet.Add($rid)
+        $idTitle[$rid] = [string]$r.title
+    }
     Write-Host "  Collection currently holds $($currentSet.Count) release(s)."
 
     $toAdd    = @($desired    | Where-Object { -not $currentSet.Contains($_) })
@@ -138,7 +145,7 @@ foreach ($e in $entries) {
     else {
         if ($toAdd.Count) {
             Write-Host "  + Adding $($toAdd.Count):" -ForegroundColor Yellow
-            $toAdd | ForEach-Object { Write-Host "      + $_" }
+            $toAdd | ForEach-Object { Write-Host "      + $_  $($idFolder[$_])" }
             if ($PSCmdlet.ShouldProcess($e.Name, "add $($toAdd.Count) release(s)")) {
                 Add-MBCollectionRelease -CollectionId $colId -ReleaseId $toAdd
                 $grandAdded += $toAdd.Count
@@ -146,7 +153,7 @@ foreach ($e in $entries) {
         }
         if ($toRemove.Count) {
             Write-Host "  - Removing $($toRemove.Count):" -ForegroundColor Yellow
-            $toRemove | ForEach-Object { Write-Host "      - $_" }
+            $toRemove | ForEach-Object { Write-Host "      - $_  $($idTitle[$_])" }
             if ($PSCmdlet.ShouldProcess($e.Name, "remove $($toRemove.Count) release(s)")) {
                 Remove-MBCollectionRelease -CollectionId $colId -ReleaseId $toRemove
                 $grandRemoved += $toRemove.Count
