@@ -15,36 +15,36 @@ It runs once and exits, so it drops straight into Task Scheduler.
 
 ```powershell
 @{
-    collections = @(
+    collections     = @(
         @{ name = 'various artists'; path = 'm:\audio\various artists' }
         @{ name = 'albums';          path = 'm:\audio\albums' }
     )
+    CreateMissing   = $true                # optional: create collections that don't exist yet
+    CredentialsFile = "$HOME\mb.cred"      # optional: saved credential for unattended runs
 }
 ```
 
 `name` is the MusicBrainz collection name (on your account), `path` the folder holding the
-release folders. More options may be added over time.
+release folders. A command-line parameter always beats its config counterpart. More options
+may be added over time.
 
 ## Usage
 
 ```powershell
-# one time, as the user the task runs under:
+# one time, as the user the task runs under (CredentialsFile points here):
 Get-Credential | Export-Clixml $HOME\mb.cred
 
 # dry run — prints the full plan, changes nothing:
-.\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred) -WhatIf
+.\collection_sync.ps1 -WhatIf
 
-# for real:
-.\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
-
-# also create collections that don't exist yet (private, Release type):
-.\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred) -CreateMissing
+# for real (credential + CreateMissing come from the config):
+.\collection_sync.ps1
 ```
 
 Scheduled task action:
 
 ```
-pwsh -NoProfile -File C:\...\scripts\collection_sync\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
+pwsh -NoProfile -File C:\...\scripts\collection_sync\collection_sync.ps1
 ```
 
 ## Notes

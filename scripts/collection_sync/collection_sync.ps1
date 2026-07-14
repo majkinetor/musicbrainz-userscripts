@@ -18,25 +18,32 @@
     later); `collections` lists the name/folder pairs to mirror:
 
         @{
-            collections = @(
+            collections     = @(
                 @{ name = 'various artists'; path = 'm:\audio\various artists' }
                 @{ name = 'albums';          path = 'm:\audio\albums' }
             )
+            CreateMissing   = $true                # optional - as if -CreateMissing was passed
+            CredentialsFile = "$HOME\mb.cred"      # optional - Export-Clixml'd credential
         }
+
+    A parameter given on the command line always beats its config counterpart.
 
 .PARAMETER ConfigPath
     Path to the config script. Default: collection_sync.config.ps1 next to this script.
 
 .PARAMETER Credential
-    MusicBrainz account (UserName = editor name). Prompted if omitted. For an unattended
-    scheduled task, save it once and pass it in, e.g.:
+    MusicBrainz account (UserName = editor name). When omitted, the config's CredentialsFile
+    (an Export-Clixml'd credential) is used; when that's absent too, you are prompted.
+    For an unattended scheduled task:
         Get-Credential | Export-Clixml $HOME\mb.cred          # one time, as the task's user
+        # then either point CredentialsFile at it in the config, or pass it explicitly:
         .\collection_sync.ps1 -Credential (Import-Clixml $HOME\mb.cred)
 
 .PARAMETER CreateMissing
     When a configured collection name doesn't exist on the account, create it (a private
     Release collection - MB's default) instead of skipping the entry. Creation goes through
     the website form (the WS2 API cannot create collections), using the same credential.
+    Can also be set in the config (CreateMissing = $true).
 
 .PARAMETER UserAgent
     User-Agent for MusicBrainz requests.
@@ -78,7 +85,16 @@ $entries = foreach ($c in @($cfg.collections)) {
 }
 if (-not $entries) { throw "No usable 'collections' entries in $ConfigPath." }
 
+# config-provided options — an explicit command-line parameter always wins
+if (-not $PSBoundParameters.ContainsKey('CreateMissing') -and $null -ne $cfg.CreateMissing) {
+    $CreateMissing = [bool]$cfg.CreateMissing
+}
+
 # --- Auth ------------------------------------------------------------------
+if (-not $Credential -and $cfg.CredentialsFile) {
+    if (Test-Path -LiteralPath $cfg.CredentialsFile) { $Credential = Import-Clixml -LiteralPath $cfg.CredentialsFile }
+    else { Write-Warning "CredentialsFile not found: $($cfg.CredentialsFile) - create it with: Get-Credential | Export-Clixml '$($cfg.CredentialsFile)'" }
+}
 if (-not $Credential) { $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)' }
 Set-MBUserAgent $UserAgent
 Set-MBClient 'collection_sync-1.0'   # recorded by MB on collection edits
