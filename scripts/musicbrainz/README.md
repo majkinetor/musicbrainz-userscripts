@@ -11,6 +11,13 @@ $library = Get-MBCollection 'library'         # one, by name (or MBID)
 Get-MBCollectionRelease $library.id | % title
 ```
 
+Download a collection into a JSON file:
+
+```powershell
+$c = Get-MBCollection 'library'
+Get-MBCollectionRelease $c.id | ConvertTo-Json -Depth 10 | Set-Content "$($c.name).json"
+```
+
 ## Functions
 
 | Function | What it does |

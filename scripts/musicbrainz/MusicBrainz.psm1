@@ -405,22 +405,17 @@ function Connect-MBWebsite {
     $form['remember_me'] = '1'
     # browser-like headers — a bare POST can trip bot protection that a GET does not
     $post = $ua + @{ 'Referer' = "$script:MBServer/login"; 'Origin' = $script:MBServer; 'Accept' = 'text/html,application/xhtml+xml' }
-    # DON'T follow the login redirect: MB rotates the session cookie on the success-302, and
-    # the auto-followed hop swallows that Set-Cookie — the jar keeps the stale pre-login id
-    # and every later request renders logged-out. Taking the 302 directly stores the cookie.
     $resp = Invoke-WebRequest -Uri "$script:MBServer/login" -Method POST -Body $form `
-                -WebSession $s -Headers $post -UseBasicParsing -MaximumRedirection 0 -SkipHttpErrorCheck
-    Write-Verbose ("MBWeb <- login POST: HTTP {0}, redirect to '{1}'" -f [int]$resp.StatusCode, ([string]$resp.Headers['Location']))
-    # Don't judge the auto-followed redirect: its hop can outrun the freshly set session
-    # cookie and render logged-out (seen in the field: landing on /user/<name> yet the
-    # /logout check failing). Verify with a NEW request instead — by now the cookie is in
-    # the session jar, so a logged-in page must carry the /logout menu link.
+                -WebSession $s -Headers $post -UseBasicParsing -MaximumRedirection 5
+    # Verify with a fresh request: a logged-in page carries the logout menu link. NOTE the
+    # link is `/logout` on some pages but `/logout?returnto=...` on others — match the prefix,
+    # not a closing quote (that cost hours: login + cookies were fine, the check was wrong).
     $check = $null
     try {
         $check = Invoke-WebRequest -Uri "$script:MBServer/user/$([uri]::EscapeDataString($Credential.UserName))?_=$([datetime]::UtcNow.Ticks)" `
                     -WebSession $s -Headers $ua -UseBasicParsing
     } catch { }   # e.g. 404 for a nonexistent editor — handled below with MB's own error
-    if (-not $check -or $check.Content -notmatch 'href="/logout"') {
+    if (-not $check -or $check.Content -notmatch 'href="/logout') {
         $err = ([regex]::Matches($resp.Content, '<(?:p|div|span)[^>]*class="[^"]*error[^"]*"[^>]*>([\s\S]*?)</(?:p|div|span)>') |
                 ForEach-Object { ($_.Groups[1].Value -replace '<[^>]+>', '').Trim() }) -join ' | '
         $finalUrl = ''; try { $finalUrl = [string]$resp.BaseResponse.RequestMessage.RequestUri } catch { }

@@ -33,9 +33,10 @@
 
 .PARAMETER Credential
     MusicBrainz account (UserName = editor name). When omitted, the config's CredentialsFile
-    is used; if that file doesn't exist yet, you are prompted ONCE and it is created there
-    (DPAPI-encrypted), so later runs are unattended. With no CredentialsFile either, you are
-    simply prompted each run.
+    is used; if that file doesn't exist yet, you are prompted ONCE and it is created there,
+    so later runs are unattended. With no CredentialsFile either, you are prompted each run.
+    The file is written with Export-Clixml (cross-platform): on Windows it is DPAPI-encrypted
+    per user; on Linux/macOS it is merely encoded - protect it with file permissions.
 
 .PARAMETER CreateMissing
     When a configured collection name doesn't exist on the account, create it (a private
@@ -101,7 +102,7 @@ if (-not $Credential -and $cfg.CredentialsFile) {
         $dir = Split-Path -Parent $cfg.CredentialsFile
         if ($dir -and -not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
         $Credential | Export-Clixml -LiteralPath $cfg.CredentialsFile
-        Write-Host "Saved to $($cfg.CredentialsFile) (DPAPI-encrypted, this Windows user only)."
+        Write-Host "Saved to $($cfg.CredentialsFile) (Windows: DPAPI-encrypted per user; Linux/macOS: protect with file permissions)."
     }
 }
 if (-not $Credential) { $Credential = Get-Credential -Message 'MusicBrainz login (editor name + password)' }

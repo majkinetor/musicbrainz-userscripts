@@ -1,4 +1,4 @@
-# Collection exports produced by Get-MbCollection.ps1 (data, not source)
+# Collection exports (data, not source)
 *.json
 
 # Your real sync config (keep the .example in git, not local paths/collections)

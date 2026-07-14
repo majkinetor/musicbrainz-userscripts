@@ -38,8 +38,10 @@ may be added over time.
 .\collection_sync.ps1
 ```
 
-The first run asks for the MusicBrainz login and saves it to `CredentialsFile`
-(DPAPI-encrypted, readable only by the same Windows user) — every later run is unattended.
+The first run asks for the MusicBrainz login and saves it to `CredentialsFile` — every later
+run is unattended. The script is cross-platform (PowerShell 7): on Windows the file is
+DPAPI-encrypted per user; on Linux/macOS it is merely encoded, so protect it with file
+permissions (`chmod 600`).
 
 Scheduled task action:
 
