@@ -405,8 +405,12 @@ function Connect-MBWebsite {
     $form['remember_me'] = '1'
     # browser-like headers — a bare POST can trip bot protection that a GET does not
     $post = $ua + @{ 'Referer' = "$script:MBServer/login"; 'Origin' = $script:MBServer; 'Accept' = 'text/html,application/xhtml+xml' }
+    # DON'T follow the login redirect: MB rotates the session cookie on the success-302, and
+    # the auto-followed hop swallows that Set-Cookie — the jar keeps the stale pre-login id
+    # and every later request renders logged-out. Taking the 302 directly stores the cookie.
     $resp = Invoke-WebRequest -Uri "$script:MBServer/login" -Method POST -Body $form `
-                -WebSession $s -Headers $post -UseBasicParsing -MaximumRedirection 5
+                -WebSession $s -Headers $post -UseBasicParsing -MaximumRedirection 0 -SkipHttpErrorCheck
+    Write-Verbose ("MBWeb <- login POST: HTTP {0}, redirect to '{1}'" -f [int]$resp.StatusCode, ([string]$resp.Headers['Location']))
     # Don't judge the auto-followed redirect: its hop can outrun the freshly set session
     # cookie and render logged-out (seen in the field: landing on /user/<name> yet the
     # /logout check failing). Verify with a NEW request instead — by now the cookie is in
