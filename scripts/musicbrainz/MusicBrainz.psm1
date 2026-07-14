@@ -407,15 +407,23 @@ function Connect-MBWebsite {
     $post = $ua + @{ 'Referer' = "$script:MBServer/login"; 'Origin' = $script:MBServer; 'Accept' = 'text/html,application/xhtml+xml' }
     $resp = Invoke-WebRequest -Uri "$script:MBServer/login" -Method POST -Body $form `
                 -WebSession $s -Headers $post -UseBasicParsing -MaximumRedirection 5
-    # a logged-in page always carries the /logout menu link; surface MB's own error if not
-    if ($resp.Content -notmatch 'href="/logout"') {
+    # Don't judge the auto-followed redirect: its hop can outrun the freshly set session
+    # cookie and render logged-out (seen in the field: landing on /user/<name> yet the
+    # /logout check failing). Verify with a NEW request instead — by now the cookie is in
+    # the session jar, so a logged-in page must carry the /logout menu link.
+    $check = $null
+    try {
+        $check = Invoke-WebRequest -Uri "$script:MBServer/user/$([uri]::EscapeDataString($Credential.UserName))?_=$([datetime]::UtcNow.Ticks)" `
+                    -WebSession $s -Headers $ua -UseBasicParsing
+    } catch { }   # e.g. 404 for a nonexistent editor — handled below with MB's own error
+    if (-not $check -or $check.Content -notmatch 'href="/logout"') {
         $err = ([regex]::Matches($resp.Content, '<(?:p|div|span)[^>]*class="[^"]*error[^"]*"[^>]*>([\s\S]*?)</(?:p|div|span)>') |
                 ForEach-Object { ($_.Groups[1].Value -replace '<[^>]+>', '').Trim() }) -join ' | '
         $finalUrl = ''; try { $finalUrl = [string]$resp.BaseResponse.RequestMessage.RequestUri } catch { }
-        Write-Verbose ("MBWeb <- login response: url='{0}' title='{1}' first 200 chars: {2}" -f $finalUrl, (Get-MBPageTitle $resp.Content), (($resp.Content -replace '\s+', ' ').Substring(0, [math]::Min(200, $resp.Content.Length))))
-        throw "MusicBrainz website login failed for '$($Credential.UserName)'$(if ($err) { ": $err" }) (page: '$(Get-MBPageTitle $resp.Content)', url: $finalUrl)."
+        Write-Verbose ("MBWeb <- login response: url='{0}' title='{1}'; verification page title='{2}'" -f $finalUrl, (Get-MBPageTitle $resp.Content), ($check ? (Get-MBPageTitle $check.Content) : '(request failed)'))
+        throw "MusicBrainz website login failed for '$($Credential.UserName)'$(if ($err) { ": $err" }) (post landed on: '$(Get-MBPageTitle $resp.Content)', $finalUrl)."
     }
-    Write-Verbose 'MBWeb <- login OK (logout link present)'
+    Write-Verbose 'MBWeb <- login OK (verified: logout link present on a fresh request)'
     $script:MBWebSession = $s
     return $s
 }
