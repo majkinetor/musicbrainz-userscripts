@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.12
+// @version      2026.7.14.195800
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -477,6 +477,15 @@
     };
   }
   var _releaseDataCache = /* @__PURE__ */ new Map();
+  function stripCompanyNums(json) {
+    for (const list of [json.companies, json.labels]) {
+      if (!Array.isArray(list)) continue;
+      for (const c of list) {
+        if (c && typeof c.name === "string") c.name = c.name.replace(/\s+\(\d+\)$/, "");
+      }
+    }
+    return json;
+  }
   function getDiscogsReleaseData(url) {
     if (_releaseDataCache.has(url)) return Promise.resolve(_releaseDataCache.get(url));
     return fetch(
@@ -485,7 +494,7 @@
         "https://api.discogs.com/releases/"
       )}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`
     ).then((body) => body.json()).then((json) => {
-      _releaseDataCache.set(url, json);
+      _releaseDataCache.set(url, stripCompanyNums(json));
       return json;
     });
   }

@@ -35,6 +35,20 @@ export function parseDiscogsUrl(url) {
 // across a single Import session.
 const _releaseDataCache = new Map();
 
+// #393 Discogs disambiguates same-named entities with a trailing " (N)" (e.g. "Odeon (4)",
+// "Audiolab (3)"). MB doesn't use that number, so strip it from companies/labels right at the
+// source — search, review table and dispatch all see the clean name. Artists are covered
+// separately in `getArtistRoles` (which also cleans their anv).
+function stripCompanyNums(json) {
+    for (const list of [json.companies, json.labels]) {
+        if (!Array.isArray(list)) continue;
+        for (const c of list) {
+            if (c && typeof c.name === 'string') c.name = c.name.replace(/\s+\(\d+\)$/, '');
+        }
+    }
+    return json;
+}
+
 /**
  * Fetch a Discogs release's JSON. Returns the cached copy if seen this
  * session, otherwise hits `api.discogs.com/releases/<id>` and memoises.
@@ -49,7 +63,7 @@ export function getDiscogsReleaseData(url) {
     )
         .then(body => body.json())
         .then(json => {
-            _releaseDataCache.set(url, json);
+            _releaseDataCache.set(url, stripCompanyNums(json));
             return json;
         });
 }
