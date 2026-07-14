@@ -139,6 +139,28 @@ foreach ($e in $entries) {
     $toAdd    = @($desired    | Where-Object { -not $currentSet.Contains($_) })
     $toRemove = @($currentSet | Where-Object { -not $desired.Contains($_) })
 
+    # --- canonicalize adds: a tag can carry a MERGED-away MBID -------------
+    # MB silently stores the merge target on PUT and the browse returns the target, so an
+    # outdated tag would be re-added (and its target re-removed) on every run, forever.
+    # Resolve each candidate through MB (cheap - only the adds) and cancel the phantom pair.
+    if ($toAdd.Count) {
+        $removeSet = [System.Collections.Generic.HashSet[string]]::new([string[]]$toRemove)
+        $resolved  = [System.Collections.Generic.List[string]]::new()
+        foreach ($id in $toAdd) {
+            $canon = $id
+            try { $canon = ([string](Get-MBRelease $id).id).ToLower() }
+            catch { Write-Warning "  release $id not found on MusicBrainz - skipping ($($idFolder[$id]))"; continue }
+            if ($canon -eq $id) { $resolved.Add($id); continue }
+            Write-Host "  ~ $id was merged into $canon on MusicBrainz - re-tag '$($idFolder[$id])'" -ForegroundColor DarkYellow
+            if ($removeSet.Contains($canon)) { [void]$removeSet.Remove($canon); continue }   # already there under the new id
+            if ($currentSet.Contains($canon)) { continue }                                    # ditto, and nothing queued to remove
+            $idFolder[$canon] = $idFolder[$id]
+            $resolved.Add($canon)
+        }
+        $toAdd    = @($resolved | Select-Object -Unique)
+        $toRemove = @($removeSet)
+    }
+
     if ($toAdd.Count -eq 0 -and $toRemove.Count -eq 0) {
         Write-Host '  Already in sync.' -ForegroundColor Green
     }
