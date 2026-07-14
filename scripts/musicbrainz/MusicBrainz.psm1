@@ -11,6 +11,9 @@
                                   module-wide); afterwards no function needs -Credential.
       * Invoke-MBApi            - throttled (1 req/s) request helper with retry/backoff and a
                                   persisted web session (Cloudflare clearance), GET/PUT/DELETE.
+      * Invoke-MBApiBulk        - many GETs on parallel background workers that share ONE
+                                  request schedule and ONE retry backoff (a 429/503 seen by
+                                  any worker pauses them all); results in input order.
       * Get-MBCollection        - collections: all of an editor's without -Id (private included
                                   for the Connect-MB user), one by MBID or name with -Id:
                                   $library = Get-MBCollection 'library'
@@ -43,10 +46,21 @@ $script:MBServer             = 'https://musicbrainz.org'
 $script:MBBase               = "$script:MBServer/ws/2"
 $script:MBClient             = 'PowerShell-MusicBrainz/1.0'
 $script:MBUserAgent          = 'PowerShell-MusicBrainz/1.0 ( https://github.com/majkinetor )'
-$script:MBLastRequestTime    = [datetime]::MinValue
 $script:MBSession            = $null
-# MusicBrainz allows ~1 request/second — consecutive API requests are spaced at least this far apart.
-$script:MBMinRequestInterval = [timespan]::FromMilliseconds(1100)
+# MusicBrainz allows ~1 request/second — sequential use spaces request starts this far apart.
+$script:MBDefaultRequestInterval = [timespan]::FromMilliseconds(1100)
+# One SHARED throttle for every request, including the parallel workers of Invoke-MBApiBulk
+# (they receive this very hashtable by reference): request starts are claimed as slots off a
+# common schedule, and a transient error seen by ANY worker raises a common backoff that all
+# of them honor. IntervalTicks adapts between FloorTicks (fast, set by bulk mode) and the
+# sequential default: it grows when MusicBrainz pushes back, decays on sustained success.
+$script:MBThrottle = [hashtable]::Synchronized(@{
+    NextSlotTicks     = 0L                                          # next unclaimed request start
+    BackoffUntilTicks = 0L                                          # shared penalty after 429/5xx
+    IntervalTicks     = $script:MBDefaultRequestInterval.Ticks      # current spacing between starts
+    FloorTicks        = $script:MBDefaultRequestInterval.Ticks      # fastest allowed spacing
+    Streak            = 0                                           # consecutive successes (drives decay)
+})
 # MusicBrainz behind Cloudflare intermittently answers a valid request with "400 Invalid mbid"
 # in streaks that can run a couple of minutes; a generous retry budget (~5 min) rides them out.
 # A genuinely bad (wrong-format) MBID never gets a real 400, so retrying can't mask a real error.
@@ -100,6 +114,50 @@ function Assert-MBConnected {
     if (-not $script:MBCredential) { throw 'Not authenticated - run Connect-MB first.' }
 }
 
+function Wait-MBRequestSlot {
+    # (internal) Claim the next request start time from the SHARED schedule and sleep until
+    # it arrives. Atomic under the throttle lock, so parallel workers never claim the same
+    # slot; if a shared backoff lands while we sleep, we go claim a fresh slot behind it.
+    $t = $script:MBThrottle
+    do {
+        [System.Threading.Monitor]::Enter($t.SyncRoot)
+        try {
+            $now  = [datetime]::UtcNow.Ticks
+            $slot = [math]::Max([math]::Max($now, [long]$t.NextSlotTicks), [long]$t.BackoffUntilTicks)
+            $t.NextSlotTicks = $slot + [long]$t.IntervalTicks
+        }
+        finally { [System.Threading.Monitor]::Exit($t.SyncRoot) }
+        $waitMs = [timespan]::FromTicks($slot - [datetime]::UtcNow.Ticks).TotalMilliseconds
+        if ($waitMs -gt 0) { Start-Sleep -Milliseconds ([int]$waitMs + 1) }
+    } while ([long]$t.BackoffUntilTicks -gt $slot)
+}
+
+function Register-MBRequestOutcome {
+    # (internal) Adaptive pacing: a transient failure raises the SHARED backoff (every worker
+    # pauses - MusicBrainz rate-limits per IP, so one 503 means all of us must slow down) and
+    # widens the spacing; sustained success decays the spacing back toward the floor.
+    param([switch] $Success, [double] $DelaySeconds = 0)
+    $t = $script:MBThrottle
+    [System.Threading.Monitor]::Enter($t.SyncRoot)
+    try {
+        if ($Success) {
+            $t.Streak = [int]$t.Streak + 1
+            if ($t.Streak -ge 15 -and [long]$t.IntervalTicks -gt [long]$t.FloorTicks) {
+                $t.IntervalTicks = [math]::Max([long]$t.FloorTicks, [long](0.85 * [long]$t.IntervalTicks))
+                $t.Streak = 0
+            }
+        }
+        else {
+            $t.Streak = 0
+            $ceiling = [math]::Max([long]$t.FloorTicks, $script:MBDefaultRequestInterval.Ticks)
+            $t.IntervalTicks = [math]::Min($ceiling, [long](1.5 * [long]$t.IntervalTicks))
+            $until = [datetime]::UtcNow.AddSeconds($DelaySeconds).Ticks
+            if ($until -gt [long]$t.BackoffUntilTicks) { $t.BackoffUntilTicks = $until }
+        }
+    }
+    finally { [System.Threading.Monitor]::Exit($t.SyncRoot) }
+}
+
 function Invoke-MBApi {
     <#
     .SYNOPSIS Throttled MusicBrainz request with retry/backoff and a persisted session.
@@ -120,9 +178,7 @@ function Invoke-MBApi {
     $Credential = $script:MBCredential
 
     for ($attempt = 1; $attempt -le $script:MBMaxRequestAttempts; $attempt++) {
-        $wait = $script:MBMinRequestInterval - ([datetime]::UtcNow - $script:MBLastRequestTime)
-        if ($wait -gt [timespan]::Zero) { Start-Sleep -Milliseconds ([int]$wait.TotalMilliseconds) }
-        $script:MBLastRequestTime = [datetime]::UtcNow
+        Wait-MBRequestSlot
 
         $params = @{
             Uri         = $url
@@ -151,6 +207,7 @@ function Invoke-MBApi {
                 if ($body.Length -gt 300) { $body = $body.Substring(0, 300) + '...' }
                 Write-Verbose ("MB <- OK in {0}ms: {1}" -f $sw.ElapsedMilliseconds, $body)
             }
+            Register-MBRequestOutcome -Success
             return $resp
         }
         catch {
@@ -165,13 +222,102 @@ function Invoke-MBApi {
             $transient = ($status -in 429, 500, 502, 503, 504) -or
                          ($status -eq 400 -and $body -match 'Invalid mbid')
             if ($transient -and $attempt -lt $script:MBMaxRequestAttempts) {
-                $delay = [math]::Min(30, 4 * $attempt) + (Get-Random -Minimum 0.0 -Maximum 1.0)
-                Write-Warning ("MB HTTP $status on attempt $attempt/$($script:MBMaxRequestAttempts) - retrying in {0:N1}s..." -f $delay)
-                Start-Sleep -Seconds $delay
-                continue
+                # rate-limit answers recover fast; Cloudflare hiccup streaks need the long budget
+                $delay = ($status -in 429, 503 ? [math]::Min(15, 1.5 * $attempt) : [math]::Min(30, 4 * $attempt)) +
+                         (Get-Random -Minimum 0.0 -Maximum 1.0)
+                Write-Warning ("MB HTTP $status on attempt $attempt/$($script:MBMaxRequestAttempts) - backing off {0:N1}s (shared)..." -f $delay)
+                Register-MBRequestOutcome -DelaySeconds $delay   # ALL workers honor this pause
+                continue                                         # Wait-MBRequestSlot serves the delay
             }
             throw
         }
+    }
+}
+
+function Invoke-MBApiBulk {
+    <#
+    .SYNOPSIS Run many GET requests on parallel background workers that share ONE request
+              schedule and ONE retry backoff - a 429/503 seen by any worker pauses them all.
+              Results come back in input order as records: Path, Ok, Result, Error.
+    .DESCRIPTION Workers start out spaced -RequestInterval apart (well under the sequential
+              1.1 s), so a large batch overlaps request latency instead of serializing it.
+              The spacing self-tunes: whenever MusicBrainz pushes back it widens toward the
+              sequential pace, and after a run of successes it decays back to the floor -
+              the batch converges on whatever rate the server actually sustains.
+    .PARAMETER Path Paths relative to /ws/2 (or full URLs), one request each.
+    .PARAMETER ThrottleLimit Parallel workers (default 4).
+    .PARAMETER RequestInterval Starting spacing between request STARTS, in milliseconds
+              (default 300). This is the adaptive floor for the whole batch.
+    .EXAMPLE
+        $r = Invoke-MBApiBulk -Path ($ids | % { "release/${_}?fmt=json" })
+        $r | ? Ok | % { $_.Result.title }
+    #>
+    param(
+        [Parameter(Mandatory)][string[]] $Path,
+        [ValidateRange(1, 16)][int] $ThrottleLimit = 4,
+        [ValidateRange(100, 2000)][int] $RequestInterval = 300
+    )
+    if ($Path.Count -eq 0) { return @() }
+    if ($Path.Count -eq 1 -or $ThrottleLimit -eq 1) {
+        return @(foreach ($p in $Path) {
+            try   { [pscustomobject]@{ Path = $p; Ok = $true;  Result = (Invoke-MBApi -Path $p); Error = $null } }
+            catch { [pscustomobject]@{ Path = $p; Ok = $false; Result = $null; Error = $_.Exception.Message } }
+        })
+    }
+
+    $t = $script:MBThrottle
+    [System.Threading.Monitor]::Enter($t.SyncRoot)
+    try {
+        $t.FloorTicks    = [timespan]::FromMilliseconds($RequestInterval).Ticks
+        $t.IntervalTicks = [long]$t.FloorTicks
+        $t.Streak        = 0
+    }
+    finally { [System.Threading.Monitor]::Exit($t.SyncRoot) }
+
+    # Everything a worker runspace needs. The throttle hashtable crosses by REFERENCE (the
+    # workers are threads in this process), which is exactly what makes the schedule shared.
+    $ctx = @{
+        Module     = Join-Path $PSScriptRoot 'MusicBrainz.psm1'
+        Throttle   = $t
+        Credential = $script:MBCredential
+        UserAgent  = $script:MBUserAgent
+        Client     = $script:MBClient
+        Server     = $script:MBServer
+        Verbose    = $VerbosePreference
+    }
+    try {
+        $out = 0..($Path.Count - 1) | ForEach-Object -ThrottleLimit $ThrottleLimit -Parallel {
+            $i   = $_   # capture NOW: inside a catch block $_ becomes the ErrorRecord
+            $ctx = $using:ctx
+            # concurrent Import-Module of one psm1 races on the module analysis cache
+            # ("An item with the same key has already been added") - serialize the imports
+            [System.Threading.Monitor]::Enter($ctx.Throttle.SyncRoot)
+            try     { Import-Module $ctx.Module }   # no-op after a runspace's first item (runspaces are reused)
+            finally { [System.Threading.Monitor]::Exit($ctx.Throttle.SyncRoot) }
+            & (Get-Module MusicBrainz) {
+                param($c)
+                $script:MBThrottle        = $c.Throttle    # the shared schedule + backoff
+                $script:MBCredential      = $c.Credential
+                $script:MBUserAgent       = $c.UserAgent
+                $script:MBClient          = $c.Client
+                $script:MBServer          = $c.Server
+                $script:MBBase            = "$($c.Server)/ws/2"
+                $script:VerbosePreference = $c.Verbose
+            } $ctx
+            $p = ($using:Path)[$i]
+            try   { [pscustomobject]@{ Index = $i; Path = $p; Ok = $true;  Result = (Invoke-MBApi -Path $p); Error = $null } }
+            catch { [pscustomobject]@{ Index = $i; Path = $p; Ok = $false; Result = $null; Error = $_.Exception.Message } }
+        }
+        return @($out | Sort-Object Index | Select-Object Path, Ok, Result, Error)
+    }
+    finally {
+        # back to the polite sequential pace for whatever the caller does next
+        [System.Threading.Monitor]::Enter($t.SyncRoot)
+        try {
+            $t.FloorTicks    = $script:MBDefaultRequestInterval.Ticks
+            $t.IntervalTicks = $script:MBDefaultRequestInterval.Ticks
+        }
+        finally { [System.Threading.Monitor]::Exit($t.SyncRoot) }
     }
 }
 
@@ -212,22 +358,25 @@ function Get-MBCollectionRelease {
     #>
     param(
         [Parameter(Mandatory)][string] $CollectionId,
-        [string] $Inc = ''
+        [string] $Inc = '',
+        [ValidateRange(1, 16)][int] $ThrottleLimit = 4
     )
     $meta  = Get-MBCollection -Id $CollectionId
     # a failed lookup must throw, not silently look like an empty collection (a full mirror
     # would otherwise treat every existing entry as removable)
     if (-not $meta -or $null -eq $meta.'release-count') { throw "Could not read collection $CollectionId (no release-count)." }
     $total = [int]$meta.'release-count'
-    $limit = 100; $offset = 0
-    while ($offset -lt $total) {
+    $limit = 100
+    $paths = @(for ($offset = 0; $offset -lt $total; $offset += $limit) {
         $q = "release?collection=$CollectionId&limit=$limit&offset=$offset&fmt=json"
         if ($Inc) { $q += "&inc=$Inc" }
-        $page = Invoke-MBApi -Path $q
-        $batch = @($page.releases)
-        if ($batch.Count -eq 0) { break }
-        $batch
-        $offset += $limit
+        $q
+    })
+    if (-not $paths) { return }
+    foreach ($page in (Invoke-MBApiBulk -Path $paths -ThrottleLimit $ThrottleLimit)) {
+        # a lost page must throw, not quietly shrink the collection (mirror safety, as above)
+        if (-not $page.Ok) { throw "Collection browse page failed ($($page.Path)): $($page.Error)" }
+        @($page.Result.releases)
     }
 }
 
@@ -520,7 +669,7 @@ function Set-MBCollection {
 }
 
 Export-ModuleMember -Function `
-    Connect-MB, Set-MBUserAgent, Set-MBClient, Set-MBServer, Invoke-MBApi, `
+    Connect-MB, Set-MBUserAgent, Set-MBClient, Set-MBServer, Invoke-MBApi, Invoke-MBApiBulk, `
     Get-MBCollection, Get-MBCollectionRelease, Add-MBCollectionRelease, `
     Remove-MBCollectionRelease, Get-MBRelease, Initialize-MBTagLib, Get-MBReleaseIdFromFile, `
     Connect-MBWebsite, New-MBCollection, Set-MBCollection

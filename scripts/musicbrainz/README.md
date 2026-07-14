@@ -24,8 +24,9 @@ Get-MBCollectionRelease $c.id | ConvertTo-Json -Depth 10 | Set-Content "$($c.nam
 |---|---|
 | `Connect-MB` | Authenticate once (prompts if no `-Credential`); verified against the API and held module-wide — no other function takes a credential |
 | `Invoke-MBApi` | Low-level `/ws/2` request: throttled (~1 req/s), retry with backoff on transient errors, persisted session; `GET`/`PUT`/`DELETE` |
+| `Invoke-MBApiBulk` | Many GETs on parallel background workers (`-ThrottleLimit`, default 4) that share **one** request schedule and **one** retry backoff — a 429/503 seen by any worker pauses them all. Returns `Path`/`Ok`/`Result`/`Error` records in input order |
 | `Get-MBCollection` | Collections — all of an editor's without `-Id` (your own by default, incl. private; `-Editor <name>` for others), or one by MBID **or name** with `-Id` |
-| `Get-MBCollectionRelease` | Every release in a release collection (full objects, paged; optional `-Inc`) |
+| `Get-MBCollectionRelease` | Every release in a release collection (full objects; pages fetched on parallel workers, `-ThrottleLimit`; optional `-Inc`) |
 | `Add-MBCollectionRelease` / `Remove-MBCollectionRelease` | Edit a release collection (batched 400/request) |
 | `New-MBCollection` | Create a collection (`-Type 'Release'` by default). The WS2 API can't create collections, so this submits the website form with the same credential |
 | `Set-MBCollection` | Edit a collection's `-Name` / `-Description` (website form; type, privacy and collaborators preserved) |
@@ -37,9 +38,12 @@ Get-MBCollectionRelease $c.id | ConvertTo-Json -Depth 10 | Set-Content "$($c.nam
 
 ## Notes
 
-- **Rate limiting** — all API calls funnel through one throttle (min 1.1 s spacing) and retry
-  transient failures (429/5xx and Cloudflare's spurious `400 Invalid mbid` streaks) with
-  backoff for up to ~5 minutes.
+- **Rate limiting** — every API call (including each parallel worker) claims its start time
+  from one shared schedule, and transient failures (429/5xx and Cloudflare's spurious
+  `400 Invalid mbid` streaks) are retried with backoff for up to ~5 minutes. In bulk mode the
+  spacing is adaptive: it starts well under the sequential 1.1 s, widens whenever MusicBrainz
+  pushes back (the penalty is shared — all workers pause), and decays back on success, so a
+  batch converges on whatever rate the server actually sustains.
 - **Auth** — HTTP Digest with a regular MusicBrainz account; the `[pscredential]` UserName is
   the editor name. Your own private collections are only visible through the authenticated
   path, which `Connect-MB` enables.

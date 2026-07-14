@@ -21,6 +21,7 @@ It runs once and exits, so it drops straight into Task Scheduler.
     )
     CreateMissing   = $true                # optional: create collections that don't exist yet
     CredentialsFile = "$HOME\mb.cred"      # optional: saved credential for unattended runs
+    ThrottleLimit   = 4                    # optional: parallel MusicBrainz workers
 }
 ```
 
@@ -57,9 +58,14 @@ when it was last mirrored.
 
 - **Auth** — a regular MusicBrainz account (editor name + password). Resolution order:
   `-Credential` parameter → `CredentialsFile` (auto-created on first run) → prompt.
+- **Speed** — adds need only the MBIDs themselves (batched 400/request), so no per-release
+  requests are made: a first sync of thousands of releases takes seconds, not hours. Reading
+  the collection (1 request per 100 releases) runs on parallel workers that share one rate
+  limit and back off together (`ThrottleLimit`, default 4; set 1 for fully sequential).
 - **Tags pointing at merged releases** — when a release was merged on MusicBrainz after your
-  files were tagged, the sync resolves the tagged MBID to its merge target automatically and
-  logs a `~ ... re-tag '<folder>'` hint; refresh those folders in Picard when convenient.
+  files were tagged, MusicBrainz silently stores the merge target. The sync detects this from
+  a single re-browse after adding, protects the target from removal, and logs a
+  `~ ... re-tag '<folder>'` hint; refresh those folders in Picard when convenient.
 - **Untagged folders** are listed as warnings and skipped — tag them with Picard to include.
 - Uses the shared [MusicBrainz module](../musicbrainz/README.md) underneath; on first run it
   downloads TagLibSharp (tag reading) into `../musicbrainz/lib/`.

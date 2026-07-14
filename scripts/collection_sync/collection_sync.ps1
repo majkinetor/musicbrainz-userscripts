@@ -24,6 +24,7 @@
             )
             CreateMissing   = $true                # optional - as if -CreateMissing was passed
             CredentialsFile = "$HOME\mb.cred"      # optional - Export-Clixml'd credential
+            ThrottleLimit   = 4                    # optional - parallel MusicBrainz workers
         }
 
     A parameter given on the command line always beats its config counterpart.
@@ -44,6 +45,11 @@
     the website form (the WS2 API cannot create collections), using the same credential.
     Can also be set in the config (CreateMissing = $true).
 
+.PARAMETER ThrottleLimit
+    Parallel background workers for MusicBrainz reads (collection pages, release lookups).
+    They share one request schedule and one retry backoff, so a rate-limit answer from any
+    worker pauses all of them. 1 = fully sequential. Default 4; config: ThrottleLimit.
+
 .PARAMETER UserAgent
     User-Agent for MusicBrainz requests.
 
@@ -59,6 +65,7 @@ param(
     [string] $ConfigPath = (Join-Path $PSScriptRoot 'collection_sync.config.ps1'),
     [pscredential] $Credential,
     [switch] $CreateMissing,
+    [ValidateRange(1, 16)][int] $ThrottleLimit = 4,
     [string] $UserAgent = 'collection_sync/1.0 ( https://github.com/majkinetor )'
 )
 
@@ -72,6 +79,19 @@ if ($VerbosePreference -ne 'SilentlyContinue') { & (Get-Module MusicBrainz) { $s
 $AudioExt = '.flac', '.mp3', '.m4a', '.ogg', '.opus', '.wma', '.ape', '.wav', '.aiff', '.aif', '.dsf', '.wv'
 
 function Write-Head { param([string] $Text) Write-Host "`n$Text" -ForegroundColor Cyan }
+
+function Read-Collection {
+    # Current contents of a release collection: @{ Set = HashSet of MBIDs; Titles = MBID -> title }.
+    param([string] $ColId)
+    $set = [System.Collections.Generic.HashSet[string]]::new()
+    $titles = @{}
+    foreach ($r in (Get-MBCollectionRelease -CollectionId $ColId -ThrottleLimit $ThrottleLimit)) {
+        $rid = ([string]$r.id).ToLower()
+        [void]$set.Add($rid)
+        $titles[$rid] = [string]$r.title
+    }
+    @{ Set = $set; Titles = $titles }
+}
 
 # --- Config: a .ps1 returning @{ collections = @( @{ name; path } ... ) } ---
 if (-not (Test-Path -LiteralPath $ConfigPath)) {
@@ -90,6 +110,9 @@ if (-not $entries) { throw "No usable 'collections' entries in $ConfigPath." }
 # config-provided options — an explicit command-line parameter always wins
 if (-not $PSBoundParameters.ContainsKey('CreateMissing') -and $null -ne $cfg.CreateMissing) {
     $CreateMissing = [bool]$cfg.CreateMissing
+}
+if (-not $PSBoundParameters.ContainsKey('ThrottleLimit') -and $cfg.ThrottleLimit) {
+    $ThrottleLimit = [int]$cfg.ThrottleLimit
 }
 
 # --- Auth ------------------------------------------------------------------
@@ -148,6 +171,10 @@ foreach ($e in $entries) {
         if (-not $audio) { continue }
         $scanned++
         $id = Get-MBReleaseIdFromFile -Path $audio.FullName
+        if ($id -and $id -notmatch '^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$') {
+            Write-Warning "  malformed MUSICBRAINZ_ALBUMID '$id': $dir"
+            $id = $null
+        }
         if ($id) { [void]$desired.Add($id); if (-not $idFolder.ContainsKey($id)) { $idFolder[$id] = Split-Path -Leaf $dir } }
         else { $untagged.Add($dir) }
     }
@@ -155,64 +182,73 @@ foreach ($e in $entries) {
     foreach ($u in $untagged) { Write-Warning "  no MUSICBRAINZ_ALBUMID: $u" }
 
     # --- current collection contents ---------------------------------------
-    $currentSet = [System.Collections.Generic.HashSet[string]]::new()
-    $idTitle    = @{}   # release MBID -> MB title (for readable remove logs — no folder on disk)
-    foreach ($r in (Get-MBCollectionRelease -CollectionId $colId)) {
-        $rid = ([string]$r.id).ToLower()
-        [void]$currentSet.Add($rid)
-        $idTitle[$rid] = [string]$r.title
-    }
-    Write-Host "  Collection currently holds $($currentSet.Count) release(s)."
+    $cur = Read-Collection $colId
+    Write-Host "  Collection currently holds $($cur.Set.Count) release(s)."
 
-    $toAdd    = @($desired    | Where-Object { -not $currentSet.Contains($_) })
-    $toRemove = @($currentSet | Where-Object { -not $desired.Contains($_) })
-
-    # --- canonicalize adds: a tag can carry a MERGED-away MBID -------------
-    # MB silently stores the merge target on PUT and the browse returns the target, so an
-    # outdated tag would be re-added (and its target re-removed) on every run, forever.
-    # Resolve each candidate through MB (cheap - only the adds) and cancel the phantom pair.
+    # --- adds go FIRST, straight from the tags: PUT needs only the MBIDs ----
+    # No per-release lookups here - that used to cost one request per add (a first sync of a
+    # large library took hours). Problem ids are found afterwards from a single re-browse.
+    $toAdd  = @($desired | Where-Object { -not $cur.Set.Contains($_) })
+    $didAdd = $false
     if ($toAdd.Count) {
-        $removeSet = [System.Collections.Generic.HashSet[string]]::new([string[]]$toRemove)
-        $resolved  = [System.Collections.Generic.List[string]]::new()
-        foreach ($id in $toAdd) {
-            $canon = $id
-            try { $canon = ([string](Get-MBRelease $id).id).ToLower() }
-            catch { Write-Warning "  release $id not found on MusicBrainz - skipping ($($idFolder[$id]))"; continue }
-            if ($canon -eq $id) { $resolved.Add($id); continue }
-            Write-Host "  ~ $id was merged into $canon on MusicBrainz - re-tag '$($idFolder[$id])'" -ForegroundColor DarkYellow
-            if ($removeSet.Contains($canon)) { [void]$removeSet.Remove($canon); continue }   # already there under the new id
-            if ($currentSet.Contains($canon)) { continue }                                    # ditto, and nothing queued to remove
-            $idFolder[$canon] = $idFolder[$id]
-            $resolved.Add($canon)
+        Write-Host "  + Adding $($toAdd.Count):" -ForegroundColor Yellow
+        $toAdd | ForEach-Object { Write-Host "      + $_  $($idFolder[$_])" }
+        if ($PSCmdlet.ShouldProcess($e.Name, "add $($toAdd.Count) release(s)")) {
+            try { Add-MBCollectionRelease -CollectionId $colId -ReleaseId $toAdd; $didAdd = $true; $grandAdded += $toAdd.Count }
+            catch {
+                # one nonexistent id fails its whole PUT batch - resolve every id on parallel
+                # workers (they share one throttle/backoff), drop the bad ones and retry
+                Write-Warning "  add failed ($($_.Exception.Message)) - resolving $($toAdd.Count) id(s) to isolate the bad one(s) ($ThrottleLimit workers)..."
+                $lookups = Invoke-MBApiBulk -Path @($toAdd | ForEach-Object { "release/${_}?fmt=json" }) -ThrottleLimit $ThrottleLimit
+                $good = [System.Collections.Generic.List[string]]::new()
+                for ($i = 0; $i -lt $toAdd.Count; $i++) {
+                    if ($lookups[$i].Ok) { $good.Add(([string]$lookups[$i].Result.id).ToLower()) }
+                    else { Write-Warning "  release $($toAdd[$i]) not on MusicBrainz - skipping ($($idFolder[$toAdd[$i]])): $($lookups[$i].Error)" }
+                }
+                $good = @($good | Select-Object -Unique | Where-Object { -not $cur.Set.Contains($_) })
+                if ($good.Count) { Add-MBCollectionRelease -CollectionId $colId -ReleaseId $good; $didAdd = $true; $grandAdded += $good.Count }
+            }
         }
-        $toAdd    = @($resolved | Select-Object -Unique)
-        $toRemove = @($removeSet)
     }
 
+    # --- verify the adds and catch MERGED-away tags --------------------------
+    # A tag can carry an MBID that was later merged on MusicBrainz: PUT silently stores the
+    # merge TARGET, so the tagged id never shows up in the collection. One cheap re-browse
+    # exposes exactly those ids, and only they need resolving (usually none).
+    $after = if ($didAdd) { Read-Collection $colId } else { $cur }
+    $protected    = [System.Collections.Generic.HashSet[string]]::new()   # merge targets of our adds - never remove
+    $stillMissing = @($desired | Where-Object { -not $after.Set.Contains($_) })
+    if ($stillMissing.Count -and -not $WhatIfPreference) {
+        $lookups = Invoke-MBApiBulk -Path @($stillMissing | ForEach-Object { "release/${_}?fmt=json" }) -ThrottleLimit $ThrottleLimit
+        for ($i = 0; $i -lt $stillMissing.Count; $i++) {
+            $id = $stillMissing[$i]
+            if (-not $lookups[$i].Ok) { Write-Warning "  release $id not on MusicBrainz - skipping ($($idFolder[$id])): $($lookups[$i].Error)"; continue }
+            $canon = ([string]$lookups[$i].Result.id).ToLower()
+            if ($canon -ne $id) {
+                Write-Host "  ~ $id was merged into $canon on MusicBrainz - re-tag '$($idFolder[$id])'" -ForegroundColor DarkYellow
+                [void]$protected.Add($canon)
+            }
+            else { Write-Warning "  release $id did not stick in the collection ($($idFolder[$id])) - will retry next run" }
+        }
+    }
+
+    # --- removals LAST: entries with no folder on disk ------------------------
+    $toRemove = @($after.Set | Where-Object { -not $desired.Contains($_) -and -not $protected.Contains($_) })
+    if ($toRemove.Count) {
+        Write-Host "  - Removing $($toRemove.Count):" -ForegroundColor Yellow
+        $toRemove | ForEach-Object { Write-Host "      - $_  $($after.Titles[$_])" }
+        if ($PSCmdlet.ShouldProcess($e.Name, "remove $($toRemove.Count) release(s)")) {
+            Remove-MBCollectionRelease -CollectionId $colId -ReleaseId $toRemove
+            $grandRemoved += $toRemove.Count
+        }
+    }
     if ($toAdd.Count -eq 0 -and $toRemove.Count -eq 0) {
         Write-Host '  Already in sync.' -ForegroundColor Green
     }
-    else {
-        if ($toAdd.Count) {
-            Write-Host "  + Adding $($toAdd.Count):" -ForegroundColor Yellow
-            $toAdd | ForEach-Object { Write-Host "      + $_  $($idFolder[$_])" }
-            if ($PSCmdlet.ShouldProcess($e.Name, "add $($toAdd.Count) release(s)")) {
-                Add-MBCollectionRelease -CollectionId $colId -ReleaseId $toAdd
-                $grandAdded += $toAdd.Count
-            }
-        }
-        if ($toRemove.Count) {
-            Write-Host "  - Removing $($toRemove.Count):" -ForegroundColor Yellow
-            $toRemove | ForEach-Object { Write-Host "      - $_  $($idTitle[$_])" }
-            if ($PSCmdlet.ShouldProcess($e.Name, "remove $($toRemove.Count) release(s)")) {
-                Remove-MBCollectionRelease -CollectionId $colId -ReleaseId $toRemove
-                $grandRemoved += $toRemove.Count
-            }
-        }
-    }
 
     # --- stamp the description with the sync date + item count --------------
-    $finalCount = $currentSet.Count + $toAdd.Count - $toRemove.Count
+    $finalCount = $after.Set.Count - $toRemove.Count
+    if ($WhatIfPreference) { $finalCount += $toAdd.Count }   # adds were only displayed
     $stamp = "Synced on $(Get-Date -Format 'yyyy-MM-dd HH:mm') - $finalCount release(s)"
     if ($PSCmdlet.ShouldProcess($e.Name, "set description '$stamp'")) {
         try { Set-MBCollection $colId -Description $stamp; Write-Host "  $stamp" }

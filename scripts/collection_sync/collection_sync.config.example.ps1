@@ -6,6 +6,8 @@
 #                     -CreateMissing was passed
 #   CredentialsFile : (optional) saved MusicBrainz credential; created on first run
 #                     (you are prompted once), then reused for unattended runs
+#   ThrottleLimit   : (optional) parallel MusicBrainz workers for reads (they share one
+#                     rate limit and back off together); 1 = sequential, default 4
 @{
     collections     = @(
         @{ name = 'various artists'; path = 'm:\audio\various artists' }
@@ -13,4 +15,5 @@
     )
     CreateMissing   = $true
     CredentialsFile = "$HOME\mb.cred"
+    ThrottleLimit   = 4
 }
