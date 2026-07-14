@@ -63,6 +63,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot '..\musicbrainz\MusicBrainz.psm1') -Force
+# -Verbose shows the raw MusicBrainz communication (every request URL, status, response
+# excerpt). Preference variables don't cross the module boundary, so push it in explicitly.
+if ($VerbosePreference -ne 'SilentlyContinue') { & (Get-Module MusicBrainz) { $script:VerbosePreference = 'Continue' } }
 
 # Audio extensions that may carry a MUSICBRAINZ_ALBUMID tag.
 $AudioExt = '.flac', '.mp3', '.m4a', '.ogg', '.opus', '.wma', '.ape', '.wav', '.aiff', '.aif', '.dsf', '.wv'

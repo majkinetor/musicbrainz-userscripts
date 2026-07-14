@@ -39,7 +39,8 @@
     same credential for its website login.
 #>
 
-$script:MBBase               = 'https://musicbrainz.org/ws/2'
+$script:MBServer             = 'https://musicbrainz.org'
+$script:MBBase               = "$script:MBServer/ws/2"
 $script:MBClient             = 'PowerShell-MusicBrainz/1.0'
 $script:MBUserAgent          = 'PowerShell-MusicBrainz/1.0 ( https://github.com/majkinetor )'
 $script:MBLastRequestTime    = [datetime]::MinValue
@@ -61,6 +62,14 @@ function Set-MBClient {
     <#.SYNOPSIS Override the client id MusicBrainz records on collection edits (client= query).#>
     param([Parameter(Mandatory)][string] $Client)
     $script:MBClient = $Client
+}
+
+function Set-MBServer {
+    <#.SYNOPSIS Point the module at another MusicBrainz server (e.g. https://beta.musicbrainz.org).#>
+    param([Parameter(Mandatory)][string] $Server)
+    $script:MBServer = $Server.TrimEnd('/')
+    $script:MBBase   = "$script:MBServer/ws/2"
+    $script:MBSession = $null; $script:MBWebSession = $null   # sessions are per-server
 }
 
 $script:MBCredential = $null
@@ -119,19 +128,29 @@ function Invoke-MBApi {
         }
         if ($Credential) { $params.Credential = $Credential }
 
+        Write-Verbose "MB -> $Method $url (attempt $attempt, auth=$([bool]$Credential))"
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
         try {
             if ($null -eq $script:MBSession) {
                 $params.SessionVariable = 'newSession'
                 $resp = Invoke-RestMethod @params
                 $script:MBSession = $newSession
-                return $resp
             }
-            $params.WebSession = $script:MBSession
-            return Invoke-RestMethod @params
+            else {
+                $params.WebSession = $script:MBSession
+                $resp = Invoke-RestMethod @params
+            }
+            if ($VerbosePreference -ne 'SilentlyContinue') {
+                $body = try { ($resp | ConvertTo-Json -Compress -Depth 3) } catch { [string]$resp }
+                if ($body.Length -gt 300) { $body = $body.Substring(0, 300) + '...' }
+                Write-Verbose ("MB <- OK in {0}ms: {1}" -f $sw.ElapsedMilliseconds, $body)
+            }
+            return $resp
         }
         catch {
             $status = 0; try { $status = [int]$_.Exception.Response.StatusCode } catch { }
             $body = '';  try { $body = [string]$_.ErrorDetails.Message } catch { }
+            Write-Verbose ("MB <- HTTP {0} in {1}ms: {2}" -f $status, $sw.ElapsedMilliseconds, ($body.Length -gt 300 ? $body.Substring(0,300) : $body))
 
             if ($status -eq 401) { throw "MusicBrainz rejected the credentials (401). Check the editor name / password." }
 
@@ -364,13 +383,14 @@ function Connect-MBWebsite {
     Assert-MBConnected
     $Credential = $script:MBCredential
     if ($script:MBWebSession) { return $script:MBWebSession }
+    Write-Verbose "MBWeb -> GET $script:MBServer/login + POST (user=$($Credential.UserName))"
     $ua = @{ 'User-Agent' = $script:MBUserAgent }
-    $login = Invoke-WebRequest -Uri 'https://musicbrainz.org/login' -SessionVariable s -Headers $ua -UseBasicParsing
+    $login = Invoke-WebRequest -Uri "$script:MBServer/login" -SessionVariable s -Headers $ua -UseBasicParsing
     $form  = ConvertFrom-MBForm -Html $login.Content -ActionMatch '/login'
     $form['username']    = $Credential.UserName
     $form['password']    = $Credential.GetNetworkCredential().Password
     $form['remember_me'] = '1'
-    $resp = Invoke-WebRequest -Uri 'https://musicbrainz.org/login' -Method POST -Body $form `
+    $resp = Invoke-WebRequest -Uri "$script:MBServer/login" -Method POST -Body $form `
                 -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
     if ($resp.Content -match 'name="password"' -and $resp.Content -match 'action="[^"]*/login"') {
         throw "MusicBrainz website login failed for '$($Credential.UserName)'."
@@ -395,7 +415,7 @@ function New-MBCollection {
     Assert-MBConnected
     $s   = Connect-MBWebsite
     $ua  = @{ 'User-Agent' = $script:MBUserAgent }
-    $url = 'https://musicbrainz.org/collection/create'
+    $url = "$script:MBServer/collection/create"
     $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
     # the create form posts to self (no action attribute) — select it by its field names
     $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/collection/create' -FieldMarker 'name="edit-list\.'
@@ -415,6 +435,7 @@ function New-MBCollection {
     $form[$nameKey] = $Name
     if ($descKey) { $form[$descKey] = $Description }
 
+    Write-Verbose "MBWeb -> POST $url (create collection '$Name')"
     $resp = Invoke-WebRequest -Uri $url -Method POST -Body $form -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
     # success redirects to /collection/<mbid>
     $final = ''
@@ -450,7 +471,8 @@ function Set-MBCollection {
     $ua  = @{ 'User-Agent' = $script:MBUserAgent }
     # the details form is on the "Edit" TAB (/own_collection/edit); plain /edit is the
     # release-removal view and carries no edit-list fields
-    $url = "https://musicbrainz.org/collection/$Id/own_collection/edit"
+    $url = "$script:MBServer/collection/$Id/own_collection/edit"
+    Write-Verbose "MBWeb -> GET $url (read edit form)"
     $page = Invoke-WebRequest -Uri $url -WebSession $s -Headers $ua -UseBasicParsing
     $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/own_collection/edit' -FieldMarker 'name="edit-list\.'
     if ($form.Count -eq 0) { throw "Could not read the edit form for collection $Id (is it yours?)." }
@@ -465,11 +487,12 @@ function Set-MBCollection {
         if (-not $descKey) { throw 'No description field on the collection edit form.' }
         $form[$descKey] = $Description
     }
+    Write-Verbose "MBWeb -> POST $url (update collection details)"
     $null = Invoke-WebRequest -Uri $url -Method POST -Body $form -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
 }
 
 Export-ModuleMember -Function `
-    Connect-MB, Set-MBUserAgent, Set-MBClient, Invoke-MBApi, `
+    Connect-MB, Set-MBUserAgent, Set-MBClient, Set-MBServer, Invoke-MBApi, `
     Get-MBCollection, Get-MBCollectionRelease, Add-MBCollectionRelease, `
     Remove-MBCollectionRelease, Get-MBRelease, Initialize-MBTagLib, Get-MBReleaseIdFromFile, `
     Connect-MBWebsite, New-MBCollection, Set-MBCollection
