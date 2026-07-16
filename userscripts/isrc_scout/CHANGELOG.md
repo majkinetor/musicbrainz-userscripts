@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
+
+### Fixes
+
+1. Toolbar buttons partially unclickable ([#414](https://github.com/majkinetor/musicbrainz-userscripts/issues/414))
+
 ## [2026.7.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12.2)
 
 ### Features

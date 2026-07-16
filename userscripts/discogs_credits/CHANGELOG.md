@@ -1,5 +1,11 @@
 # Import Discogs Credits Changelog
 
+## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
+
+### Features
+
+1. Informative message when choosing to create works ([#421](https://github.com/majkinetor/musicbrainz-userscripts/issues/421))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features

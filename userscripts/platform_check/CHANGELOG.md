@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
+
+### Fixes
+
+1. Strict settings prevent adding Discogs master ([#416](https://github.com/majkinetor/musicbrainz-userscripts/issues/416))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features
