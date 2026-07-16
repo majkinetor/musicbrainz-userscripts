@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.13.203013
+// @version      2026.7.16.223453
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1206,7 +1206,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.13.203013';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.16.223453';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4537,7 +4537,13 @@
       // row changed and its ↺ reverts it. Alt = do the whole column.
       if (e.target.closest('td.tc-tkt')) {
         e.preventDefault();
-        const setFromRec = (m, i) => { const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null; if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} } };
+        const setFromRec = (m, i) => {
+          const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null;
+          if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
+          // #420: the track title now equals the recording's, so a pending "rename recording"
+          // flag is a no-op — clear it (and its green indicator) instead of leaving it stale.
+          if (t && u(t.updateRecordingTitle)) { setCopy('title', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: title copied from recording — cleared the now-moot rename-recording flag`); }
+        };
         if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setFromRec(+row.dataset.mi, +row.dataset.ti));
         else setFromRec(+tr.dataset.mi, +tr.dataset.ti);
         _tlRefreshed = false; scheduleSync();   // #348: title changed here (a self-edit the watcher ignores) — re-sync the Tracklist mirror so the new title + changed-row marker show reliably, not on a racy tab-switch
@@ -4556,8 +4562,11 @@
           const t = koTrack(m, i), rec = t && u(t.recording), recAc = rec && u(rec.artistCredit);
           const recNames = recAc && (u(recAc.names) || []);
           if (!recNames || !recNames.length) { Log.warn(`#348 artist copy: track ${m}.${i} — recording has no artist credit (recording ${rec ? 'present' : 'null'}) — nothing to copy`); return; }
+          // #420 (artist twin): once track and recording agree, a pending "update recording
+          // artist" flag is a no-op — clear it so its indicator doesn't linger.
+          const clearMootArtistFlag = () => { if (u(t.updateRecordingArtist)) { setCopy('artist', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: artist copied from recording — cleared the now-moot update-recording-artist flag`); } };
           const tNames = u(u(t.artistCredit).names) || [];
-          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); return; }
+          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); clearMootArtistFlag(); return; }
           const gids = recNames.map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
           // Fetch the FULL artist entity for each credit (same as the paste-MBID resolve → pickArtist
           // path). Verified live: writing the recording's own LEAN artist — or W.MB.entity(gid,name) —
@@ -4575,6 +4584,7 @@
             // the entity link was dropped and only the credited text stuck (the "set without match" bug).
             const wrote = (u(u(t.artistCredit).names) || []).map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
             Log.info(`#348 artist copy: track ${m}.${i} ← recording "${acText(u(t.artistCredit))}" (recording gid(s): ${gids} · written track gid(s): ${wrote})`);
+            clearMootArtistFlag();
           } catch (x) { Log.warn(`#348 artist copy: track ${m}.${i} — artistCredit setter threw: ${x && x.message}`); }
         };
         (async () => {

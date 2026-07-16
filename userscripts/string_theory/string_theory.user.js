@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.16.220728
+// @version      2026.7.16.223831
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -69,13 +69,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.16.220728 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.13.203013\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.16.220619\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.16.213500\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.16");
+  console.log('%c String Theory %c v2026.7.16.223831 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.16.223453\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.16.220619\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.16.213500\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.16.223453");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.13.203013","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.13.203013","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.16.223453","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.16.223453","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1267,7 +1267,7 @@ try {
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.13.203013';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.16.223453';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4598,7 +4598,13 @@ try {
       // row changed and its ↺ reverts it. Alt = do the whole column.
       if (e.target.closest('td.tc-tkt')) {
         e.preventDefault();
-        const setFromRec = (m, i) => { const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null; if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} } };
+        const setFromRec = (m, i) => {
+          const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null;
+          if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
+          // #420: the track title now equals the recording's, so a pending "rename recording"
+          // flag is a no-op — clear it (and its green indicator) instead of leaving it stale.
+          if (t && u(t.updateRecordingTitle)) { setCopy('title', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: title copied from recording — cleared the now-moot rename-recording flag`); }
+        };
         if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setFromRec(+row.dataset.mi, +row.dataset.ti));
         else setFromRec(+tr.dataset.mi, +tr.dataset.ti);
         _tlRefreshed = false; scheduleSync();   // #348: title changed here (a self-edit the watcher ignores) — re-sync the Tracklist mirror so the new title + changed-row marker show reliably, not on a racy tab-switch
@@ -4617,8 +4623,11 @@ try {
           const t = koTrack(m, i), rec = t && u(t.recording), recAc = rec && u(rec.artistCredit);
           const recNames = recAc && (u(recAc.names) || []);
           if (!recNames || !recNames.length) { Log.warn(`#348 artist copy: track ${m}.${i} — recording has no artist credit (recording ${rec ? 'present' : 'null'}) — nothing to copy`); return; }
+          // #420 (artist twin): once track and recording agree, a pending "update recording
+          // artist" flag is a no-op — clear it so its indicator doesn't linger.
+          const clearMootArtistFlag = () => { if (u(t.updateRecordingArtist)) { setCopy('artist', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: artist copied from recording — cleared the now-moot update-recording-artist flag`); } };
           const tNames = u(u(t.artistCredit).names) || [];
-          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); return; }
+          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); clearMootArtistFlag(); return; }
           const gids = recNames.map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
           // Fetch the FULL artist entity for each credit (same as the paste-MBID resolve → pickArtist
           // path). Verified live: writing the recording's own LEAN artist — or W.MB.entity(gid,name) —
@@ -4636,6 +4645,7 @@ try {
             // the entity link was dropped and only the credited text stuck (the "set without match" bug).
             const wrote = (u(u(t.artistCredit).names) || []).map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
             Log.info(`#348 artist copy: track ${m}.${i} ← recording "${acText(u(t.artistCredit))}" (recording gid(s): ${gids} · written track gid(s): ${wrote})`);
+            clearMootArtistFlag();
           } catch (x) { Log.warn(`#348 artist copy: track ${m}.${i} — artistCredit setter threw: ${x && x.message}`); }
         };
         (async () => {
@@ -26073,7 +26083,7 @@ ${lines}
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.16","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.16","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.16.223453","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.16.223453","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -26488,6 +26498,11 @@ container.innerHTML = `
      the panel doesn't jump/flash as results stream in. */
   @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
   #mb-pc-panel .pc-row.pc-rise { animation: pcRise .28s ease; }
+  /* (#422) header busy/done indicator */
+  @keyframes pcSpin { to { transform: rotate(360deg); } }
+  #mb-scan-status .pc-scan-spin { display: inline-block; animation: pcSpin 1s linear infinite; color: #3b82c4; font-weight: bold; }
+  #mb-scan-status.pc-scan-done { color: #2e7d32; }
+  #mb-scan-status.pc-scan-halt { color: #c62828; }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -26599,6 +26614,7 @@ container.innerHTML = `
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+      <span id="mb-scan-status" style="font-size: 11px; color: #888; display: inline-flex; align-items: center; gap: 3px; margin-left: 2px;"></span>
     </div>
   </div>
 </div>
@@ -29757,7 +29773,33 @@ function parseMbData(data) {
     return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
 }
 
+// (#422) header busy/done indicator with live elapsed seconds — a long scan (searches,
+// rate-limit backoffs) is visibly "still working", and the ✓ tells at a glance it's done.
+let _scanT0 = 0, _scanTick = null;
+function setScanStatus(state) {
+    const el = document.getElementById('mb-scan-status'); if (!el) return;
+    if (_scanTick) { clearInterval(_scanTick); _scanTick = null; }
+    el.classList.remove('pc-scan-done', 'pc-scan-halt');
+    if (state === 'busy') {
+        _scanT0 = Date.now();
+        el.title = 'Scanning platforms…';
+        const paint = () => { el.innerHTML = `<span class="pc-scan-spin">⟳</span>${Math.round((Date.now() - _scanT0) / 1000)}s`; };
+        paint(); _scanTick = setInterval(paint, 1000);
+        return;
+    }
+    const secs = ((Date.now() - _scanT0) / 1000).toFixed(1);
+    if (state === 'done') { el.classList.add('pc-scan-done'); el.textContent = `✓ ${secs}s`; el.title = `All scans completed in ${secs}s`; }
+    else { el.classList.add('pc-scan-halt'); el.textContent = '✗'; el.title = 'Scan halted — see the log'; }
+}
 async function runScans() {
+    // (#422) thin status wrapper — the scan body lives in runScansInner; `false` = halted.
+    setScanStatus('busy');
+    let ok = false;
+    try { ok = await runScansInner() !== false; }
+    catch (e) { appendLog('System', `Scan failed: ${e && e.message}`, 'error'); }
+    setScanStatus(ok ? 'done' : 'halt');
+}
+async function runScansInner() {
     // Source precedence: DOM (instant, no network) > /ws/2 API (~10s when MB is
     // hot) > mbDataCache (transient MB outage). DOM is identical data to API
     // for our purposes — both give artist/album/tracks/rg/url-rels — and we're
@@ -29787,7 +29829,7 @@ async function runScans() {
                 dataSource = 'cache';
             } else {
                 appendLog('MusicBrainz', `Halted: no DOM, no API, no cache (status ${mb.status})`, 'error');
-                return;
+                return false;   // (#422) wrapper shows the halt state
             }
         }
     }
