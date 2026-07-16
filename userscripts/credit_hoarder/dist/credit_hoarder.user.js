@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.14.195503
+// @version      2026.7.16.022921
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -5601,16 +5601,25 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     return dp[a.length] <= max ? dp[a.length] : -1;
   };
   var fuzzyMax = (len) => len <= 6 ? 0 : len <= 12 ? 1 : 2;
+  var stripInitials = (fn) => fn.split(" ").filter((t) => !/^[a-z]\.?$/.test(t)).join(" ");
   function mergeResolvedResults(allResults, entitySources) {
     const rows = (allResults || []).filter(Boolean);
     const nameMbids = /* @__PURE__ */ new Map();
+    const nameMbidsStripped = /* @__PURE__ */ new Map();
     for (const r of rows) {
       if (r.type !== "resolved" || !r.mbUrl) continue;
       const fn = fold(_resultName(r));
       if (!fn) continue;
       if (!nameMbids.has(fn)) nameMbids.set(fn, /* @__PURE__ */ new Set());
       nameMbids.get(fn).add(r.mbUrl);
+      const sn = stripInitials(fn);
+      if (!nameMbidsStripped.has(sn)) nameMbidsStripped.set(sn, /* @__PURE__ */ new Set());
+      nameMbidsStripped.get(sn).add(r.mbUrl);
     }
+    const conflictNames = /* @__PURE__ */ new Set();
+    nameMbids.forEach((set, nm) => {
+      if (set.size > 1) conflictNames.add(nm);
+    });
     const uniqResolved = [];
     nameMbids.forEach((set, nm) => {
       if (set.size === 1) uniqResolved.push([nm, [...set][0]]);
@@ -5625,11 +5634,16 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       return hit;
     };
     const keyFor = (r) => {
-      if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       const fn = fold(_resultName(r));
+      if (fn && conflictNames.has(fn)) return "cf:" + fn;
+      if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       if (!fn) return null;
       const set = nameMbids.get(fn);
       if (set && set.size === 1) return "mb:" + [...set][0];
+      if (!set) {
+        const stripped = nameMbidsStripped.get(stripInitials(fn));
+        if (stripped && stripped.size === 1) return "mb:" + [...stripped][0];
+      }
       const fuzzy = fuzzyResolvedMatch(fn);
       if (fuzzy) return "mb:" + fuzzy;
       return "nm:" + fn;
@@ -5641,12 +5655,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         if (gk) {
           byKey.set(gk, r);
           mergeMap.set(rk, [rk]);
+          if (gk.startsWith("cf:")) r._conflicts = [r.mbUrl ? { mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig } : null];
         }
         out.push(r);
         continue;
       }
       const rep = byKey.get(gk), repKey = _resultKey(rep);
-      if ((rep.type !== "resolved" || !rep.mbUrl) && r.type === "resolved" && r.mbUrl) {
+      if (gk.startsWith("cf:")) {
+        if (r.mbUrl) (rep._conflicts = rep._conflicts || []).push({ mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig });
+      } else if ((rep.type !== "resolved" || !rep.mbUrl) && r.type === "resolved" && r.mbUrl) {
         rep.type = "resolved";
         rep.mbUrl = r.mbUrl;
         rep.mbName = r.mbName;
@@ -5668,6 +5685,23 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
       mergeMap.get(repKey).push(rk);
     }
+    byKey.forEach((rep, gk) => {
+      if (!gk.startsWith("cf:")) return;
+      const cands = [], seenIds = /* @__PURE__ */ new Set();
+      for (const c of rep._conflicts || []) {
+        const m = c && c.mbUrl && c.mbUrl.match(/\/(?:artist|label|place)\/([^/?#]+)/i);
+        if (!m || seenIds.has(m[1])) continue;
+        seenIds.add(m[1]);
+        cands.push({ id: m[1], name: c.mbName || _resultName(rep), disambiguation: c.mbDisambig || "" });
+      }
+      rep.nameMatches = cands.concat((rep.nameMatches || []).filter((nm) => nm && nm.id && !seenIds.has(nm.id)));
+      rep.type = "attention";
+      rep.mbUrl = null;
+      rep.mbName = null;
+      rep.mbDisambig = "";
+      rep.ambiguityReason = "sources link this name to different MB artists";
+      delete rep._conflicts;
+    });
     for (const rep of out) {
       const keys = mergeMap.get(_resultKey(rep));
       rep._mergeUrls = (keys || []).filter((k) => /^https?:\/\//i.test(k));

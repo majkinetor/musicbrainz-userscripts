@@ -111,15 +111,54 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['composer', 'lyricist']);
 }
 
-// Ambiguous: a name resolving to TWO different MBIDs is left alone (unresolved twin not forced).
+// #415 (conflict row): the same name resolved to TWO different MB artists across sources
+// (John Andrews) → ONE attention row with both MB artists as candidates; the unresolved
+// same-name row joins the group. Nothing auto-imports until the user picks.
 {
     const results = [
-        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/j1', entity: { resource_url: 'a', name: 'John Smith' }, _roles: [] },
-        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/j2', entity: { resource_url: 'b', name: 'John Smith' }, _roles: [] },
-        { type: 'attention', entity: { resource_url: 'c', name: 'John Smith' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/j1', mbName: 'John Smith', mbDisambig: 'US bassist', entity: { resource_url: 'a', name: 'John Smith' }, _roles: [{ linkType: 'organ', displayLabel: 'organ', trackPos: '', trackTitle: '' }] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/j2', mbName: 'John Smith', mbDisambig: 'UK organist', entity: { resource_url: 'b', name: 'John Smith' }, _roles: [{ linkType: 'piano', displayLabel: 'piano', trackPos: '', trackTitle: '' }] },
+        { type: 'attention', entity: { resource_url: 'c', name: 'John Smith' }, _roles: [{ linkType: 'photography', displayLabel: 'photography', trackPos: '', trackTitle: '' }] },
+    ];
+    const es = new Map([['a', ['Discogs']], ['b', ['Tidal']], ['c', ['Qobuz']]]);
+    const { results: out, mergeMap } = mergeResolvedResults(results, es);
+    assert.equal(out.length, 1, 'conflicting resolutions collapse to ONE row (#415)');
+    assert.equal(out[0].type, 'attention', 'conflict row needs the user to pick');
+    assert.equal(out[0].mbUrl, null, 'no auto-adopted MBID on a conflict row');
+    assert.deepEqual(out[0].nameMatches.map(c => c.id).sort(), ['j1', 'j2'], 'both MB artists offered as candidates');
+    assert.equal(out[0].nameMatches.find(c => c.id === 'j2').disambiguation, 'UK organist', 'candidate keeps its disambiguation');
+    assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['organ', 'photography', 'piano'], 'roles unioned across all three rows');
+    assert.deepEqual((es.get('a') || []).sort(), ['Discogs', 'Qobuz', 'Tidal'], 'source badges unioned');
+    assert.deepEqual(mergeMap.get('a').sort(), ['a', 'b', 'c'], 'mergeMap covers every member for post-pick expansion');
+}
+
+// #415 (middle initial): an unresolved "Vasilis Korres" merges into the uniquely-resolved
+// "Vasilis N. Korres" (single-letter tokens ignored when looking for the resolved twin).
+{
+    const tidal = 'https://tidal.com/artist/1', discogs = 'https://www.discogs.com/artist/2';
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/vasilis', entity: { resource_url: tidal, name: 'Vasilis N. Korres' }, _roles: [{ linkType: 'recording', displayLabel: 'recording', trackPos: '', trackTitle: '' }] },
+        { type: 'attention', entity: { resource_url: discogs, name: 'Vasilis Korres' }, _roles: [{ linkType: 'engineer', displayLabel: 'engineer', trackPos: '', trackTitle: '' }] },
+    ];
+    const es = new Map([[tidal, ['Tidal']], [discogs, ['Discogs']]]);
+    const { results: out, mergeMap } = mergeResolvedResults(results, es);
+    assert.equal(out.length, 1, 'middle-initial variant merges into its resolved twin (#415)');
+    assert.equal(out[0].mbUrl, '//musicbrainz.org/artist/vasilis', 'adopts the resolved MBID');
+    assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['engineer', 'recording'], 'roles merged');
+    assert.deepEqual(mergeMap.get(tidal).sort(), [discogs, tidal].sort(), 'both urls in mergeMap');
+}
+
+// #415 (initial guard): stripping initials must not merge across DIFFERENT initials that
+// resolve to different people — "John A. Smith" and "John B. Smith" both strip to
+// "john smith", so an unresolved "John Smith" has no unique twin and stays alone.
+{
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/a', entity: { resource_url: 'u1', name: 'John A. Smith' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/b', entity: { resource_url: 'u2', name: 'John B. Smith' }, _roles: [] },
+        { type: 'attention', entity: { resource_url: 'u3', name: 'John Smith' }, _roles: [] },
     ];
     const { results: out } = mergeResolvedResults(results, new Map());
-    assert.equal(out.length, 3, 'ambiguous same-name (2 MBIDs) → nothing force-merged');
+    assert.equal(out.length, 3, 'stripped-name ambiguity (2 MBIDs) → nothing force-merged');
 }
 
 // #408 (typo merge): an unresolved credit that is a single-char typo of a uniquely-resolved name
