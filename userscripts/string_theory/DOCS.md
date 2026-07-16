@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-16 02:29 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-16 13:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1418,6 +1418,7 @@ Platform Check now (#182):
   - **strictly** — only add *barcode-confirmed* links, i.e. also withhold links whose barcode can't be checked (Apple/Spotify, which don't expose a UPC).
   - The left-bar indicator shows known mismatches regardless of this setting.
   - A **withheld** link (by either the barcode or format check) is shown **grayed out and non-clickable** — like any other mismatch.
+  - The **Discogs master** is exempt from barcode/format withholding (#416): it goes onto the MB **release group**, which spans every edition's format and barcode — it only requires the Discogs release to be a confirmed (`✓`) match.
 
 #### Format matching
 

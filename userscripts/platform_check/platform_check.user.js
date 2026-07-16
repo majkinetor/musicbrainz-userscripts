@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.12
+// @version      2026.7.16
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -4025,12 +4025,13 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     const mbCached     = mbDataGet(mbid);
     const rgMbid       = mbCached?.releaseGroupMbid;
     const existingMaster = mbCached?.existing?.discogsMaster;
-    // #255 disabled provider → skip. #256 only queue the master when the Discogs RELEASE
-    // is a confirmed match (✓, not barcode/format-blocked): if text/Brave search landed on
-    // an unrelated pressing (no release match), its master isn't this release-group's master.
+    // #255 disabled provider → skip. #256 only queue the master when the Discogs RELEASE is a
+    // confirmed match (✓): if text/Brave search landed on an unrelated album, its master isn't
+    // this release-group's master. Barcode/format withholding deliberately does NOT apply here
+    // (#416): a master is the whole release GROUP — it spans every edition's format and
+    // barcode, so a different-pressing Discogs hit still shares this album's master.
     const discogsConfirmed = providerEnabled('discogs')
-        && document.getElementById('ico-discogs')?.textContent?.trim() === '✓'
-        && !barcodeBlocks('discogs') && !formatBlocks('discogs');
+        && document.getElementById('ico-discogs')?.textContent?.trim() === '✓';
     if (!discogsConfirmed) {
         if (masterUrl) appendLog('System', `Inject: Discogs release isn't a confirmed match — not queueing master ${masterUrl}`, 'warn');
     } else if (masterUrl && rgMbid && !existingMaster) {
