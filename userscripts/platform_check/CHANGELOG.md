@@ -2,6 +2,10 @@
 
 ## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
 
+### Features
+
+1. Check progress indicator ([#422](https://github.com/majkinetor/musicbrainz-userscripts/issues/422))
+
 ### Fixes
 
 1. Strict settings prevent adding Discogs master ([#416](https://github.com/majkinetor/musicbrainz-userscripts/issues/416))

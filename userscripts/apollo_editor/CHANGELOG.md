@@ -4,7 +4,6 @@
 
 ### Features
 
-1. Check progress indicator ([#422](https://github.com/majkinetor/musicbrainz-userscripts/issues/422))
 1. Keyboard navigation and autocomplete in join phrase dropdown ([#419](https://github.com/majkinetor/musicbrainz-userscripts/issues/419))
 1. Entering edit and saving indicator on the toolbar ([#412](https://github.com/majkinetor/musicbrainz-userscripts/issues/412))
 

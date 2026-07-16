@@ -4,7 +4,6 @@
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)
 
-1. Check progress indicator ([#422](https://github.com/majkinetor/musicbrainz-userscripts/issues/422))
 1. Keyboard navigation and autocomplete in join phrase dropdown ([#419](https://github.com/majkinetor/musicbrainz-userscripts/issues/419))
 1. Entering edit and saving indicator on the toolbar ([#412](https://github.com/majkinetor/musicbrainz-userscripts/issues/412))
 1. Recording rename indicator not reset when applying recording title to track title ([#420](https://github.com/majkinetor/musicbrainz-userscripts/issues/420))
@@ -22,6 +21,7 @@
 
 ### [Platform Check](../platform_check/CHANGELOG.md)
 
+1. Check progress indicator ([#422](https://github.com/majkinetor/musicbrainz-userscripts/issues/422))
 1. Strict settings prevent adding Discogs master ([#416](https://github.com/majkinetor/musicbrainz-userscripts/issues/416))
 
 ## [2026.7.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12.2)
