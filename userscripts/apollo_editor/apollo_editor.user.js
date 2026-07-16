@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.16.223453
+// @version      2026.7.16.224248
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1206,7 +1206,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.16.223453';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.16.224248';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2379,17 +2379,48 @@
       if (!cjk && !/\s$/.test(v)) { wrap.classList.add('tc-jp-notrail'); bad = true; }
       if (bad) wrap.classList.add('tc-jp-bad');
     };
-    inp.oninput = () => { fit(); markJoin(); }; inp.onchange = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
-    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
-    let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
-    arrow.onclick = () => {
-      if (pop) { close(); return; }
-      pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
-      pop.innerHTML = JOIN_OPTIONS.map(o => `<div class="tc-acrow" data-v="${esc(o.value)}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
-      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
-      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); markJoin(); editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); close(); }; });
-      const off = e => { if (pop && !pop.contains(e.target) && e.target !== arrow) { close(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
+    const commit = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); };
+    inp.oninput = () => { fit(); markJoin(); if (inp.value.trim()) open(inp.value); else close(); };   // #419: typing filters the presets live
+    inp.onchange = () => { commit(); };
+    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases (type to filter · ↑↓ + Enter)';
+    // #419: keyboard-first presets — typing filters ("fe" → feat. / featuring), ArrowDown
+    // opens/moves, Enter picks the highlighted row, Esc closes; same keys on the ▾ button.
+    let pop = null, items = [], hi = -1;
+    const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
+    const pick = v => { inp.value = v; fit(); commit(); close(); };
+    const paint = () => {
+      pop.innerHTML = items.map((o, i) => `<div class="tc-acrow${i === hi ? ' hi' : ''}" data-i="${i}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
+      [...pop.querySelectorAll('[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); pick(items[+row.dataset.i].value); }; });
     };
+    const open = q => {
+      const needle = String(q || '').trim().toLowerCase();
+      items = needle ? JOIN_OPTIONS.filter(o => o.label.toLowerCase().includes(needle) || o.value.trim().toLowerCase().includes(needle)) : JOIN_OPTIONS.slice();
+      if (!items.length) { close(); return; }
+      if (!pop) {
+        pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
+        document.body.appendChild(pop);
+        const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
+        const off = e => { if (!pop) { document.removeEventListener('mousedown', off); return; } if (!pop.contains(e.target) && e.target !== arrow && e.target !== inp) { close(); document.removeEventListener('mousedown', off); } };
+        setTimeout(() => document.addEventListener('mousedown', off), 0);
+      }
+      hi = needle ? 0 : -1;   // typing pre-highlights the top hit so Enter picks it straight away
+      paint();
+    };
+    const keys = e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (!pop) open(inp.value); else { hi = (hi + 1) % items.length; paint(); } }
+      else if (e.key === 'ArrowUp') { if (!pop) return; e.preventDefault(); e.stopPropagation(); hi = (hi - 1 + items.length) % items.length; paint(); }
+      else if (e.key === 'Enter') {
+        if (!pop && e.currentTarget === arrow) return;             // let the button's native click open the menu
+        // Enter must never reach MB's form (it switches tabs) — same contract enterBlurs had
+        e.preventDefault(); e.stopPropagation();
+        if (pop && hi >= 0 && items[hi]) pick(items[hi].value); else { close(); inp.blur(); }
+      }
+      else if (e.key === 'Escape') { if (pop) { e.preventDefault(); e.stopPropagation(); close(); } }
+    };
+    inp.addEventListener('keydown', keys);
+    arrow.addEventListener('keydown', keys);
+    inp.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== arrow) close(); }, 120));   // Tab away closes (row picks keep focus via preventDefault)
+    arrow.onclick = () => { if (pop) close(); else open(''); };
     wrap.appendChild(inp); wrap.appendChild(arrow); markJoin();
     return wrap;
   }

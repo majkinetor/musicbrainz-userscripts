@@ -376,6 +376,17 @@ Feature works on both the [Recordings] and the [Tracklist] artists where the joi
 
 Shares the _Enlarge punctuation_ master switch (`0` = off).
 
+#### Join-phrase presets — keyboard (#419)
+
+The join input's preset dropdown (▾) is fully keyboard-driven:
+
+| Key | Action |
+| --- | ------ |
+| *typing* | opens the dropdown filtered to matching presets (`fe` → `feat.` / `featuring`), top hit pre-highlighted |
+| <kbd>↓</kbd> / <kbd>↑</kbd> | open the list / move the highlight (wraps) |
+| <kbd>Enter</kbd> | pick the highlighted preset (or commit the typed value when the list is closed) |
+| <kbd>Esc</kbd> | close the list |
+
 ## Persistence
 
 These are remembered automatically as you use the UI:
