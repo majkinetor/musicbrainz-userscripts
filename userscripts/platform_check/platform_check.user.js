@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.16.223453
+// @version      2026.7.16.225224
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -447,11 +447,10 @@ container.innerHTML = `
      the panel doesn't jump/flash as results stream in. */
   @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
   #mb-pc-panel .pc-row.pc-rise { animation: pcRise .28s ease; }
-  /* (#422) header busy/done indicator */
+  /* (#422) the ↻ refresh button doubles as the progress indicator: it spins (and is
+     unclickable) while scans run; the scan duration lands in its tooltip afterwards */
   @keyframes pcSpin { to { transform: rotate(360deg); } }
-  #mb-scan-status .pc-scan-spin { display: inline-block; animation: pcSpin 1s linear infinite; color: #3b82c4; font-weight: bold; }
-  #mb-scan-status.pc-scan-done { color: #2e7d32; }
-  #mb-scan-status.pc-scan-halt { color: #c62828; }
+  #mb-refresh-btn.pc-scanning { display: inline-block; animation: pcSpin 1s linear infinite; pointer-events: none; color: #3b82c4; }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -563,7 +562,6 @@ container.innerHTML = `
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
-      <span id="mb-scan-status" style="font-size: 11px; color: #888; display: inline-flex; align-items: center; gap: 3px; margin-left: 2px;"></span>
     </div>
   </div>
 </div>
@@ -3722,23 +3720,17 @@ function parseMbData(data) {
     return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
 }
 
-// (#422) header busy/done indicator with live elapsed seconds — a long scan (searches,
-// rate-limit backoffs) is visibly "still working", and the ✓ tells at a glance it's done.
-let _scanT0 = 0, _scanTick = null;
+// (#422, per maintainer review) the ↻ button ITSELF is the progress indicator — it spins
+// and can't be clicked while scans run (no separate icon, no ticking seconds, no end-state
+// noise); the total scan time goes into the button's tooltip when done.
+let _scanT0 = 0;
+const REFRESH_TITLE = 'Refresh — clear cache and re-scan';
 function setScanStatus(state) {
-    const el = document.getElementById('mb-scan-status'); if (!el) return;
-    if (_scanTick) { clearInterval(_scanTick); _scanTick = null; }
-    el.classList.remove('pc-scan-done', 'pc-scan-halt');
-    if (state === 'busy') {
-        _scanT0 = Date.now();
-        el.title = 'Scanning platforms…';
-        const paint = () => { el.innerHTML = `<span class="pc-scan-spin">⟳</span>${Math.round((Date.now() - _scanT0) / 1000)}s`; };
-        paint(); _scanTick = setInterval(paint, 1000);
-        return;
-    }
+    const btn = document.getElementById('mb-refresh-btn'); if (!btn) return;
+    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms…'; return; }
+    btn.classList.remove('pc-scanning');
     const secs = ((Date.now() - _scanT0) / 1000).toFixed(1);
-    if (state === 'done') { el.classList.add('pc-scan-done'); el.textContent = `✓ ${secs}s`; el.title = `All scans completed in ${secs}s`; }
-    else { el.classList.add('pc-scan-halt'); el.textContent = '✗'; el.title = 'Scan halted — see the log'; }
+    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
 }
 async function runScans() {
     // (#422) thin status wrapper — the scan body lives in runScansInner; `false` = halted.

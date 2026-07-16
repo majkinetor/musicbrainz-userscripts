@@ -1,5 +1,6 @@
-// Verify #422 — Platform Check header shows a live busy indicator (spinner + elapsed)
-// while scans run and a green "✓ N.Ns" once "All scans completed".
+// Verify #422 (maintainer-revised) — the ↻ refresh button itself is the progress
+// indicator: it spins and is unclickable (pointer-events: none) while scans run, and
+// once "All scans completed" it stops with the total scan time in its tooltip.
 //
 //   node test/verify-422.mjs [--headed]
 import { chromium }      from 'playwright';
@@ -38,27 +39,30 @@ await page.waitForSelector('#sidebar', { timeout: 30000 });
 await page.addScriptTag({ content: shim });
 await page.addScriptTag({ content: userJs });
 
-// busy phase: spinner + elapsed seconds visible while scans run
-await page.waitForSelector('#mb-scan-status .pc-scan-spin', { timeout: 15000 }).catch(() => {});
+// busy phase: the ↻ button spins and is unclickable
+await page.waitForSelector('#mb-refresh-btn.pc-scanning', { timeout: 15000 }).catch(() => {});
 const busy = await page.evaluate(() => {
-    const el = document.getElementById('mb-scan-status');
-    return { html: el?.innerHTML || '', title: el?.title || '', cls: el?.className || '' };
+    const btn = document.getElementById('mb-refresh-btn');
+    return { spinning: btn.classList.contains('pc-scanning'), title: btn.title, pe: getComputedStyle(btn).pointerEvents, statusEl: !!document.getElementById('mb-scan-status') };
 });
 
-// done phase
-await page.waitForSelector('#mb-scan-status.pc-scan-done', { timeout: 120000 });
+// done phase: spin stops, duration lands in the tooltip
+await page.waitForFunction(() => !document.getElementById('mb-refresh-btn').classList.contains('pc-scanning'), null, { timeout: 120000 });
 const done = await page.evaluate(() => {
-    const el = document.getElementById('mb-scan-status');
+    const btn = document.getElementById('mb-refresh-btn');
     const log = document.getElementById('mb-finder-log-panel')?.innerText || '';
-    return { text: el.textContent, title: el.title, completedLogged: /All scans completed/.test(log) };
+    return { title: btn.title, pe: getComputedStyle(btn).pointerEvents, completedLogged: /All scans completed/.test(log) };
 });
 await context.close();
 
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 console.log('busy:', JSON.stringify(busy), '\ndone:', JSON.stringify(done));
-ck(/pc-scan-spin/.test(busy.html) && /\d+s/.test(busy.html), 'busy: spinner + elapsed seconds shown');
+ck(busy.spinning, 'busy: ↻ button spins');
+ck(busy.pe === 'none', 'busy: ↻ button unclickable (pointer-events none)');
 ck(/Scanning platforms/.test(busy.title), 'busy: tooltip says scanning');
-ck(/^✓ \d+(\.\d+)?s$/.test(done.text), `done: green check + total time ("${done.text}")`);
+ck(!busy.statusEl, 'no separate status element anymore');
+ck(/Refresh — clear cache and re-scan \(last scan: \d+(\.\d+)?s\)/.test(done.title), `done: duration in the refresh tooltip ("${done.title}")`);
+ck(done.pe !== 'none', 'done: ↻ clickable again');
 ck(done.completedLogged, 'log confirms "All scans completed"');
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 2)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
