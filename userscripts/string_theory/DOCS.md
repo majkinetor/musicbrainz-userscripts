@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-16 20:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-16 21:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1174,7 +1174,7 @@ Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant
   - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** from anywhere: the login's real contribution is the **account's region**, not authentication.
 - The **store page HTML has zero ISRCs** — so there's no anonymous scrape fallback.
 
-**So ISRC Scout tries the anonymous `album/get` first and only falls back to the session** (#418). In Qobuz countries no login is needed at all. Elsewhere, [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
+**So ISRC Scout prefers the session when you're logged in (one request, any country) and works anonymously otherwise** (#418) — in Qobuz countries no login is needed at all, and a stale session falls back to the anonymous path. [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
 
 Other Qobuz gotchas:
 - **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.

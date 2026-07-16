@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.16
+// @version      2026.7.16.213500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1774,28 +1774,35 @@
      serves: the anonymous API resolves catalogue visibility by request IP and
      answers 404 "No result matching given argument" everywhere else. (That
      geo dimension is why the original #353 investigation, run from a
-     non-Qobuz country, concluded a login was required.) So: anonymous first;
-     on failure retry with Platform Check's shared user_auth_token
-     (mbtools:qobuz localStorage key, same channel as the Beatport token) —
-     the login's real contribution is the ACCOUNT's region, not auth. Only
+     non-Qobuz country, concluded a login was required.) So: Platform Check's
+     shared user_auth_token is PREFERRED when present (one request, works from
+     any country — the login's real contribution is the ACCOUNT's region, not
+     auth; mbtools:qobuz localStorage key, same channel as the Beatport
+     token), anonymous otherwise or when the session has gone stale. Only
      when both paths fail do we point at the PC login.
   ═══════════════════════════════════════════════════════════════════════ */
   const QOBUZ = { appId: '712109809', api: 'https://www.qobuz.com/api.json/0.2', lsKey: 'mbtools:qobuz' };
   const qbToken = () => { try { const t = JSON.parse(localStorage.getItem(QOBUZ.lsKey) || 'null'); return (t && t.token) || null; } catch (e) { return null; } };
   const qbHeaders = tok => { const h = { 'X-App-Id': QOBUZ.appId, 'Accept': 'application/json' }; if (tok) h['X-User-Auth-Token'] = tok; return h; };
-  // One Qobuz API GET: anonymous first, session retry on any non-200 (#418).
+  // One Qobuz API GET (#418): the Platform Check session is preferred when present (one
+  // request, works from any country — the token carries the account's region), falling back
+  // to an anonymous call when there is no token or the token has expired. Anonymous works
+  // fine from countries Qobuz serves; elsewhere it answers 404, hence the tailored error.
   // `pathAndQuery` must already carry its `?`; app_id is appended here.
   async function qbGet(pathAndQuery, what) {
     const url = QOBUZ.api + pathAndQuery + '&app_id=' + QOBUZ.appId;
+    const tok = qbToken();
+    if (tok) {
+      const r = await gmGet(url, qbHeaders(tok));
+      if (r.status === 200) return r;
+      // expired/broken session — the anonymous path may still work (served country)
+      Log.warn('Qobuz: session ' + what + ' answered ' + r.status + (r.status === 401 ? ' (expired? re-login in Platform Check ⚙)' : '') + ' — trying anonymously');
+    }
     const anon = await gmGet(url, qbHeaders(null));
     if (anon.status === 200) return anon;
-    const tok = qbToken();
-    if (!tok) throw new Error('Qobuz ' + anon.status + ' for ' + what + ' — the anonymous API only answers from countries Qobuz serves; sign in to Qobuz in Platform Check ⚙ Setup → Auth to use your account’s region instead');
-    Log.info('Qobuz: anonymous ' + what + ' answered ' + anon.status + ' — retrying with the Platform Check session');
-    const r = await gmGet(url, qbHeaders(tok));
-    if (r.status === 401) throw new Error('Qobuz: session expired — re-login in Platform Check ⚙');
-    if (r.status !== 200) throw new Error('Qobuz ' + r.status + ' for ' + what);
-    return r;
+    throw new Error('Qobuz ' + anon.status + ' for ' + what + (tok
+      ? ' — session and anonymous both failed (re-login in Platform Check ⚙ Setup → Auth?)'
+      : ' — the anonymous API only answers from countries Qobuz serves; sign in to Qobuz in Platform Check ⚙ Setup → Auth to use your account’s region instead'));
   }
   async function fetchQobuz(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
