@@ -44,9 +44,8 @@ Import track-level artist credits in addition to release-level credits.
 1. **Move release credits to tracks**<br>
 Move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, etc.). Doesn't move any pre-existing release-level credits.
 1. **Create works** — mode picker:
-    - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach to the recording.
-    - `when missing` — create a work for every recording without one, regardless of credits.
-    - `never` — never create any work, even when there are credits.
+    - `never` (default) — never create any work, even when there are credits; work-only credits with no existing work are logged and skipped.
+    - `when needed` — create a work only when there's a composer/lyricist/writer credit to attach to the recording. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `never` for everyone once.
 1. **Dedup**
     - **Equivalence sets**<br>
     Skip a role when an equivalent role already exists on the target (writer ≡ composer).

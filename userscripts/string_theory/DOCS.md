@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-16 21:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-16 22:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -620,9 +620,8 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
 - **Create works** — mode picker:
-    - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach.
-    - `when missing` — create a work for every recording without one, regardless of credits.
-    - `never` — never create a work, even when there are credits.
+    - `never` (default) — never create a work, even when there are credits; work-only credits with no existing work are logged and skipped.
+    - `when needed` — create a work only when there's a composer/lyricist/writer credit to attach. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `never` for everyone once.
 - **Options**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).

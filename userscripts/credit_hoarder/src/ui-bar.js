@@ -814,33 +814,53 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     const OPTS_KEY = 'discogs-importer-opts';
     let savedOpts = {};
     try { savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || '{}'); } catch(e) {}
+    // #421 one-time reset: work duplicates were being created by careless "create works"
+    // use, so THIS version starts everyone at 'never' regardless of what was saved — the
+    // duplicate-works warning popup is then guaranteed to be seen when re-enabling.
+    if (!savedOpts.createWorksReset421) {
+        savedOpts.createWorksMode = 'never';
+        savedOpts.createWorksReset421 = true;
+        delete savedOpts.createWorks;   // pre-#94 legacy key, superseded by the reset
+        try { localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts)); } catch(e) {}
+    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
 
     const tracklistCb    = makeCheckbox('Per-track credits',              bv('tracklist', true),
         'Import per-track artist credits.');
     const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', false),
         'Move performance credits from the release down to every recording.');
-    // "Create works" mode picker (#94, "never" option restored later):
-    //   when-needed (default): create a work only when there's a
-    //                           composer/lyricist/writer credit to attach.
-    //   when-missing:          create a work for EVERY recording without one,
-    //                           credits or no credits (old `createWorks=true`).
-    //   never:                  create no works at all (old `createWorks=false`).
-    //                           Work-only credits that need a work that doesn't
-    //                           exist are logged and skipped.
-    // Migration: legacy `createWorks: true` → 'when-missing'; `createWorks: false`
-    // → 'never' (the explicit opt-out path the #94 picker lost); otherwise
-    // 'when-needed'.
-    const _legacyCreateWorks = savedOpts.createWorks;
-    const _initialCreateWorksMode = bv('createWorksMode',
-        _legacyCreateWorks === true  ? 'when-missing' :
-        _legacyCreateWorks === false ? 'never' :
-                                       'when-needed');
+    // "Create works" mode picker (#94; 'when-missing' — a work for EVERY recording —
+    // removed in #421: it was a work-duplicate factory; dispatch still understands the
+    // value defensively but the UI no longer offers it):
+    //   never (default since #421): create no works at all. Work-only credits that
+    //                               need a work that doesn't exist are logged and skipped.
+    //   when-needed:                create a work only when there's a
+    //                               composer/lyricist/writer credit to attach.
+    const _initialCreateWorksMode = bv('createWorksMode', 'never') === 'when-needed' ? 'when-needed' : 'never';
     const createWorksMode = makeSelect('Create works', _initialCreateWorksMode, [
-        { value: 'when-needed',  label: 'when needed'  },
-        { value: 'when-missing', label: 'when missing' },
         { value: 'never',        label: 'never'        },
-    ], 'when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works — work-only credits with no existing work are logged and skipped.');
+        { value: 'when-needed',  label: 'when needed'  },
+    ], 'never: do not create works — work-only credits with no existing work are logged and skipped. when needed: create a work only when there is a composer/lyricist/writer credit to attach — match recordings to EXISTING works first (Group Therapy) or you will create duplicates.');
+    // #421: choosing to create works must confront the duplicate-works responsibility.
+    function showCreateWorksWarning() {
+        const ov = document.createElement('div');
+        ov.className = 'discogs-cw-warn-ov';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;';
+        const box = document.createElement('div');
+        box.style.cssText = 'max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;';
+        box.innerHTML =
+            '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">⚠️ WARNING: Avoid creating work duplicates!</div>' +
+            '<p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p>' +
+            '<p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don’t forget.</p>' +
+            '<div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
+        const close = () => ov.remove();
+        box.querySelector('button').addEventListener('click', close);
+        ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+        ov.appendChild(box);
+        document.body.appendChild(ov);
+        box.querySelector('button').focus();
+    }
+    createWorksMode.addEventListener('change', () => { if (createWorksMode.value === 'when-needed') showCreateWorksWarning(); });
 
     // ── Deduplication section (issue #62) ─────────────────────────────────
     // Two toggles that change how the dispatcher decides "this rel is
@@ -883,6 +903,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         try { localStorage.setItem(OPTS_KEY, JSON.stringify({
             tracklist: tracklistCb.checked, applyTracks: applyTracksCb.checked,
             createWorksMode: createWorksMode.value,
+            createWorksReset421: true,   // #421 one-time reset already applied — must survive every save
             dedupeEquivalenceSets: dedupeEqCb.checked,
             dedupeDuplicateRoles:  dedupeDupCb.checked,
         })); } catch(e) {}

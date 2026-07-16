@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.16.173522
+// @version      2026.7.16.220728
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4729,6 +4729,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
     } catch (e) {
     }
+    if (!savedOpts.createWorksReset421) {
+      savedOpts.createWorksMode = "never";
+      savedOpts.createWorksReset421 = true;
+      delete savedOpts.createWorks;
+      try {
+        localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts));
+      } catch (e) {
+      }
+    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
     const tracklistCb = makeCheckbox(
       "Per-track credits",
@@ -4740,16 +4749,30 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       bv("applyTracks", false),
       "Move performance credits from the release down to every recording."
     );
-    const _legacyCreateWorks = savedOpts.createWorks;
-    const _initialCreateWorksMode = bv(
-      "createWorksMode",
-      _legacyCreateWorks === true ? "when-missing" : _legacyCreateWorks === false ? "never" : "when-needed"
-    );
+    const _initialCreateWorksMode = bv("createWorksMode", "never") === "when-needed" ? "when-needed" : "never";
     const createWorksMode = makeSelect("Create works", _initialCreateWorksMode, [
-      { value: "when-needed", label: "when needed" },
-      { value: "when-missing", label: "when missing" },
-      { value: "never", label: "never" }
-    ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works \u2014 work-only credits with no existing work are logged and skipped.");
+      { value: "never", label: "never" },
+      { value: "when-needed", label: "when needed" }
+    ], "never: do not create works \u2014 work-only credits with no existing work are logged and skipped. when needed: create a work only when there is a composer/lyricist/writer credit to attach \u2014 match recordings to EXISTING works first (Group Therapy) or you will create duplicates.");
+    function showCreateWorksWarning() {
+      const ov = document.createElement("div");
+      ov.className = "discogs-cw-warn-ov";
+      ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;";
+      const box = document.createElement("div");
+      box.style.cssText = "max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;";
+      box.innerHTML = '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
+      const close = () => ov.remove();
+      box.querySelector("button").addEventListener("click", close);
+      ov.addEventListener("mousedown", (e) => {
+        if (e.target === ov) close();
+      });
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+      box.querySelector("button").focus();
+    }
+    createWorksMode.addEventListener("change", () => {
+      if (createWorksMode.value === "when-needed") showCreateWorksWarning();
+    });
     const optsBtn = document.createElement("button");
     optsBtn.type = "button";
     optsBtn.className = "discogs-opts-btn";
@@ -4796,6 +4819,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
           createWorksMode: createWorksMode.value,
+          createWorksReset421: true,
+          // #421 one-time reset already applied — must survive every save
           dedupeEquivalenceSets: dedupeEqCb.checked,
           dedupeDuplicateRoles: dedupeDupCb.checked
         }));
