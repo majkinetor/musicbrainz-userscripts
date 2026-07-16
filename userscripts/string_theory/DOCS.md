@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-16 17:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-16 20:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1167,13 +1167,14 @@ Modifier-clicks on the **Links tab** Add / Linked icons (see [links tab](#links)
 
 Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant endpoints:
 - **`album/search`** (album-level: `upc`, `label`, `year`, `tracks_count`) — **works anonymously** with the web-player app_id **`712109809`**. This is all [Platform Check](../platform_check/README.md) needs to *locate/verify* a Qobuz release.
-- **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). It is **session-gated**, not geo-gated:
-  - app_id `712109809` → **`404`** for *every* album id anonymously — even ids `album/search` just returned.
-  - the other web app_id `798273057` → **`401` "User authentication is required"**.
-  - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** with full `tracks.items[]` (isrc + performers). Verified end-to-end (16/16 ISRCs matched a known release).
+- **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). It is **geo-gated, not session-gated** (#418 corrected the original conclusion):
+  - **from a country Qobuz serves**, app_id `712109809` returns **`200`** with full `tracks.items[]` (isrc + performers) **anonymously** — no cookies, no token (verified from a HAR capture in #418).
+  - **from anywhere else**, the same anonymous request → **`404` "No result matching given argument"** for *every* album id — even ids `album/search` just returned. The anonymous API resolves catalogue visibility by **request IP**; the original #353 investigation ran from a non-Qobuz country, which made it look session-gated.
+  - the other web app_id `798273057` → **`401` "User authentication is required"** regardless.
+  - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** from anywhere: the login's real contribution is the **account's region**, not authentication.
 - The **store page HTML has zero ISRCs** — so there's no anonymous scrape fallback.
 
-**So Qobuz is a login-gated source.** [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
+**So ISRC Scout tries the anonymous `album/get` first and only falls back to the session** (#418). In Qobuz countries no login is needed at all. Elsewhere, [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
 
 Other Qobuz gotchas:
 - **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.

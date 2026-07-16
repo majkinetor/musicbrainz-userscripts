@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.16.173522
+// @version      2026.7.16.205551
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -69,8 +69,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.16.173522 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.13.203013\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.16.173401\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.15\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.16");
+  console.log('%c String Theory %c v2026.7.16.205551 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.13.203013\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.16.173401\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.16\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.16");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -20022,7 +20022,7 @@ ${lines}
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.15","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.15","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.16","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.16","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -21761,36 +21761,52 @@ ${lines}
      barcodes itself, that's Platform Check's job.)
   ═══════════════════════════════════════════════════════════════════════ */
   /* ═══════════════════════════════════════════════════════════════════════
-     QOBUZ (#353) — per-track ISRCs live behind the session-gated album/get,
-     which needs a logged-in user_auth_token. Platform Check owns the login and
-     shares the token via the mbtools:qobuz localStorage key on this origin (the
-     same channel as the Beatport token). Album-based, matched by ISRC/position.
+     QOBUZ (#353, #418) — per-track ISRCs come from album/get, which works
+     ANONYMOUSLY (app_id only) when the request comes from a country Qobuz
+     serves: the anonymous API resolves catalogue visibility by request IP and
+     answers 404 "No result matching given argument" everywhere else. (That
+     geo dimension is why the original #353 investigation, run from a
+     non-Qobuz country, concluded a login was required.) So: anonymous first;
+     on failure retry with Platform Check's shared user_auth_token
+     (mbtools:qobuz localStorage key, same channel as the Beatport token) —
+     the login's real contribution is the ACCOUNT's region, not auth. Only
+     when both paths fail do we point at the PC login.
   ═══════════════════════════════════════════════════════════════════════ */
   const QOBUZ = { appId: '712109809', api: 'https://www.qobuz.com/api.json/0.2', lsKey: 'mbtools:qobuz' };
   const qbToken = () => { try { const t = JSON.parse(localStorage.getItem(QOBUZ.lsKey) || 'null'); return (t && t.token) || null; } catch (e) { return null; } };
-  const qbHeaders = tok => ({ 'X-App-Id': QOBUZ.appId, 'X-User-Auth-Token': tok, 'Accept': 'application/json' });
+  const qbHeaders = tok => { const h = { 'X-App-Id': QOBUZ.appId, 'Accept': 'application/json' }; if (tok) h['X-User-Auth-Token'] = tok; return h; };
+  // One Qobuz API GET: anonymous first, session retry on any non-200 (#418).
+  // `pathAndQuery` must already carry its `?`; app_id is appended here.
+  async function qbGet(pathAndQuery, what) {
+    const url = QOBUZ.api + pathAndQuery + '&app_id=' + QOBUZ.appId;
+    const anon = await gmGet(url, qbHeaders(null));
+    if (anon.status === 200) return anon;
+    const tok = qbToken();
+    if (!tok) throw new Error('Qobuz ' + anon.status + ' for ' + what + ' — the anonymous API only answers from countries Qobuz serves; sign in to Qobuz in Platform Check ⚙ Setup → Auth to use your account’s region instead');
+    Log.info('Qobuz: anonymous ' + what + ' answered ' + anon.status + ' — retrying with the Platform Check session');
+    const r = await gmGet(url, qbHeaders(tok));
+    if (r.status === 401) throw new Error('Qobuz: session expired — re-login in Platform Check ⚙');
+    if (r.status !== 200) throw new Error('Qobuz ' + r.status + ' for ' + what);
+    return r;
+  }
   async function fetchQobuz(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
-    const tok = qbToken();
-    if (!tok) throw new Error('Qobuz: not logged in — sign in to Qobuz in Platform Check ⚙ Setup → Auth');
     let id = String(albumId).trim();
     // a bare barcode/UPC → resolve to the album id via search (Qobuz stores the 13-digit EAN, so try zero-padded too, #354)
     if (/^\d+$/.test(id)) {
       const want = id.replace(/^0+/, '');
-      let hit = null;
+      let hit = null, lastErr = null;
       for (const q of [id, id.length < 13 ? id.padStart(13, '0') : null].filter(Boolean)) {
-        const sr = await gmGet(QOBUZ.api + '/album/search?query=' + encodeURIComponent(q) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
+        let sr; try { sr = await qbGet('/album/search?query=' + encodeURIComponent(q), 'barcode search ' + q); } catch (e) { lastErr = e; continue; }
         let sj; try { sj = JSON.parse(sr.responseText || 'null'); } catch (e) { sj = null; }
         const items = (sj && sj.albums && sj.albums.items) || [];
         hit = items.find(a => String(a.upc || '').replace(/^0+/, '') === want) || items[0];
         if (hit) break;
       }
-      if (!hit || !hit.id) throw new Error('Qobuz: no album for barcode ' + id);
+      if (!hit || !hit.id) throw (lastErr || new Error('Qobuz: no album for barcode ' + id));
       id = hit.id;
     }
-    const r = await gmGet(QOBUZ.api + '/album/get?album_id=' + encodeURIComponent(id) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
-    if (r.status === 401) throw new Error('Qobuz: session expired — re-login in Platform Check ⚙');
-    if (r.status !== 200) throw new Error('Qobuz ' + r.status + ' for album ' + id);
+    const r = await qbGet('/album/get?album_id=' + encodeURIComponent(id), 'album ' + id);
     let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Qobuz: malformed JSON'); }
     const list = (j && j.tracks && j.tracks.items) || [];
     Log.info('Qobuz album "' + ((j && j.title) || id) + '": ' + list.length + ' track(s)');
