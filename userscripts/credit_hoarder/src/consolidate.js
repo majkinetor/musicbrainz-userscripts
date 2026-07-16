@@ -95,6 +95,10 @@ export function mergeHarvests(harvests) {
 // key, so the caller points every source URL at the MBID for dispatch.
 const _resultKey = r => (r && r.entity && (r.entity.resource_url || r.entity._syntheticKey)) || `_nourl_${(r && ((r.entity && r.entity.name) || r.displayName)) || ''}`;
 const _resultName = r => (r && ((r.entity && r.entity.name) || r.displayName)) || '';
+// #417: name-based grouping must never cross entity kinds — a music PUBLISHER named like the
+// singer is a label, and fusing it with the artist row dispatched an artist into a label→work
+// publishing rel (which MB rejects, killing the whole edit).
+const _resultKind = r => (r && (r.entityType || (r.entity && r.entity.entityType))) || 'artist';
 const _roleKey = ro => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join('');
 
 // Levenshtein distance, bounded: returns -1 as soon as the minimum possible distance exceeds `max`
@@ -121,34 +125,39 @@ const fuzzyMax = len => len <= 6 ? 0 : len <= 12 ? 1 : 2;
 const stripInitials = fn => fn.split(' ').filter(t => !/^[a-z]\.?$/.test(t)).join(' ');
 export function mergeResolvedResults(allResults, entitySources) {
     const rows = (allResults || []).filter(Boolean);
-    // name → set of resolved mbUrls, so an unresolved row can be routed to its resolved twin — but
-    // only when that name resolves to exactly ONE MBID (ambiguous names are left alone).
+    // kind|name → set of resolved mbUrls, so an unresolved row can be routed to its resolved twin —
+    // but only when that name resolves to exactly ONE MBID (ambiguous names are left alone), and
+    // never across kinds (#417): an artist row is no twin for a same-named label/place row.
     const nameMbids = new Map();
-    // initial-stripped name → set of resolved mbUrls (#415, second lookup tier)
+    // kind|initial-stripped name → set of resolved mbUrls (#415, second lookup tier)
     const nameMbidsStripped = new Map();
     for (const r of rows) {
         if (r.type !== 'resolved' || !r.mbUrl) continue;
         const fn = fold(_resultName(r)); if (!fn) continue;
-        if (!nameMbids.has(fn)) nameMbids.set(fn, new Set());
-        nameMbids.get(fn).add(r.mbUrl);
-        const sn = stripInitials(fn);
+        const kn = _resultKind(r) + '|' + fn;
+        if (!nameMbids.has(kn)) nameMbids.set(kn, new Set());
+        nameMbids.get(kn).add(r.mbUrl);
+        const sn = _resultKind(r) + '|' + stripInitials(fn);
         if (!nameMbidsStripped.has(sn)) nameMbidsStripped.set(sn, new Set());
         nameMbidsStripped.get(sn).add(r.mbUrl);
     }
-    // #415: names whose sources resolved to MORE THAN ONE MB artist. Every row of such a name
-    // (resolved or not) is grouped under one conflict key and the merged row is downgraded to
-    // an attention row listing the disagreeing MB artists as candidates.
+    // #415: kind|names whose sources resolved to MORE THAN ONE MB artist. Every row of such a
+    // name (resolved or not) is grouped under one conflict key and the merged row is downgraded
+    // to an attention row listing the disagreeing MB artists as candidates.
     const conflictNames = new Set();
-    nameMbids.forEach((set, nm) => { if (set.size > 1) conflictNames.add(nm); });
-    // Names that resolve to exactly ONE MBID — the only safe fuzzy-merge targets.
+    nameMbids.forEach((set, kn) => { if (set.size > 1) conflictNames.add(kn); });
+    // kind|names that resolve to exactly ONE MBID — the only safe fuzzy-merge targets.
     const uniqResolved = [];
-    nameMbids.forEach((set, nm) => { if (set.size === 1) uniqResolved.push([nm, [...set][0]]); });
-    // An unresolved name that is a tight typo of exactly ONE uniquely-resolved name → route to its
-    // MBID (#408). Returns null if zero, or if two DIFFERENT resolved names are both within tolerance
-    // (ambiguous — leave it alone rather than guess).
-    const fuzzyResolvedMatch = fn => {
+    nameMbids.forEach((set, kn) => { if (set.size === 1) uniqResolved.push([kn, [...set][0]]); });
+    // An unresolved name that is a tight typo of exactly ONE uniquely-resolved SAME-KIND name →
+    // route to its MBID (#408). Returns null if zero, or if two DIFFERENT resolved names are both
+    // within tolerance (ambiguous — leave it alone rather than guess).
+    const fuzzyResolvedMatch = kfn => {
+        const [kind, fn] = [kfn.slice(0, kfn.indexOf('|')), kfn.slice(kfn.indexOf('|') + 1)];
         let hit = null;
-        for (const [nm, url] of uniqResolved) {
+        for (const [kn, url] of uniqResolved) {
+            if (!kn.startsWith(kind + '|')) continue;
+            const nm = kn.slice(kind.length + 1);
             if (boundedLev(fn, nm, fuzzyMax(Math.max(fn.length, nm.length))) < 0) continue;
             if (hit && hit !== url) return null;
             hit = url;
@@ -157,18 +166,19 @@ export function mergeResolvedResults(allResults, entitySources) {
     };
     const keyFor = r => {
         const fn = fold(_resultName(r));
-        if (fn && conflictNames.has(fn)) return 'cf:' + fn;      // #415: sources disagree → one conflict row
+        const kn = fn ? _resultKind(r) + '|' + fn : '';
+        if (kn && conflictNames.has(kn)) return 'cf:' + kn;      // #415: sources disagree → one conflict row
         if (r.type === 'resolved' && r.mbUrl) return 'mb:' + r.mbUrl;
         if (!fn) return null;                                     // no name → never group
-        const set = nameMbids.get(fn);
+        const set = nameMbids.get(kn);
         if (set && set.size === 1) return 'mb:' + [...set][0];   // unresolved → its unique resolved twin
         if (!set) {                                               // #415: twin differs only by middle initials
-            const stripped = nameMbidsStripped.get(stripInitials(fn));
+            const stripped = nameMbidsStripped.get(_resultKind(r) + '|' + stripInitials(fn));
             if (stripped && stripped.size === 1) return 'mb:' + [...stripped][0];
         }
-        const fuzzy = fuzzyResolvedMatch(fn);                    // unresolved → typo of a unique resolved twin
+        const fuzzy = fuzzyResolvedMatch(kn);                    // unresolved → typo of a unique resolved twin
         if (fuzzy) return 'mb:' + fuzzy;
-        return 'nm:' + fn;                                        // same-name, none resolved → group together
+        return 'nm:' + kn;                                        // same-kind same-name, none resolved → group
     };
     const byKey = new Map(), mergeMap = new Map(), out = [];
     for (const r of rows) {

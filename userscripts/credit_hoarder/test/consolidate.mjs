@@ -199,4 +199,29 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.equal(out.length, 3, 'typo within tolerance of two resolved names → nothing force-merged');
 }
 
+// #417 (kind guard): a music PUBLISHER named like the singer is a LABEL row — it must NOT
+// name-merge into the resolved artist row (that dispatched an artist into a label→work
+// publishing rel, which MB rejects and the whole edit failed to submit).
+{
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/monica', entityType: 'artist', entity: { resource_url: 'https://tidal.com/artist/9621022', name: 'Monica Rypma' }, _roles: [{ linkType: 'vocal', displayLabel: 'lead vocals', trackPos: '1', trackTitle: '' }] },
+        { type: 'attention', entityType: 'label', entity: { resource_url: 'https://tidal.com/_publisher/Monica%20Rypma', name: 'Monica Rypma', entityType: 'label' }, _roles: [{ linkType: 'publishing', displayLabel: 'publishing', trackPos: '1', trackTitle: '' }] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 2, 'same-named label (publisher) row never merges into the artist row (#417)');
+    assert.equal(out.find(r => r.entityType === 'label').type, 'attention', 'publisher row stays unresolved for the user');
+}
+
+// #417 (kind guard, resolved both): a resolved artist and a resolved label sharing a name are
+// NOT a #415 conflict — different kinds are different entities by definition.
+{
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/w1', entityType: 'artist', entity: { resource_url: 'a', name: 'Widowspeak' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/label/w2', entityType: 'label', entity: { resource_url: 'b', name: 'Widowspeak' }, _roles: [] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 2, 'same-named artist + label resolved rows are no conflict, stay separate');
+    assert.ok(out.every(r => r.type === 'resolved'), 'neither row downgraded');
+}
+
 console.log('consolidate: all assertions passed');

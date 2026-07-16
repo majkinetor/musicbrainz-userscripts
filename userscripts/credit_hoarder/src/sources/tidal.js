@@ -274,14 +274,18 @@ export function parseTidalArtistUrl(url) {
  */
 /** A music-publisher credit → label→work "publishing" rel. The publisher is a
  *  LABEL entity (entityType:'label'), resolved by name against MB labels —
- *  Tidal exposes no usable label URL, so resource_url is always empty. Pass a
- *  `track` for a per-track work; omit it for a release-level (all works) rel. */
+ *  Tidal exposes no usable label URL, so synthesise a unique resource_url like
+ *  tidalCompany does. An empty resource_url would key the entity `_nourl_<name>`,
+ *  colliding with a same-named name-only ARTIST credit (#417: "Monica Rypma" the
+ *  publisher fused with Monica Rypma the vocalist and dispatched an artist as a
+ *  label→work publishing rel, which MB rejects at submit). Pass a `track` for a
+ *  per-track work; omit it for a release-level (all works) rel. */
 function tidalPublisherRole(name, track) {
     const role = {
         linkType:   'publishing',
         entityType: 'label',
         attributes: [],
-        artist:     { name, anv: '', entityType: 'label', resource_url: '' },
+        artist:     { name, anv: '', entityType: 'label', resource_url: 'https://tidal.com/_publisher/' + encodeURIComponent(name) },
     };
     if (track) role.track = track;
     return role;

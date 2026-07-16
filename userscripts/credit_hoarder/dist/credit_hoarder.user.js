@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.16.022921
+// @version      2026.7.16.173401
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -65,7 +65,8 @@
     ["writer", "composer"]
   ];
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  DISCOGS_CHANNEL.unref?.();
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
 
   // src/log.js
   var _logs = null;
@@ -2183,7 +2184,7 @@
       linkType: "publishing",
       entityType: "label",
       attributes: [],
-      artist: { name, anv: "", entityType: "label", resource_url: "" }
+      artist: { name, anv: "", entityType: "label", resource_url: "https://tidal.com/_publisher/" + encodeURIComponent(name) }
     };
     if (track) role.track = track;
     return role;
@@ -5330,6 +5331,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           }
           const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
           const srcType = role.entityType || "artist";
+          const urlType = (mbUrl.match(/musicbrainz\.org\/(artist|label|place)\//i) || [])[1];
+          if (urlType && urlType !== srcType) {
+            log.skip(`Skipped ${role.linkType} for "${credit}" \u2014 resolved to an MB ${urlType}, but this relationship needs a ${srcType} (#417)`);
+            continue;
+          }
           if (workEntity.gid) {
             await processOne(workEntity, srcType, "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
           } else {
@@ -5582,6 +5588,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   }
   var _resultKey = (r) => r && r.entity && (r.entity.resource_url || r.entity._syntheticKey) || `_nourl_${r && (r.entity && r.entity.name || r.displayName) || ""}`;
   var _resultName = (r) => r && (r.entity && r.entity.name || r.displayName) || "";
+  var _resultKind = (r) => r && (r.entityType || r.entity && r.entity.entityType) || "artist";
   var _roleKey = (ro) => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join("");
   var boundedLev = (a, b, max) => {
     if (Math.abs(a.length - b.length) > max) return -1;
@@ -5610,23 +5617,27 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       if (r.type !== "resolved" || !r.mbUrl) continue;
       const fn = fold(_resultName(r));
       if (!fn) continue;
-      if (!nameMbids.has(fn)) nameMbids.set(fn, /* @__PURE__ */ new Set());
-      nameMbids.get(fn).add(r.mbUrl);
-      const sn = stripInitials(fn);
+      const kn = _resultKind(r) + "|" + fn;
+      if (!nameMbids.has(kn)) nameMbids.set(kn, /* @__PURE__ */ new Set());
+      nameMbids.get(kn).add(r.mbUrl);
+      const sn = _resultKind(r) + "|" + stripInitials(fn);
       if (!nameMbidsStripped.has(sn)) nameMbidsStripped.set(sn, /* @__PURE__ */ new Set());
       nameMbidsStripped.get(sn).add(r.mbUrl);
     }
     const conflictNames = /* @__PURE__ */ new Set();
-    nameMbids.forEach((set, nm) => {
-      if (set.size > 1) conflictNames.add(nm);
+    nameMbids.forEach((set, kn) => {
+      if (set.size > 1) conflictNames.add(kn);
     });
     const uniqResolved = [];
-    nameMbids.forEach((set, nm) => {
-      if (set.size === 1) uniqResolved.push([nm, [...set][0]]);
+    nameMbids.forEach((set, kn) => {
+      if (set.size === 1) uniqResolved.push([kn, [...set][0]]);
     });
-    const fuzzyResolvedMatch = (fn) => {
+    const fuzzyResolvedMatch = (kfn) => {
+      const [kind, fn] = [kfn.slice(0, kfn.indexOf("|")), kfn.slice(kfn.indexOf("|") + 1)];
       let hit = null;
-      for (const [nm, url] of uniqResolved) {
+      for (const [kn, url] of uniqResolved) {
+        if (!kn.startsWith(kind + "|")) continue;
+        const nm = kn.slice(kind.length + 1);
         if (boundedLev(fn, nm, fuzzyMax(Math.max(fn.length, nm.length))) < 0) continue;
         if (hit && hit !== url) return null;
         hit = url;
@@ -5635,18 +5646,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     };
     const keyFor = (r) => {
       const fn = fold(_resultName(r));
-      if (fn && conflictNames.has(fn)) return "cf:" + fn;
+      const kn = fn ? _resultKind(r) + "|" + fn : "";
+      if (kn && conflictNames.has(kn)) return "cf:" + kn;
       if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       if (!fn) return null;
-      const set = nameMbids.get(fn);
+      const set = nameMbids.get(kn);
       if (set && set.size === 1) return "mb:" + [...set][0];
       if (!set) {
-        const stripped = nameMbidsStripped.get(stripInitials(fn));
+        const stripped = nameMbidsStripped.get(_resultKind(r) + "|" + stripInitials(fn));
         if (stripped && stripped.size === 1) return "mb:" + [...stripped][0];
       }
-      const fuzzy = fuzzyResolvedMatch(fn);
+      const fuzzy = fuzzyResolvedMatch(kn);
       if (fuzzy) return "mb:" + fuzzy;
-      return "nm:" + fn;
+      return "nm:" + kn;
     };
     const byKey = /* @__PURE__ */ new Map(), mergeMap = /* @__PURE__ */ new Map(), out = [];
     for (const r of rows) {

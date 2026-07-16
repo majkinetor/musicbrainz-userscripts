@@ -76,6 +76,9 @@ export const EQUIVALENCE_SETS = [
  * only existed in the entry module's scope → ReferenceError at runtime.
  */
 export const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
+// node's BroadcastChannel holds the event loop open, which would hang the pure-node
+// unit tests after they finish; browsers have no unref, hence the optional call.
+DISCOGS_CHANNEL.unref?.();
 
 /**
  * The page's real `window` — Tampermonkey exposes it as `unsafeWindow` to
@@ -85,4 +88,5 @@ export const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
  * Use `pageWindow` to read MB-provided globals like `MB.relationshipEditor`
  * or `MB.linkedEntities` that live on the page's own JS context.
  */
-export const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
+export const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
+    : (typeof window !== 'undefined') ? window : globalThis;

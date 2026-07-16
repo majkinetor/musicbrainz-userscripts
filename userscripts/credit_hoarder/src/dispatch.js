@@ -846,6 +846,14 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 // Most work-only rels are artist→work; a music publisher is a
                 // label→work "publishing" rel (role carries entityType:'label').
                 const srcType = role.entityType || 'artist';
+                // #417 safety net: the confirmed mbUrl embeds its MB entity type — never dispatch
+                // a rel whose resolved entity kind contradicts the link type (an artist inside a
+                // label→work publishing rel is invalid and makes the WHOLE edit fail to submit).
+                const urlType = (mbUrl.match(/musicbrainz\.org\/(artist|label|place)\//i) || [])[1];
+                if (urlType && urlType !== srcType) {
+                    log.skip(`Skipped ${role.linkType} for "${credit}" — resolved to an MB ${urlType}, but this relationship needs a ${srcType} (#417)`);
+                    continue;
+                }
                 if (workEntity.gid) {
                     await processOne(workEntity, srcType, 'work', role.linkType, mbUrl, role.attributes || [], credit, trackPos || (entries[0]?.role?.track?.position));
                 } else {

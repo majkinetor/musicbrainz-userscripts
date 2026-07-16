@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.14.195800
+// @version      2026.7.16.173522
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -53,7 +53,8 @@
     ["writer", "composer"]
   ];
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  DISCOGS_CHANNEL.unref?.();
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
 
   // src/log.js
   var _logs = null;

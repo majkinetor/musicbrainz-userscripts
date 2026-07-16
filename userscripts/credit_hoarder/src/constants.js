@@ -76,6 +76,9 @@ export const EQUIVALENCE_SETS = [
  * only existed in the entry module's scope → ReferenceError at runtime.
  */
 export const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
+// node's BroadcastChannel holds the event loop open, which would hang the pure-node
+// unit tests after they finish; browsers have no unref, hence the optional call.
+DISCOGS_CHANNEL.unref?.();
 
 /**
  * The page's real `window` — Tampermonkey exposes it as `unsafeWindow` to
@@ -83,6 +86,9 @@ export const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
  * any environment without that grant, we fall through to plain `window`.
  *
  * Use `pageWindow` to read MB-provided globals like `MB.relationshipEditor`
- * or `MB.linkedEntities` that live on the page's own JS context.
+ * or `MB.linkedEntities` that live on the page's own JS context. Falls through
+ * to `globalThis` in plain node so the pure-node unit tests can import modules
+ * that pull this in transitively.
  */
-export const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
+export const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
+    : (typeof window !== 'undefined') ? window : globalThis;
