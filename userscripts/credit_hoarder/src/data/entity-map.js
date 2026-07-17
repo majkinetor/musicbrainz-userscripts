@@ -198,6 +198,21 @@ export const ENTITY_TYPE_MAP = {
         linkType: 'vocal',
         attributes: [{ _type: 'vocal', value: 'lead vocals' }],
     },
+    // #427: voice-type vocals — MB carries each of these as a vocal attribute (verified
+    // against the live link_attribute_type table). Hyphenated ones get both Discogs
+    // casing variants, since the role lookup is exact-case.
+    'Soprano Vocals':        { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'soprano vocals' }] },
+    'Mezzo-soprano Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'mezzo-soprano vocals' }] },
+    'Mezzo-Soprano Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'mezzo-soprano vocals' }] },
+    'Alto Vocals':           { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'alto vocals' }] },
+    'Contralto Vocals':      { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'contralto vocals' }] },
+    'Countertenor Vocals':   { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'countertenor vocals' }] },
+    'Tenor Vocals':          { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'tenor vocals' }] },
+    'Baritone Vocals':       { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'baritone vocals' }] },
+    'Bass-baritone Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'bass-baritone vocals' }] },
+    'Bass-Baritone Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'bass-baritone vocals' }] },
+    'Bass Vocals':           { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'bass vocals' }] },
+    'Treble Vocals':         { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'treble vocals' }] },
     Orchestra: {
         entityType: 'artist',
         linkType: 'orchestra',
