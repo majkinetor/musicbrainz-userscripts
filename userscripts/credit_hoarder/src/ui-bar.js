@@ -851,6 +851,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         const w = createWorksMode.closest('.discogs-select-wrap'); if (w) w.style.opacity = useWorksCb.checked ? '' : '.45';
     };
     syncWorksUi();
+    // #424 follow-up (maintainer): "Use works:" must read as ONE phrase — collapse the
+    // toggle's right padding, the strip's flex gap and the select wrap's left padding
+    // down to a normal word space.
+    useWorksCb.closest('label').style.paddingRight = '0';
+    { const w = createWorksMode.closest('.discogs-select-wrap'); if (w) { w.style.paddingLeft = '0'; w.style.marginLeft = '-0.2rem'; } }
     // #421: choosing to create works must confront the duplicate-works responsibility.
     function showCreateWorksWarning() {
         const ov = document.createElement('div');

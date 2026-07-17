@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.17.123911
+// @version      2026.7.17.130251
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4770,6 +4770,14 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       if (w) w.style.opacity = useWorksCb.checked ? "" : ".45";
     };
     syncWorksUi();
+    useWorksCb.closest("label").style.paddingRight = "0";
+    {
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) {
+        w.style.paddingLeft = "0";
+        w.style.marginLeft = "-0.2rem";
+      }
+    }
     function showCreateWorksWarning() {
       const ov = document.createElement("div");
       ov.className = "discogs-cw-warn-ov";
