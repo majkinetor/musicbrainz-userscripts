@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.16
+// @version      2026.7.17
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -229,7 +229,44 @@ async function injectInto(urls, storageKey) {
         }
         setSel.call(select, opt.value);
         select.dispatchEvent(new Event('change', { bubbles: true }));
-        reports.push({ url, ok: true, type: opt.textContent.trim(), linkTypeId: opt.value });
+        const report = { url, ok: true, type: opt.textContent.trim(), linkTypeId: opt.value };
+        reports.push(report);
+
+        // #423: a Bandcamp album that also has a DIGITAL release is both streamable AND
+        // purchasable, so it deserves a SECOND relationship on the same URL — 74 'purchase
+        // for download' next to 85 'stream for free' — via MB's own "Add another
+        // relationship" row. Gated on the format the Bandcamp scan parsed from the page's
+        // JSON-LD musicReleaseFormat ("Digital", "Digital, CD", …), so a physical-only
+        // page doesn't get a bogus download rel. cacheGet/cacheKey are hoisted function
+        // declarations, safe to call from this pre-return path.
+        if (opt.value === '85' && /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url)) {
+            const relMbid = (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1];
+            const bc = relMbid ? cacheGet(relMbid, 'bandcamp') : null;
+            if (bc && /\b(digital|file)\b/i.test(bc.format || '')) {
+                const addBtn = await pcWaitFor(() => {
+                    const s = typeRow.nextElementSibling;
+                    return (s && s.classList?.contains('add-relationship')) ? s.querySelector('button.add-item') : null;
+                }, 3000);
+                let ok2 = false;
+                if (addBtn) {
+                    addBtn.click();
+                    // the fresh relationship row lands right after the first one
+                    const sel2 = await pcWaitFor(() => {
+                        const s = typeRow.nextElementSibling;
+                        if (!s || !s.classList?.contains('relationship-item')) return null;
+                        const el = s.querySelector('select.link-type');
+                        return (el && el !== select && !el.value) ? el : null;
+                    }, 3000);
+                    if (sel2 && [...sel2.options].some(o => o.value === '74')) {
+                        setSel.call(sel2, '74');
+                        sel2.dispatchEvent(new Event('change', { bubbles: true }));
+                        report.type += ' + purchase for download';
+                        ok2 = true;
+                    }
+                }
+                if (!ok2) report.note = 'digital release detected but the second rel (purchase for download) could not be added';
+            }
+        }
     }
 
     if (injected > 0) GM_setValue(storageKey, null);
