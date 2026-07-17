@@ -1,3 +1,16 @@
+// The role vocabulary: Discogs role name → MB entity type + link type (+ attributes).
+// Artist roles feed `getArtistRoles` (mappers.js), which looks each role up here (and in
+// INSTRUMENTS for instrument names); company credits resolve their `entity_type_name`
+// here via preflight's COMPANY_KIND and `dispatchCompanies`.
+//
+// Keys are matched EXACT-CASE (instruments have a case-insensitive fallback, roles do
+// not) — where Discogs spells a role in more than one casing, add both. An UNMAPPED
+// artist role drops the whole credit before preflight, so the entity can vanish from
+// the review table entirely (#427).
+//
+// Kept in lockstep with Credit Hoarder's copy — in CH the same map serves Tidal and
+// Qobuz too (their roles are bridged into these Discogs-style keys), so fixes here
+// should be mirrored there and vice versa.
 export const ENTITY_TYPE_MAP = {
     // Places
     'Arranged At': {
