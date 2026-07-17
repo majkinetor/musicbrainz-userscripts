@@ -651,6 +651,14 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     }
 
     async function dispatchWorks() {
+        // #424: "Use works" toggle off — no work relationship is touched at all: nothing
+        // created AND nothing attached to pre-existing works. Log what gets left out so
+        // the omission is visible.
+        if (createWorksMode === 'off') {
+            const workOnly = [...(tracklistRels || []), ...(artistRoles || [])].filter(r => WORK_ONLY_ARTIST_RELS.includes(r.linkType));
+            if (workOnly.length) log.skip(`"Use works" is off — skipped ${workOnly.length} work-level credit(s) (${[...new Set(workOnly.map(r => r.linkType))].join(', ')})`);
+            return;
+        }
         // recordingOfLinkTypeId: the "recording of" / "performance" link type
         const recordingOfLinkTypeId = resolveLinkTypeId('performance', 'recording', 'work');
 

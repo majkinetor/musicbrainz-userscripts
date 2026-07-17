@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.16
+// @version      2026.7.17.123911
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4005,6 +4005,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       }
     }
     async function dispatchWorks() {
+      if (createWorksMode === "off") {
+        const workOnly = [...tracklistRels || [], ...artistRoles || []].filter((r) => WORK_ONLY_ARTIST_RELS.includes(r.linkType));
+        if (workOnly.length) log.skip(`"Use works" is off \u2014 skipped ${workOnly.length} work-level credit(s) (${[...new Set(workOnly.map((r) => r.linkType))].join(", ")})`);
+        return;
+      }
       const recordingOfLinkTypeId = resolveLinkTypeId("performance", "recording", "work");
       const includeOnlyResolved = createWorksMode === "when-needed";
       const workOnlyByGid = /* @__PURE__ */ new Map();
@@ -4749,11 +4754,22 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       bv("applyTracks", false),
       "Move performance credits from the release down to every recording."
     );
+    const useWorksCb = makeCheckbox(
+      "Use",
+      bv("useWorks", true),
+      "Import work-level credits (composer / lyricist / writer \u2026). Off: no work relationship is touched at all \u2014 nothing created, nothing attached to existing works."
+    );
     const _initialCreateWorksMode = bv("createWorksMode", "never") === "when-needed" ? "when-needed" : "never";
-    const createWorksMode = makeSelect("Create works", _initialCreateWorksMode, [
-      { value: "never", label: "never" },
-      { value: "when-needed", label: "when needed" }
-    ], "never: do not create works \u2014 work-only credits with no existing work are logged and skipped. when needed: create a work only when there is a composer/lyricist/writer credit to attach \u2014 match recordings to EXISTING works first (Group Therapy) or you will create duplicates.");
+    const createWorksMode = makeSelect("works", _initialCreateWorksMode, [
+      { value: "never", label: "create none" },
+      { value: "when-needed", label: "create needed" }
+    ], "create none: use only existing works \u2014 work-only credits with no work are logged and skipped. create needed: also create a work when a composer/lyricist/writer credit needs one \u2014 match recordings to EXISTING works first (Group Therapy) or you will create duplicates.");
+    const syncWorksUi = () => {
+      createWorksMode.disabled = !useWorksCb.checked;
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) w.style.opacity = useWorksCb.checked ? "" : ".45";
+    };
+    syncWorksUi();
     function showCreateWorksWarning() {
       const ov = document.createElement("div");
       ov.className = "discogs-cw-warn-ov";
@@ -4773,6 +4789,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     createWorksMode.addEventListener("change", () => {
       if (createWorksMode.value === "when-needed") showCreateWorksWarning();
     });
+    useWorksCb.closest("label").addEventListener("click", () => setTimeout(() => {
+      syncWorksUi();
+      if (useWorksCb.checked && createWorksMode.value === "when-needed") showCreateWorksWarning();
+    }, 0));
     const optsBtn = document.createElement("button");
     optsBtn.type = "button";
     optsBtn.className = "discogs-opts-btn";
@@ -4818,6 +4838,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         localStorage.setItem(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
+          useWorks: useWorksCb.checked,
+          // #424 master toggle
           createWorksMode: createWorksMode.value,
           createWorksReset421: true,
           // #421 one-time reset already applied — must survive every save
@@ -4827,7 +4849,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -5076,7 +5098,8 @@ ${lines}
       const getOpts = () => ({
         processTracklist: tracklistCb.checked,
         applyToTracks: applyTracksCb.checked,
-        createWorksMode: createWorksMode.value,
+        // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
+        createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
         dedupeEquivalenceSets: dedupeEqCb.checked,
         dedupeDuplicateRoles: dedupeDupCb.checked
       });

@@ -42,9 +42,10 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 - **⚛ All** (consolidated import) — shown when **more than one** source is available. Harvests every source, merges their credits into **one** de-duplicated review table (see [Consolidated import](#consolidated-import)), and dispatches once. Clicking any source icon (or ⚛ All again) while a preflight/review is open cancels it and returns you to the picker.
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
-- **Create works** — mode picker:
-    - `never` (default) — never create a work, even when there are credits; work-only credits with no existing work are logged and skipped.
-    - `when needed` — create a work only when there's a composer/lyricist/writer credit to attach. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `never` for everyone once.
+- **Use works** — a master toggle plus a mode picker (#424):
+    - **toggle off** — no work relationship is touched at all: nothing is created *and* nothing is attached to pre-existing works; skipped work-level credits are logged.
+    - `create none` (default) — use only works that already exist; never create one. Work-only credits with no existing work are logged and skipped.
+    - `create needed` — also create a work when a composer/lyricist/writer credit needs one. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `create none` for everyone once.
 - **Options**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).
