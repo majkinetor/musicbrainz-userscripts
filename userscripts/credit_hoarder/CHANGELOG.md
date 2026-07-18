@@ -1,5 +1,17 @@
 # Credit Hoarder Changelog
 
+## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
+
+### Features
+
+1. Informative message when choosing to create works ([#421](https://github.com/majkinetor/musicbrainz-userscripts/issues/421))
+1. Entering edit and saving indicator on the toolbar ([#412](https://github.com/majkinetor/musicbrainz-userscripts/issues/412))
+
+### Fixes
+
+1. Artist set as publisher ([#417](https://github.com/majkinetor/musicbrainz-userscripts/issues/417))
+1. Artist not merged in consolidated import ([#415](https://github.com/majkinetor/musicbrainz-userscripts/issues/415))
+
 ## [2026.7.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12.2)
 
 ### Features

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.12
+// @version      2026.7.17
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -229,7 +229,44 @@ async function injectInto(urls, storageKey) {
         }
         setSel.call(select, opt.value);
         select.dispatchEvent(new Event('change', { bubbles: true }));
-        reports.push({ url, ok: true, type: opt.textContent.trim(), linkTypeId: opt.value });
+        const report = { url, ok: true, type: opt.textContent.trim(), linkTypeId: opt.value };
+        reports.push(report);
+
+        // #423: a Bandcamp album that also has a DIGITAL release is both streamable AND
+        // purchasable, so it deserves a SECOND relationship on the same URL — 74 'purchase
+        // for download' next to 85 'stream for free' — via MB's own "Add another
+        // relationship" row. Gated on the format the Bandcamp scan parsed from the page's
+        // JSON-LD musicReleaseFormat ("Digital", "Digital, CD", …), so a physical-only
+        // page doesn't get a bogus download rel. cacheGet/cacheKey are hoisted function
+        // declarations, safe to call from this pre-return path.
+        if (opt.value === '85' && /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url)) {
+            const relMbid = (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1];
+            const bc = relMbid ? cacheGet(relMbid, 'bandcamp') : null;
+            if (bc && /\b(digital|file)\b/i.test(bc.format || '')) {
+                const addBtn = await pcWaitFor(() => {
+                    const s = typeRow.nextElementSibling;
+                    return (s && s.classList?.contains('add-relationship')) ? s.querySelector('button.add-item') : null;
+                }, 3000);
+                let ok2 = false;
+                if (addBtn) {
+                    addBtn.click();
+                    // the fresh relationship row lands right after the first one
+                    const sel2 = await pcWaitFor(() => {
+                        const s = typeRow.nextElementSibling;
+                        if (!s || !s.classList?.contains('relationship-item')) return null;
+                        const el = s.querySelector('select.link-type');
+                        return (el && el !== select && !el.value) ? el : null;
+                    }, 3000);
+                    if (sel2 && [...sel2.options].some(o => o.value === '74')) {
+                        setSel.call(sel2, '74');
+                        sel2.dispatchEvent(new Event('change', { bubbles: true }));
+                        report.type += ' + purchase for download';
+                        ok2 = true;
+                    }
+                }
+                if (!ok2) report.note = 'digital release detected but the second rel (purchase for download) could not be added';
+            }
+        }
     }
 
     if (injected > 0) GM_setValue(storageKey, null);
@@ -447,6 +484,10 @@ container.innerHTML = `
      the panel doesn't jump/flash as results stream in. */
   @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
   #mb-pc-panel .pc-row.pc-rise { animation: pcRise .28s ease; }
+  /* (#422) the ↻ refresh button doubles as the progress indicator: it spins (and is
+     unclickable) while scans run; the scan duration lands in its tooltip afterwards */
+  @keyframes pcSpin { to { transform: rotate(360deg); } }
+  #mb-refresh-btn.pc-scanning { display: inline-block; animation: pcSpin 1s linear infinite; pointer-events: none; color: #3b82c4; }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -3716,7 +3757,27 @@ function parseMbData(data) {
     return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
 }
 
+// (#422, per maintainer review) the ↻ button ITSELF is the progress indicator — it spins
+// and can't be clicked while scans run (no separate icon, no ticking seconds, no end-state
+// noise); the total scan time goes into the button's tooltip when done.
+let _scanT0 = 0;
+const REFRESH_TITLE = 'Refresh — clear cache and re-scan';
+function setScanStatus(state) {
+    const btn = document.getElementById('mb-refresh-btn'); if (!btn) return;
+    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms…'; return; }
+    btn.classList.remove('pc-scanning');
+    const secs = ((Date.now() - _scanT0) / 1000).toFixed(1);
+    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
+}
 async function runScans() {
+    // (#422) thin status wrapper — the scan body lives in runScansInner; `false` = halted.
+    setScanStatus('busy');
+    let ok = false;
+    try { ok = await runScansInner() !== false; }
+    catch (e) { appendLog('System', `Scan failed: ${e && e.message}`, 'error'); }
+    setScanStatus(ok ? 'done' : 'halt');
+}
+async function runScansInner() {
     // Source precedence: DOM (instant, no network) > /ws/2 API (~10s when MB is
     // hot) > mbDataCache (transient MB outage). DOM is identical data to API
     // for our purposes — both give artist/album/tracks/rg/url-rels — and we're
@@ -3746,7 +3807,7 @@ async function runScans() {
                 dataSource = 'cache';
             } else {
                 appendLog('MusicBrainz', `Halted: no DOM, no API, no cache (status ${mb.status})`, 'error');
-                return;
+                return false;   // (#422) wrapper shows the halt state
             }
         }
     }
@@ -4025,12 +4086,13 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     const mbCached     = mbDataGet(mbid);
     const rgMbid       = mbCached?.releaseGroupMbid;
     const existingMaster = mbCached?.existing?.discogsMaster;
-    // #255 disabled provider → skip. #256 only queue the master when the Discogs RELEASE
-    // is a confirmed match (✓, not barcode/format-blocked): if text/Brave search landed on
-    // an unrelated pressing (no release match), its master isn't this release-group's master.
+    // #255 disabled provider → skip. #256 only queue the master when the Discogs RELEASE is a
+    // confirmed match (✓): if text/Brave search landed on an unrelated album, its master isn't
+    // this release-group's master. Barcode/format withholding deliberately does NOT apply here
+    // (#416): a master is the whole release GROUP — it spans every edition's format and
+    // barcode, so a different-pressing Discogs hit still shares this album's master.
     const discogsConfirmed = providerEnabled('discogs')
-        && document.getElementById('ico-discogs')?.textContent?.trim() === '✓'
-        && !barcodeBlocks('discogs') && !formatBlocks('discogs');
+        && document.getElementById('ico-discogs')?.textContent?.trim() === '✓';
     if (!discogsConfirmed) {
         if (masterUrl) appendLog('System', `Inject: Discogs release isn't a confirmed match — not queueing master ${masterUrl}`, 'warn');
     } else if (masterUrl && rgMbid && !existingMaster) {

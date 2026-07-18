@@ -6,7 +6,8 @@ UI for importing Discogs credits as MusicBrainz release relationships and a few 
 - [View changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Import+Discogs+Credits)
 
-> **Looking to import from more than Discogs?** [**Credit Hoarder**](../credit_hoarder/README.md) is the multi-source successor — same review-and-resolve workflow, but it also pulls per-track credits from **Tidal** and **Qobuz** (and is built to grow more providers). This script stays as the focused, stable Discogs-only tool; if you want streaming-source credits, use Credit Hoarder instead.
+> [!WARNING]
+> **DEPRECATED** - [**Credit Hoarder**](../credit_hoarder/README.md) is the multi-source successor — same review-and-resolve workflow, but also pulls credits from several providers.
 
 This userscript presents itself on *Edit relationships* screen of the MusicBrainz release for those releases having associated Discogs release link.
 
@@ -43,10 +44,10 @@ Options are saved in localStorage and persist across sessions.
 Import track-level artist credits in addition to release-level credits.
 1. **Move release credits to tracks**<br>
 Move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, etc.). Doesn't move any pre-existing release-level credits.
-1. **Create works** — mode picker:
-    - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach to the recording.
-    - `when missing` — create a work for every recording without one, regardless of credits.
-    - `never` — never create any work, even when there are credits.
+1. **Use works** — a master toggle plus a mode picker (#424):
+    - **toggle off** — no work relationship is touched at all: nothing is created *and* nothing is attached to pre-existing works; skipped work-level credits are logged.
+    - `create none` (default) — use only works that already exist; never create one. Work-only credits with no existing work are logged and skipped.
+    - `create needed` — also create a work when a composer/lyricist/writer credit needs one. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `create none` for everyone once.
 1. **Dedup**
     - **Equivalence sets**<br>
     Skip a role when an equivalent role already exists on the target (writer ≡ composer).

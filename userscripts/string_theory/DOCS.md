@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-14 19:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-18 16:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -392,6 +392,17 @@ Feature works on both the [Recordings](#recordings) and the [Tracklist](#trackli
 
 Shares the _Enlarge punctuation_ master switch (`0` = off).
 
+##### Join-phrase presets — keyboard (#419)
+
+The join input's preset dropdown (▾) is fully keyboard-driven:
+
+| Key | Action |
+| --- | ------ |
+| *typing* | opens the dropdown filtered to matching presets (`fe` → `feat.` / `featuring`), top hit pre-highlighted |
+| <kbd>↓</kbd> / <kbd>↑</kbd> | open the list / move the highlight (wraps) |
+| <kbd>Enter</kbd> | pick the highlighted preset (or commit the typed value when the list is closed) |
+| <kbd>Esc</kbd> | close the list |
+
 ### Persistence
 
 These are remembered automatically as you use the UI:
@@ -587,10 +598,10 @@ Import track and release credits from streaming and database providers into Musi
 
 The script presents itself on the **Edit relationships** screen of a MusicBrainz release when there's something to import — a linked provider (or one [Platform Check](../platform_check/README.md) found), **or** track titles that name a remixer (the **Titles** source). On a release with neither it stays out of the way. Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for the general guidelines.
 
-> [!NOTE] Discogs Importer
-> Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md)
+> [!NOTE] 
+> Credit Hoarder is the [multi-source](#providers) successor to the single-source [Discogs Importer](../discogs_credits/README.md)
 
-> [!TIP] Group Therapy
+> [!TIP] 
 > **[Group Therapy](../group_therapy/README.md)** adds general relationship-editor helpers — batch group-delete, hover-highlight, and copy/move credits between recordings, works and releases.
 
 ### Workflow
@@ -619,10 +630,10 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 - **⚛ All** (consolidated import) — shown when **more than one** source is available. Harvests every source, merges their credits into **one** de-duplicated review table (see [Consolidated import](#consolidated-import)), and dispatches once. Clicking any source icon (or ⚛ All again) while a preflight/review is open cancels it and returns you to the picker.
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
-- **Create works** — mode picker:
-    - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach.
-    - `when missing` — create a work for every recording without one, regardless of credits.
-    - `never` — never create a work, even when there are credits.
+- **Use works** — a master toggle plus a mode picker (#424):
+    - **toggle off** — no work relationship is touched at all: nothing is created *and* nothing is attached to pre-existing works; skipped work-level credits are logged.
+    - `create none` (default) — use only works that already exist; never create one. Work-only credits with no existing work are logged and skipped.
+    - `create needed` — also create a work when a composer/lyricist/writer credit needs one. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `create none` for everyone once.
 - **Options**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).
@@ -1167,13 +1178,14 @@ Modifier-clicks on the **Links tab** Add / Linked icons (see [links tab](#links)
 
 Qobuz's public catalogue API (`www.qobuz.com/api.json/0.2/…`) has two relevant endpoints:
 - **`album/search`** (album-level: `upc`, `label`, `year`, `tracks_count`) — **works anonymously** with the web-player app_id **`712109809`**. This is all [Platform Check](../platform_check/README.md) needs to *locate/verify* a Qobuz release.
-- **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). It is **session-gated**, not geo-gated:
-  - app_id `712109809` → **`404`** for *every* album id anonymously — even ids `album/search` just returned.
-  - the other web app_id `798273057` → **`401` "User authentication is required"**.
-  - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** with full `tracks.items[]` (isrc + performers). Verified end-to-end (16/16 ISRCs matched a known release).
+- **`album/get`** — the **only** endpoint that carries per-track **`isrc`** (and roled `performers`). It is **geo-gated, not session-gated** (#418 corrected the original conclusion):
+  - **from a country Qobuz serves**, app_id `712109809` returns **`200`** with full `tracks.items[]` (isrc + performers) **anonymously** — no cookies, no token (verified from a HAR capture in #418).
+  - **from anywhere else**, the same anonymous request → **`404` "No result matching given argument"** for *every* album id — even ids `album/search` just returned. The anonymous API resolves catalogue visibility by **request IP**; the original #353 investigation ran from a non-Qobuz country, which made it look session-gated.
+  - the other web app_id `798273057` → **`401` "User authentication is required"** regardless.
+  - **with a logged-in `user_auth_token`** (header `X-User-Auth-Token`) → **`200`** from anywhere: the login's real contribution is the **account's region**, not authentication.
 - The **store page HTML has zero ISRCs** — so there's no anonymous scrape fallback.
 
-**So Qobuz is a login-gated source.** [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
+**So ISRC Scout prefers the session when you're logged in (one request, any country) and works anonymously otherwise** (#418) — in Qobuz countries no login is needed at all, and a stale session falls back to the anonymous path. [Platform Check](../platform_check/README.md) owns the login (email + password → `user_auth_token`, password sent as an MD5 digest and **never stored**) and shares the token via the `mbtools:qobuz` `localStorage` key on the MB origin — exactly how the Beatport token is shared. ISRC Scout reads that token for the ISRC import here; Credit Hoarder reads the same token for roled Qobuz credits.
 
 Other Qobuz gotchas:
 - **Brutal rate-limiting** — a few requests and it `429`s; honour `Retry-After`.
@@ -1371,7 +1383,8 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 - **Multiple [platforms](#platforms)** supported with customizable position and visibility
 - **Header info** — MB's release year, format, label and track count in the dashboard header
-- **Insert links to release** — open the release's edit page and insert one or all confirmed platform links
+- **Progress indicator** (#422) — the ↻ refresh button spins (and can't be clicked) while scans run; when done, the total scan time shows in its tooltip
+- **Insert links to release** — open the release's edit page and insert one or all confirmed platform links. A Bandcamp album whose page includes a **digital** release gets **both** relationships on the one URL — *stream for free* and *purchase for download* (#423); physical-only Bandcamp pages get just the stream rel.
 - **Open all found** — open each confirmed platform page not yet in MB in its own tab (plus the Discogs master) Mismatches and unverifiable links are skipped. *(Watch for pop-up blocking.)*
 - **Options** — detailed appearance, authentication, link confidence settings etc.
 - **Diagnostic log** — per-source filter chips to isolate a single platform's chain
@@ -1418,6 +1431,7 @@ Platform Check now (#182):
   - **strictly** — only add *barcode-confirmed* links, i.e. also withhold links whose barcode can't be checked (Apple/Spotify, which don't expose a UPC).
   - The left-bar indicator shows known mismatches regardless of this setting.
   - A **withheld** link (by either the barcode or format check) is shown **grayed out and non-clickable** — like any other mismatch.
+  - The **Discogs master** is exempt from barcode/format withholding (#416): it goes onto the MB **release group**, which spans every edition's format and barcode — it only requires the Discogs release to be a confirmed (`✓`) match.
 
 #### Format matching
 

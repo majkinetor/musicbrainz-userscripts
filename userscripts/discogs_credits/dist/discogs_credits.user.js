@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.14.195800
+// @version      2026.7.18.134808
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -53,7 +53,8 @@
     ["writer", "composer"]
   ];
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  DISCOGS_CHANNEL.unref?.();
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
 
   // src/log.js
   var _logs = null;
@@ -719,6 +720,21 @@
       linkType: "vocal",
       attributes: [{ _type: "vocal", value: "lead vocals" }]
     },
+    // #427: voice-type vocals — MB carries each of these as a vocal attribute (verified
+    // against the live link_attribute_type table). Hyphenated ones get both Discogs
+    // casing variants, since the role lookup is exact-case.
+    "Soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "soprano vocals" }] },
+    "Mezzo-soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "mezzo-soprano vocals" }] },
+    "Mezzo-Soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "mezzo-soprano vocals" }] },
+    "Alto Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "alto vocals" }] },
+    "Contralto Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "contralto vocals" }] },
+    "Countertenor Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "countertenor vocals" }] },
+    "Tenor Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "tenor vocals" }] },
+    "Baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "baritone vocals" }] },
+    "Bass-baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass-baritone vocals" }] },
+    "Bass-Baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass-baritone vocals" }] },
+    "Bass Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass vocals" }] },
+    "Treble Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "treble vocals" }] },
     Orchestra: {
       entityType: "artist",
       linkType: "orchestra"
@@ -2268,6 +2284,34 @@
   var ARTIST_KIND = () => "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
+  // src/data/special-purpose.js
+  var SPECIAL_PURPOSE_ARTISTS = /* @__PURE__ */ new Set([
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ]);
+
   // src/edit-note.js
   function buildEditNote(discogsUrl, opts, extraLines) {
     const s = GM_info.script;
@@ -2860,7 +2904,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         const ACTION_CHIP_STYLE = "display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;padding:0 0.35rem;font-size:0.95rem;line-height:1;cursor:pointer;border:1px solid #d6d6d6;border-radius:0.3rem;background:#fafafa;";
         function renderActions(selected) {
           tdAction.innerHTML = "";
-          if (selected) {
+          const noLinkUi = selected && SPECIAL_PURPOSE_ARTISTS.has(selected.id);
+          if (selected && !noLinkUi) {
             let recheckUrlBypassCache = function() {
               _urlCheckSessionCache.delete(urlCheckCacheKey);
               try {
@@ -4004,6 +4049,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       }
     }
     async function dispatchWorks() {
+      if (createWorksMode === "off") {
+        const workOnly = [...tracklistRels || [], ...artistRoles || []].filter((r) => WORK_ONLY_ARTIST_RELS.includes(r.linkType));
+        if (workOnly.length) log.skip(`"Use works" is off \u2014 skipped ${workOnly.length} work-level credit(s) (${[...new Set(workOnly.map((r) => r.linkType))].join(", ")})`);
+        return;
+      }
       const recordingOfLinkTypeId = resolveLinkTypeId("performance", "recording", "work");
       const includeOnlyResolved = createWorksMode === "when-needed";
       const workOnlyByGid = /* @__PURE__ */ new Map();
@@ -4728,6 +4778,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
     } catch (e) {
     }
+    if (!savedOpts.createWorksReset421) {
+      savedOpts.createWorksMode = "never";
+      savedOpts.createWorksReset421 = true;
+      delete savedOpts.createWorks;
+      try {
+        localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts));
+      } catch (e) {
+      }
+    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
     const tracklistCb = makeCheckbox(
       "Per-track credits",
@@ -4739,16 +4798,53 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       bv("applyTracks", false),
       "Move performance credits from the release down to every recording."
     );
-    const _legacyCreateWorks = savedOpts.createWorks;
-    const _initialCreateWorksMode = bv(
-      "createWorksMode",
-      _legacyCreateWorks === true ? "when-missing" : _legacyCreateWorks === false ? "never" : "when-needed"
+    const useWorksCb = makeCheckbox(
+      "Use",
+      bv("useWorks", true),
+      "Import work-level credits (composer / lyricist / writer \u2026). Off: no work relationship is touched at all \u2014 nothing created, nothing attached to existing works."
     );
-    const createWorksMode = makeSelect("Create works", _initialCreateWorksMode, [
-      { value: "when-needed", label: "when needed" },
-      { value: "when-missing", label: "when missing" },
-      { value: "never", label: "never" }
-    ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works \u2014 work-only credits with no existing work are logged and skipped.");
+    const _initialCreateWorksMode = bv("createWorksMode", "never") === "when-needed" ? "when-needed" : "never";
+    const createWorksMode = makeSelect("works", _initialCreateWorksMode, [
+      { value: "never", label: "create none" },
+      { value: "when-needed", label: "create needed" }
+    ], "create none: use only existing works \u2014 work-only credits with no work are logged and skipped. create needed: also create a work when a composer/lyricist/writer credit needs one \u2014 match recordings to EXISTING works first (Group Therapy) or you will create duplicates.");
+    const syncWorksUi = () => {
+      createWorksMode.disabled = !useWorksCb.checked;
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) w.style.opacity = useWorksCb.checked ? "" : ".45";
+    };
+    syncWorksUi();
+    useWorksCb.closest("label").style.paddingRight = "0";
+    {
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) {
+        w.style.paddingLeft = "0";
+        w.style.marginLeft = "-0.2rem";
+      }
+    }
+    function showCreateWorksWarning() {
+      const ov = document.createElement("div");
+      ov.className = "discogs-cw-warn-ov";
+      ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;";
+      const box = document.createElement("div");
+      box.style.cssText = "max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;";
+      box.innerHTML = '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
+      const close = () => ov.remove();
+      box.querySelector("button").addEventListener("click", close);
+      ov.addEventListener("mousedown", (e) => {
+        if (e.target === ov) close();
+      });
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+      box.querySelector("button").focus();
+    }
+    createWorksMode.addEventListener("change", () => {
+      if (createWorksMode.value === "when-needed") showCreateWorksWarning();
+    });
+    useWorksCb.closest("label").addEventListener("click", () => setTimeout(() => {
+      syncWorksUi();
+      if (useWorksCb.checked && createWorksMode.value === "when-needed") showCreateWorksWarning();
+    }, 0));
     const optsBtn = document.createElement("button");
     optsBtn.type = "button";
     optsBtn.className = "discogs-opts-btn";
@@ -4794,14 +4890,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         localStorage.setItem(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
+          useWorks: useWorksCb.checked,
+          // #424 master toggle
           createWorksMode: createWorksMode.value,
+          createWorksReset421: true,
+          // #421 one-time reset already applied — must survive every save
           dedupeEquivalenceSets: dedupeEqCb.checked,
           dedupeDuplicateRoles: dedupeDupCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -5050,7 +5150,8 @@ ${lines}
       const getOpts = () => ({
         processTracklist: tracklistCb.checked,
         applyToTracks: applyTracksCb.checked,
-        createWorksMode: createWorksMode.value,
+        // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
+        createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
         dedupeEquivalenceSets: dedupeEqCb.checked,
         dedupeDuplicateRoles: dedupeDupCb.checked
       });

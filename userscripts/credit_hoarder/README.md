@@ -10,10 +10,10 @@ Import track and release credits from streaming and database providers into Musi
 
 The script presents itself on the **Edit relationships** screen of a MusicBrainz release when there's something to import — a linked provider (or one [Platform Check](../platform_check/README.md) found), **or** track titles that name a remixer (the **Titles** source). On a release with neither it stays out of the way. Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for the general guidelines.
 
-> [!NOTE] Discogs Importer
-> Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md)
+> [!NOTE] 
+> Credit Hoarder is the [multi-source](#providers) successor to the single-source [Discogs Importer](../discogs_credits/README.md)
 
-> [!TIP] Group Therapy
+> [!TIP] 
 > **[Group Therapy](../group_therapy/README.md)** adds general relationship-editor helpers — batch group-delete, hover-highlight, and copy/move credits between recordings, works and releases.
 
 ## Workflow
@@ -42,10 +42,10 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 - **⚛ All** (consolidated import) — shown when **more than one** source is available. Harvests every source, merges their credits into **one** de-duplicated review table (see [Consolidated import](#consolidated-import)), and dispatches once. Clicking any source icon (or ⚛ All again) while a preflight/review is open cancels it and returns you to the picker.
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
-- **Create works** — mode picker:
-    - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach.
-    - `when missing` — create a work for every recording without one, regardless of credits.
-    - `never` — never create a work, even when there are credits.
+- **Use works** — a master toggle plus a mode picker (#424):
+    - **toggle off** — no work relationship is touched at all: nothing is created *and* nothing is attached to pre-existing works; skipped work-level credits are logged.
+    - `create none` (default) — use only works that already exist; never create one. Work-only credits with no existing work are logged and skipped.
+    - `create needed` — also create a work when a composer/lyricist/writer credit needs one. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `create none` for everyone once.
 - **Options**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).

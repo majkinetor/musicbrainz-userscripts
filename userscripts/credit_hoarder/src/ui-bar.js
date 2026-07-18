@@ -814,33 +814,74 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     const OPTS_KEY = 'discogs-importer-opts';
     let savedOpts = {};
     try { savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || '{}'); } catch(e) {}
+    // #421 one-time reset: work duplicates were being created by careless "create works"
+    // use, so THIS version starts everyone at 'never' regardless of what was saved — the
+    // duplicate-works warning popup is then guaranteed to be seen when re-enabling.
+    if (!savedOpts.createWorksReset421) {
+        savedOpts.createWorksMode = 'never';
+        savedOpts.createWorksReset421 = true;
+        delete savedOpts.createWorks;   // pre-#94 legacy key, superseded by the reset
+        try { localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts)); } catch(e) {}
+    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
 
     const tracklistCb    = makeCheckbox('Per-track credits',              bv('tracklist', true),
         'Import per-track artist credits.');
     const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', false),
         'Move performance credits from the release down to every recording.');
-    // "Create works" mode picker (#94, "never" option restored later):
-    //   when-needed (default): create a work only when there's a
-    //                           composer/lyricist/writer credit to attach.
-    //   when-missing:          create a work for EVERY recording without one,
-    //                           credits or no credits (old `createWorks=true`).
-    //   never:                  create no works at all (old `createWorks=false`).
-    //                           Work-only credits that need a work that doesn't
-    //                           exist are logged and skipped.
-    // Migration: legacy `createWorks: true` → 'when-missing'; `createWorks: false`
-    // → 'never' (the explicit opt-out path the #94 picker lost); otherwise
-    // 'when-needed'.
-    const _legacyCreateWorks = savedOpts.createWorks;
-    const _initialCreateWorksMode = bv('createWorksMode',
-        _legacyCreateWorks === true  ? 'when-missing' :
-        _legacyCreateWorks === false ? 'never' :
-                                       'when-needed');
-    const createWorksMode = makeSelect('Create works', _initialCreateWorksMode, [
-        { value: 'when-needed',  label: 'when needed'  },
-        { value: 'when-missing', label: 'when missing' },
-        { value: 'never',        label: 'never'        },
-    ], 'when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works — work-only credits with no existing work are logged and skipped.');
+    // #424: "Use works" master toggle + mode picker (renamed from "Create works").
+    // Toggle OFF: no work relationship is touched AT ALL — nothing created and nothing
+    // attached to pre-existing works either (some editors keep credits off works
+    // entirely); dispatch receives mode 'off'. Toggle ON, the mode decides creation:
+    //   create none   ('never', default since #421): use only works that already exist;
+    //                 work-only credits with no work are logged and skipped.
+    //   create needed ('when-needed'): also create a work when a composer/lyricist/
+    //                 writer credit needs one ('when-missing' removed in #421).
+    // Stored keys/values are unchanged (useWorks + createWorksMode) so #421's one-time
+    // reset and saved choices survive the rename.
+    const useWorksCb = makeCheckbox('Use', bv('useWorks', true),
+        'Import work-level credits (composer / lyricist / writer …). Off: no work relationship is touched at all — nothing created, nothing attached to existing works.');
+    const _initialCreateWorksMode = bv('createWorksMode', 'never') === 'when-needed' ? 'when-needed' : 'never';
+    const createWorksMode = makeSelect('works', _initialCreateWorksMode, [
+        { value: 'never',        label: 'create none'   },
+        { value: 'when-needed',  label: 'create needed' },
+    ], 'create none: use only existing works — work-only credits with no work are logged and skipped. create needed: also create a work when a composer/lyricist/writer credit needs one — match recordings to EXISTING works first (Group Therapy) or you will create duplicates.');
+    const syncWorksUi = () => {
+        createWorksMode.disabled = !useWorksCb.checked;
+        const w = createWorksMode.closest('.discogs-select-wrap'); if (w) w.style.opacity = useWorksCb.checked ? '' : '.45';
+    };
+    syncWorksUi();
+    // #424 follow-up (maintainer): "Use works:" must read as ONE phrase — collapse the
+    // toggle's right padding, the strip's flex gap and the select wrap's left padding
+    // down to a normal word space.
+    useWorksCb.closest('label').style.paddingRight = '0';
+    { const w = createWorksMode.closest('.discogs-select-wrap'); if (w) { w.style.paddingLeft = '0'; w.style.marginLeft = '-0.2rem'; } }
+    // #421: choosing to create works must confront the duplicate-works responsibility.
+    function showCreateWorksWarning() {
+        const ov = document.createElement('div');
+        ov.className = 'discogs-cw-warn-ov';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;';
+        const box = document.createElement('div');
+        box.style.cssText = 'max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;';
+        box.innerHTML =
+            '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">⚠️ WARNING: Avoid creating work duplicates!</div>' +
+            '<p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p>' +
+            '<p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don’t forget.</p>' +
+            '<div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
+        const close = () => ov.remove();
+        box.querySelector('button').addEventListener('click', close);
+        ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+        ov.appendChild(box);
+        document.body.appendChild(ov);
+        box.querySelector('button').focus();
+    }
+    createWorksMode.addEventListener('change', () => { if (createWorksMode.value === 'when-needed') showCreateWorksWarning(); });
+    // #424: enabling "Use works" while the mode is 'create needed' is also opting into
+    // creation — same warning applies; and the mode select greys out with the toggle.
+    useWorksCb.closest('label').addEventListener('click', () => setTimeout(() => {
+        syncWorksUi();
+        if (useWorksCb.checked && createWorksMode.value === 'when-needed') showCreateWorksWarning();
+    }, 0));
 
     // ── Deduplication section (issue #62) ─────────────────────────────────
     // Two toggles that change how the dispatcher decides "this rel is
@@ -882,12 +923,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     const saveOpts = () => {
         try { localStorage.setItem(OPTS_KEY, JSON.stringify({
             tracklist: tracklistCb.checked, applyTracks: applyTracksCb.checked,
+            useWorks: useWorksCb.checked,   // #424 master toggle
             createWorksMode: createWorksMode.value,
+            createWorksReset421: true,   // #421 one-time reset already applied — must survive every save
             dedupeEquivalenceSets: dedupeEqCb.checked,
             dedupeDuplicateRoles:  dedupeDupCb.checked,
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
 
@@ -1266,7 +1309,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         const getOpts = () => ({
             processTracklist:        tracklistCb.checked,
             applyToTracks:           applyTracksCb.checked,
-            createWorksMode:         createWorksMode.value,
+            // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
+            createWorksMode:         useWorksCb.checked ? createWorksMode.value : 'off',
             dedupeEquivalenceSets:   dedupeEqCb.checked,
             dedupeDuplicateRoles:    dedupeDupCb.checked,
         });

@@ -5,6 +5,7 @@
 // the user explicitly clicks "Start import".
 
 import { readIdbRecord, writeIdbRecord }   from './storage.js';
+import { SPECIAL_PURPOSE_ARTISTS }         from './data/special-purpose.js';
 import { mbThrottle, fetchWithRetry, fetchArtistRelTypes } from './api-mb.js';
 import { parseDiscogsUrl, getDiscogsEntityData } from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
@@ -795,7 +796,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             function renderActions(selected) {
                 tdAction.innerHTML = '';
-                if (selected) {
+                // #428: SPECIAL-PURPOSE artists ([traditional], Various Artists, …) must never
+                // get provider URL relationships — no link chip at all (Apollo #306 policy).
+                const noLinkUi = selected && SPECIAL_PURPOSE_ARTISTS.has(selected.id);
+                if (selected && !noLinkUi) {
                     // Link state lives in a single chip (Proposal C from #77):
                     //   🔗 — needs adding (default action)
                     //   ✓  — already linked (no further action)

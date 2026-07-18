@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.14.195503
+// @version      2026.7.18.160200
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -65,7 +65,8 @@
     ["writer", "composer"]
   ];
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  DISCOGS_CHANNEL.unref?.();
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
 
   // src/log.js
   var _logs = null;
@@ -750,6 +751,21 @@
       linkType: "vocal",
       attributes: [{ _type: "vocal", value: "lead vocals" }]
     },
+    // #427: voice-type vocals — MB carries each of these as a vocal attribute (verified
+    // against the live link_attribute_type table). Hyphenated ones get both Discogs
+    // casing variants, since the role lookup is exact-case.
+    "Soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "soprano vocals" }] },
+    "Mezzo-soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "mezzo-soprano vocals" }] },
+    "Mezzo-Soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "mezzo-soprano vocals" }] },
+    "Alto Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "alto vocals" }] },
+    "Contralto Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "contralto vocals" }] },
+    "Countertenor Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "countertenor vocals" }] },
+    "Tenor Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "tenor vocals" }] },
+    "Baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "baritone vocals" }] },
+    "Bass-baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass-baritone vocals" }] },
+    "Bass-Baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass-baritone vocals" }] },
+    "Bass Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass vocals" }] },
+    "Treble Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "treble vocals" }] },
     Orchestra: {
       entityType: "artist",
       linkType: "orchestra"
@@ -2183,7 +2199,7 @@
       linkType: "publishing",
       entityType: "label",
       attributes: [],
-      artist: { name, anv: "", entityType: "label", resource_url: "" }
+      artist: { name, anv: "", entityType: "label", resource_url: "https://tidal.com/_publisher/" + encodeURIComponent(name) }
     };
     if (track) role.track = track;
     return role;
@@ -2675,7 +2691,9 @@
     if (/deezer\.com\//i.test(url || "")) return "Deezer";
     return "Discogs";
   }
+  var isSyntheticProviderUrl = (url) => /tidal\.com\/_(?:publisher|company)\//i.test(String(url || ""));
   function sourceUrlLinkTypeId(url, entityType) {
+    if (isSyntheticProviderUrl(url)) return null;
     const src = sourceNameForUrl(url);
     if (src === "Tidal") return entityType === "artist" ? "978" : null;
     if (src === "Qobuz") return entityType === "artist" ? "978" : null;
@@ -3117,6 +3135,34 @@
     return roles;
   }
 
+  // src/data/special-purpose.js
+  var SPECIAL_PURPOSE_ARTISTS = /* @__PURE__ */ new Set([
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ]);
+
   // src/edit-note.js
   function buildEditNote(sourceUrl, opts, extraLines, sourceLabel) {
     const s = GM_info.script;
@@ -3491,7 +3537,7 @@ ${ourBlock}` : ourBlock;
           const tdSrc = document.createElement("td");
           tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
           const names = entitySources.get(_entityKey) || [];
-          const srcUrls = r._mergeUrls || (discogsHref ? [discogsHref] : []);
+          const srcUrls = (r._mergeUrls || (discogsHref ? [discogsHref] : [])).filter((u) => !isSyntheticProviderUrl(u));
           if (!names.length) {
             tdSrc.innerHTML = '<span style="color:#bbb;">\u2014</span>';
           } else names.forEach((nm) => {
@@ -3893,7 +3939,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             rowLinkChips.delete(_entityKey);
             updateLinksBadge();
           }
-          if (selected) {
+          const noLinkUi = selected && (isSyntheticProviderUrl(discogsHref) || SPECIAL_PURPOSE_ARTISTS.has(selected.id));
+          if (noLinkUi) {
+            linkState.delete(_entityKey);
+            rowLinkChips.delete(_entityKey);
+            updateLinksBadge();
+          }
+          if (selected && !noLinkUi) {
             let recheckUrlBypassCache = function() {
               _urlCheckSessionCache.delete(urlCheckCacheKey);
               try {
@@ -5193,6 +5245,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
     }
     async function dispatchWorks() {
+      if (createWorksMode === "off") {
+        const workOnly = [...tracklistRels || [], ...artistRoles || []].filter((r) => WORK_ONLY_ARTIST_RELS.includes(r.linkType));
+        if (workOnly.length) log.skip(`"Use works" is off \u2014 skipped ${workOnly.length} work-level credit(s) (${[...new Set(workOnly.map((r) => r.linkType))].join(", ")})`);
+        return;
+      }
       const recordingOfLinkTypeId = resolveLinkTypeId("performance", "recording", "work");
       const includeOnlyResolved = createWorksMode === "when-needed";
       const workOnlyByGid = /* @__PURE__ */ new Map();
@@ -5330,6 +5387,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           }
           const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
           const srcType = role.entityType || "artist";
+          const urlType = (mbUrl.match(/musicbrainz\.org\/(artist|label|place)\//i) || [])[1];
+          if (urlType && urlType !== srcType) {
+            log.skip(`Skipped ${role.linkType} for "${credit}" \u2014 resolved to an MB ${urlType}, but this relationship needs a ${srcType} (#417)`);
+            continue;
+          }
           if (workEntity.gid) {
             await processOne(workEntity, srcType, "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
           } else {
@@ -5582,6 +5644,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   }
   var _resultKey = (r) => r && r.entity && (r.entity.resource_url || r.entity._syntheticKey) || `_nourl_${r && (r.entity && r.entity.name || r.displayName) || ""}`;
   var _resultName = (r) => r && (r.entity && r.entity.name || r.displayName) || "";
+  var _resultKind = (r) => r && (r.entityType || r.entity && r.entity.entityType) || "artist";
   var _roleKey = (ro) => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join("");
   var boundedLev = (a, b, max) => {
     if (Math.abs(a.length - b.length) > max) return -1;
@@ -5601,23 +5664,36 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     return dp[a.length] <= max ? dp[a.length] : -1;
   };
   var fuzzyMax = (len) => len <= 6 ? 0 : len <= 12 ? 1 : 2;
+  var stripInitials = (fn) => fn.split(" ").filter((t) => !/^[a-z]\.?$/.test(t)).join(" ");
   function mergeResolvedResults(allResults, entitySources) {
     const rows = (allResults || []).filter(Boolean);
     const nameMbids = /* @__PURE__ */ new Map();
+    const nameMbidsStripped = /* @__PURE__ */ new Map();
     for (const r of rows) {
       if (r.type !== "resolved" || !r.mbUrl) continue;
       const fn = fold(_resultName(r));
       if (!fn) continue;
-      if (!nameMbids.has(fn)) nameMbids.set(fn, /* @__PURE__ */ new Set());
-      nameMbids.get(fn).add(r.mbUrl);
+      const kn = _resultKind(r) + "|" + fn;
+      if (!nameMbids.has(kn)) nameMbids.set(kn, /* @__PURE__ */ new Set());
+      nameMbids.get(kn).add(r.mbUrl);
+      const sn = _resultKind(r) + "|" + stripInitials(fn);
+      if (!nameMbidsStripped.has(sn)) nameMbidsStripped.set(sn, /* @__PURE__ */ new Set());
+      nameMbidsStripped.get(sn).add(r.mbUrl);
     }
-    const uniqResolved = [];
-    nameMbids.forEach((set, nm) => {
-      if (set.size === 1) uniqResolved.push([nm, [...set][0]]);
+    const conflictNames = /* @__PURE__ */ new Set();
+    nameMbids.forEach((set, kn) => {
+      if (set.size > 1) conflictNames.add(kn);
     });
-    const fuzzyResolvedMatch = (fn) => {
+    const uniqResolved = [];
+    nameMbids.forEach((set, kn) => {
+      if (set.size === 1) uniqResolved.push([kn, [...set][0]]);
+    });
+    const fuzzyResolvedMatch = (kfn) => {
+      const [kind, fn] = [kfn.slice(0, kfn.indexOf("|")), kfn.slice(kfn.indexOf("|") + 1)];
       let hit = null;
-      for (const [nm, url] of uniqResolved) {
+      for (const [kn, url] of uniqResolved) {
+        if (!kn.startsWith(kind + "|")) continue;
+        const nm = kn.slice(kind.length + 1);
         if (boundedLev(fn, nm, fuzzyMax(Math.max(fn.length, nm.length))) < 0) continue;
         if (hit && hit !== url) return null;
         hit = url;
@@ -5625,14 +5701,20 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       return hit;
     };
     const keyFor = (r) => {
-      if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       const fn = fold(_resultName(r));
+      const kn = fn ? _resultKind(r) + "|" + fn : "";
+      if (kn && conflictNames.has(kn)) return "cf:" + kn;
+      if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       if (!fn) return null;
-      const set = nameMbids.get(fn);
+      const set = nameMbids.get(kn);
       if (set && set.size === 1) return "mb:" + [...set][0];
-      const fuzzy = fuzzyResolvedMatch(fn);
+      if (!set) {
+        const stripped = nameMbidsStripped.get(_resultKind(r) + "|" + stripInitials(fn));
+        if (stripped && stripped.size === 1) return "mb:" + [...stripped][0];
+      }
+      const fuzzy = fuzzyResolvedMatch(kn);
       if (fuzzy) return "mb:" + fuzzy;
-      return "nm:" + fn;
+      return "nm:" + kn;
     };
     const byKey = /* @__PURE__ */ new Map(), mergeMap = /* @__PURE__ */ new Map(), out = [];
     for (const r of rows) {
@@ -5641,12 +5723,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         if (gk) {
           byKey.set(gk, r);
           mergeMap.set(rk, [rk]);
+          if (gk.startsWith("cf:")) r._conflicts = [r.mbUrl ? { mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig } : null];
         }
         out.push(r);
         continue;
       }
       const rep = byKey.get(gk), repKey = _resultKey(rep);
-      if ((rep.type !== "resolved" || !rep.mbUrl) && r.type === "resolved" && r.mbUrl) {
+      if (gk.startsWith("cf:")) {
+        if (r.mbUrl) (rep._conflicts = rep._conflicts || []).push({ mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig });
+      } else if ((rep.type !== "resolved" || !rep.mbUrl) && r.type === "resolved" && r.mbUrl) {
         rep.type = "resolved";
         rep.mbUrl = r.mbUrl;
         rep.mbName = r.mbName;
@@ -5668,9 +5753,26 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
       mergeMap.get(repKey).push(rk);
     }
+    byKey.forEach((rep, gk) => {
+      if (!gk.startsWith("cf:")) return;
+      const cands = [], seenIds = /* @__PURE__ */ new Set();
+      for (const c of rep._conflicts || []) {
+        const m = c && c.mbUrl && c.mbUrl.match(/\/(?:artist|label|place)\/([^/?#]+)/i);
+        if (!m || seenIds.has(m[1])) continue;
+        seenIds.add(m[1]);
+        cands.push({ id: m[1], name: c.mbName || _resultName(rep), disambiguation: c.mbDisambig || "" });
+      }
+      rep.nameMatches = cands.concat((rep.nameMatches || []).filter((nm) => nm && nm.id && !seenIds.has(nm.id)));
+      rep.type = "attention";
+      rep.mbUrl = null;
+      rep.mbName = null;
+      rep.mbDisambig = "";
+      rep.ambiguityReason = "sources link this name to different MB artists";
+      delete rep._conflicts;
+    });
     for (const rep of out) {
       const keys = mergeMap.get(_resultKey(rep));
-      rep._mergeUrls = (keys || []).filter((k) => /^https?:\/\//i.test(k));
+      rep._mergeUrls = [...new Set((keys || []).filter((k) => /^https?:\/\//i.test(k) && !/tidal\.com\/_(?:publisher|company)\//i.test(k)).map((k) => k.replace(/^https?:\/\/api\.discogs\.com\/(\w+?)s\/(\d+).*$/i, "https://www.discogs.com/$1/$2")))];
     }
     return { results: out, mergeMap };
   }
@@ -6336,6 +6438,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
     } catch (e) {
     }
+    if (!savedOpts.createWorksReset421) {
+      savedOpts.createWorksMode = "never";
+      savedOpts.createWorksReset421 = true;
+      delete savedOpts.createWorks;
+      try {
+        localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts));
+      } catch (e) {
+      }
+    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
     const tracklistCb = makeCheckbox(
       "Per-track credits",
@@ -6347,16 +6458,53 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       bv("applyTracks", false),
       "Move performance credits from the release down to every recording."
     );
-    const _legacyCreateWorks = savedOpts.createWorks;
-    const _initialCreateWorksMode = bv(
-      "createWorksMode",
-      _legacyCreateWorks === true ? "when-missing" : _legacyCreateWorks === false ? "never" : "when-needed"
+    const useWorksCb = makeCheckbox(
+      "Use",
+      bv("useWorks", true),
+      "Import work-level credits (composer / lyricist / writer \u2026). Off: no work relationship is touched at all \u2014 nothing created, nothing attached to existing works."
     );
-    const createWorksMode = makeSelect("Create works", _initialCreateWorksMode, [
-      { value: "when-needed", label: "when needed" },
-      { value: "when-missing", label: "when missing" },
-      { value: "never", label: "never" }
-    ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works \u2014 work-only credits with no existing work are logged and skipped.");
+    const _initialCreateWorksMode = bv("createWorksMode", "never") === "when-needed" ? "when-needed" : "never";
+    const createWorksMode = makeSelect("works", _initialCreateWorksMode, [
+      { value: "never", label: "create none" },
+      { value: "when-needed", label: "create needed" }
+    ], "create none: use only existing works \u2014 work-only credits with no work are logged and skipped. create needed: also create a work when a composer/lyricist/writer credit needs one \u2014 match recordings to EXISTING works first (Group Therapy) or you will create duplicates.");
+    const syncWorksUi = () => {
+      createWorksMode.disabled = !useWorksCb.checked;
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) w.style.opacity = useWorksCb.checked ? "" : ".45";
+    };
+    syncWorksUi();
+    useWorksCb.closest("label").style.paddingRight = "0";
+    {
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) {
+        w.style.paddingLeft = "0";
+        w.style.marginLeft = "-0.2rem";
+      }
+    }
+    function showCreateWorksWarning() {
+      const ov = document.createElement("div");
+      ov.className = "discogs-cw-warn-ov";
+      ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;";
+      const box = document.createElement("div");
+      box.style.cssText = "max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;";
+      box.innerHTML = '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
+      const close = () => ov.remove();
+      box.querySelector("button").addEventListener("click", close);
+      ov.addEventListener("mousedown", (e) => {
+        if (e.target === ov) close();
+      });
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+      box.querySelector("button").focus();
+    }
+    createWorksMode.addEventListener("change", () => {
+      if (createWorksMode.value === "when-needed") showCreateWorksWarning();
+    });
+    useWorksCb.closest("label").addEventListener("click", () => setTimeout(() => {
+      syncWorksUi();
+      if (useWorksCb.checked && createWorksMode.value === "when-needed") showCreateWorksWarning();
+    }, 0));
     const optsBtn = document.createElement("button");
     optsBtn.type = "button";
     optsBtn.className = "discogs-opts-btn";
@@ -6402,14 +6550,18 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         localStorage.setItem(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
+          useWorks: useWorksCb.checked,
+          // #424 master toggle
           createWorksMode: createWorksMode.value,
+          createWorksReset421: true,
+          // #421 one-time reset already applied — must survive every save
           dedupeEquivalenceSets: dedupeEqCb.checked,
           dedupeDuplicateRoles: dedupeDupCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -6714,7 +6866,8 @@ ${lines}
       const getOpts = () => ({
         processTracklist: tracklistCb.checked,
         applyToTracks: applyTracksCb.checked,
-        createWorksMode: createWorksMode.value,
+        // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
+        createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
         dedupeEquivalenceSets: dedupeEqCb.checked,
         dedupeDuplicateRoles: dedupeDupCb.checked
       });

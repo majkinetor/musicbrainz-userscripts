@@ -651,6 +651,14 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     }
 
     async function dispatchWorks() {
+        // #424: "Use works" toggle off — no work relationship is touched at all: nothing
+        // created AND nothing attached to pre-existing works. Log what gets left out so
+        // the omission is visible.
+        if (createWorksMode === 'off') {
+            const workOnly = [...(tracklistRels || []), ...(artistRoles || [])].filter(r => WORK_ONLY_ARTIST_RELS.includes(r.linkType));
+            if (workOnly.length) log.skip(`"Use works" is off — skipped ${workOnly.length} work-level credit(s) (${[...new Set(workOnly.map(r => r.linkType))].join(', ')})`);
+            return;
+        }
         // recordingOfLinkTypeId: the "recording of" / "performance" link type
         const recordingOfLinkTypeId = resolveLinkTypeId('performance', 'recording', 'work');
 
@@ -846,6 +854,14 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 // Most work-only rels are artist→work; a music publisher is a
                 // label→work "publishing" rel (role carries entityType:'label').
                 const srcType = role.entityType || 'artist';
+                // #417 safety net: the confirmed mbUrl embeds its MB entity type — never dispatch
+                // a rel whose resolved entity kind contradicts the link type (an artist inside a
+                // label→work publishing rel is invalid and makes the WHOLE edit fail to submit).
+                const urlType = (mbUrl.match(/musicbrainz\.org\/(artist|label|place)\//i) || [])[1];
+                if (urlType && urlType !== srcType) {
+                    log.skip(`Skipped ${role.linkType} for "${credit}" — resolved to an MB ${urlType}, but this relationship needs a ${srcType} (#417)`);
+                    continue;
+                }
                 if (workEntity.gid) {
                     await processOne(workEntity, srcType, 'work', role.linkType, mbUrl, role.attributes || [], credit, trackPos || (entries[0]?.role?.track?.position));
                 } else {

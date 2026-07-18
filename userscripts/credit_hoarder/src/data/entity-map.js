@@ -1,3 +1,25 @@
+// The SHARED role vocabulary for EVERY source — not just Discogs, although the keys are
+// Discogs's role names (it grew out of the Discogs importer):
+//
+//   - Discogs artist roles feed `getArtistRoles` (mappers.js), which looks up each role
+//     here (and in INSTRUMENTS for instrument names).
+//   - Tidal and Qobuz deliberately FUNNEL through the same path: their per-source maps
+//     (TIDAL_PERTRACK_BRIDGE / TIDAL_RELEASE_ROLE_MAP, the Qobuz role handling) first
+//     translate provider role names into these Discogs-style keys, then call
+//     `getArtistRoles` — so an entry added here fixes all three sources at once (#427:
+//     the voice-type vocals below apply to a Qobuz "Mezzo-soprano Vocals" credit too).
+//     Roles without a bridge entry pass through verbatim, so a provider role that already
+//     matches a key resolves directly.
+//   - Company credits from any source (Discogs `companies`, Tidal's synthesized ones)
+//     resolve their `entity_type_name` here as well — preflight's COMPANY_KIND and
+//     `dispatchCompanies` both index this map.
+//   - Deezer is the one exception: it only yields Main/Featured artist credits and
+//     builds those rels directly.
+//
+// Keys are matched EXACT-CASE (instruments have a case-insensitive fallback, roles do
+// not) — when a provider spells a role differently, add both spellings. An UNMAPPED
+// artist role drops the whole credit before preflight, so the entity can vanish from
+// the review table entirely (#427).
 export const ENTITY_TYPE_MAP = {
     // Places
     'Arranged At': {
@@ -198,6 +220,21 @@ export const ENTITY_TYPE_MAP = {
         linkType: 'vocal',
         attributes: [{ _type: 'vocal', value: 'lead vocals' }],
     },
+    // #427: voice-type vocals — MB carries each of these as a vocal attribute (verified
+    // against the live link_attribute_type table). Hyphenated ones get both Discogs
+    // casing variants, since the role lookup is exact-case.
+    'Soprano Vocals':        { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'soprano vocals' }] },
+    'Mezzo-soprano Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'mezzo-soprano vocals' }] },
+    'Mezzo-Soprano Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'mezzo-soprano vocals' }] },
+    'Alto Vocals':           { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'alto vocals' }] },
+    'Contralto Vocals':      { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'contralto vocals' }] },
+    'Countertenor Vocals':   { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'countertenor vocals' }] },
+    'Tenor Vocals':          { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'tenor vocals' }] },
+    'Baritone Vocals':       { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'baritone vocals' }] },
+    'Bass-baritone Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'bass-baritone vocals' }] },
+    'Bass-Baritone Vocals':  { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'bass-baritone vocals' }] },
+    'Bass Vocals':           { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'bass vocals' }] },
+    'Treble Vocals':         { entityType: 'artist', linkType: 'vocal', attributes: [{ _type: 'vocal', value: 'treble vocals' }] },
     Orchestra: {
         entityType: 'artist',
         linkType: 'orchestra',

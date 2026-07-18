@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.13.203013
+// @version      2026.7.16
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -433,6 +433,9 @@
   // (e.g. [unknown] → '"Gold Diggers of 1937" Chorus'); never surface one as an AKA.
   // Keyed by MBID, not a name pattern — not all are bracketed (Various Artists) and
   // plenty of real artists DO use brackets. (#171, per @chaban-mb)
+  // NB (#428): the same list lives in credit_hoarder/src/data/special-purpose.js and
+  // discogs_credits/src/data/special-purpose.js — single-file scripts can't import,
+  // so keep the three copies in sync by hand.
   const SPECIAL_PURPOSE_ARTISTS = new Set([
     '125ec42a-7229-4250-afc5-e057484327fe', // [unknown]
     'f731ccc4-e22a-43af-a747-64213329e088', // [anonymous]
@@ -1206,7 +1209,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.13.203013';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.16.225224';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1426,7 +1429,9 @@
     .tc-joinwrap{flex:none;margin-left:auto;display:flex;align-items:center;gap:0}
     .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px Arial;padding:1px 2px;border-radius:3px}
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
-    .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
+    /* #419: the caret needs a REAL hit target (padding-grown), not a bare 10px glyph */
+    .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:12px;padding:3px 5px;margin:-3px 0;line-height:1;border-radius:3px}
+    .tc-joinarrow:hover{color:#5f3ec0;background:#ede9f6}
     /* #208 join-phrase spacing flags: ␣ where a space is missing, ␣?␣ when the phrase is missing entirely */
     .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:#fff0f0;color:#b00}
     .tc-jp-nolead::before,.tc-jp-notrail::after,.tc-jp-nophrase::before{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font:700 11px Arial;line-height:1}
@@ -2379,17 +2384,48 @@
       if (!cjk && !/\s$/.test(v)) { wrap.classList.add('tc-jp-notrail'); bad = true; }
       if (bad) wrap.classList.add('tc-jp-bad');
     };
-    inp.oninput = () => { fit(); markJoin(); }; inp.onchange = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
-    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
-    let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
-    arrow.onclick = () => {
-      if (pop) { close(); return; }
-      pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
-      pop.innerHTML = JOIN_OPTIONS.map(o => `<div class="tc-acrow" data-v="${esc(o.value)}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
-      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
-      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); markJoin(); editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); close(); }; });
-      const off = e => { if (pop && !pop.contains(e.target) && e.target !== arrow) { close(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
+    const commit = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); };
+    inp.oninput = () => { fit(); markJoin(); if (inp.value.trim()) open(inp.value); else close(); };   // #419: typing filters the presets live
+    inp.onchange = () => { commit(); };
+    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases (type to filter · ↑↓ + Enter)';
+    // #419: keyboard-first presets — typing filters ("fe" → feat. / featuring), ArrowDown
+    // opens/moves, Enter picks the highlighted row, Esc closes; same keys on the ▾ button.
+    let pop = null, items = [], hi = -1;
+    const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
+    const pick = v => { inp.value = v; fit(); commit(); close(); };
+    const paint = () => {
+      pop.innerHTML = items.map((o, i) => `<div class="tc-acrow${i === hi ? ' hi' : ''}" data-i="${i}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
+      [...pop.querySelectorAll('[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); pick(items[+row.dataset.i].value); }; });
     };
+    const open = q => {
+      const needle = String(q || '').trim().toLowerCase();
+      items = needle ? JOIN_OPTIONS.filter(o => o.label.toLowerCase().includes(needle) || o.value.trim().toLowerCase().includes(needle)) : JOIN_OPTIONS.slice();
+      if (!items.length) { close(); return; }
+      if (!pop) {
+        pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
+        document.body.appendChild(pop);
+        const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
+        const off = e => { if (!pop) { document.removeEventListener('mousedown', off); return; } if (!pop.contains(e.target) && e.target !== arrow && e.target !== inp) { close(); document.removeEventListener('mousedown', off); } };
+        setTimeout(() => document.addEventListener('mousedown', off), 0);
+      }
+      hi = needle ? 0 : -1;   // typing pre-highlights the top hit so Enter picks it straight away
+      paint();
+    };
+    const keys = e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (!pop) open(inp.value); else { hi = (hi + 1) % items.length; paint(); } }
+      else if (e.key === 'ArrowUp') { if (!pop) return; e.preventDefault(); e.stopPropagation(); hi = (hi - 1 + items.length) % items.length; paint(); }
+      else if (e.key === 'Enter') {
+        if (!pop && e.currentTarget === arrow) return;             // let the button's native click open the menu
+        // Enter must never reach MB's form (it switches tabs) — same contract enterBlurs had
+        e.preventDefault(); e.stopPropagation();
+        if (pop && hi >= 0 && items[hi]) pick(items[hi].value); else { close(); inp.blur(); }
+      }
+      else if (e.key === 'Escape') { if (pop) { e.preventDefault(); e.stopPropagation(); close(); } }
+    };
+    inp.addEventListener('keydown', keys);
+    arrow.addEventListener('keydown', keys);
+    inp.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== arrow) close(); }, 120));   // Tab away closes (row picks keep focus via preventDefault)
+    arrow.onclick = () => { if (pop) close(); else open(''); };
     wrap.appendChild(inp); wrap.appendChild(arrow); markJoin();
     return wrap;
   }
@@ -4537,7 +4573,13 @@
       // row changed and its ↺ reverts it. Alt = do the whole column.
       if (e.target.closest('td.tc-tkt')) {
         e.preventDefault();
-        const setFromRec = (m, i) => { const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null; if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} } };
+        const setFromRec = (m, i) => {
+          const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null;
+          if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
+          // #420: the track title now equals the recording's, so a pending "rename recording"
+          // flag is a no-op — clear it (and its green indicator) instead of leaving it stale.
+          if (t && u(t.updateRecordingTitle)) { setCopy('title', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: title copied from recording — cleared the now-moot rename-recording flag`); }
+        };
         if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setFromRec(+row.dataset.mi, +row.dataset.ti));
         else setFromRec(+tr.dataset.mi, +tr.dataset.ti);
         _tlRefreshed = false; scheduleSync();   // #348: title changed here (a self-edit the watcher ignores) — re-sync the Tracklist mirror so the new title + changed-row marker show reliably, not on a racy tab-switch
@@ -4556,8 +4598,11 @@
           const t = koTrack(m, i), rec = t && u(t.recording), recAc = rec && u(rec.artistCredit);
           const recNames = recAc && (u(recAc.names) || []);
           if (!recNames || !recNames.length) { Log.warn(`#348 artist copy: track ${m}.${i} — recording has no artist credit (recording ${rec ? 'present' : 'null'}) — nothing to copy`); return; }
+          // #420 (artist twin): once track and recording agree, a pending "update recording
+          // artist" flag is a no-op — clear it so its indicator doesn't linger.
+          const clearMootArtistFlag = () => { if (u(t.updateRecordingArtist)) { setCopy('artist', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: artist copied from recording — cleared the now-moot update-recording-artist flag`); } };
           const tNames = u(u(t.artistCredit).names) || [];
-          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); return; }
+          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); clearMootArtistFlag(); return; }
           const gids = recNames.map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
           // Fetch the FULL artist entity for each credit (same as the paste-MBID resolve → pickArtist
           // path). Verified live: writing the recording's own LEAN artist — or W.MB.entity(gid,name) —
@@ -4575,6 +4620,7 @@
             // the entity link was dropped and only the credited text stuck (the "set without match" bug).
             const wrote = (u(u(t.artistCredit).names) || []).map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
             Log.info(`#348 artist copy: track ${m}.${i} ← recording "${acText(u(t.artistCredit))}" (recording gid(s): ${gids} · written track gid(s): ${wrote})`);
+            clearMootArtistFlag();
           } catch (x) { Log.warn(`#348 artist copy: track ${m}.${i} — artistCredit setter threw: ${x && x.message}`); }
         };
         (async () => {

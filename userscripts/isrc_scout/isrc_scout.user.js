@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12.2
+// @version      2026.7.16
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -599,7 +599,7 @@
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
     .ii-cand:hover { background: #f0f6ff; border-color: #9ec5fe; }
-    .ii-cands.collapsed .ii-cand:not(.chosen) { display: none; }
+    .ii-cands.ii-collapsed .ii-cand:not(.chosen) { display: none; }
     .ii-cand.chosen { box-shadow: inset 3px 0 0 #198754; }
     .ii-cand.best { border-color: #6ea8fe; background: #d4e6ff; }
     .ii-cand.warn { border-color: #ffe08a; background: #fff3cd; }
@@ -702,11 +702,14 @@
       font-weight: 600; color: #8a7bb0; background: #fff; border: 1px solid #e0d7f2; border-radius: 5px; cursor: pointer; }
     .ii-exact-toggle:hover { background: #f3eefc; color: #6f42c1; }
     .ii-exact-toggle .ii-exact-car { font-size: 9px; transition: transform .15s; }
-    .ii-sx-group:not(.collapsed) .ii-exact-toggle .ii-exact-car { transform: rotate(180deg); }
+    /* NB: the state class is namespaced (ii-collapsed) on purpose — MB's common.css paints a
+       20px absolute ::after fade overlay on ANY bare .collapsed, which blanketed the toolbar
+       and swallowed clicks on the bottom half of every button (#414). */
+    .ii-sx-group:not(.ii-collapsed) .ii-exact-toggle .ii-exact-car { transform: rotate(180deg); }
     /* a filled dot on the toggle when any exact option is active while collapsed */
     .ii-exact-toggle.on { color: #6f42c1; border-color: #c9b6ee; background: #f3eefc; }
     .ii-exact-toggle.on::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #6f42c1; }
-    .ii-sx-group.collapsed .ii-exact-set { display: none; }
+    .ii-sx-group.ii-collapsed .ii-exact-set { display: none; }
     .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
     .ii-ex-all-lbl { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
     .ii-ex-all-lbl input { cursor: pointer; }
@@ -1766,36 +1769,59 @@
      barcodes itself, that's Platform Check's job.)
   ═══════════════════════════════════════════════════════════════════════ */
   /* ═══════════════════════════════════════════════════════════════════════
-     QOBUZ (#353) — per-track ISRCs live behind the session-gated album/get,
-     which needs a logged-in user_auth_token. Platform Check owns the login and
-     shares the token via the mbtools:qobuz localStorage key on this origin (the
-     same channel as the Beatport token). Album-based, matched by ISRC/position.
+     QOBUZ (#353, #418) — per-track ISRCs come from album/get, which works
+     ANONYMOUSLY (app_id only) when the request comes from a country Qobuz
+     serves: the anonymous API resolves catalogue visibility by request IP and
+     answers 404 "No result matching given argument" everywhere else. (That
+     geo dimension is why the original #353 investigation, run from a
+     non-Qobuz country, concluded a login was required.) So: Platform Check's
+     shared user_auth_token is PREFERRED when present (one request, works from
+     any country — the login's real contribution is the ACCOUNT's region, not
+     auth; mbtools:qobuz localStorage key, same channel as the Beatport
+     token), anonymous otherwise or when the session has gone stale. Only
+     when both paths fail do we point at the PC login.
   ═══════════════════════════════════════════════════════════════════════ */
   const QOBUZ = { appId: '712109809', api: 'https://www.qobuz.com/api.json/0.2', lsKey: 'mbtools:qobuz' };
   const qbToken = () => { try { const t = JSON.parse(localStorage.getItem(QOBUZ.lsKey) || 'null'); return (t && t.token) || null; } catch (e) { return null; } };
-  const qbHeaders = tok => ({ 'X-App-Id': QOBUZ.appId, 'X-User-Auth-Token': tok, 'Accept': 'application/json' });
+  const qbHeaders = tok => { const h = { 'X-App-Id': QOBUZ.appId, 'Accept': 'application/json' }; if (tok) h['X-User-Auth-Token'] = tok; return h; };
+  // One Qobuz API GET (#418): the Platform Check session is preferred when present (one
+  // request, works from any country — the token carries the account's region), falling back
+  // to an anonymous call when there is no token or the token has expired. Anonymous works
+  // fine from countries Qobuz serves; elsewhere it answers 404, hence the tailored error.
+  // `pathAndQuery` must already carry its `?`; app_id is appended here.
+  async function qbGet(pathAndQuery, what) {
+    const url = QOBUZ.api + pathAndQuery + '&app_id=' + QOBUZ.appId;
+    const tok = qbToken();
+    if (tok) {
+      const r = await gmGet(url, qbHeaders(tok));
+      if (r.status === 200) return r;
+      // expired/broken session — the anonymous path may still work (served country)
+      Log.warn('Qobuz: session ' + what + ' answered ' + r.status + (r.status === 401 ? ' (expired? re-login in Platform Check ⚙)' : '') + ' — trying anonymously');
+    }
+    const anon = await gmGet(url, qbHeaders(null));
+    if (anon.status === 200) return anon;
+    throw new Error('Qobuz ' + anon.status + ' for ' + what + (tok
+      ? ' — session and anonymous both failed (re-login in Platform Check ⚙ Setup → Auth?)'
+      : ' — the anonymous API only answers from countries Qobuz serves; sign in to Qobuz in Platform Check ⚙ Setup → Auth to use your account’s region instead'));
+  }
   async function fetchQobuz(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
-    const tok = qbToken();
-    if (!tok) throw new Error('Qobuz: not logged in — sign in to Qobuz in Platform Check ⚙ Setup → Auth');
     let id = String(albumId).trim();
     // a bare barcode/UPC → resolve to the album id via search (Qobuz stores the 13-digit EAN, so try zero-padded too, #354)
     if (/^\d+$/.test(id)) {
       const want = id.replace(/^0+/, '');
-      let hit = null;
+      let hit = null, lastErr = null;
       for (const q of [id, id.length < 13 ? id.padStart(13, '0') : null].filter(Boolean)) {
-        const sr = await gmGet(QOBUZ.api + '/album/search?query=' + encodeURIComponent(q) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
+        let sr; try { sr = await qbGet('/album/search?query=' + encodeURIComponent(q), 'barcode search ' + q); } catch (e) { lastErr = e; continue; }
         let sj; try { sj = JSON.parse(sr.responseText || 'null'); } catch (e) { sj = null; }
         const items = (sj && sj.albums && sj.albums.items) || [];
         hit = items.find(a => String(a.upc || '').replace(/^0+/, '') === want) || items[0];
         if (hit) break;
       }
-      if (!hit || !hit.id) throw new Error('Qobuz: no album for barcode ' + id);
+      if (!hit || !hit.id) throw (lastErr || new Error('Qobuz: no album for barcode ' + id));
       id = hit.id;
     }
-    const r = await gmGet(QOBUZ.api + '/album/get?album_id=' + encodeURIComponent(id) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
-    if (r.status === 401) throw new Error('Qobuz: session expired — re-login in Platform Check ⚙');
-    if (r.status !== 200) throw new Error('Qobuz ' + r.status + ' for album ' + id);
+    const r = await qbGet('/album/get?album_id=' + encodeURIComponent(id), 'album ' + id);
     let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Qobuz: malformed JSON'); }
     const list = (j && j.tracks && j.tracks.items) || [];
     Log.info('Qobuz album "' + ((j && j.title) || id) + '": ' + list.length + ' track(s)');
@@ -2221,12 +2247,12 @@
         : 'Exact-match options';
     };
     const applyExactCollapsed = (collapsed) => {
-      sxGroup.classList.toggle('collapsed', collapsed);
+      sxGroup.classList.toggle('ii-collapsed', collapsed);
       exactToggle.setAttribute('aria-expanded', String(!collapsed));
     };
     applyExactCollapsed(store.get('sx_exact_collapsed', true));   // collapsed by default to keep the toolbar compact
     exactToggle.addEventListener('click', () => {
-      const collapsed = !sxGroup.classList.contains('collapsed');
+      const collapsed = !sxGroup.classList.contains('ii-collapsed');
       applyExactCollapsed(collapsed);
       store.set('sx_exact_collapsed', collapsed);
     });
@@ -3297,7 +3323,7 @@
     const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
     // re-expand the candidate list so a different suggestion can be picked
     const box = rowCands(idx);
-    if (box) { box.classList.remove('collapsed'); box.querySelectorAll('.ii-cand.chosen').forEach(c => c.classList.remove('chosen')); }
+    if (box) { box.classList.remove('ii-collapsed'); box.querySelectorAll('.ii-cand.chosen').forEach(c => c.classList.remove('chosen')); }
     updateSummary();
     input.focus();
   }
@@ -3558,7 +3584,7 @@
       el.classList.toggle('chosen', on);
       if (on) found = true;
     });
-    box.classList.toggle('collapsed', found);
+    box.classList.toggle('ii-collapsed', found);
   }
   function renderCands(idx, rows) {
     const box = rowCands(idx);
@@ -3588,7 +3614,7 @@
       });
       box.appendChild(c);
     });
-    box.classList.remove('collapsed');
+    box.classList.remove('ii-collapsed');
     // "refine search" entry — opens the panel to tweak title/artist/release + exact
     const refine = document.createElement('div');
     refine.className = 'ii-cand-refine';

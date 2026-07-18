@@ -108,12 +108,14 @@ assert.equal(prod.entityType, 'artist');
 assert.deepEqual(prod.attributes, []);
 assert.equal(prod.artist.resource_url, 'https://tidal.com/artist/6220117');
 assert.equal(prod.track.position, '1');
-// Music publisher → label→work "publishing", resolved by name (no URL)
+// Music publisher → label→work "publishing", resolved by name. #417: carries a SYNTHETIC
+// resource_url (like tidalCompany) so a publisher named like an artist can't share the
+// `_nourl_<name>` key with that artist and fuse with it in review/dispatch.
 const pub = eng.tracklistRels.find(r => r.linkType === 'publishing');
 assert.equal(pub.entityType, 'label');
 assert.equal(pub.artist.entityType, 'label');
 assert.equal(pub.artist.name, 'Mavuthela Music Co.');
-assert.equal(pub.artist.resource_url, '');
+assert.equal(pub.artist.resource_url, 'https://tidal.com/_publisher/Mavuthela%20Music%20Co.');
 assert.equal(pub.track.position, '2');
 // unlinked credit → empty resource_url (name-search path), never undefined
 const unlinked = eng.tracklistRels.find(r => r.artist.name === 'No Tidal Page');

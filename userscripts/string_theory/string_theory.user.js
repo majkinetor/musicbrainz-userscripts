@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.14.195800
+// @version      2026.7.18.160307
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -69,13 +69,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.14.195800 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.13.203013\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.14.195503\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.12.2\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.12");
+  console.log('%c String Theory %c v2026.7.18.160307 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.16\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.18.160200\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.16\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.17");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.13.203013","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.13.203013","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.16","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.16","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -494,6 +494,9 @@ try {
   // (e.g. [unknown] → '"Gold Diggers of 1937" Chorus'); never surface one as an AKA.
   // Keyed by MBID, not a name pattern — not all are bracketed (Various Artists) and
   // plenty of real artists DO use brackets. (#171, per @chaban-mb)
+  // NB (#428): the same list lives in credit_hoarder/src/data/special-purpose.js and
+  // discogs_credits/src/data/special-purpose.js — single-file scripts can't import,
+  // so keep the three copies in sync by hand.
   const SPECIAL_PURPOSE_ARTISTS = new Set([
     '125ec42a-7229-4250-afc5-e057484327fe', // [unknown]
     'f731ccc4-e22a-43af-a747-64213329e088', // [anonymous]
@@ -1267,7 +1270,7 @@ try {
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.13.203013';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.16.225224';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1487,7 +1490,9 @@ try {
     .tc-joinwrap{flex:none;margin-left:auto;display:flex;align-items:center;gap:0}
     .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px Arial;padding:1px 2px;border-radius:3px}
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
-    .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
+    /* #419: the caret needs a REAL hit target (padding-grown), not a bare 10px glyph */
+    .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:12px;padding:3px 5px;margin:-3px 0;line-height:1;border-radius:3px}
+    .tc-joinarrow:hover{color:#5f3ec0;background:#ede9f6}
     /* #208 join-phrase spacing flags: ␣ where a space is missing, ␣?␣ when the phrase is missing entirely */
     .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:#fff0f0;color:#b00}
     .tc-jp-nolead::before,.tc-jp-notrail::after,.tc-jp-nophrase::before{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font:700 11px Arial;line-height:1}
@@ -2440,17 +2445,48 @@ try {
       if (!cjk && !/\s$/.test(v)) { wrap.classList.add('tc-jp-notrail'); bad = true; }
       if (bad) wrap.classList.add('tc-jp-bad');
     };
-    inp.oninput = () => { fit(); markJoin(); }; inp.onchange = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
-    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
-    let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
-    arrow.onclick = () => {
-      if (pop) { close(); return; }
-      pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
-      pop.innerHTML = JOIN_OPTIONS.map(o => `<div class="tc-acrow" data-v="${esc(o.value)}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
-      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
-      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); markJoin(); editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); close(); }; });
-      const off = e => { if (pop && !pop.contains(e.target) && e.target !== arrow) { close(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
+    const commit = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); };
+    inp.oninput = () => { fit(); markJoin(); if (inp.value.trim()) open(inp.value); else close(); };   // #419: typing filters the presets live
+    inp.onchange = () => { commit(); };
+    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases (type to filter · ↑↓ + Enter)';
+    // #419: keyboard-first presets — typing filters ("fe" → feat. / featuring), ArrowDown
+    // opens/moves, Enter picks the highlighted row, Esc closes; same keys on the ▾ button.
+    let pop = null, items = [], hi = -1;
+    const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
+    const pick = v => { inp.value = v; fit(); commit(); close(); };
+    const paint = () => {
+      pop.innerHTML = items.map((o, i) => `<div class="tc-acrow${i === hi ? ' hi' : ''}" data-i="${i}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
+      [...pop.querySelectorAll('[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); pick(items[+row.dataset.i].value); }; });
     };
+    const open = q => {
+      const needle = String(q || '').trim().toLowerCase();
+      items = needle ? JOIN_OPTIONS.filter(o => o.label.toLowerCase().includes(needle) || o.value.trim().toLowerCase().includes(needle)) : JOIN_OPTIONS.slice();
+      if (!items.length) { close(); return; }
+      if (!pop) {
+        pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
+        document.body.appendChild(pop);
+        const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
+        const off = e => { if (!pop) { document.removeEventListener('mousedown', off); return; } if (!pop.contains(e.target) && e.target !== arrow && e.target !== inp) { close(); document.removeEventListener('mousedown', off); } };
+        setTimeout(() => document.addEventListener('mousedown', off), 0);
+      }
+      hi = needle ? 0 : -1;   // typing pre-highlights the top hit so Enter picks it straight away
+      paint();
+    };
+    const keys = e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (!pop) open(inp.value); else { hi = (hi + 1) % items.length; paint(); } }
+      else if (e.key === 'ArrowUp') { if (!pop) return; e.preventDefault(); e.stopPropagation(); hi = (hi - 1 + items.length) % items.length; paint(); }
+      else if (e.key === 'Enter') {
+        if (!pop && e.currentTarget === arrow) return;             // let the button's native click open the menu
+        // Enter must never reach MB's form (it switches tabs) — same contract enterBlurs had
+        e.preventDefault(); e.stopPropagation();
+        if (pop && hi >= 0 && items[hi]) pick(items[hi].value); else { close(); inp.blur(); }
+      }
+      else if (e.key === 'Escape') { if (pop) { e.preventDefault(); e.stopPropagation(); close(); } }
+    };
+    inp.addEventListener('keydown', keys);
+    arrow.addEventListener('keydown', keys);
+    inp.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== arrow) close(); }, 120));   // Tab away closes (row picks keep focus via preventDefault)
+    arrow.onclick = () => { if (pop) close(); else open(''); };
     wrap.appendChild(inp); wrap.appendChild(arrow); markJoin();
     return wrap;
   }
@@ -4598,7 +4634,13 @@ try {
       // row changed and its ↺ reverts it. Alt = do the whole column.
       if (e.target.closest('td.tc-tkt')) {
         e.preventDefault();
-        const setFromRec = (m, i) => { const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null; if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} } };
+        const setFromRec = (m, i) => {
+          const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null;
+          if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
+          // #420: the track title now equals the recording's, so a pending "rename recording"
+          // flag is a no-op — clear it (and its green indicator) instead of leaving it stale.
+          if (t && u(t.updateRecordingTitle)) { setCopy('title', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: title copied from recording — cleared the now-moot rename-recording flag`); }
+        };
         if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setFromRec(+row.dataset.mi, +row.dataset.ti));
         else setFromRec(+tr.dataset.mi, +tr.dataset.ti);
         _tlRefreshed = false; scheduleSync();   // #348: title changed here (a self-edit the watcher ignores) — re-sync the Tracklist mirror so the new title + changed-row marker show reliably, not on a racy tab-switch
@@ -4617,8 +4659,11 @@ try {
           const t = koTrack(m, i), rec = t && u(t.recording), recAc = rec && u(rec.artistCredit);
           const recNames = recAc && (u(recAc.names) || []);
           if (!recNames || !recNames.length) { Log.warn(`#348 artist copy: track ${m}.${i} — recording has no artist credit (recording ${rec ? 'present' : 'null'}) — nothing to copy`); return; }
+          // #420 (artist twin): once track and recording agree, a pending "update recording
+          // artist" flag is a no-op — clear it so its indicator doesn't linger.
+          const clearMootArtistFlag = () => { if (u(t.updateRecordingArtist)) { setCopy('artist', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: artist copied from recording — cleared the now-moot update-recording-artist flag`); } };
           const tNames = u(u(t.artistCredit).names) || [];
-          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); return; }
+          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); clearMootArtistFlag(); return; }
           const gids = recNames.map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
           // Fetch the FULL artist entity for each credit (same as the paste-MBID resolve → pickArtist
           // path). Verified live: writing the recording's own LEAN artist — or W.MB.entity(gid,name) —
@@ -4636,6 +4681,7 @@ try {
             // the entity link was dropped and only the credited text stuck (the "set without match" bug).
             const wrote = (u(u(t.artistCredit).names) || []).map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
             Log.info(`#348 artist copy: track ${m}.${i} ← recording "${acText(u(t.artistCredit))}" (recording gid(s): ${gids} · written track gid(s): ${wrote})`);
+            clearMootArtistFlag();
           } catch (x) { Log.warn(`#348 artist copy: track ${m}.${i} — artistCredit setter threw: ${x && x.message}`); }
         };
         (async () => {
@@ -10457,7 +10503,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.14.195503","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.14.195503","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.18.160200","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.18.160200","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -10496,7 +10542,8 @@ try {
     ["writer", "composer"]
   ];
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  DISCOGS_CHANNEL.unref?.();
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
 
   // src/log.js
   var _logs = null;
@@ -11181,6 +11228,21 @@ try {
       linkType: "vocal",
       attributes: [{ _type: "vocal", value: "lead vocals" }]
     },
+    // #427: voice-type vocals — MB carries each of these as a vocal attribute (verified
+    // against the live link_attribute_type table). Hyphenated ones get both Discogs
+    // casing variants, since the role lookup is exact-case.
+    "Soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "soprano vocals" }] },
+    "Mezzo-soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "mezzo-soprano vocals" }] },
+    "Mezzo-Soprano Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "mezzo-soprano vocals" }] },
+    "Alto Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "alto vocals" }] },
+    "Contralto Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "contralto vocals" }] },
+    "Countertenor Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "countertenor vocals" }] },
+    "Tenor Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "tenor vocals" }] },
+    "Baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "baritone vocals" }] },
+    "Bass-baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass-baritone vocals" }] },
+    "Bass-Baritone Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass-baritone vocals" }] },
+    "Bass Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "bass vocals" }] },
+    "Treble Vocals": { entityType: "artist", linkType: "vocal", attributes: [{ _type: "vocal", value: "treble vocals" }] },
     Orchestra: {
       entityType: "artist",
       linkType: "orchestra"
@@ -12614,7 +12676,7 @@ try {
       linkType: "publishing",
       entityType: "label",
       attributes: [],
-      artist: { name, anv: "", entityType: "label", resource_url: "" }
+      artist: { name, anv: "", entityType: "label", resource_url: "https://tidal.com/_publisher/" + encodeURIComponent(name) }
     };
     if (track) role.track = track;
     return role;
@@ -13106,7 +13168,9 @@ try {
     if (/deezer\.com\//i.test(url || "")) return "Deezer";
     return "Discogs";
   }
+  var isSyntheticProviderUrl = (url) => /tidal\.com\/_(?:publisher|company)\//i.test(String(url || ""));
   function sourceUrlLinkTypeId(url, entityType) {
+    if (isSyntheticProviderUrl(url)) return null;
     const src = sourceNameForUrl(url);
     if (src === "Tidal") return entityType === "artist" ? "978" : null;
     if (src === "Qobuz") return entityType === "artist" ? "978" : null;
@@ -13548,6 +13612,34 @@ try {
     return roles;
   }
 
+  // src/data/special-purpose.js
+  var SPECIAL_PURPOSE_ARTISTS = /* @__PURE__ */ new Set([
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ]);
+
   // src/edit-note.js
   function buildEditNote(sourceUrl, opts, extraLines, sourceLabel) {
     const s = GM_info.script;
@@ -13922,7 +14014,7 @@ ${ourBlock}` : ourBlock;
           const tdSrc = document.createElement("td");
           tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
           const names = entitySources.get(_entityKey) || [];
-          const srcUrls = r._mergeUrls || (discogsHref ? [discogsHref] : []);
+          const srcUrls = (r._mergeUrls || (discogsHref ? [discogsHref] : [])).filter((u) => !isSyntheticProviderUrl(u));
           if (!names.length) {
             tdSrc.innerHTML = '<span style="color:#bbb;">\u2014</span>';
           } else names.forEach((nm) => {
@@ -14324,7 +14416,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             rowLinkChips.delete(_entityKey);
             updateLinksBadge();
           }
-          if (selected) {
+          const noLinkUi = selected && (isSyntheticProviderUrl(discogsHref) || SPECIAL_PURPOSE_ARTISTS.has(selected.id));
+          if (noLinkUi) {
+            linkState.delete(_entityKey);
+            rowLinkChips.delete(_entityKey);
+            updateLinksBadge();
+          }
+          if (selected && !noLinkUi) {
             let recheckUrlBypassCache = function() {
               _urlCheckSessionCache.delete(urlCheckCacheKey);
               try {
@@ -15624,6 +15722,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
     }
     async function dispatchWorks() {
+      if (createWorksMode === "off") {
+        const workOnly = [...tracklistRels || [], ...artistRoles || []].filter((r) => WORK_ONLY_ARTIST_RELS.includes(r.linkType));
+        if (workOnly.length) log.skip(`"Use works" is off \u2014 skipped ${workOnly.length} work-level credit(s) (${[...new Set(workOnly.map((r) => r.linkType))].join(", ")})`);
+        return;
+      }
       const recordingOfLinkTypeId = resolveLinkTypeId("performance", "recording", "work");
       const includeOnlyResolved = createWorksMode === "when-needed";
       const workOnlyByGid = /* @__PURE__ */ new Map();
@@ -15761,6 +15864,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           }
           const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
           const srcType = role.entityType || "artist";
+          const urlType = (mbUrl.match(/musicbrainz\.org\/(artist|label|place)\//i) || [])[1];
+          if (urlType && urlType !== srcType) {
+            log.skip(`Skipped ${role.linkType} for "${credit}" \u2014 resolved to an MB ${urlType}, but this relationship needs a ${srcType} (#417)`);
+            continue;
+          }
           if (workEntity.gid) {
             await processOne(workEntity, srcType, "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
           } else {
@@ -16013,6 +16121,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   }
   var _resultKey = (r) => r && r.entity && (r.entity.resource_url || r.entity._syntheticKey) || `_nourl_${r && (r.entity && r.entity.name || r.displayName) || ""}`;
   var _resultName = (r) => r && (r.entity && r.entity.name || r.displayName) || "";
+  var _resultKind = (r) => r && (r.entityType || r.entity && r.entity.entityType) || "artist";
   var _roleKey = (ro) => [ro.linkType, ro.displayLabel, ro.trackPos, ro.trackTitle].join("");
   var boundedLev = (a, b, max) => {
     if (Math.abs(a.length - b.length) > max) return -1;
@@ -16032,23 +16141,36 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     return dp[a.length] <= max ? dp[a.length] : -1;
   };
   var fuzzyMax = (len) => len <= 6 ? 0 : len <= 12 ? 1 : 2;
+  var stripInitials = (fn) => fn.split(" ").filter((t) => !/^[a-z]\.?$/.test(t)).join(" ");
   function mergeResolvedResults(allResults, entitySources) {
     const rows = (allResults || []).filter(Boolean);
     const nameMbids = /* @__PURE__ */ new Map();
+    const nameMbidsStripped = /* @__PURE__ */ new Map();
     for (const r of rows) {
       if (r.type !== "resolved" || !r.mbUrl) continue;
       const fn = fold(_resultName(r));
       if (!fn) continue;
-      if (!nameMbids.has(fn)) nameMbids.set(fn, /* @__PURE__ */ new Set());
-      nameMbids.get(fn).add(r.mbUrl);
+      const kn = _resultKind(r) + "|" + fn;
+      if (!nameMbids.has(kn)) nameMbids.set(kn, /* @__PURE__ */ new Set());
+      nameMbids.get(kn).add(r.mbUrl);
+      const sn = _resultKind(r) + "|" + stripInitials(fn);
+      if (!nameMbidsStripped.has(sn)) nameMbidsStripped.set(sn, /* @__PURE__ */ new Set());
+      nameMbidsStripped.get(sn).add(r.mbUrl);
     }
-    const uniqResolved = [];
-    nameMbids.forEach((set, nm) => {
-      if (set.size === 1) uniqResolved.push([nm, [...set][0]]);
+    const conflictNames = /* @__PURE__ */ new Set();
+    nameMbids.forEach((set, kn) => {
+      if (set.size > 1) conflictNames.add(kn);
     });
-    const fuzzyResolvedMatch = (fn) => {
+    const uniqResolved = [];
+    nameMbids.forEach((set, kn) => {
+      if (set.size === 1) uniqResolved.push([kn, [...set][0]]);
+    });
+    const fuzzyResolvedMatch = (kfn) => {
+      const [kind, fn] = [kfn.slice(0, kfn.indexOf("|")), kfn.slice(kfn.indexOf("|") + 1)];
       let hit = null;
-      for (const [nm, url] of uniqResolved) {
+      for (const [kn, url] of uniqResolved) {
+        if (!kn.startsWith(kind + "|")) continue;
+        const nm = kn.slice(kind.length + 1);
         if (boundedLev(fn, nm, fuzzyMax(Math.max(fn.length, nm.length))) < 0) continue;
         if (hit && hit !== url) return null;
         hit = url;
@@ -16056,14 +16178,20 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       return hit;
     };
     const keyFor = (r) => {
-      if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       const fn = fold(_resultName(r));
+      const kn = fn ? _resultKind(r) + "|" + fn : "";
+      if (kn && conflictNames.has(kn)) return "cf:" + kn;
+      if (r.type === "resolved" && r.mbUrl) return "mb:" + r.mbUrl;
       if (!fn) return null;
-      const set = nameMbids.get(fn);
+      const set = nameMbids.get(kn);
       if (set && set.size === 1) return "mb:" + [...set][0];
-      const fuzzy = fuzzyResolvedMatch(fn);
+      if (!set) {
+        const stripped = nameMbidsStripped.get(_resultKind(r) + "|" + stripInitials(fn));
+        if (stripped && stripped.size === 1) return "mb:" + [...stripped][0];
+      }
+      const fuzzy = fuzzyResolvedMatch(kn);
       if (fuzzy) return "mb:" + fuzzy;
-      return "nm:" + fn;
+      return "nm:" + kn;
     };
     const byKey = /* @__PURE__ */ new Map(), mergeMap = /* @__PURE__ */ new Map(), out = [];
     for (const r of rows) {
@@ -16072,12 +16200,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         if (gk) {
           byKey.set(gk, r);
           mergeMap.set(rk, [rk]);
+          if (gk.startsWith("cf:")) r._conflicts = [r.mbUrl ? { mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig } : null];
         }
         out.push(r);
         continue;
       }
       const rep = byKey.get(gk), repKey = _resultKey(rep);
-      if ((rep.type !== "resolved" || !rep.mbUrl) && r.type === "resolved" && r.mbUrl) {
+      if (gk.startsWith("cf:")) {
+        if (r.mbUrl) (rep._conflicts = rep._conflicts || []).push({ mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig });
+      } else if ((rep.type !== "resolved" || !rep.mbUrl) && r.type === "resolved" && r.mbUrl) {
         rep.type = "resolved";
         rep.mbUrl = r.mbUrl;
         rep.mbName = r.mbName;
@@ -16099,9 +16230,26 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
       mergeMap.get(repKey).push(rk);
     }
+    byKey.forEach((rep, gk) => {
+      if (!gk.startsWith("cf:")) return;
+      const cands = [], seenIds = /* @__PURE__ */ new Set();
+      for (const c of rep._conflicts || []) {
+        const m = c && c.mbUrl && c.mbUrl.match(/\/(?:artist|label|place)\/([^/?#]+)/i);
+        if (!m || seenIds.has(m[1])) continue;
+        seenIds.add(m[1]);
+        cands.push({ id: m[1], name: c.mbName || _resultName(rep), disambiguation: c.mbDisambig || "" });
+      }
+      rep.nameMatches = cands.concat((rep.nameMatches || []).filter((nm) => nm && nm.id && !seenIds.has(nm.id)));
+      rep.type = "attention";
+      rep.mbUrl = null;
+      rep.mbName = null;
+      rep.mbDisambig = "";
+      rep.ambiguityReason = "sources link this name to different MB artists";
+      delete rep._conflicts;
+    });
     for (const rep of out) {
       const keys = mergeMap.get(_resultKey(rep));
-      rep._mergeUrls = (keys || []).filter((k) => /^https?:\/\//i.test(k));
+      rep._mergeUrls = [...new Set((keys || []).filter((k) => /^https?:\/\//i.test(k) && !/tidal\.com\/_(?:publisher|company)\//i.test(k)).map((k) => k.replace(/^https?:\/\/api\.discogs\.com\/(\w+?)s\/(\d+).*$/i, "https://www.discogs.com/$1/$2")))];
     }
     return { results: out, mergeMap };
   }
@@ -16767,6 +16915,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
     } catch (e) {
     }
+    if (!savedOpts.createWorksReset421) {
+      savedOpts.createWorksMode = "never";
+      savedOpts.createWorksReset421 = true;
+      delete savedOpts.createWorks;
+      try {
+        localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts));
+      } catch (e) {
+      }
+    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
     const tracklistCb = makeCheckbox(
       "Per-track credits",
@@ -16778,16 +16935,53 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       bv("applyTracks", false),
       "Move performance credits from the release down to every recording."
     );
-    const _legacyCreateWorks = savedOpts.createWorks;
-    const _initialCreateWorksMode = bv(
-      "createWorksMode",
-      _legacyCreateWorks === true ? "when-missing" : _legacyCreateWorks === false ? "never" : "when-needed"
+    const useWorksCb = makeCheckbox(
+      "Use",
+      bv("useWorks", true),
+      "Import work-level credits (composer / lyricist / writer \u2026). Off: no work relationship is touched at all \u2014 nothing created, nothing attached to existing works."
     );
-    const createWorksMode = makeSelect("Create works", _initialCreateWorksMode, [
-      { value: "when-needed", label: "when needed" },
-      { value: "when-missing", label: "when missing" },
-      { value: "never", label: "never" }
-    ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works \u2014 work-only credits with no existing work are logged and skipped.");
+    const _initialCreateWorksMode = bv("createWorksMode", "never") === "when-needed" ? "when-needed" : "never";
+    const createWorksMode = makeSelect("works", _initialCreateWorksMode, [
+      { value: "never", label: "create none" },
+      { value: "when-needed", label: "create needed" }
+    ], "create none: use only existing works \u2014 work-only credits with no work are logged and skipped. create needed: also create a work when a composer/lyricist/writer credit needs one \u2014 match recordings to EXISTING works first (Group Therapy) or you will create duplicates.");
+    const syncWorksUi = () => {
+      createWorksMode.disabled = !useWorksCb.checked;
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) w.style.opacity = useWorksCb.checked ? "" : ".45";
+    };
+    syncWorksUi();
+    useWorksCb.closest("label").style.paddingRight = "0";
+    {
+      const w = createWorksMode.closest(".discogs-select-wrap");
+      if (w) {
+        w.style.paddingLeft = "0";
+        w.style.marginLeft = "-0.2rem";
+      }
+    }
+    function showCreateWorksWarning() {
+      const ov = document.createElement("div");
+      ov.className = "discogs-cw-warn-ov";
+      ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;";
+      const box = document.createElement("div");
+      box.style.cssText = "max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;";
+      box.innerHTML = '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
+      const close = () => ov.remove();
+      box.querySelector("button").addEventListener("click", close);
+      ov.addEventListener("mousedown", (e) => {
+        if (e.target === ov) close();
+      });
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+      box.querySelector("button").focus();
+    }
+    createWorksMode.addEventListener("change", () => {
+      if (createWorksMode.value === "when-needed") showCreateWorksWarning();
+    });
+    useWorksCb.closest("label").addEventListener("click", () => setTimeout(() => {
+      syncWorksUi();
+      if (useWorksCb.checked && createWorksMode.value === "when-needed") showCreateWorksWarning();
+    }, 0));
     const optsBtn = document.createElement("button");
     optsBtn.type = "button";
     optsBtn.className = "discogs-opts-btn";
@@ -16833,14 +17027,18 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         localStorage.setItem(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
+          useWorks: useWorksCb.checked,
+          // #424 master toggle
           createWorksMode: createWorksMode.value,
+          createWorksReset421: true,
+          // #421 one-time reset already applied — must survive every save
           dedupeEquivalenceSets: dedupeEqCb.checked,
           dedupeDuplicateRoles: dedupeDupCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -17145,7 +17343,8 @@ ${lines}
       const getOpts = () => ({
         processTracklist: tracklistCb.checked,
         applyToTracks: applyTracksCb.checked,
-        createWorksMode: createWorksMode.value,
+        // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
+        createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
         dedupeEquivalenceSets: dedupeEqCb.checked,
         dedupeDuplicateRoles: dedupeDupCb.checked
       });
@@ -19976,7 +20175,7 @@ ${lines}
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.12.2","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.12.2","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.16","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.16","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -20545,7 +20744,7 @@ ${lines}
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
     .ii-cand:hover { background: #f0f6ff; border-color: #9ec5fe; }
-    .ii-cands.collapsed .ii-cand:not(.chosen) { display: none; }
+    .ii-cands.ii-collapsed .ii-cand:not(.chosen) { display: none; }
     .ii-cand.chosen { box-shadow: inset 3px 0 0 #198754; }
     .ii-cand.best { border-color: #6ea8fe; background: #d4e6ff; }
     .ii-cand.warn { border-color: #ffe08a; background: #fff3cd; }
@@ -20648,11 +20847,14 @@ ${lines}
       font-weight: 600; color: #8a7bb0; background: #fff; border: 1px solid #e0d7f2; border-radius: 5px; cursor: pointer; }
     .ii-exact-toggle:hover { background: #f3eefc; color: #6f42c1; }
     .ii-exact-toggle .ii-exact-car { font-size: 9px; transition: transform .15s; }
-    .ii-sx-group:not(.collapsed) .ii-exact-toggle .ii-exact-car { transform: rotate(180deg); }
+    /* NB: the state class is namespaced (ii-collapsed) on purpose — MB's common.css paints a
+       20px absolute ::after fade overlay on ANY bare .collapsed, which blanketed the toolbar
+       and swallowed clicks on the bottom half of every button (#414). */
+    .ii-sx-group:not(.ii-collapsed) .ii-exact-toggle .ii-exact-car { transform: rotate(180deg); }
     /* a filled dot on the toggle when any exact option is active while collapsed */
     .ii-exact-toggle.on { color: #6f42c1; border-color: #c9b6ee; background: #f3eefc; }
     .ii-exact-toggle.on::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #6f42c1; }
-    .ii-sx-group.collapsed .ii-exact-set { display: none; }
+    .ii-sx-group.ii-collapsed .ii-exact-set { display: none; }
     .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
     .ii-ex-all-lbl { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
     .ii-ex-all-lbl input { cursor: pointer; }
@@ -21712,36 +21914,59 @@ ${lines}
      barcodes itself, that's Platform Check's job.)
   ═══════════════════════════════════════════════════════════════════════ */
   /* ═══════════════════════════════════════════════════════════════════════
-     QOBUZ (#353) — per-track ISRCs live behind the session-gated album/get,
-     which needs a logged-in user_auth_token. Platform Check owns the login and
-     shares the token via the mbtools:qobuz localStorage key on this origin (the
-     same channel as the Beatport token). Album-based, matched by ISRC/position.
+     QOBUZ (#353, #418) — per-track ISRCs come from album/get, which works
+     ANONYMOUSLY (app_id only) when the request comes from a country Qobuz
+     serves: the anonymous API resolves catalogue visibility by request IP and
+     answers 404 "No result matching given argument" everywhere else. (That
+     geo dimension is why the original #353 investigation, run from a
+     non-Qobuz country, concluded a login was required.) So: Platform Check's
+     shared user_auth_token is PREFERRED when present (one request, works from
+     any country — the login's real contribution is the ACCOUNT's region, not
+     auth; mbtools:qobuz localStorage key, same channel as the Beatport
+     token), anonymous otherwise or when the session has gone stale. Only
+     when both paths fail do we point at the PC login.
   ═══════════════════════════════════════════════════════════════════════ */
   const QOBUZ = { appId: '712109809', api: 'https://www.qobuz.com/api.json/0.2', lsKey: 'mbtools:qobuz' };
   const qbToken = () => { try { const t = JSON.parse(localStorage.getItem(QOBUZ.lsKey) || 'null'); return (t && t.token) || null; } catch (e) { return null; } };
-  const qbHeaders = tok => ({ 'X-App-Id': QOBUZ.appId, 'X-User-Auth-Token': tok, 'Accept': 'application/json' });
+  const qbHeaders = tok => { const h = { 'X-App-Id': QOBUZ.appId, 'Accept': 'application/json' }; if (tok) h['X-User-Auth-Token'] = tok; return h; };
+  // One Qobuz API GET (#418): the Platform Check session is preferred when present (one
+  // request, works from any country — the token carries the account's region), falling back
+  // to an anonymous call when there is no token or the token has expired. Anonymous works
+  // fine from countries Qobuz serves; elsewhere it answers 404, hence the tailored error.
+  // `pathAndQuery` must already carry its `?`; app_id is appended here.
+  async function qbGet(pathAndQuery, what) {
+    const url = QOBUZ.api + pathAndQuery + '&app_id=' + QOBUZ.appId;
+    const tok = qbToken();
+    if (tok) {
+      const r = await gmGet(url, qbHeaders(tok));
+      if (r.status === 200) return r;
+      // expired/broken session — the anonymous path may still work (served country)
+      Log.warn('Qobuz: session ' + what + ' answered ' + r.status + (r.status === 401 ? ' (expired? re-login in Platform Check ⚙)' : '') + ' — trying anonymously');
+    }
+    const anon = await gmGet(url, qbHeaders(null));
+    if (anon.status === 200) return anon;
+    throw new Error('Qobuz ' + anon.status + ' for ' + what + (tok
+      ? ' — session and anonymous both failed (re-login in Platform Check ⚙ Setup → Auth?)'
+      : ' — the anonymous API only answers from countries Qobuz serves; sign in to Qobuz in Platform Check ⚙ Setup → Auth to use your account’s region instead'));
+  }
   async function fetchQobuz(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
-    const tok = qbToken();
-    if (!tok) throw new Error('Qobuz: not logged in — sign in to Qobuz in Platform Check ⚙ Setup → Auth');
     let id = String(albumId).trim();
     // a bare barcode/UPC → resolve to the album id via search (Qobuz stores the 13-digit EAN, so try zero-padded too, #354)
     if (/^\d+$/.test(id)) {
       const want = id.replace(/^0+/, '');
-      let hit = null;
+      let hit = null, lastErr = null;
       for (const q of [id, id.length < 13 ? id.padStart(13, '0') : null].filter(Boolean)) {
-        const sr = await gmGet(QOBUZ.api + '/album/search?query=' + encodeURIComponent(q) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
+        let sr; try { sr = await qbGet('/album/search?query=' + encodeURIComponent(q), 'barcode search ' + q); } catch (e) { lastErr = e; continue; }
         let sj; try { sj = JSON.parse(sr.responseText || 'null'); } catch (e) { sj = null; }
         const items = (sj && sj.albums && sj.albums.items) || [];
         hit = items.find(a => String(a.upc || '').replace(/^0+/, '') === want) || items[0];
         if (hit) break;
       }
-      if (!hit || !hit.id) throw new Error('Qobuz: no album for barcode ' + id);
+      if (!hit || !hit.id) throw (lastErr || new Error('Qobuz: no album for barcode ' + id));
       id = hit.id;
     }
-    const r = await gmGet(QOBUZ.api + '/album/get?album_id=' + encodeURIComponent(id) + '&app_id=' + QOBUZ.appId, qbHeaders(tok));
-    if (r.status === 401) throw new Error('Qobuz: session expired — re-login in Platform Check ⚙');
-    if (r.status !== 200) throw new Error('Qobuz ' + r.status + ' for album ' + id);
+    const r = await qbGet('/album/get?album_id=' + encodeURIComponent(id), 'album ' + id);
     let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Qobuz: malformed JSON'); }
     const list = (j && j.tracks && j.tracks.items) || [];
     Log.info('Qobuz album "' + ((j && j.title) || id) + '": ' + list.length + ' track(s)');
@@ -22167,12 +22392,12 @@ ${lines}
         : 'Exact-match options';
     };
     const applyExactCollapsed = (collapsed) => {
-      sxGroup.classList.toggle('collapsed', collapsed);
+      sxGroup.classList.toggle('ii-collapsed', collapsed);
       exactToggle.setAttribute('aria-expanded', String(!collapsed));
     };
     applyExactCollapsed(store.get('sx_exact_collapsed', true));   // collapsed by default to keep the toolbar compact
     exactToggle.addEventListener('click', () => {
-      const collapsed = !sxGroup.classList.contains('collapsed');
+      const collapsed = !sxGroup.classList.contains('ii-collapsed');
       applyExactCollapsed(collapsed);
       store.set('sx_exact_collapsed', collapsed);
     });
@@ -23243,7 +23468,7 @@ ${lines}
     const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
     // re-expand the candidate list so a different suggestion can be picked
     const box = rowCands(idx);
-    if (box) { box.classList.remove('collapsed'); box.querySelectorAll('.ii-cand.chosen').forEach(c => c.classList.remove('chosen')); }
+    if (box) { box.classList.remove('ii-collapsed'); box.querySelectorAll('.ii-cand.chosen').forEach(c => c.classList.remove('chosen')); }
     updateSummary();
     input.focus();
   }
@@ -23504,7 +23729,7 @@ ${lines}
       el.classList.toggle('chosen', on);
       if (on) found = true;
     });
-    box.classList.toggle('collapsed', found);
+    box.classList.toggle('ii-collapsed', found);
   }
   function renderCands(idx, rows) {
     const box = rowCands(idx);
@@ -23534,7 +23759,7 @@ ${lines}
       });
       box.appendChild(c);
     });
-    box.classList.remove('collapsed');
+    box.classList.remove('ii-collapsed');
     // "refine search" entry — opens the panel to tweak title/artist/release + exact
     const refine = document.createElement('div');
     refine.className = 'ii-cand-refine';
@@ -25976,7 +26201,7 @@ ${lines}
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.12","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.12","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.17","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.17","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -26173,7 +26398,44 @@ async function injectInto(urls, storageKey) {
         }
         setSel.call(select, opt.value);
         select.dispatchEvent(new Event('change', { bubbles: true }));
-        reports.push({ url, ok: true, type: opt.textContent.trim(), linkTypeId: opt.value });
+        const report = { url, ok: true, type: opt.textContent.trim(), linkTypeId: opt.value };
+        reports.push(report);
+
+        // #423: a Bandcamp album that also has a DIGITAL release is both streamable AND
+        // purchasable, so it deserves a SECOND relationship on the same URL — 74 'purchase
+        // for download' next to 85 'stream for free' — via MB's own "Add another
+        // relationship" row. Gated on the format the Bandcamp scan parsed from the page's
+        // JSON-LD musicReleaseFormat ("Digital", "Digital, CD", …), so a physical-only
+        // page doesn't get a bogus download rel. cacheGet/cacheKey are hoisted function
+        // declarations, safe to call from this pre-return path.
+        if (opt.value === '85' && /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url)) {
+            const relMbid = (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1];
+            const bc = relMbid ? cacheGet(relMbid, 'bandcamp') : null;
+            if (bc && /\b(digital|file)\b/i.test(bc.format || '')) {
+                const addBtn = await pcWaitFor(() => {
+                    const s = typeRow.nextElementSibling;
+                    return (s && s.classList?.contains('add-relationship')) ? s.querySelector('button.add-item') : null;
+                }, 3000);
+                let ok2 = false;
+                if (addBtn) {
+                    addBtn.click();
+                    // the fresh relationship row lands right after the first one
+                    const sel2 = await pcWaitFor(() => {
+                        const s = typeRow.nextElementSibling;
+                        if (!s || !s.classList?.contains('relationship-item')) return null;
+                        const el = s.querySelector('select.link-type');
+                        return (el && el !== select && !el.value) ? el : null;
+                    }, 3000);
+                    if (sel2 && [...sel2.options].some(o => o.value === '74')) {
+                        setSel.call(sel2, '74');
+                        sel2.dispatchEvent(new Event('change', { bubbles: true }));
+                        report.type += ' + purchase for download';
+                        ok2 = true;
+                    }
+                }
+                if (!ok2) report.note = 'digital release detected but the second rel (purchase for download) could not be added';
+            }
+        }
     }
 
     if (injected > 0) GM_setValue(storageKey, null);
@@ -26391,6 +26653,10 @@ container.innerHTML = `
      the panel doesn't jump/flash as results stream in. */
   @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
   #mb-pc-panel .pc-row.pc-rise { animation: pcRise .28s ease; }
+  /* (#422) the ↻ refresh button doubles as the progress indicator: it spins (and is
+     unclickable) while scans run; the scan duration lands in its tooltip afterwards */
+  @keyframes pcSpin { to { transform: rotate(360deg); } }
+  #mb-refresh-btn.pc-scanning { display: inline-block; animation: pcSpin 1s linear infinite; pointer-events: none; color: #3b82c4; }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -29660,7 +29926,27 @@ function parseMbData(data) {
     return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
 }
 
+// (#422, per maintainer review) the ↻ button ITSELF is the progress indicator — it spins
+// and can't be clicked while scans run (no separate icon, no ticking seconds, no end-state
+// noise); the total scan time goes into the button's tooltip when done.
+let _scanT0 = 0;
+const REFRESH_TITLE = 'Refresh — clear cache and re-scan';
+function setScanStatus(state) {
+    const btn = document.getElementById('mb-refresh-btn'); if (!btn) return;
+    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms…'; return; }
+    btn.classList.remove('pc-scanning');
+    const secs = ((Date.now() - _scanT0) / 1000).toFixed(1);
+    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
+}
 async function runScans() {
+    // (#422) thin status wrapper — the scan body lives in runScansInner; `false` = halted.
+    setScanStatus('busy');
+    let ok = false;
+    try { ok = await runScansInner() !== false; }
+    catch (e) { appendLog('System', `Scan failed: ${e && e.message}`, 'error'); }
+    setScanStatus(ok ? 'done' : 'halt');
+}
+async function runScansInner() {
     // Source precedence: DOM (instant, no network) > /ws/2 API (~10s when MB is
     // hot) > mbDataCache (transient MB outage). DOM is identical data to API
     // for our purposes — both give artist/album/tracks/rg/url-rels — and we're
@@ -29690,7 +29976,7 @@ async function runScans() {
                 dataSource = 'cache';
             } else {
                 appendLog('MusicBrainz', `Halted: no DOM, no API, no cache (status ${mb.status})`, 'error');
-                return;
+                return false;   // (#422) wrapper shows the halt state
             }
         }
     }
@@ -29969,12 +30255,13 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     const mbCached     = mbDataGet(mbid);
     const rgMbid       = mbCached?.releaseGroupMbid;
     const existingMaster = mbCached?.existing?.discogsMaster;
-    // #255 disabled provider → skip. #256 only queue the master when the Discogs RELEASE
-    // is a confirmed match (✓, not barcode/format-blocked): if text/Brave search landed on
-    // an unrelated pressing (no release match), its master isn't this release-group's master.
+    // #255 disabled provider → skip. #256 only queue the master when the Discogs RELEASE is a
+    // confirmed match (✓): if text/Brave search landed on an unrelated album, its master isn't
+    // this release-group's master. Barcode/format withholding deliberately does NOT apply here
+    // (#416): a master is the whole release GROUP — it spans every edition's format and
+    // barcode, so a different-pressing Discogs hit still shares this album's master.
     const discogsConfirmed = providerEnabled('discogs')
-        && document.getElementById('ico-discogs')?.textContent?.trim() === '✓'
-        && !barcodeBlocks('discogs') && !formatBlocks('discogs');
+        && document.getElementById('ico-discogs')?.textContent?.trim() === '✓';
     if (!discogsConfirmed) {
         if (masterUrl) appendLog('System', `Inject: Discogs release isn't a confirmed match — not queueing master ${masterUrl}`, 'warn');
     } else if (masterUrl && rgMbid && !existingMaster) {
