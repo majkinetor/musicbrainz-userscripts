@@ -12,11 +12,11 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 ## Features
 
 - Batch delete role, entity, both
-- Highlight role or entity everywhere and show tooltip with overall counts
 - Copy/move credits from recording to recordings, work to works, release to release, release from/to recordings 
 - Consolidate release-level credits across an entire release group (matrix + one-click apply)
 - Match recordings to existing works (ISRC + ranked title search) and stage the *performance* relationships
 - Set a date across a release's credits — a picker to choose the date + exactly which credits get it
+- Highlight role or entity everywhere and show tooltip with overall counts
 - Works on existing and newly-added relationships
 - Right-click entity to open its editor
 
