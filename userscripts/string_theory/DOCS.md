@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-18 22:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-19 00:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -760,11 +760,11 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 ### Features
 
 - Batch delete role, entity, both
-- Highlight role or entity everywhere and show tooltip with overall counts
 - Copy/move credits from recording to recordings, work to works, release to release, release from/to recordings 
 - Consolidate release-level credits across an entire release group (matrix + one-click apply)
 - Match recordings to existing works (ISRC + ranked title search) and stage the *performance* relationships
 - Set a date across a release's credits — a picker to choose the date + exactly which credits get it
+- Highlight role or entity everywhere and show tooltip with overall counts
 - Works on existing and newly-added relationships
 - Right-click entity to open its editor
 
@@ -988,6 +988,9 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 
 > [!IMPORTANT]
 > **Album-based** providers (everything except Deezer/Tidal) need the release's album link — either already in MB, or one [Platform Check](../platform_check/README.md) found by barcode, or a URL you paste yourself.
+
+> [!WARNING] Plausibility flags (#431)
+> Album imports map tracks **by position**, trusting the link — provider titles legitimately diverge (`(feat. …)`, remaster suffixes), so title mismatches alone don't block anything. But each position-matched fill is checked against the MB track **length** (>10 s off ⇒ probably a different recording): suspicious fills stay filled but get an **amber input + tooltip**, a log warning per row and an `⚠ N implausible` count in the summary. A linked album with **more tracks than the release** is called out as a likely wrong link/edition before the fills even finish. Verify amber rows (e.g. right-click the row's ISRC lookup) before submitting.
 
 Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
 

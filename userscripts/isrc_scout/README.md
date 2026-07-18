@@ -45,6 +45,9 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 > [!IMPORTANT]
 > **Album-based** providers (everything except Deezer/Tidal) need the release's album link — either already in MB, or one [Platform Check](../platform_check/README.md) found by barcode, or a URL you paste yourself.
 
+> [!WARNING] Plausibility flags (#431)
+> Album imports map tracks **by position**, trusting the link — provider titles legitimately diverge (`(feat. …)`, remaster suffixes), so title mismatches alone don't block anything. But each position-matched fill is checked against the MB track **length** (>10 s off ⇒ probably a different recording): suspicious fills stay filled but get an **amber input + tooltip**, a log warning per row and an `⚠ N implausible` count in the summary. A linked album with **more tracks than the release** is called out as a likely wrong link/edition before the fills even finish. Verify amber rows (e.g. right-click the row's ISRC lookup) before submitting.
+
 Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
 
 > [!NOTE] Qobuz auth in Platform Check

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.16
+// @version      2026.7.19
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -725,6 +725,8 @@
     .ii-lookup.spin { color: #6c757d; }
     .ii-lookup-rel { color: #6c757d; }
     .ii-lookup.pending { color: #6c757d; cursor: pointer; text-decoration: underline dotted #adb5bd; text-underline-offset: 2px; }
+    /* #431: a position-matched fill whose length/title doesn't fit the MB track */
+    input.ii-in-suspect { border-color: #e0892a !important; background: #fff6ea !important; box-shadow: 0 0 0 2px rgba(224,137,42,.28); }
     .ii-lookup.pending:hover { color: #343a40; }
     .ii-cand-refine { font-size: 10.5px; color: #6f42c1; cursor: pointer; padding: 2px 7px;
       border: 1px dashed #d6c7ee; border-radius: 4px; background: #faf8fe; width: max-content; }
@@ -3283,6 +3285,7 @@
     t.pending = normalizeIsrc(isrc);
     t.source = source || 'manual';
     input.value = t.pending;
+    input.classList.remove('ii-in-suspect'); input.title = '';   // #431: a fresh fill resets any prior implausibility flag
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
     { const sxb = input.closest('tr')?.querySelector('.ii-sx'); if (sxb) sxb.disabled = trackBtnDisabled(t, t.pending); }   // #157/#181: keep per-track button enabled-state in sync after a fill
@@ -3305,7 +3308,7 @@
 
   function clearPending() {
     abortSxWork('clear entered');            // cancel queued verifications + the bulk SX search (#127)
-    RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; validateInput(inp, t); } });
+    RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; inp.classList.remove('ii-in-suspect'); inp.title = ''; validateInput(inp, t); } });
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
     tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
     updateSummary();
@@ -3938,17 +3941,46 @@
   }
 
   /* ── streaming-source import (Deezer / Spotify) ── */
+  // #431: "m:ss" / "h:mm:ss" → seconds, or null when unknown.
+  const mmssToSec = v => { const m = String(v || '').trim().match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/); return m ? ((+m[1] || 0) * 3600 + (+m[2]) * 60 + (+m[3])) : null; };
+  const DUR_TOLERANCE_SEC = 10;
+  // #431: a POSITION match is filled trustingly — provider titles legitimately diverge
+  // ("(feat. …)", "(Album Version)", transliterations), which is exactly why position
+  // mapping exists — but nothing used to catch a WRONG provider link mapping a different
+  // album 1:1 by position. Duration is the variant-proof plausibility signal: a retitle
+  // shifts 0s, a different recording shifts tens of seconds. Suspicious fills are KEPT
+  // (dropping would kill legit cases — maintainer) but flagged: amber input + tooltip,
+  // a Log warning per row and a count in the import summary.
+  function flagImplausibleFill(idx, s, label) {
+    const t = RELEASE.tracks[idx];
+    const a = mmssToSec(t.dur), b = mmssToSec(s.dur);
+    const durOff = (a != null && b != null) ? Math.abs(a - b) : null;
+    // duration decides when both sides know it; title/artist only judges when it doesn't
+    const suspicious = durOff != null ? durOff > DUR_TOLERANCE_SEC
+      : !!(s.title && t.title && !isGoodMatch(s.title, s.artist, t.title, t.artist));
+    if (!suspicious) return;
+    const input = rowInput(idx); if (!input) return;
+    const why = durOff != null
+      ? 'length differs by ' + durOff + 's (MB ' + t.dur + ' vs ' + label + ' ' + (s.dur || '?') + ')'
+      : 'title/artist do not match ("' + s.title + '")';
+    input.classList.add('ii-in-suspect');
+    input.title = '⚠ matched by position only, but ' + why + ' — verify before submitting';
+    if (_stream) (_stream.suspects = _stream.suspects || []).push(idx);
+    Log.warn(label + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": filled by position, but ' + why);
+  }
   // Map ONE fetched ISRC to a track and fill it immediately (live, as it arrives).
   // Returns 'filled' | 'already' | 'skipped' | 'unmatched'.
   function mapOneToTrack(s, label) {
+    let byPos = true;
     let idx = RELEASE.tracks.findIndex(t =>
       (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
-    if (idx < 0) idx = RELEASE.tracks.findIndex(t => t.title && isGoodMatch(s.title, s.artist, t.title, t.artist));
+    if (idx < 0) { byPos = false; idx = RELEASE.tracks.findIndex(t => t.title && isGoodMatch(s.title, s.artist, t.title, t.artist)); }
     if (idx < 0) { Log.warn(label + ': no track matched ' + s.isrc + ' "' + s.title + '" (disc ' + s.disc + ' pos ' + s.pos + ')'); return 'unmatched'; }
     const t = RELEASE.tracks[idx];
     if (t.existing.includes(s.isrc)) return 'already';
     if (t.pending) return 'skipped';
     setPending(idx, s.isrc, true, label);   // fills the input box right now
+    if (byPos) flagImplausibleFill(idx, s, label);   // #431 — title-matched rows already validated themselves
     updateSummary();
     return 'filled';
   }
@@ -3985,7 +4017,16 @@
     let res;
     try {
       res = await fetcher(albumId,
-        (d, n) => setProg(n ? (label + ' ' + d + '/' + n) : (label + ': starting…')),
+        (d, n) => {
+          // #431: a provider album with MORE tracks than this release is the classic
+          // wrong-link/wrong-edition signature (a 12-track album position-mapping onto a
+          // 4-track single) — call it out loudly, once, before the fills finish.
+          if (n && !st.countWarned) {
+            st.countWarned = true;
+            if (+n > RELEASE.tracks.length) Log.warn(label + ': the linked album has ' + n + ' track(s) but this release has ' + RELEASE.tracks.length + ' — possibly the WRONG link/edition; implausible fills get flagged, verify before submitting');
+          }
+          setProg(n ? (label + ' ' + d + '/' + n) : (label + ': starting…'));
+        },
         s => { counts[mapOneToTrack(s, label)]++; },   // ← fill each ISRC as it's fetched
         st.cursor);
     } catch (e) {
@@ -4007,6 +4048,10 @@
     if (counts.already)   parts.push(counts.already + ' already present');
     if (counts.skipped)   parts.push(counts.skipped + ' already entered');
     if (counts.unmatched) parts.push(counts.unmatched + ' unmatched');
+    if (st.suspects && st.suspects.length) {   // #431
+      parts.push('⚠ ' + st.suspects.length + ' implausible');
+      Log.warn(label + ': ' + st.suspects.length + ' filled track(s) look implausible (length/title mismatch, amber inputs) — verify before submitting');
+    }
     if (next != null) {
       // more tracks remain — pause so we don't spam the source; click to continue
       st.cursor = next;
