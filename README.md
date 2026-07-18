@@ -1,6 +1,6 @@
-# musicbrainz-userscripts
+# Musicbrainz Toolset
 
-This repository contains [userscripts](https://musicbrainz.org/doc/Guides/Userscripts) to be used with [MusicBrainz](https://musicbrainz.org). See each script's README for detailed instructions, screenshots and videos. 
+This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides/Userscripts), [picard plugins](https://picard-docs.musicbrainz.org/en/latest/extending/plugins.html) and [shell scripts](./scripts)) to be used with [MusicBrainz](https://musicbrainz.org). 
 
 > [!IMPORTANT]
 >  [String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>

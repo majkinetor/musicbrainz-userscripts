@@ -1,5 +1,0 @@
-# Collection exports (data, not source)
-*.json
-
-# Your real sync config (keep the .example in git, not local paths/collections)
-collection_sync/collection_sync.config.ps1
