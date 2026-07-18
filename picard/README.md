@@ -1,6 +1,6 @@
 # Picard plugins
 
-Plugins for [MusicBrainz Picard](https://picard.musicbrainz.org/) used alongside the userscripts in this repo.
+Plugins for [MusicBrainz Picard](https://picard.musicbrainz.org/), v2.
 
 **Install**: copy the `.py` file into Picard's plugin folder (*Options → Plugins → Open plugin folder*, or `%LOCALAPPDATA%\MusicBrainz\Picard\plugins` on Windows), then enable it in *Options → Plugins* and restart Picard.
 
