@@ -238,4 +238,19 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.deepEqual(out.find(r => r.entityType === 'artist')._mergeUrls, [real], 'real provider URL kept');
 }
 
+// #429: Discogs member keys carry the API form — the row's URL set must hold the WEBSITE
+// form (MB refuses api.discogs.com as a URL relationship).
+{
+    const api = 'https://api.discogs.com/artists/3749';
+    const tidal = 'https://tidal.com/artist/55';
+    const mb = '//musicbrainz.org/artist/boozoo';
+    const results = [
+        { type: 'resolved', mbUrl: mb, entityType: 'artist', entity: { resource_url: api, name: 'Boozoo Bajou' }, _roles: [] },
+        { type: 'resolved', mbUrl: mb, entityType: 'artist', entity: { resource_url: tidal, name: 'Boozoo Bajou' }, _roles: [] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.equal(out.length, 1, 'same-MBID rows merge');
+    assert.deepEqual(out[0]._mergeUrls.sort(), ['https://tidal.com/artist/55', 'https://www.discogs.com/artist/3749'], 'api.discogs.com canonicalized to www form in _mergeUrls (#429)');
+}
+
 console.log('consolidate: all assertions passed');

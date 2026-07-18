@@ -224,7 +224,12 @@ export function mergeResolvedResults(allResults, entitySources) {
         // #428: synthesized resolution keys (tidal.com/_publisher/… , /_company/…) are NOT
         // real pages — keep them out of the row's URL set (inline regex to keep this module
         // pure; the canonical predicate is isSyntheticProviderUrl in sources/registry.js).
-        rep._mergeUrls = (keys || []).filter(k => /^https?:\/\//i.test(k) && !/tidal\.com\/_(?:publisher|company)\//i.test(k));
+        // #429: Discogs member keys are the API form ("api.discogs.com/artists/3749") —
+        // MB refuses those as URL relationships, so canonicalize to the website form here
+        // (the same api→www conversion preflight applies to discogsHref for single rows).
+        rep._mergeUrls = [...new Set((keys || [])
+            .filter(k => /^https?:\/\//i.test(k) && !/tidal\.com\/_(?:publisher|company)\//i.test(k))
+            .map(k => k.replace(/^https?:\/\/api\.discogs\.com\/(\w+?)s\/(\d+).*$/i, 'https://www.discogs.com/$1/$2')))];
     }
     return { results: out, mergeMap };
 }
