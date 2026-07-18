@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.18.134808
+// @version      2026.7.18.220448
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2643,18 +2643,31 @@
         tr.appendChild(tdDiscogs);
         const rolesList = r._roles || [];
         if (rolesList.length > 0) {
-          const seen = /* @__PURE__ */ new Map();
+          const byRole = /* @__PURE__ */ new Map();
           rolesList.forEach(({ displayLabel, linkType, trackPos }) => {
             const key = displayLabel || linkType;
             if (!key) return;
-            const uniqueKey = key + (trackPos ? "[" + trackPos + "]" : "");
-            if (seen.has(uniqueKey)) return;
-            seen.set(uniqueKey, {
-              roleKey: key,
-              displayText: key + (trackPos ? " [" + trackPos + "]" : "")
-            });
+            if (!byRole.has(key)) byRole.set(key, /* @__PURE__ */ new Set());
+            if (trackPos) byRole.get(key).add(String(trackPos));
           });
-          const chips = [...seen.values()];
+          const compressPositions = (posSet) => {
+            const all = [...posSet];
+            if (!all.length) return "";
+            if (!all.every((p) => /^\d+$/.test(p))) return "[" + all.join(",") + "]";
+            const nums = all.map(Number).sort((a, b) => a - b);
+            const parts = [];
+            for (let i = 0; i < nums.length; ) {
+              let j = i;
+              while (j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
+              parts.push(j > i ? nums[i] + "-" + nums[j] : String(nums[i]));
+              i = j + 1;
+            }
+            return "[" + parts.join(",") + "]";
+          };
+          const chips = [...byRole.entries()].map(([roleKey, posSet]) => {
+            const pos = compressPositions(posSet);
+            return { roleKey, displayText: roleKey + (pos ? " " + pos : "") };
+          });
           const rolesLine = document.createElement("div");
           rolesLine.style.cssText = "font-size:0.75rem;color:#888;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
           rolesLine.title = chips.map((c) => c.displayText).join(", ");

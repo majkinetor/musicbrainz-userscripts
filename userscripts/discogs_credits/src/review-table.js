@@ -454,18 +454,36 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // together on hover.
             const rolesList = r._roles || [];
             if (rolesList.length > 0) {
-                const seen = new Map(); // unique-display-string -> { roleKey, displayText }
+                // #430: ONE chip per role with its track positions grouped and consecutive
+                // runs compressed — "composer [1], mix [1], composer [2], mix [2]" becomes
+                // "composer [1-2], mix [1-2]", the same shortened notation the logs use.
+                // Multi-medium compound positions ("2-5") aren't pure integers and would
+                // clash with range notation, so those are comma-joined verbatim.
+                const byRole = new Map();   // roleKey → Set of positions (empty set = release-level only)
                 rolesList.forEach(({ displayLabel, linkType, trackPos }) => {
                     const key = displayLabel || linkType;
                     if (!key) return;
-                    const uniqueKey = key + (trackPos ? '[' + trackPos + ']' : '');
-                    if (seen.has(uniqueKey)) return;
-                    seen.set(uniqueKey, {
-                        roleKey:     key,
-                        displayText: key + (trackPos ? ' [' + trackPos + ']' : ''),
-                    });
+                    if (!byRole.has(key)) byRole.set(key, new Set());
+                    if (trackPos) byRole.get(key).add(String(trackPos));
                 });
-                const chips = [...seen.values()];
+                const compressPositions = posSet => {
+                    const all = [...posSet];
+                    if (!all.length) return '';
+                    if (!all.every(p => /^\d+$/.test(p))) return '[' + all.join(',') + ']';
+                    const nums = all.map(Number).sort((a, b) => a - b);
+                    const parts = [];
+                    for (let i = 0; i < nums.length;) {
+                        let j = i;
+                        while (j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
+                        parts.push(j > i ? nums[i] + '-' + nums[j] : String(nums[i]));
+                        i = j + 1;
+                    }
+                    return '[' + parts.join(',') + ']';
+                };
+                const chips = [...byRole.entries()].map(([roleKey, posSet]) => {
+                    const pos = compressPositions(posSet);
+                    return { roleKey, displayText: roleKey + (pos ? ' ' + pos : '') };
+                });
 
                 const rolesLine = document.createElement('div');
                 rolesLine.style.cssText = 'font-size:0.75rem;color:#888;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
