@@ -11,7 +11,7 @@ Import track and release credits from streaming and database providers into Musi
 The script presents itself on the **Edit relationships** screen of a MusicBrainz release when there's something to import — a linked provider (or one [Platform Check](../platform_check/README.md) found), **or** track titles that name a remixer (the **Titles** source). On a release with neither it stays out of the way. Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for the general guidelines.
 
 > [!NOTE] 
-> Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md)
+> Credit Hoarder is the [multi-source](#providers) successor to the single-source [Discogs Importer](../discogs_credits/README.md)
 
 > [!TIP] 
 > **[Group Therapy](../group_therapy/README.md)** adds general relationship-editor helpers — batch group-delete, hover-highlight, and copy/move credits between recordings, works and releases.
