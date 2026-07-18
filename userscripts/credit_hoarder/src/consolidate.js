@@ -221,7 +221,10 @@ export function mergeResolvedResults(allResults, entitySources) {
     // badge (has URL) vs greying it (name-only credit) + opening the provider page on click.
     for (const rep of out) {
         const keys = mergeMap.get(_resultKey(rep));
-        rep._mergeUrls = (keys || []).filter(k => /^https?:\/\//i.test(k));
+        // #428: synthesized resolution keys (tidal.com/_publisher/… , /_company/…) are NOT
+        // real pages — keep them out of the row's URL set (inline regex to keep this module
+        // pure; the canonical predicate is isSyntheticProviderUrl in sources/registry.js).
+        rep._mergeUrls = (keys || []).filter(k => /^https?:\/\//i.test(k) && !/tidal\.com\/_(?:publisher|company)\//i.test(k));
     }
     return { results: out, mergeMap };
 }

@@ -7,7 +7,8 @@
 import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry, fetchArtistRelTypes } from './api-mb.js';
 import { getDiscogsEntityData }            from './api-discogs.js';
-import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId, idbKeyForEntity } from './sources/registry.js';
+import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId, idbKeyForEntity, isSyntheticProviderUrl } from './sources/registry.js';
+import { SPECIAL_PURPOSE_ARTISTS }         from './data/special-purpose.js';
 import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
 import { getLogContainer, getReviewContainer } from './log.js';
@@ -469,7 +470,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const tdSrc = document.createElement('td');
                 tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
                 const names = entitySources.get(_entityKey) || [];
-                const srcUrls = r._mergeUrls || (discogsHref ? [discogsHref] : []);
+                // #428: a synthesized key isn't a page — the badge must grey out as a
+                // name-only credit instead of opening a dead URL.
+                const srcUrls = (r._mergeUrls || (discogsHref ? [discogsHref] : [])).filter(u => !isSyntheticProviderUrl(u));
                 if (!names.length) { tdSrc.innerHTML = '<span style="color:#bbb;">—</span>'; }
                 else names.forEach(nm => {
                     const url = srcUrls.find(u => sourceNameForUrl(u) === nm) || null;
@@ -997,7 +1000,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             function renderActions(selected) {
                 tdAction.innerHTML = '';
                 if (!selected) { linkState.delete(_entityKey); rowLinkChips.delete(_entityKey); updateLinksBadge(); }
-                if (selected) {
+                // #428: no link UI at all when there's no REAL provider page behind the row
+                // (synthesized tidal.com/_publisher|_company keys 404 → a dead 🔗 counted in
+                // the header) or when the selected MB entity is a SPECIAL-PURPOSE artist
+                // ([traditional], Various Artists, …) — same policy as Apollo #306.
+                const noLinkUi = selected && (isSyntheticProviderUrl(discogsHref) || SPECIAL_PURPOSE_ARTISTS.has(selected.id));
+                if (noLinkUi) { linkState.delete(_entityKey); rowLinkChips.delete(_entityKey); updateLinksBadge(); }
+                if (selected && !noLinkUi) {
                     // Link state lives in a single chip (Proposal C from #77):
                     //   🔗 — needs adding (default action)
                     //   ✓  — already linked (no further action)

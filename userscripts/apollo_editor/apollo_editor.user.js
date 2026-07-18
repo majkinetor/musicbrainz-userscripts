@@ -433,6 +433,9 @@
   // (e.g. [unknown] → '"Gold Diggers of 1937" Chorus'); never surface one as an AKA.
   // Keyed by MBID, not a name pattern — not all are bracketed (Various Artists) and
   // plenty of real artists DO use brackets. (#171, per @chaban-mb)
+  // NB (#428): the same list lives in credit_hoarder/src/data/special-purpose.js and
+  // discogs_credits/src/data/special-purpose.js — single-file scripts can't import,
+  // so keep the three copies in sync by hand.
   const SPECIAL_PURPOSE_ARTISTS = new Set([
     '125ec42a-7229-4250-afc5-e057484327fe', // [unknown]
     'f731ccc4-e22a-43af-a747-64213329e088', // [anonymous]

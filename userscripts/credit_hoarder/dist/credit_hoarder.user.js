@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.17.194052
+// @version      2026.7.18.134551
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2691,7 +2691,9 @@
     if (/deezer\.com\//i.test(url || "")) return "Deezer";
     return "Discogs";
   }
+  var isSyntheticProviderUrl = (url) => /tidal\.com\/_(?:publisher|company)\//i.test(String(url || ""));
   function sourceUrlLinkTypeId(url, entityType) {
+    if (isSyntheticProviderUrl(url)) return null;
     const src = sourceNameForUrl(url);
     if (src === "Tidal") return entityType === "artist" ? "978" : null;
     if (src === "Qobuz") return entityType === "artist" ? "978" : null;
@@ -3133,6 +3135,34 @@
     return roles;
   }
 
+  // src/data/special-purpose.js
+  var SPECIAL_PURPOSE_ARTISTS = /* @__PURE__ */ new Set([
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ]);
+
   // src/edit-note.js
   function buildEditNote(sourceUrl, opts, extraLines, sourceLabel) {
     const s = GM_info.script;
@@ -3507,7 +3537,7 @@ ${ourBlock}` : ourBlock;
           const tdSrc = document.createElement("td");
           tdSrc.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;text-align:center;`;
           const names = entitySources.get(_entityKey) || [];
-          const srcUrls = r._mergeUrls || (discogsHref ? [discogsHref] : []);
+          const srcUrls = (r._mergeUrls || (discogsHref ? [discogsHref] : [])).filter((u) => !isSyntheticProviderUrl(u));
           if (!names.length) {
             tdSrc.innerHTML = '<span style="color:#bbb;">\u2014</span>';
           } else names.forEach((nm) => {
@@ -3909,7 +3939,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             rowLinkChips.delete(_entityKey);
             updateLinksBadge();
           }
-          if (selected) {
+          const noLinkUi = selected && (isSyntheticProviderUrl(discogsHref) || SPECIAL_PURPOSE_ARTISTS.has(selected.id));
+          if (noLinkUi) {
+            linkState.delete(_entityKey);
+            rowLinkChips.delete(_entityKey);
+            updateLinksBadge();
+          }
+          if (selected && !noLinkUi) {
             let recheckUrlBypassCache = function() {
               _urlCheckSessionCache.delete(urlCheckCacheKey);
               try {
@@ -5736,7 +5772,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     });
     for (const rep of out) {
       const keys = mergeMap.get(_resultKey(rep));
-      rep._mergeUrls = (keys || []).filter((k) => /^https?:\/\//i.test(k));
+      rep._mergeUrls = (keys || []).filter((k) => /^https?:\/\//i.test(k) && !/tidal\.com\/_(?:publisher|company)\//i.test(k));
     }
     return { results: out, mergeMap };
   }

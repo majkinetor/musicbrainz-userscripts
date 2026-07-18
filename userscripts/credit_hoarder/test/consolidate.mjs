@@ -224,4 +224,18 @@ const rel = (name, url, linkType, pos, attrs) => ({ linkType, entityType: 'artis
     assert.ok(out.every(r => r.type === 'resolved'), 'neither row downgraded');
 }
 
+// #428: synthesized provider keys (tidal.com/_publisher/… , /_company/…) are resolution
+// keys, not pages — they must never enter the row's URL set (no dead add-link chip/badge).
+{
+    const synth = 'https://tidal.com/_publisher/Shika%20Shika';
+    const real  = 'https://tidal.com/artist/123';
+    const results = [
+        { type: 'resolved', mbUrl: '//musicbrainz.org/label/shika', entityType: 'label', entity: { resource_url: synth, name: 'Shika Shika', entityType: 'label' }, _roles: [] },
+        { type: 'resolved', mbUrl: '//musicbrainz.org/artist/abc', entityType: 'artist', entity: { resource_url: real, name: 'Real Artist' }, _roles: [] },
+    ];
+    const { results: out } = mergeResolvedResults(results, new Map());
+    assert.deepEqual(out.find(r => r.entityType === 'label')._mergeUrls, [], 'synthetic publisher key excluded from _mergeUrls (#428)');
+    assert.deepEqual(out.find(r => r.entityType === 'artist')._mergeUrls, [real], 'real provider URL kept');
+}
+
 console.log('consolidate: all assertions passed');

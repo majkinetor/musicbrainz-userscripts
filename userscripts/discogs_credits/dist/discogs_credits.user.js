@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.17.194116
+// @version      2026.7.18.134808
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2284,6 +2284,34 @@
   var ARTIST_KIND = () => "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
+  // src/data/special-purpose.js
+  var SPECIAL_PURPOSE_ARTISTS = /* @__PURE__ */ new Set([
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ]);
+
   // src/edit-note.js
   function buildEditNote(discogsUrl, opts, extraLines) {
     const s = GM_info.script;
@@ -2876,7 +2904,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         const ACTION_CHIP_STYLE = "display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;padding:0 0.35rem;font-size:0.95rem;line-height:1;cursor:pointer;border:1px solid #d6d6d6;border-radius:0.3rem;background:#fafafa;";
         function renderActions(selected) {
           tdAction.innerHTML = "";
-          if (selected) {
+          const noLinkUi = selected && SPECIAL_PURPOSE_ARTISTS.has(selected.id);
+          if (selected && !noLinkUi) {
             let recheckUrlBypassCache = function() {
               _urlCheckSessionCache.delete(urlCheckCacheKey);
               try {

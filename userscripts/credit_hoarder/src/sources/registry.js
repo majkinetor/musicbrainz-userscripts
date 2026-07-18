@@ -40,11 +40,18 @@ export function sourceNameForUrl(url) {
     return 'Discogs';
 }
 
+/** #428: synthesized per-credit resource_urls — resolution/cache KEYS with no real page
+ *  behind them (Tidal exposes no label/publisher URLs, so tidalCompany/tidalPublisherRole
+ *  mint `tidal.com/_company/…` / `tidal.com/_publisher/…`). Never link-UI material:
+ *  no add-link chip, no link count, no clickable badge, never seeded into MB. */
+export const isSyntheticProviderUrl = url => /tidal\.com\/_(?:publisher|company)\//i.test(String(url || ''));
+
 /** MB URL-relationship link-type id to seed when adding this external URL
  *  to an MB entity. Discogs pages have dedicated types per entity; a Tidal
  *  artist page is a "streaming page" (978). Returns null when there is no
  *  sensible type (e.g. Tidal URL on a label) — callers then omit the URL. */
 export function sourceUrlLinkTypeId(url, entityType) {
+    if (isSyntheticProviderUrl(url)) return null;   // #428 — not a real page
     const src = sourceNameForUrl(url);
     if (src === 'Tidal') return entityType === 'artist' ? '978' : null;
     if (src === 'Qobuz') return entityType === 'artist' ? '978' : null;   // #353 Qobuz artist page = "streaming" (978), same as Tidal
