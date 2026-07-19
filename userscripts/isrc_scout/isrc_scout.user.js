@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.19
+// @version      2026.7.19.145356
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -727,6 +727,9 @@
     .ii-lookup.pending { color: #6c757d; cursor: pointer; text-decoration: underline dotted #adb5bd; text-underline-offset: 2px; }
     /* #431: a position-matched fill whose length/title doesn't fit the MB track */
     input.ii-in-suspect { border-color: #e0892a !important; background: #fff6ea !important; box-shadow: 0 0 0 2px rgba(224,137,42,.28); }
+    #ii-suspect-badge { color: #b45309; background: #fff3e0; border: 1px solid #e0a05a; border-radius: 5px;
+      padding: 2px 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
+    #ii-suspect-badge:hover { background: #ffe9cc; }
     .ii-lookup.pending:hover { color: #343a40; }
     .ii-cand-refine { font-size: 10.5px; color: #6f42c1; cursor: pointer; padding: 2px 7px;
       border: 1px dashed #d6c7ee; border-radius: 4px; background: #faf8fe; width: max-content; }
@@ -3115,6 +3118,7 @@
           input.value = t.pending; input.setSelectionRange(p, p);
         }
         input.dataset.autofill = '';
+        if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431: a manual edit is the user taking over
         validateInput(input, t);
         updateSummary();
         // #157: don't hit SoundExchange on every keystroke (that spammed SX).
@@ -3285,7 +3289,7 @@
     t.pending = normalizeIsrc(isrc);
     t.source = source || 'manual';
     input.value = t.pending;
-    input.classList.remove('ii-in-suspect'); input.title = '';   // #431: a fresh fill resets any prior implausibility flag
+    if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431: a fresh fill resets any prior implausibility flag
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
     { const sxb = input.closest('tr')?.querySelector('.ii-sx'); if (sxb) sxb.disabled = trackBtnDisabled(t, t.pending); }   // #157/#181: keep per-track button enabled-state in sync after a fill
@@ -3309,6 +3313,7 @@
   function clearPending() {
     abortSxWork('clear entered');            // cancel queued verifications + the bulk SX search (#127)
     RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; inp.classList.remove('ii-in-suspect'); inp.title = ''; validateInput(inp, t); } });
+    updateSuspectBadge();   // #431
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
     tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
     updateSummary();
@@ -3322,6 +3327,7 @@
     _vq.items = _vq.items.filter(it => it.idx !== idx);   // drop any queued verify for this row
     t.pending = ''; t.source = '';
     input.value = ''; input.dataset.autofill = '';
+    if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431
     validateInput(input, t);
     const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
     // re-expand the candidate list so a different suggestion can be picked
@@ -3967,6 +3973,32 @@
     input.title = '⚠ matched by position only, but ' + why + ' — verify before submitting';
     if (_stream) (_stream.suspects = _stream.suspects || []).push(idx);
     Log.warn(label + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": filled by position, but ' + why);
+    updateSuspectBadge();
+  }
+  // #431 follow-up (maintainer): the summary-line "⚠ N implausible" was too easy to
+  // overlook — a persistent amber pill in the footer (next to the Submit button's row)
+  // tracks the live count; clicking it jumps to the first flagged row.
+  function updateSuspectBadge() {
+    if (!modal) return 0;
+    let el = modal.querySelector('#ii-suspect-badge');
+    if (!el) {
+      el = document.createElement('span');
+      el.id = 'ii-suspect-badge';
+      el.className = 'ii-only-isrc';
+      el.title = 'These fills differ from the MB track in length or title — click to jump to the first one';
+      el.addEventListener('click', () => {
+        const s = modal.querySelector('input.ii-in-suspect');
+        if (!s) return;
+        s.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        const tr = s.closest('tr');
+        if (tr) { tr.classList.remove('ii-row-fill'); void tr.offsetWidth; tr.classList.add('ii-row-fill'); }
+      });
+      if (summaryEl) summaryEl.after(el);
+    }
+    const n = modal.querySelectorAll('input.ii-in-suspect').length;
+    el.textContent = n ? ('⚠ ' + n + ' implausible fill' + (n === 1 ? '' : 's') + ' — verify') : '';
+    el.style.display = n ? '' : 'none';
+    return n;
   }
   // Map ONE fetched ISRC to a track and fill it immediately (live, as it arrives).
   // Returns 'filled' | 'already' | 'skipped' | 'unmatched'.
@@ -4260,6 +4292,36 @@
      that didn't, so it was easy to submit one and forget the other. This submits
      BOTH — every entered ISRC and every resolved streaming link — in one action,
      then closes. Either half can be empty; it does whatever's actually changed. */
+  // #431: confirmation popup shown when implausible (amber) fills are about to be
+  // submitted. Resolves true only on an explicit "Submit anyway"; "Review first"
+  // closes and jumps to the first flagged row.
+  function confirmSuspectSubmit(n) {
+    return new Promise(resolve => {
+      const ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2147483400;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;';
+      const box = document.createElement('div');
+      box.style.cssText = 'max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #e0892a;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;font-family:inherit;';
+      box.innerHTML =
+        '<div style="font-weight:800;color:#b45309;font-size:15px;margin-bottom:8px;">⚠ ' + n + ' implausible ISRC fill' + (n === 1 ? '' : 's') + '</div>' +
+        '<p style="margin:0 0 12px;">The amber-flagged entries differ from the MB track in <strong>length or title</strong> — they may belong to a <strong>different recording</strong> (wrong provider link or edition). Submitted ISRCs are rarely re-checked, so verify those rows first.</p>' +
+        '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+        '<button type="button" data-a="review" style="padding:5px 14px;font-size:13px;font-weight:600;color:#333;background:#f1f3f5;border:1px solid #ced4da;border-radius:5px;cursor:pointer;">Review first</button>' +
+        '<button type="button" data-a="go" style="padding:5px 14px;font-size:13px;font-weight:600;color:#fff;background:#e0892a;border:none;border-radius:5px;cursor:pointer;">Submit anyway</button>' +
+        '</div>';
+      const done = ok => {
+        ov.remove();
+        if (!ok) { const s = modal.querySelector('input.ii-in-suspect'); if (s) s.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+        resolve(ok);
+      };
+      box.querySelector('[data-a="review"]').addEventListener('click', () => done(false));
+      box.querySelector('[data-a="go"]').addEventListener('click', () => done(true));
+      ov.addEventListener('mousedown', e => { if (e.target === ov) done(false); });
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+      box.querySelector('[data-a="review"]').focus();
+    });
+  }
+
   async function doSubmitAll() {
     // 1) pending ISRC additions (valid, not a cross-track duplicate, not already present)
     const map = {};
@@ -4276,6 +4338,10 @@
     const linkCount = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
 
     if (!isrcCount && !linkCount) { toast('Nothing to submit — enter ISRCs or 🔗 Find links first', 'err'); return; }
+    // #431 follow-up (maintainer): flagged fills about to be submitted need explicit
+    // confirmation — the amber inputs + summary count alone were too easy to miss.
+    const suspectN = isrcCount ? [...modal.querySelectorAll('input.ii-in-suspect')].filter(i => i.value.trim()).length : 0;
+    if (suspectN && !(await confirmSuspectSubmit(suspectN))) return;
     // ISRC additions need OAuth; link edits ride the logged-in MB session. Only block
     // on authorization when there are ISRCs — links alone can still go through.
     if (isrcCount && !Auth.isAuthorized()) {

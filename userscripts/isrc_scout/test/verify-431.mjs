@@ -78,6 +78,29 @@ ck(r.suspectCount >= 3, `most fills flagged amber (${r.suspectCount})`);
 ck(r.perRowWarns === r.suspectCount, `per-row warnings match the amber inputs (${r.perRowWarns})`);
 ck(new RegExp('⚠ ' + r.suspectCount + ' implausible').test(r.doneLine), `summary count agrees ("${r.doneLine}")`);
 ck(/matched by position only, but length differs/.test(r.suspectTitle), 'amber input explains itself in the tooltip');
+
+// follow-up: footer badge + submit confirmation popup (probe is unauthorized, so even
+// "Submit anyway" dead-ends at the OAuth gate — nothing can actually submit)
+const fu = await page.evaluate(async () => {
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
+  const out = {};
+  const badge = document.getElementById('ii-suspect-badge');
+  out.badge = badge ? { visible: badge.style.display !== 'none', text: badge.textContent } : null;
+  document.getElementById('ii-submit').click();
+  await sleep(200);
+  const pop = [...document.querySelectorAll('div')].find(d => /implausible ISRC fill/.test(d.textContent) && d.querySelector('[data-a="go"]'));
+  out.popupShown = !!pop;
+  out.popupText = pop ? pop.textContent.slice(0, 120) : '';
+  pop?.querySelector('[data-a="review"]')?.click();
+  await sleep(150);
+  out.popupClosedOnReview = ![...document.querySelectorAll('[data-a="go"]')].length;
+  out.submitStillEnabled = !document.getElementById('ii-submit').disabled;
+  return out;
+});
+console.log(JSON.stringify(fu, null, 1));
+ck(fu.badge && fu.badge.visible && /implausible/.test(fu.badge.text), `footer badge prominent ("${fu.badge && fu.badge.text}")`);
+ck(fu.popupShown && /implausible ISRC fill/.test(fu.popupText), 'submit raises the confirmation popup');
+ck(fu.popupClosedOnReview && fu.submitStillEnabled, '"Review first" cancels without submitting');
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 2)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close(); process.exit(fail ? 1 : 0);
