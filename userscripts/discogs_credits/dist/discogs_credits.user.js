@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.19.172838
+// @version      2026.7.19.174403
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3102,7 +3102,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               if (evt.data.resourceUrl !== r.entity.resource_url) return;
               DISCOGS_CHANNEL.removeEventListener("message", onCreated);
               _urlCheckSessionCache.set(`${evt.data.id}|${discogsHref}`, "linked");
-              setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
+              if (evt.data.name) {
+                setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
+              } else {
+                setRowResolved({ id: evt.data.id, name: finalName || displayName || "", disambiguation: "" });
+                fetchWithRetry(`//musicbrainz.org/ws/2/${entityType}/${evt.data.id}?fmt=json`).then((json) => {
+                  if (json && json.name) setRowResolved({ id: evt.data.id, name: json.name, disambiguation: json.disambiguation || "" });
+                }).catch(() => {
+                });
+              }
             };
             DISCOGS_CHANNEL.addEventListener("message", onCreated);
           }

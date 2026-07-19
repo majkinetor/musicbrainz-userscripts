@@ -1333,7 +1333,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         // `${mbid}|${discogsHref}` exactly as renderActions
                         // builds it.
                         _urlCheckSessionCache.set(`${evt.data.id}|${discogsHref}`, 'linked');
-                        setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
+                        // #434: the create tab caps its name fetch at ~1s and posts an EMPTY name
+                        // when MB is slow — the row then showed a bare ✓ with no name and no [MB]
+                        // credit helper. Show the entered name at once and backfill the real MB
+                        // name + disambiguation from this side.
+                        if (evt.data.name) {
+                            setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
+                        } else {
+                            setRowResolved({ id: evt.data.id, name: finalName || displayName || '', disambiguation: '' });
+                            fetchWithRetry(`//musicbrainz.org/ws/2/${entityType}/${evt.data.id}?fmt=json`)
+                                .then(json => { if (json && json.name) setRowResolved({ id: evt.data.id, name: json.name, disambiguation: json.disambiguation || '' }); })
+                                .catch(() => {});
+                        }
                     };
                     DISCOGS_CHANNEL.addEventListener('message', onCreated);
                     // #273: collapse the row to its final height now + show a
