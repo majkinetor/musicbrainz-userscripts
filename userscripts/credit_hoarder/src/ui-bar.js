@@ -47,6 +47,7 @@ import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources/tidal.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine, qobuzToken, fetchQobuzApiAlbum, parseQobuzApiTracks, qobuzApiAlbumInfo } from './sources/qobuz.js';
+import { parseAppleAlbumUrl, fetchAppleCredits, appleToEngine } from './sources/apple.js';
 import { parseDeezerAlbumUrl, fetchDeezerAlbumPage, extractDeezerCredits, extractDeezerAlbumInfo, deezerToEngine } from './sources/deezer.js';
 import { mergeHarvests, mergeResolvedResults } from './consolidate.js';
 
@@ -61,6 +62,8 @@ let _tidalJson = null;
 let _qobuzJson = null;
 // Parsed Deezer credits of the current run — same contract for "Copy Deezer".
 let _deezerJson = null;
+// Parsed Apple credits of the current run (#435) — same contract for "Copy Apple".
+let _appleJson = null;
 // #408: combined JSON of a consolidated ("Import all") run — every source's raw JSON
 // plus the merged, de-duplicated result — for the Log ▾ "Copy all" item.
 let _consolidatedJson = null;
@@ -80,6 +83,7 @@ const SRC_ICON = {
     Tidal:   stIcon('tidal', 16),
     Qobuz:   stIcon('qobuz', 16),
     Deezer:  stIcon('deezer', 16),
+    Apple:   stIcon('apple', 16),
     Titles:  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>',
 };
 const srcIconByUrl = url => SRC_ICON[sourceNameForUrl(url)] || '';
@@ -505,6 +509,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: (g, c, collect) => runTidalImport(sources.tidal, g, c, collect) });
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: (g, c, collect) => runQobuzImport(sources.qobuz, g, c, collect) });
     if (sources.deezer) importSources.push({ name: 'Deezer', url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
+    if (sources.apple)  importSources.push({ name: 'Apple',  url: sources.apple,  run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
     // #271: "Titles" — derive remixer credits from the track titles. Offered
     // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
     // CH doesn't surface an action with nothing behind it. Pushed LAST so it
@@ -524,6 +529,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         Tidal:   stIcon('tidal', 16),
         Qobuz:   stIcon('qobuz', 16),
         Deezer:  stIcon('deezer', 16),
+        Apple:   stIcon('apple', 16),
         Titles:  SRC_ICON.Titles,
     };
     const srcButtons = [];
@@ -1006,6 +1012,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (sources.tidal) logMenu.appendChild(mkMenuItem('Copy Tidal',   'Copy the raw Tidal credits harvest for this release',  (b, l) => bar._copy?.tidal(b, l)));
     if (sources.qobuz) logMenu.appendChild(mkMenuItem('Copy Qobuz',   'Copy the parsed Qobuz credits for this release',       (b, l) => bar._copy?.qobuz(b, l)));
     if (sources.deezer) logMenu.appendChild(mkMenuItem('Copy Deezer', 'Copy the parsed Deezer credits for this release',      (b, l) => bar._copy?.deezer(b, l)));
+    if (sources.apple)  logMenu.appendChild(mkMenuItem('Copy Apple',  'Copy the parsed Apple credits for this release',       (b, l) => bar._copy?.apple(b, l)));
     if (importSources.length > 1) logMenu.appendChild(mkMenuItem('Copy all', 'Copy the combined JSON of an "Import all" run — every source plus the merged, de-duplicated result (#408)', (b, l) => bar._copy?.all(b, l)));   // #408
     document.body.appendChild(logMenu);
 
@@ -1284,6 +1291,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             tidal:   (item, label) => { if (_tidalJson)   copyToClipboard(JSON.stringify(_tidalJson,   null, 2), item, label); },
             qobuz:   (item, label) => { if (_qobuzJson)   copyToClipboard(JSON.stringify(_qobuzJson,   null, 2), item, label); },
             deezer:  (item, label) => { if (_deezerJson)  copyToClipboard(JSON.stringify(_deezerJson,  null, 2), item, label); },
+            apple:   (item, label) => { if (_appleJson)   copyToClipboard(JSON.stringify(_appleJson,   null, 2), item, label); },   // #435
             all:     (item, label) => { if (_consolidatedJson) copyToClipboard(JSON.stringify(_consolidatedJson, null, 2), item, label); },   // #408
         };
 
@@ -1610,6 +1618,34 @@ function runDeezerImport(deezerUrl, getOpts, cancelled, collect) {
         .catch(err => { log.error(err.message || String(err)); });
 }
 
+// Apple import (#435): the amp-api serves roled per-track credits anonymously (token
+// from the web player's public JS). album → tracks → per-song /credits. Names only —
+// every credit resolves via name search + the review table (the Qobuz/Deezer shape).
+function runAppleImport(appleUrl, getOpts, cancelled, collect) {
+    const parsed = parseAppleAlbumUrl(appleUrl);
+    if (!parsed) { log.error(`Not an Apple Music album URL: ${appleUrl}`); return Promise.resolve(); }
+    log.info(`Fetching Apple Music credits (anonymous): album ${parsed.id} (${parsed.storefront})`);
+    return fetchAppleCredits(parsed.storefront, parsed.id, (d, n) => document.querySelector('.discogs-bar')?._setProgress?.(null, `Apple ${d}/${n}`))
+        .then(({ album, tracks }) => {
+            _appleJson = { source: appleUrl, album, tracks };   // Log ▾ → "Copy Apple"
+            const li = document.createElement('li');
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
+            pre.textContent = JSON.stringify(_appleJson, null, 2);
+            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${album || 'Apple album'} · ${tracks.length} tracks — parsed Apple credits (API)</strong></summary></details>`;
+            li.querySelector('details').appendChild(pre);
+            _logs.appendChild(li);
+            if (!tracks.length) { log.warn('No Apple credits found (Apple has no credit data for this album, or none of its tracks list credits) — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            const { tracklistRels, tracklist, skipped } = appleToEngine(tracks);
+            log.info(`Apple credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+            skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            if (!tracklistRels.length) { log.warn('No importable Apple credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: appleUrl, processTracklist: true };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
 // Titles "source" (#271): no provider — read the release's own track titles
 // from MB (WS2) and derive remixer credits from the disambiguation convention
 // ("Song (Artist Remix)"). The derived roles are name-only artists (no URL,
@@ -1696,7 +1732,7 @@ async function runConsolidatedImport(importSources, getOpts, cancelled) {
     // combined JSON for Log ▾ → "Copy all"
     _consolidatedJson = {
         via: 'consolidated', sources: harvests.map(h => h.sourceName),
-        discogs: _discogsJson, tidal: _tidalJson, qobuz: _qobuzJson, deezer: _deezerJson,
+        discogs: _discogsJson, tidal: _tidalJson, qobuz: _qobuzJson, deezer: _deezerJson, apple: _appleJson,
         merged: { companies: merged.companies, artistRoles: merged.artistRoles, tracklistRels: merged.tracklistRels },
     };
     return runSourcePipeline({

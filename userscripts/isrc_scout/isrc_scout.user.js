@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.19.145356
+// @version      2026.7.19.190506
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -29,6 +29,7 @@
 // @connect      api.beatport.com
 // @connect      bandcamp.com
 // @connect      music.apple.com
+// @connect      amp-api.music.apple.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -1253,6 +1254,7 @@
     volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
     hdtracks: { source: 'HDtracks', idField: 'hdtracksId', fetcher: fetchHDtracks, code: 'hd' },
     qobuz:    { source: 'Qobuz',    idField: 'qobuzId',    fetcher: fetchQobuz,    code: 'qz' },
+    apple:    { source: 'Apple',    idField: 'appleUrl',   fetcher: fetchApple,    code: 'am' },   // #435 anonymous amp-api
   };
   const _PROV_COLOR = { sx: stColor('soundexchange'), deezer: stColor('deezer'), spotify: stColor('spotify'), beatport: stColor('beatport'), tidal: stColor('tidal'), volumo: stColor('volumo'), hdtracks: stColor('hdtracks'), qobuz: stColor('qobuz'), bandcamp: stColor('bandcamp'), apple: stColor('apple') };   // #404: colours from the shared registry
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
@@ -1263,7 +1265,7 @@
     // on any release. The rest scan the release's album, so they need its link.
     TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' || k === 'tidal' };
   });
-  const TRACK_PROV_ORDER = ['sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks', 'qobuz'];
+  const TRACK_PROV_ORDER = ['sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks', 'qobuz', 'apple'];
   let trackProv = 'sx';                                  // NOT persisted (#181)
   const TPM = () => TRACK_PROV[trackProv];
   // a provider is offered only when it can resolve a source for THIS release
@@ -1849,6 +1851,68 @@
     return { total: list.length, next: null };
   }
 
+  /* ═══════════════════════════════════════════════════════════════════════
+     APPLE MUSIC (#435) — per-track ISRCs from the amp-api, ANONYMOUSLY. The
+     web player's bearer token lives in its public JS bundle (no login); one
+     `catalog/<sf>/albums/<id>` call returns every track's `attributes.isrc`.
+     The storefront comes from the MB link (…/us/…); credits aren't needed
+     here (that's Credit Hoarder's job), just the album's tracklist.
+  ═══════════════════════════════════════════════════════════════════════ */
+  const APPLE = { amp: 'https://amp-api.music.apple.com/v1/catalog', lsKey: 'mbtools:apple-token' };
+  let _appleTok = null;
+  async function appleToken() {
+    if (_appleTok) return _appleTok;
+    try { const c = JSON.parse(localStorage.getItem(APPLE.lsKey) || 'null'); if (c && c.t && c.at && (Date.now() - c.at) < 12 * 3600e3) { _appleTok = c.t; return _appleTok; } } catch (e) {}
+    const home = await gmGet('https://music.apple.com/us/browse', { 'Accept': 'text/html' });
+    const asset = (home.responseText.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.responseText.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
+    if (!asset) throw new Error('Apple: web-player JS asset not found');
+    const js = await gmGet('https://music.apple.com' + asset, {});
+    const tok = (js.responseText.match(/eyJ[A-Za-z0-9._\-]{80,}/) || [])[0];
+    if (!tok) throw new Error('Apple: no bearer token in the web-player JS');
+    _appleTok = tok;
+    try { localStorage.setItem(APPLE.lsKey, JSON.stringify({ t: tok, at: Date.now() })); } catch (e) {}
+    return tok;
+  }
+  // albumId is "<storefront>/<id>" (from parseStreamingId) or a full Apple album URL.
+  async function fetchApple(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    let sf = 'us', id = String(albumId).trim();
+    let m = id.match(/music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i) || id.match(/^([a-z]{2})\/(\d+)$/i);
+    if (m) { sf = m[1].toLowerCase(); id = m[2]; }
+    const tok = await appleToken();
+    const h = { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com', Accept: 'application/json' };
+    const r = await gmGet(APPLE.amp + '/' + sf + '/albums/' + encodeURIComponent(id) + '?l=en-US', h);
+    if (r.status !== 200) throw new Error('Apple ' + r.status + ' for album ' + id);
+    let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Apple: malformed JSON'); }
+    const alb = j && j.data && j.data[0];
+    let list = (alb && alb.relationships && alb.relationships.tracks && alb.relationships.tracks.data) || [];
+    let next = alb && alb.relationships && alb.relationships.tracks && alb.relationships.tracks.next;
+    while (next) {
+      const pg = await gmGet('https://amp-api.music.apple.com' + next + (next.includes('?') ? '&' : '?') + 'l=en-US', h);
+      let pj; try { pj = JSON.parse(pg.responseText || 'null'); } catch (e) { break; }
+      list = list.concat((pj && pj.data) || []); next = pj && pj.next;
+    }
+    Log.info('Apple album "' + ((alb && alb.attributes && alb.attributes.name) || id) + '": ' + list.length + ' track(s)');
+    let n = 0;
+    list.forEach((t, i) => {
+      const a = t.attributes || {};
+      const e = {
+        isrc:   normalizeIsrc(a.isrc || ''),
+        title:  a.name || '',
+        artist: a.artistName || '',
+        disc:   a.discNumber || 1,
+        pos:    a.trackNumber || (i + 1),
+        dur:    a.durationInMillis ? msToMmSs(a.durationInMillis) : '',
+        url:    a.url || '',
+      };
+      try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Apple map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(++n, list.length); } catch (err) {}
+    });
+    const withIsrc = list.filter(t => isValidIsrc(normalizeIsrc((t.attributes || {}).isrc || ''))).length;
+    if (!withIsrc) throw new Error('Apple album exposed no ISRCs');
+    return { total: list.length, next: null };
+  }
+
   async function fetchVolumo(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
     const idStr = String(albumId);
@@ -2131,6 +2195,7 @@
         <button class="ii-tbtn vo ii-only-isrc" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
         <button class="ii-tbtn hd ii-only-isrc" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
         <button class="ii-tbtn qz ii-only-isrc" id="ii-qz-all" title="Import ISRCs from Qobuz (needs Qobuz login in Platform Check)"><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
+        <button class="ii-tbtn am ii-only-isrc" id="ii-am-all" title="Import ISRCs from Apple Music"><span class="ii-bico">${SRC_ICON.am}</span><span class="ii-blabel">Apple</span></button>
         <span class="ii-urladd ii-only-isrc" id="ii-urladd">
           <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
@@ -2317,6 +2382,7 @@
     modal.querySelector('#ii-vo-all').addEventListener('click', runVolumo);
     modal.querySelector('#ii-hd-all').addEventListener('click', runHDtracks);
     modal.querySelector('#ii-qz-all').addEventListener('click', runQobuz);
+    modal.querySelector('#ii-am-all').addEventListener('click', runApple);
     // Unified "paste a URL" control (#180) — apollo-style unroll. Click the +
     // to reveal the input; paste any streaming album URL; on Enter the platform
     // is auto-detected and imported. Replaces the per-provider ▾ submenus.
@@ -3054,7 +3120,8 @@
      ['Tidal', 'ii-td-all', 'tidalId'],
      ['Volumo', 'ii-vo-all', 'volumoId'],
      ['HDtracks', 'ii-hd-all', 'hdtracksId'],
-     ['Qobuz', 'ii-qz-all', 'qobuzId']].forEach(([source, id, field]) => {
+     ['Qobuz', 'ii-qz-all', 'qobuzId'],
+     ['Apple', 'ii-am-all', 'appleUrl']].forEach(([source, id, field]) => {
       const btn = modal.querySelector('#' + id);
       const mbId = RELEASE[field];
       // Spotify imports only via its MB-linked album (ISRC Hunt resolves the
@@ -4119,6 +4186,7 @@
   async function runVolumo()   { return runProvider('Volumo',   RELEASE.volumoId,   fetchVolumo,   '#ii-vo-all'); }
   async function runHDtracks() { return runProvider('HDtracks', RELEASE.hdtracksId, fetchHDtracks, '#ii-hd-all'); }
   async function runQobuz()    { return runProvider('Qobuz',    RELEASE.qobuzId,    fetchQobuz,    '#ii-qz-all'); }
+  async function runApple()    { return runProvider('Apple',    RELEASE.appleUrl,   fetchApple,    '#ii-am-all'); }   // #435
   // Map a source label to its fetcher (used by the unified URL-paste import).
   function fetcherFor(source) {
     return source === 'Deezer'   ? fetchDeezer
@@ -4133,8 +4201,8 @@
 
   /* ── source links & the unified "paste a URL" control (#180) ── */
   // Source name → SRC_ICON key / brand colour, for the URL-add detection feedback.
-  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo', HDtracks: 'hd', Qobuz: 'qz' };
-  const SRC_COLOR = { dz: stColor('deezer'), sp: stColor('spotify'), bp: stColor('beatport'), td: stColor('tidal'), vo: stColor('volumo'), hd: stColor('hdtracks'), qz: stColor('qobuz') };   // #404: colours from the shared registry
+  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo', HDtracks: 'hd', Qobuz: 'qz', Apple: 'am' };
+  const SRC_COLOR = { dz: stColor('deezer'), sp: stColor('spotify'), bp: stColor('beatport'), td: stColor('tidal'), vo: stColor('volumo'), hd: stColor('hdtracks'), qz: stColor('qobuz'), am: stColor('apple') };   // #404: colours from the shared registry
 
   // If Platform Check (separate userscript) is on the page, read the URL it found
   // for this source from its sidebar anchor (#mb-online-<source>).
@@ -4182,6 +4250,7 @@
     if (/volumo\.com/i.test(s)) return mk('Volumo');
     if (/hdtracks\.com/i.test(s)) return mk('HDtracks');
     if (/qobuz\.com/i.test(s)) return mk('Qobuz');
+    if (/music\.apple\.com/i.test(s)) return mk('Apple');   // #435
     // Spotify intentionally NOT detected here: its import resolves the MB release
     // FROM the Spotify URL (ISRC Hunt), so a non-MB URL can't work (#180). It's
     // offered only as a provider button when the release has a Spotify MB link.
@@ -4248,6 +4317,12 @@
       m = s.match(/[?&]valbum_code=(\d{8,})/i);
       if (m) return m[1];
       return /^[a-f0-9]{24}$/i.test(s) ? s : (/^\d{8,}$/.test(s) ? s : null);
+    }
+    if (source === 'Apple') {
+      // …/<storefront>/album/<slug>/<id> or the slug-less form; the per-track ?i= form
+      // still identifies the album. Keep the storefront — the amp-api album is region-scoped.
+      const m = s.match(/music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i);
+      return m ? (m[1].toLowerCase() + '/' + m[2]) : null;
     }
     let m = s.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/) || s.match(/spotify:album:([A-Za-z0-9]+)/);
     return m ? m[1] : (/^[A-Za-z0-9]{18,30}$/.test(s) ? s : null);

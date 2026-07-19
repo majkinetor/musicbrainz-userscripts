@@ -20,6 +20,8 @@
 // @connect      www.qobuz.com
 // @connect      deezer.com
 // @connect      www.deezer.com
+// @connect      music.apple.com
+// @connect      amp-api.music.apple.com
 // @grant        GM_openInTab
 // @grant        GM_setValue
 // @grant        GM_getValue

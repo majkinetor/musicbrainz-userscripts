@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.19.174403
+// @version      2026.7.19.190711
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -29,6 +29,8 @@
 // @connect      www.qobuz.com
 // @connect      deezer.com
 // @connect      www.deezer.com
+// @connect      music.apple.com
+// @connect      amp-api.music.apple.com
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
@@ -50,7 +52,6 @@
 // @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
 // @connect      bandcamp.com
-// @connect      music.apple.com
 // @match        https://*.musicbrainz.org/*
 // @match        https://*.musicbrainz.org/release-group/*/edit
 // @match        https://*.musicbrainz.org/release-group/*/edit-relationships
@@ -69,8 +70,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.19.174403 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.16\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.19.174323\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.19.145356\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.17");
+  console.log('%c String Theory %c v2026.7.19.190711 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.16\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.19.190635\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.19.190506\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.17");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -10503,7 +10504,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.19.174323","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.19.174323","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.19.190635","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.19.190635","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -10787,7 +10788,9 @@ try {
         discogs: href((rel) => rel.target?.sidebar_name === "Discogs"),
         tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || "")),
         qobuz: href((rel) => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || "")),
-        deezer: href((rel) => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || ""))
+        deezer: href((rel) => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || "")),
+        apple: href((rel) => /(^|\/\/)music\.apple\.com\/[a-z]{2}\/album\/(?:[^/?#]+\/)?\d+/i.test(rel.target?.href_url || ""))
+        // #435
       };
     });
   }
@@ -13195,6 +13198,7 @@ try {
     if (/tidal\.com\//i.test(url || "")) return "Tidal";
     if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
     if (/deezer\.com\//i.test(url || "")) return "Deezer";
+    if (/music\.apple\.com\//i.test(url || "")) return "Apple";
     return "Discogs";
   }
   var isSyntheticProviderUrl = (url) => /tidal\.com\/_(?:publisher|company)\//i.test(String(url || ""));
@@ -15994,6 +15998,167 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${stagedPart}${dedupPart}, ${skipped} skipped, ${failed} failed${selNote}</strong>`);
   }
 
+  // src/sources/apple.js
+  var APPLE_AMP = "https://amp-api.music.apple.com/v1/catalog";
+  var APPLE_ALBUM_RE = /music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i;
+  function parseAppleAlbumUrl(url) {
+    const m = APPLE_ALBUM_RE.exec(url || "");
+    return m ? { storefront: m[1].toLowerCase(), id: m[2] } : null;
+  }
+  var APPLE_ROLE_BRIDGE = {
+    "Songwriter": "Written-By",
+    "Writer": "Written-By",
+    "Composer": "Composed By",
+    "Lyricist": "Lyrics By",
+    "Producer": "Producer",
+    "Mixing Engineer": "Mixed By",
+    "Mixer": "Mixed By",
+    "Recording Engineer": "Recording Engineer",
+    "Engineer": "Engineer",
+    "Arranger": "Arranged By",
+    "Vocalist": "Vocals",
+    "Vocal": "Vocals",
+    "Background Vocals": "Backing Vocals",
+    "Background Vocal": "Backing Vocals"
+  };
+  var APPLE_SKIP = /* @__PURE__ */ new Set(["Performer", "Mastering Engineer", "Studio Personnel"]);
+  function appleToEngine(parsedTracks) {
+    const tracklistRels = [];
+    const tracklist = [];
+    const skipped = [];
+    for (const t of parsedTracks || []) {
+      const track = { position: String(t.index), title: t.title || "", type_: "track" };
+      tracklist.push(track);
+      for (const c of t.credits || []) {
+        const role = String(c.role || "").trim();
+        const name = String(c.name || "").trim();
+        if (!role || !name) continue;
+        if (APPLE_SKIP.has(role)) {
+          skipped.push(`track ${t.index}: ${role} \u2014 ${name}`);
+          continue;
+        }
+        const discogsRole = APPLE_ROLE_BRIDGE[role] || role;
+        const rels = getArtistRoles({ name, anv: "", role: discogsRole, resource_url: "" });
+        if (!rels || !rels.length) {
+          skipped.push(`track ${t.index}: ${role} \u2014 ${name} (unmapped)`);
+          continue;
+        }
+        for (const rel of rels) tracklistRels.push({ ...rel, artist: rel.artist || { name, anv: "", resource_url: "" }, track });
+      }
+    }
+    return { tracklistRels, tracklist, skipped };
+  }
+  function appleGet(url, headers) {
+    return new Promise((resolve, reject) => {
+      if (typeof GM_xmlhttpRequest !== "function") {
+        reject(new Error("GM_xmlhttpRequest unavailable"));
+        return;
+      }
+      GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        headers: headers || {},
+        timeout: 2e4,
+        onload: (r) => resolve({ status: r.status, text: r.responseText || "" }),
+        onerror: () => reject(new Error("Apple request failed (network)")),
+        ontimeout: () => reject(new Error("Apple request timed out"))
+      });
+    });
+  }
+  var _appleToken = null;
+  var APPLE_TOKEN_LS = "ch:apple-token";
+  async function appleToken() {
+    if (_appleToken) return _appleToken;
+    try {
+      const raw = JSON.parse(localStorage.getItem(APPLE_TOKEN_LS) || "null");
+      if (raw && raw.t && raw.at && Date.now() - raw.at < 12 * 36e5) {
+        _appleToken = raw.t;
+        return _appleToken;
+      }
+    } catch (e) {
+    }
+    const home = await appleGet("https://music.apple.com/us/browse", { "Accept": "text/html" });
+    const asset = (home.text.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.text.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
+    if (!asset) throw new Error("Apple: could not locate the web-player JS asset");
+    const js = await appleGet("https://music.apple.com" + asset, {});
+    const tok = (js.text.match(/eyJ[A-Za-z0-9._\-]{80,}/) || [])[0];
+    if (!tok) throw new Error("Apple: no bearer token in the web-player JS");
+    _appleToken = tok;
+    try {
+      localStorage.setItem(APPLE_TOKEN_LS, JSON.stringify({ t: tok, at: Date.now() }));
+    } catch (e) {
+    }
+    return tok;
+  }
+  function ampHeaders(tok) {
+    return { Authorization: "Bearer " + tok, Origin: "https://music.apple.com", Accept: "application/json" };
+  }
+  async function fetchAppleCredits(storefront, albumId, onProgress) {
+    const sf = storefront || "us";
+    const tok = await appleToken();
+    const albRes = await appleGet(`${APPLE_AMP}/${sf}/albums/${encodeURIComponent(albumId)}?l=en-US`, ampHeaders(tok));
+    if (albRes.status !== 200) throw new Error(`Apple album ${albumId} \u2192 HTTP ${albRes.status}`);
+    let albJson;
+    try {
+      albJson = JSON.parse(albRes.text);
+    } catch (e) {
+      throw new Error("Apple: malformed album JSON");
+    }
+    const album = albJson.data && albJson.data[0];
+    const albumName = album && album.attributes && album.attributes.name || "";
+    let songs = album && album.relationships && album.relationships.tracks && album.relationships.tracks.data || [];
+    let next = album && album.relationships && album.relationships.tracks && album.relationships.tracks.next;
+    while (next) {
+      const pg = await appleGet("https://amp-api.music.apple.com" + next + (next.includes("?") ? "&" : "?") + "l=en-US", ampHeaders(tok));
+      let pj;
+      try {
+        pj = JSON.parse(pg.text);
+      } catch (e) {
+        break;
+      }
+      songs = songs.concat(pj.data || []);
+      next = pj.next;
+    }
+    const tracks = [];
+    let done = 0;
+    for (const s of songs) {
+      const sid = s.id;
+      const num = s.attributes && s.attributes.trackNumber || done + 1;
+      const title = s.attributes && s.attributes.name || "";
+      const credits = [];
+      try {
+        const cr = await appleGet(`${APPLE_AMP}/${sf}/songs/${encodeURIComponent(sid)}/credits?l=en-US`, ampHeaders(tok));
+        if (cr.status === 200) {
+          let cj;
+          try {
+            cj = JSON.parse(cr.text);
+          } catch (e) {
+            cj = null;
+          }
+          for (const grp of cj && cj.data || []) {
+            const arts = grp.relationships && grp.relationships["credit-artists"] && grp.relationships["credit-artists"].data || [];
+            for (const a of arts) {
+              const name = a.attributes && a.attributes.name;
+              for (const role of a.attributes && a.attributes.roleNames || []) {
+                if (name && role) credits.push({ name, role });
+              }
+            }
+          }
+        }
+      } catch (e) {
+      }
+      if (credits.length) tracks.push({ index: +num, title, credits });
+      done++;
+      if (onProgress) {
+        try {
+          onProgress(done, songs.length);
+        } catch (e) {
+        }
+      }
+    }
+    return { album: albumName, tracks };
+  }
+
   // src/sources/deezer.js
   function decodeEntities2(s) {
     return String(s).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&#039;/g, "'").replace(/&apos;/g, "'");
@@ -16311,6 +16476,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var _tidalJson = null;
   var _qobuzJson = null;
   var _deezerJson = null;
+  var _appleJson = null;
   var _consolidatedJson = null;
   var ST_ICONS = { "musicbrainz": { "color": "#eb743b", "svg": '<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5)"><path d="m13 1-12 7v14l12 7z" fill="#ba478f"/><path d="m14 1 12 7v14l-12 7z" fill="#eb743b"/></g></svg>' }, "discogs": { "color": "#333333", "svg": '<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><circle cx="512" cy="512" r="512" fill="#333"/><path fill="#fff" d="M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z"/></svg>' }, "spotify": { "color": "#1DB954", "svg": '<svg viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>' }, "apple": { "color": "#FA243C", "svg": '<svg viewBox="0 0 24 24" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' }, "deezer": { "color": "#A238FF", "svg": '<svg viewBox="0 0 24 24" fill="#A238FF"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></svg>' }, "tidal": { "color": "#000000", "svg": '<svg viewBox="0 0 24 24" fill="#000000"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>' }, "qobuz": { "color": "#0070ef", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' }, "beatport": { "color": "#0a8754", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0a8754"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>' }, "bandcamp": { "color": "#629AA9", "svg": '<svg viewBox="0 0 24 24" fill="#629AA9"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' }, "volumo": { "color": "#7c4dff", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' }, "hdtracks": { "color": "#e63329", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' }, "soundexchange": { "color": "#6f42c1", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "globe": { "color": "#6f7d75", "svg": '<svg viewBox="0 0 24 24" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' } };
   function stIcon(name, size) {
@@ -16328,6 +16494,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     Tidal: stIcon("tidal", 16),
     Qobuz: stIcon("qobuz", 16),
     Deezer: stIcon("deezer", 16),
+    Apple: stIcon("apple", 16),
     Titles: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>'
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
@@ -16733,6 +16900,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g, c, collect) => runTidalImport(sources.tidal, g, c, collect) });
     if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g, c, collect) => runQobuzImport(sources.qobuz, g, c, collect) });
     if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
+    if (sources.apple) importSources.push({ name: "Apple", url: sources.apple, run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
     if ((meta.titlesRemixCount || 0) > 0) {
       importSources.push({ name: "Titles", url: "", run: (g, c, collect) => runTitlesImport(g, c, collect) });
     }
@@ -16746,6 +16914,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       Tidal: stIcon("tidal", 16),
       Qobuz: stIcon("qobuz", 16),
       Deezer: stIcon("deezer", 16),
+      Apple: stIcon("apple", 16),
       Titles: SRC_ICON.Titles
     };
     const srcButtons = [];
@@ -17154,6 +17323,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (sources.tidal) logMenu.appendChild(mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l)));
     if (sources.qobuz) logMenu.appendChild(mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l)));
     if (sources.deezer) logMenu.appendChild(mkMenuItem("Copy Deezer", "Copy the parsed Deezer credits for this release", (b, l) => bar._copy?.deezer(b, l)));
+    if (sources.apple) logMenu.appendChild(mkMenuItem("Copy Apple", "Copy the parsed Apple credits for this release", (b, l) => bar._copy?.apple(b, l)));
     if (importSources.length > 1) logMenu.appendChild(mkMenuItem("Copy all", 'Copy the combined JSON of an "Import all" run \u2014 every source plus the merged, de-duplicated result (#408)', (b, l) => bar._copy?.all(b, l)));
     document.body.appendChild(logMenu);
     function openLogMenu() {
@@ -17377,6 +17547,10 @@ ${lines}
         deezer: (item, label) => {
           if (_deezerJson) copyToClipboard(JSON.stringify(_deezerJson, null, 2), item, label);
         },
+        apple: (item, label) => {
+          if (_appleJson) copyToClipboard(JSON.stringify(_appleJson, null, 2), item, label);
+        },
+        // #435
         all: (item, label) => {
           if (_consolidatedJson) copyToClipboard(JSON.stringify(_consolidatedJson, null, 2), item, label);
         }
@@ -17657,6 +17831,41 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
+  function runAppleImport(appleUrl, getOpts, cancelled, collect) {
+    const parsed = parseAppleAlbumUrl(appleUrl);
+    if (!parsed) {
+      log.error(`Not an Apple Music album URL: ${appleUrl}`);
+      return Promise.resolve();
+    }
+    log.info(`Fetching Apple Music credits (anonymous): album ${parsed.id} (${parsed.storefront})`);
+    return fetchAppleCredits(parsed.storefront, parsed.id, (d, n) => document.querySelector(".discogs-bar")?._setProgress?.(null, `Apple ${d}/${n}`)).then(({ album, tracks }) => {
+      _appleJson = { source: appleUrl, album, tracks };
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.textContent = JSON.stringify(_appleJson, null, 2);
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${album || "Apple album"} \xB7 ${tracks.length} tracks \u2014 parsed Apple credits (API)</strong></summary></details>`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      if (!tracks.length) {
+        log.warn("No Apple credits found (Apple has no credit data for this album, or none of its tracks list credits) \u2014 nothing to import.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
+        return;
+      }
+      const { tracklistRels, tracklist, skipped } = appleToEngine(tracks);
+      log.info(`Apple credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+      skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (!tracklistRels.length) {
+        log.warn("No importable Apple credits found.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
+        return;
+      }
+      const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: appleUrl, processTracklist: true };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
   function buildTitlesTracklist(mbid) {
     return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then((json) => {
       const media = json?.media || [];
@@ -17734,6 +17943,7 @@ ${lines}
       tidal: _tidalJson,
       qobuz: _qobuzJson,
       deezer: _deezerJson,
+      apple: _appleJson,
       merged: { companies: merged.companies, artistRoles: merged.artistRoles, tracklistRels: merged.tracklistRels }
     };
     return runSourcePipeline({
@@ -18035,7 +18245,7 @@ ${lines}
       getSourceUrlsForRelease(m[1]).catch(() => ({})),
       probeTitleRemixes(m[1])
     ]).then(([sources, remix]) => {
-      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer);
+      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
       const remixCount = remix?.count || 0;
       if (!hasProvider && remixCount === 0) return;
       insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });
@@ -20268,7 +20478,7 @@ ${lines}
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.19.145356","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.19.145356","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.19.190506","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.7.19.190506","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -21491,6 +21701,7 @@ ${lines}
     volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
     hdtracks: { source: 'HDtracks', idField: 'hdtracksId', fetcher: fetchHDtracks, code: 'hd' },
     qobuz:    { source: 'Qobuz',    idField: 'qobuzId',    fetcher: fetchQobuz,    code: 'qz' },
+    apple:    { source: 'Apple',    idField: 'appleUrl',   fetcher: fetchApple,    code: 'am' },   // #435 anonymous amp-api
   };
   const _PROV_COLOR = { sx: stColor('soundexchange'), deezer: stColor('deezer'), spotify: stColor('spotify'), beatport: stColor('beatport'), tidal: stColor('tidal'), volumo: stColor('volumo'), hdtracks: stColor('hdtracks'), qobuz: stColor('qobuz'), bandcamp: stColor('bandcamp'), apple: stColor('apple') };   // #404: colours from the shared registry
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
@@ -21501,7 +21712,7 @@ ${lines}
     // on any release. The rest scan the release's album, so they need its link.
     TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' || k === 'tidal' };
   });
-  const TRACK_PROV_ORDER = ['sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks', 'qobuz'];
+  const TRACK_PROV_ORDER = ['sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks', 'qobuz', 'apple'];
   let trackProv = 'sx';                                  // NOT persisted (#181)
   const TPM = () => TRACK_PROV[trackProv];
   // a provider is offered only when it can resolve a source for THIS release
@@ -22087,6 +22298,68 @@ ${lines}
     return { total: list.length, next: null };
   }
 
+  /* ═══════════════════════════════════════════════════════════════════════
+     APPLE MUSIC (#435) — per-track ISRCs from the amp-api, ANONYMOUSLY. The
+     web player's bearer token lives in its public JS bundle (no login); one
+     `catalog/<sf>/albums/<id>` call returns every track's `attributes.isrc`.
+     The storefront comes from the MB link (…/us/…); credits aren't needed
+     here (that's Credit Hoarder's job), just the album's tracklist.
+  ═══════════════════════════════════════════════════════════════════════ */
+  const APPLE = { amp: 'https://amp-api.music.apple.com/v1/catalog', lsKey: 'mbtools:apple-token' };
+  let _appleTok = null;
+  async function appleToken() {
+    if (_appleTok) return _appleTok;
+    try { const c = JSON.parse(localStorage.getItem(APPLE.lsKey) || 'null'); if (c && c.t && c.at && (Date.now() - c.at) < 12 * 3600e3) { _appleTok = c.t; return _appleTok; } } catch (e) {}
+    const home = await gmGet('https://music.apple.com/us/browse', { 'Accept': 'text/html' });
+    const asset = (home.responseText.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.responseText.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
+    if (!asset) throw new Error('Apple: web-player JS asset not found');
+    const js = await gmGet('https://music.apple.com' + asset, {});
+    const tok = (js.responseText.match(/eyJ[A-Za-z0-9._\-]{80,}/) || [])[0];
+    if (!tok) throw new Error('Apple: no bearer token in the web-player JS');
+    _appleTok = tok;
+    try { localStorage.setItem(APPLE.lsKey, JSON.stringify({ t: tok, at: Date.now() })); } catch (e) {}
+    return tok;
+  }
+  // albumId is "<storefront>/<id>" (from parseStreamingId) or a full Apple album URL.
+  async function fetchApple(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    let sf = 'us', id = String(albumId).trim();
+    let m = id.match(/music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i) || id.match(/^([a-z]{2})\/(\d+)$/i);
+    if (m) { sf = m[1].toLowerCase(); id = m[2]; }
+    const tok = await appleToken();
+    const h = { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com', Accept: 'application/json' };
+    const r = await gmGet(APPLE.amp + '/' + sf + '/albums/' + encodeURIComponent(id) + '?l=en-US', h);
+    if (r.status !== 200) throw new Error('Apple ' + r.status + ' for album ' + id);
+    let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Apple: malformed JSON'); }
+    const alb = j && j.data && j.data[0];
+    let list = (alb && alb.relationships && alb.relationships.tracks && alb.relationships.tracks.data) || [];
+    let next = alb && alb.relationships && alb.relationships.tracks && alb.relationships.tracks.next;
+    while (next) {
+      const pg = await gmGet('https://amp-api.music.apple.com' + next + (next.includes('?') ? '&' : '?') + 'l=en-US', h);
+      let pj; try { pj = JSON.parse(pg.responseText || 'null'); } catch (e) { break; }
+      list = list.concat((pj && pj.data) || []); next = pj && pj.next;
+    }
+    Log.info('Apple album "' + ((alb && alb.attributes && alb.attributes.name) || id) + '": ' + list.length + ' track(s)');
+    let n = 0;
+    list.forEach((t, i) => {
+      const a = t.attributes || {};
+      const e = {
+        isrc:   normalizeIsrc(a.isrc || ''),
+        title:  a.name || '',
+        artist: a.artistName || '',
+        disc:   a.discNumber || 1,
+        pos:    a.trackNumber || (i + 1),
+        dur:    a.durationInMillis ? msToMmSs(a.durationInMillis) : '',
+        url:    a.url || '',
+      };
+      try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Apple map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(++n, list.length); } catch (err) {}
+    });
+    const withIsrc = list.filter(t => isValidIsrc(normalizeIsrc((t.attributes || {}).isrc || ''))).length;
+    if (!withIsrc) throw new Error('Apple album exposed no ISRCs');
+    return { total: list.length, next: null };
+  }
+
   async function fetchVolumo(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
     const idStr = String(albumId);
@@ -22369,6 +22642,7 @@ ${lines}
         <button class="ii-tbtn vo ii-only-isrc" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
         <button class="ii-tbtn hd ii-only-isrc" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
         <button class="ii-tbtn qz ii-only-isrc" id="ii-qz-all" title="Import ISRCs from Qobuz (needs Qobuz login in Platform Check)"><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
+        <button class="ii-tbtn am ii-only-isrc" id="ii-am-all" title="Import ISRCs from Apple Music"><span class="ii-bico">${SRC_ICON.am}</span><span class="ii-blabel">Apple</span></button>
         <span class="ii-urladd ii-only-isrc" id="ii-urladd">
           <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
@@ -22555,6 +22829,7 @@ ${lines}
     modal.querySelector('#ii-vo-all').addEventListener('click', runVolumo);
     modal.querySelector('#ii-hd-all').addEventListener('click', runHDtracks);
     modal.querySelector('#ii-qz-all').addEventListener('click', runQobuz);
+    modal.querySelector('#ii-am-all').addEventListener('click', runApple);
     // Unified "paste a URL" control (#180) — apollo-style unroll. Click the +
     // to reveal the input; paste any streaming album URL; on Enter the platform
     // is auto-detected and imported. Replaces the per-provider ▾ submenus.
@@ -23292,7 +23567,8 @@ ${lines}
      ['Tidal', 'ii-td-all', 'tidalId'],
      ['Volumo', 'ii-vo-all', 'volumoId'],
      ['HDtracks', 'ii-hd-all', 'hdtracksId'],
-     ['Qobuz', 'ii-qz-all', 'qobuzId']].forEach(([source, id, field]) => {
+     ['Qobuz', 'ii-qz-all', 'qobuzId'],
+     ['Apple', 'ii-am-all', 'appleUrl']].forEach(([source, id, field]) => {
       const btn = modal.querySelector('#' + id);
       const mbId = RELEASE[field];
       // Spotify imports only via its MB-linked album (ISRC Hunt resolves the
@@ -24357,6 +24633,7 @@ ${lines}
   async function runVolumo()   { return runProvider('Volumo',   RELEASE.volumoId,   fetchVolumo,   '#ii-vo-all'); }
   async function runHDtracks() { return runProvider('HDtracks', RELEASE.hdtracksId, fetchHDtracks, '#ii-hd-all'); }
   async function runQobuz()    { return runProvider('Qobuz',    RELEASE.qobuzId,    fetchQobuz,    '#ii-qz-all'); }
+  async function runApple()    { return runProvider('Apple',    RELEASE.appleUrl,   fetchApple,    '#ii-am-all'); }   // #435
   // Map a source label to its fetcher (used by the unified URL-paste import).
   function fetcherFor(source) {
     return source === 'Deezer'   ? fetchDeezer
@@ -24371,8 +24648,8 @@ ${lines}
 
   /* ── source links & the unified "paste a URL" control (#180) ── */
   // Source name → SRC_ICON key / brand colour, for the URL-add detection feedback.
-  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo', HDtracks: 'hd', Qobuz: 'qz' };
-  const SRC_COLOR = { dz: stColor('deezer'), sp: stColor('spotify'), bp: stColor('beatport'), td: stColor('tidal'), vo: stColor('volumo'), hd: stColor('hdtracks'), qz: stColor('qobuz') };   // #404: colours from the shared registry
+  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo', HDtracks: 'hd', Qobuz: 'qz', Apple: 'am' };
+  const SRC_COLOR = { dz: stColor('deezer'), sp: stColor('spotify'), bp: stColor('beatport'), td: stColor('tidal'), vo: stColor('volumo'), hd: stColor('hdtracks'), qz: stColor('qobuz'), am: stColor('apple') };   // #404: colours from the shared registry
 
   // If Platform Check (separate userscript) is on the page, read the URL it found
   // for this source from its sidebar anchor (#mb-online-<source>).
@@ -24420,6 +24697,7 @@ ${lines}
     if (/volumo\.com/i.test(s)) return mk('Volumo');
     if (/hdtracks\.com/i.test(s)) return mk('HDtracks');
     if (/qobuz\.com/i.test(s)) return mk('Qobuz');
+    if (/music\.apple\.com/i.test(s)) return mk('Apple');   // #435
     // Spotify intentionally NOT detected here: its import resolves the MB release
     // FROM the Spotify URL (ISRC Hunt), so a non-MB URL can't work (#180). It's
     // offered only as a provider button when the release has a Spotify MB link.
@@ -24486,6 +24764,12 @@ ${lines}
       m = s.match(/[?&]valbum_code=(\d{8,})/i);
       if (m) return m[1];
       return /^[a-f0-9]{24}$/i.test(s) ? s : (/^\d{8,}$/.test(s) ? s : null);
+    }
+    if (source === 'Apple') {
+      // …/<storefront>/album/<slug>/<id> or the slug-less form; the per-track ?i= form
+      // still identifies the album. Keep the storefront — the amp-api album is region-scoped.
+      const m = s.match(/music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i);
+      return m ? (m[1].toLowerCase() + '/' + m[2]) : null;
     }
     let m = s.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/) || s.match(/spotify:album:([A-Za-z0-9]+)/);
     return m ? m[1] : (/^[A-Za-z0-9]{18,30}$/.test(s) ? s : null);

@@ -167,7 +167,7 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
         getSourceUrlsForRelease(m[1]).catch(() => ({})),
         probeTitleRemixes(m[1]),
     ]).then(([sources, remix]) => {
-        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer);
+        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
         const remixCount  = remix?.count || 0;
         if (!hasProvider && remixCount === 0) return;   // nothing to import — don't mount
         insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });

@@ -256,6 +256,7 @@ export function getSourceUrlsForRelease(mbid) {
                 tidal:   href(rel => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || '')),
                 qobuz:   href(rel => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || '')),
                 deezer:  href(rel => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || '')),
+                apple:   href(rel => /(^|\/\/)music\.apple\.com\/[a-z]{2}\/album\/(?:[^/?#]+\/)?\d+/i.test(rel.target?.href_url || '')),   // #435
             };
         });
 }

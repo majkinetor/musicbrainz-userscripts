@@ -36,7 +36,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **Beatport** | ✓ | ✓ | by **album** — the Beatport tracklist (id + ISRC), matched by ISRC |
 | **Volumo** | ✓ | ✓ | by **album** — the Volumo album JSON (id + ISRC), matched by ISRC |
 | **Bandcamp** | – | ✓ | by **album** — album page track list, matched by position + title |
-| **Apple Music** | – | ✓ | by **album** — album `ld+json`, matched by position + title |
+| **Apple Music** | ✓ | ✓ | by **album** — the amp-api album tracklist (id + ISRC) read **anonymously** (token from the web-player JS, no login); ISRC import matched by position, per-track link from the `ld+json` |
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
 | **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |

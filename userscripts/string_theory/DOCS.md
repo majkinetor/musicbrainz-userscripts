@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-19 17:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-19 19:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -626,7 +626,7 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 
 <img width="600" src="../credit_hoarder/screenshots/bar.png" />
 
-- **Source picker** — an **Import credits:** label followed by one brand icon per source available on the release (Discogs, Tidal, Qobuz, Deezer, and the title-derived **Titles** source). **Left-click** an icon to import from that source; **right-click** to open the source's page. Several sources can be run in one session — the edits stack and are submitted together.
+- **Source picker** — an **Import credits:** label followed by one brand icon per source available on the release (Discogs, Tidal, Qobuz, Deezer, Apple Music, and the title-derived **Titles** source). **Left-click** an icon to import from that source; **right-click** to open the source's page. Several sources can be run in one session — the edits stack and are submitted together. **Apple Music** (#435) reads roled per-track credits from Apple's public API anonymously (no login) — names only, so its credits resolve by name search + review, like Deezer/Qobuz.
 - **⚛ All** (consolidated import) — shown when **more than one** source is available. Harvests every source, merges their credits into **one** de-duplicated review table (see [Consolidated import](#consolidated-import)), and dispatches once. Clicking any source icon (or ⚛ All again) while a preflight/review is open cancels it and returns you to the picker.
 - **Per-track credits** — import track-level artist credits in addition to release-level credits.
 - **Move release credits to tracks** — move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, …). Pre-existing release-level credits aren't moved.
@@ -982,7 +982,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **Beatport** | ✓ | ✓ | by **album** — the Beatport tracklist (id + ISRC), matched by ISRC |
 | **Volumo** | ✓ | ✓ | by **album** — the Volumo album JSON (id + ISRC), matched by ISRC |
 | **Bandcamp** | – | ✓ | by **album** — album page track list, matched by position + title |
-| **Apple Music** | – | ✓ | by **album** — album `ld+json`, matched by position + title |
+| **Apple Music** | ✓ | ✓ | by **album** — the amp-api album tracklist (id + ISRC) read **anonymously** (token from the web-player JS, no login); ISRC import matched by position, per-track link from the `ld+json` |
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
 | **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
