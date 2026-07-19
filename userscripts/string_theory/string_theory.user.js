@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.19.145456
+// @version      2026.7.19.172838
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -69,8 +69,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.19.145456 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.16\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.18.220231\n  · Group Therapy v2026.7.12\n  · ISRC Scout v2026.7.19.145356\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.17");
+  console.log('%c String Theory %c v2026.7.19.172838 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.16\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.19.172342\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.19.145356\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.17");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -10503,7 +10503,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.18.220231","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.18.220231","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.19.172342","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.19.172342","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -12503,6 +12503,35 @@ try {
     }).filter((resolvedRole) => {
       return !!resolvedRole;
     });
+  }
+  var ARTWORK_LINK_TYPES = /* @__PURE__ */ new Set(["artwork", "design", "photography", "illustration", "graphic design"]);
+  function hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist) {
+    const allPos = new Set((tracklist || []).map((t) => String(t && t.position != null ? t.position : "")).filter(Boolean));
+    if (!allPos.size) return { artistRoles, tracklistRels, hoisted: [] };
+    const keyOf = (r) => [
+      r.artist && (r.artist.resource_url || r.artist.name) || "",
+      r.linkType,
+      JSON.stringify((r.attributes || []).map((a) => a && typeof a === "object" && a._type ? a._type + ":" + a.value : String(a)).sort())
+    ].join("|");
+    const groups = /* @__PURE__ */ new Map();
+    for (const r of tracklistRels) {
+      if (!ARTWORK_LINK_TYPES.has(r.linkType) || !r.artist) continue;
+      const k = keyOf(r);
+      if (!groups.has(k)) groups.set(k, { rels: [], pos: /* @__PURE__ */ new Set() });
+      const g = groups.get(k);
+      g.rels.push(r);
+      if (r.track && r.track.position != null) g.pos.add(String(r.track.position));
+    }
+    const drop = /* @__PURE__ */ new Set(), hoisted = [];
+    for (const g of groups.values()) {
+      if (g.pos.size !== allPos.size || ![...allPos].every((p) => g.pos.has(p))) continue;
+      g.rels.forEach((r) => drop.add(r));
+      const rel = Object.assign({}, g.rels[0]);
+      delete rel.track;
+      hoisted.push(rel);
+    }
+    if (!hoisted.length) return { artistRoles, tracklistRels, hoisted };
+    return { artistRoles: artistRoles.concat(hoisted), tracklistRels: tracklistRels.filter((r) => !drop.has(r)), hoisted };
   }
   function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {
@@ -17715,6 +17744,14 @@ ${lines}
   }
   function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources, sourceLabel }) {
     const isCancelled = () => typeof cancelled === "function" && cancelled();
+    {
+      const h = hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist);
+      if (h.hoisted.length) {
+        artistRoles = h.artistRoles;
+        tracklistRels = h.tracklistRels;
+        h.hoisted.forEach((r) => log.info(`Moved to release level (#433): ${r.linkType} \u2014 ${r.artist.name} (was on every track; artist\u2013recording artwork is for videos)`));
+      }
+    }
     const allArtistRoles = artistRoles.concat(tracklistRels);
     const uniqueArtists = [];
     const seenResourceUrls = /* @__PURE__ */ new Set();
@@ -18002,7 +18039,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.12","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.12","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.19","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.19","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -19537,8 +19574,41 @@ ${lines}
     lc.append(chips, inp); wrap.appendChild(lc); renderChips();
     const more = el('button', 'gt-wm-nwp-more', '⋯'); more.type = 'button'; more.title = 'recording-of relationship options — attributes (live, cover…) + dates';
     more.onclick = () => wmRelOptsPopover(more); wrap.appendChild(more);
+    // #432 (vzell): the ⋯ popover selections were invisible once it closed — surface them
+    // as live chips right next to the button (attributes and "ended" removable via ×, the
+    // date chip re-opens the popover), and highlight ⋯ while anything is set.
+    const roSum = el('span', 'gt-wm-ro-sum');
+    const fmtD = d => [d.year, d.month, d.day].some(v => v != null)
+      ? [d.year != null ? String(d.year) : '????', d.month != null ? String(d.month).padStart(2, '0') : (d.day != null ? '??' : null), d.day != null ? String(d.day).padStart(2, '0') : null].filter(Boolean).join('‑') : null;
+    wmRoRefresh = () => {
+      roSum.textContent = '';
+      const names = new Map(wmPerfAttrs().map(a => [a.typeID, a.name]));
+      wmRelAttrs.forEach(id => {
+        const c = el('span', 'gt-wm-nwp-chip', names.get(id) || ('#' + id));
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove attribute';
+        x.onclick = () => { wmRelAttrs.delete(id); closeRoPop(); wmRoRefresh(); };
+        c.appendChild(x); roSum.appendChild(c);
+      });
+      const b = fmtD(wmBegin), e2 = fmtD(wmEnd);
+      if (b || e2) {
+        const c = el('span', 'gt-wm-nwp-chip', (b || '…') + ' → ' + (e2 || '…'));
+        c.title = 'recording-of dates — click to edit'; c.style.cursor = 'pointer';
+        c.onclick = () => { if (!wmRoPop) wmRelOptsPopover(more); };
+        roSum.appendChild(c);
+      }
+      if (wmEnded) {
+        const c = el('span', 'gt-wm-nwp-chip', 'ended');
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove';
+        x.onclick = () => { wmEnded = false; closeRoPop(); wmRoRefresh(); };
+        c.appendChild(x); roSum.appendChild(c);
+      }
+      more.classList.toggle('on', !!(wmRelAttrs.size || b || e2 || wmEnded));
+    };
+    wrap.appendChild(roSum);
+    wmRoRefresh();
     return wrap;
   }
+  let wmRoRefresh = null;   // #432 — repaints the rel-options chips; set by wmNewParamsUi
   // #363 the recording-of relationship options popover (opened by the ⋯ button): the performance
   // attributes as checkboxes + begin/end date + ended. These go on the recording→work rel, not the work.
   let wmRoPop = null;
@@ -19551,18 +19621,18 @@ ${lines}
     pop.appendChild(el('div', 'gt-wm-ro-hd', 'recording of'));
     wmPerfAttrs().forEach(a => {
       const lb = el('label', 'gt-wm-ro-cb'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = wmRelAttrs.has(a.typeID);
-      cb.onchange = () => { if (cb.checked) wmRelAttrs.add(a.typeID); else wmRelAttrs.delete(a.typeID); };
+      cb.onchange = () => { if (cb.checked) wmRelAttrs.add(a.typeID); else wmRelAttrs.delete(a.typeID); if (wmRoRefresh) wmRoRefresh(); };   // #432 live chips
       lb.append(cb, el('span', null, a.name)); pop.appendChild(lb);
     });
     const mkDate = (label, obj) => {
       const row = el('div', 'gt-wm-ro-date'); row.appendChild(el('span', 'gt-wm-ro-dl', label));
-      const mk = (ph, key, cls) => { const i = el('input', cls); i.type = 'text'; i.placeholder = ph; i.value = obj[key] || ''; i.oninput = () => { const v = parseInt(i.value, 10); obj[key] = Number.isFinite(v) ? v : null; }; return i; };
+      const mk = (ph, key, cls) => { const i = el('input', cls); i.type = 'text'; i.placeholder = ph; i.value = obj[key] || ''; i.oninput = () => { const v = parseInt(i.value, 10); obj[key] = Number.isFinite(v) ? v : null; if (wmRoRefresh) wmRoRefresh(); }; return i; };   // #432 live chips
       row.append(mk('YYYY', 'year', 'gt-wm-ro-y'), el('span', 'gt-wm-ro-sep', '‑'), mk('MM', 'month', 'gt-wm-ro-m'), el('span', 'gt-wm-ro-sep', '‑'), mk('DD', 'day', 'gt-wm-ro-d')); return row;
     };
     pop.appendChild(mkDate('Begin date', wmBegin));
     pop.appendChild(mkDate('End date', wmEnd));
     const endedL = el('label', 'gt-wm-ro-cb'); const endedCb = document.createElement('input'); endedCb.type = 'checkbox'; endedCb.checked = wmEnded;
-    endedCb.onchange = () => { wmEnded = endedCb.checked; }; endedL.append(endedCb, el('span', null, 'This relationship has ended.')); pop.appendChild(endedL);
+    endedCb.onchange = () => { wmEnded = endedCb.checked; if (wmRoRefresh) wmRoRefresh(); }; endedL.append(endedCb, el('span', null, 'This relationship has ended.')); pop.appendChild(endedL);   // #432 live chips
     document.body.appendChild(pop);
     const r = anchor.getBoundingClientRect();
     pop.style.left = Math.min(r.left, window.innerWidth - pop.offsetWidth - 8) + 'px';
@@ -19758,7 +19828,9 @@ ${lines}
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}'
       // #363 New-work params (Type + searchable lyrics-language combo) in the footer
       + '.gt-wm-nwp{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#555}'
-      + '.gt-wm-nwp-more{padding:2px 6px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;color:#6f42c1;cursor:pointer;font:13px Arial;line-height:1}.gt-wm-nwp-more:hover{background:#f0ecfa}'
+      + '.gt-wm-ro-sum{display:inline-flex;align-items:center;gap:3px;flex-wrap:wrap;max-width:340px}'
+    + '.gt-wm-nwp-more.on{border-color:#6f42c1;background:#efeaf9;font-weight:700}'
+    + '.gt-wm-nwp-more{padding:2px 6px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;color:#6f42c1;cursor:pointer;font:13px Arial;line-height:1}.gt-wm-nwp-more:hover{background:#f0ecfa}'
       + '.gt-wm-nwp-type{font:12px Arial;padding:2px 4px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;max-width:130px}'
       + '.gt-wm-nwp-lang{position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:3px;min-width:120px;max-width:240px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;padding:2px 4px}'
       + '.gt-wm-nwp-chip{display:inline-flex;align-items:center;gap:3px;background:#efeaf9;color:#5b4a86;border-radius:9px;padding:1px 4px 1px 7px;font-size:11px;white-space:nowrap}'

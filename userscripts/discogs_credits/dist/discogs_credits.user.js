@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.18.220448
+// @version      2026.7.19.172838
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1980,6 +1980,35 @@
     }).filter((resolvedRole) => {
       return !!resolvedRole;
     });
+  }
+  var ARTWORK_LINK_TYPES = /* @__PURE__ */ new Set(["artwork", "design", "photography", "illustration", "graphic design"]);
+  function hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist) {
+    const allPos = new Set((tracklist || []).map((t) => String(t && t.position != null ? t.position : "")).filter(Boolean));
+    if (!allPos.size) return { artistRoles, tracklistRels, hoisted: [] };
+    const keyOf = (r) => [
+      r.artist && (r.artist.resource_url || r.artist.name) || "",
+      r.linkType,
+      JSON.stringify((r.attributes || []).map((a) => a && typeof a === "object" && a._type ? a._type + ":" + a.value : String(a)).sort())
+    ].join("|");
+    const groups = /* @__PURE__ */ new Map();
+    for (const r of tracklistRels) {
+      if (!ARTWORK_LINK_TYPES.has(r.linkType) || !r.artist) continue;
+      const k = keyOf(r);
+      if (!groups.has(k)) groups.set(k, { rels: [], pos: /* @__PURE__ */ new Set() });
+      const g = groups.get(k);
+      g.rels.push(r);
+      if (r.track && r.track.position != null) g.pos.add(String(r.track.position));
+    }
+    const drop = /* @__PURE__ */ new Set(), hoisted = [];
+    for (const g of groups.values()) {
+      if (g.pos.size !== allPos.size || ![...allPos].every((p) => g.pos.has(p))) continue;
+      g.rels.forEach((r) => drop.add(r));
+      const rel = Object.assign({}, g.rels[0]);
+      delete rel.track;
+      hoisted.push(rel);
+    }
+    if (!hoisted.length) return { artistRoles, tracklistRels, hoisted };
+    return { artistRoles: artistRoles.concat(hoisted), tracklistRels: tracklistRels.filter((r) => !drop.has(r)), hoisted };
   }
   function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {
@@ -5268,6 +5297,14 @@ ${lines}
           );
         }
         log.info(`Found ${tracklistRels.length} tracklist relationships`);
+      }
+      {
+        const h = hoistFullSpanArtworkRels(artistRoles, tracklistRels, flattenTracklist(json.tracklist).filter((t) => t.type_ === "track"));
+        if (h.hoisted.length) {
+          artistRoles = h.artistRoles;
+          tracklistRels = h.tracklistRels;
+          h.hoisted.forEach((r) => log.info(`Moved to release level (#433): ${r.linkType} \u2014 ${r.artist.name} (was on every track; artist\u2013recording artwork is for videos)`));
+        }
       }
       const allArtistRoles = artistRoles.concat(tracklistRels);
       const uniqueArtists = [];

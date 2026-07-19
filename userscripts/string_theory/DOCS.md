@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-19 14:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-19 17:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -910,6 +910,8 @@ Open the **⚙ settings** popover from the toolbar. Every option is remembered p
 | **Uncollapse media on start** | off | On load, clicks MusicBrainz's **Expand all mediums** so every medium's tracks are reachable during the fill phase (MB collapses mediums past the first few). Expanding a large release takes a moment. |
 
 The **work matcher** popup carries its own controls, also persisted: the **Cutoff** confidence level, and — under **＋ New work** — the new-work **Type** and **lyrics language**.
+
+The **⋯ button** next to those opens the **recording-of relationship options** — the performance **attributes** (live, partial, instrumental, cover, medley…), **begin/end dates** and the **ended** flag, applied to every `recording → work` relationship the matcher creates. Everything selected there shows as **chips next to ⋯** (#432): attribute and *ended* chips are removable with their ×, the date chip re-opens the popover, and the ⋯ button itself highlights while any option is active — so a stray *live* attribute can't ride along unseen.
 
 ### Shortcuts
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.18.220231
+// @version      2026.7.19.172342
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2026,6 +2026,35 @@
     }).filter((resolvedRole) => {
       return !!resolvedRole;
     });
+  }
+  var ARTWORK_LINK_TYPES = /* @__PURE__ */ new Set(["artwork", "design", "photography", "illustration", "graphic design"]);
+  function hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist) {
+    const allPos = new Set((tracklist || []).map((t) => String(t && t.position != null ? t.position : "")).filter(Boolean));
+    if (!allPos.size) return { artistRoles, tracklistRels, hoisted: [] };
+    const keyOf = (r) => [
+      r.artist && (r.artist.resource_url || r.artist.name) || "",
+      r.linkType,
+      JSON.stringify((r.attributes || []).map((a) => a && typeof a === "object" && a._type ? a._type + ":" + a.value : String(a)).sort())
+    ].join("|");
+    const groups = /* @__PURE__ */ new Map();
+    for (const r of tracklistRels) {
+      if (!ARTWORK_LINK_TYPES.has(r.linkType) || !r.artist) continue;
+      const k = keyOf(r);
+      if (!groups.has(k)) groups.set(k, { rels: [], pos: /* @__PURE__ */ new Set() });
+      const g = groups.get(k);
+      g.rels.push(r);
+      if (r.track && r.track.position != null) g.pos.add(String(r.track.position));
+    }
+    const drop = /* @__PURE__ */ new Set(), hoisted = [];
+    for (const g of groups.values()) {
+      if (g.pos.size !== allPos.size || ![...allPos].every((p) => g.pos.has(p))) continue;
+      g.rels.forEach((r) => drop.add(r));
+      const rel = Object.assign({}, g.rels[0]);
+      delete rel.track;
+      hoisted.push(rel);
+    }
+    if (!hoisted.length) return { artistRoles, tracklistRels, hoisted };
+    return { artistRoles: artistRoles.concat(hoisted), tracklistRels: tracklistRels.filter((r) => !drop.has(r)), hoisted };
   }
   function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {
@@ -7238,6 +7267,14 @@ ${lines}
   }
   function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources, sourceLabel }) {
     const isCancelled = () => typeof cancelled === "function" && cancelled();
+    {
+      const h = hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist);
+      if (h.hoisted.length) {
+        artistRoles = h.artistRoles;
+        tracklistRels = h.tracklistRels;
+        h.hoisted.forEach((r) => log.info(`Moved to release level (#433): ${r.linkType} \u2014 ${r.artist.name} (was on every track; artist\u2013recording artwork is for videos)`));
+      }
+    }
     const allArtistRoles = artistRoles.concat(tracklistRels);
     const uniqueArtists = [];
     const seenResourceUrls = /* @__PURE__ */ new Set();

@@ -33,6 +33,7 @@ import {
     rolesFromDiscogsArtists,
     getAllArtistTracks,
     flattenTracklist,
+    hoistFullSpanArtworkRels,
     getArtistRoles,
 }                                        from './mappers.js';
 import {
@@ -1215,6 +1216,16 @@ function runImport(discogsUrl, getOpts) {
                     );
                 }
                 log.info(`Found ${tracklistRels.length} tracklist relationships`);
+            }
+
+            // #433: artwork-family credits stamped on EVERY track hoist to the release level
+            // (artist-recording artwork is for video recordings per MB guidance).
+            {
+                const h = hoistFullSpanArtworkRels(artistRoles, tracklistRels, flattenTracklist(json.tracklist).filter(t => t.type_ === 'track'));
+                if (h.hoisted.length) {
+                    artistRoles = h.artistRoles; tracklistRels = h.tracklistRels;
+                    h.hoisted.forEach(r => log.info(`Moved to release level (#433): ${r.linkType} — ${r.artist.name} (was on every track; artist–recording artwork is for videos)`));
+                }
             }
 
             // Collect all unique artist entities referenced across release-level and tracklist roles

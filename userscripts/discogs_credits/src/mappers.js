@@ -380,6 +380,43 @@ export function getArtistRoles(artist) {
         });
 }
 
+// #433: visual-art credits attached to EVERY track belong on the RELEASE — MB's
+// artist-recording guidance reserves artwork rels for VIDEO recordings, everything else
+// goes release-level. Providers (Tidal/Qobuz, Discogs track ranges) often stamp the
+// cover artist onto each track. Hoist a per-track rel to ONE release-level rel when its
+// (artist, linkType, attributes) span ALL tracklist positions; partial coverage stays
+// per-track (it may be deliberate). Detecting video recordings would cost a lookup per
+// recording — maintainer: skip that check.
+const ARTWORK_LINK_TYPES = new Set(['artwork', 'design', 'photography', 'illustration', 'graphic design']);
+export function hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist) {
+    const allPos = new Set((tracklist || []).map(t => String(t && t.position != null ? t.position : '')).filter(Boolean));
+    if (!allPos.size) return { artistRoles, tracklistRels, hoisted: [] };
+    const keyOf = r => [
+        (r.artist && (r.artist.resource_url || r.artist.name)) || '',
+        r.linkType,
+        JSON.stringify((r.attributes || []).map(a => (a && typeof a === 'object' && a._type) ? a._type + ':' + a.value : String(a)).sort()),
+    ].join('|');
+    const groups = new Map();
+    for (const r of tracklistRels) {
+        if (!ARTWORK_LINK_TYPES.has(r.linkType) || !r.artist) continue;
+        const k = keyOf(r);
+        if (!groups.has(k)) groups.set(k, { rels: [], pos: new Set() });
+        const g = groups.get(k);
+        g.rels.push(r);
+        if (r.track && r.track.position != null) g.pos.add(String(r.track.position));
+    }
+    const drop = new Set(), hoisted = [];
+    for (const g of groups.values()) {
+        if (g.pos.size !== allPos.size || ![...allPos].every(p => g.pos.has(p))) continue;
+        g.rels.forEach(r => drop.add(r));
+        const rel = Object.assign({}, g.rels[0]);
+        delete rel.track;   // release-level now
+        hoisted.push(rel);
+    }
+    if (!hoisted.length) return { artistRoles, tracklistRels, hoisted };
+    return { artistRoles: artistRoles.concat(hoisted), tracklistRels: tracklistRels.filter(r => !drop.has(r)), hoisted };
+}
+
 /** Run `getArtistRoles` over every artist, flattening the results. */
 export function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {

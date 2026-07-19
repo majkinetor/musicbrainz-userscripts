@@ -28,6 +28,7 @@ import { getDiscogsReleaseData }          from './api-discogs.js';
 import {
     convertPotentialDJMixers,
     rolesFromDiscogsArtists,
+    hoistFullSpanArtworkRels,
     getAllArtistTracks,
     flattenTracklist,
     getArtistRoles,
@@ -1711,6 +1712,15 @@ async function runConsolidatedImport(importSources, getOpts, cancelled) {
 // runImport unchanged so every source feeds the same engine.
 function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts, cancelled, entitySources, sourceLabel }) {
             const isCancelled = () => (typeof cancelled === 'function') && cancelled();
+            // #433: artwork-family credits stamped on EVERY track hoist to the release level
+            // (artist-recording artwork is for video recordings per MB guidance).
+            {
+                const h = hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist);
+                if (h.hoisted.length) {
+                    artistRoles = h.artistRoles; tracklistRels = h.tracklistRels;
+                    h.hoisted.forEach(r => log.info(`Moved to release level (#433): ${r.linkType} — ${r.artist.name} (was on every track; artist–recording artwork is for videos)`));
+                }
+            }
             // Collect all unique artist entities referenced across release-level and tracklist roles
             const allArtistRoles = artistRoles.concat(tracklistRels);
             const uniqueArtists = [];
