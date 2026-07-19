@@ -1,5 +1,35 @@
 # String Theory Changelog
 
+## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Small improvements
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Apple Music support ([#435](https://github.com/majkinetor/musicbrainz-userscripts/issues/435))
+1. Move artwork credits referenced on each track to release level relationship ([#433](https://github.com/majkinetor/musicbrainz-userscripts/issues/433))
+1. Shortened roles in review table ([#430](https://github.com/majkinetor/musicbrainz-userscripts/issues/430))
+1. Option to not import work relationships ([#424](https://github.com/majkinetor/musicbrainz-userscripts/issues/424))
+1. Artist name not visible in review table ([#434](https://github.com/majkinetor/musicbrainz-userscripts/issues/434))
+1. Invalid Discogs links in consolidated import ([#429](https://github.com/majkinetor/musicbrainz-userscripts/issues/429))
+1. Link enabled/counted for placeholder/special companies ([#428](https://github.com/majkinetor/musicbrainz-userscripts/issues/428))
+1. Voice types are not imported ([#427](https://github.com/majkinetor/musicbrainz-userscripts/issues/427))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Visual feedback of selected attributes on "Match recordings to works" ([#432](https://github.com/majkinetor/musicbrainz-userscripts/issues/432))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Apple Music support ([#435](https://github.com/majkinetor/musicbrainz-userscripts/issues/435))
+1. Plausibility warnings for position-matched ISRC fills ([#431](https://github.com/majkinetor/musicbrainz-userscripts/issues/431))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Seed all applicable URL relationships for bandcamp URLs ([#423](https://github.com/majkinetor/musicbrainz-userscripts/issues/423))
+
 ## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

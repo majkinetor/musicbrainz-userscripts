@@ -1,5 +1,9 @@
 # Apollo Editor Changelog
 
+## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
+
+- Small improvements
+
 ## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
 
 ### Features

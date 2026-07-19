@@ -1,5 +1,11 @@
 # Group Therapy
 
+## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
+
+### Features
+
+1. Visual feedback of selected attributes on "Match recordings to works" ([#432](https://github.com/majkinetor/musicbrainz-userscripts/issues/432))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features

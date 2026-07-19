@@ -1,5 +1,12 @@
 # ISRC Scout Changelog
 
+## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
+
+### Features
+
+1. Apple Music support ([#435](https://github.com/majkinetor/musicbrainz-userscripts/issues/435))
+1. Plausibility warnings for position-matched ISRC fills ([#431](https://github.com/majkinetor/musicbrainz-userscripts/issues/431))
+
 ## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
 
 ### Fixes

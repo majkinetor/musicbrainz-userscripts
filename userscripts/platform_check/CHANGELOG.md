@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
+
+### Features
+
+1. Seed all applicable URL relationships for bandcamp URLs ([#423](https://github.com/majkinetor/musicbrainz-userscripts/issues/423))
+
 ## [2026.7.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.16)
 
 ### Features
