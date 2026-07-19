@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.12
+// @version      2026.7.19
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1545,8 +1545,41 @@
     lc.append(chips, inp); wrap.appendChild(lc); renderChips();
     const more = el('button', 'gt-wm-nwp-more', '⋯'); more.type = 'button'; more.title = 'recording-of relationship options — attributes (live, cover…) + dates';
     more.onclick = () => wmRelOptsPopover(more); wrap.appendChild(more);
+    // #432 (vzell): the ⋯ popover selections were invisible once it closed — surface them
+    // as live chips right next to the button (attributes and "ended" removable via ×, the
+    // date chip re-opens the popover), and highlight ⋯ while anything is set.
+    const roSum = el('span', 'gt-wm-ro-sum');
+    const fmtD = d => [d.year, d.month, d.day].some(v => v != null)
+      ? [d.year != null ? String(d.year) : '????', d.month != null ? String(d.month).padStart(2, '0') : (d.day != null ? '??' : null), d.day != null ? String(d.day).padStart(2, '0') : null].filter(Boolean).join('‑') : null;
+    wmRoRefresh = () => {
+      roSum.textContent = '';
+      const names = new Map(wmPerfAttrs().map(a => [a.typeID, a.name]));
+      wmRelAttrs.forEach(id => {
+        const c = el('span', 'gt-wm-nwp-chip', names.get(id) || ('#' + id));
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove attribute';
+        x.onclick = () => { wmRelAttrs.delete(id); closeRoPop(); wmRoRefresh(); };
+        c.appendChild(x); roSum.appendChild(c);
+      });
+      const b = fmtD(wmBegin), e2 = fmtD(wmEnd);
+      if (b || e2) {
+        const c = el('span', 'gt-wm-nwp-chip', (b || '…') + ' → ' + (e2 || '…'));
+        c.title = 'recording-of dates — click to edit'; c.style.cursor = 'pointer';
+        c.onclick = () => { if (!wmRoPop) wmRelOptsPopover(more); };
+        roSum.appendChild(c);
+      }
+      if (wmEnded) {
+        const c = el('span', 'gt-wm-nwp-chip', 'ended');
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove';
+        x.onclick = () => { wmEnded = false; closeRoPop(); wmRoRefresh(); };
+        c.appendChild(x); roSum.appendChild(c);
+      }
+      more.classList.toggle('on', !!(wmRelAttrs.size || b || e2 || wmEnded));
+    };
+    wrap.appendChild(roSum);
+    wmRoRefresh();
     return wrap;
   }
+  let wmRoRefresh = null;   // #432 — repaints the rel-options chips; set by wmNewParamsUi
   // #363 the recording-of relationship options popover (opened by the ⋯ button): the performance
   // attributes as checkboxes + begin/end date + ended. These go on the recording→work rel, not the work.
   let wmRoPop = null;
@@ -1559,18 +1592,18 @@
     pop.appendChild(el('div', 'gt-wm-ro-hd', 'recording of'));
     wmPerfAttrs().forEach(a => {
       const lb = el('label', 'gt-wm-ro-cb'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = wmRelAttrs.has(a.typeID);
-      cb.onchange = () => { if (cb.checked) wmRelAttrs.add(a.typeID); else wmRelAttrs.delete(a.typeID); };
+      cb.onchange = () => { if (cb.checked) wmRelAttrs.add(a.typeID); else wmRelAttrs.delete(a.typeID); if (wmRoRefresh) wmRoRefresh(); };   // #432 live chips
       lb.append(cb, el('span', null, a.name)); pop.appendChild(lb);
     });
     const mkDate = (label, obj) => {
       const row = el('div', 'gt-wm-ro-date'); row.appendChild(el('span', 'gt-wm-ro-dl', label));
-      const mk = (ph, key, cls) => { const i = el('input', cls); i.type = 'text'; i.placeholder = ph; i.value = obj[key] || ''; i.oninput = () => { const v = parseInt(i.value, 10); obj[key] = Number.isFinite(v) ? v : null; }; return i; };
+      const mk = (ph, key, cls) => { const i = el('input', cls); i.type = 'text'; i.placeholder = ph; i.value = obj[key] || ''; i.oninput = () => { const v = parseInt(i.value, 10); obj[key] = Number.isFinite(v) ? v : null; if (wmRoRefresh) wmRoRefresh(); }; return i; };   // #432 live chips
       row.append(mk('YYYY', 'year', 'gt-wm-ro-y'), el('span', 'gt-wm-ro-sep', '‑'), mk('MM', 'month', 'gt-wm-ro-m'), el('span', 'gt-wm-ro-sep', '‑'), mk('DD', 'day', 'gt-wm-ro-d')); return row;
     };
     pop.appendChild(mkDate('Begin date', wmBegin));
     pop.appendChild(mkDate('End date', wmEnd));
     const endedL = el('label', 'gt-wm-ro-cb'); const endedCb = document.createElement('input'); endedCb.type = 'checkbox'; endedCb.checked = wmEnded;
-    endedCb.onchange = () => { wmEnded = endedCb.checked; }; endedL.append(endedCb, el('span', null, 'This relationship has ended.')); pop.appendChild(endedL);
+    endedCb.onchange = () => { wmEnded = endedCb.checked; if (wmRoRefresh) wmRoRefresh(); }; endedL.append(endedCb, el('span', null, 'This relationship has ended.')); pop.appendChild(endedL);   // #432 live chips
     document.body.appendChild(pop);
     const r = anchor.getBoundingClientRect();
     pop.style.left = Math.min(r.left, window.innerWidth - pop.offsetWidth - 8) + 'px';
@@ -1766,7 +1799,9 @@
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}'
       // #363 New-work params (Type + searchable lyrics-language combo) in the footer
       + '.gt-wm-nwp{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#555}'
-      + '.gt-wm-nwp-more{padding:2px 6px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;color:#6f42c1;cursor:pointer;font:13px Arial;line-height:1}.gt-wm-nwp-more:hover{background:#f0ecfa}'
+      + '.gt-wm-ro-sum{display:inline-flex;align-items:center;gap:3px;flex-wrap:wrap;max-width:340px}'
+    + '.gt-wm-nwp-more.on{border-color:#6f42c1;background:#efeaf9;font-weight:700}'
+    + '.gt-wm-nwp-more{padding:2px 6px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;color:#6f42c1;cursor:pointer;font:13px Arial;line-height:1}.gt-wm-nwp-more:hover{background:#f0ecfa}'
       + '.gt-wm-nwp-type{font:12px Arial;padding:2px 4px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;max-width:130px}'
       + '.gt-wm-nwp-lang{position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:3px;min-width:120px;max-width:240px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;padding:2px 4px}'
       + '.gt-wm-nwp-chip{display:inline-flex;align-items:center;gap:3px;background:#efeaf9;color:#5b4a86;border-radius:9px;padding:1px 4px 1px 7px;font-size:11px;white-space:nowrap}'
