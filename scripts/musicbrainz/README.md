@@ -1,7 +1,6 @@
 # MusicBrainz PowerShell module
 
-General-purpose [MusicBrainz](https://musicbrainz.org) helpers for PowerShell — a standalone
-module with no ties to any particular script, equally usable for interactive exploration:
+[MusicBrainz](https://musicbrainz.org) [API](https://musicbrainz.org/doc/MusicBrainz_API) using PowerShell.
 
 ```powershell
 Import-Module .\MusicBrainz.psm1
