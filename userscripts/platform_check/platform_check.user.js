@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.20.135045
+// @version      2026.7.20.140510
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2845,6 +2845,12 @@ async function fetchSoundcloudSet(setUrl) {
     const cid = await soundcloudClientId();
     const rj = async (u) => { const r = await gmGet(u, { headers: { Accept: 'application/json' } }); return r.ok ? JSON.parse(r.responseText || 'null') : null; };
     const pl = await rj(`${SC_API_V2}/resolve?url=${encodeURIComponent(setUrl)}&client_id=${cid}`);
+    // a bare track URL is a single-track release (#439, chaban-mb) — its own publisher_metadata carries the barcode
+    if (pl && pl.kind === 'track') {
+        const pm = pl.publisher_metadata || {};
+        const pl1 = (pm.p_line || '').replace(/^\s*©?℗?\s*\d{4}\s*/, '').trim();
+        return { title: pl.title || '', tracks: 1, barcode: String(pm.upc_or_ean || '').trim() || null, year: (pl.release_date || pl.display_date || pl.created_at || '').slice(0, 4) || null, label: pl1 || null, format: 'Digital Media' };
+    }
     if (!pl || pl.kind !== 'playlist') return null;
     const stubs = (pl.tracks || []).filter(t => t && t.id);
     const byId = new Map(); (pl.tracks || []).forEach(t => { if (t && t.title) byId.set(t.id, t); });
@@ -3617,7 +3623,7 @@ function parseMbFromDom() {
             beatport:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
             volumo:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
             hdtracks:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
-            soundcloud:    externalHrefs.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/sets\//i.test(u)) || null,
+            soundcloud:    externalHrefs.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+/i.test(u)) || null,
             discogsMaster: externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
         };
 
@@ -3827,7 +3833,7 @@ function parseMbData(data) {
         beatport:      relUrls.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
         volumo:        relUrls.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
         hdtracks:      relUrls.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
-        soundcloud:    relUrls.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/sets\//i.test(u)) || null,
+        soundcloud:    relUrls.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+/i.test(u)) || null,
         discogsMaster: relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
     };
     const format = data.media?.[0]?.format || null;

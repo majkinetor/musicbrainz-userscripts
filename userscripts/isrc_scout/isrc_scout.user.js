@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.132455
+// @version      2026.7.20.140510
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -897,8 +897,9 @@
     // legacy forms have no clean id mapping and are skipped (Platform Check handles by barcode).
     if ((m = u.match(/hdtracks\.com\/(?:#\/)?album\/([a-f0-9]{24})/i)))        return { k: 'hdtracksId', v: m[1] };
     if ((m = u.match(/hdtracks\.com\/[^?]*[?&]valbum_code=(\d{8,})/i)))        return { k: 'hdtracksId', v: m[1] };
-    // SoundCloud SET (playlist) = album; the whole permalink URL is the id (api-v2 resolves it). #439
-    if ((m = u.match(/^(https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/sets\/[^/?#]+)/i))) return { k: 'scUrl', v: m[1] };
+    // SoundCloud SET (playlist) = album, or a bare TRACK url = a single-track release
+    // (#439, chaban-mb); the whole permalink URL is the id (api-v2 resolves either). #439
+    if ((m = u.match(/^(https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+)/i))) return { k: 'scUrl', v: m[1] };
     return null;
   }
 
@@ -1964,20 +1965,28 @@
       try { return JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('SoundCloud: malformed JSON (' + what + ')'); }
     };
     const pl = await rj(SC.api + '/resolve?url=' + encodeURIComponent(setUrl) + '&client_id=' + cid, 'set');
-    if (!pl || pl.kind !== 'playlist') throw new Error('SoundCloud: not a set/playlist URL');
-    const stubs = (pl.tracks || []).filter(t => t && t.id);
-    Log.info('SoundCloud set "' + (pl.title || setUrl) + '": ' + stubs.length + ' track(s)');
-    // /resolve hydrates only the first few tracks; batch-hydrate the rest by id
-    // (≤50 per call), preserving the set order so positions stay 1:1 with the release.
-    const byId = new Map();
-    (pl.tracks || []).forEach(t => { if (t && t.title) byId.set(t.id, t); });
-    const missing = stubs.filter(t => !byId.has(t.id)).map(t => t.id);
-    for (let i = 0; i < missing.length; i += 50) {
-      const ids = missing.slice(i, i + 50).join(',');
-      let batch; try { batch = await rj(SC.api + '/tracks?ids=' + encodeURIComponent(ids) + '&client_id=' + cid, 'tracks'); } catch (e) { Log.warn('SoundCloud batch failed: ' + errText(e)); continue; }
-      (batch || []).forEach(t => { if (t && t.id != null) byId.set(t.id, t); });
+    let ordered;
+    if (pl && pl.kind === 'track') {
+      // a bare track URL — a single-track release (#439, chaban-mb): treat it as a 1-track set
+      ordered = [pl];
+      Log.info('SoundCloud track "' + (pl.title || setUrl) + '": 1 track');
+    } else if (pl && pl.kind === 'playlist') {
+      const stubs = (pl.tracks || []).filter(t => t && t.id);
+      Log.info('SoundCloud set "' + (pl.title || setUrl) + '": ' + stubs.length + ' track(s)');
+      // /resolve hydrates only the first few tracks; batch-hydrate the rest by id
+      // (≤50 per call), preserving the set order so positions stay 1:1 with the release.
+      const byId = new Map();
+      (pl.tracks || []).forEach(t => { if (t && t.title) byId.set(t.id, t); });
+      const missing = stubs.filter(t => !byId.has(t.id)).map(t => t.id);
+      for (let i = 0; i < missing.length; i += 50) {
+        const ids = missing.slice(i, i + 50).join(',');
+        let batch; try { batch = await rj(SC.api + '/tracks?ids=' + encodeURIComponent(ids) + '&client_id=' + cid, 'tracks'); } catch (e) { Log.warn('SoundCloud batch failed: ' + errText(e)); continue; }
+        (batch || []).forEach(t => { if (t && t.id != null) byId.set(t.id, t); });
+      }
+      ordered = stubs.map(s => byId.get(s.id)).filter(Boolean);
+    } else {
+      throw new Error('SoundCloud: not a set or track URL');
     }
-    const ordered = stubs.map(s => byId.get(s.id)).filter(Boolean);
     let n = 0;
     ordered.forEach((t, i) => {
       const pm = t.publisher_metadata || {};
@@ -2821,6 +2830,7 @@
         const cid = await soundcloudClientId();
         const rj = async (u) => { const r = await gmGet(u, { 'Accept': 'application/json' }); return r.status === 200 ? JSON.parse(r.responseText || 'null') : null; };
         const pl = await rj(SC.api + '/resolve?url=' + encodeURIComponent(setUrl) + '&client_id=' + cid);
+        if (pl && pl.kind === 'track') return [{ title: pl.title || '', url: pl.permalink_url || '' }].filter(t => t.url);   // single-track release (#439)
         if (!pl || pl.kind !== 'playlist') return [];
         const stubs = (pl.tracks || []).filter(t => t && t.id);
         const byId = new Map(); (pl.tracks || []).forEach(t => { if (t && t.title) byId.set(t.id, t); });
@@ -4392,7 +4402,7 @@
     if (/hdtracks\.com/i.test(s)) return mk('HDtracks');
     if (/qobuz\.com/i.test(s)) return mk('Qobuz');
     if (/(?:music|itunes)\.apple\.com/i.test(s)) return mk('Apple');   // #435, iTunes URLs #436
-    if (/soundcloud\.com\/[^/]+\/sets\//i.test(s)) return mk('SoundCloud');   // #439 sets only (a set = album)
+    if (/soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+/i.test(s)) return mk('SoundCloud');   // #439 a set (album) or a track (single-track release)
     // Spotify intentionally NOT detected here: its import resolves the MB release
     // FROM the Spotify URL (ISRC Hunt), so a non-MB URL can't work (#180). It's
     // offered only as a provider button when the release has a Spotify MB link.
@@ -4461,9 +4471,9 @@
       return /^[a-f0-9]{24}$/i.test(s) ? s : (/^\d{8,}$/.test(s) ? s : null);
     }
     if (source === 'SoundCloud') {
-      // A set (playlist) is the album; api-v2 resolves the whole permalink URL, so
-      // the id we carry IS that URL. Only sets — a single-track URL isn't an album. #439
-      const m = s.match(/^(https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/sets\/[^/?#]+)/i);
+      // A set (playlist) is the album, or a bare track url is a single-track release;
+      // api-v2 resolves the whole permalink URL, so the id we carry IS that URL. #439
+      const m = s.match(/^(https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+)/i);
       return m ? m[1] : null;
     }
     if (source === 'Apple') {

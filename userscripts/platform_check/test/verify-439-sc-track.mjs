@@ -1,0 +1,25 @@
+import { createRequire } from 'node:module';
+import { readFile } from 'node:fs/promises';
+const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
+const { chromium } = require('playwright');
+const code = await readFile('C:/Work/mb-userscripts/userscripts/platform_check/platform_check.user.js','utf8');
+const MBID='6e569b63-124b-47a6-ba2f-e8af96d2d1bc';
+const ctx=await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile',{headless:true,viewport:{width:1500,height:1000},bypassCSP:true});
+await ctx.exposeBinding('__gmFetch',async(_s,o)=>{try{const r=await ctx.request.fetch(o.url,{method:o.method||'GET',headers:o.headers||{},maxRedirects:10});return{status:r.status(),responseText:await r.text(),finalUrl:r.url(),responseHeaders:''};}catch(e){return{status:0,responseText:'',finalUrl:o.url,responseHeaders:''};}});
+const page=ctx.pages()[0]||await ctx.newPage(); const errs=[]; page.on('pageerror',e=>errs.push(e.message));
+await page.addInitScript(()=>{const store=new Map();window.__store=store;window.GM_getValue=(k,d)=>store.has(k)?store.get(k):d;window.GM_setValue=(k,v)=>store.set(k,v);window.GM_info={script:{name:'Platform Check',version:'t'}};window.unsafeWindow=window;
+  window.GM_xmlhttpRequest=(o)=>{window.__gmFetch({method:o.method||'GET',url:o.url,headers:o.headers||{},data:o.data}).then(r=>o.onload&&o.onload({status:r.status,finalUrl:r.finalUrl,responseText:r.responseText,responseHeaders:r.responseHeaders})).catch(()=>o.onerror&&o.onerror({status:0}));};});
+await page.goto(`https://musicbrainz.org/release/${MBID}`,{waitUntil:'domcontentloaded'});
+if(page.url().includes('/login')){console.log('NOT LOGGED IN');await ctx.close();process.exit(3);}
+await page.waitForTimeout(1200); await page.addScriptTag({content:code});
+await page.waitForFunction((mbid)=>{const raw=window.__store.get('pc:cache:v2:soundcloud:'+mbid);try{return !!(raw&&JSON.parse(raw).url);}catch{return false;}},MBID,{timeout:60000}).catch(()=>{});
+await page.waitForTimeout(500);
+const r=await page.evaluate((mbid)=>{let c=null;try{c=JSON.parse(window.__store.get('pc:cache:v2:soundcloud:'+mbid)||'null');}catch{}return{cache:c,rowExists:!!document.getElementById('row-soundcloud')};},MBID);
+let fail=0;const ck=(c,m)=>{console.log((c?'ok  : ':'FAIL: ')+m);if(!c)fail++;};
+console.log(JSON.stringify(r.cache));
+ck(r.rowExists,'SoundCloud row rendered');
+ck(r.cache&&/soundcloud\.com/.test(r.cache.url||''),'recognized the track URL as the release SoundCloud link');
+ck(r.cache&&r.cache.tracks===1,`track count = 1 (${r.cache&&r.cache.tracks})`);
+ck(errs.length===0,'no errors: '+JSON.stringify(errs.slice(0,2)));
+console.log(fail?`\n${fail} FAIL`:'\nALL PASS');
+await ctx.close();process.exit(fail?1:0);
