@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.20.172712
+// @version      2026.7.20.174524
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -73,13 +73,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.20.172712 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.20.172656\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.20.122901\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.20.140510\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.20.140510");
+  console.log('%c String Theory %c v2026.7.20.174524 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.20.174510\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.20.122901\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.20.140510\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.20.140510");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.172656","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.172656","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.174510","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.174510","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -263,7 +263,7 @@ try {
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, autoMatchArtist: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, autoMatchArtist: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -1427,7 +1427,7 @@ try {
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.20.172656';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.20.174510';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4783,17 +4783,49 @@ try {
   //   plain  → just the clicked field on that row
   //   Ctrl   → both fields (that have a diff) on the clicked row
   //   Alt    → the clicked field down the whole column (every diffing row)
+  //   Ctrl+Alt   → both fields on every row = the whole side of the table (#443). The two
+  //                sides copy in opposite directions, so the full table is two gestures.
   function wireRecCellContextMenu(wrap) {
     const tbl = wrap.querySelector('.tc-rectbl'); if (!tbl) return;
     const copyOn = (t, f) => f === 'title' ? !!u(t.updateRecordingTitle) : !!u(t.updateRecordingArtist);
     const eligible = (t, f) => !!t && (nativeDiffFlag(t, f) || copyOn(t, f));
     tbl.addEventListener('contextmenu', e => {
       const tr = e.target.closest('tr.tc-recrow'); if (!tr) return;
+      const recRows = () => wrap.querySelectorAll('tbody tr.tc-recrow');
+      const wholeSide = e.ctrlKey && e.altKey;   // #443: both fields, every row = the whole side
+      // #443 whole-side sweep for the track side (recording -> track): copy a recording's
+      // title AND artist onto its track for one row, reused across every row in the gesture.
+      // Mirrors the per-field setters below; the shared cache fetches each artist entity once.
+      const _sideEntCache = new Map();
+      const copyRecToTrack = async (m, i) => {
+        const t = koTrack(m, i); if (!t) return;
+        const rec = u(t.recording);
+        const rn = rec ? u(rec.name) : null;
+        if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
+        if (u(t.updateRecordingTitle)) setCopy('title', { mi: m, ti: i }, false);   // now equal -> clear the moot flag
+        const recAc = rec && u(rec.artistCredit), recNames = recAc && (u(recAc.names) || []);
+        if (recNames && recNames.length) {
+          const nk = n => (n.artist ? (u(u(n.artist).gid) || '') : '') + '|' + (u(n.name) || '') + '|' + (u(n.joinPhrase) || '');
+          const tNames = u(u(t.artistCredit).names) || [];
+          const same = tNames.length === recNames.length && tNames.every((n, k) => nk(n) === nk(recNames[k]));
+          if (!same) {
+            const names = [];
+            for (const n of recNames) {
+              const a = u(n.artist), gid = a && u(a.gid);
+              let full = null; if (gid) { if (!_sideEntCache.has(gid)) _sideEntCache.set(gid, await fetchEntity(gid)); full = _sideEntCache.get(gid); }
+              names.push({ artist: full || a, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' });   // full entity persists the match (#348)
+            }
+            try { t.artistCredit({ names }); } catch (x) { Log.warn(`#443 side copy: track ${m}.${i} artistCredit setter threw: ${x && x.message}`); }
+          }
+          if (u(t.updateRecordingArtist)) setCopy('artist', { mi: m, ti: i }, false);
+        }
+      };
       // #348: right-click a TRACK title cell → set the track NAME to its recording's name, IMMEDIATELY
       // (the mirror of copying track→recording). It's a real title edit, so the Tracklist tab shows the
       // row changed and its ↺ reverts it. Alt = do the whole column.
       if (e.target.closest('td.tc-tkt')) {
         e.preventDefault();
+        if (wholeSide) { (async () => { for (const row of recRows()) await copyRecToTrack(+row.dataset.mi, +row.dataset.ti); _tlRefreshed = false; scheduleSync(); rerenderRec(); })(); return; }   // #443 whole track side
         const setFromRec = (m, i) => {
           const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null;
           if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
@@ -4810,6 +4842,7 @@ try {
       // #348: right-click a TRACK artist cell → set the track's ARTIST CREDIT to its recording's, immediately. Alt = whole column.
       if (e.target.closest('td.tc-tka')) {
         e.preventDefault();
+        if (wholeSide) { (async () => { for (const row of recRows()) await copyRecToTrack(+row.dataset.mi, +row.dataset.ti); _tlRefreshed = false; scheduleSync(); rerenderRec(); })(); return; }   // #443 whole track side
         // entity-aware equality: same artist GID + credited-as + join phrase per name. NOT acText — two
         // different artists sharing a credited name ("Mariz" ≠ "Mariz") must still copy the recording's entity.
         const nameKey = n => (n.artist ? (u(u(n.artist).gid) || '') : '') + '' + (u(n.name) || '') + '' + (u(n.joinPhrase) || '');
@@ -4868,9 +4901,10 @@ try {
       if (!eligible(t0, field)) return;   // no copy available here → do nothing
       const target = !copyOn(t0, field);   // toggle based on the clicked cell's current state
       const apply = (m, i, f) => { const t = koTrack(m, i); if (eligible(t, f)) setCopy(f, { mi: m, ti: i }, target); };
-      if (e.ctrlKey)      ['title', 'artist'].forEach(f => apply(mi, ti, f));
-      else if (e.altKey)  wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => apply(+row.dataset.mi, +row.dataset.ti, field));
-      else                apply(mi, ti, field);
+      if (wholeSide)          recRows().forEach(row => ['title', 'artist'].forEach(f => apply(+row.dataset.mi, +row.dataset.ti, f)));   // #443 whole recording side (both fields, every row)
+      else if (e.ctrlKey)     ['title', 'artist'].forEach(f => apply(mi, ti, f));   // whole row
+      else if (e.altKey)      recRows().forEach(row => apply(+row.dataset.mi, +row.dataset.ti, field));   // whole column
+      else                    apply(mi, ti, field);
       rerenderRec();
     });
   }
@@ -5053,9 +5087,9 @@ try {
       else dot.style.visibility = 'hidden';
       const nameCell = tr.querySelector('.tc-recname');
       nameCell.classList.add('tc-clickable');
-      nameCell.title = 'change recording — suggestions / search' + (tElig ? '  ·  right-click: copy track title to recording (Ctrl: row · Alt: column)' : '');
+      nameCell.title = 'change recording — suggestions / search' + (tElig ? '  ·  right-click: copy track title to recording (Ctrl: row · Alt: column · Ctrl+Alt: whole recording side)' : '');
       nameCell.onclick = () => openRecPicker(r, nameCell);
-      if (aElig) { const artCell = tr.querySelector('.tc-recartist'); if (artCell) artCell.title = 'right-click: copy track artist to recording (Ctrl: row · Alt: column)'; }
+      if (aElig) { const artCell = tr.querySelector('.tc-recartist'); if (artCell) artCell.title = 'right-click: copy track artist to recording (Ctrl: row · Alt: column · Ctrl+Alt: whole recording side)'; }
       if (changed) {   // per-row revert ↺ (single), shown on hover when changed
         const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.title = 'revert to the original recording';
         rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
@@ -5064,11 +5098,11 @@ try {
       // #348: hint the track-title / track-artist cells' right-click when the recording's value differs
       const tkt = tr.querySelector('.tc-tkt');
       if (tkt && !r.isNew && r.recName != null && r.recName !== '' && (r.title || '') !== r.recName) {
-        tkt.title = 'right-click: set track title to the recording title “' + r.recName + '” (Alt: whole column)';
+        tkt.title = 'right-click: set track title to the recording title “' + r.recName + '” (Alt: whole column · Ctrl+Alt: whole track side)';
       }
       const tka = tr.querySelector('.tc-tka');
       if (tka && !r.isNew && r.recArtist != null && r.recArtist !== '' && (r.trackArtist || '') !== r.recArtist) {
-        tka.title = 'right-click: set track artist to the recording artist “' + r.recArtist + '” (Alt: whole column)';
+        tka.title = 'right-click: set track artist to the recording artist “' + r.recArtist + '” (Alt: whole column · Ctrl+Alt: whole track side)';
       }
       return tr;
   }

@@ -274,12 +274,13 @@ When a track's title or artist differs from its linked recording, you can copy t
 | **Right-click** | Toggle copy for that one cell |
 | **Ctrl + right-click** | Toggle both fields (that differ) on the row |
 | **Alt + right-click** | Toggle that field down the whole column (every differing row) |
+| **Ctrl + Alt + right-click** | Toggle both fields on **every row** — the whole side of the table (#443) |
 
 While a copy is on, the cell previews `→ New ` followed by the recording's ~~original~~ value, struck through. Cells that offer a copy carry a subtle underline; a real mismatch stays red.
 
 This mirrors MusicBrainz's **native** update checkboxes exactly — so a copy is offered whenever the native editor would show its checkbox, **including casing-only differences** that Apollo's match tolerance / *Ignore casing* setting would otherwise treat as a match. The tolerance settings still drive the confidence colouring; they no longer hide the copy. Right-clicking a recording cell with no difference does nothing (the browser's context menu is suppressed there).
 
-The same feature works on track side too, but updates its title or artist immediately.
+The same gestures work on the **track side** too (setting the track from its recording), applied immediately. Because the two sides copy in opposite directions, **Ctrl + Alt** covers one side per gesture — run it once on a recording cell and once on a track cell to sweep the whole table.
 
 ## Toolbar
 
