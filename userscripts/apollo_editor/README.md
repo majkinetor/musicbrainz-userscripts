@@ -210,16 +210,17 @@ If _Auto-match on start_ is enabled in the [settings](#matching-options), matchi
 
 ### Artist matching
 
-Apollo resolves each unmatched track artist in two stages, in order:
+Apollo resolves each unmatched track artist in stages, in order:
 
 1. **Releases from same release group** — it pulls the per-track credits (with MBIDs) from other versions of the album and matches by track title. Other editions usually credit the same songs to the same artists, so this resolves most cases at the highest confidence — especially various-artists compilations.
-2. **Name search** — for anything siblings don't cover, it searches the MusicBrainz artist index by the credited name. An exact name is taken as high-confidence only when it's unambiguous; artists that share exact name are left out.
+2. **Existing artist credits (co-occurrence)** — when the credited name is a *non-unique common name* that a plain name search can't disambiguate (a featured "Joni", "Eva", …), Apollo asks MusicBrainz for a recording that credits that name **alongside an artist already known on this release** — a split co-artist or the release artist. If exactly one artist has been co-credited that way, it's the answer. This is a stronger signal than a bare name search (a real prior collaboration, not a name guess), so it applies confidently with a magenta **CRED** badge. Only an exact credited-as / name hit counts — no fuzzy matching — and a tie is surfaced as candidates to pick from rather than guessed.
+3. **Name search** — for anything the above don't cover, it searches the MusicBrainz artist index by the credited name. An exact name is taken as high-confidence only when it's unambiguous; artists that share exact name are left out.
 
-Each resolved artist is tagged by how it matched (release-group, name, pre-existing, or manual).
+Each resolved artist is tagged by how it matched (release-group, credit co-occurrence, name, pre-existing, or manual).
 
 **Confidence levels**:
 
-1. 🟢 Green colored artist box means the artist was matched confidently (release-group or unambiguous exact name).
+1. 🟢 Green colored artist box means the artist was matched confidently (release-group, credit co-occurrence, or unambiguous exact name).
 1. ⚪ White search box means artist is unresolved or low-confidence, for user to pick; these are what the "N unresolved" counter counts and what clicking that badge jumps to.
 
 ### Discogs artist links
