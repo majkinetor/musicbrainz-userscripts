@@ -352,7 +352,7 @@ Applied to **both** tables (Tracklist and Recordings).
 | **Row layout** | normal | Row density: `compact` (tight) · `normal` · `cozy` (airy). |
 | **Alternate row colors** | Off | Tints every other row (and deepens the matched-box green on alternate rows). |
 | **Show grid** | Off | Toggle grid lines on rows and/or columns |
-| **Enlarge punctuation** | On | How much to enlarge in pixels| 
+| **Enlarge punctuation** | 3px | How much to enlarge confusable characters, in pixels (`0` = no enlargement; the invisible-char / missing-space markers still show under [detailed highlighting](#enable-detailed-highlighting)) | 
 
 ## Keyboard 
 
@@ -367,11 +367,13 @@ By default, moving between cells keeps the **caret column** where it was (clampe
 
 ### Enlarge punctuation
 
+When [detailed highlighting](#enable-detailed-highlighting) is on:
+
 - Every character that is confusable (a straight `'` `"` `-`, a curly `’`, an en/em dash) is **enlarged**.
-- Every invisible character (a no-break or zero-width space, a tab etc.) is rendered as a visible glyph.
-- Tooltip shows its Unicode name and exact codepoint
- 
-Control enlargement size via the _Appearance → Enlarge punctuation by N px_ setting (`0` = off, the master switch).
+- Every invisible character (a no-break or zero-width space, a tab etc.) is rendered as a **visible glyph** with a highlight — so a missing / wrong space can never hide.
+- Tooltip shows its Unicode name and exact codepoint.
+
+The _Appearance → Enlarge punctuation by N px_ setting controls **only the enlargement size** — `0` means *no enlargement*, **not** off: the invisible glyphs and missing-space markers still show (they're part of detailed highlighting). To turn the marking off entirely, uncheck **Enable detailed highlighting** (#443).
 
 On the **Tracklist** tab the **Title** can't be styled while it's an editable `<input>`, so it's shown as styled read-only text that **drops into the native input the moment you click or tab into it**.
 

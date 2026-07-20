@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.174510
+// @version      2026.7.20.180808
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1362,7 +1362,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.20.174510';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.20.180808';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1957,7 +1957,7 @@
           <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
           <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
           <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" title="vertical column separators"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" title="horizontal lines between tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
-          <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = off)</span></div>
+          <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = no enlargement)</span></div>
           <label title="Moving between tracklist cells with ↑ / ↓ / Enter keeps the text caret at the same column (clamped to the field's length) so you can fix casing or edit in place. Off: select the whole field on arrival (so the next keystroke overwrites it)."><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
           <label title="When you hover an artist in the tracklist, highlight every other slot where that same artist appears (#284). Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
         </div>
@@ -2523,7 +2523,7 @@
     // Same px>0 master switch as the #203 marking.
     const markJoin = () => {
       wrap.classList.remove('tc-jp-nolead', 'tc-jp-notrail', 'tc-jp-nophrase', 'tc-jp-bad');
-      if ((SETTINGS.recPunctSize | 0) <= 0) return;
+      if (!dhMark()) return;   // #443: gated by detailed highlighting, not the px size
       const v = inp.value;
       if (v === '') { wrap.classList.add('tc-jp-nophrase', 'tc-jp-bad'); return; }
       // CJK scripts (Japanese と / 、, Chinese, Korean) don't space their joins —
@@ -4409,14 +4409,24 @@
   // codepoint, invisibles draw a visible glyph, and all are enlarged by the Appearance
   // "punctuation size" setting (px). Straight ' " are marked too (MB style prefers curly), but a plain
   // hyphen-minus is NOT — it's the correct char (#369). px = 0 disables it (master switch).
+  // #443: the confusable / invisible marking (and the missing-space markers) belong to
+  // **detailed highlighting** — they must show whenever it's on, so an invisible char (a
+  // no-break space, a missing space) can never hide. "Enlarge punctuation" (px) is only
+  // the enlargement amount, NOT a master switch: at 0px the markers are still drawn
+  // (invisibles as their glyph, all named on hover), just not enlarged. Before, 0px
+  // silently disabled everything — which surprised (a missing space vanished, #443).
+  const dhMark = () => (SETTINGS.recPunctSize | 0) > 0 || !!SETTINGS.recDetailedHl;
   function dhRun(str) {
+    if (!dhMark()) return esc(String(str));
     const px = SETTINGS.recPunctSize | 0;
-    if (px <= 0) return esc(String(str));   // 0 = disabled everywhere
-    const st = ' style="font-size:calc(1em + ' + px + 'px);font-weight:700;line-height:1"';
+    const st = px > 0 ? ' style="font-size:calc(1em + ' + px + 'px);font-weight:700;line-height:1"' : '';   // px enlarges only
     let out = '';
     for (const ch of String(str)) {
       const cf = CONFUSABLE[ch];
-      out += cf ? '<span class="tc-cf"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>' : esc(ch);
+      if (!cf) { out += esc(ch); continue; }
+      // invisibles carry a persistent highlight (like the join ␣) so they're obvious at any size
+      const cls = 'tc-cf' + (cf.vis ? ' tc-cf-inv' : '');
+      out += '<span class="' + cls + '"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>';
     }
     return out;
   }
@@ -4440,8 +4450,7 @@
   const isCjk = s => CJK_RE.test(String(s == null ? '' : s));
   function joinMark(join, isLast, prevName, nextName) {
     const j = String(join == null ? '' : join);
-    const px = SETTINGS.recPunctSize | 0;
-    if (px <= 0) return esc(j);
+    if (!dhMark()) return esc(j);                // #443: gated by detailed highlighting, not the px size
     if (isLast) return dhRun(j);                 // trailing artist — empty join is fine
     if (j === '') return '<span class="tc-jp" title="missing join phrase — no separator between these artists">␣?␣</span>';
     const mk = side => '<span class="tc-jp" title="missing ' + side + ' space around the join phrase">␣</span>';
@@ -4576,6 +4585,7 @@
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
       '.tc-rectbl .tc-dh{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — colour configurable (Matching → highlight colour)
       '.tc-cf{display:inline-block;padding:0 .5px}',   // #203 confusable/invisible changed char — enlarged inline (Appearance) + hover tooltip names the codepoint
+      '.tc-cf-inv{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #443 invisible/whitespace char — always visible (glyph + wash), even at 0px enlargement
       '.tc-jp{display:inline-block;background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font-weight:700}',   // #208 missing space (␣) / missing join phrase (␣?␣) around a join phrase',
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
@@ -7136,7 +7146,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
