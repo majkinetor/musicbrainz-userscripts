@@ -52,7 +52,17 @@ const resolved = await page.evaluate(async (rg) => {
 }, RG);
 log('3) position+similarity candidates for "Salongo, Pt. 1":', JSON.stringify(resolved));
 
+// 4) the IMPORT case (majkinetor): a fresh release has no RG yet, so matching must
+// fall back to possible DUPLICATES by title+artist (rgGid = null) — still resolves.
+const dup = await page.evaluate(async () => {
+  const idx = new Map();
+  await window.__apolloEditor.fetchDuplicatePositionIndex('Zaire 74: The African Artists', null, null, idx);
+  return (idx.get('1.3') || []).some(c => c.gid.startsWith('bb07aeb2'));
+});
+log('4) duplicate search with no RG resolves slot 1.3 =', dup);
+
 let fail = 0; const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
+check(dup === true, 'fresh import (no RG) still resolves via possible-duplicate search by title');
 check(posHit.at13.some(c => c.gid === SALONGO), 'position index holds the Salongo recording at slot 1.3');
 check(sim.bridges === true, 'similarity gate bridges "Salongo, Pt. 1" ↔ "Salongo Part 1"');
 check(sim.rejectsUnrelated === false, 'similarity gate rejects an unrelated same-slot title');
