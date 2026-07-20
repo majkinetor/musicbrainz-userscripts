@@ -152,7 +152,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 ### Apple Music
 
-- **API** — iTunes
+- **API** — iTunes (`itunes.apple.com`)
     - Search: `itunes.apple.com/search?term=`
     - Album: `itunes.apple.com/lookup?id=<ID>`
     - Barcode: `itunes.apple.com/lookup?upc=<UPC>` (barcode-first; retried with other zero-paddings, #354). The found barcode is **not** exposed, so no capture for confidence.
@@ -195,7 +195,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 ### Qobuz
 
-- **API** — catalogue API `api.json/0.2` with the web player's `app_id` (`712109809`)
+- **API** — catalogue API `www.qobuz.com/api.json/0.2` with the web player's `app_id` (`712109809`)
     - Search: `album/search` (works **anonymously**)
     - Album: `album/get` — track count, year, label, **UPC** — **session-gated** (401/404 anonymously, #353), so login-only
     - Barcode: `album/search?query=<UPC>` (barcode-first, exact; zero-padded too, #354); UPC captured from `album/get`
@@ -242,7 +242,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 ### HDtracks
 
-- **API** — high-resolution store API (clean, unauthenticated, CORS-open — no Cloudflare/token)
+- **API** — `hdtracks.azurewebsites.net/api/v1` high-resolution store API (clean, unauthenticated, CORS-open — no Cloudflare/token)
     - Search: `/albums/search?q=`
     - Album: `/albums/search?q=` (track count from the search result)
     - Barcode: `/albums/search?q=<UPC>` (barcode-first, exact; found barcode captured)
@@ -259,7 +259,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 ### SoundCloud
 
-- **API** — the anonymous `api-v2` (public `client_id` lifted from the web-player JS — no login)
+- **API** — the anonymous `api-v2.soundcloud.com` (public `client_id` lifted from the web-player JS — no login)
     - Resolve: `/resolve?url=<set|track>` → the playlist (track count + track ids) or a single track
     - Tracks: `/tracks?ids=` → each track's `publisher_metadata` (barcode, `p_line` label)
     - Barcode: **link-derived** — read from the linked set/track, not searched (see note)

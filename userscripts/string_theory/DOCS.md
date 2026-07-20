@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-20 16:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-20 16:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -967,7 +967,7 @@ Shows the release's existing ISRCs and lets you fill in the missing ones from se
     - **[Delete existing ISRCs](#deleting-existing-isrcs)** in bulk
     - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting
     - **[Submit to MusicBrainz](#submitting)** — one-time OAuth, then submit straight from the editor
-- **[Links](#links)** — find and add streaming / store links to recordings (Deezer, Tidal, Beatport, Volumo, Bandcamp, Apple Music, SoundCloud), and see every other provider a recording already links to.
+- **[Links](#links)** — find and add streaming / store links to recordings (Deezer, Tidal, Beatport, Volumo, Qobuz, Bandcamp, Apple Music, SoundCloud), and see every other provider a recording already links to.
   - Find links based on release external links and ISRCs
   - [Batch ending or removing](#ending--removing) link relationship
 - Using release group external links and [Platform Check](../platform_check/README.md) links
@@ -1039,6 +1039,8 @@ Button `(+)` lets you import from an URL — paste any album URL to import from 
 | **Tidal** | `openapi.tidal.com` | app token (baked in) | Enabled when the release has a Tidal album relationship. Uses Tidal's official API with a built-in client-credentials app token (catalog access, **no user login**); maps each track's ISRC by disc/track number. |
 | **Volumo** | `volumo.com/api/v1` | none | Enabled when the release has a Volumo relationship (or one Platform Check found via barcode). Clean unauthenticated API — one call returns every track's ISRC; no Cloudflare/token. Link-only, like the others. |
 | **HDtracks** | `hdtracks.azurewebsites.net/api/v1` | none | Enabled when the release has an HDtracks relationship (or one Platform Check found via barcode). Clean unauthenticated, CORS-open API — one `/album/<id>` call returns every track's ISRC inline; no per-track fan-out, no token. The album id is a 24-char ObjectId; a barcode/UPC (e.g. from a legacy `valbum_code` rel) is resolved to it via search first. |
+| **Apple Music** | `music.apple.com` amp-api | none | Enabled when the release has an Apple Music relationship (or one Platform Check found). Reads the anonymous amp-api album tracklist (bearer token lifted from the web-player JS, **no login**) and maps each track's ISRC by position. Legacy `itunes.apple.com/…/album/id…` links are recognized as the same album. |
+| **SoundCloud** | `api-v2.soundcloud.com` | none | Enabled when the release has a SoundCloud **set** relationship (a bare track URL works as a single-track release). Reads each track's `publisher_metadata.isrc` anonymously from api-v2 (public `client_id` lifted from the web-player JS, **no login**), mapped by position. Distributed sets also carry the release barcode (`upc_or_ean`), which Scout logs (it doesn't set barcodes — that's Platform Check's job). |
 | **Qobuz** | `www.qobuz.com/api.json/0.2` | **login** | Enabled when the release has a Qobuz relationship (or one Platform Check found) **and** you're signed in to Qobuz under [Platform Check](../platform_check/README.md) → ⚙ Setup → Auth. One `album/get` call (with the shared token) returns every track's ISRC; matched by position. A barcode/UPC is resolved to the album id via `album/search` (zero-padded). Session-gated — see above. |
 
 > [!NOTE] Platform Check links
@@ -1062,7 +1064,7 @@ Uses Tidal's official API (`openapi.tidal.com`) with a baked-in client-credentia
 
 - **+1** — fill with the previous track's ISRC incremented by one.
 - **ISRC lookup**<br>
-Displays track metadata from the ISRC provider. It takes the ISRC in the row (entered or existing) and looks it up **on the selected provider**, showing that track's metadata (title · artist · length, mismatches highlighted) next to the row. It's menu lets you choose an available provider: SoundExchange (default) plus every other provider available for the release. Picking one re-skins **all** per-track buttons to that provider's icon (global for the release, not remembered). **Right-click** a button to inoke on all tracks. Providers with a global by-ISRC endpoint (**SoundExchange**, **Deezer**, **Tidal**) work on any release; the album-based ones (**HDtracks / Volumo / Beatport**) read the release's album (so they need its link, in MB or found by Platform Check) and match by ISRC.
+Displays track metadata from the ISRC provider. It takes the ISRC in the row (entered or existing) and looks it up **on the selected provider**, showing that track's metadata (title · artist · length, mismatches highlighted) next to the row. It's menu lets you choose an available provider: SoundExchange (default) plus every other provider available for the release. Picking one re-skins **all** per-track buttons to that provider's icon (global for the release, not remembered). **Right-click** a button to inoke on all tracks. Providers with a global by-ISRC endpoint (**SoundExchange**, **Deezer**, **Tidal**) work on any release; the album-based ones (**Beatport / Volumo / HDtracks / Qobuz / Apple Music / SoundCloud**) read the release's album (so they need its link, in MB or found by Platform Check) and match by ISRC.
 - **⚙ search on SoundExchange**<br>
 Open a panel where you can tweak the title/artist/release + exact toggles for SX. The panel has a **Search on SoundExchange ↗** link that runs the same query on the SoundExchange website.
 
@@ -1108,8 +1110,9 @@ ISRC Scout also adds **streaming / store links to recordings** in the background
 | **Beatport**, **Volumo** | by **album** — the release's Beatport/Volumo album carries every track's **ISRC** (and id), so the per-track URL is matched by ISRC. Both are download stores → *purchase for download* | purchase for download |
 | **Qobuz** | by **album** — `album/get` (with the shared [Platform Check](../platform_check/README.md) login token) carries every track's **ISRC** + id; the per-track link is the id-only `open.qobuz.com/track/<id>`, matched by ISRC. Needs the Qobuz login | purchase for download |
 | **Bandcamp**, **Apple Music** | by **album page** — the release's Bandcamp/Apple album link lists every track URL, matched to the tracklist by **position + title** (a title mismatch is skipped, never guessed) | free streaming / streaming |
+| **SoundCloud** | by **set** — the release's SoundCloud **set** (playlist) lists every track's permalink, matched by **position + title**; a bare track URL is handled as a single-track release | free streaming |
 
-A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Beatport/Volumo/Bandcamp/Apple need the release's album link) or the recording is already linked to it.
+A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Beatport/Volumo/Bandcamp/Apple/SoundCloud need the release's album link) or the recording is already linked to it.
 
 ##### Other linked providers
 
@@ -1532,7 +1535,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 #### Apple Music
 
-- **API** — iTunes
+- **API** — iTunes (`itunes.apple.com`)
     - Search: `itunes.apple.com/search?term=`
     - Album: `itunes.apple.com/lookup?id=<ID>`
     - Barcode: `itunes.apple.com/lookup?upc=<UPC>` (barcode-first; retried with other zero-paddings, #354). The found barcode is **not** exposed, so no capture for confidence.
@@ -1575,7 +1578,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 #### Qobuz
 
-- **API** — catalogue API `api.json/0.2` with the web player's `app_id` (`712109809`)
+- **API** — catalogue API `www.qobuz.com/api.json/0.2` with the web player's `app_id` (`712109809`)
     - Search: `album/search` (works **anonymously**)
     - Album: `album/get` — track count, year, label, **UPC** — **session-gated** (401/404 anonymously, #353), so login-only
     - Barcode: `album/search?query=<UPC>` (barcode-first, exact; zero-padded too, #354); UPC captured from `album/get`
@@ -1622,7 +1625,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 #### HDtracks
 
-- **API** — high-resolution store API (clean, unauthenticated, CORS-open — no Cloudflare/token)
+- **API** — `hdtracks.azurewebsites.net/api/v1` high-resolution store API (clean, unauthenticated, CORS-open — no Cloudflare/token)
     - Search: `/albums/search?q=`
     - Album: `/albums/search?q=` (track count from the search result)
     - Barcode: `/albums/search?q=<UPC>` (barcode-first, exact; found barcode captured)
@@ -1639,7 +1642,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 #### SoundCloud
 
-- **API** — the anonymous `api-v2` (public `client_id` lifted from the web-player JS — no login)
+- **API** — the anonymous `api-v2.soundcloud.com` (public `client_id` lifted from the web-player JS — no login)
     - Resolve: `/resolve?url=<set|track>` → the playlist (track count + track ids) or a single track
     - Tracks: `/tracks?ids=` → each track's `publisher_metadata` (barcode, `p_line` label)
     - Barcode: **link-derived** — read from the linked set/track, not searched (see note)
