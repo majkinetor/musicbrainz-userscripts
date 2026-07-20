@@ -246,6 +246,8 @@ Already-linked artists are verified for free via MusicBrainz's internal entity e
 
 Apollo fetches **every recording in the release group in one request**, indexes them by title, and matches each track **locally** — choosing the highest-confidence candidate (title + artist + length). It only falls back to a per-track MusicBrainz lookup for the tracks the release group can't satisfy. A full release therefore matches in roughly one fetch rather than one request per track.
 
+**Matching by duplicates (position + similarity).** A title-only match misses when editions word the same track differently (*Salongo Part 1* vs *Salongo, Pt. 1*, *Part 1* vs *Pt 1*). So when the title match doesn't clear the cutoff, Apollo also looks at the **same position** across the release's other editions — and, if those come up short, across releases MB holds under the *same title + artist* in **other release groups** (possible duplicates). A candidate from that slot links only when its title is **similar enough** to the track (≈60% by edit distance, or one contained in the other) *and* its length agrees — so a differently-worded duplicate resolves while an unrelated song that merely shares a slot in a divergent edition does not. It reads each edition's tracklist by position in one request and only reaches outside the RG when the editions don't answer.
+
 *Credited as* values on track and recording don't influence matching.
 
 **Confidence levels**:
