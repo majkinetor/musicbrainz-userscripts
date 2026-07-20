@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.122818
+// @version      2026.7.20.125336
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1932,8 +1932,9 @@
         /tracks?ids=<id,…>  (batched ≤50) → each track's publisher_metadata.isrc
      A set is an ordered playlist, so ISRCs map to the tracklist BY POSITION
      (title + duration ride along so the #431 plausibility guard can flag a
-     mismatched edition). SoundCloud exposes no album barcode/UPC, so this is
-     an ISRC source only.
+     mismatched edition). Distributed sets also carry the release barcode per
+     track (publisher_metadata.upc_or_ean) — logged here, but not written
+     (setting a release barcode is Platform Check's job). #439
   ═══════════════════════════════════════════════════════════════════════ */
   const SC = { api: 'https://api-v2.soundcloud.com', lsKey: 'mbtools:soundcloud-clientid' };
   let _scClientId = null;
@@ -1992,6 +1993,13 @@
       try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('SoundCloud map hiccup for ' + e.isrc + ': ' + errText(err)); }
       try { if (onProgress) onProgress(++n, ordered.length); } catch (err) {}
     });
+    // SoundCloud stores the release barcode per track as publisher_metadata.upc_or_ean
+    // (label-supplied — present on distributed sets, absent on self-uploads). ISRC Scout
+    // doesn't set the barcode (that's a release edit — Platform Check's job), but surface
+    // it in the log when the whole set agrees on one value, so it's not lost. #439
+    const upcs = [...new Set(ordered.map(t => String((t.publisher_metadata || {}).upc_or_ean || '').trim()).filter(Boolean))];
+    if (upcs.length === 1) Log.info('SoundCloud set barcode (UPC/EAN): ' + upcs[0]);
+    else if (upcs.length > 1) Log.info('SoundCloud set exposes ' + upcs.length + ' different track UPCs (compilation?): ' + upcs.join(', '));
     const withIsrc = ordered.filter(t => isValidIsrc(normalizeIsrc((t.publisher_metadata || {}).isrc || ''))).length;
     if (!withIsrc) throw new Error('SoundCloud set exposed no ISRCs');
     return { total: ordered.length, next: null };
