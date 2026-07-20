@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-20 18:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-20 18:14 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -358,6 +358,8 @@ The interface modifications (everything above except *Auto confirm*) are toggled
 ##### Enable detailed highlighting
 
  Highlights the exact **differing characters** in a mismatching **title and artist** (including a casing- or punctuation-only difference the match would otherwise tolerate), instead of the whole field, and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
+
+For artists this works at two levels: a **different linked artist** is boxed whole, while a **credited-as** difference on the *same* artist (e.g. *DJ Vadim* vs *Vadim*) has just its differing characters highlighted — the link is kept and matching is unaffected (credited-as never influences matching), so you can *see* the difference without it being treated as a mismatch (#444).
 
 #### Appearance
 
