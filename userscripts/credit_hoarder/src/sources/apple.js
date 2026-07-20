@@ -18,14 +18,17 @@ import { getArtistRoles } from '../mappers.js';
 
 export const APPLE_AMP = 'https://amp-api.music.apple.com/v1/catalog';
 
-const APPLE_ALBUM_RE = /music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i;
+// Accepts music.apple.com AND legacy itunes.apple.com links (equivalent — #436),
+// an optional storefront (iTunes links sometimes omit it), and the iTunes `id` prefix.
+const APPLE_ALBUM_RE = /(?:music|itunes)\.apple\.com\/(?:([a-z]{2})\/)?album\/(?:[^/?#]+\/)?(?:id)?(\d+)/i;
 
 /** Parse an Apple Music album URL → `{ storefront, id }`, or `null`. Accepts the
- *  slugged and slug-less forms and the per-track `…/album/<slug>/<albumId>?i=<songId>`
- *  form (we take the ALBUM id — imports are album-scoped). */
+ *  slugged and slug-less forms, the per-track `…/album/<slug>/<albumId>?i=<songId>`
+ *  form (we take the ALBUM id — imports are album-scoped), and legacy iTunes URLs
+ *  like `itunes.apple.com/us/album/id123` (#436). */
 export function parseAppleAlbumUrl(url) {
     const m = APPLE_ALBUM_RE.exec(url || '');
-    return m ? { storefront: m[1].toLowerCase(), id: m[2] } : null;
+    return m ? { storefront: (m[1] || 'us').toLowerCase(), id: m[2] } : null;
 }
 
 // Apple role name → Discogs-style role key (resolved via ENTITY_TYPE_MAP). Anything

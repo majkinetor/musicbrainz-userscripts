@@ -37,7 +37,7 @@ export function sourceNameForUrl(url) {
     if (/tidal\.com\//i.test(url || '')) return 'Tidal';
     if (/qobuz\.com\//i.test(url || '')) return 'Qobuz';
     if (/deezer\.com\//i.test(url || '')) return 'Deezer';
-    if (/music\.apple\.com\//i.test(url || '')) return 'Apple';   // #435
+    if (/(?:music|itunes)\.apple\.com\//i.test(url || '')) return 'Apple';   // #435; iTunes URLs #436
     return 'Discogs';
 }
 

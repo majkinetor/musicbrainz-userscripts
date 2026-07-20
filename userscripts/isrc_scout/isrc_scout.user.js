@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.19
+// @version      2026.7.20
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -878,6 +878,9 @@
     let m;
     if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) return { k: 'bandcampUrl', v: m[0] };  // #300: per-track URLs by position
     if ((m = u.match(/^(https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/(?:[^/?#]+\/)?\d+)/i))) return { k: 'appleUrl', v: m[1] };  // album page ld+json lists every track URL
+    // Legacy iTunes links are equivalent to Apple Music — normalise to the canonical
+    // music.apple.com album URL so the same fetch path handles them (#436).
+    if ((m = u.match(/itunes\.apple\.com\/(?:([a-z]{2})\/)?album\/(?:[^/?#]+\/)?id(\d+)/i))) return { k: 'appleUrl', v: 'https://music.apple.com/' + (m[1] || 'us').toLowerCase() + '/album/' + m[2] };
     if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/)))            return { k: 'spotifyId', v: m[1] };
     if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))             return { k: 'deezerId', v: m[1] };
     if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))                 return { k: 'beatportId', v: m[1] };
@@ -2732,7 +2735,7 @@
       { test: u => /music\.youtube\.com\/watch|youtu\.be\/|youtube\.com\/watch/i.test(u),  name: 'YouTube',      color: '#ff0000', icon: _GLOBE },
       { test: u => /soundcloud\.com\//i.test(u),                                           name: 'SoundCloud',   color: '#ff5500', icon: _GLOBE },
       { test: u => /music\.amazon\./i.test(u),                                             name: 'Amazon Music', color: '#00a8e1', icon: _GLOBE },
-      { test: u => /music\.apple\.com\//i.test(u),                                         name: 'Apple Music',  color: _PROV_COLOR.apple, icon: SRC_ICON.am },
+      { test: u => /(?:music|itunes)\.apple\.com\//i.test(u),                              name: 'Apple Music',  color: _PROV_COLOR.apple, icon: SRC_ICON.am },
     ];
     // recUrls this track carries that no PROV provider already renders → [{url,name,color,icon}] (deduped).
     function otherLinked(t) {
@@ -4196,6 +4199,7 @@
          : source === 'Volumo'   ? fetchVolumo
          : source === 'HDtracks' ? fetchHDtracks
          : source === 'Qobuz'    ? fetchQobuz
+         : source === 'Apple'    ? fetchApple
          : null;
   }
 
@@ -4250,7 +4254,7 @@
     if (/volumo\.com/i.test(s)) return mk('Volumo');
     if (/hdtracks\.com/i.test(s)) return mk('HDtracks');
     if (/qobuz\.com/i.test(s)) return mk('Qobuz');
-    if (/music\.apple\.com/i.test(s)) return mk('Apple');   // #435
+    if (/(?:music|itunes)\.apple\.com/i.test(s)) return mk('Apple');   // #435, iTunes URLs #436
     // Spotify intentionally NOT detected here: its import resolves the MB release
     // FROM the Spotify URL (ISRC Hunt), so a non-MB URL can't work (#180). It's
     // offered only as a provider button when the release has a Spotify MB link.
@@ -4269,7 +4273,7 @@
     } else {
       btn.textContent = '+';
       btn.style.color = '';
-      btn.title = 'Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks) — auto-detected and imported';
+      btn.title = 'Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz / Apple) — auto-detected and imported';
     }
   }
   async function submitUrlAdd(value) {
@@ -4279,7 +4283,7 @@
       if (/open\.spotify\.com|spotify:album:/i.test(v)) {
         toast('Spotify can only be imported from its MusicBrainz-linked album — use the Spotify button', 'err');
       } else if (v) {
-        toast('Unrecognized URL — paste a Deezer, Beatport, Tidal, Volumo or HDtracks album link', 'err'); Log.warn('URL import: unrecognized "' + v + '"');
+        toast('Unrecognized URL — paste a Deezer, Beatport, Tidal, Volumo, HDtracks, Qobuz or Apple album link', 'err'); Log.warn('URL import: unrecognized "' + v + '"');
       }
       return;
     }
@@ -4321,8 +4325,10 @@
     if (source === 'Apple') {
       // …/<storefront>/album/<slug>/<id> or the slug-less form; the per-track ?i= form
       // still identifies the album. Keep the storefront — the amp-api album is region-scoped.
-      const m = s.match(/music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i);
-      return m ? (m[1].toLowerCase() + '/' + m[2]) : null;
+      // Also accept legacy iTunes links: itunes.apple.com/<sf>/album/<slug>/id<id> (the
+      // `id` prefix and an optional storefront), which are equivalent to Apple Music (#436).
+      const m = s.match(/(?:music|itunes)\.apple\.com\/(?:([a-z]{2})\/)?album\/(?:[^/?#]+\/)?(?:id)?(\d+)/i);
+      return m ? ((m[1] || 'us').toLowerCase() + '/' + m[2]) : null;
     }
     let m = s.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/) || s.match(/spotify:album:([A-Za-z0-9]+)/);
     return m ? m[1] : (/^[A-Za-z0-9]{18,30}$/.test(s) ? s : null);

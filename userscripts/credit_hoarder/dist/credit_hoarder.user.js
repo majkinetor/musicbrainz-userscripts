@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.19
+// @version      2026.7.20.121624
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -313,8 +313,8 @@
         tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || "")),
         qobuz: href((rel) => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || "")),
         deezer: href((rel) => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || "")),
-        apple: href((rel) => /(^|\/\/)music\.apple\.com\/[a-z]{2}\/album\/(?:[^/?#]+\/)?\d+/i.test(rel.target?.href_url || ""))
-        // #435
+        apple: href((rel) => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || ""))
+        // #435; iTunes URLs #436
       };
     });
   }
@@ -2722,7 +2722,7 @@
     if (/tidal\.com\//i.test(url || "")) return "Tidal";
     if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
     if (/deezer\.com\//i.test(url || "")) return "Deezer";
-    if (/music\.apple\.com\//i.test(url || "")) return "Apple";
+    if (/(?:music|itunes)\.apple\.com\//i.test(url || "")) return "Apple";
     return "Discogs";
   }
   var isSyntheticProviderUrl = (url) => /tidal\.com\/_(?:publisher|company)\//i.test(String(url || ""));
@@ -5524,10 +5524,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
 
   // src/sources/apple.js
   var APPLE_AMP = "https://amp-api.music.apple.com/v1/catalog";
-  var APPLE_ALBUM_RE = /music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i;
+  var APPLE_ALBUM_RE = /(?:music|itunes)\.apple\.com\/(?:([a-z]{2})\/)?album\/(?:[^/?#]+\/)?(?:id)?(\d+)/i;
   function parseAppleAlbumUrl(url) {
     const m = APPLE_ALBUM_RE.exec(url || "");
-    return m ? { storefront: m[1].toLowerCase(), id: m[2] } : null;
+    return m ? { storefront: (m[1] || "us").toLowerCase(), id: m[2] } : null;
   }
   var APPLE_ROLE_BRIDGE = {
     "Songwriter": "Written-By",
