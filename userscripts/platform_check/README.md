@@ -260,19 +260,19 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 ### SoundCloud
 
 - **API** — the anonymous `api-v2` (public `client_id` lifted from the web-player JS — no login)
-    - Resolve set: `/resolve?url=<set>` → the playlist (track count + track ids)
+    - Resolve: `/resolve?url=<set|track>` → the playlist (track count + track ids) or a single track
     - Tracks: `/tracks?ids=` → each track's `publisher_metadata` (barcode, `p_line` label)
-    - Barcode: **link-derived** — read from the set's tracks, not searched (see note)
+    - Barcode: **link-derived** — read from the linked set/track, not searched (see note)
 - **Local search:** `/search/playlists?q=` (title + track-count verified before trusting a set)
 - **Global search:** —
-- **Track verify:** set track count vs MB
+- **Track verify:** set/track count vs MB
 - **Wikidata cross-ref:** —
 - **Login:** —
 - **Method:** MB → LS
 - **Notes:**
-    - Unlike every other provider, SoundCloud **can't be searched by barcode** — the release UPC lives per-track inside a **set** (`publisher_metadata.upc_or_ean`, the same value across the set on distributed releases; self-uploads omit it). So it's link-derived, like Bandcamp's capture: when the release links a set, its barcode is read and fed to the barcode-confidence check. Only a barcode the **whole set agrees on** is trusted (a mixed-UPC compilation yields none).
-    - Only **sets** (playlists) are releases here — a single-track URL isn't matched.
-    - ISRC Scout imports a SoundCloud set's per-track ISRCs and links from the same set.
+    - Unlike every other provider, SoundCloud **can't be searched by barcode** — the release UPC lives per-track inside the set (`publisher_metadata.upc_or_ean`, the same value across the set on distributed releases; self-uploads omit it). So it's link-derived, like Bandcamp's capture: when the release links a SoundCloud set/track, its barcode is read and fed to the barcode-confidence check. Only a barcode the **whole set agrees on** is trusted (a mixed-UPC compilation yields none).
+    - Both a **set** (playlist → the album) and a bare **track** URL (a *single-track release*) are recognized; a track resolves to a 1-track release.
+    - ISRC Scout imports a SoundCloud set's per-track ISRCs and links from the same set (and the single ISRC/link for a track release).
 
 ## Settings
 

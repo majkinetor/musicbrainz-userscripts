@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-20 14:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-20 14:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -987,7 +987,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **Volumo** | ✓ | ✓ | by **album** — the Volumo album JSON (id + ISRC), matched by ISRC |
 | **Bandcamp** | – | ✓ | by **album** — album page track list, matched by position + title |
 | **Apple Music** | ✓ | ✓ | by **album** — the amp-api album tracklist (id + ISRC) read **anonymously** (token from the web-player JS, no login); ISRC import matched by position, per-track link from the `ld+json`. Legacy **iTunes** links (`itunes.apple.com/…/album/id…`) are recognized as the same album |
-| **SoundCloud** | ✓ | ✓ | by **set** — the release's SoundCloud **set** (playlist) is the album; each track's `publisher_metadata.isrc` is read **anonymously** from api-v2 (public `client_id` from the web-player JS, no login), matched by position. The per-track link (free streaming) is the track's permalink, matched by position + title. Distributed sets also carry the release barcode (`upc_or_ean`), which Scout **logs** (it doesn't set barcodes — that's Platform Check's job) |
+| **SoundCloud** | ✓ | ✓ | by **set** — the release's SoundCloud **set** (playlist) is the album; each track's `publisher_metadata.isrc` is read **anonymously** from api-v2 (public `client_id` from the web-player JS, no login), matched by position. A bare **track** URL is handled too, as a single-track release. The per-track link (free streaming) is the track's permalink, matched by position + title. Distributed sets also carry the release barcode (`upc_or_ean`), which Scout **logs** (it doesn't set barcodes — that's Platform Check's job) |
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
 | **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
@@ -1640,19 +1640,19 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 #### SoundCloud
 
 - **API** — the anonymous `api-v2` (public `client_id` lifted from the web-player JS — no login)
-    - Resolve set: `/resolve?url=<set>` → the playlist (track count + track ids)
+    - Resolve: `/resolve?url=<set|track>` → the playlist (track count + track ids) or a single track
     - Tracks: `/tracks?ids=` → each track's `publisher_metadata` (barcode, `p_line` label)
-    - Barcode: **link-derived** — read from the set's tracks, not searched (see note)
+    - Barcode: **link-derived** — read from the linked set/track, not searched (see note)
 - **Local search:** `/search/playlists?q=` (title + track-count verified before trusting a set)
 - **Global search:** —
-- **Track verify:** set track count vs MB
+- **Track verify:** set/track count vs MB
 - **Wikidata cross-ref:** —
 - **Login:** —
 - **Method:** MB → LS
 - **Notes:**
-    - Unlike every other provider, SoundCloud **can't be searched by barcode** — the release UPC lives per-track inside a **set** (`publisher_metadata.upc_or_ean`, the same value across the set on distributed releases; self-uploads omit it). So it's link-derived, like Bandcamp's capture: when the release links a set, its barcode is read and fed to the barcode-confidence check. Only a barcode the **whole set agrees on** is trusted (a mixed-UPC compilation yields none).
-    - Only **sets** (playlists) are releases here — a single-track URL isn't matched.
-    - ISRC Scout imports a SoundCloud set's per-track ISRCs and links from the same set.
+    - Unlike every other provider, SoundCloud **can't be searched by barcode** — the release UPC lives per-track inside the set (`publisher_metadata.upc_or_ean`, the same value across the set on distributed releases; self-uploads omit it). So it's link-derived, like Bandcamp's capture: when the release links a SoundCloud set/track, its barcode is read and fed to the barcode-confidence check. Only a barcode the **whole set agrees on** is trusted (a mixed-UPC compilation yields none).
+    - Both a **set** (playlist → the album) and a bare **track** URL (a *single-track release*) are recognized; a track resolves to a 1-track release.
+    - ISRC Scout imports a SoundCloud set's per-track ISRCs and links from the same set (and the single ISRC/link for a track release).
 
 ### Settings
 
