@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-20 13:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-20 13:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1467,6 +1467,7 @@ Each release's format is shown as a compact **4-quadrant circle**: Vinyl (top-ri
 | [Beatport](#beatport-1)       |     –     |     ✗      |  P11312  |   optional²    |
 | [Volumo](#volumo)           |    ✓     |     ✓      |    –     |       –        |
 | [HDtracks](#hdtracks)       |    ✓     |     ✓      |    –     |       –        |
+| [SoundCloud](#soundcloud)   |  capture  |     ✓      |    –     |       –        |
 
 **Barcode** legend: `✓` = barcode-first lookup **and** the found item's barcode captured for confidence · `lookup` = barcode-first lookup only (found barcode not exposed) · `capture` = no barcode search, but the found barcode is captured · `via SAMBL` = the barcode-exact album comes from the SAMBL resolver · `–` = neither.
 
@@ -1633,6 +1634,23 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
     - Canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode.
     - No dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)), so the `+` insert force-sets **purchase for download** (id 74).
     - ISRC Scout can import an HDtracks release's ISRCs from the link this finds.
+
+#### SoundCloud
+
+- **API** — the anonymous `api-v2` (public `client_id` lifted from the web-player JS — no login)
+    - Resolve set: `/resolve?url=<set>` → the playlist (track count + track ids)
+    - Tracks: `/tracks?ids=` → each track's `publisher_metadata` (barcode, `p_line` label)
+    - Barcode: **link-derived** — read from the set's tracks, not searched (see note)
+- **Local search:** `/search/playlists?q=` (title + track-count verified before trusting a set)
+- **Global search:** —
+- **Track verify:** set track count vs MB
+- **Wikidata cross-ref:** —
+- **Login:** —
+- **Method:** MB → LS
+- **Notes:**
+    - Unlike every other provider, SoundCloud **can't be searched by barcode** — the release UPC lives per-track inside a **set** (`publisher_metadata.upc_or_ean`, the same value across the set on distributed releases; self-uploads omit it). So it's link-derived, like Bandcamp's capture: when the release links a set, its barcode is read and fed to the barcode-confidence check. Only a barcode the **whole set agrees on** is trusted (a mixed-UPC compilation yields none).
+    - Only **sets** (playlists) are releases here — a single-track URL isn't matched.
+    - ISRC Scout imports a SoundCloud set's per-track ISRCs and links from the same set.
 
 ### Settings
 
