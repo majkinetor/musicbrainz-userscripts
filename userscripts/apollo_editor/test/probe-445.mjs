@@ -1,8 +1,9 @@
-// Probe #445 — the exact-alias resolver mislabeled a NAME match as "via exact alias".
-// "Tee Vee" (a8122172) has no aliases; it matched on its NAME but the /ws/js search
-// ranked a fuzzy "Tee-vee" first, so nameHigh missed it and resolveByExactAlias found
-// it — then logged "via exact alias" (wrong). A TRUE alias hit (STOO → Stuart Cambridge,
-// alias "Stoo") must still be labeled 'alias'. Verifies the label split (#445).
+// Probe #445 — (1) label split: an exact NAME hit the /ws/js search under-ranked below a
+// look-alike ("Tee Vee" a8122172, no aliases, ranked below "Tee-vee") resolves as a NAME
+// match, not "via exact alias". (2) UNIFIED unambiguity across name+alias: "STOO" is now
+// ambiguous — an artist NAMED "STOO" (614721af) AND Stuart Cambridge aliased "Stoo" — so
+// the unified check must DECLINE to auto-link (left low for the user), instead of the old
+// alias-blind behavior that confidently picked Stuart Cambridge's nickname alias.
 import { createRequire } from 'node:module';
 const { chromium } = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/')('playwright');
 import { readFile } from 'node:fs/promises';
@@ -40,8 +41,10 @@ let fail = 0; const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + 
 check(r.teeVee.gid === TEEVEE, `"Tee Vee" resolves to the exact-name artist ${TEEVEE} (got ${r.teeVee.gid})`);
 check(r.teeVee.src !== 'alias', `"Tee Vee" is NOT labeled alias (it has no aliases) — got source=${r.teeVee.src}`);
 check(r.teeVee.src === 'search' && r.teeVee.conf === 'high', `"Tee Vee" is a confident NAME match (source=search, conf=high) — got ${r.teeVee.src}/${r.teeVee.conf}`);
-check(r.stoo.gid === STUART, `"STOO" resolves via the real alias to Stuart Cambridge ${STUART} (got ${r.stoo.gid})`);
-check(r.stoo.src === 'alias', `"STOO" is correctly labeled alias — got source=${r.stoo.src}`);
+// #445 unification: "STOO" is ambiguous across name+alias → must NOT confidently auto-link
+check(r.stoo.conf !== 'high', `"STOO" is NOT a confident auto-link — ambiguous name+alias (got conf=${r.stoo.conf})`);
+check(r.stoo.src !== 'alias', `"STOO" is NOT alias-matched to Stuart Cambridge's nickname (got source=${r.stoo.src})`);
+check(r.stoo.gid !== STUART, `"STOO" does NOT wrongly link Stuart Cambridge ${STUART} (got ${r.stoo.gid})`);
 console.log(fail ? `\n${fail} FAILURE(S)` : '\nALL ASSERTIONS PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);

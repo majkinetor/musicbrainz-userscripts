@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.20.210746
+// @version      2026.7.20.222833
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -73,13 +73,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.20.210746 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.20.210731\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.20.122901\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.20.140510\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.20.140510");
+  console.log('%c String Theory %c v2026.7.20.222833 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.20.222817\n  · Art Station v2026.7.12\n  · Credit Hoarder v2026.7.20.122901\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.20.140510\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.20.140510");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.210731","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.210731","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.222817","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.20.222817","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -369,13 +369,16 @@ try {
     list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
     _cache.set(k, list); return list;
   }
-  // #442: resolve a credited name to the unique MB artist that carries it as an exact
-  // NAME or ALIAS. The fast /ws/js search matchSlot uses returns NO aliases, so an
-  // artist known by this name only as an alias — a performance name / transliteration,
-  // e.g. "Don Abi" is an alias of the artist named "Abiodun" — never surfaced as a
-  // confident match and got left 'low'. One /ws/2 lookup carries aliases and matches the
-  // alias field; accept it ONLY when EXACTLY ONE artist has the exact name-or-alias, so
-  // it can never confidently pick the wrong artist among several sharing that alias.
+  // #442/#445: the UNIFIED exact-identity resolver — the single source of truth for a
+  // confident exact match in matchSlot. Resolves a credited name to the unique MB artist
+  // that carries it as an exact NAME or ALIAS (an alias is just an alternative name), and
+  // accepts it ONLY when EXACTLY ONE artist across name+alias space has it. That makes the
+  // check alias-AWARE like MB's own duplicate/dedup logic: a name that is ALSO another
+  // artist's alias is ambiguous → declined (a candidate, not an auto-link) — the #445 fix.
+  // The fast /ws/js search matchSlot uses is alias-blind, so this one /ws/2 lookup (which
+  // carries aliases + matches the alias field) both catches an alias-only credit ("Don Abi"
+  // → "Abiodun", #442) and enforces the unified unambiguity. Returns { entity, via } where
+  // via is 'name' or 'alias' (label only), else null (ambiguous OR none). Cached per name.
   const _aliasMatchCache = new Map();
   async function resolveByExactAlias(name) {
     const key = fold(name); if (!key) return null;
@@ -1112,36 +1115,24 @@ try {
     }
     if (!entity) {
       let top = candidates[0] || null;
-      // an exact name match is only high-confidence (and auto-committed) when it's UNAMBIGUOUS — when
-      // several artists share that exact name (e.g. three "Dansu"), there's no way to know which is
-      // right, so leave it 'low' for the user to pick rather than confidently linking the first.
-      const exact = candidates.filter(c => sameName(c.name, creditedAs));
-      const nameHigh = !!(top && sameName(top.name, creditedAs) && exact.length === 1);
-      // #442: before settling for a low-confidence guess, an exact ALIAS match — when
-      // exactly one MB artist is known by this name (as its name or an alias) — is as
-      // reliable as an unambiguous exact-name hit. /ws/js carries no aliases, so this is
-      // the only place an alias-only name (a performance name / transliteration) resolves
-      // confidently. Unambiguous by construction, so it runs ahead of the co-occurrence
-      // guess below (which only helps when the identity itself is ambiguous).
-      if (!nameHigh) {
-        const aliasHit = await resolveByExactAlias(creditedAs);
-        if (aliasHit && aliasHit.entity && aliasHit.entity.gid) {
-          const e = aliasHit.entity, rest = candidates.filter(c => (c.gid || c.id) !== e.gid);
-          if (aliasHit.via === 'name') {
-            // #445: an exact NAME the /ws/js search under-ranked below a fuzzy look-alike (e.g.
-            // "Tee Vee" ranked below "Tee-vee") — it's a name match, not an alias. Label it 'name'.
-            Log.info('Match:', who, '→', e.name, '— via name (exact)');
-            return { entity: e, source: 'search', confidence: 'high', candidates: [e, ...rest] };
-          }
-          Log.info('Match:', who, '→', e.name, '— via exact alias');
-          return { entity: e, source: 'alias', confidence: 'high', candidates: [e, ...rest] };
-        }
+      // #445: UNIFIED exact-identity match. An alias is just an alternative name, so name and
+      // alias resolve together with ONE unambiguity check — confident (auto-committed) only
+      // when EXACTLY ONE MB artist carries the credited string as its name OR an alias. This
+      // is alias-AWARE (mirroring MB's own duplicate/dedup check): a name that is ALSO another
+      // artist's alias is now ambiguous → a candidate, not a confident auto-link (that was the
+      // old alias-BLIND name check's error surface). Only the label differs — 'via name (exact)'
+      // vs 'via exact alias'. It also resolves an exact name the fast /ws/js search under-ranked
+      // below a look-alike (e.g. "Tee Vee" below "Tee-vee", #445) and an alias-only credit
+      // (e.g. "Don Abi" → the artist named "Abiodun", #442), neither of which /ws/js can.
+      const idHit = await resolveByExactAlias(creditedAs);   // {entity, via} — unique name-or-alias, else null (ambiguous OR none)
+      if (idHit && idHit.entity && idHit.entity.gid) {
+        const e = idHit.entity, rest = candidates.filter(c => (c.gid || c.id) !== e.gid);
+        Log.info('Match:', who, '→', e.name, idHit.via === 'alias' ? '— via exact alias' : '— via name (exact)');
+        return { entity: e, source: idHit.via === 'alias' ? 'alias' : 'search', confidence: 'high', candidates: [e, ...rest] };
       }
-      // #437: only when the NAME search isn't already unambiguous — that's exactly the
-      // common-name case this resolves — try credit co-occurrence against the release's
-      // known artists. A clear winner outranks the name search (it's the more confident
-      // signal); a tie just seeds the picker with the co-credited candidates.
-      if (!nameHigh && contextGids && contextGids.length) {
+      // #437: no unique exact identity → try credit co-occurrence against the release's known
+      // artists (the common-name case). A clear winner is confident; a tie seeds the picker.
+      if (contextGids && contextGids.length) {
         const cred = await resolveByCredit(creditedAs, contextGids);
         if (cred.entity) {
           Log.info('Match:', who, '→', cred.entity.name, '— via existing artist credits');
@@ -1151,7 +1142,7 @@ try {
       }
       if (!top) return { entity: null, source: 'none', confidence: 'none', candidates: [] };
       entity = top;
-      confidence = nameHigh ? 'high' : 'low';
+      confidence = 'low';   // no unique exact identity and no co-occurrence winner → user picks
     }
     return { entity, source, confidence, candidates: [entity, ...candidates.filter(c => c.gid !== entity.gid)] };
   }
@@ -1443,7 +1434,7 @@ try {
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.20.210731';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.20.222817';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
