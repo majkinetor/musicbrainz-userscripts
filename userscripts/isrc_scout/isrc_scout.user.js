@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.140510
+// @version      2026.7.20.232927
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1545,13 +1545,22 @@
     const table = tables.find(t => /\bISRC\b/i.test(t.textContent) && /track/i.test(t.textContent)) || tables[0];
     const out = [];
     if (!table) return out;
+    // #446: ISRC Hunt restarts the track number at 1 for each Spotify disc and gives NO
+    // disc column, so a multi-disc album reads as 1..13, 1..12 with everything looking like
+    // "disc 1" — the disc-2 rows then collided with medium 1 (only the first medium filled).
+    // Track the running position and bump the disc whenever the number resets (<= the
+    // previous one), so mediums map correctly. Sequential single-disc tables are unaffected.
+    let disc = 1, prevPos = 0;
     [...table.querySelectorAll('tr')].forEach(tr => {
       const td = [...tr.querySelectorAll('td')];
       if (td.length < 4) return;
-      const pos = parseInt(td[0].textContent.trim(), 10);
       const lenMs = parseInt(td[2].textContent.trim(), 10);
       const isrc = normalizeIsrc(td[3].textContent.trim());
-      if (isValidIsrc(isrc)) out.push({ isrc, title: td[1].textContent.trim(), artist: '', pos: pos || (out.length + 1), disc: 1, dur: lenMs ? msToMmSs(lenMs) : '' });
+      if (!isValidIsrc(isrc)) return;
+      const pos = parseInt(td[0].textContent.trim(), 10) || (prevPos + 1);
+      if (pos <= prevPos) disc++;   // track number reset → next disc / medium
+      prevPos = pos;
+      out.push({ isrc, title: td[1].textContent.trim(), artist: '', pos, disc, dur: lenMs ? msToMmSs(lenMs) : '' });
     });
     return out;
   }
