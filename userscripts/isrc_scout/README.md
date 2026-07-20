@@ -17,7 +17,7 @@ Shows the release's existing ISRCs and lets you fill in the missing ones from se
     - **[Delete existing ISRCs](#deleting-existing-isrcs)** in bulk
     - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting
     - **[Submit to MusicBrainz](#submitting)** — one-time OAuth, then submit straight from the editor
-- **[Links](#links)** — find and add streaming / store links to recordings (Deezer, Tidal, Beatport, Volumo, Bandcamp, Apple Music), and see every other provider a recording already links to.
+- **[Links](#links)** — find and add streaming / store links to recordings (Deezer, Tidal, Beatport, Volumo, Bandcamp, Apple Music, SoundCloud), and see every other provider a recording already links to.
   - Find links based on release external links and ISRCs
   - [Batch ending or removing](#ending--removing) link relationship
 - Using release group external links and [Platform Check](../platform_check/README.md) links
@@ -37,7 +37,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **Volumo** | ✓ | ✓ | by **album** — the Volumo album JSON (id + ISRC), matched by ISRC |
 | **Bandcamp** | – | ✓ | by **album** — album page track list, matched by position + title |
 | **Apple Music** | ✓ | ✓ | by **album** — the amp-api album tracklist (id + ISRC) read **anonymously** (token from the web-player JS, no login); ISRC import matched by position, per-track link from the `ld+json`. Legacy **iTunes** links (`itunes.apple.com/…/album/id…`) are recognized as the same album |
-| **SoundCloud** | ✓ | – | by **set** — the release's SoundCloud **set** (playlist) is the album; each track's `publisher_metadata.isrc` is read **anonymously** from api-v2 (public `client_id` from the web-player JS, no login), matched by position. Distributed sets also carry the release barcode (`upc_or_ean`), which Scout **logs** (it doesn't set barcodes — that's Platform Check's job) |
+| **SoundCloud** | ✓ | ✓ | by **set** — the release's SoundCloud **set** (playlist) is the album; each track's `publisher_metadata.isrc` is read **anonymously** from api-v2 (public `client_id` from the web-player JS, no login), matched by position. The per-track link (free streaming) is the track's permalink, matched by position + title. Distributed sets also carry the release barcode (`upc_or_ean`), which Scout **logs** (it doesn't set barcodes — that's Platform Check's job) |
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
 | **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
