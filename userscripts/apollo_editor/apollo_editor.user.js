@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.170504
+// @version      2026.7.20.172656
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -303,6 +303,27 @@
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
     list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
     _cache.set(k, list); return list;
+  }
+  // #442: resolve a credited name to the unique MB artist that carries it as an exact
+  // NAME or ALIAS. The fast /ws/js search matchSlot uses returns NO aliases, so an
+  // artist known by this name only as an alias — a performance name / transliteration,
+  // e.g. "Don Abi" is an alias of the artist named "Abiodun" — never surfaced as a
+  // confident match and got left 'low'. One /ws/2 lookup carries aliases and matches the
+  // alias field; accept it ONLY when EXACTLY ONE artist has the exact name-or-alias, so
+  // it can never confidently pick the wrong artist among several sharing that alias.
+  const _aliasMatchCache = new Map();
+  async function resolveByExactAlias(name) {
+    const key = fold(name); if (!key) return null;
+    if (_aliasMatchCache.has(key)) return _aliasMatchCache.get(key);
+    const q = String(name).replace(/["\\]/g, ' ').trim(); if (!q) return null;
+    let arr = null;
+    try { arr = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(`alias:"${q}" OR artist:"${q}"`)}&fmt=json&limit=25`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    catch (e) { Log.warn('alias search failed:', name, e.message); return null; }   // transient → don't cache, let a later pass retry
+    const arts = (arr && arr.artists) || [];
+    const exact = arts.filter(a => sameName(a.name, name) || (a.aliases || []).some(al => sameName(al.name || al, name)));
+    const hit = exact.length === 1 ? await fetchEntity(exact[0].id) : null;   // unambiguous only
+    _aliasMatchCache.set(key, hit);
+    return hit;
   }
 
   /* ── label auto-match (#407) ──────────────────────────────────────────────
@@ -647,7 +668,7 @@
   }
   // slot status from a match result — 'disc' for a confident Discogs-URL match,
   // 'rg' for a release-group sibling, else the name-search confidence.
-  const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : m.source === 'cred' ? 'cred' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : m.confidence);
+  const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : m.source === 'cred' ? 'cred' : m.source === 'alias' ? 'alias' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : m.confidence);
 
   /* ── add / create the Discogs link for a slot (#227) ──────────────────────────
    * Stash the slot's Discogs artist URL and decide whether a link can be added:
@@ -1022,6 +1043,19 @@
       // right, so leave it 'low' for the user to pick rather than confidently linking the first.
       const exact = candidates.filter(c => sameName(c.name, creditedAs));
       const nameHigh = !!(top && sameName(top.name, creditedAs) && exact.length === 1);
+      // #442: before settling for a low-confidence guess, an exact ALIAS match — when
+      // exactly one MB artist is known by this name (as its name or an alias) — is as
+      // reliable as an unambiguous exact-name hit. /ws/js carries no aliases, so this is
+      // the only place an alias-only name (a performance name / transliteration) resolves
+      // confidently. Unambiguous by construction, so it runs ahead of the co-occurrence
+      // guess below (which only helps when the identity itself is ambiguous).
+      if (!nameHigh) {
+        const aliasHit = await resolveByExactAlias(creditedAs);
+        if (aliasHit && aliasHit.gid) {
+          Log.info('Match:', who, '→', aliasHit.name, '— via exact alias');
+          return { entity: aliasHit, source: 'alias', confidence: 'high', candidates: [aliasHit, ...candidates.filter(c => (c.gid || c.id) !== aliasHit.gid)] };
+        }
+      }
       // #437: only when the NAME search isn't already unambiguous — that's exactly the
       // common-name case this resolves — try credit co-occurrence against the release's
       // known artists. A clear winner outranks the name search (it's the more confident
@@ -1094,8 +1128,8 @@
     });
   }
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
-  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
-  function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred') { s.committed = true; any = true; } }); if (any) commitTrack(t); }
+  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
+  function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias') { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
     snapshotMissing();   // capture page-load state for any lazily-loaded medium before matching touches it
@@ -1328,7 +1362,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.20.170504';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.20.172656';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1359,18 +1393,18 @@
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
-  const badgeText = s => ({ rg: 'rg', disc: 'disc', cred: 'cred', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
+  const badgeText = s => ({ rg: 'rg', disc: 'disc', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
   const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
-  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'cred', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
+  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
   const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
   const css = `
     .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:#fff;white-space:nowrap}
     .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}.tc-badge.disc{background:#0a7a8c}
-    .tc-badge.low{background:#e0a800}.tc-badge.user{background:#6f42c1}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}
+    .tc-badge.low{background:#e0a800}.tc-badge.user{background:#6f42c1}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}.tc-badge.alias{background:#1f8a7a}
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}
     .tc-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}
     .tc-btn.primary{color:#5f3ec0;font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}

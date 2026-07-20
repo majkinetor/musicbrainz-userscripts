@@ -44,6 +44,11 @@ const r = await page.evaluate(async () => {
   const featUrlPreSplit = A.discogsFeatUrlFor(dmap, 'Dibidibi (feat. Don Abi) (Massivan remix)', 1, 4, 'Don Abi');
   // end-to-end: matchSlot with that URL resolves to the MB artist via the Discogs link
   const m = featUrl ? await A.matchSlot('Don Abi', null, featUrl, []) : null;
+  // the general improvement (majkinetor): even with NO Discogs URL, an exact-alias
+  // match to a single MB artist resolves confidently (source 'alias').
+  const ma = await A.matchSlot('Don Abi', null, null, []);
+  // and an AMBIGUOUS bare name must NOT alias-match (no false high): "Eva" is many artists
+  const amb = await A.matchSlot('Eva', null, null, []);
   return {
     byPosFeat,
     featUrl,
@@ -51,12 +56,16 @@ const r = await page.evaluate(async () => {
     matchGid: m && m.entity && m.entity.gid.slice(0, 8),
     matchName: m && m.entity && m.entity.name,
     matchSrc: m && m.source,
+    aliasGid: ma && ma.entity && ma.entity.gid.slice(0, 8),
+    aliasSrc: ma && ma.source,
+    ambSrc: amb && amb.source,
   };
 });
 log('track-2 Discogs Featuring credits:', JSON.stringify(r.byPosFeat));
 log('discogsFeatUrlFor (post-split title):', r.featUrl);
 log('discogsFeatUrlFor (pre-split title, by position):', r.featUrlPreSplit);
 log('matchSlot("Don Abi", url) →', r.matchGid, `"${r.matchName}"`, `(${r.matchSrc})`);
+log('matchSlot("Don Abi", NO url) → alias path:', r.aliasGid, `(${r.aliasSrc})`, '| ambiguous "Eva" →', r.ambSrc);
 
 let fail = 0; const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 check(r.byPosFeat && r.byPosFeat.some(f => f.url === FEAT_URL), 'Discogs map captures the "Featuring: Don Abi" extraartist on track 2');
@@ -64,6 +73,9 @@ check(r.featUrl === FEAT_URL, `discogsFeatUrlFor resolves the "Don Abi" slot to 
 check(r.featUrlPreSplit === FEAT_URL, 'resolves by position even before the feat is split from the title');
 check(r.matchSrc === 'discogs', `matchSlot links it via the Discogs URL (source=discogs, got ${r.matchSrc})`);
 check(r.matchGid === ABIODUN, `matchSlot links "Don Abi" to MB artist Abiodun ${ABIODUN} (got ${r.matchGid})`);
+check(r.aliasSrc === 'alias', `exact-alias path: matchSlot("Don Abi", no URL) resolves via alias (source=alias, got ${r.aliasSrc})`);
+check(r.aliasGid === ABIODUN, `exact-alias path links to Abiodun ${ABIODUN} (got ${r.aliasGid})`);
+check(r.ambSrc !== 'alias', `ambiguous bare name "Eva" does NOT alias-match (got source=${r.ambSrc})`);
 console.log(fail ? `\n${fail} FAILURE(S)` : '\nALL ASSERTIONS PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);
