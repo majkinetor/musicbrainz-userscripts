@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.222817
+// @version      2026.7.20.233303
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -588,11 +588,19 @@
       // separately, keyed by folded title and by position, as [{ name, url }].
       map.featByPos = [];
       map.featByTitle = new Map();
+      // #447: a track's performing credit on Discogs is a "Featuring" extra-artist on some
+      // releases and a "Vocals" / "Backing Vocals" / "Rap" / "MC" one on others (e.g. a
+      // "feat. X" in the MB title where Discogs credits X as Vocals). Capture ANY performing
+      // role — vocals, rap, voice, performer, narration, choir — so those artists' Discogs
+      // links are available to match a feat slot. Non-performing roles (producer, remix,
+      // written-by, mixed/engineer, instruments) stay out; and matching is name-gated anyway,
+      // so a captured artist only links when the slot's credited name matches it.
+      const CREDIT_ROLE_RE = /feat|vocal|voice|\brap\b|\bmc\b|\bemcee\b|narrat|spoken|perform|sung|choir|chorus|chant/i;
       if (json && Array.isArray(json.tracklist)) {
         json.tracklist.filter(t => (t.type_ || 'track') === 'track').forEach(t => {
           const urls = (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null);
           map.byPos.push(urls);
-          const feats = (t.extraartists || []).filter(a => a && a.id && /feat/i.test(a.role || '')).map(a => ({ name: a.name || '', url: `https://www.discogs.com/artist/${a.id}` }));
+          const feats = (t.extraartists || []).filter(a => a && a.id && CREDIT_ROLE_RE.test(a.role || '')).map(a => ({ name: a.name || '', url: `https://www.discogs.com/artist/${a.id}` }));
           map.featByPos.push(feats);
           const key = fold(t.title || '');
           if (key && !map.featByTitle.has(key)) map.featByTitle.set(key, feats);
@@ -1369,7 +1377,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.20.222817';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.20.233303';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };

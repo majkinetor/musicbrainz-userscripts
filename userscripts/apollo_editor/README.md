@@ -233,7 +233,7 @@ When the release carries a **Discogs link** (read from the page), Apollo uses it
 
 Before the name search, each track artist is matched by its Discogs URL (taken from the release's Discogs tracklist) against MusicBrainz's URL relationships — a strong, human-verified signal. A single linked MB artist is applied directly with a teal **DISC** badge; several linked artists are offered as candidates to pick from.
 
-This includes **featured artists** split out of the title: Discogs models a *feat.* credit as a "Featuring" extra-artist (not a main track artist), so Apollo reads those too and matches a feat slot by its Discogs artist link — matched to the slot's credited name, by title or (when titles differ but the track counts agree) by position. That link is often the only reliable bridge, since the split name is frequently just an alias of the MB artist.
+This includes **featured artists** split out of the title. Discogs credits them as an extra-artist (not a main track artist) whose role varies — *Featuring* on some releases, *Vocals* / *Backing Vocals* / *Rap* / *MC* on others — so Apollo reads **any performing role** (vocals, rap, voice, performer, narration…; not producers, remixers or instrumentalists) and matches a feat slot by its Discogs artist link, keyed to the slot's credited name, by title or (when titles differ but the track counts agree) by position. That link is often the only reliable bridge, since the split name is frequently just an alias of the MB artist.
 
 #### Adding link
 
