@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.143317
+// @version      2026.7.20.145511
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -942,6 +942,20 @@
     return { entity: unique ? candidates[0] : null, candidates };
   }
 
+  // #441 — pick the RG-sibling artist for a slot by NAME, not blind index. Editions
+  // differ in how many artists they credit (a title that omits a co-feature — "feat.
+  // Nile Rodgers" where the full credit is "feat. John Newman & Nile Rodgers" — has
+  // fewer slots), so sib[i] by position grabbed the wrong artist. Prefer the positional
+  // one only when its name/credited-as actually agrees; else find the sibling artist
+  // whose name/credited-as matches this slot's credited name; else none (fall through).
+  function pickSibArtist(sibArr, creditedAs, idx) {
+    if (!Array.isArray(sibArr) || !sibArr.length) return null;
+    const agrees = s => s && s.gid && (sameName(s.creditedAs, creditedAs) || sameName(s.name, creditedAs));
+    const at = sibArr[idx];
+    if (agrees(at)) return at;
+    return sibArr.find(agrees) || null;
+  }
+
   async function matchSlot(creditedAs, sib, discogsUrl, contextGids) {
     const who = creditedAs || '(track artist)';
     // #224: a Discogs artist-link match outranks the name search.
@@ -1016,7 +1030,7 @@
         if (n.artistGid) { slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], committed: true }); }
         else {
           const ctxGids = [...new Set(slots.map(s => s.gid).filter(Boolean).concat(releaseArtistGids()))].slice(0, 6);   // #437 co-artists so far + release artist(s)
-          const m = await matchSlot(n.creditedAs, sib && sib[i], durls && durls[i], ctxGids);
+          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), durls && durls[i], ctxGids);
           const status = slotStatusOf(m);
           const slot = { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false };
           await tagDiscogsAddable(slot, durls && durls[i]);   // #227
@@ -1088,7 +1102,7 @@
         const durls = discogsUrlsForTrack(dmap, t.title, ti, total).urls;   // title, else by position (#283)
         for (let i = 0; i < t.slots.length; i++) {
           const s = t.slots[i]; if (!s._pending) continue;
-          const m = await matchSlot(s.creditedAs, sib && sib[i], durls && durls[i], slotContextGids(t, i));   // #437
+          const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), durls && durls[i], slotContextGids(t, i));   // #437
           Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
           await tagDiscogsAddable(s, durls && durls[i]);   // #227
         }
@@ -1284,7 +1298,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.20.143317';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.20.145511';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2294,7 +2308,7 @@
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && sib[i], durls && durls[i], slotContextGids(slot._entry, i)); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); }
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i)); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); }
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
@@ -2962,7 +2976,7 @@
   const BRIDGE = [
     { act: 'x:gpunct', label: 'Guess punctuation', icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAHYgAAB2IBOHqZ2wAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFpSURBVDiNpZOxjwFBGMV/e5FspZeoFETlL9Bug0RDL5FolVpRUqxCr1iNUelUEhmFZqlEVAolFRuxsswVl9uzWVfceeX73nvzfTPzaUIIxRuIAJTL5X+ZR6MRH++cDrwOOBwOdLtdbrdbqDafzxmPx78H2LZNtVplt9txPp993vM8TNOk1WoFeIQQ6htSSmUYhur3++rxePi853mq0WioUqmkttutzwshVOS57U6nQy6Xo1KpBLoaDAYsl0t6vR6pVOr1HViWheM4IfPlcmE4HJLNZkPmQMBqtSIajbJYLFiv175gs9lwvV653+/MZjOOx2MgwB/BdV1OpxPtdhuAYrFIvV73X0JKiZQSXdcxTZN0Oh3sIBaLBZInkwlKqRDvui7T6TQ8gmEYAWE8HkfTNBKJBMlkMlQLjVAoFHAcB9u20XWdWq3mi5rNJpZlsd/vyWQy5PP5n7Tnf/BXCCHU27sQga+t+i8+AYUS9lO02Bg3AAAAAElFTkSuQmCC', find: () => bridgeBtn(/^guess\s+punctuation$/i) },
   ];
-  let _bridges = [], _bridgeMap = {};
+  let _bridges = [], _bridgeMap = {}, _lastBridgeSig = null;   // #441 dedupe the sync-diagnostics log
   // refresh the tools available right now: built-in matches that resolve + elements
   // tagged class="apollo-tool" (self-registering). Each carries a stable act so the
   // normal tool-config (bar / menu / Customize, persisted) treats it like a native tool.
@@ -2975,7 +2989,10 @@
       if (!out.some(o => o.act === act)) out.push({ act, label, icon: el.dataset.apolloIcon || '🔧', el });
     });
     _bridges = out; _bridgeMap = Object.fromEntries(out.map(b => [b.act, b]));
-    Log.debug('Apollo bridges synced:', out.length ? out.map(b => b.act + (b.el ? '' : '(no-el)')).join(', ') : '(none)');   // #378 diagnostics
+    // #441 — only log when the set actually CHANGES; syncBridges runs on every tick and
+    // was spamming the same line ~2×/s. Dedupe against the last signature.
+    const sig = out.length ? out.map(b => b.act + (b.el ? '' : '(no-el)')).join(', ') : '(none)';
+    if (sig !== _lastBridgeSig) { _lastBridgeSig = sig; Log.debug('Apollo bridges synced:', sig); }   // #378 diagnostics
     return out;
   }
   // tool-def accessor: native tools + present bridges, so render/customize treat them alike
@@ -7000,7 +7017,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
