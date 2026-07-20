@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.20.160747
+// @version      2026.7.20.170504
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -546,11 +546,24 @@
       // TITLE doesn't match (transliteration / punctuation the fold can't catch) can
       // still be matched BY POSITION when the two tracklists are the same length.
       map.byPos = [];
+      // #442: Discogs models a "feat." credit as an extraartist with a Featuring role,
+      // NOT a main track artist (`t.artists`), so it never reached the by-title/by-pos
+      // maps above — a feat slot split from the MB title (e.g. "Don Abi") then had no
+      // Discogs URL to match on, even though the artist IS credited on Discogs and its
+      // MB entry links that Discogs artist (often the split name is only an ALIAS of the
+      // MB artist, making the link the only reliable bridge). Keep the featured artists
+      // separately, keyed by folded title and by position, as [{ name, url }].
+      map.featByPos = [];
+      map.featByTitle = new Map();
       if (json && Array.isArray(json.tracklist)) {
         json.tracklist.filter(t => (t.type_ || 'track') === 'track').forEach(t => {
           const urls = (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null);
           map.byPos.push(urls);
-          const key = fold(t.title || ''); if (!key || map.has(key)) return;
+          const feats = (t.extraartists || []).filter(a => a && a.id && /feat/i.test(a.role || '')).map(a => ({ name: a.name || '', url: `https://www.discogs.com/artist/${a.id}` }));
+          map.featByPos.push(feats);
+          const key = fold(t.title || '');
+          if (key && !map.featByTitle.has(key)) map.featByTitle.set(key, feats);
+          if (!key || map.has(key)) return;
           map.set(key, urls);
         });
         // this loads the Discogs release for the link CHECK (and for URL-matching unset
@@ -572,6 +585,21 @@
     if (byTitle) return { urls: byTitle, byPos: false };
     if (dmap.byPos && dmap.byPos.length === total && total > 0) return { urls: dmap.byPos[index] || null, byPos: true };
     return { urls: null, byPos: false };
+  }
+  // #442: the Discogs "Featuring" artist URL for a feat slot split out of the title,
+  // matched to the slot's credited name (Discogs credits e.g. "Don Abi", which may be
+  // an ALIAS of the MB artist named "Abiodun", so the shared Discogs link is the only
+  // reliable bridge — a name search alone can't confidently pick it). By folded title,
+  // falling back to POSITION when titles differ but the two tracklists are equal length.
+  function discogsFeatUrlFor(dmap, title, index, total, creditedAs) {
+    if (!dmap || !creditedAs) return null;
+    let feats = dmap.featByTitle && dmap.featByTitle.get(fold(title));
+    if (!feats && dmap.featByPos && dmap.featByPos.length === total && total > 0) feats = dmap.featByPos[index];
+    if (!feats || !feats.length) return null;
+    const want = fold(creditedAs);
+    const hit = feats.find(f => fold(f.name) === want)
+             || feats.find(f => { const fn = fold(f.name); return fn && want && (fn.includes(want) || want.includes(fn)); });
+    return hit ? hit.url : null;
   }
   // Resolve a Discogs artist URL to MB artist(s) via its URL relationship.
   // Returns [{ gid, name }] (0 / 1 / many) on success, or `null` when the lookup
@@ -778,7 +806,7 @@
           // release-level artist POSITIONALLY (#283/#287). Strictly relArtists[i]: a
           // single release artist only fills slot 0, NOT a track's feat. guests —
           // assigning the release artist to a guest slot caused false mismatches (#287).
-          const durl = durls[i] || (!hasTrackArtists ? (relArtists[i] || null) : null);
+          const durl = durls[i] || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs) || (!hasTrackArtists ? (relArtists[i] || null) : null);   // #442 feat credit
           if (durl) { s._discByPos = !!(durls[i] && byPos); jobs.push([s, durl]); }
         });
       });
@@ -1030,10 +1058,11 @@
         if (n.artistGid) { slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], committed: true }); }
         else {
           const ctxGids = [...new Set(slots.map(s => s.gid).filter(Boolean).concat(releaseArtistGids()))].slice(0, 6);   // #437 co-artists so far + release artist(s)
-          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), durls && durls[i], ctxGids);
+          const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, tl.length, n.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
+          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), dUrl, ctxGids);
           const status = slotStatusOf(m);
           const slot = { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false };
-          await tagDiscogsAddable(slot, durls && durls[i]);   // #227
+          await tagDiscogsAddable(slot, dUrl);   // #227
           slots.push(slot);
         }
       }
@@ -1102,9 +1131,10 @@
         const durls = discogsUrlsForTrack(dmap, t.title, ti, total).urls;   // title, else by position (#283)
         for (let i = 0; i < t.slots.length; i++) {
           const s = t.slots[i]; if (!s._pending) continue;
-          const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), durls && durls[i], slotContextGids(t, i));   // #437
+          const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
+          const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i));   // #437
           Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
-          await tagDiscogsAddable(s, durls && durls[i]);   // #227
+          await tagDiscogsAddable(s, dUrl);   // #227
         }
         autoCommitTrack(t); if (!isEditing()) rerender();
         done++; if (onProgress) onProgress(done, todo.length);
@@ -1298,7 +1328,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.20.160747';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.20.170504';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -7038,7 +7068,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
