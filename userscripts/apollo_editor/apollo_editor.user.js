@@ -2960,7 +2960,188 @@
   async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists on medium', mi + 1); }
   function resetNumbers(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } finally { _selfEdit = false; } rebuild(); }
   function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
-  function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
+  function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'lengthparser') openLengthParserPopover(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
+  /**
+   * Parse duration matches out of raw text.
+   * @param {string} text
+   * @returns {string[]} Formatted duration strings e.g. ["5:50", "6:30"]
+   */
+  function extractDurations(text) {
+    if (!text) return [];
+    const durationParser = /(?:(?:(\b\d\b)[°h])?(\b\d{1,3}\b)[′’'m])?(\b\d{2}\b)[″”"s]|(?:(?:(\b\d\b):)?(\b\d{1,3}\b):)(\b\d{2}\b)/g;
+    const matches = text.match(durationParser);
+    if (!matches || !matches.length) return [];
+    const itemParser = new RegExp(durationParser.source);
+    const results = [];
+    for (const match of matches) {
+      const m = match.match(itemParser);
+      if (!m) continue;
+      const h = parseInt(m[1] || m[4] || '0', 10);
+      const min = parseInt(m[2] || m[5] || '0', 10);
+      const sec = parseInt(m[3] || m[6] || '0', 10);
+      const timeStr = h > 0
+        ? `${h}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+        : `${min}:${String(sec).padStart(2, '0')}`;
+      results.push(timeStr);
+    }
+    return results;
+  }
+
+  /**
+   * Applies an array of formatted duration strings to medium tracks.
+   * @param {string[]} durations
+   * @param {number} mi Medium index
+   */
+  function parseTrackLengthsText(durations, mi) {
+    try {
+      const med = mediums()[mi]; if (!med) return;
+      const tks = u(med.tracks) || [];
+      if (!tks.length) { toast('No tracks found in medium'); return; }
+      if (!durations || !durations.length) { toast('No track lengths detected'); return; }
+
+      const count = Math.min(durations.length, tks.length);
+      for (let ti = 0; ti < count; ti++) {
+        const timeStr = durations[ti];
+        setLength({ mi, ti }, timeStr);
+        if (MODEL && MODEL.tracks) {
+          const tr = MODEL.tracks.find(t => t.mi === mi && t.ti === ti);
+          if (tr) tr.lengthStr = timeStr;
+        }
+      }
+      rebuild(true);
+      toast(`Applied ${count} track length${count !== 1 ? 's' : ''}`);
+      Log.info('parsed and applied', count, 'track length(s) on medium', mi + 1);
+    } catch (e) {
+      Log.warn('parse track lengths failed', e.message);
+      console.error('Track length parser error:', e);
+      toast('Error parsing track lengths');
+    }
+  }
+
+  /**
+   * Opens the Apollo-styled Track Length Parser popover panel.
+   * @param {number} [mi] Medium index
+   * @param {HTMLElement} [anchor] Anchor element
+   */
+  function openLengthParserPopover(mi, anchor) {
+    let p = document.getElementById('tc-lppop');
+    if (p) { p.remove(); return; }
+
+    const targetMi = mi != null ? mi : toolMedium();
+    const med = mediums()[targetMi];
+    const tks = med ? (u(med.tracks) || []) : [];
+
+    p = document.createElement('div');
+    p.id = 'tc-lppop'; p.className = 'tc-lppop';
+
+    const medOptionsHtml = mediums().map((m, i) =>
+      `<option value="${i}"${i === targetMi ? ' selected' : ''}>Medium ${i + 1}</option>`
+    ).join('');
+    const medSelectHtml = mediums().length > 1
+      ? `<select class="tc-lp-medsel">${medOptionsHtml}</select>`
+      : `<span class="tc-lp-medlbl">Medium ${targetMi + 1}</span>`;
+
+    p.innerHTML = `
+      <div class="tc-lp-hd">
+        <span class="tc-lp-title">Parse track lengths</span>
+        ${medSelectHtml}
+        <button type="button" class="tc-lp-close" title="Close">✕</button>
+      </div>
+      <div class="tc-lp-body">
+        <textarea class="tc-lp-text" placeholder="Paste tracklist text containing durations (e.g. 5:50, 1′23″)..."></textarea>
+        <div class="tc-lp-status">Paste text above to detect durations (${tks.length} tracks in Medium ${targetMi + 1})</div>
+      </div>
+      <div class="tc-lp-ft">
+        <button type="button" class="tc-lp-cancel">Cancel</button>
+        <button type="button" class="tc-lp-apply" disabled>Apply to Medium ${targetMi + 1}</button>
+      </div>
+    `;
+
+    document.body.appendChild(p);
+
+    const targetEl = anchor || document.querySelector(`.tc-opt[data-tool="lengthparser"]`) || document.querySelector(`.tc-toolbtn[data-act="lengthparser"]`) || document.getElementById('tc-bar');
+    if (targetEl) {
+      const r = targetEl.getBoundingClientRect();
+      const pw = p.offsetWidth || 380, ph = p.offsetHeight || 220;
+      const below = r.bottom + 6, above = r.top - 6 - ph;
+      let top = (below + ph > window.innerHeight - 8 && above >= 8) ? above : below;
+      top = Math.max(8, Math.min(top, window.innerHeight - ph - 8));
+      p.style.left = Math.max(8, Math.min(r.left, window.innerWidth - pw - 8)) + 'px';
+      p.style.top = top + 'px';
+    } else {
+      p.style.left = Math.max(8, Math.round((window.innerWidth - 380) / 2)) + 'px';
+      p.style.top = '100px';
+    }
+
+    const txt = p.querySelector('.tc-lp-text');
+    const status = p.querySelector('.tc-lp-status');
+    const applyBtn = p.querySelector('.tc-lp-apply');
+    const cancelBtn = p.querySelector('.tc-lp-cancel');
+    const closeBtn = p.querySelector('.tc-lp-close');
+    const medSel = p.querySelector('.tc-lp-medsel');
+
+    let currentMi = targetMi;
+    let detected = [];
+
+    const updateStatus = () => {
+      const currentMed = mediums()[currentMi];
+      const trackCount = currentMed ? (u(currentMed.tracks) || []).length : 0;
+      detected = extractDurations(txt.value);
+      if (!txt.value.trim()) {
+        status.className = 'tc-lp-status';
+        status.textContent = `Paste text above to detect durations (${trackCount} tracks in Medium ${currentMi + 1})`;
+        applyBtn.disabled = true;
+      } else if (!detected.length) {
+        status.className = 'tc-lp-status warn';
+        status.textContent = 'No track durations detected in text';
+        applyBtn.disabled = true;
+      } else {
+        const matchesCount = detected.length === trackCount;
+        status.className = 'tc-lp-status' + (matchesCount ? ' ok' : ' warn');
+        status.textContent = `Found ${detected.length} duration${detected.length !== 1 ? 's' : ''} for ${trackCount} track${trackCount !== 1 ? 's' : ''} (Medium ${currentMi + 1})`;
+        applyBtn.disabled = false;
+      }
+      applyBtn.textContent = `Apply (${detected.length}) to Medium ${currentMi + 1}`;
+    };
+
+    txt.oninput = updateStatus;
+    if (medSel) {
+      medSel.onchange = () => {
+        currentMi = parseInt(medSel.value, 10) || 0;
+        updateStatus();
+      };
+    }
+
+    const doApply = () => {
+      if (!detected.length) return;
+      parseTrackLengthsText(detected, currentMi);
+      p.remove();
+    };
+
+    applyBtn.onclick = doApply;
+    cancelBtn.onclick = closeBtn.onclick = () => p.remove();
+
+    txt.onkeydown = e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        doApply();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        p.remove();
+      }
+    };
+
+    setTimeout(() => txt.focus(), 0);
+
+    const off = e => {
+      if (!p.contains(e.target) && (!anchor || !anchor.contains(e.target))) {
+        p.remove();
+        document.removeEventListener('mousedown', off, true);
+      }
+    };
+    setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+  }
+
   function runAction(a) {
     // #378 a bridged external tool (x:…). The PINNED toolbar button reaches us via bindActions (which
     // rebinds every [data-act] to runAction, overriding pickTool), so re-sync the bridge map HERE too —
@@ -3017,17 +3198,18 @@
      params on a 2nd row. Click the "Tools" label to customise (visibility, order,
      per-tool icon/text, pinning). ── */
   const MENU = [
-    { act: 'parser',    label: 'Track parser',       icon: '☰' },           // ☰
-    { act: 'swap',      label: 'Swap',               icon: '⇅' },           // ⇅
-    { act: 'resetnum',  label: 'Reset #',            icon: '#' },
-    { act: 'guessfeat', label: 'Guess feat.',        icon: 'ft', instant: true },
-    { act: 'guesscase', label: 'Guess case',         icon: 'Aa', params: true },
-    { act: 'sr',        label: 'Search and Replace', icon: 'S&R', params: true },
-    { act: 'cols',      label: 'Resize columns',     icon: '↔', params: true }, // ↔
+    { act: 'parser',       label: 'Track parser',          icon: '☰' },           // ☰
+    { act: 'lengthparser', label: 'Parse track lengths',   icon: '⏱' },          // ⏱
+    { act: 'swap',         label: 'Swap',                  icon: '⇅' },           // ⇅
+    { act: 'resetnum',     label: 'Reset #',               icon: '#' },
+    { act: 'guessfeat',    label: 'Guess feat.',           icon: 'ft', instant: true },
+    { act: 'guesscase',    label: 'Guess case',            icon: 'Aa', params: true },
+    { act: 'sr',           label: 'Search and Replace',    icon: 'S&R', params: true },
+    { act: 'cols',         label: 'Resize columns',        icon: '↔', params: true }, // ↔
   ];
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
   const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
-  const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
+  const MEDIUM_TOOLS = new Set(['parser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
   const hasParams = act => !!(TOOL[act] && TOOL[act].params);
 
