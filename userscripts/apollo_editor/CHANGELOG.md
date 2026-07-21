@@ -1,5 +1,21 @@
 # Apollo Editor Changelog
 
+## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
+
+### Features
+
+1. Use more Discogs extraartists roles for matching ([#447](https://github.com/majkinetor/musicbrainz-userscripts/issues/447))
+1. Shortcut to update both rows and columns Alt + Ctrl + rclick  ([#443](https://github.com/majkinetor/musicbrainz-userscripts/issues/443))
+1. Match by artist alias and Discogs URL matching improvement ([#442](https://github.com/majkinetor/musicbrainz-userscripts/issues/442))
+1. Match recordings based on duplicates ([#440](https://github.com/majkinetor/musicbrainz-userscripts/issues/440))
+1. Match artist based on existing artist credits ([#437](https://github.com/majkinetor/musicbrainz-userscripts/issues/437))
+
+### Fixes
+
+1. Disambiguation for newly created artist not shown in tracklist ([#450](https://github.com/majkinetor/musicbrainz-userscripts/issues/450))
+1. No detailed highlighting for artist-as-credit difference ([#444](https://github.com/majkinetor/musicbrainz-userscripts/issues/444))
+1. Wrong Discogs artist matched ([#441](https://github.com/majkinetor/musicbrainz-userscripts/issues/441))
+
 ## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
 
 - Small improvements

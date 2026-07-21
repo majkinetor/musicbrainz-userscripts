@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
+
+### Features
+
+1. Support for Soundcloud ([#439](https://github.com/majkinetor/musicbrainz-userscripts/issues/439))
+
 ## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
 
 ### Features

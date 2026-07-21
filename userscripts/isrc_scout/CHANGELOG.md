@@ -1,5 +1,13 @@
 # ISRC Scout Changelog
 
+## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
+
+### Features
+
+1. Importing Spotify ISRCs with multiple mediums ([#446](https://github.com/majkinetor/musicbrainz-userscripts/issues/446))
+1. Support for Soundcloud ([#439](https://github.com/majkinetor/musicbrainz-userscripts/issues/439))
+1. Recognize iTunes URLs as Apple Music ([#436](https://github.com/majkinetor/musicbrainz-userscripts/issues/436))
+
 ## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
 
 ### Features
