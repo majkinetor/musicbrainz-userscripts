@@ -46,6 +46,7 @@ import { buildEditNote }                 from './edit-note.js';
 import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources/tidal.js';
+import { harvestMetalArchivesAlbum, metalArchivesToEngine, metalArchivesReleaseArtists } from './sources/metal_archives.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine, qobuzToken, fetchQobuzApiAlbum, parseQobuzApiTracks, qobuzApiAlbumInfo } from './sources/qobuz.js';
 import { parseAppleAlbumUrl, fetchAppleCredits, appleToEngine } from './sources/apple.js';
 import { parseDeezerAlbumUrl, fetchDeezerAlbumPage, extractDeezerCredits, extractDeezerAlbumInfo, deezerToEngine } from './sources/deezer.js';
@@ -58,6 +59,8 @@ let _summary;
 let _discogsJson = null;
 // Raw Tidal harvest of the current run — same contract for "Copy Tidal".
 let _tidalJson = null;
+// Raw Metal Archives harvest of the current run (#453).
+let _maJson = null;
 // Parsed Qobuz credits of the current run — same contract for "Copy Qobuz".
 let _qobuzJson = null;
 // Parsed Deezer credits of the current run — same contract for "Copy Deezer".
@@ -84,6 +87,7 @@ const SRC_ICON = {
     Qobuz:   stIcon('qobuz', 16),
     Deezer:  stIcon('deezer', 16),
     Apple:   stIcon('apple', 16),
+    'Metal Archives': stIcon('globe', 16),   // #453 — no dedicated brand glyph; the generic globe
     Titles:  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>',
 };
 const srcIconByUrl = url => SRC_ICON[sourceNameForUrl(url)] || '';
@@ -510,6 +514,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: (g, c, collect) => runQobuzImport(sources.qobuz, g, c, collect) });
     if (sources.deezer) importSources.push({ name: 'Deezer', url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
     if (sources.apple)  importSources.push({ name: 'Apple',  url: sources.apple,  run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
+    if (sources.metalArchives) importSources.push({ name: 'Metal Archives', url: sources.metalArchives, run: (g, c, collect) => runMetalArchivesImport(sources.metalArchives, g, c, collect) });   // #453
     // #271: "Titles" — derive remixer credits from the track titles. Offered
     // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
     // CH doesn't surface an action with nothing behind it. Pushed LAST so it
@@ -1535,6 +1540,48 @@ function runTidalImport(tidalUrl, getOpts, cancelled, collect) {
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
             if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
             const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
+// Metal Archives import (#453): Cloudflare-walled, so the same background-tab
+// harvest as Tidal (a real browser clears the challenge). The static lineup tables
+// give album-level performance credits (per-track, or track-scoped via "(track N)")
+// plus release-level other-staff. Roles bridge to the shared getArtistRoles mapper.
+function runMetalArchivesImport(maUrl, getOpts, cancelled, collect) {
+    log.info(`Opening the Metal Archives tab — it closes itself once harvested (a few seconds)…`);
+    return harvestMetalArchivesAlbum(maUrl)
+        .then(harvest => {
+            _maJson = harvest;   // Log ▾ → "Copy Metal Archives"
+            if (!harvest.ok) throw new Error(`Metal Archives harvest failed: ${harvest.error || 'unknown error'}`);
+            const li = document.createElement('li');
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
+            pre.textContent = JSON.stringify(harvest, null, 2);
+            const nCredited = (harvest.band?.length || 0) + (harvest.guest?.length || 0) + (harvest.misc?.length || 0);
+            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${(harvest.tracks || []).length} tracks, ${nCredited} credited — raw Metal Archives harvest</strong></summary></details>`;
+            li.querySelector('details').appendChild(pre);
+            _logs.appendChild(li);
+            const processTracklist = !!getOpts().processTracklist;
+            const { tracklistRels: ptRels, tracklist, skipped, multiVolume } = metalArchivesToEngine(harvest);
+            const tracklistRels = processTracklist ? ptRels : [];
+            // Other-staff → release-level artist roles via the shared mapper.
+            const { artists: relArtists, skipped: relSkipped } = metalArchivesReleaseArtists(harvest);
+            const artistRoles = [];
+            for (const a of relArtists) {
+                const roles = getArtistRoles(a);
+                if (!roles.length) { relSkipped.push(`release: ${a.maRole} — ${a.name}`); continue; }
+                artistRoles.push(...roles);
+            }
+            const companies = [];
+            log.info(`Metal Archives: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+            if (!processTracklist) log.info(`Per-track credits disabled — importing release-level credits only${getOpts().applyToTracks ? ' (applied to tracks)' : ''}.`);
+            (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach(s => log.info(`Not imported: ${s}`));
+            if (harvest.multiBand) log.warn(`Multi-artist release (${harvest.type}) — split/collaboration credits may need per-band track scoping; review carefully.`);
+            if (multiVolume) log.warn(`Multi-disc release — positions are "disc-track"; verify they line up with this release's mediums.`);
+            if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable credits found on the Metal Archives page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: maUrl, processTracklist };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });

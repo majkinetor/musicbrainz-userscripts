@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.21.140226
+// @version      2026.7.22.002912
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -24,6 +24,7 @@
 // @match        https://*.musicbrainz.org/place/*
 // @match        https://tidal.com/album/*
 // @match        https://listen.tidal.com/album/*
+// @match        https://www.metal-archives.com/albums/*
 // @grant        unsafeWindow
 // @connect      qobuz.com
 // @connect      www.qobuz.com
@@ -31,6 +32,7 @@
 // @connect      www.deezer.com
 // @connect      music.apple.com
 // @connect      amp-api.music.apple.com
+// @connect      www.metal-archives.com
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
@@ -73,8 +75,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.21.140226 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.21\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.21\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
+  console.log('%c String Theory %c v2026.7.22.002912 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.21\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.22.002624\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -10845,7 +10847,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.21","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.21","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.22.002624","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.7.22.002624","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -11130,8 +11132,10 @@ try {
         tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || "")),
         qobuz: href((rel) => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || "")),
         deezer: href((rel) => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || "")),
-        apple: href((rel) => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || ""))
+        apple: href((rel) => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || "")),
         // #435; iTunes URLs #436
+        metalArchives: href((rel) => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || ""))
+        // #453
       };
     });
   }
@@ -13526,10 +13530,370 @@ try {
     });
   }
 
+  // src/sources/metal_archives.js
+  var MA_ARTIST_RE = /^https?:\/\/(?:www\.)?metal-archives\.com\/artists\/([^/?#]+)\/(\d+)/i;
+  function parseMetalArchivesArtistUrl(url) {
+    const m = MA_ARTIST_RE.exec(url || "");
+    if (!m) return null;
+    return { id: m[2], key: `metal-archives-artist/${m[2]}`, cleanUrl: `https://www.metal-archives.com/artists/${m[1]}/${m[2]}` };
+  }
+  var MA_ALBUM_RE = /^https?:\/\/(?:www\.)?metal-archives\.com\/albums\/([^/?#]+)\/([^/?#]+)\/(\d+)/i;
+  function parseMetalArchivesAlbumUrl(url) {
+    const m = MA_ALBUM_RE.exec(url || "");
+    if (!m) return null;
+    return { id: m[3], albumUrl: `https://www.metal-archives.com/albums/${m[1]}/${m[2]}/${m[3]}` };
+  }
+  var MA_INSTRUMENT_MAP = {
+    "Guitars": "Guitar",
+    "Guitar": "Guitar",
+    "Bass": "Bass",
+    "Bass Guitar": "Bass",
+    "Drums": "Drums",
+    "Drum programming": "Drum Programming",
+    "Drum Programming": "Drum Programming",
+    "Keyboards": "Keyboard",
+    "Keyboard": "Keyboard",
+    "Synthesizers": "Synthesizer",
+    "Synthesizer": "Synthesizer",
+    "Synth": "Synthesizer",
+    "Synths": "Synthesizer",
+    "Piano": "Piano",
+    "Percussion": "Percussion",
+    "Classical Percussion": "Percussion",
+    "Bagpipes": "Bagpipe",
+    "Bells": "Bell",
+    "Round Bells": "Bell",
+    "Kettledrums": "Kettledrum",
+    "Contrabass": "Double Bass",
+    "Citern": "Cittern",
+    "Jew's Harp": "Mouth Harp",
+    "Oak Stick": "Rhythm Sticks",
+    "Western Concert Flute": "Concert Flute",
+    "Woodchimes": "Chimes",
+    "Wind instruments": "Wind Instruments",
+    "Saxophone (alto)": "Alto Saxophone",
+    "Saxophone (baritone)": "Baritone Saxophone",
+    "Saxophone (tenor)": "Tenor Saxophone"
+    // pass-through-friendly names (already in INSTRUMENTS): Accordion, Banjo, Bassoon, Bouzouki, Cello,
+    // Clarinet, Concertina, Cowbell, Crumhorn, Domra, Fiddle, Flute, French Horn, Harp, Harpsichord,
+    // Hurdy Gurdy, Mandolin, Oboe, Ocarina, Organ, Pan Flute, Saxophone, Shakuhachi, Sopilka, Strings,
+    // Tambourine, Timpani, Tin Whistle, Trombone, Trumpet, Viola, Violin, Xylophone, Sitar, Ebow, Samples.
+  };
+  var MA_VOCAL_SUBTYPE = {
+    "lead": "Lead Vocals",
+    "backing": "Backing Vocals",
+    "back": "Backing Vocals",
+    "additional": "Backing Vocals",
+    "baritone": "Baritone Vocals",
+    "soprano": "Soprano Vocals",
+    "tenor": "Tenor Vocals",
+    "alto": "Alto Vocals",
+    "choirs": "Choir Vocals",
+    "choir": "Choir Vocals",
+    "spoken": "Spoken Vocals",
+    "spoken word": "Spoken Vocals"
+  };
+  var MA_STAFF_MAP = {
+    "Songwriting": "Composed By",
+    "Composition": "Composed By",
+    "Lyrics": "Lyrics By",
+    "Arrangements": "Arranged By",
+    "Arrangement": "Arranged By",
+    "Recording": "Recording Engineer",
+    "Engineering": "Engineer",
+    "Mixing": "Mixed By",
+    "Remixing": "Remixer",
+    "Mastering": "Mastered By",
+    "Remastering": "Remastered By",
+    "Producer": "Producer",
+    "Executive Producer": "Executive-Producer",
+    "Co-producer": "Co-producer",
+    "Editing": "Edited By",
+    "Technician": "Instruments",
+    "Conductor": "Conductor",
+    "Choirmaster": "Chorus Master",
+    "Artwork": "Artwork By",
+    "Illustrations": "Illustration",
+    "Illustration": "Illustration",
+    "Cover Art": "Artwork By",
+    "Interior art": "Artwork By",
+    "Art Direction": "Art Direction",
+    "Photography": "Photography By",
+    "Design": "Graphic Design",
+    "Layout": "Graphic Design [layout]",
+    "Liner Notes": "Liner Notes",
+    "Logo": "Graphic Design [logo]",
+    "Photo manipulation": "Graphic Design [photo manipulation]",
+    "Director": "Director"
+  };
+  var MA_SKIP = /* @__PURE__ */ new Set([
+    "All Instruments",
+    "Everything",
+    "Unknown",
+    "Production assistance",
+    "Producer (pre-production)",
+    "Authoring",
+    "Orchestra leader",
+    "Menu"
+  ]);
+  var MA_SPECIAL_SKIP = /* @__PURE__ */ new Set(["Ambience"]);
+  function splitTopLevelCommas(str) {
+    const out = [];
+    let depth = 0, cur = "";
+    for (const ch of String(str || "")) {
+      if (ch === "(") depth++;
+      else if (ch === ")") depth = Math.max(0, depth - 1);
+      if (ch === "," && depth === 0) {
+        out.push(cur.trim());
+        cur = "";
+      } else cur += ch;
+    }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+  }
+  function parseTrackGroup(inner) {
+    if (!/^tracks?\b/i.test(inner)) return null;
+    const nums = [];
+    inner.replace(/^tracks?\s*/i, "").split(",").forEach((part) => {
+      const range = part.trim().match(/^(\d+)\s*[-–]\s*(\d+)$/);
+      if (range) {
+        for (let n = +range[1]; n <= +range[2]; n++) nums.push(n);
+      } else {
+        const one = part.trim().match(/^\d+$/);
+        if (one) nums.push(+part.trim());
+      }
+    });
+    return nums.length ? nums : null;
+  }
+  function parseMaRoleCell(cell) {
+    return splitTopLevelCommas(cell).map((token) => {
+      const details = [];
+      let tracks = null;
+      const base = token.replace(/\(([^()]*)\)/g, (_, inner) => {
+        const tg = parseTrackGroup(inner.trim());
+        if (tg) tracks = (tracks || []).concat(tg);
+        else if (inner.trim()) details.push(inner.trim());
+        return "";
+      }).replace(/\s+/g, " ").trim();
+      return { base, details, tracks };
+    }).filter((t) => t.base);
+  }
+  function bridgeToken(tok) {
+    const base = tok.base;
+    if (MA_SKIP.has(base) || MA_SPECIAL_SKIP.has(base)) return null;
+    if (/^vocals?$/i.test(base) || /^voice$/i.test(base) || /^narration$/i.test(base)) {
+      if (/^narration$/i.test(base)) return "Spoken Vocals";
+      const sub = tok.details.map((d) => d.toLowerCase()).find((d) => MA_VOCAL_SUBTYPE[d]);
+      return sub ? MA_VOCAL_SUBTYPE[sub] : "Vocals";
+    }
+    if (MA_INSTRUMENT_MAP[base]) return MA_INSTRUMENT_MAP[base];
+    if (MA_STAFF_MAP[base]) return MA_STAFF_MAP[base];
+    return base;
+  }
+  function extractLineupTable(doc, id) {
+    const table = doc.getElementById(id);
+    const rows = [];
+    if (!table) return rows;
+    let band = null;
+    for (const tr of table.querySelectorAll("tr")) {
+      const a = tr.querySelector('a[href*="/artists/"]');
+      const tds = [...tr.querySelectorAll("td")];
+      if (!a) {
+        const label = tds.map((td) => td.textContent.trim()).join(" ").replace(/^\[|\]$/g, "").trim();
+        if (label) band = label;
+        continue;
+      }
+      const url = a.href;
+      const nameText = a.textContent.trim();
+      const roleTd = tds.find((td) => !td.querySelector('a[href*="/artists/"]'));
+      const roleCell = roleTd ? roleTd.textContent.trim().replace(/\s+/g, " ") : "";
+      rows.push({ name: nameText, url, roleCell, band });
+    }
+    return rows;
+  }
+  function extractTracklist(doc) {
+    const table = doc.querySelector("#album_tabs_tracklist table.table_lyrics, .album_tabs_tracklist table, table.table_lyrics");
+    const tracks = [];
+    let disc = 0;
+    if (!table) return { tracks, multiDisc: false };
+    const multiDisc = /\b(?:Disc|CD)\s*\d/i.test(table.textContent);
+    for (const tr of table.querySelectorAll("tr")) {
+      const tds = [...tr.querySelectorAll("td")];
+      if (/^(disc|cd|side)\s*\w+/i.test(tr.textContent.trim()) && !tr.querySelector("td.wrapWords")) {
+        disc++;
+        continue;
+      }
+      const m = tds[0] && tds[0].textContent.trim().match(/^(\d+)\.?$/);
+      if (!m) continue;
+      const n = +m[1];
+      const titleCell = tr.querySelector("td.wrapWords") || tds[1];
+      const title = titleCell ? titleCell.textContent.trim().replace(/\s+/g, " ") : "";
+      tracks.push({ position: multiDisc ? `${disc || 1}-${n}` : String(n), title, type_: "track" });
+    }
+    return { tracks, multiDisc };
+  }
+  function extractMaLineupDom(doc) {
+    const typeEl = [...doc.querySelectorAll("#album_info dt, dl.float_left dt")].find((d) => /^type\b/i.test(d.textContent.trim()));
+    const type = typeEl && typeEl.nextElementSibling ? typeEl.nextElementSibling.textContent.trim() : "";
+    const band = extractLineupTable(doc, "album_members_lineup");
+    const guest = extractLineupTable(doc, "album_members_guest");
+    const misc = extractLineupTable(doc, "album_members_misc");
+    const { tracks, multiDisc } = extractTracklist(doc);
+    const multiBand = /split|collaboration/i.test(type) || [...band, ...guest].some((r) => r.band);
+    return { type, multiBand, multiDisc, tracks, band, guest, misc };
+  }
+  var HARVEST_KEY2 = (reqId) => `ch-ma-result:${reqId}`;
+  var HARVEST_TIMEOUT_MS2 = 45e3;
+  function runMetalArchivesHarvestPage() {
+    const m = location.hash.match(/ch-req=([a-z0-9.-]+)/i);
+    if (!m) return;
+    const reqId = m[1];
+    const albumId = (location.pathname.match(/\/albums\/[^/]+\/[^/]+\/(\d+)/) || [])[1] || null;
+    const post = (payload) => {
+      try {
+        GM_setValue(HARVEST_KEY2(reqId), { albumId, ts: Date.now(), ...payload });
+      } catch (e) {
+      }
+    };
+    const started = Date.now();
+    const timer = setInterval(() => {
+      const challenged = /just a moment|attention required|checking your browser/i.test(document.title);
+      const ready = document.querySelector("#album_info, .album_name, #album_tabs_tracklist, table.table_lyrics");
+      if (ready && !challenged) {
+        clearInterval(timer);
+        try {
+          post({ ok: true, ...extractMaLineupDom(document) });
+        } catch (e) {
+          post({ ok: false, error: "extract failed: " + (e && e.message) });
+        }
+        setTimeout(() => window.close(), 250);
+        return;
+      }
+      if (Date.now() - started > HARVEST_TIMEOUT_MS2 - 3e3) {
+        clearInterval(timer);
+        post({ ok: false, error: challenged ? "Cloudflare challenge did not clear in the tab" : "album page never rendered" });
+        setTimeout(() => window.close(), 250);
+      }
+    }, 300);
+  }
+  function harvestMetalArchivesAlbum(albumUrl) {
+    const parsed = parseMetalArchivesAlbumUrl(albumUrl);
+    if (!parsed) return Promise.reject(new Error(`Not a Metal Archives album URL: ${albumUrl}`));
+    const reqId = `${parsed.id}.${Date.now().toString(36)}`;
+    const key = HARVEST_KEY2(reqId);
+    const harvestUrl = `${parsed.albumUrl}#ch-req=${reqId}`;
+    if (typeof GM_openInTab === "function") {
+      GM_openInTab(harvestUrl, { active: false, insert: true, setParent: true });
+    } else {
+      const tab = window.open(harvestUrl, "_blank");
+      if (!tab) return Promise.reject(new Error("Popup blocked \u2014 allow popups for musicbrainz.org and retry"));
+    }
+    return new Promise((resolve, reject) => {
+      let listenerId = null, pollTimer = null;
+      const done = (fn, arg) => {
+        if (pollTimer) clearInterval(pollTimer);
+        clearTimeout(deadline);
+        try {
+          if (listenerId !== null && typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(listenerId);
+        } catch (e) {
+        }
+        try {
+          GM_deleteValue(key);
+        } catch (e) {
+        }
+        fn(arg);
+      };
+      const check = (value) => {
+        if (value && typeof value === "object") done(resolve, value);
+      };
+      if (typeof GM_addValueChangeListener === "function") listenerId = GM_addValueChangeListener(key, (_n, _o, value) => check(value));
+      pollTimer = setInterval(() => {
+        try {
+          check(GM_getValue(key));
+        } catch (e) {
+        }
+      }, 700);
+      const deadline = setTimeout(() => done(reject, new Error("Metal Archives harvest timed out \u2014 is the album tab open and loading?")), HARVEST_TIMEOUT_MS2);
+    });
+  }
+  function maArtist(row, discogsRole) {
+    const parsed = parseMetalArchivesArtistUrl(row.url);
+    return {
+      id: parsed ? `metal-archives-${parsed.id}` : void 0,
+      name: row.name,
+      anv: "",
+      role: discogsRole,
+      resource_url: parsed ? parsed.cleanUrl : ""
+    };
+  }
+  function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel) {
+    const rels = [];
+    for (const tok of parseMaRoleCell(row.roleCell)) {
+      const discogsRole = bridgeToken(tok);
+      if (!discogsRole) {
+        skipped.push(`${sectionLabel}: ${tok.base} \u2014 ${row.name}`);
+        continue;
+      }
+      let resolved = getArtistRoles(maArtist(row, discogsRole));
+      if (!resolved.length && /s$/i.test(discogsRole)) resolved = getArtistRoles(maArtist(row, discogsRole.replace(/s$/i, "")));
+      if (!resolved.length) {
+        skipped.push(`${sectionLabel}: ${tok.base} \u2014 ${row.name}`);
+        continue;
+      }
+      const targets = tok.tracks ? tok.tracks.map((n) => byPosition.get(String(n))).filter(Boolean) : allTracks;
+      for (const track of targets) {
+        for (const r of resolved) {
+          rels.push({
+            linkType: r.linkType,
+            entityType: "artist",
+            attributes: [...r.attributes || [], ...guest ? ["guest"] : []],
+            artist: r.artist,
+            track
+          });
+        }
+      }
+    }
+    return rels;
+  }
+  function metalArchivesToEngine(harvest) {
+    const tracklist = (harvest.tracks || []).map((t) => ({ position: t.position, title: t.title, type_: "track" }));
+    const byPosition = new Map(tracklist.map((t) => [String(t.position).replace(/^\d+-/, ""), t]));
+    tracklist.forEach((t) => byPosition.set(String(t.position), t));
+    const skipped = [];
+    const tracklistRels = [];
+    const isSplit = /split/i.test(harvest.type || "");
+    for (const [rows, guest, label] of [[harvest.band || [], false, "band"], [harvest.guest || [], true, "guest"]]) {
+      for (const row of rows) {
+        if (isSplit) {
+          skipped.push(`${label} (split \u2014 assign to ${row.band || "band"} tracks manually): ${row.roleCell} \u2014 ${row.name}`);
+          continue;
+        }
+        tracklistRels.push(...rowToTrackRels(row, tracklist, byPosition, guest, skipped, label));
+      }
+    }
+    return { tracklistRels, tracklist, skipped, multiVolume: !!harvest.multiDisc };
+  }
+  function metalArchivesReleaseArtists(harvest) {
+    const artists = [], skipped = [];
+    for (const row of harvest.misc || []) {
+      for (const tok of parseMaRoleCell(row.roleCell)) {
+        const discogsRole = bridgeToken(tok);
+        if (!discogsRole) {
+          skipped.push(`release: ${tok.base} \u2014 ${row.name}`);
+          continue;
+        }
+        const a = maArtist(row, discogsRole);
+        a.maRole = tok.base;
+        artists.push(a);
+      }
+    }
+    return { artists, publishers: [], companies: [], skipped };
+  }
+
   // src/sources/registry.js
   function parseSourceEntityUrl(url) {
     if (!url) return null;
-    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url);
+    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url) || parseMetalArchivesArtistUrl(url);
   }
   function idbKeyForEntity(entity) {
     if (!entity) return null;
@@ -13540,6 +13904,7 @@ try {
     if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
     if (/deezer\.com\//i.test(url || "")) return "Deezer";
     if (/(?:music|itunes)\.apple\.com\//i.test(url || "")) return "Apple";
+    if (/metal-archives\.com\//i.test(url || "")) return "Metal Archives";
     return "Discogs";
   }
   var isSyntheticProviderUrl = (url) => /tidal\.com\/_(?:publisher|company)\//i.test(String(url || ""));
@@ -13548,6 +13913,7 @@ try {
     const src = sourceNameForUrl(url);
     if (src === "Tidal") return entityType === "artist" ? "978" : null;
     if (src === "Qobuz") return entityType === "artist" ? "978" : null;
+    if (src === "Metal Archives") return null;
     return entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
   }
 
@@ -16815,6 +17181,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var _summary;
   var _discogsJson = null;
   var _tidalJson = null;
+  var _maJson = null;
   var _qobuzJson = null;
   var _deezerJson = null;
   var _appleJson = null;
@@ -16836,6 +17203,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     Qobuz: stIcon("qobuz", 16),
     Deezer: stIcon("deezer", 16),
     Apple: stIcon("apple", 16),
+    "Metal Archives": stIcon("globe", 16),
+    // #453 — no dedicated brand glyph; the generic globe
     Titles: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>'
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
@@ -17242,6 +17611,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g, c, collect) => runQobuzImport(sources.qobuz, g, c, collect) });
     if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
     if (sources.apple) importSources.push({ name: "Apple", url: sources.apple, run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
+    if (sources.metalArchives) importSources.push({ name: "Metal Archives", url: sources.metalArchives, run: (g, c, collect) => runMetalArchivesImport(sources.metalArchives, g, c, collect) });
     if ((meta.titlesRemixCount || 0) > 0) {
       importSources.push({ name: "Titles", url: "", run: (g, c, collect) => runTitlesImport(g, c, collect) });
     }
@@ -18088,6 +18458,49 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
+  function runMetalArchivesImport(maUrl, getOpts, cancelled, collect) {
+    log.info(`Opening the Metal Archives tab \u2014 it closes itself once harvested (a few seconds)\u2026`);
+    return harvestMetalArchivesAlbum(maUrl).then((harvest) => {
+      _maJson = harvest;
+      if (!harvest.ok) throw new Error(`Metal Archives harvest failed: ${harvest.error || "unknown error"}`);
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.textContent = JSON.stringify(harvest, null, 2);
+      const nCredited = (harvest.band?.length || 0) + (harvest.guest?.length || 0) + (harvest.misc?.length || 0);
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${(harvest.tracks || []).length} tracks, ${nCredited} credited \u2014 raw Metal Archives harvest</strong></summary></details>`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      const processTracklist = !!getOpts().processTracklist;
+      const { tracklistRels: ptRels, tracklist, skipped, multiVolume } = metalArchivesToEngine(harvest);
+      const tracklistRels = processTracklist ? ptRels : [];
+      const { artists: relArtists, skipped: relSkipped } = metalArchivesReleaseArtists(harvest);
+      const artistRoles = [];
+      for (const a of relArtists) {
+        const roles = getArtistRoles(a);
+        if (!roles.length) {
+          relSkipped.push(`release: ${a.maRole} \u2014 ${a.name}`);
+          continue;
+        }
+        artistRoles.push(...roles);
+      }
+      const companies = [];
+      log.info(`Metal Archives: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+      if (!processTracklist) log.info(`Per-track credits disabled \u2014 importing release-level credits only${getOpts().applyToTracks ? " (applied to tracks)" : ""}.`);
+      (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach((s) => log.info(`Not imported: ${s}`));
+      if (harvest.multiBand) log.warn(`Multi-artist release (${harvest.type}) \u2014 split/collaboration credits may need per-band track scoping; review carefully.`);
+      if (multiVolume) log.warn(`Multi-disc release \u2014 positions are "disc-track"; verify they line up with this release's mediums.`);
+      if (!tracklistRels.length && !artistRoles.length) {
+        log.warn("No importable credits found on the Metal Archives page.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
+        return;
+      }
+      const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: maUrl, processTracklist };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
   function runQobuzImport(qobuzUrl, getOpts, cancelled, collect) {
     const parsed = parseQobuzAlbumUrl(qobuzUrl);
     if (!parsed) {
@@ -18498,6 +18911,9 @@ ${lines}
   // src/credit_hoarder.user.js
   if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
     runTidalHarvestPage();
+  }
+  if (/(^|\.)metal-archives\.com$/i.test(location.hostname)) {
+    runMetalArchivesHarvestPage();
   }
   (function handleCreatePageAutoCommit() {
     const onCreate = /\/(artist|label|place)\/create\b/i.test(location.pathname);

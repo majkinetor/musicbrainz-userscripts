@@ -17,6 +17,7 @@ import { getSourceUrlsForRelease } from './api-mb.js';
 import { insertDiscogsBar, probeTitleRemixes } from './ui-bar.js';
 import { DISCOGS_CHANNEL }       from './constants.js';
 import { runTidalHarvestPage }   from './sources/tidal.js';
+import { runMetalArchivesHarvestPage } from './sources/metal_archives.js';
 import                                './storage.js';   // opens IndexedDB on load
 
 // ── tidal.com: credits-harvest companion (#193) ──────────────────────────────
@@ -26,6 +27,10 @@ import                                './storage.js';   // opens IndexedDB on lo
 // page — and everything below this block is MB-only.
 if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
     runTidalHarvestPage();
+}
+// ── metal-archives.com: same background-tab credits harvest (#453) ────────────
+if (/(^|\.)metal-archives\.com$/i.test(location.hostname)) {
+    runMetalArchivesHarvestPage();
 }
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────

@@ -11,6 +11,7 @@
 // @match        https://*.musicbrainz.org/place/*
 // @match        https://tidal.com/album/*
 // @match        https://listen.tidal.com/album/*
+// @match        https://www.metal-archives.com/albums/*
 // @license      MIT
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
@@ -22,6 +23,7 @@
 // @connect      www.deezer.com
 // @connect      music.apple.com
 // @connect      amp-api.music.apple.com
+// @connect      www.metal-archives.com
 // @grant        GM_openInTab
 // @grant        GM_setValue
 // @grant        GM_getValue

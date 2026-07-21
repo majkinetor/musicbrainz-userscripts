@@ -12,13 +12,14 @@
 import { parseDiscogsUrl }      from '../api-discogs.js';
 import { parseTidalArtistUrl }  from './tidal.js';
 import { parseQobuzArtistUrl }  from './qobuz.js';
+import { parseMetalArchivesArtistUrl } from './metal_archives.js';
 
 /** Parse a credited entity's external URL into `{ key, cleanUrl, … }` via
  *  whichever source recognises it, or `null`. Drop-in superset of
  *  `parseDiscogsUrl` (Discogs URLs return the exact same shape). */
 export function parseSourceEntityUrl(url) {
     if (!url) return null;
-    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url);
+    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url) || parseMetalArchivesArtistUrl(url);
 }
 
 /** The IDB `entity_cache` key for an entity. Normally derived from its source
@@ -38,6 +39,7 @@ export function sourceNameForUrl(url) {
     if (/qobuz\.com\//i.test(url || '')) return 'Qobuz';
     if (/deezer\.com\//i.test(url || '')) return 'Deezer';
     if (/(?:music|itunes)\.apple\.com\//i.test(url || '')) return 'Apple';   // #435; iTunes URLs #436
+    if (/metal-archives\.com\//i.test(url || '')) return 'Metal Archives';   // #453
     return 'Discogs';
 }
 
@@ -56,5 +58,6 @@ export function sourceUrlLinkTypeId(url, entityType) {
     const src = sourceNameForUrl(url);
     if (src === 'Tidal') return entityType === 'artist' ? '978' : null;
     if (src === 'Qobuz') return entityType === 'artist' ? '978' : null;   // #353 Qobuz artist page = "streaming" (978), same as Tidal
+    if (src === 'Metal Archives') return null;   // #453 v1: resolve via existing MB links; don't auto-add MA URLs (would need the "other databases" type)
     return entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
 }
