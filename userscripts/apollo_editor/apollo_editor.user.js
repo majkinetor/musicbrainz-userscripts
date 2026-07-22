@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.21
+// @version      2026.7.22.115455
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1695,6 +1695,28 @@
     .tc-gco,.tc-sro,.tc-colso,.tc-medo{display:flex;align-items:center;gap:8px}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
+    /* #455 track length parser panel */
+    .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:420px;max-height:76vh;display:flex;flex-direction:column}
+    .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6}
+    .tc-lp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
+    .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444}
+    .tc-lp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-lp-x:hover{color:#333}
+    .tc-lp-in{display:flex;gap:6px;padding:8px 12px 4px;align-items:flex-start}
+    .tc-lp-ta{flex:1;resize:vertical;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:5px 7px}
+    .tc-lp-clip{white-space:nowrap;cursor:pointer;border:1px solid #cdbff0;background:#f7f4fd;color:#5f3ec0;font:11px Arial;border-radius:4px;padding:4px 8px}.tc-lp-clip:hover{background:#efe9fb}
+    .tc-lp-cnt{padding:2px 12px 4px;font:11px Arial;color:#777}
+    .tc-lp-cnt.ok{color:#2e7d32}.tc-lp-cnt.warn{color:#b26a00}.tc-lp-cnt.bad{color:#c62828;font-weight:bold}
+    .tc-lp-list{overflow:auto;padding:0 8px 4px}
+    .tc-lp-row{display:flex;align-items:center;gap:6px;padding:1px 4px}
+    .tc-lp-tk{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:12px}
+    .tc-lp-tk.none{color:#aaa;font-style:italic}
+    .tc-lp-val{width:86px;font:12px ui-monospace,Consolas,monospace;text-align:right;border:1px solid #ccc;border-radius:4px;padding:2px 5px}
+    .tc-lp-val.bad{border-color:#e53935;background:#fff2f2;color:#c62828}
+    .tc-lp-del{border:none;background:none;cursor:pointer;color:#c0392b;font-size:12px;opacity:.35;padding:0 3px}.tc-lp-row:hover .tc-lp-del{opacity:1}
+    .tc-lp-add{display:block;width:100%;height:9px;line-height:7px;border:none;background:none;cursor:pointer;color:#5f3ec0;opacity:0;font-size:12px;padding:0}.tc-lp-add:hover{opacity:.9;background:#f3eefc}
+    .tc-lp-ft{display:flex;justify-content:flex-end;gap:8px;padding:8px 12px;border-top:1px solid #ece7f6}
+    .tc-lp-cancel{cursor:pointer;border:1px solid #ccc;background:#fff;font:12px Arial;border-radius:4px;padding:4px 12px}
+    .tc-lp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:4px 12px}.tc-lp-ok:hover:not(:disabled){background:#e6f6e6}.tc-lp-ok:disabled{opacity:.5;cursor:not-allowed}
     .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
     /* #152/#375: Search & Replace — RE toggle, search caret, invalid-regex flag, Saved & History popup */
     .tc-srbtn{cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#6f42c1;font:bold 11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}
@@ -2960,7 +2982,115 @@
   async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists on medium', mi + 1); }
   function resetNumbers(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } finally { _selfEdit = false; } rebuild(); }
   function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
-  function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
+
+  /* ── Track length parser (#455) ────────────────────────────────────────────
+   * MB's native track parser wants a specific format; lengths copied off a site
+   * (Bandcamp, foobar, …) rarely fit. This greps every DURATION out of arbitrary
+   * pasted text — jesus2099's battle-tested regex, which only matches things
+   * shaped like a time so track numbers / titles / years are ignored — into a
+   * REVIEWABLE, editable list (add / delete / edit rows, invalid times blocked),
+   * then writes them to the medium's tracks in order. Nothing is written until
+   * you commit. */
+  const LP_DUR_RE = /(?:(?:(\b\d\b)[°h])?(\b\d{1,3}\b)[′’'m])?(\b\d{2}\b)[″”"s]|(?:(?:(\b\d\b):)?(\b\d{1,3}\b):)(\b\d{2}\b)/g;
+  // Extract durations (in reading order) → [{ value, raw }]. value is m:ss, or
+  // h:mm:ss when hours are present (hours 0 collapse back to m:ss).
+  function lpParse(text) {
+    if (!text) return [];
+    const item = new RegExp(LP_DUR_RE.source);
+    return (String(text).match(LP_DUR_RE) || []).map(raw => {
+      const m = raw.match(item);
+      const h = +(m[1] || m[4] || 0), mn = +(m[2] || m[5] || 0), s = +(m[3] || m[6] || 0);
+      const value = h > 0 ? `${h}:${String(mn).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${mn}:${String(s).padStart(2, '0')}`;
+      return { value, raw };
+    });
+  }
+  // A valid MB length: m:ss (ss<60; minutes unbounded) or h:mm:ss (mm<60, ss<60).
+  const lpValid = v => /^\d+:[0-5]\d$/.test(String(v).trim()) || /^\d+:[0-5]\d:[0-5]\d$/.test(String(v).trim());
+
+  function openLengthParser(mi) {
+    document.getElementById('tc-lppop')?.remove();
+    let curMi = (mi != null ? mi : toolMedium());
+    let items = [];   // [{ value, raw }] — the editable list (item i → track i)
+
+    const p = document.createElement('div'); p.id = 'tc-lppop'; p.className = 'tc-lppop';
+    const medSel = mediums().length > 1
+      ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
+      : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
+    p.innerHTML = `
+      <div class="tc-lp-hd"><span class="tc-lp-t">Parse track lengths</span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-lp-in">
+        <textarea class="tc-lp-ta" rows="3" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
+        <button type="button" class="tc-lp-clip" title="Read the clipboard (may need permission; otherwise just paste into the box)">📋 From clipboard</button>
+      </div>
+      <div class="tc-lp-cnt"></div>
+      <div class="tc-lp-list"></div>
+      <div class="tc-lp-ft"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></div>`;
+    document.body.appendChild(p);
+
+    // position near the toolbar trigger (fall back to centred)
+    const trig = document.querySelector('.tc-opt[data-tool="lengthparser"]') || document.getElementById('tc-bar');
+    if (trig) { const r = trig.getBoundingClientRect(), ph = p.offsetHeight || 300; let top = r.bottom + 6; if (top + ph > innerHeight - 8) top = Math.max(8, r.top - 6 - ph); p.style.left = Math.max(8, Math.min(r.left, innerWidth - (p.offsetWidth || 420) - 8)) + 'px'; p.style.top = top + 'px'; }
+    else { p.style.left = Math.max(8, (innerWidth - 420) / 2) + 'px'; p.style.top = '90px'; }
+
+    const $ = s => p.querySelector(s);
+    const ta = $('.tc-lp-ta'), listEl = $('.tc-lp-list'), cntEl = $('.tc-lp-cnt'), okBtn = $('.tc-lp-ok');
+    const tracks = () => u(mediums()[curMi].tracks) || [];
+    const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
+
+    function render() {
+      const nT = tracks().length;
+      listEl.innerHTML = '';
+      const addRow = at => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-lp-add'; b.title = 'insert a length here'; b.textContent = '+'; b.onclick = () => { items.splice(at, 0, { value: '', raw: '' }); render(); const inp = listEl.querySelectorAll('.tc-lp-val')[at]; inp && inp.focus(); }; return b; };
+      listEl.appendChild(addRow(0));
+      items.forEach((it, i) => {
+        const row = document.createElement('div'); row.className = 'tc-lp-row';
+        const ok = lpValid(it.value);
+        row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? trackTitle(i) : 'no track — will be ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
+        const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tc-lp-val' + (ok ? '' : ' bad'); inp.value = it.value; inp.title = it.raw ? ('detected: ' + it.raw) : '';
+        inp.oninput = () => { it.value = inp.value; const good = lpValid(it.value); inp.classList.toggle('bad', !good); refreshFoot(); };
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.title = 'delete (rows below shift up)'; del.textContent = '✕'; del.onclick = () => { items.splice(i, 1); render(); };
+        row.append(inp, del);
+        listEl.appendChild(row);
+        listEl.appendChild(addRow(i + 1));
+      });
+      refreshFoot();
+    }
+    function refreshFoot() {
+      const nT = tracks().length, n = items.length, bad = items.filter(it => !lpValid(it.value)).length;
+      cntEl.className = 'tc-lp-cnt' + (bad ? ' bad' : n === nT ? ' ok' : n ? ' warn' : '');
+      cntEl.textContent = !n ? `Paste text above — ${nT} track${nT !== 1 ? 's' : ''} in Medium ${curMi + 1}`
+        : `${n} length${n !== 1 ? 's' : ''} ↔ ${nT} track${nT !== 1 ? 's' : ''}` + (bad ? ` · ${bad} invalid — fix or delete` : n !== nT ? ' · count mismatch' : '');
+      okBtn.disabled = !n || bad > 0;
+      okBtn.textContent = `Apply ${Math.min(n, nT)} to Medium ${curMi + 1}`;
+    }
+    const reparse = () => { items = lpParse(ta.value); render(); };
+
+    ta.oninput = reparse;
+    $('.tc-lp-clip').onclick = () => {
+      if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => { ta.value = t; reparse(); ta.focus(); }).catch(() => toast('Clipboard blocked — paste into the box instead'));
+      else toast('Clipboard unavailable — paste into the box instead');
+    };
+    const medEl = $('.tc-lp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
+    const close = () => { p.remove(); document.removeEventListener('mousedown', onDown, true); };
+    function commit() {
+      const nT = tracks().length, n = Math.min(items.length, nT);
+      if (!items.length || items.some(it => !lpValid(it.value))) return;
+      for (let i = 0; i < n; i++) setLength({ mi: curMi, ti: i }, items[i].value);
+      rebuild(true);
+      Log.info('length parser: applied', n, 'track length(s) on medium', curMi + 1);
+      toast(`Applied ${n} track length${n !== 1 ? 's' : ''}`);
+      close();
+    }
+    $('.tc-lp-ok').onclick = commit;
+    $('.tc-lp-cancel').onclick = $('.tc-lp-x').onclick = close;
+    p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); commit(); } };
+    // dismiss on outside mousedown, swallowing the trailing click (#305)
+    function onDown(e) { if (p.contains(e.target)) return; e.preventDefault(); e.stopPropagation(); const swallow = ev => { ev.preventDefault(); ev.stopPropagation(); document.removeEventListener('click', swallow, true); }; document.addEventListener('click', swallow, true); close(); }
+    setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
+    render();
+    setTimeout(() => ta.focus(), 0);
+  }
+  function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'lengthparser') openLengthParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
   function runAction(a) {
     // #378 a bridged external tool (x:…). The PINNED toolbar button reaches us via bindActions (which
     // rebinds every [data-act] to runAction, overriding pickTool), so re-sync the bridge map HERE too —
@@ -3018,6 +3148,7 @@
      per-tool icon/text, pinning). ── */
   const MENU = [
     { act: 'parser',    label: 'Track parser',       icon: '☰' },           // ☰
+    { act: 'lengthparser', label: 'Parse track lengths', icon: '⏱' },       // ⏱ #455
     { act: 'swap',      label: 'Swap',               icon: '⇅' },           // ⇅
     { act: 'resetnum',  label: 'Reset #',            icon: '#' },
     { act: 'guessfeat', label: 'Guess feat.',        icon: 'ft', instant: true },
@@ -3027,7 +3158,7 @@
   ];
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
   const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
-  const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
+  const MEDIUM_TOOLS = new Set(['parser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
   const hasParams = act => !!(TOOL[act] && TOOL[act].params);
 
@@ -7176,7 +7307,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it

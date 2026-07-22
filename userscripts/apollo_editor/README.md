@@ -178,6 +178,20 @@ Search a string within track titles and replace it. Clicking the tool name start
 
 Set column sizes to predefined variants (Fit, Centered, Default).
 
+### Parse track lengths
+
+Fill a medium's track **lengths** from any text you paste — the native track parser wants a specific format, but lengths copied off a site (Bandcamp, foobar2000, …) rarely fit (track numbers land on their own lines, etc.). This just **greps every duration out of the text** and lets you review the result before writing anything.
+
+- **Paste** a tracklist into the box (or click **📋 From clipboard**). It detects everything shaped like a time — `5:50`, `1′23″`, `1'23"`, `1:02:03` — and **ignores** track numbers, titles, years and other noise. Nothing else has to match a format.
+- The detected times appear as an **editable list**, each next to the track it will fill (item 1 → track 1, …). Because alignment is by order:
+  - **✕** deletes a row (everything below shifts up);
+  - **+** (between rows / at the ends) inserts a length anywhere (everything below shifts down) — for a duration the parser couldn't see (e.g. a single-digit-seconds `1:2`);
+  - click a value to **edit** it.
+- **Invalid** times (e.g. `99:99`) are highlighted red and **must be fixed or deleted** — **Apply** stays disabled until the list is clean. A counter shows *N lengths ↔ M tracks*.
+- **Apply** writes the lengths to the medium's tracks in order (nothing is written until then; **Esc** cancels, **Ctrl+Enter** applies). On a multi-medium release, pick the medium in the panel header.
+
+<!-- source: discussion #451 / issue #455 -->
+
 ### External tools 
 
 Those tools need 3rd party userscript:
