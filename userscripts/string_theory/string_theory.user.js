@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.22.115550
+// @version      2026.7.22.123736
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -73,13 +73,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.22.115550 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.22.115455\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.21\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
+  console.log('%c String Theory %c v2026.7.22.123736 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.22.123735\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.21\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.115455","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.115455","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.123735","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.123735","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1760,26 +1760,28 @@ try {
     .tc-gco,.tc-sro,.tc-colso,.tc-medo{display:flex;align-items:center;gap:8px}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
-    /* #455 track length parser panel */
-    .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:420px;max-height:76vh;display:flex;flex-direction:column}
-    .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6}
+    /* #455 track length parser panel — centred, draggable, textarea | list */
+    .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:640px;height:64vh;min-width:460px;min-height:280px;max-width:92vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
+    .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
     .tc-lp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
-    .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444}
+    .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444;cursor:default}
     .tc-lp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-lp-x:hover{color:#333}
-    .tc-lp-in{display:flex;gap:6px;padding:8px 12px 4px;align-items:flex-start}
-    .tc-lp-ta{flex:1;resize:vertical;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:5px 7px}
-    .tc-lp-clip{white-space:nowrap;cursor:pointer;border:1px solid #cdbff0;background:#f7f4fd;color:#5f3ec0;font:11px Arial;border-radius:4px;padding:4px 8px}.tc-lp-clip:hover{background:#efe9fb}
-    .tc-lp-cnt{padding:2px 12px 4px;font:11px Arial;color:#777}
-    .tc-lp-cnt.ok{color:#2e7d32}.tc-lp-cnt.warn{color:#b26a00}.tc-lp-cnt.bad{color:#c62828;font-weight:bold}
-    .tc-lp-list{overflow:auto;padding:0 8px 4px}
-    .tc-lp-row{display:flex;align-items:center;gap:6px;padding:1px 4px}
+    .tc-lp-body{flex:1;min-height:0;display:flex;gap:8px;padding:8px 10px}
+    .tc-lp-ta{flex:0 0 45%;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
+    .tc-lp-list{flex:1;min-width:0;overflow:auto;border:1px solid #eee;border-radius:5px;padding:3px}
+    .tc-lp-row{display:flex;align-items:center;gap:6px;padding:2px 3px;border-radius:3px}.tc-lp-row:hover{background:#faf8fe}
     .tc-lp-tk{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:12px}
     .tc-lp-tk.none{color:#aaa;font-style:italic}
-    .tc-lp-val{width:86px;font:12px ui-monospace,Consolas,monospace;text-align:right;border:1px solid #ccc;border-radius:4px;padding:2px 5px}
+    .tc-lp-val{width:80px;font:12px ui-monospace,Consolas,monospace;text-align:right;border:1px solid #ccc;border-radius:4px;padding:2px 5px}
     .tc-lp-val.bad{border-color:#e53935;background:#fff2f2;color:#c62828}
-    .tc-lp-del{border:none;background:none;cursor:pointer;color:#c0392b;font-size:12px;opacity:.35;padding:0 3px}.tc-lp-row:hover .tc-lp-del{opacity:1}
-    .tc-lp-add{display:block;width:100%;height:9px;line-height:7px;border:none;background:none;cursor:pointer;color:#5f3ec0;opacity:0;font-size:12px;padding:0}.tc-lp-add:hover{opacity:.9;background:#f3eefc}
-    .tc-lp-ft{display:flex;justify-content:flex-end;gap:8px;padding:8px 12px;border-top:1px solid #ece7f6}
+    .tc-lp-add,.tc-lp-del{border:1px solid transparent;background:none;cursor:pointer;font-size:13px;line-height:1;border-radius:4px;padding:2px 5px}
+    .tc-lp-add{color:#2e7d32}.tc-lp-add:hover{background:#eef8ee;border-color:#cdeccd}
+    .tc-lp-del{color:#c0392b}.tc-lp-del:hover{background:#fdecea;border-color:#f3c6c1}
+    .tc-lp-addend{display:block;width:calc(100% - 6px);margin:4px 3px 2px;border:1px dashed #cdbff0;background:#faf8fe;color:#5f3ec0;cursor:pointer;font:12px Arial;border-radius:5px;padding:5px}.tc-lp-addend:hover{background:#f1ebfb}
+    .tc-lp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
+    .tc-lp-cnt{flex:1;font:11px Arial;color:#777}
+    .tc-lp-cnt.ok{color:#2e7d32}.tc-lp-cnt.warn{color:#b26a00}.tc-lp-cnt.bad{color:#c62828;font-weight:bold}
+    .tc-lp-acts{display:flex;gap:8px}
     .tc-lp-cancel{cursor:pointer;border:1px solid #ccc;background:#fff;font:12px Arial;border-radius:4px;padding:4px 12px}
     .tc-lp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:4px 12px}.tc-lp-ok:hover:not(:disabled){background:#e6f6e6}.tc-lp-ok:disabled{opacity:.5;cursor:not-allowed}
     .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
@@ -3083,19 +3085,16 @@ try {
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
       <div class="tc-lp-hd"><span class="tc-lp-t">Parse track lengths</span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
-      <div class="tc-lp-in">
-        <textarea class="tc-lp-ta" rows="3" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
-        <button type="button" class="tc-lp-clip" title="Read the clipboard (may need permission; otherwise just paste into the box)">📋 From clipboard</button>
+      <div class="tc-lp-body">
+        <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
+        <div class="tc-lp-list"></div>
       </div>
-      <div class="tc-lp-cnt"></div>
-      <div class="tc-lp-list"></div>
-      <div class="tc-lp-ft"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></div>`;
+      <div class="tc-lp-ft"><span class="tc-lp-cnt"></span><span class="tc-lp-acts"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></span></div>`;
     document.body.appendChild(p);
-
-    // position near the toolbar trigger (fall back to centred)
-    const trig = document.querySelector('.tc-opt[data-tool="lengthparser"]') || document.getElementById('tc-bar');
-    if (trig) { const r = trig.getBoundingClientRect(), ph = p.offsetHeight || 300; let top = r.bottom + 6; if (top + ph > innerHeight - 8) top = Math.max(8, r.top - 6 - ph); p.style.left = Math.max(8, Math.min(r.left, innerWidth - (p.offsetWidth || 420) - 8)) + 'px'; p.style.top = top + 'px'; }
-    else { p.style.left = Math.max(8, (innerWidth - 420) / 2) + 'px'; p.style.top = '90px'; }
+    // centred (then drag by the header to move)
+    const cw = p.offsetWidth || 640, ch = p.offsetHeight || 460;
+    p.style.left = Math.max(8, Math.round((innerWidth - cw) / 2)) + 'px';
+    p.style.top = Math.max(8, Math.round((innerHeight - ch) / 2)) + 'px';
 
     const $ = s => p.querySelector(s);
     const ta = $('.tc-lp-ta'), listEl = $('.tc-lp-list'), cntEl = $('.tc-lp-cnt'), okBtn = $('.tc-lp-ok');
@@ -3105,38 +3104,35 @@ try {
     function render() {
       const nT = tracks().length;
       listEl.innerHTML = '';
-      const addRow = at => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-lp-add'; b.title = 'insert a length here'; b.textContent = '+'; b.onclick = () => { items.splice(at, 0, { value: '', raw: '' }); render(); const inp = listEl.querySelectorAll('.tc-lp-val')[at]; inp && inp.focus(); }; return b; };
-      listEl.appendChild(addRow(0));
       items.forEach((it, i) => {
         const row = document.createElement('div'); row.className = 'tc-lp-row';
-        const ok = lpValid(it.value);
-        row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? trackTitle(i) : 'no track — will be ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
-        const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tc-lp-val' + (ok ? '' : ' bad'); inp.value = it.value; inp.title = it.raw ? ('detected: ' + it.raw) : '';
-        inp.oninput = () => { it.value = inp.value; const good = lpValid(it.value); inp.classList.toggle('bad', !good); refreshFoot(); };
-        const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.title = 'delete (rows below shift up)'; del.textContent = '✕'; del.onclick = () => { items.splice(i, 1); render(); };
-        row.append(inp, del);
+        row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? (trackTitle(i) || '') : 'no track — ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
+        const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tc-lp-val' + (lpValid(it.value) ? '' : ' bad'); inp.value = it.value; inp.title = it.raw ? ('detected: ' + it.raw) : '';
+        inp.oninput = () => { it.value = inp.value; inp.classList.toggle('bad', !lpValid(inp.value)); refreshFoot(); };   // clears the red the moment it's valid
+        const add = document.createElement('button'); add.type = 'button'; add.className = 'tc-lp-add'; add.textContent = '+'; add.title = 'insert a length below (rows shift down)';
+        add.onclick = () => { items.splice(i + 1, 0, { value: '', raw: '' }); render(); listEl.querySelectorAll('.tc-lp-val')[i + 1]?.focus(); };
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.textContent = '✕'; del.title = 'delete (rows below shift up)';
+        del.onclick = () => { items.splice(i, 1); render(); };
+        row.append(inp, add, del);
         listEl.appendChild(row);
-        listEl.appendChild(addRow(i + 1));
       });
+      const end = document.createElement('button'); end.type = 'button'; end.className = 'tc-lp-addend';
+      end.textContent = items.length ? '+ add length' : '+ add a length (or paste into the box on the left)';
+      end.onclick = () => { items.push({ value: '', raw: '' }); render(); const all = listEl.querySelectorAll('.tc-lp-val'); all[all.length - 1]?.focus(); };
+      listEl.appendChild(end);
       refreshFoot();
     }
     function refreshFoot() {
       const nT = tracks().length, n = items.length, bad = items.filter(it => !lpValid(it.value)).length;
       cntEl.className = 'tc-lp-cnt' + (bad ? ' bad' : n === nT ? ' ok' : n ? ' warn' : '');
-      cntEl.textContent = !n ? `Paste text above — ${nT} track${nT !== 1 ? 's' : ''} in Medium ${curMi + 1}`
+      cntEl.textContent = !n ? `${nT} track${nT !== 1 ? 's' : ''} in Medium ${curMi + 1}`
         : `${n} length${n !== 1 ? 's' : ''} ↔ ${nT} track${nT !== 1 ? 's' : ''}` + (bad ? ` · ${bad} invalid — fix or delete` : n !== nT ? ' · count mismatch' : '');
       okBtn.disabled = !n || bad > 0;
       okBtn.textContent = `Apply ${Math.min(n, nT)} to Medium ${curMi + 1}`;
     }
-    const reparse = () => { items = lpParse(ta.value); render(); };
-
-    ta.oninput = reparse;
-    $('.tc-lp-clip').onclick = () => {
-      if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => { ta.value = t; reparse(); ta.focus(); }).catch(() => toast('Clipboard blocked — paste into the box instead'));
-      else toast('Clipboard unavailable — paste into the box instead');
-    };
+    ta.oninput = () => { items = lpParse(ta.value); render(); };
     const medEl = $('.tc-lp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
-    const close = () => { p.remove(); document.removeEventListener('mousedown', onDown, true); };
+    const close = () => p.remove();
     function commit() {
       const nT = tracks().length, n = Math.min(items.length, nT);
       if (!items.length || items.some(it => !lpValid(it.value))) return;
@@ -3148,10 +3144,17 @@ try {
     }
     $('.tc-lp-ok').onclick = commit;
     $('.tc-lp-cancel').onclick = $('.tc-lp-x').onclick = close;
+    // Esc / Ctrl+Enter only — does NOT dismiss on an outside click (#455.6)
     p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); commit(); } };
-    // dismiss on outside mousedown, swallowing the trailing click (#305)
-    function onDown(e) { if (p.contains(e.target)) return; e.preventDefault(); e.stopPropagation(); const swallow = ev => { ev.preventDefault(); ev.stopPropagation(); document.removeEventListener('click', swallow, true); }; document.addEventListener('click', swallow, true); close(); }
-    setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
+    // draggable by the header
+    $('.tc-lp-hd').onmousedown = e => {
+      if (e.target.closest('button, select')) return;
+      e.preventDefault();
+      const r = p.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
+      const mv = ev => { p.style.left = Math.max(0, Math.min(ev.clientX - ox, innerWidth - p.offsetWidth)) + 'px'; p.style.top = Math.max(0, Math.min(ev.clientY - oy, innerHeight - p.offsetHeight)) + 'px'; };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    };
     render();
     setTimeout(() => ta.focus(), 0);
   }
