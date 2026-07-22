@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.22.123735
+// @version      2026.7.22.143246
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1696,12 +1696,25 @@
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
     /* #455 track length parser panel — centred, draggable, textarea | list */
-    .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:640px;height:64vh;min-width:460px;min-height:280px;max-width:92vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
+    .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:832px;height:64vh;min-width:520px;min-height:300px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
     .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
+    .tc-lp-back{border:none;background:none;cursor:pointer;font-size:16px;color:#888;padding:0 2px;line-height:1}.tc-lp-back:hover{color:#5f3ec0}
     .tc-lp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
     .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444;cursor:default}
     .tc-lp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-lp-x:hover{color:#333}
-    .tc-lp-body{flex:1;min-height:0;display:flex;gap:8px;padding:8px 10px}
+    .tc-lp-mid{flex:1;min-height:0}
+    /* start view — three source options */
+    .tc-lp-mid.tc-lp-choose{display:flex;flex-direction:column;gap:12px;padding:22px 24px;justify-content:center}
+    .tc-lp-opt{display:flex;align-items:center;gap:14px;text-align:left;cursor:pointer;border:1px solid #d8cdf0;background:#faf8fe;border-radius:8px;padding:14px 16px}.tc-lp-opt:hover{background:#f1ebfb;border-color:#c3aef0}
+    .tc-lp-oi{font-size:26px;line-height:1}
+    .tc-lp-otx{display:flex;flex-direction:column;gap:2px}.tc-lp-otx b{font:700 14px Arial;color:#3d2a70}.tc-lp-otx span{font:12px Arial;color:#777}
+    /* external-link picker */
+    .tc-lp-mid.tc-lp-links{display:flex;flex-direction:column;gap:6px;padding:14px 16px;overflow:auto}
+    .tc-lp-linkhdr{font:12px Arial;color:#555;margin-bottom:4px}
+    .tc-lp-link{display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #d8cdf0;background:#fff;border-radius:6px;padding:9px 12px;font:12px ui-monospace,Consolas,monospace;color:#3d2a70;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tc-lp-link:hover{background:#f7f4fd}
+    .tc-lp-linkstatus{font:12px Arial;color:#777;padding:16px 4px;text-align:center}.tc-lp-linkstatus.err{color:#c62828}
+    /* parse view */
+    .tc-lp-mid.tc-lp-body{display:flex;gap:8px;padding:8px 10px}
     .tc-lp-ta{flex:0 0 45%;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
     .tc-lp-list{flex:1;min-width:0;overflow:auto;border:1px solid #eee;border-radius:5px;padding:3px}
     .tc-lp-row{display:flex;align-items:center;gap:6px;padding:2px 3px;border-radius:3px}.tc-lp-row:hover{background:#faf8fe}
@@ -3008,37 +3021,129 @@
   }
   // A valid MB length: m:ss (ss<60; minutes unbounded) or h:mm:ss (mm<60, ss<60).
   const lpValid = v => /^\d+:[0-5]\d$/.test(String(v).trim()) || /^\d+:[0-5]\d:[0-5]\d$/.test(String(v).trim());
+  // #455.1 fetch an external page's HTML (any host — @connect *) via GM.
+  function lpFetchHtml(url) {
+    return new Promise((resolve, reject) => {
+      const gmx = (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || (typeof GM !== 'undefined' && GM && GM.xmlHttpRequest);
+      if (!gmx) { reject(new Error('no GM_xmlhttpRequest')); return; }
+      try { gmx({ method: 'GET', url, timeout: 20000,
+        onload: r => (r.status >= 200 && r.status < 400) ? resolve(r.responseText || '') : reject(new Error('HTTP ' + r.status)),
+        onerror: () => reject(new Error('fetch failed')), ontimeout: () => reject(new Error('timeout')) }); }
+      catch (e) { reject(e); }
+    });
+  }
+  // #455.1 pull the tracklist text out of fetched HTML: the SMALLEST element whose text
+  // still holds at least `want` durations (trims nav/footer noise), else the whole body.
+  function lpExtractFromHtml(html, want) {
+    let doc; try { doc = new DOMParser().parseFromString(html, 'text/html'); } catch (e) { return ''; }
+    if (!doc || !doc.body) return '';
+    doc.querySelectorAll('script,style,noscript,svg').forEach(e => e.remove());
+    // textContent glues adjacent cells/rows ("12Song 1213:55") — durations lose their word
+    // boundary and stop matching. Insert separators: table cells → space, block/rows → newline.
+    doc.querySelectorAll('td,th').forEach(e => e.append(document.createTextNode(' ')));
+    doc.querySelectorAll('tr,li,p,div,br,h1,h2,h3,h4,h5,h6,section,article').forEach(e => e.append(document.createTextNode('\n')));
+    const count = t => (String(t).match(LP_DUR_RE) || []).length;
+    let best = doc.body, bestLen = (doc.body.textContent || '').length + 1;
+    if (want > 0) for (const el of doc.body.querySelectorAll('*')) {
+      const t = el.textContent || ''; if (t.length > bestLen) continue;
+      if (count(t) >= want) { best = el; bestLen = t.length; }
+    }
+    return (best.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{2,}/g, '\n');
+  }
+  // #455.1 external links to offer: the release's link rows (Release-Info / relationships
+  // tab), else — for a saved release — its url relationships from the web service.
+  async function lpExternalLinks() {
+    const dom = (typeof linkRows === 'function' ? linkRows() : []).map(l => l.url).filter(Boolean);
+    if (dom.length) return [...new Set(dom)];
+    const gid = (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1];
+    if (!gid) return [];
+    try { const j = await fetch(`${ORIGIN}/ws/2/release/${gid}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); return [...new Set((j.relations || []).map(r => r.url && r.url.resource).filter(Boolean))]; }
+    catch (e) { return []; }
+  }
+  // #455.2 append the source URL to the release edit note (React-safe native setter).
+  function lpNoteSource(url) {
+    const ta = document.getElementById('edit-note-text'); if (!ta || !url) return;
+    const line = 'Track lengths from ' + url;
+    const cur = ta.value || ''; if (cur.includes(line)) return;
+    const kept = cur.replace(/\s+$/, '');
+    const val = kept ? kept + '\n' + line : line;
+    try { Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(ta, val); } catch (e) { ta.value = val; }
+    ta.dispatchEvent(new Event('input', { bubbles: true })); ta.dispatchEvent(new Event('change', { bubbles: true }));
+  }
 
   function openLengthParser(mi) {
     document.getElementById('tc-lppop')?.remove();
     let curMi = (mi != null ? mi : toolMedium());
-    let items = [];   // [{ value, raw }] — the editable list (item i → track i)
+    let items = [];        // [{ value, raw }] — the editable list (item i → track i)
+    let sourceUrl = null;  // set when the lengths came from an external link → stamped in the edit note
 
     const p = document.createElement('div'); p.id = 'tc-lppop'; p.className = 'tc-lppop';
     const medSel = mediums().length > 1
       ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-lp-hd"><span class="tc-lp-t">Parse track lengths</span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
-      <div class="tc-lp-body">
-        <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
-        <div class="tc-lp-list"></div>
-      </div>
-      <div class="tc-lp-ft"><span class="tc-lp-cnt"></span><span class="tc-lp-acts"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></span></div>`;
+      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" title="Back" style="display:none">‹</button><span class="tc-lp-t">Parse track lengths</span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-lp-mid"></div>
+      <div class="tc-lp-ft" style="display:none"><span class="tc-lp-cnt"></span><span class="tc-lp-acts"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></span></div>`;
     document.body.appendChild(p);
-    // centred (then drag by the header to move)
-    const cw = p.offsetWidth || 640, ch = p.offsetHeight || 460;
+    const cw = p.offsetWidth || 832, ch = p.offsetHeight || 460;
     p.style.left = Math.max(8, Math.round((innerWidth - cw) / 2)) + 'px';
     p.style.top = Math.max(8, Math.round((innerHeight - ch) / 2)) + 'px';
 
     const $ = s => p.querySelector(s);
-    const ta = $('.tc-lp-ta'), listEl = $('.tc-lp-list'), cntEl = $('.tc-lp-cnt'), okBtn = $('.tc-lp-ok');
+    const mid = $('.tc-lp-mid'), ft = $('.tc-lp-ft'), backBtn = $('.tc-lp-back');
     const tracks = () => u(mediums()[curMi].tracks) || [];
     const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
+    const close = () => p.remove();
 
+    // ── start view: three sources ──
+    function showStart() {
+      sourceUrl = null; ft.style.display = 'none'; backBtn.style.display = 'none';
+      mid.className = 'tc-lp-mid tc-lp-choose';
+      mid.innerHTML = `
+        <button type="button" class="tc-lp-opt" data-o="text"><span class="tc-lp-oi">📝</span><span class="tc-lp-otx"><b>Enter text</b><span>Paste or type a tracklist and pick out the durations</span></span></button>
+        <button type="button" class="tc-lp-opt" data-o="clip"><span class="tc-lp-oi">📋</span><span class="tc-lp-otx"><b>From clipboard</b><span>Read whatever is on your clipboard right now</span></span></button>
+        <button type="button" class="tc-lp-opt" data-o="link"><span class="tc-lp-oi">🔗</span><span class="tc-lp-otx"><b>From an external link</b><span>Fetch a page linked on this release and read its text</span></span></button>`;
+      mid.querySelector('[data-o="text"]').onclick = () => showParse();
+      mid.querySelector('[data-o="clip"]').onclick = () => {
+        if (navigator.clipboard && navigator.clipboard.readText)
+          navigator.clipboard.readText().then(t => { showParse(); const ta = $('.tc-lp-ta'); ta.value = t; items = lpParse(t); render(); }).catch(() => { showParse(); toast('Clipboard blocked — paste into the box'); });
+        else { showParse(); toast('Clipboard unavailable — paste into the box'); }
+      };
+      mid.querySelector('[data-o="link"]').onclick = () => showLinks();
+    }
+
+    // ── external-link picker ──
+    async function showLinks() {
+      backBtn.style.display = ''; ft.style.display = 'none';
+      mid.className = 'tc-lp-mid tc-lp-links'; mid.innerHTML = `<div class="tc-lp-linkstatus">Loading external links…</div>`;
+      const urls = await lpExternalLinks();
+      if (!urls.length) { mid.innerHTML = `<div class="tc-lp-linkstatus">No external links on this release — add one (e.g. the Bandcamp page) or use “Enter text”.</div>`; return; }
+      mid.innerHTML = `<div class="tc-lp-linkhdr">Pick a page to read track lengths from:</div>` + urls.map(x => `<button type="button" class="tc-lp-link" data-u="${esc(x)}">${esc(x)}</button>`).join('');
+      mid.querySelectorAll('.tc-lp-link').forEach(b => b.onclick = () => fetchLink(b.dataset.u));
+    }
+    async function fetchLink(url) {
+      mid.className = 'tc-lp-mid tc-lp-links'; mid.innerHTML = `<div class="tc-lp-linkstatus">Fetching the page…<br><small>${esc(url)}</small></div>`;
+      let html; try { html = await lpFetchHtml(url); }
+      catch (e) { mid.innerHTML = `<div class="tc-lp-linkstatus err">Couldn't fetch that page (${esc(e.message)}). Try another link or use “Enter text”.</div><button type="button" class="tc-lp-link" data-back="1">‹ Back to links</button>`; mid.querySelector('[data-back]').onclick = showLinks; return; }
+      const text = lpExtractFromHtml(html, tracks().length);
+      sourceUrl = url;
+      showParse(); const ta = $('.tc-lp-ta'); ta.value = text; items = lpParse(text); render();
+      if (!items.length) toast('No durations found on that page — try another link or paste the text');
+    }
+
+    // ── parse view: textarea | editable list ──
+    function showParse() {
+      backBtn.style.display = ''; ft.style.display = '';
+      mid.className = 'tc-lp-mid tc-lp-body';
+      mid.innerHTML = `<textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea><div class="tc-lp-list"></div>`;
+      const ta = $('.tc-lp-ta');
+      ta.oninput = () => { sourceUrl = null; items = lpParse(ta.value); render(); };   // typing overrides an external source
+      render(); setTimeout(() => ta.focus(), 0);
+    }
     function render() {
-      const nT = tracks().length;
-      listEl.innerHTML = '';
+      const listEl = $('.tc-lp-list'); if (!listEl) return;
+      const nT = tracks().length; listEl.innerHTML = '';
       items.forEach((it, i) => {
         const row = document.createElement('div'); row.className = 'tc-lp-row';
         row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? (trackTitle(i) || '') : 'no track — ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
@@ -3058,29 +3163,32 @@
       refreshFoot();
     }
     function refreshFoot() {
+      const cntEl = $('.tc-lp-cnt'), okBtn = $('.tc-lp-ok');
       const nT = tracks().length, n = items.length, bad = items.filter(it => !lpValid(it.value)).length;
       cntEl.className = 'tc-lp-cnt' + (bad ? ' bad' : n === nT ? ' ok' : n ? ' warn' : '');
-      cntEl.textContent = !n ? `${nT} track${nT !== 1 ? 's' : ''} in Medium ${curMi + 1}`
-        : `${n} length${n !== 1 ? 's' : ''} ↔ ${nT} track${nT !== 1 ? 's' : ''}` + (bad ? ` · ${bad} invalid — fix or delete` : n !== nT ? ' · count mismatch' : '');
+      cntEl.textContent = (!n ? `${nT} track${nT !== 1 ? 's' : ''} in Medium ${curMi + 1}`
+        : `${n} length${n !== 1 ? 's' : ''} ↔ ${nT} track${nT !== 1 ? 's' : ''}` + (bad ? ` · ${bad} invalid — fix or delete` : n !== nT ? ' · count mismatch' : ''))
+        + (sourceUrl ? ' · from external link' : '');
       okBtn.disabled = !n || bad > 0;
       okBtn.textContent = `Apply ${Math.min(n, nT)} to Medium ${curMi + 1}`;
     }
-    ta.oninput = () => { items = lpParse(ta.value); render(); };
-    const medEl = $('.tc-lp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
-    const close = () => p.remove();
     function commit() {
       const nT = tracks().length, n = Math.min(items.length, nT);
       if (!items.length || items.some(it => !lpValid(it.value))) return;
       for (let i = 0; i < n; i++) setLength({ mi: curMi, ti: i }, items[i].value);
+      if (sourceUrl) lpNoteSource(sourceUrl);   // #455.2 credit the source in the edit note
       rebuild(true);
-      Log.info('length parser: applied', n, 'track length(s) on medium', curMi + 1);
+      Log.info('length parser: applied', n, 'track length(s) on medium', curMi + 1, sourceUrl ? ('from ' + sourceUrl) : '');
       toast(`Applied ${n} track length${n !== 1 ? 's' : ''}`);
       close();
     }
+    // static header/footer wiring
     $('.tc-lp-ok').onclick = commit;
     $('.tc-lp-cancel').onclick = $('.tc-lp-x').onclick = close;
-    // Esc / Ctrl+Enter only — does NOT dismiss on an outside click (#455.6)
-    p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); commit(); } };
+    backBtn.onclick = showStart;
+    const medEl = $('.tc-lp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; if ($('.tc-lp-list')) render(); };
+    // Esc / Ctrl+Enter only — never dismisses on an outside click (#455.6)
+    p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && $('.tc-lp-list')) { e.preventDefault(); commit(); } };
     // draggable by the header
     $('.tc-lp-hd').onmousedown = e => {
       if (e.target.closest('button, select')) return;
@@ -3090,8 +3198,7 @@
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     };
-    render();
-    setTimeout(() => ta.focus(), 0);
+    showStart();
   }
   function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'lengthparser') openLengthParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
   function runAction(a) {
@@ -7310,7 +7417,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it

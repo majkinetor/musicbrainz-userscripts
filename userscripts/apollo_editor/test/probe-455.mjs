@@ -42,9 +42,36 @@ const unit = await page.evaluate(() => {
 log('parse messy(bandcamp):', JSON.stringify(unit.messy));
 log('parse traps:', JSON.stringify(unit.traps), '| hours:', JSON.stringify(unit.hours));
 
-// 2) open the panel, paste, edit-invalid, delete, insert, apply
+// 1b) smart extraction from fetched HTML — the tightest container with >= N durations,
+//     ignoring nav/footer noise blocks that have fewer.
+const extract = await page.evaluate(() => {
+  const A = window.__apolloEditor;
+  const rows = Array.from({ length: 12 }, (_, i) => `<tr><td>${i + 1}</td><td>Song ${i + 1}</td><td>${i + 2}:${String((i * 5) % 60).padStart(2, '0')}</td></tr>`).join('');
+  const html = `<html><body><nav>Home 0:00 Cart 9:99</nav><main><table>${rows}</table></main><footer>2:00 min read · 1:30</footer></body></html>`;
+  const text = A.lpExtractFromHtml(html, 12);
+  return { vals: A.lpParse(text).map(x => x.value), hasNav: /9:99/.test(text) };
+});
+log('extract from HTML:', JSON.stringify(extract.vals), '| pulled in nav noise:', extract.hasNav);
+
+// 1c) edit-note stamping
+const note = await page.evaluate(() => {
+  const A = window.__apolloEditor;
+  let ta = document.getElementById('edit-note-text');
+  if (!ta) { ta = document.createElement('textarea'); ta.id = 'edit-note-text'; document.body.appendChild(ta); }
+  ta.value = 'Existing note.';
+  A.lpNoteSource('https://example.bandcamp.com/album/x');
+  const once = ta.value;
+  A.lpNoteSource('https://example.bandcamp.com/album/x');   // idempotent
+  return { text: ta.value, dupd: ta.value !== once };
+});
+log('edit note after stamp:', JSON.stringify(note.text));
+
+// 2) open the panel — starts on the 3-option chooser; pick "Enter text", then paste/edit/apply
 await page.evaluate(() => window.__apolloEditor.openLengthParser(0));
-await page.waitForSelector('#tc-lppop', { timeout: 5000 });
+await page.waitForSelector('#tc-lppop .tc-lp-choose', { timeout: 5000 });
+const startOpts = await page.evaluate(() => [...document.querySelectorAll('#tc-lppop .tc-lp-opt')].map(b => b.dataset.o));
+await page.evaluate(() => document.querySelector('#tc-lppop [data-o="text"]').click());
+await page.waitForSelector('#tc-lppop .tc-lp-ta', { timeout: 5000 });
 const ui = await page.evaluate(async () => {
   const p = document.getElementById('tc-lppop');
   const ta = p.querySelector('.tc-lp-ta'), ok = p.querySelector('.tc-lp-ok');
@@ -98,6 +125,9 @@ check(JSON.stringify(unit.messy) === JSON.stringify(['2:07', '5:50', '6:30']), '
 check(JSON.stringify(unit.traps) === JSON.stringify(['3:45']), 'trap text → only the real duration');
 check(JSON.stringify(unit.hours) === JSON.stringify(['1:23:45']), 'hours kept as h:mm:ss');
 check(unit.validGood && unit.validBad, 'lpValid: m:ss / h:mm:ss valid; 99:99 / 1:99:45 / 1:2 invalid');
+check(extract.vals.length === 12 && !extract.hasNav, `smart extraction pulls the 12 tracklist durations, skips nav/footer noise (got ${extract.vals.length}, nav=${extract.hasNav})`);
+check(/Existing note\./.test(note.text) && /Track lengths from https:\/\/example\.bandcamp\.com/.test(note.text) && !note.dupd, 'edit note gets the source line, keeps the existing note, idempotent (#455.2)');
+check(JSON.stringify(startOpts) === JSON.stringify(['text', 'clip', 'link']), 'start view offers the 3 sources: enter text / clipboard / external link (#455.1)');
 check(ui.afterParse.length === ui.nT && ui.okAfterParse, 'panel parsed one row per track, Apply enabled');
 check(ui.noClipButton, 'the From-clipboard button was removed (#455.5)');
 check(ui.okWhenInvalid && ui.firstBad, 'an invalid time flags the row and disables Apply');

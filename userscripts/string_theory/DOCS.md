@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-22 12:37 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-22 14:32 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -196,15 +196,21 @@ Set column sizes to predefined variants (Fit, Centered, Default).
 
 #### Parse track lengths
 
-Fill a medium's track **lengths** from any text you paste — the native track parser wants a specific format, but lengths copied off a site (Bandcamp, foobar2000, …) rarely fit (track numbers land on their own lines, etc.). This just **greps every duration out of the text** and lets you review the result before writing anything.
+Fill a medium's track **lengths** from any text — the native track parser wants a specific format, but lengths copied off a site (Bandcamp, foobar2000, …) rarely fit (track numbers land on their own lines, etc.). This just **greps every duration out of the text** and lets you review the result before writing anything.
 
-- **Paste** a tracklist into the box (or click **📋 From clipboard**). It detects everything shaped like a time — `5:50`, `1′23″`, `1'23"`, `1:02:03` — and **ignores** track numbers, titles, years and other noise. Nothing else has to match a format.
-- The detected times appear as an **editable list**, each next to the track it will fill (item 1 → track 1, …). Because alignment is by order:
-  - **✕** deletes a row (everything below shifts up);
-  - **+** (between rows / at the ends) inserts a length anywhere (everything below shifts down) — for a duration the parser couldn't see (e.g. a single-digit-seconds `1:2`);
-  - click a value to **edit** it.
-- **Invalid** times (e.g. `99:99`) are highlighted red and **must be fixed or deleted** — **Apply** stays disabled until the list is clean. A counter shows *N lengths ↔ M tracks*.
-- **Apply** writes the lengths to the medium's tracks in order (nothing is written until then; **Esc** cancels, **Ctrl+Enter** applies). On a multi-medium release, pick the medium in the panel header.
+It opens on a **three-source chooser**:
+
+- **📝 Enter text** — paste or type a tracklist into the box.
+- **📋 From clipboard** — reads the clipboard directly.
+- **🔗 From an external link** — pick a page linked on the release; it **fetches that page and reads its text**. It narrows to the smallest part of the page that still holds at least a full tracklist's worth of durations, so nav/player/footer noise is skipped (e.g. it pulls all 20 lengths straight off a Bandcamp album page). When you Apply, the **source URL is added to the edit note**.
+
+Whichever source, it detects everything shaped like a time — `5:50`, `1′23″`, `1'23"`, `1:02:03` — and **ignores** track numbers, titles, years and other noise. The detected times appear as an **editable list**, each next to the track it will fill (item 1 → track 1, …). Because alignment is by order:
+
+- **✕** deletes a row (everything below shifts up);
+- **+** on a row inserts a length below it (everything shifts down) — for a duration the parser couldn't see (e.g. a single-digit-seconds `1:2`); **+ add length** appends;
+- click a value to **edit** it.
+
+**Invalid** times (e.g. `99:99`) are highlighted red and **must be fixed or deleted** — **Apply** stays disabled until the list is clean. A counter shows *N lengths ↔ M tracks*. **Apply** writes the lengths to the medium's tracks in order (nothing is written until then; **Esc** cancels, **Ctrl+Enter** applies). The panel is **centred, draggable by its header, and resizable**; on a multi-medium release, pick the medium in the header.
 
 <!-- source: discussion #451 / issue #455 -->
 
