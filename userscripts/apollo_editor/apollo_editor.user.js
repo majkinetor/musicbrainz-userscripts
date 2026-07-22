@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.22.220217
+// @version      2026.7.22.221623
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1377,7 +1377,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.22.220217';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.22.221623';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1732,6 +1732,38 @@
     .tc-lp-acts{display:flex;gap:8px}
     .tc-lp-cancel{cursor:pointer;border:1px solid #ccc;background:#fff;font:12px Arial;border-radius:4px;padding:4px 12px}
     .tc-lp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:4px 12px}.tc-lp-ok:hover:not(:disabled){background:#e6f6e6}.tc-lp-ok:disabled{opacity:.5;cursor:not-allowed}
+    /* #456 pattern Track parser */
+    .tc-tpppop{position:fixed;top:9vh;left:50%;transform:translateX(-50%);z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:920px;height:70vh;min-width:640px;min-height:340px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
+    .tc-tpp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
+    .tc-tpp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
+    .tc-tpp-med,.tc-tpp-med1{font:12px Arial;color:#444}
+    .tc-tpp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-tpp-x:hover{color:#333}
+    .tc-tpp-pat{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ebfa;flex-wrap:wrap}
+    .tc-tpp-plbl{font:700 11px Arial;color:#8a7fae}
+    .tc-tpp-pi{flex:1;min-width:160px;font:13px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:5px 8px;color:#3d2a70}
+    .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
+    .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-tpp-body{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 10px}
+    .tc-tpp-ta{flex:0 0 22%;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
+    .tc-tpp-tblwrap{flex:1;min-height:0;overflow:auto;border:1px solid #eee;border-radius:5px}
+    .tc-tpp-tbl{width:100%;border-collapse:collapse;font-size:12px}
+    .tc-tpp-tbl th{position:sticky;top:0;background:#f7f4fc;text-align:left;font:600 10px Arial;letter-spacing:.03em;text-transform:uppercase;color:#8a7fae;padding:4px 6px;border-bottom:1px solid #e6ddf6}
+    .tc-tpp-tbl td{padding:2px 6px;border-bottom:1px solid #f3f0fa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+    .tc-tpp-tr.notrk{opacity:.5}
+    .tc-tpp-dot{width:14px;padding-left:8px!important}.tc-tpp-dot span{display:inline-block;width:8px;height:8px;border-radius:50%}
+    .tc-tpp-pcell{width:120px}
+    .tc-tpp-ov{width:112px;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 5px;color:#5f3ec0;background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
+    .tc-tpp-raw{color:#666;font:11px ui-monospace,Consolas,monospace;max-width:260px}
+    .tc-tpp-empty{color:#ccc;font-style:italic}
+    .tc-tpp-c{color:#222}
+    .tc-tpp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
+    .tc-tpp-cnt{flex:1;font:11px Arial;color:#777}.tc-tpp-cnt.ok{color:#2e7d32}.tc-tpp-cnt.warn{color:#b26a00}
+    .tc-tpp-acts{display:flex;gap:0;position:relative}
+    .tc-tpp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px 0 0 4px;padding:4px 12px}.tc-tpp-ok:hover:not(:disabled){background:#e6f6e6}.tc-tpp-ok:disabled{opacity:.5;cursor:not-allowed}
+    .tc-tpp-menu{cursor:pointer;border:1px solid #a9dca9;border-left:none;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:0 4px 4px 0;padding:4px 7px}.tc-tpp-menu:hover:not(:disabled){background:#e6f6e6}.tc-tpp-menu:disabled{opacity:.5;cursor:not-allowed}
+    .tc-tpp-mpop{position:absolute;bottom:calc(100% + 4px);right:0;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;min-width:200px;z-index:5}
+    .tc-tpp-mi{display:block;width:100%;text-align:left;border:none;background:none;cursor:pointer;font:12px Arial;color:#333;padding:6px 12px}.tc-tpp-mi:hover{background:#f1ebfb;color:#5f3ec0}
+    .tc-tpp-mhr{height:1px;background:#eee;margin:4px 0}
     .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
     /* #152/#375: Search & Replace — RE toggle, search caret, invalid-regex flag, Saved & History popup */
     .tc-srbtn{cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#6f42c1;font:bold 11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}
@@ -2996,7 +3028,214 @@
   // medium-scoped tools — each acts on one medium (chosen via the inline medium combo)
   async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists on medium', mi + 1); }
   function resetNumbers(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } finally { _selfEdit = false; } rebuild(); }
-  function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
+  /* ── #456 pattern Track parser ─────────────────────────────────────────────
+   * MB's native parser is rigid, so we roll our own. A one-line PATTERN describes
+   * a tracklist line; we compile it to a regex and run every pasted line through
+   * it, filling only the fields the pattern declares. Tokens: # T A L M (+ _ skip),
+   * $X explicit, X[slice] positional (1-based; ~ = from end); separators match any
+   * of a list (- – — / :); literals are literal; whitespace is elastic; text fields
+   * are lazy (split-on-first) except the last which is greedy. Engine is unit-tested
+   * in test/pattern-engine.test.mjs — keep the two in sync. */
+  const TP_FIELDS = { '#': 'pos', 'T': 'title', 'A': 'artist', 'L': 'length', 'M': 'medium' };
+  const TP_DUR = '\\d{1,2}:\\d{2}(?::\\d{2})?';
+  const TP_SEPS = ['-', '–', '—', '/', ':'];
+  const TP_PRESETS = ['#. T', '# T L', '# A - T', '# A - T (L)', 'T L'];
+  let _tpPattern = '#. T';   // remembered across opens this session
+  const tpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tpUsable = out => !!out && Object.values(out).some(v => v && String(v).trim());
+  function tpTokenize(pattern, seps) {
+    const segs = [], sepSet = new Set(seps);
+    const isFieldLetter = c => c === '#' || c === 'M' || c === 'T' || c === 'A' || c === 'L';
+    const readSlice = (str, i) => {
+      if (str[i] !== '[') return null;
+      const m = /^\[(~?)(\d*)-?(\d*)\]/.exec(str.slice(i));
+      if (!m) return null;
+      const a = m[2] === '' ? null : parseInt(m[2], 10), b = m[3] === '' ? null : parseInt(m[3], 10);
+      const hadDash = /-/.test(m[0]);
+      return { slice: hadDash ? { a, b, fromEnd: m[1] === '~' } : { a, b: a, fromEnd: m[1] === '~' }, next: i + m[0].length };
+    };
+    for (let i = 0; i < pattern.length;) {
+      const c = pattern[i];
+      if (c === '$') {
+        const letter = pattern[i + 1];
+        if (isFieldLetter(letter)) { const sl = readSlice(pattern, i + 2); segs.push({ kind: 'field', field: TP_FIELDS[letter], slice: sl ? sl.slice : null }); i = sl ? sl.next : i + 2; continue; }
+        segs.push({ kind: 'lit', text: '$' }); i++; continue;
+      }
+      if (c === '_') { segs.push({ kind: 'skip' }); i++; continue; }
+      if (isFieldLetter(c)) {
+        const letterish = ch => ch && /[A-Za-z]/.test(ch);
+        if (!(letterish(pattern[i - 1]) || (c !== '#' && letterish(pattern[i + 1])))) {
+          const sl = readSlice(pattern, i + 1); segs.push({ kind: 'field', field: TP_FIELDS[c], slice: sl ? sl.slice : null }); i = sl ? sl.next : i + 1; continue;
+        }
+      }
+      if (sepSet.has(c)) { segs.push({ kind: 'sep' }); i++; continue; }
+      if (/\s/.test(c)) { let j = i; while (j < pattern.length && /\s/.test(pattern[j])) j++; segs.push({ kind: 'ws' }); i = j; continue; }
+      segs.push({ kind: 'lit', text: c }); i++;
+    }
+    return segs;
+  }
+  function tpCompile(pattern, opts = {}) {
+    const seps = opts.separators || TP_SEPS;
+    const segs = tpTokenize(pattern, seps);
+    const fieldSegs = segs.filter(s => s.kind === 'field');
+    const fields = new Set(fieldSegs.map(s => s.field));
+    const sliced = fieldSegs.filter(s => s.slice);
+    const sepClass = '(?:' + seps.map(tpEsc).join('|') + ')';
+    if (fieldSegs.length > 0 && sliced.length === fieldSegs.length) {   // slice-mode (all fields positional)
+      return { fields, exec(line) {
+        const s = String(line), out = {};
+        for (const seg of fieldSegs) {
+          const { a, b, fromEnd } = seg.slice; let start, end;
+          if (fromEnd) { const n = s.length; start = a == null ? 0 : n - a; end = b == null ? n : n - b + 1; }
+          else { start = (a == null ? 1 : a) - 1; end = b == null ? s.length : b; }
+          out[seg.field] = s.slice(Math.max(0, start), Math.max(0, end)).trim();
+        }
+        return tpUsable(out) ? out : null;
+      } };
+    }
+    const lastText = [...fieldSegs].reverse().find(s => s.field === 'title' || s.field === 'artist');
+    let re = '^\\s*';
+    for (const seg of segs) {
+      if (seg.kind === 'ws') re += '\\s+';
+      else if (seg.kind === 'lit') re += /\s/.test(seg.text) ? '\\s+' : tpEsc(seg.text);
+      else if (seg.kind === 'sep') re += '\\s*' + sepClass + '\\s*';
+      else if (seg.kind === 'skip') re += '.*?';
+      else if (seg.kind === 'field') {
+        const f = seg.field;
+        if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
+        else if (f === 'medium') re += '(\\d+)';
+        else if (f === 'length') re += '(' + TP_DUR + ')';
+        else re += seg === lastText ? '(.+)' : '(.+?)';
+      }
+    }
+    re += '\\s*$';
+    const rx = new RegExp(re), order = fieldSegs.map(s => s.field);
+    return { fields, exec(line) {
+      const m = rx.exec(String(line).trim()); if (!m) return null;
+      const out = {}; order.forEach((f, i) => { out[f] = (m[i + 1] || '').trim(); });
+      return tpUsable(out) ? out : null;
+    } };
+  }
+
+  function openParser(mi) { openTrackPatternParser(mi); }
+  function openTrackParserNative(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
+
+  function openTrackPatternParser(mi) {
+    document.getElementById('tc-tpppop')?.remove();
+    let curMi = (mi != null ? mi : toolMedium());
+    let rows = [];   // [{ raw, override }]
+    const tracks = () => u(mediums()[curMi].tracks) || [];
+    const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
+    const compiled = new Map();   // pattern string → compiled (cached)
+    const compileFor = ov => { const key = (ov || _tpPattern); if (!compiled.has(key)) { try { compiled.set(key, tpCompile(key, { separators: TP_SEPS })); } catch (e) { compiled.set(key, null); } } return compiled.get(key); };
+    const parseRow = r => { const c = compileFor(r.override && r.override.trim()); try { return c ? c.exec(r.raw) : null; } catch (e) { return null; } };
+
+    const p = document.createElement('div'); p.id = 'tc-tpppop'; p.className = 'tc-tpppop';
+    const medSel = mediums().length > 1
+      ? `<select class="tc-tpp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
+      : `<span class="tc-tpp-med1">Medium ${curMi + 1}</span>`;
+    p.innerHTML = `
+      <div class="tc-tpp-hd"><span class="tc-tpp-t">Track parser</span>${medSel}<button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-tpp-pat">
+        <span class="tc-tpp-plbl">Pattern</span>
+        <input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice">
+        <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
+      </div>
+      <div class="tc-tpp-body">
+        <textarea class="tc-tpp-ta" spellcheck="false" placeholder="Paste the tracklist — one track per line"></textarea>
+        <div class="tc-tpp-tblwrap"><table class="tc-tpp-tbl"><thead><tr><th></th><th>pattern</th><th>raw</th><th>#</th><th>artist</th><th>title</th><th>length</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="tc-tpp-ft"><span class="tc-tpp-cnt"></span><span class="tc-tpp-acts"><button type="button" class="tc-tpp-ok" disabled>Apply</button><button type="button" class="tc-tpp-menu" title="Apply options" disabled>▾</button></span></div>`;
+    document.body.appendChild(p);
+    const $ = s => p.querySelector(s);
+    const ta = $('.tc-tpp-ta'), tbody = $('.tc-tpp-tbl tbody'), patIn = $('.tc-tpp-pi');
+    const close = () => p.remove();
+
+    function syncRows() {
+      const lines = ta.value.split('\n');
+      // keep overrides aligned to line index across edits
+      rows = lines.map((raw, i) => ({ raw, override: (rows[i] && rows[i].override) || '' }))
+        .filter((r, i) => !(i === lines.length - 1 && r.raw.trim() === '' && lines.length > 1));
+    }
+    const DOT = { exact: '#2e7d32', over: '#b26a00', none: '#c62828' };
+    function render() {
+      const nT = tracks().length;
+      tbody.innerHTML = '';
+      rows.forEach((r, i) => {
+        const parsed = parseRow(r);
+        const state = !parsed ? 'none' : (r.override && r.override.trim() ? 'over' : 'exact');
+        const tr = document.createElement('tr'); tr.className = 'tc-tpp-tr' + (i >= nT ? ' notrk' : '');
+        const cell = v => `<td class="tc-tpp-c" title="${esc(v || '')}">${esc(v || '')}</td>`;
+        tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" title="${state === 'none' ? 'no match — adjust the pattern' : state === 'over' ? 'matched via a per-row pattern' : 'matched'}"></span></td>`
+          + `<td class="tc-tpp-pcell"><input class="tc-tpp-ov" spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"></td>`
+          + `<td class="tc-tpp-raw" title="${esc(r.raw)}">${esc(r.raw) || '<span class="tc-tpp-empty">(empty)</span>'}</td>`
+          + cell(parsed && parsed.pos) + cell(parsed && parsed.artist) + cell(parsed && parsed.title) + cell(parsed && parsed.length);
+        const ov = tr.querySelector('.tc-tpp-ov');
+        ov.oninput = () => { r.override = ov.value; const pr = parseRow(r); const st = !pr ? 'none' : (r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].title = v || ''; }); refreshFoot(); };
+        tbody.appendChild(tr);
+      });
+      refreshFoot();
+    }
+    function stats() {
+      const nT = tracks().length; let matched = 0, unmatched = 0;
+      rows.forEach(r => { if (r.raw.trim() === '') return; parseRow(r) ? matched++ : unmatched++; });
+      return { nT, matched, unmatched, n: matched + unmatched };
+    }
+    function refreshFoot() {
+      const s = stats(), cnt = $('.tc-tpp-cnt'), ok = $('.tc-tpp-ok'), menu = $('.tc-tpp-menu');
+      cnt.className = 'tc-tpp-cnt' + (s.unmatched ? ' warn' : s.matched ? ' ok' : '');
+      cnt.textContent = !s.n ? `${s.nT} track${s.nT !== 1 ? 's' : ''} in Medium ${curMi + 1} — paste a tracklist`
+        : `${s.matched} matched · ${s.unmatched} unmatched  →  ${s.nT} track${s.nT !== 1 ? 's' : ''}` + (s.n > s.nT ? ` (+${s.n - s.nT} would need new tracks)` : '');
+      ok.disabled = menu.disabled = !s.matched;
+      ok.textContent = `Apply ${Math.min(s.matched, s.nT)} → Medium ${curMi + 1}`;
+    }
+    // Apply captured fields (only the ones each row's pattern produced) to tracks in row order.
+    function apply(which, addMissing) {
+      const s = stats();
+      if (addMissing && s.n > s.nT) addTracks(curMi, s.n - s.nT);
+      const nT = tracks().length; let wrote = 0;
+      rows.forEach((r, i) => {
+        if (i >= nT) return; const pr = parseRow(r); if (!pr) return;
+        const entry = { mi: curMi, ti: i };
+        if ((which === 'all' || which === 'title') && pr.title != null && pr.title !== '') setTitle(entry, pr.title);
+        if ((which === 'all' || which === 'artist') && pr.artist != null && pr.artist !== '') { try { koTrack(curMi, i).artistCredit({ names: [{ artist: null, name: pr.artist, joinPhrase: '' }] }); } catch (e) { Log.warn('set artist failed', e.message); } }
+        if ((which === 'all' || which === 'length') && pr.length && lpValid(pr.length)) setLength(entry, pr.length);
+        if ((which === 'all' || which === 'pos') && pr.pos != null && pr.pos !== '') setNumber(entry, pr.pos);
+        wrote++;
+      });
+      rebuild(true);
+      Log.info('track parser: applied', which, 'from pattern', JSON.stringify(_tpPattern), 'to', wrote, 'row(s) on medium', curMi + 1);
+      toast(`Applied ${wrote} row${wrote !== 1 ? 's' : ''} to Medium ${curMi + 1}`);
+      close();
+    }
+    function openMenu() {
+      p.querySelector('.tc-tpp-mpop')?.remove();
+      const s = stats(); const m = document.createElement('div'); m.className = 'tc-tpp-mpop';
+      const item = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-tpp-mi'; b.textContent = label; b.onclick = () => { m.remove(); fn(); }; return b; };
+      m.append(item('Only titles', () => apply('title', false)), item('Only artists', () => apply('artist', false)), item('Only lengths', () => apply('length', false)), item('Only track #s', () => apply('pos', false)));
+      if (s.n > s.nT) { const hr = document.createElement('div'); hr.className = 'tc-tpp-mhr'; m.append(hr, item(`Add ${s.n - s.nT} track${s.n - s.nT !== 1 ? 's' : ''}, then apply all`, () => apply('all', true))); }
+      $('.tc-tpp-acts').appendChild(m);
+      const off = e => { if (!m.contains(e.target) && !e.target.closest('.tc-tpp-menu')) { m.remove(); document.removeEventListener('mousedown', off, true); } };
+      setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+    }
+
+    ta.oninput = () => { syncRows(); render(); };
+    patIn.oninput = () => { _tpPattern = patIn.value; compiled.clear(); render(); };
+    p.querySelectorAll('.tc-tpp-chip').forEach(c => c.onclick = () => { patIn.value = c.dataset.p; _tpPattern = c.dataset.p; compiled.clear(); render(); patIn.focus(); });
+    $('.tc-tpp-ok').onclick = () => apply('all', false);
+    $('.tc-tpp-menu').onclick = openMenu;
+    $('.tc-tpp-x').onclick = close;
+    const medEl = $('.tc-tpp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
+    p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!$('.tc-tpp-ok').disabled) apply('all', false); } };
+    $('.tc-tpp-hd').onmousedown = e => {
+      if (e.target.closest('button, select')) return; e.preventDefault();
+      const r = p.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
+      const mv = ev => { p.style.left = Math.max(0, Math.min(ev.clientX - ox, innerWidth - p.offsetWidth)) + 'px'; p.style.top = Math.max(0, Math.min(ev.clientY - oy, innerHeight - p.offsetHeight)) + 'px'; };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    };
+    render(); ta.focus();
+  }
 
   /* ── Track length parser (#455) ────────────────────────────────────────────
    * MB's native track parser wants a specific format; lengths copied off a site
@@ -7422,7 +7661,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
