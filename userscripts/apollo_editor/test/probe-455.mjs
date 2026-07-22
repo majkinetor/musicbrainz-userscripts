@@ -76,10 +76,21 @@ const chooser = await page.evaluate(() => {
     hasExtLabel: !!p.querySelector('.tc-lp-choose .tc-lp-clbl'),
     hasFavArea: !!p.querySelector('.tc-lp-choose .tc-lp-favs'),
     listVisibleWithChooser: !!p.querySelector('.tc-lp-list'),   // list stays beside the chooser (#455.2)
+    backHiddenAtStart: getComputedStyle(p.querySelector('.tc-lp-back')).display === 'none',   // no back on the initial screen
+    noCancelBtn: !p.querySelector('.tc-lp-cancel'),   // #455 r4: Cancel removed (✕ is equivalent)
   };
 });
+// #455 r4: after choosing a source, a "‹ Sources" back button appears and returns to the chooser
 await page.evaluate(() => document.querySelector('#tc-lppop [data-o="text"]').click());
 await page.waitForSelector('#tc-lppop .tc-lp-ta', { timeout: 5000 });
+const back = await page.evaluate(() => {
+  const p = document.getElementById('tc-lppop'), bk = p.querySelector('.tc-lp-back'), ch = p.querySelector('.tc-lp-choose');
+  const backShownAfterChoose = getComputedStyle(bk).display !== 'none' && getComputedStyle(ch).display === 'none';
+  bk.click();   // go back
+  const chooserBackAfterBack = getComputedStyle(ch).display !== 'none' && getComputedStyle(bk).display === 'none';
+  p.querySelector('[data-o="text"]').click();   // re-enter text mode for the rest of the probe
+  return { backShownAfterChoose, chooserBackAfterBack };
+});
 const ui = await page.evaluate(async () => {
   const p = document.getElementById('tc-lppop');
   const ta = p.querySelector('.tc-lp-ta'), ok = p.querySelector('.tc-lp-ok');
@@ -140,6 +151,8 @@ check(extract.vals.length === 12 && !extract.hasNav, `smart extraction pulls the
 check(/Existing note\./.test(note.text) && /Track lengths from https:\/\/example\.bandcamp\.com/.test(note.text) && !note.dupd, 'edit note gets the source line, keeps the existing note, idempotent (#455.2)');
 check(JSON.stringify(chooser.opts) === JSON.stringify(['text', 'clip']) && chooser.hasExtLabel && chooser.hasFavArea, 'chooser overlays the left column: Enter text / Paste from clipboard buttons + external-link favicon area (#455 r3)');
 check(chooser.listVisibleWithChooser, 'the track list stays visible beside the chooser (integrated layout, no separate start window)');
+check(chooser.backHiddenAtStart && chooser.noCancelBtn, 'initial screen has no back button; Cancel button removed (#455 r4)');
+check(back.backShownAfterChoose && back.chooserBackAfterBack, 'after choosing a source the "‹ Sources" button returns to the chooser (#455 r4)');
 check(ui.afterParse.length === ui.nT && ui.okAfterParse, 'panel parsed one row per track, Apply enabled');
 check(ui.okWhenInvalid && ui.firstBad, 'an invalid time flags the row and disables Apply');
 check(ui.badgeShown, 'an invalid time raises a prominent badge in the header (#455.3)');

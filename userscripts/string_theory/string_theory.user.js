@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.22.152458
+// @version      2026.7.22.184136
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,13 +75,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.22.152458 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.22.151817\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.22.120225\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
+  console.log('%c String Theory %c v2026.7.22.184136 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.22.183652\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.22.120225\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.151817","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.151817","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.183652","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.183652","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1444,7 +1444,7 @@ try {
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.22.151817';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.22.183652';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1765,6 +1765,7 @@ try {
     /* #455 track length parser panel — centred, draggable, textarea+chooser | list */
     .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:832px;height:64vh;min-width:520px;min-height:300px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
     .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
+    .tc-lp-back{cursor:pointer;border:1px solid #cbb9ec;background:#faf8fe;color:#5f3ec0;font:600 11px Arial;border-radius:5px;padding:3px 9px;white-space:nowrap}.tc-lp-back:hover{background:#f1ebfb;border-color:#a98fe0}
     .tc-lp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
     .tc-lp-err{font:bold 11px Arial;color:#fff;background:#e53935;border-radius:10px;padding:2px 9px;white-space:nowrap;box-shadow:0 1px 3px rgba(197,48,48,.4)}   /* #455.3 header invalid badge */
     .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444;cursor:default}
@@ -3148,7 +3149,7 @@ try {
       ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-lp-hd"><span class="tc-lp-t">Parse track lengths</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" title="Back to the source chooser" style="display:none">‹ Sources</button><span class="tc-lp-t">Parse track lengths</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
       <div class="tc-lp-body">
         <div class="tc-lp-left">
           <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
@@ -3160,25 +3161,30 @@ try {
         </div>
         <div class="tc-lp-list"></div>
       </div>
-      <div class="tc-lp-ft"><span class="tc-lp-cnt"></span><span class="tc-lp-acts"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></span></div>`;
+      <div class="tc-lp-ft"><span class="tc-lp-cnt"></span><span class="tc-lp-acts"><button type="button" class="tc-lp-ok" disabled>Apply</button></span></div>`;
     document.body.appendChild(p);
     const cw = p.offsetWidth || 832, ch = p.offsetHeight || 460;
     p.style.left = Math.max(8, Math.round((innerWidth - cw) / 2)) + 'px';
     p.style.top = Math.max(8, Math.round((innerHeight - ch) / 2)) + 'px';
 
     const $ = s => p.querySelector(s);
-    const ta = $('.tc-lp-ta'), listEl = $('.tc-lp-list'), chooser = $('.tc-lp-choose'), errBadge = $('.tc-lp-err');
+    const ta = $('.tc-lp-ta'), listEl = $('.tc-lp-list'), chooser = $('.tc-lp-choose'), errBadge = $('.tc-lp-err'), backBtn = $('.tc-lp-back');
     const tracks = () => u(mediums()[curMi].tracks) || [];
     const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
     const close = () => p.remove();
-    const showChooser = () => { chooser.style.display = (!ta.value && !items.length) ? '' : 'none'; };
+    // the chooser overlays the empty box; the header "‹ Sources" button appears once a
+    // source is picked so you can go back and try another (#455: some links, e.g. Spotify,
+    // have no parsable text). setChooser(true) forces it back even over fetched content.
+    const setChooser = show => { chooser.style.display = show ? '' : 'none'; backBtn.style.display = show ? 'none' : ''; };
+    const showChooser = () => setChooser(!ta.value && !items.length);
+    backBtn.onclick = () => { setChooser(true); };
 
     // ── source chooser (overlaid on the empty textarea, beside the list) ──
-    chooser.querySelector('[data-o="text"]').onclick = () => { chooser.style.display = 'none'; ta.focus(); };
+    chooser.querySelector('[data-o="text"]').onclick = () => { setChooser(false); ta.focus(); };
     chooser.querySelector('[data-o="clip"]').onclick = () => {
       if (navigator.clipboard && navigator.clipboard.readText)
-        navigator.clipboard.readText().then(t => { ta.value = t; sourceUrl = null; items = lpParse(t); render(); showChooser(); ta.focus(); }).catch(() => { chooser.style.display = 'none'; ta.focus(); toast('Clipboard blocked — paste into the box'); });
-      else { chooser.style.display = 'none'; ta.focus(); toast('Clipboard unavailable — paste into the box'); }
+        navigator.clipboard.readText().then(t => { ta.value = t; sourceUrl = null; items = lpParse(t); render(); showChooser(); ta.focus(); }).catch(() => { setChooser(false); ta.focus(); toast('Clipboard blocked — paste into the box'); });
+      else { setChooser(false); ta.focus(); toast('Clipboard unavailable — paste into the box'); }
     };
     // external links → one favicon each; clicking fetches + parses immediately
     lpExternalLinks().then(urls => {
@@ -3191,7 +3197,7 @@ try {
       });
     });
     async function fetchLink(url) {
-      chooser.style.display = 'none'; ta.disabled = true; ta.value = 'Fetching the page…\n' + url;
+      setChooser(false); ta.disabled = true; ta.value = 'Fetching the page…\n' + url;
       let html; try { html = await lpFetchHtml(url); }
       catch (e) { ta.disabled = false; ta.value = ''; items = []; render(); showChooser(); toast(`Couldn't fetch that page (${e.message}) — try another link or paste`); return; }
       ta.disabled = false;
@@ -3246,7 +3252,7 @@ try {
     }
     // static header/footer wiring
     $('.tc-lp-ok').onclick = commit;
-    $('.tc-lp-cancel').onclick = $('.tc-lp-x').onclick = close;
+    $('.tc-lp-x').onclick = close;
     const medEl = $('.tc-lp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
     // Esc / Ctrl+Enter only — never dismisses on an outside click (#455.6)
     p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); commit(); } };

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-22 15:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-22 18:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -203,6 +203,8 @@ The panel is **side-by-side**: an input box on the left, the reviewable track li
 - **Enter text** — type or paste a tracklist into the box.
 - **Paste from clipboard** — reads the clipboard directly.
 - **Parse from external link** — a **favicon per page linked on the release**; click one and it **fetches that page and reads its text right away** (no extra picker step). It narrows to the smallest part of the page that still holds at least a full tracklist's worth of durations, so nav/player/footer noise is skipped (e.g. it pulls all 20 lengths straight off a Bandcamp album page). When you Apply, the **source URL is added to the edit note**. (If a favicon can't load, it falls back to a clickable hostname chip.)
+
+Once you've picked a source, a **‹ Sources** button in the header returns you to the chooser — handy when a fetched page has no parsable text (e.g. Spotify) and you want to try another link.
 
 Whichever source, it detects everything shaped like a time — `5:50`, `1′23″`, `1'23"`, `1:02:03` — and **ignores** track numbers, titles, years and other noise. The detected times appear as an **editable list**, each next to the track it will fill (item 1 → track 1, …). Because alignment is by order:
 
