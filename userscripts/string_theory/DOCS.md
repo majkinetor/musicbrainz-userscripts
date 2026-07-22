@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-22 22:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-22 22:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -193,6 +193,18 @@ Search a string within track titles and replace it. Clicking the tool name start
 #### Resize Columns 
 
 Set column sizes to predefined variants (Fit, Centered, Default).
+
+#### Track parser
+
+Fill a medium's tracklist from pasted text using a **pattern** — a one-line template that says what each line looks like, so you're not locked into the native parser's rigid format. Type a pattern, paste the list, review the live preview, Apply.
+
+**Tokens:** `#` track number · `T` title · `A` artist · `L` length · `M` medium · `_` skip noise. Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out. Text fields split on the **first** separator (`A - T` → artist = up to the first `-`, title = the rest).
+
+**Examples:** `#. T` → `1. So What` · `# A - T (L)` → `1 Miles Davis - So What (9:22)` · `# A - T (_` drops a trailing `(original edit)`.
+
+**Slices** (for delimiter-free fixed-width text): a token can carry a 1-based char range — `T[6-]` (6th char to end), `T[6-20]`, `T[-5]` (first 5), `T[~3-]` (last 3).
+
+The preview is one row per pasted line: a **match dot** (green = matched · amber = matched via a per-row pattern · red = no match), the raw text, and the extracted **# / artist / title / length**. A messy line can get its **own pattern** in the row's `pattern` cell without disturbing the rest. **Apply** writes only the fields the pattern produced (so a title-only pattern won't touch lengths); its **▾ menu** applies a single field (only titles / artists / lengths / #s) or adds the missing tracks first when you pasted more lines than the medium has.
 
 #### Parse track lengths
 
