@@ -55,8 +55,7 @@ export function parseMetalArchivesAlbumUrl(url) {
 // Instruments/performance — Metal Archives name → Discogs/INSTRUMENTS role name.
 // (Values chosen to hit INSTRUMENTS_CI / ENTITY_TYPE_MAP; the OP's #453 list.)
 const MA_INSTRUMENT_MAP = {
-    'Guitars': 'Guitar', 'Guitar': 'Guitar',
-    'Bass': 'Bass', 'Bass Guitar': 'Bass',
+    // Guitars / Bass are special-cased in bridgeToken (electric by default in metal, #453).
     'Drums': 'Drums', 'Drum programming': 'Drum Programming', 'Drum Programming': 'Drum Programming',
     'Keyboards': 'Keyboard', 'Keyboard': 'Keyboard',
     'Synthesizers': 'Synthesizer', 'Synthesizer': 'Synthesizer', 'Synth': 'Synthesizer', 'Synths': 'Synthesizer',
@@ -89,9 +88,12 @@ const MA_STAFF_MAP = {
     'Artwork': 'Artwork By', 'Illustrations': 'Illustration', 'Illustration': 'Illustration',
     'Cover Art': 'Artwork By', 'Interior art': 'Artwork By', 'Art Direction': 'Art Direction',
     'Photography': 'Photography By', 'Design': 'Graphic Design',
-    'Layout': 'Graphic Design [layout]', 'Liner Notes': 'Liner Notes', 'Logo': 'Graphic Design [logo]',
-    'Photo manipulation': 'Graphic Design [photo manipulation]', 'Director': 'Director',
+    'Liner Notes': 'Liner Notes', 'Director': 'Director',
+    // design-with-a-task (#453): base rel + a `task` attribute (getArtistRoles doesn't add
+    // it for the graphic-design link type, so bridgeToken attaches it explicitly).
 };
+// Metal Archives "Other staff" role → MB Graphic Design rel + a design task attribute.
+const MA_DESIGN_TASK = { 'Layout': 'layout', 'Logo': 'logo', 'Photo manipulation': 'photo manipulation' };
 
 // Reported, not imported (no clean MB target, or out of scope — OP's list).
 const MA_SKIP = new Set([
@@ -144,21 +146,39 @@ export function parseMaRoleCell(cell) {
     }).filter(t => t.base);
 }
 
-// Map one parsed token → a Discogs role STRING for getArtistRoles (or null to skip).
+// Map one parsed token → `{ role, attrs }` for getArtistRoles (`role` = a Discogs role
+// string; `attrs` = extra MB attributes to append after resolution), or null to skip.
 function bridgeToken(tok) {
     const base = tok.base;
     if (MA_SKIP.has(base) || MA_SPECIAL_SKIP.has(base)) return null;
+    const detail = tok.details.map(d => d.toLowerCase()).join(' ');
+    // Guitars / Bass default to the ELECTRIC variant in metal, unless a detail says
+    // otherwise (acoustic / classical / double / fretless) — OP #453.
+    if (/^guitars?$/i.test(base)) {
+        const role = /\belectric\b/.test(detail) ? 'Electric Guitar'
+            : /\bacoustic\b/.test(detail) ? 'Acoustic Guitar'
+            : /\b(classical|nylon)\b/.test(detail) ? 'Classical Guitar'
+            : 'Electric Guitar';
+        return { role, attrs: [] };
+    }
+    if (/^bass(\s*guitar)?$/i.test(base)) {
+        const role = /\bacoustic\b/.test(detail) ? 'Acoustic Bass'
+            : /\b(double|upright|contrabass)\b/.test(detail) ? 'Double Bass'
+            : /\bfretless\b/.test(detail) ? 'Fretless Bass'
+            : 'Bass Guitar';   // MB "bass guitar" is the electric bass
+        return { role, attrs: [] };
+    }
     // Vocals with a subtype detail → "Lead Vocals" / "Backing Vocals" / …
     if (/^vocals?$/i.test(base) || /^voice$/i.test(base) || /^narration$/i.test(base)) {
-        if (/^narration$/i.test(base)) return 'Spoken Vocals';
+        if (/^narration$/i.test(base)) return { role: 'Spoken Vocals', attrs: [] };
         const sub = tok.details.map(d => d.toLowerCase()).find(d => MA_VOCAL_SUBTYPE[d]);
-        return sub ? MA_VOCAL_SUBTYPE[sub] : 'Vocals';
+        return { role: sub ? MA_VOCAL_SUBTYPE[sub] : 'Vocals', attrs: [] };
     }
+    // Design-with-a-task (Layout / Logo / Photo manipulation) → graphic design + task attr.
+    if (MA_DESIGN_TASK[base]) return { role: 'Graphic Design', attrs: [{ _type: 'task', value: MA_DESIGN_TASK[base] }] };
     // Named instrument remap, else staff/work remap, else pass through (INSTRUMENTS_CI),
     // else strip a trailing "s" and retry (OP heuristic).
-    if (MA_INSTRUMENT_MAP[base]) return MA_INSTRUMENT_MAP[base];
-    if (MA_STAFF_MAP[base]) return MA_STAFF_MAP[base];
-    return base;   // getArtistRoles resolves via INSTRUMENTS_CI; unresolved → reported by caller
+    return { role: MA_INSTRUMENT_MAP[base] || MA_STAFF_MAP[base] || base, attrs: [] };
 }
 
 /* ── DOM extraction ──────────────────────────────────────────────────────── */
@@ -222,6 +242,15 @@ export function extractMaLineupDom(doc) {
     const misc = extractLineupTable(doc, 'album_members_misc');
     const { tracks, multiDisc } = extractTracklist(doc);
     const multiBand = /split|collaboration/i.test(type) || [...band, ...guest].some(r => r.band);
+    // On a split, tracklist titles are prefixed "Band - Title" — tag each track with the
+    // lineup band it belongs to (and strip the prefix) so credits scope to that band's tracks (#453).
+    if (/split/i.test(type)) {
+        const bandNames = [...new Set([...band, ...guest, ...misc].map(r => r.band).filter(Boolean))];
+        for (const t of tracks) {
+            const b = bandNames.find(bn => new RegExp('^' + bn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*[-–]\\s*', 'i').test(t.title));
+            if (b) { t.band = b; t.title = t.title.replace(new RegExp('^' + b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*[-–]\\s*', 'i'), ''); }
+        }
+    }
     return { type, multiBand, multiDisc, tracks, band, guest, misc };
 }
 
@@ -313,18 +342,18 @@ function maArtist(row, discogsRole) {
 function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel) {
     const rels = [];
     for (const tok of parseMaRoleCell(row.roleCell)) {
-        const discogsRole = bridgeToken(tok);
-        if (!discogsRole) { skipped.push(`${sectionLabel}: ${tok.base} — ${row.name}`); continue; }
+        const bridged = bridgeToken(tok);
+        if (!bridged) { skipped.push(`${sectionLabel}: ${tok.base} — ${row.name}`); continue; }
         // resolve via the shared Discogs resolver; retry once without a trailing "s"
-        let resolved = getArtistRoles(maArtist(row, discogsRole));
-        if (!resolved.length && /s$/i.test(discogsRole)) resolved = getArtistRoles(maArtist(row, discogsRole.replace(/s$/i, '')));
+        let resolved = getArtistRoles(maArtist(row, bridged.role));
+        if (!resolved.length && /s$/i.test(bridged.role)) resolved = getArtistRoles(maArtist(row, bridged.role.replace(/s$/i, '')));
         if (!resolved.length) { skipped.push(`${sectionLabel}: ${tok.base} — ${row.name}`); continue; }
         const targets = tok.tracks ? tok.tracks.map(n => byPosition.get(String(n))).filter(Boolean) : allTracks;
         for (const track of targets) {
             for (const r of resolved) {
                 rels.push({
                     linkType: r.linkType, entityType: 'artist',
-                    attributes: [...(r.attributes || []), ...(guest ? ['guest'] : [])],
+                    attributes: [...(r.attributes || []), ...bridged.attrs, ...(guest ? ['guest'] : [])],
                     artist: r.artist, track,
                 });
             }
@@ -341,7 +370,7 @@ function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel
  * (per-band track scoping) are reported for manual review in this version.
  */
 export function metalArchivesToEngine(harvest) {
-    const tracklist = (harvest.tracks || []).map(t => ({ position: t.position, title: t.title, type_: 'track' }));
+    const tracklist = (harvest.tracks || []).map(t => ({ position: t.position, title: t.title, type_: 'track', band: t.band }));
     const byPosition = new Map(tracklist.map(t => [String(t.position).replace(/^\d+-/, ''), t]));
     // also key bare medium-less numbers for single-disc
     tracklist.forEach(t => byPosition.set(String(t.position), t));
@@ -350,8 +379,14 @@ export function metalArchivesToEngine(harvest) {
     const isSplit = /split/i.test(harvest.type || '');
     for (const [rows, guest, label] of [[harvest.band || [], false, 'band'], [harvest.guest || [], true, 'guest']]) {
         for (const row of rows) {
-            if (isSplit) { skipped.push(`${label} (split — assign to ${row.band || 'band'} tracks manually): ${row.roleCell} — ${row.name}`); continue; }
-            tracklistRels.push(...rowToTrackRels(row, tracklist, byPosition, guest, skipped, label));
+            // On a split, scope a band's credits to the tracks tagged with that band (#453);
+            // fall back to reporting if the band's tracks couldn't be identified.
+            let scope = tracklist;
+            if (isSplit && row.band) {
+                scope = tracklist.filter(t => t.band === row.band);
+                if (!scope.length) { skipped.push(`${label} (split — no tracks matched band "${row.band}"): ${row.roleCell} — ${row.name}`); continue; }
+            }
+            tracklistRels.push(...rowToTrackRels(row, scope, byPosition, guest, skipped, label));
         }
     }
     return { tracklistRels, tracklist, skipped, multiVolume: !!harvest.multiDisc };
@@ -367,10 +402,11 @@ export function metalArchivesReleaseArtists(harvest) {
     const artists = [], skipped = [];
     for (const row of (harvest.misc || [])) {
         for (const tok of parseMaRoleCell(row.roleCell)) {
-            const discogsRole = bridgeToken(tok);
-            if (!discogsRole) { skipped.push(`release: ${tok.base} — ${row.name}`); continue; }
-            const a = maArtist(row, discogsRole);
-            a.maRole = tok.base;   // for "not imported" reporting
+            const bridged = bridgeToken(tok);
+            if (!bridged) { skipped.push(`release: ${tok.base} — ${row.name}`); continue; }
+            const a = maArtist(row, bridged.role);
+            a.maRole = tok.base;       // for "not imported" reporting
+            a.maAttrs = bridged.attrs; // extra attributes (design task) the caller appends after getArtistRoles
             artists.push(a);
         }
     }

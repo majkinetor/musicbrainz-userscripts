@@ -35,6 +35,7 @@ let fail = 0; const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + 
 for (const [tag, url, expect] of [
     ['orchestral', 'https://www.metal-archives.com/albums/Nightwish/Once/39218', { tracks: 11, band: 5 }],
     ['empty', 'https://www.metal-archives.com/albums/Turandyarkh/Book_I/1093169', { tracks: 5, band: 0 }],
+    ['split', 'https://www.metal-archives.com/albums/Undergang/Kuolema_parantaa_kaikki_haavat/537262', {}],
 ]) {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await page.waitForTimeout(2200);
@@ -45,15 +46,26 @@ for (const [tag, url, expect] of [
         // a track-scoped credit stays scoped (Marco Hietala "Vocals (tracks 2,4,6,8,11)" → 5, not 11)
         const marco = h.band.find(b => /Hietala/.test(b.name));
         const marcoVocal = marco ? eng.tracklistRels.filter(x => x.artist.name === marco.name && x.linkType === 'ROLE:Vocals').length : -1;
-        return { tracks: h.tracks.length, band: h.band.length, misc: h.misc.length, nRels: eng.tracklistRels.length, roles, relArtists: rel.artists.length, relUrlOk: rel.artists.every(a => a.resource_url), marcoVocal };
+        // split: a band's members must only be credited on that band's tracks
+        let splitMisplaced = 0, splitBandTracks = 0;
+        if (/split/i.test(h.type)) {
+            const bandOf = new Map(h.tracks.map(t => [String(t.position), t.band]));
+            const memberBand = new Map([...h.band, ...h.guest].map(m => [m.name, m.band]));
+            splitBandTracks = new Set(h.tracks.filter(t => t.band).map(t => t.band)).size;
+            splitMisplaced = eng.tracklistRels.filter(x => memberBand.get(x.artist.name) && memberBand.get(x.artist.name) !== bandOf.get(String(x.track.position))).length;
+        }
+        return { type: h.type, tracks: h.tracks.length, band: h.band.length, misc: h.misc.length, nRels: eng.tracklistRels.length, roles, relArtists: rel.artists.length, relUrlOk: rel.artists.every(a => a.resource_url), marcoVocal, splitMisplaced, splitBandTracks };
     });
     console.log(`\n[${tag}] tracks=${r.tracks} band=${r.band} misc=${r.misc} rels=${r.nRels} relArtists=${r.relArtists}`);
     if (tag === 'orchestral') {
         console.log('  roles:', JSON.stringify(r.roles.slice(0, 12)));
         check(r.tracks === 11 && r.band === 5 && r.misc >= 5, 'extracted the orchestral lineup');
-        check(r.roles.includes('ROLE:Composed By') && r.roles.includes('ROLE:Lyrics By') && r.roles.includes('ROLE:Guitar'), 'roles bridged to the Discogs vocabulary');
+        check(r.roles.includes('ROLE:Composed By') && r.roles.includes('ROLE:Lyrics By') && r.roles.includes('ROLE:Electric Guitar') && r.roles.includes('ROLE:Bass Guitar'), 'roles bridged (guitars/bass default to electric, #453)');
         check(r.marcoVocal === 5, `a "(tracks 2,4,6,8,11)" credit stays scoped to 5 tracks (got ${r.marcoVocal})`);
         check(r.relArtists > 0 && r.relUrlOk, 'release-staff carry resolvable MA person URLs');
+    } else if (tag === 'split') {
+        check(r.splitBandTracks >= 2, `split: tracks tagged with ≥2 bands (${r.splitBandTracks})`);
+        check(r.splitMisplaced === 0, `split: no member credited outside their band's tracks (${r.splitMisplaced} misplaced)`);
     } else check(r.band === 0 && r.misc === 0 && r.nRels === 0, 'empty album imports nothing');
 }
 

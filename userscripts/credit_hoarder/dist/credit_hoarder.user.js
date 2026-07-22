@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.22.002624
+// @version      2026.7.22.091130
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2727,10 +2727,7 @@
     return { id: m[3], albumUrl: `https://www.metal-archives.com/albums/${m[1]}/${m[2]}/${m[3]}` };
   }
   var MA_INSTRUMENT_MAP = {
-    "Guitars": "Guitar",
-    "Guitar": "Guitar",
-    "Bass": "Bass",
-    "Bass Guitar": "Bass",
+    // Guitars / Bass are special-cased in bridgeToken (electric by default in metal, #453).
     "Drums": "Drums",
     "Drum programming": "Drum Programming",
     "Drum Programming": "Drum Programming",
@@ -2803,12 +2800,12 @@
     "Art Direction": "Art Direction",
     "Photography": "Photography By",
     "Design": "Graphic Design",
-    "Layout": "Graphic Design [layout]",
     "Liner Notes": "Liner Notes",
-    "Logo": "Graphic Design [logo]",
-    "Photo manipulation": "Graphic Design [photo manipulation]",
     "Director": "Director"
+    // design-with-a-task (#453): base rel + a `task` attribute (getArtistRoles doesn't add
+    // it for the graphic-design link type, so bridgeToken attaches it explicitly).
   };
+  var MA_DESIGN_TASK = { "Layout": "layout", "Logo": "logo", "Photo manipulation": "photo manipulation" };
   var MA_SKIP = /* @__PURE__ */ new Set([
     "All Instruments",
     "Everything",
@@ -2864,14 +2861,22 @@
   function bridgeToken(tok) {
     const base = tok.base;
     if (MA_SKIP.has(base) || MA_SPECIAL_SKIP.has(base)) return null;
-    if (/^vocals?$/i.test(base) || /^voice$/i.test(base) || /^narration$/i.test(base)) {
-      if (/^narration$/i.test(base)) return "Spoken Vocals";
-      const sub = tok.details.map((d) => d.toLowerCase()).find((d) => MA_VOCAL_SUBTYPE[d]);
-      return sub ? MA_VOCAL_SUBTYPE[sub] : "Vocals";
+    const detail = tok.details.map((d) => d.toLowerCase()).join(" ");
+    if (/^guitars?$/i.test(base)) {
+      const role = /\belectric\b/.test(detail) ? "Electric Guitar" : /\bacoustic\b/.test(detail) ? "Acoustic Guitar" : /\b(classical|nylon)\b/.test(detail) ? "Classical Guitar" : "Electric Guitar";
+      return { role, attrs: [] };
     }
-    if (MA_INSTRUMENT_MAP[base]) return MA_INSTRUMENT_MAP[base];
-    if (MA_STAFF_MAP[base]) return MA_STAFF_MAP[base];
-    return base;
+    if (/^bass(\s*guitar)?$/i.test(base)) {
+      const role = /\bacoustic\b/.test(detail) ? "Acoustic Bass" : /\b(double|upright|contrabass)\b/.test(detail) ? "Double Bass" : /\bfretless\b/.test(detail) ? "Fretless Bass" : "Bass Guitar";
+      return { role, attrs: [] };
+    }
+    if (/^vocals?$/i.test(base) || /^voice$/i.test(base) || /^narration$/i.test(base)) {
+      if (/^narration$/i.test(base)) return { role: "Spoken Vocals", attrs: [] };
+      const sub = tok.details.map((d) => d.toLowerCase()).find((d) => MA_VOCAL_SUBTYPE[d]);
+      return { role: sub ? MA_VOCAL_SUBTYPE[sub] : "Vocals", attrs: [] };
+    }
+    if (MA_DESIGN_TASK[base]) return { role: "Graphic Design", attrs: [{ _type: "task", value: MA_DESIGN_TASK[base] }] };
+    return { role: MA_INSTRUMENT_MAP[base] || MA_STAFF_MAP[base] || base, attrs: [] };
   }
   function extractLineupTable(doc, id) {
     const table = doc.getElementById(id);
@@ -2923,6 +2928,16 @@
     const misc = extractLineupTable(doc, "album_members_misc");
     const { tracks, multiDisc } = extractTracklist(doc);
     const multiBand = /split|collaboration/i.test(type) || [...band, ...guest].some((r) => r.band);
+    if (/split/i.test(type)) {
+      const bandNames = [...new Set([...band, ...guest, ...misc].map((r) => r.band).filter(Boolean))];
+      for (const t of tracks) {
+        const b = bandNames.find((bn) => new RegExp("^" + bn.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*[-\u2013]\\s*", "i").test(t.title));
+        if (b) {
+          t.band = b;
+          t.title = t.title.replace(new RegExp("^" + b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*[-\u2013]\\s*", "i"), "");
+        }
+      }
+    }
     return { type, multiBand, multiDisc, tracks, band, guest, misc };
   }
   var HARVEST_KEY2 = (reqId) => `ch-ma-result:${reqId}`;
@@ -3012,13 +3027,13 @@
   function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel) {
     const rels = [];
     for (const tok of parseMaRoleCell(row.roleCell)) {
-      const discogsRole = bridgeToken(tok);
-      if (!discogsRole) {
+      const bridged = bridgeToken(tok);
+      if (!bridged) {
         skipped.push(`${sectionLabel}: ${tok.base} \u2014 ${row.name}`);
         continue;
       }
-      let resolved = getArtistRoles(maArtist(row, discogsRole));
-      if (!resolved.length && /s$/i.test(discogsRole)) resolved = getArtistRoles(maArtist(row, discogsRole.replace(/s$/i, "")));
+      let resolved = getArtistRoles(maArtist(row, bridged.role));
+      if (!resolved.length && /s$/i.test(bridged.role)) resolved = getArtistRoles(maArtist(row, bridged.role.replace(/s$/i, "")));
       if (!resolved.length) {
         skipped.push(`${sectionLabel}: ${tok.base} \u2014 ${row.name}`);
         continue;
@@ -3029,7 +3044,7 @@
           rels.push({
             linkType: r.linkType,
             entityType: "artist",
-            attributes: [...r.attributes || [], ...guest ? ["guest"] : []],
+            attributes: [...r.attributes || [], ...bridged.attrs, ...guest ? ["guest"] : []],
             artist: r.artist,
             track
           });
@@ -3039,7 +3054,7 @@
     return rels;
   }
   function metalArchivesToEngine(harvest) {
-    const tracklist = (harvest.tracks || []).map((t) => ({ position: t.position, title: t.title, type_: "track" }));
+    const tracklist = (harvest.tracks || []).map((t) => ({ position: t.position, title: t.title, type_: "track", band: t.band }));
     const byPosition = new Map(tracklist.map((t) => [String(t.position).replace(/^\d+-/, ""), t]));
     tracklist.forEach((t) => byPosition.set(String(t.position), t));
     const skipped = [];
@@ -3047,11 +3062,15 @@
     const isSplit = /split/i.test(harvest.type || "");
     for (const [rows, guest, label] of [[harvest.band || [], false, "band"], [harvest.guest || [], true, "guest"]]) {
       for (const row of rows) {
-        if (isSplit) {
-          skipped.push(`${label} (split \u2014 assign to ${row.band || "band"} tracks manually): ${row.roleCell} \u2014 ${row.name}`);
-          continue;
+        let scope = tracklist;
+        if (isSplit && row.band) {
+          scope = tracklist.filter((t) => t.band === row.band);
+          if (!scope.length) {
+            skipped.push(`${label} (split \u2014 no tracks matched band "${row.band}"): ${row.roleCell} \u2014 ${row.name}`);
+            continue;
+          }
         }
-        tracklistRels.push(...rowToTrackRels(row, tracklist, byPosition, guest, skipped, label));
+        tracklistRels.push(...rowToTrackRels(row, scope, byPosition, guest, skipped, label));
       }
     }
     return { tracklistRels, tracklist, skipped, multiVolume: !!harvest.multiDisc };
@@ -3060,13 +3079,14 @@
     const artists = [], skipped = [];
     for (const row of harvest.misc || []) {
       for (const tok of parseMaRoleCell(row.roleCell)) {
-        const discogsRole = bridgeToken(tok);
-        if (!discogsRole) {
+        const bridged = bridgeToken(tok);
+        if (!bridged) {
           skipped.push(`release: ${tok.base} \u2014 ${row.name}`);
           continue;
         }
-        const a = maArtist(row, discogsRole);
+        const a = maArtist(row, bridged.role);
         a.maRole = tok.base;
+        a.maAttrs = bridged.attrs;
         artists.push(a);
       }
     }
@@ -3096,7 +3116,7 @@
     const src = sourceNameForUrl(url);
     if (src === "Tidal") return entityType === "artist" ? "978" : null;
     if (src === "Qobuz") return entityType === "artist" ? "978" : null;
-    if (src === "Metal Archives") return null;
+    if (src === "Metal Archives") return entityType === "artist" ? "188" : null;
     return entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
   }
 
@@ -7665,6 +7685,9 @@ ${lines}
           relSkipped.push(`release: ${a.maRole} \u2014 ${a.name}`);
           continue;
         }
+        if (a.maAttrs && a.maAttrs.length) roles.forEach((r) => {
+          r.attributes = (r.attributes || []).concat(a.maAttrs);
+        });
         artistRoles.push(...roles);
       }
       const companies = [];

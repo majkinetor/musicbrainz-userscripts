@@ -58,6 +58,6 @@ export function sourceUrlLinkTypeId(url, entityType) {
     const src = sourceNameForUrl(url);
     if (src === 'Tidal') return entityType === 'artist' ? '978' : null;
     if (src === 'Qobuz') return entityType === 'artist' ? '978' : null;   // #353 Qobuz artist page = "streaming" (978), same as Tidal
-    if (src === 'Metal Archives') return null;   // #453 v1: resolve via existing MB links; don't auto-add MA URLs (would need the "other databases" type)
+    if (src === 'Metal Archives') return entityType === 'artist' ? '188' : null;   // #453 artist → "has a page in a database at" (other databases); seeds the MA URL on create
     return entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
 }

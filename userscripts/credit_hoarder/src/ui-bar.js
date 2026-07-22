@@ -1572,6 +1572,7 @@ function runMetalArchivesImport(maUrl, getOpts, cancelled, collect) {
             for (const a of relArtists) {
                 const roles = getArtistRoles(a);
                 if (!roles.length) { relSkipped.push(`release: ${a.maRole} — ${a.name}`); continue; }
+                if (a.maAttrs && a.maAttrs.length) roles.forEach(r => { r.attributes = (r.attributes || []).concat(a.maAttrs); });   // #453 design task
                 artistRoles.push(...roles);
             }
             const companies = [];
