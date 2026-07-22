@@ -60,7 +60,7 @@ for (const [tag, url, expect] of [
     if (tag === 'orchestral') {
         console.log('  roles:', JSON.stringify(r.roles.slice(0, 12)));
         check(r.tracks === 11 && r.band === 5 && r.misc >= 5, 'extracted the orchestral lineup');
-        check(r.roles.includes('ROLE:Composed By') && r.roles.includes('ROLE:Lyrics By') && r.roles.includes('ROLE:Electric Guitar') && r.roles.includes('ROLE:Bass Guitar'), 'roles bridged (guitars/bass default to electric, #453)');
+        check(r.roles.includes('ROLE:Composed By') && r.roles.includes('ROLE:Lyrics By') && r.roles.includes('ROLE:Electric Guitar') && r.roles.includes('ROLE:Electric Bass Guitar'), 'roles bridged (guitars→electric, bass→electric bass guitar, #453)');
         check(r.marcoVocal === 5, `a "(tracks 2,4,6,8,11)" credit stays scoped to 5 tracks (got ${r.marcoVocal})`);
         check(r.relArtists > 0 && r.relUrlOk, 'release-staff carry resolvable MA person URLs');
     } else if (tag === 'split') {
@@ -68,6 +68,30 @@ for (const [tag, url, expect] of [
         check(r.splitMisplaced === 0, `split: no member credited outside their band's tracks (${r.splitMisplaced} misplaced)`);
     } else check(r.band === 0 && r.misc === 0 && r.nRels === 0, 'empty album imports nothing');
 }
+
+// ── (1b) split other-staff track-scoping (OP #453): Gonkulator/Undinism has misc credits
+//     "Engineering (tracks 1, 2)" / "Recording (tracks 3-9)" / "Executive producer" (no tracks) ──
+await page.goto('https://www.metal-archives.com/albums/Gonkulator/Gonkulator_-_Undinism/84563', { waitUntil: 'domcontentloaded', timeout: 45000 });
+await page.waitForTimeout(2200);
+await page.addScriptTag({ content: modBundle });
+const g = await page.evaluate(() => {
+    const h = MA.extractMaLineupDom(document); const eng = MA.metalArchivesToEngine(h); const rel = MA.metalArchivesReleaseArtists(h);
+    const posOf = name => [...new Set(eng.tracklistRels.filter(x => new RegExp(name).test(x.artist.name)).map(x => String(x.track.position)))].sort((a, b) => +a - +b);
+    return {
+        misc: h.misc.length, nTracks: h.tracks.length,
+        brucePos: posOf('Bennett'),           // Engineering (tracks 1, 2) → track-level on 1,2
+        scottPos: posOf('Harper'),            // Recording (tracks 3-9)   → track-level on 3-9
+        bruceRelLevel: rel.artists.filter(a => /Bennett/.test(a.name)).length,   // must NOT be release-level now
+        scottRelLevel: rel.artists.filter(a => /Harper/.test(a.name)).length,
+        charlieExecRelLevel: rel.artists.filter(a => /Infection/.test(a.name) && /Executive/i.test(a.maRole || '')).length,   // unqualified → stays release-level
+        charlieExecTrackLevel: eng.tracklistRels.filter(x => /Infection/.test(x.artist.name) && /Executive/i.test(x.linkType)).length,
+    };
+});
+console.log(`\n[split-misc] misc=${g.misc} Bruce→[${g.brucePos}] Scott→[${g.scottPos}] Charlie-exec rel=${g.charlieExecRelLevel}/trk=${g.charlieExecTrackLevel}`);
+check(JSON.stringify(g.brucePos) === JSON.stringify(['1', '2']), `Engineering "(tracks 1, 2)" is recording-level on exactly tracks 1,2 (got [${g.brucePos}])`);
+check(JSON.stringify(g.scottPos) === JSON.stringify(['3', '4', '5', '6', '7', '8', '9']), `Recording "(tracks 3-9)" is recording-level on exactly tracks 3-9 (got [${g.scottPos}])`);
+check(g.bruceRelLevel === 0 && g.scottRelLevel === 0, 'track-qualified other-staff is no longer duplicated as a release-level credit (OP #453)');
+check(g.charlieExecRelLevel >= 1 && g.charlieExecTrackLevel === 0, 'unqualified other-staff (Executive producer) stays a release-level credit');
 
 // ── (2) tab-side harvest with the REAL dist bundle (clears Cloudflare, posts over GM) ──
 await page.goto('https://www.metal-archives.com/albums/Nightwish/Once/39218#ch-req=t1', { waitUntil: 'domcontentloaded', timeout: 45000 });
