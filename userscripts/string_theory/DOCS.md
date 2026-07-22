@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-22 18:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-22 21:43 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1000,7 +1000,7 @@ Shows the release's existing ISRCs and lets you fill in the missing ones from se
     - **[Delete existing ISRCs](#deleting-existing-isrcs)** in bulk
     - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting
     - **[Submit to MusicBrainz](#submitting)** — one-time OAuth, then submit straight from the editor
-- **[Links](#links)** — find and add streaming / store links to recordings (Deezer, Tidal, Beatport, Volumo, Qobuz, Bandcamp, Apple Music, SoundCloud), and see every other provider a recording already links to.
+- **[Links](#links)** — find and add streaming / store links to recordings (Deezer, Tidal, Beatport, Volumo, Qobuz, Bandcamp, Apple Music, SoundCloud, Spotify), and see every other provider a recording already links to.
   - Find links based on release external links and ISRCs
   - [Batch ending or removing](#ending--removing) link relationship
 - Using release group external links and [Platform Check](../platform_check/README.md) links
@@ -1023,7 +1023,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 | **SoundCloud** | ✓ | ✓ | by **set** — the release's SoundCloud **set** (playlist) is the album; each track's `publisher_metadata.isrc` is read **anonymously** from api-v2 (public `client_id` from the web-player JS, no login), matched by position. A bare **track** URL is handled too, as a single-track release. The per-track link (free streaming) is the track's permalink, matched by position + title. Distributed sets also carry the release barcode (`upc_or_ean`), which Scout **logs** (it doesn't set barcodes — that's Platform Check's job) |
 | **HDtracks** | ✓ | – | download store — no per-track pages to link |
 | **SoundExchange** | ✓ | – | metadata search only; returns no addable URL |
-| **Spotify** | ✓ | – | via ISRC Hunt; no anonymous ISRC→track URL to add |
+| **Spotify** | ✓ | ✓ | by **album** — the token-free `open.spotify.com/embed/album/<id>` page ships the ordered tracklist (`__NEXT_DATA__`); per-track link (free streaming) matched by position + title. ISRC import is still via ISRC Hunt (which never exposes the track id) |
 | **Qobuz** | ✓¹ | ✓¹ | ¹ needs a **Qobuz login** in [Platform Check](../platform_check/README.md) (album/get is session-gated). ISRCs matched by position; per-track link is the id-only `open.qobuz.com/track/<id>`, matched by ISRC |
 
 > [!IMPORTANT]
@@ -1032,7 +1032,7 @@ ISRC Scout has **two independent provider systems** — a provider can support o
 > [!WARNING] 
 > Album imports map tracks **by position**, trusting the link — provider titles legitimately diverge (`(feat. …)`, remaster suffixes), so title mismatches alone don't block anything. But each position-matched fill is checked against the MB track **length** (>10 s off ⇒ probably a different recording): suspicious fills stay filled but get an **amber input + tooltip**, a log warning per row and an `⚠ N implausible` count in the summary. A linked album with **more tracks than the release** is called out as a likely wrong link/edition before the fills even finish. Verify amber rows (e.g. right-click the row's ISRC lookup) before submitting.
 
-Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (Spotify, Qobuz, YouTube, SoundCloud, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
+Beyond these, the Links tab's **Linked** column also **shows every other provider a recording already links to** (YouTube, Amazon Music, or any host by its name) — even ones ISRC Scout can't add. It can't *add* those, but it **can end / remove** them (that acts on the existing relationship). See [other linked providers](#other-linked-providers).
 
 > [!NOTE] Qobuz auth in Platform Check
 > Qobuz per-track ISRCs live behind the session-gated `album/get` endpoint — sign in once under **Platform Check → ⚙ Setup → Auth → Qobuz account** and Scout reads the shared token. Without it, the Qobuz button stays hidden.

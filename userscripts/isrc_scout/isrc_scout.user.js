@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.21
+// @version      2026.7.22
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -33,6 +33,7 @@
 // @connect      soundcloud.com
 // @connect      api-v2.soundcloud.com
 // @connect      a-v2.sndcdn.com
+// @connect      open.spotify.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -2761,6 +2762,13 @@
         album: true, urlKey: 'scUrl', conc: 99, gap: 0,
         test: u => /soundcloud\.com\/[^/]+\/(?!sets\/)[^/?#]+/i.test(u),
         resolve: (isrc, t, idx) => scResolve(t, idx) },
+      // Spotify (#458): the token-free /embed/album/<id> page ships the ordered tracklist,
+      // matched per track BY POSITION with a title guard (like Bandcamp/Apple). Free tier →
+      // recording↔url "free streaming" (268). Only offered when the release has a Spotify album link.
+      { code: 'sp', name: 'Spotify', color: _PROV_COLOR.spotify, icon: SRC_ICON.sp, linkTypeID: 268,
+        album: true, urlKey: 'spotifyId', conc: 99, gap: 0,
+        test: u => /open\.spotify\.com\/(?:intl-[a-z-]+\/)?track\//i.test(u),
+        resolve: (isrc, t, idx) => spResolve(t, idx) },
     ];
 
     let resolving = false;
@@ -2857,6 +2865,55 @@
       const list = await scAlbum();
       const e = list[idx];
       if (!e) return null;
+      const a = _nrm(e.title), b = _nrm(t.title);
+      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+    }
+
+    // Spotify embed page (fetched once): ordered [{title, url}] from its __NEXT_DATA__
+    // trackList. The /embed/album/<id> page is server-rendered and token-free (#458), and
+    // each entry carries uri "spotify:track:<id>" + title, so — like Bandcamp/Apple — we
+    // match per track BY POSITION with a title guard rather than by ISRC (Spotify's ISRCs
+    // come from ISRC Hunt, which never exposes the track id). Spotify has a free tier →
+    // recording↔url "free streaming" (268).
+    function _spTrackList(o, depth) {
+      if (!o || depth > 8 || typeof o !== 'object') return null;
+      if (Array.isArray(o.trackList)) return o.trackList;
+      for (const k in o) { const r = _spTrackList(o[k], (depth || 0) + 1); if (r) return r; }
+      return null;
+    }
+    let _spList = null, _spPromise = null;
+    async function spAlbum() {
+      if (_spList) return _spList;
+      if (_spPromise) return _spPromise;
+      const id = RELEASE && RELEASE.spotifyId;
+      if (!id) { _spList = []; return _spList; }
+      _spPromise = (async () => {
+        const r = await gmGet('https://open.spotify.com/embed/album/' + id, { 'Accept': 'text/html' });
+        if (r.status !== 200) return [];
+        const html = r.responseText || '';
+        let list = [];
+        const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+        if (m) {
+          try {
+            const tl = _spTrackList(JSON.parse(m[1]), 0) || [];
+            list = tl.map(t => {
+              const mm = (t.uri || '').match(/spotify:track:([A-Za-z0-9]+)/);
+              return mm ? { title: t.title || t.name || '', url: 'https://open.spotify.com/track/' + mm[1] } : null;
+            }).filter(Boolean);
+          } catch (e) { list = []; }
+        }
+        // fallback: ordered track ids straight out of the HTML (no titles → position only)
+        if (!list.length) list = [...html.matchAll(/spotify:track:([A-Za-z0-9]+)/g)].map(x => ({ title: '', url: 'https://open.spotify.com/track/' + x[1] }));
+        return list;
+      })();
+      _spList = await _spPromise.catch(() => []); _spPromise = null;
+      return _spList;
+    }
+    async function spResolve(t, idx) {
+      const list = await spAlbum();
+      const e = list[idx];
+      if (!e) return null;
+      if (!e.title) return e.url;   // fallback list carries no titles → trust album position
       const a = _nrm(e.title), b = _nrm(t.title);
       return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
     }
