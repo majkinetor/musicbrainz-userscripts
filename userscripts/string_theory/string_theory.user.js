@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.22.143246
+// @version      2026.7.22.152325
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -73,13 +73,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.22.143246 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.22.143246\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.21\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
+  console.log('%c String Theory %c v2026.7.22.152325 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.22.151817\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.21\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.21\n  · Mammoth v2026.7.12\n  · Platform Check v2026.7.21.140214");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.143246","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.143246","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.151817","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.22.151817","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1442,7 +1442,7 @@ try {
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.21.001732';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.22.151817';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1760,27 +1760,26 @@ try {
     .tc-gco,.tc-sro,.tc-colso,.tc-medo{display:flex;align-items:center;gap:8px}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
-    /* #455 track length parser panel — centred, draggable, textarea | list */
+    /* #455 track length parser panel — centred, draggable, textarea+chooser | list */
     .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:832px;height:64vh;min-width:520px;min-height:300px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
     .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
-    .tc-lp-back{border:none;background:none;cursor:pointer;font-size:16px;color:#888;padding:0 2px;line-height:1}.tc-lp-back:hover{color:#5f3ec0}
     .tc-lp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
+    .tc-lp-err{font:bold 11px Arial;color:#fff;background:#e53935;border-radius:10px;padding:2px 9px;white-space:nowrap;box-shadow:0 1px 3px rgba(197,48,48,.4)}   /* #455.3 header invalid badge */
     .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444;cursor:default}
     .tc-lp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-lp-x:hover{color:#333}
-    .tc-lp-mid{flex:1;min-height:0}
-    /* start view — three source options */
-    .tc-lp-mid.tc-lp-choose{display:flex;flex-direction:column;gap:12px;padding:22px 24px;justify-content:center}
-    .tc-lp-opt{display:flex;align-items:center;gap:14px;text-align:left;cursor:pointer;border:1px solid #d8cdf0;background:#faf8fe;border-radius:8px;padding:14px 16px}.tc-lp-opt:hover{background:#f1ebfb;border-color:#c3aef0}
-    .tc-lp-oi{font-size:26px;line-height:1}
-    .tc-lp-otx{display:flex;flex-direction:column;gap:2px}.tc-lp-otx b{font:700 14px Arial;color:#3d2a70}.tc-lp-otx span{font:12px Arial;color:#777}
-    /* external-link picker */
-    .tc-lp-mid.tc-lp-links{display:flex;flex-direction:column;gap:6px;padding:14px 16px;overflow:auto}
-    .tc-lp-linkhdr{font:12px Arial;color:#555;margin-bottom:4px}
-    .tc-lp-link{display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #d8cdf0;background:#fff;border-radius:6px;padding:9px 12px;font:12px ui-monospace,Consolas,monospace;color:#3d2a70;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tc-lp-link:hover{background:#f7f4fd}
-    .tc-lp-linkstatus{font:12px Arial;color:#777;padding:16px 4px;text-align:center}.tc-lp-linkstatus.err{color:#c62828}
-    /* parse view */
-    .tc-lp-mid.tc-lp-body{display:flex;gap:8px;padding:8px 10px}
-    .tc-lp-ta{flex:0 0 45%;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
+    /* body: left (textarea + chooser overlay) | list */
+    .tc-lp-body{flex:1;min-height:0;display:flex;gap:8px;padding:8px 10px}
+    .tc-lp-left{flex:0 0 45%;position:relative;display:flex}
+    .tc-lp-ta{flex:1;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
+    /* chooser — overlaid on the empty textarea (#455 round 3) */
+    .tc-lp-choose{position:absolute;inset:0;background:#faf8fe;border:1px solid #cbb9ec;border-radius:5px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:16px}
+    .tc-lp-crow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+    .tc-lp-cbtn{cursor:pointer;border:1px solid #c3aef0;background:#fff;color:#3d2a70;font:600 13px Arial;border-radius:7px;padding:11px 16px}.tc-lp-cbtn:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-lp-clbl{font:600 12px Arial;color:#8a7fae;margin-top:6px}
+    .tc-lp-favs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:34px}
+    .tc-lp-fav{width:32px;height:32px;cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:4px;background:#fff}.tc-lp-fav:hover{border-color:#a98fe0;background:#f1ebfb;transform:scale(1.08)}
+    .tc-lp-favtxt{cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:6px 9px;background:#fff;font:600 11px Arial;color:#3d2a70;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tc-lp-favtxt:hover{border-color:#a98fe0;background:#f1ebfb}
+    .tc-lp-favload,.tc-lp-nofav{font:12px Arial;color:#aaa;font-style:italic}
     .tc-lp-list{flex:1;min-width:0;overflow:auto;border:1px solid #eee;border-radius:5px;padding:3px}
     .tc-lp-row{display:flex;align-items:center;gap:6px;padding:2px 3px;border-radius:3px}.tc-lp-row:hover{background:#faf8fe}
     .tc-lp-tk{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:12px}
@@ -3147,67 +3146,61 @@ try {
       ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" title="Back" style="display:none">‹</button><span class="tc-lp-t">Parse track lengths</span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
-      <div class="tc-lp-mid"></div>
-      <div class="tc-lp-ft" style="display:none"><span class="tc-lp-cnt"></span><span class="tc-lp-acts"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></span></div>`;
+      <div class="tc-lp-hd"><span class="tc-lp-t">Parse track lengths</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-lp-body">
+        <div class="tc-lp-left">
+          <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
+          <div class="tc-lp-choose">
+            <div class="tc-lp-crow"><button type="button" class="tc-lp-cbtn" data-o="text">Enter text</button><button type="button" class="tc-lp-cbtn" data-o="clip">Paste from clipboard</button></div>
+            <div class="tc-lp-clbl">Parse from external link</div>
+            <div class="tc-lp-favs"><span class="tc-lp-favload">…</span></div>
+          </div>
+        </div>
+        <div class="tc-lp-list"></div>
+      </div>
+      <div class="tc-lp-ft"><span class="tc-lp-cnt"></span><span class="tc-lp-acts"><button type="button" class="tc-lp-cancel">Cancel</button><button type="button" class="tc-lp-ok" disabled>Apply</button></span></div>`;
     document.body.appendChild(p);
     const cw = p.offsetWidth || 832, ch = p.offsetHeight || 460;
     p.style.left = Math.max(8, Math.round((innerWidth - cw) / 2)) + 'px';
     p.style.top = Math.max(8, Math.round((innerHeight - ch) / 2)) + 'px';
 
     const $ = s => p.querySelector(s);
-    const mid = $('.tc-lp-mid'), ft = $('.tc-lp-ft'), backBtn = $('.tc-lp-back');
+    const ta = $('.tc-lp-ta'), listEl = $('.tc-lp-list'), chooser = $('.tc-lp-choose'), errBadge = $('.tc-lp-err');
     const tracks = () => u(mediums()[curMi].tracks) || [];
     const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
     const close = () => p.remove();
+    const showChooser = () => { chooser.style.display = (!ta.value && !items.length) ? '' : 'none'; };
 
-    // ── start view: three sources ──
-    function showStart() {
-      sourceUrl = null; ft.style.display = 'none'; backBtn.style.display = 'none';
-      mid.className = 'tc-lp-mid tc-lp-choose';
-      mid.innerHTML = `
-        <button type="button" class="tc-lp-opt" data-o="text"><span class="tc-lp-oi">📝</span><span class="tc-lp-otx"><b>Enter text</b><span>Paste or type a tracklist and pick out the durations</span></span></button>
-        <button type="button" class="tc-lp-opt" data-o="clip"><span class="tc-lp-oi">📋</span><span class="tc-lp-otx"><b>From clipboard</b><span>Read whatever is on your clipboard right now</span></span></button>
-        <button type="button" class="tc-lp-opt" data-o="link"><span class="tc-lp-oi">🔗</span><span class="tc-lp-otx"><b>From an external link</b><span>Fetch a page linked on this release and read its text</span></span></button>`;
-      mid.querySelector('[data-o="text"]').onclick = () => showParse();
-      mid.querySelector('[data-o="clip"]').onclick = () => {
-        if (navigator.clipboard && navigator.clipboard.readText)
-          navigator.clipboard.readText().then(t => { showParse(); const ta = $('.tc-lp-ta'); ta.value = t; items = lpParse(t); render(); }).catch(() => { showParse(); toast('Clipboard blocked — paste into the box'); });
-        else { showParse(); toast('Clipboard unavailable — paste into the box'); }
-      };
-      mid.querySelector('[data-o="link"]').onclick = () => showLinks();
-    }
-
-    // ── external-link picker ──
-    async function showLinks() {
-      backBtn.style.display = ''; ft.style.display = 'none';
-      mid.className = 'tc-lp-mid tc-lp-links'; mid.innerHTML = `<div class="tc-lp-linkstatus">Loading external links…</div>`;
-      const urls = await lpExternalLinks();
-      if (!urls.length) { mid.innerHTML = `<div class="tc-lp-linkstatus">No external links on this release — add one (e.g. the Bandcamp page) or use “Enter text”.</div>`; return; }
-      mid.innerHTML = `<div class="tc-lp-linkhdr">Pick a page to read track lengths from:</div>` + urls.map(x => `<button type="button" class="tc-lp-link" data-u="${esc(x)}">${esc(x)}</button>`).join('');
-      mid.querySelectorAll('.tc-lp-link').forEach(b => b.onclick = () => fetchLink(b.dataset.u));
-    }
+    // ── source chooser (overlaid on the empty textarea, beside the list) ──
+    chooser.querySelector('[data-o="text"]').onclick = () => { chooser.style.display = 'none'; ta.focus(); };
+    chooser.querySelector('[data-o="clip"]').onclick = () => {
+      if (navigator.clipboard && navigator.clipboard.readText)
+        navigator.clipboard.readText().then(t => { ta.value = t; sourceUrl = null; items = lpParse(t); render(); showChooser(); ta.focus(); }).catch(() => { chooser.style.display = 'none'; ta.focus(); toast('Clipboard blocked — paste into the box'); });
+      else { chooser.style.display = 'none'; ta.focus(); toast('Clipboard unavailable — paste into the box'); }
+    };
+    // external links → one favicon each; clicking fetches + parses immediately
+    lpExternalLinks().then(urls => {
+      const favs = chooser.querySelector('.tc-lp-favs');
+      if (!urls.length) { favs.innerHTML = `<span class="tc-lp-nofav">no external links on this release</span>`; return; }
+      favs.innerHTML = urls.map(x => { let h = ''; try { h = new URL(x).hostname.replace(/^www\./, ''); } catch (e) {} return `<img class="tc-lp-fav" src="https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(h)}" title="Read track lengths from ${esc(x)}" data-u="${esc(x)}" data-h="${esc(h)}" alt="${esc(h)}" referrerpolicy="no-referrer">`; }).join('');
+      favs.querySelectorAll('.tc-lp-fav').forEach(im => {
+        im.onclick = () => fetchLink(im.dataset.u);
+        im.onerror = () => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-lp-favtxt'; b.textContent = im.dataset.h || 'link'; b.title = im.title; b.onclick = () => fetchLink(im.dataset.u); im.replaceWith(b); };   // favicon blocked/offline → clickable hostname chip
+      });
+    });
     async function fetchLink(url) {
-      mid.className = 'tc-lp-mid tc-lp-links'; mid.innerHTML = `<div class="tc-lp-linkstatus">Fetching the page…<br><small>${esc(url)}</small></div>`;
+      chooser.style.display = 'none'; ta.disabled = true; ta.value = 'Fetching the page…\n' + url;
       let html; try { html = await lpFetchHtml(url); }
-      catch (e) { mid.innerHTML = `<div class="tc-lp-linkstatus err">Couldn't fetch that page (${esc(e.message)}). Try another link or use “Enter text”.</div><button type="button" class="tc-lp-link" data-back="1">‹ Back to links</button>`; mid.querySelector('[data-back]').onclick = showLinks; return; }
+      catch (e) { ta.disabled = false; ta.value = ''; items = []; render(); showChooser(); toast(`Couldn't fetch that page (${e.message}) — try another link or paste`); return; }
+      ta.disabled = false;
       const text = lpExtractFromHtml(html, tracks().length);
-      sourceUrl = url;
-      showParse(); const ta = $('.tc-lp-ta'); ta.value = text; items = lpParse(text); render();
+      ta.value = text; sourceUrl = url; items = lpParse(text); render(); showChooser();
       if (!items.length) toast('No durations found on that page — try another link or paste the text');
     }
 
-    // ── parse view: textarea | editable list ──
-    function showParse() {
-      backBtn.style.display = ''; ft.style.display = '';
-      mid.className = 'tc-lp-mid tc-lp-body';
-      mid.innerHTML = `<textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea><div class="tc-lp-list"></div>`;
-      const ta = $('.tc-lp-ta');
-      ta.oninput = () => { sourceUrl = null; items = lpParse(ta.value); render(); };   // typing overrides an external source
-      render(); setTimeout(() => ta.focus(), 0);
-    }
+    ta.oninput = () => { sourceUrl = null; items = lpParse(ta.value); render(); showChooser(); };   // typing overrides an external source
+
     function render() {
-      const listEl = $('.tc-lp-list'); if (!listEl) return;
       const nT = tracks().length; listEl.innerHTML = '';
       items.forEach((it, i) => {
         const row = document.createElement('div'); row.className = 'tc-lp-row';
@@ -3236,6 +3229,8 @@ try {
         + (sourceUrl ? ' · from external link' : '');
       okBtn.disabled = !n || bad > 0;
       okBtn.textContent = `Apply ${Math.min(n, nT)} to Medium ${curMi + 1}`;
+      if (bad > 0) { errBadge.style.display = ''; errBadge.textContent = `⚠ ${bad} invalid — fix or delete`; }   // #455.3 prominent badge in the header
+      else errBadge.style.display = 'none';
     }
     function commit() {
       const nT = tracks().length, n = Math.min(items.length, nT);
@@ -3250,10 +3245,9 @@ try {
     // static header/footer wiring
     $('.tc-lp-ok').onclick = commit;
     $('.tc-lp-cancel').onclick = $('.tc-lp-x').onclick = close;
-    backBtn.onclick = showStart;
-    const medEl = $('.tc-lp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; if ($('.tc-lp-list')) render(); };
+    const medEl = $('.tc-lp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
     // Esc / Ctrl+Enter only — never dismisses on an outside click (#455.6)
-    p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && $('.tc-lp-list')) { e.preventDefault(); commit(); } };
+    p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); commit(); } };
     // draggable by the header
     $('.tc-lp-hd').onmousedown = e => {
       if (e.target.closest('button, select')) return;
@@ -3263,7 +3257,7 @@ try {
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     };
-    showStart();
+    render(); showChooser();
   }
   function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'lengthparser') openLengthParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
   function runAction(a) {

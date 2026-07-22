@@ -66,10 +66,18 @@ const note = await page.evaluate(() => {
 });
 log('edit note after stamp:', JSON.stringify(note.text));
 
-// 2) open the panel — starts on the 3-option chooser; pick "Enter text", then paste/edit/apply
+// 2) open the panel — chooser overlays the left textarea beside the list; pick "Enter text", then paste/edit/apply
 await page.evaluate(() => window.__apolloEditor.openLengthParser(0));
 await page.waitForSelector('#tc-lppop .tc-lp-choose', { timeout: 5000 });
-const startOpts = await page.evaluate(() => [...document.querySelectorAll('#tc-lppop .tc-lp-opt')].map(b => b.dataset.o));
+const chooser = await page.evaluate(() => {
+  const p = document.getElementById('tc-lppop');
+  return {
+    opts: [...p.querySelectorAll('.tc-lp-choose .tc-lp-cbtn')].map(b => b.dataset.o),
+    hasExtLabel: !!p.querySelector('.tc-lp-choose .tc-lp-clbl'),
+    hasFavArea: !!p.querySelector('.tc-lp-choose .tc-lp-favs'),
+    listVisibleWithChooser: !!p.querySelector('.tc-lp-list'),   // list stays beside the chooser (#455.2)
+  };
+});
 await page.evaluate(() => document.querySelector('#tc-lppop [data-o="text"]').click());
 await page.waitForSelector('#tc-lppop .tc-lp-ta', { timeout: 5000 });
 const ui = await page.evaluate(async () => {
@@ -85,12 +93,15 @@ const ui = await page.evaluate(async () => {
   const afterParse = vals();
   const okAfterParse = !ok.disabled;
   const noClipButton = !p.querySelector('.tc-lp-clip'), noOutsideDismiss = true;   // #455.5 / #455.6
-  // make one invalid → Apply must disable + row flagged red
+  // make one invalid → Apply must disable + row flagged red + header badge shows (#455.3)
   const firstVal = p.querySelector('.tc-lp-val'); firstVal.value = '9:99'; firstVal.dispatchEvent(new Event('input', { bubbles: true }));
+  const err = p.querySelector('.tc-lp-err');
   const okWhenInvalid = ok.disabled, firstBad = firstVal.classList.contains('bad');
+  const badgeShown = getComputedStyle(err).display !== 'none' && /invalid/i.test(err.textContent);
   // #455.7 fixing it must clear the red immediately (no re-render, keeps focus)
   firstVal.value = afterParse[0]; firstVal.dispatchEvent(new Event('input', { bubbles: true }));
   const clearedAfterFix = !firstVal.classList.contains('bad') && !ok.disabled;
+  const badgeHidden = getComputedStyle(err).display === 'none';
   // delete row 2 → list shifts up
   const before = vals().length;
   rows()[1].querySelector('.tc-lp-del').click();
@@ -98,7 +109,7 @@ const ui = await page.evaluate(async () => {
   // insert via a row's + (#455.2 per-row +, inserts below)
   rows()[0].querySelector('.tc-lp-add').click();
   const afterIns = vals().length;
-  return { nT, afterParse, okAfterParse, noClipButton, okWhenInvalid, firstBad, clearedAfterFix, before, afterDel, afterIns };
+  return { nT, afterParse, okAfterParse, noClipButton, okWhenInvalid, firstBad, badgeShown, clearedAfterFix, badgeHidden, before, afterDel, afterIns };
 });
 log('panel: parsed', ui.afterParse.length, 'rows for', ui.nT, 'tracks; Apply enabled =', ui.okAfterParse, '; clip-btn removed =', ui.noClipButton);
 log('invalid → Apply disabled =', ui.okWhenInvalid, ', flagged =', ui.firstBad, ', cleared-after-fix =', ui.clearedAfterFix, '; delete', ui.before, '→', ui.afterDel, '; insert →', ui.afterIns);
@@ -127,11 +138,12 @@ check(JSON.stringify(unit.hours) === JSON.stringify(['1:23:45']), 'hours kept as
 check(unit.validGood && unit.validBad, 'lpValid: m:ss / h:mm:ss valid; 99:99 / 1:99:45 / 1:2 invalid');
 check(extract.vals.length === 12 && !extract.hasNav, `smart extraction pulls the 12 tracklist durations, skips nav/footer noise (got ${extract.vals.length}, nav=${extract.hasNav})`);
 check(/Existing note\./.test(note.text) && /Track lengths from https:\/\/example\.bandcamp\.com/.test(note.text) && !note.dupd, 'edit note gets the source line, keeps the existing note, idempotent (#455.2)');
-check(JSON.stringify(startOpts) === JSON.stringify(['text', 'clip', 'link']), 'start view offers the 3 sources: enter text / clipboard / external link (#455.1)');
+check(JSON.stringify(chooser.opts) === JSON.stringify(['text', 'clip']) && chooser.hasExtLabel && chooser.hasFavArea, 'chooser overlays the left column: Enter text / Paste from clipboard buttons + external-link favicon area (#455 r3)');
+check(chooser.listVisibleWithChooser, 'the track list stays visible beside the chooser (integrated layout, no separate start window)');
 check(ui.afterParse.length === ui.nT && ui.okAfterParse, 'panel parsed one row per track, Apply enabled');
-check(ui.noClipButton, 'the From-clipboard button was removed (#455.5)');
 check(ui.okWhenInvalid && ui.firstBad, 'an invalid time flags the row and disables Apply');
-check(ui.clearedAfterFix, 'fixing an invalid time clears the red and re-enables Apply (#455.7)');
+check(ui.badgeShown, 'an invalid time raises a prominent badge in the header (#455.3)');
+check(ui.clearedAfterFix && ui.badgeHidden, 'fixing an invalid time clears the red, hides the badge and re-enables Apply (#455.7)');
 check(ui.afterDel === ui.before - 1 && ui.afterIns === ui.afterDel + 1, 'per-row delete removes a row; per-row + inserts one (#455.2)');
 check(applied.got.length && applied.expected.every((t, i) => applied.got[i] === t), 'Apply wrote every length to the tracks in order');
 check(applied.closed, 'panel closes after Apply');
