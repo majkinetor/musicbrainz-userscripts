@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.22.221623
+// @version      2026.7.23.103849
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1377,7 +1377,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.22.221623';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.23.103849';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1744,7 +1744,10 @@
     .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
     .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
     .tc-tpp-body{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 10px}
-    .tc-tpp-ta{flex:0 0 22%;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
+    .tc-tpp-src{flex:0 0 auto;display:flex;flex-direction:column;gap:4px}
+    .tc-tpp-srctgl{align-self:flex-start;cursor:pointer;border:none;background:none;color:#5f3ec0;font:600 11px Arial;padding:2px}.tc-tpp-srctgl:hover{color:#3d2a70;text-decoration:underline}
+    .tc-tpp-src.tc-collapsed .tc-tpp-ta{display:none}
+    .tc-tpp-ta{height:15vh;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
     .tc-tpp-tblwrap{flex:1;min-height:0;overflow:auto;border:1px solid #eee;border-radius:5px}
     .tc-tpp-tbl{width:100%;border-collapse:collapse;font-size:12px}
     .tc-tpp-tbl th{position:sticky;top:0;background:#f7f4fc;text-align:left;font:600 10px Arial;letter-spacing:.03em;text-transform:uppercase;color:#8a7fae;padding:4px 6px;border-bottom:1px solid #e6ddf6}
@@ -3117,8 +3120,7 @@
     } };
   }
 
-  function openParser(mi) { openTrackPatternParser(mi); }
-  function openTrackParserNative(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
+  function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
 
   function openTrackPatternParser(mi) {
     document.getElementById('tc-tpppop')?.remove();
@@ -3135,20 +3137,27 @@
       ? `<select class="tc-tpp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-tpp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-tpp-hd"><span class="tc-tpp-t">Track parser</span>${medSel}<button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
         <input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice">
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
       </div>
       <div class="tc-tpp-body">
-        <textarea class="tc-tpp-ta" spellcheck="false" placeholder="Paste the tracklist — one track per line"></textarea>
+        <div class="tc-tpp-src">
+          <button type="button" class="tc-tpp-srctgl" title="Show / hide the paste box">▾ Paste tracklist</button>
+          <textarea class="tc-tpp-ta" spellcheck="false" placeholder="Paste the tracklist — one track per line"></textarea>
+        </div>
         <div class="tc-tpp-tblwrap"><table class="tc-tpp-tbl"><thead><tr><th></th><th>pattern</th><th>raw</th><th>#</th><th>artist</th><th>title</th><th>length</th></tr></thead><tbody></tbody></table></div>
       </div>
       <div class="tc-tpp-ft"><span class="tc-tpp-cnt"></span><span class="tc-tpp-acts"><button type="button" class="tc-tpp-ok" disabled>Apply</button><button type="button" class="tc-tpp-menu" title="Apply options" disabled>▾</button></span></div>`;
     document.body.appendChild(p);
     const $ = s => p.querySelector(s);
     const ta = $('.tc-tpp-ta'), tbody = $('.tc-tpp-tbl tbody'), patIn = $('.tc-tpp-pi');
+    const src = $('.tc-tpp-src'), srctgl = $('.tc-tpp-srctgl');
+    // #456: the paste box only seeds the rows, so fold it away once there's content (the raw
+    // column keeps the source visible); the caret toggles it back to re-paste/edit.
+    const setSrc = collapsed => { src.classList.toggle('tc-collapsed', collapsed); const n = rows.length; srctgl.textContent = (collapsed ? '▸ ' : '▾ ') + (collapsed && n ? `Paste tracklist (${n} line${n !== 1 ? 's' : ''})` : 'Paste tracklist'); };
     const close = () => p.remove();
 
     function syncRows() {
@@ -3220,6 +3229,8 @@
     }
 
     ta.oninput = () => { syncRows(); render(); };
+    ta.onblur = () => { if (ta.value.trim()) setSrc(true); };   // fold away once seeded
+    srctgl.onclick = () => { const collapse = !src.classList.contains('tc-collapsed'); setSrc(collapse); if (!collapse) ta.focus(); };
     patIn.oninput = () => { _tpPattern = patIn.value; compiled.clear(); render(); };
     p.querySelectorAll('.tc-tpp-chip').forEach(c => c.onclick = () => { patIn.value = c.dataset.p; _tpPattern = c.dataset.p; compiled.clear(); render(); patIn.focus(); });
     $('.tc-tpp-ok').onclick = () => apply('all', false);
@@ -3229,7 +3240,9 @@
     p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!$('.tc-tpp-ok').disabled) apply('all', false); } };
     $('.tc-tpp-hd').onmousedown = e => {
       if (e.target.closest('button, select')) return; e.preventDefault();
-      const r = p.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
+      const r = p.getBoundingClientRect();
+      p.style.transform = 'none'; p.style.left = r.left + 'px'; p.style.top = r.top + 'px';   // #456: detach from the centering transform so the drag math is absolute (else it clamps early)
+      const ox = e.clientX - r.left, oy = e.clientY - r.top;
       const mv = ev => { p.style.left = Math.max(0, Math.min(ev.clientX - ox, innerWidth - p.offsetWidth)) + 'px'; p.style.top = Math.max(0, Math.min(ev.clientY - oy, innerHeight - p.offsetHeight)) + 'px'; };
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
@@ -3439,7 +3452,7 @@
     };
     render(); showChooser();
   }
-  function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'lengthparser') openLengthParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
+  function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'patternparser') openTrackPatternParser(mi); else if (act === 'lengthparser') openLengthParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
   function runAction(a) {
     // #378 a bridged external tool (x:…). The PINNED toolbar button reaches us via bindActions (which
     // rebinds every [data-act] to runAction, overriding pickTool), so re-sync the bridge map HERE too —
@@ -3496,7 +3509,8 @@
      params on a 2nd row. Click the "Tools" label to customise (visibility, order,
      per-tool icon/text, pinning). ── */
   const MENU = [
-    { act: 'parser',    label: 'Track parser',       icon: '☰' },           // ☰
+    { act: 'parser',    label: 'Track parser',       icon: '☰' },           // ☰ native MB parser
+    { act: 'patternparser', label: 'Pattern parser',  icon: '▦' },           // ▦ #456 our pattern-based parser
     { act: 'lengthparser', label: 'Parse track lengths', icon: '⏱' },       // ⏱ #455
     { act: 'swap',      label: 'Swap',               icon: '⇅' },           // ⇅
     { act: 'resetnum',  label: 'Reset #',            icon: '#' },
@@ -3507,7 +3521,7 @@
   ];
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
   const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
-  const MEDIUM_TOOLS = new Set(['parser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
+  const MEDIUM_TOOLS = new Set(['parser', 'patternparser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
   const hasParams = act => !!(TOOL[act] && TOOL[act].params);
 

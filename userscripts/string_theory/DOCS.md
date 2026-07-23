@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-23 09:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-23 10:39 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -194,9 +194,9 @@ Search a string within track titles and replace it. Clicking the tool name start
 
 Set column sizes to predefined variants (Fit, Centered, Default).
 
-#### Track parser
+#### Pattern parser
 
-Fill a medium's tracklist from pasted text using a **pattern** — a one-line template that says what each line looks like, so you're not locked into the native parser's rigid format. Type a pattern, paste the list, review the live preview, Apply.
+A second track parser (the `▦` tool, next to the native `☰` one — the native parser stays put) that fills a medium's tracklist from pasted text using a **pattern** — a one-line template that says what each line looks like, so you're not locked into the native parser's rigid format. Type a pattern, paste the list, review the live preview, Apply. The paste box folds away once you've pasted (the raw column keeps the source visible) — click **▸ Paste tracklist** to reopen it.
 
 **Tokens:** `#` track number · `T` title · `A` artist · `L` length · `M` medium · `_` skip noise. Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out. Text fields split on the **first** separator (`A - T` → artist = up to the first `-`, title = the rest).
 
