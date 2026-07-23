@@ -197,7 +197,7 @@ For a tracklist where no single pattern fits every line, **🔒 Freeze matched**
 
 For a one-off messy line you don't want to write a pattern for, **select the span** in its **raw** cell — a little bar pops up (`#` · `A` · `T` · `L` · `✕`); click a field to bind that span to it (it writes a `T[a-b]`-style slice into the row's pattern), or `✕` to clear the row. Both the main pattern box and each row's pattern cell carry a small **✕** to clear them.
 
-### Parse track lengths
+### Length parser
 
 Fill a medium's track **lengths** from any text — the native track parser wants a specific format, but lengths copied off a site (Bandcamp, foobar2000, …) rarely fit (track numbers land on their own lines, etc.). This just **greps every duration out of the text** and lets you review the result before writing anything.
 

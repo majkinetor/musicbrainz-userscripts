@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.23.204204
+// @version      2026.7.23.205139
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3466,7 +3466,7 @@
       ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" title="Back to the source chooser" style="display:none">‹ Sources</button><span class="tc-lp-t">Parse track lengths</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" title="Back to the source chooser" style="display:none">‹ Sources</button><span class="tc-lp-t">Length parser</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
       <div class="tc-lp-body">
         <div class="tc-lp-left">
           <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
@@ -3643,7 +3643,7 @@
   const MENU = [
     { act: 'parser',    label: 'Track parser',       icon: '☰' },           // ☰ native MB parser
     { act: 'patternparser', label: 'Pattern parser',  icon: '▦' },           // ▦ #456 our pattern-based parser
-    { act: 'lengthparser', label: 'Parse track lengths', icon: '⏱' },       // ⏱ #455
+    { act: 'lengthparser', label: 'Length parser',     icon: '⏱' },         // ⏱ #455
     { act: 'swap',      label: 'Swap',               icon: '⇅' },           // ⇅
     { act: 'resetnum',  label: 'Reset #',            icon: '#' },
     { act: 'guessfeat', label: 'Guess feat.',        icon: 'ft', instant: true },
