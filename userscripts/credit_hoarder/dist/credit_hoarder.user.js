@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.22.120225
+// @version      2026.7.22.155617
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -1390,6 +1390,8 @@
     Ektare: null,
     "Electric Bass": "bass guitar",
     // MB's "bass guitar" IS the electric bass (was falling through to generic "instrument")
+    "Electric Bass Guitar": "electric bass guitar",
+    // MB's specific instrument (distinct from generic "bass guitar"); metal default, OP #453
     "Electric Guitar": "electric guitar",
     "Electric Upright Bass": "electric upright bass",
     "Electric Violin": "electric violin",
@@ -2867,7 +2869,7 @@
       return { role, attrs: [] };
     }
     if (/^bass(\s*guitar)?$/i.test(base)) {
-      const role = /\bacoustic\b/.test(detail) ? "Acoustic Bass" : /\b(double|upright|contrabass)\b/.test(detail) ? "Double Bass" : /\bfretless\b/.test(detail) ? "Fretless Bass" : "Bass Guitar";
+      const role = /\bacoustic\b/.test(detail) ? "Acoustic Bass" : /\b(double|upright|contrabass)\b/.test(detail) ? "Double Bass" : /\bfretless\b/.test(detail) ? "Fretless Bass" : "Electric Bass Guitar";
       return { role, attrs: [] };
     }
     if (/^vocals?$/i.test(base) || /^voice$/i.test(base) || /^narration$/i.test(base)) {
@@ -3024,9 +3026,10 @@
       resource_url: parsed ? parsed.cleanUrl : ""
     };
   }
-  function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel) {
+  function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel, onlyQualified) {
     const rels = [];
     for (const tok of parseMaRoleCell(row.roleCell)) {
+      if (onlyQualified && !tok.tracks) continue;
       const bridged = bridgeToken(tok);
       if (!bridged) {
         skipped.push(`${sectionLabel}: ${tok.base} \u2014 ${row.name}`);
@@ -3073,12 +3076,16 @@
         tracklistRels.push(...rowToTrackRels(row, scope, byPosition, guest, skipped, label));
       }
     }
+    for (const row of harvest.misc || []) {
+      tracklistRels.push(...rowToTrackRels(row, tracklist, byPosition, false, skipped, "misc", true));
+    }
     return { tracklistRels, tracklist, skipped, multiVolume: !!harvest.multiDisc };
   }
   function metalArchivesReleaseArtists(harvest) {
     const artists = [], skipped = [];
     for (const row of harvest.misc || []) {
       for (const tok of parseMaRoleCell(row.roleCell)) {
+        if (tok.tracks) continue;
         const bridged = bridgeToken(tok);
         if (!bridged) {
           skipped.push(`release: ${tok.base} \u2014 ${row.name}`);

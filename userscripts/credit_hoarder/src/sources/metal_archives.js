@@ -165,7 +165,7 @@ function bridgeToken(tok) {
         const role = /\bacoustic\b/.test(detail) ? 'Acoustic Bass'
             : /\b(double|upright|contrabass)\b/.test(detail) ? 'Double Bass'
             : /\bfretless\b/.test(detail) ? 'Fretless Bass'
-            : 'Bass Guitar';   // MB "bass guitar" is the electric bass
+            : 'Electric Bass Guitar';   // metal default = MB's specific "electric bass guitar" (OP #453)
         return { role, attrs: [] };
     }
     // Vocals with a subtype detail → "Lead Vocals" / "Backing Vocals" / …
@@ -339,9 +339,10 @@ function maArtist(row, discogsRole) {
 // One lineup row → engine per-track rels. `guest` adds the guest attribute; the
 // row's role cell is parsed, each token bridged and resolved, then applied to
 // its track(s) — the qualifier's tracks, or (none) → every track.
-function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel) {
+function rowToTrackRels(row, allTracks, byPosition, guest, skipped, sectionLabel, onlyQualified) {
     const rels = [];
     for (const tok of parseMaRoleCell(row.roleCell)) {
+        if (onlyQualified && !tok.tracks) continue;   // other-staff: unqualified → release-level (handled elsewhere)
         const bridged = bridgeToken(tok);
         if (!bridged) { skipped.push(`${sectionLabel}: ${tok.base} — ${row.name}`); continue; }
         // resolve via the shared Discogs resolver; retry once without a trailing "s"
@@ -389,6 +390,13 @@ export function metalArchivesToEngine(harvest) {
             tracklistRels.push(...rowToTrackRels(row, scope, byPosition, guest, skipped, label));
         }
     }
+    // Other-staff (misc) credits with an explicit "(tracks N)" qualifier are recording-level
+    // on exactly those tracks (e.g. Bruce Bennett — Engineering (tracks 1, 2)); unqualified
+    // misc stays release-level via metalArchivesReleaseArtists. OP #453: don't spread a
+    // track-specific engineer/recording credit across the whole tracklist.
+    for (const row of (harvest.misc || [])) {
+        tracklistRels.push(...rowToTrackRels(row, tracklist, byPosition, false, skipped, 'misc', true));
+    }
     return { tracklistRels, tracklist, skipped, multiVolume: !!harvest.multiDisc };
 }
 
@@ -402,6 +410,7 @@ export function metalArchivesReleaseArtists(harvest) {
     const artists = [], skipped = [];
     for (const row of (harvest.misc || [])) {
         for (const tok of parseMaRoleCell(row.roleCell)) {
+            if (tok.tracks) continue;   // track-qualified misc → recording-level (metalArchivesToEngine), not release-level (OP #453)
             const bridged = bridgeToken(tok);
             if (!bridged) { skipped.push(`release: ${tok.base} — ${row.name}`); continue; }
             const a = maArtist(row, bridged.role);
