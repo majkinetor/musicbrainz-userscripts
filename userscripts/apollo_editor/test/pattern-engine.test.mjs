@@ -85,8 +85,9 @@ function tpCompile(pattern, opts = {}) {
     };
   }
 
-  // flow-mode: build an anchored regex; text fields lazy except the last one greedy
-  const lastText = [...fieldSegs].reverse().find(s => s.field === 'title' || s.field === 'artist');
+  // flow-mode: build an anchored regex; one text field is greedy (first sep by default, last when splitLast)
+  const textSegs = fieldSegs.filter(s => s.field === 'title' || s.field === 'artist');
+  const greedyText = opts.splitLast ? textSegs[0] : textSegs[textSegs.length - 1];
   let re = '^\\s*';
   for (const seg of segs) {
     if (seg.kind === 'ws') re += '\\s+';
@@ -98,7 +99,7 @@ function tpCompile(pattern, opts = {}) {
       if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
       else if (f === 'medium') re += '(\\d+)';
       else if (f === 'length') re += '(' + TP_DUR + ')';
-      else re += seg === lastText ? '(.+)' : '(.+?)';   // title/artist
+      else re += seg === greedyText ? '(.+)' : '(.+?)';   // title/artist
     }
   }
   re += '\\s*$';
@@ -131,6 +132,8 @@ eq(P('# A - T (_', '1 Miles Davis - So What (original edit)'), { pos: '1', artis
 
 // split-on-first: artist ends at the first separator, title takes the rest
 eq(P('# A - T', '1 Miles Davis - So What - Take 1'), { pos: '1', artist: 'Miles Davis', title: 'So What - Take 1' }, 'split on first separator');
+// split-on-last (#456 v2 ‹first|last›): artist takes up to the LAST separator
+eq(P('# A - T', '1 Miles Davis - So What - Take 1', { splitLast: true }), { pos: '1', artist: 'Miles Davis - So What', title: 'Take 1' }, 'split on last separator (splitLast)');
 
 // separator list: one pattern, dash/slash/colon/en-dash variants
 eq(P('# A - T', '1 Miles Davis – So What'), { pos: '1', artist: 'Miles Davis', title: 'So What' }, 'sep: en-dash matches the literal -');

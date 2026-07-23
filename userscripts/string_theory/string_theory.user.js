@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.23.112143
+// @version      2026.7.23.113247
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,13 +75,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.23.112143 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.23.112143\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.22.120225\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.23\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.21.140214");
+  console.log('%c String Theory %c v2026.7.23.113247 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.23.113246\n  · Art Station v2026.7.21\n  · Credit Hoarder v2026.7.22.120225\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.23\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.21.140214");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.23.112143","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.23.112143","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.23.113246","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.23.113246","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1455,7 +1455,7 @@ try {
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.23.112143';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.23.113246';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1822,6 +1822,10 @@ try {
     .tc-tpp-pi{flex:1;min-width:160px;font:13px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:5px 8px;color:#3d2a70}
     .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
     .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-tpp-split{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#8a7fae;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:#f1ebfb;border-color:#a98fe0}.tc-tpp-split b{color:#5f3ec0}
+    .tc-tpp-chipbar{position:fixed;z-index:100005;display:flex;gap:2px;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 4px 16px rgba(40,20,80,.32);padding:3px}
+    .tc-tpp-chipbar button{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:bold 12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 8px;min-width:22px}.tc-tpp-chipbar button:hover{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
+    .tc-tpp-chipbar button[data-clr]{color:#c0392b}.tc-tpp-chipbar button[data-clr]:hover{background:#c0392b;color:#fff;border-color:#c0392b}
     .tc-tpp-body{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 10px}
     .tc-tpp-src{flex:0 0 auto;display:flex;flex-direction:column;gap:4px}
     .tc-tpp-srctgl{align-self:flex-start;cursor:pointer;border:none;background:none;color:#5f3ec0;font:600 11px Arial;padding:2px}.tc-tpp-srctgl:hover{color:#3d2a70;text-decoration:underline}
@@ -1835,7 +1839,7 @@ try {
     .tc-tpp-dot{width:14px;padding-left:8px!important}.tc-tpp-dot span{display:inline-block;width:8px;height:8px;border-radius:50%}
     .tc-tpp-pcell{width:120px}
     .tc-tpp-ov{width:112px;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 5px;color:#5f3ec0;background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
-    .tc-tpp-raw{color:#666;font:11px ui-monospace,Consolas,monospace;max-width:260px}
+    .tc-tpp-raw{color:#666;font:11px ui-monospace,Consolas,monospace;max-width:260px;cursor:text;user-select:text}
     .tc-tpp-empty{color:#ccc;font-style:italic}
     .tc-tpp-c{color:#222}
     .tc-tpp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
@@ -3175,7 +3179,10 @@ try {
         return tpUsable(out) ? out : null;
       } };
     }
-    const lastText = [...fieldSegs].reverse().find(s => s.field === 'title' || s.field === 'artist');
+    // one text field is greedy so the split lands on the FIRST separator (default) — or the LAST
+    // one when splitLast is on (#456 v2 ‹first|last› toggle): then the FIRST text field is greedy.
+    const textSegs = fieldSegs.filter(s => s.field === 'title' || s.field === 'artist');
+    const greedyText = opts.splitLast ? textSegs[0] : textSegs[textSegs.length - 1];
     let re = '^\\s*';
     for (const seg of segs) {
       if (seg.kind === 'ws') re += '\\s+';
@@ -3187,7 +3194,7 @@ try {
         if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
         else if (f === 'medium') re += '(\\d+)';
         else if (f === 'length') re += '(' + TP_DUR + ')';
-        else re += seg === lastText ? '(.+)' : '(.+?)';
+        else re += seg === greedyText ? '(.+)' : '(.+?)';
       }
     }
     re += '\\s*$';
@@ -3204,11 +3211,12 @@ try {
   function openTrackPatternParser(mi) {
     document.getElementById('tc-tpppop')?.remove();
     let curMi = (mi != null ? mi : toolMedium());
-    let rows = [];   // [{ raw, override }]
+    let rows = [];         // [{ raw, override }]
+    let _splitLast = false;   // #456 v2 ‹first|last›: which separator instance a text field splits on
     const tracks = () => u(mediums()[curMi].tracks) || [];
     const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
-    const compiled = new Map();   // pattern string → compiled (cached)
-    const compileFor = ov => { const key = (ov || _tpPattern); if (!compiled.has(key)) { try { compiled.set(key, tpCompile(key, { separators: TP_SEPS })); } catch (e) { compiled.set(key, null); } } return compiled.get(key); };
+    const compiled = new Map();   // pattern+mode → compiled (cached)
+    const compileFor = ov => { const key = (_splitLast ? 'L\x01' : 'F\x01') + (ov || _tpPattern); if (!compiled.has(key)) { try { compiled.set(key, tpCompile(ov || _tpPattern, { separators: TP_SEPS, splitLast: _splitLast })); } catch (e) { compiled.set(key, null); } } return compiled.get(key); };
     const parseRow = r => { const c = compileFor(r.override && r.override.trim()); try { return c ? c.exec(r.raw) : null; } catch (e) { return null; } };
 
     const p = document.createElement('div'); p.id = 'tc-tpppop'; p.className = 'tc-tpppop';
@@ -3221,6 +3229,7 @@ try {
         <span class="tc-tpp-plbl">Pattern</span>
         <input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice">
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
+        <button type="button" class="tc-tpp-split" title="Which separator a text field splits on when it repeats (A - T on 'a - b - c')">split: <b>first</b></button>
       </div>
       <div class="tc-tpp-body">
         <div class="tc-tpp-src">
@@ -3312,6 +3321,53 @@ try {
     srctgl.onclick = () => { const collapse = !src.classList.contains('tc-collapsed'); setSrc(collapse); if (!collapse) ta.focus(); };
     patIn.oninput = () => { _tpPattern = patIn.value; compiled.clear(); render(); };
     p.querySelectorAll('.tc-tpp-chip').forEach(c => c.onclick = () => { patIn.value = c.dataset.p; _tpPattern = c.dataset.p; compiled.clear(); render(); patIn.focus(); });
+    $('.tc-tpp-split').onclick = () => { _splitLast = !_splitLast; $('.tc-tpp-split').innerHTML = 'split: <b>' + (_splitLast ? 'last' : 'first') + '</b>'; render(); };
+
+    /* #456 v2 — interactive fix: select a span in a raw cell → a chip bar pops above it to bind
+     * that span to a field for THAT row, writing a slice into its pattern cell (T[a-b], …). */
+    const FIELD_CHIPS = [['#', 'pos'], ['A', 'artist'], ['T', 'title'], ['L', 'length']];
+    const chipBar = document.createElement('div'); chipBar.className = 'tc-tpp-chipbar'; chipBar.style.display = 'none';
+    chipBar.innerHTML = FIELD_CHIPS.map(([g, f]) => `<button type="button" data-f="${f}" data-g="${g}" title="Bind the selection to ${f}">${g}</button>`).join('') + '<button type="button" data-clr="1" title="Clear this row’s pattern">✕</button>';
+    p.appendChild(chipBar);
+    let _selCtx = null;   // { rowIdx, a, b } — 1-based inclusive char range in the raw text
+    const hideChips = () => { chipBar.style.display = 'none'; _selCtx = null; };
+    // char offsets of the current selection within a raw cell (the cell text == the row's raw)
+    function rawSelection() {
+      const sel = window.getSelection(); if (!sel || !sel.rangeCount || sel.isCollapsed) return null;
+      const range = sel.getRangeAt(0);
+      const cell = (range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement)?.closest('.tc-tpp-raw');
+      if (!cell || !cell.contains(range.endContainer)) return null;
+      const tr = cell.closest('tr'); const rowIdx = tr ? [...tbody.children].indexOf(tr) : -1;
+      if (rowIdx < 0) return null;
+      const pre = document.createRange(); pre.selectNodeContents(cell); pre.setEnd(range.startContainer, range.startOffset);
+      const start = pre.toString().length, len = range.toString().length;
+      if (!len) return null;
+      return { rowIdx, a: start + 1, b: start + len, rect: range.getBoundingClientRect() };   // 1-based inclusive
+    }
+    tbody.addEventListener('mouseup', () => setTimeout(() => {
+      const s = rawSelection();
+      if (!s) { hideChips(); return; }
+      _selCtx = s;
+      chipBar.style.display = 'flex';
+      const bw = chipBar.offsetWidth || 160;
+      chipBar.style.left = Math.max(6, Math.min(s.rect.left + s.rect.width / 2 - bw / 2, innerWidth - bw - 6)) + 'px';
+      chipBar.style.top = Math.max(6, s.rect.top - chipBar.offsetHeight - 6) + 'px';
+    }, 0));
+    // set/replace a field's slice in a row's override (overrides built this way are pure slice-mode)
+    function bindSlice(row, letter, a, b) {
+      const esc2 = letter === '#' ? '\\#' : letter;
+      let ov = (row.override || '').replace(new RegExp('\\$?' + esc2 + '\\[[^\\]]*\\]\\s*', 'g'), '').replace(/\s+/g, ' ').trim();
+      row.override = (ov ? ov + ' ' : '') + letter + '[' + a + '-' + b + ']';
+    }
+    chipBar.addEventListener('mousedown', e => e.preventDefault());   // keep the text selection alive through the click
+    chipBar.querySelectorAll('button').forEach(b => b.onclick = () => {
+      if (!_selCtx) return; const row = rows[_selCtx.rowIdx]; if (!row) return;
+      if (b.dataset.clr) row.override = '';
+      else bindSlice(row, b.dataset.g, _selCtx.a, _selCtx.b);
+      hideChips(); window.getSelection()?.removeAllRanges(); render();
+    });
+    p.addEventListener('mousedown', e => { if (!chipBar.contains(e.target) && !e.target.closest('.tc-tpp-raw')) hideChips(); });
+
     $('.tc-tpp-ok').onclick = () => apply('all', false);
     $('.tc-tpp-menu').onclick = openMenu;
     $('.tc-tpp-x').onclick = close;
