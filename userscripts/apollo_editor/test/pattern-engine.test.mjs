@@ -16,17 +16,14 @@ function tpTokenize(pattern, seps) {
   const sepSet = new Set(seps);
   const isFieldLetter = c => c === '#' || c === 'M' || c === 'T' || c === 'A' || c === 'L';
   const readSlice = (str, i) => {
-    // [a-b] | [a-] | [-b] | [~a-] (1-based, inclusive; ~ = from end). returns {slice, next} or null
+    // [a-b] | [a-] | [-b] | [~a-] numeric (1-based, inclusive; ~ = from end), or [a:X] = from a to
+    // (excluding) the first literal X. returns {slice, next} or null.
     if (str[i] !== '[') return null;
-    const m = /^\[(~?)(\d*)-?(\d*)\]/.exec(str.slice(i));
-    if (!m) return null;
-    const fromEnd = m[1] === '~';
-    const a = m[2] === '' ? null : parseInt(m[2], 10);
-    const hadDash = /-/.test(m[0]);
-    const b = m[3] === '' ? null : parseInt(m[3], 10);
-    // [a] (no dash) → single char a..a
-    const slice = hadDash ? { a, b, fromEnd } : { a, b: a, fromEnd };
-    return { slice, next: i + m[0].length };
+    const close = str.indexOf(']', i); if (close < 0) return null;
+    const inner = str.slice(i + 1, close); let m;
+    if ((m = /^(~?)(\d*):([\s\S]*)$/.exec(inner))) return { slice: { a: m[2] === '' ? null : parseInt(m[2], 10), fromEnd: m[1] === '~', toDelim: m[3] }, next: close + 1 };
+    if ((m = /^(~?)(\d*)(-?)(\d*)$/.exec(inner))) { const a = m[2] === '' ? null : parseInt(m[2], 10), b = m[4] === '' ? null : parseInt(m[4], 10); return { slice: m[3] === '-' ? { a, b, fromEnd: m[1] === '~' } : { a, b: a, fromEnd: m[1] === '~' }, next: close + 1 }; }
+    return null;
   };
   for (let i = 0; i < pattern.length;) {
     const c = pattern[i];
@@ -74,9 +71,14 @@ function tpCompile(pattern, opts = {}) {
         const s = String(line);
         const out = {};
         for (const seg of fieldSegs) {
-          const { a, b, fromEnd } = seg.slice;
+          const { a, b, fromEnd, toDelim } = seg.slice;
           let start, end;
-          if (fromEnd) { const n = s.length; start = a == null ? 0 : n - a; end = b == null ? n : n - b + 1; }
+          if (toDelim != null) {
+            start = fromEnd ? s.length - (a == null ? 0 : a) : (a == null ? 1 : a) - 1;
+            start = Math.max(0, start);
+            const idx = toDelim === '' ? -1 : s.indexOf(toDelim, start);
+            end = idx < 0 ? s.length : idx;
+          } else if (fromEnd) { const n = s.length; start = a == null ? 0 : n - a; end = b == null ? n : n - b + 1; }
           else { start = (a == null ? 1 : a) - 1; end = b == null ? s.length : b; }
           out[seg.field] = s.slice(Math.max(0, start), Math.max(0, end)).trim();
         }
@@ -96,7 +98,8 @@ function tpCompile(pattern, opts = {}) {
     else if (seg.kind === 'skip') re += '.*?';
     else if (seg.kind === 'field') {
       const f = seg.field;
-      if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
+      if (seg.slice && seg.slice.toDelim != null) re += '(.+?)' + tpEsc(seg.slice.toDelim);   // X[a:delim] in flow: capture up to the delim
+      else if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
       else if (f === 'medium') re += '(\\d+)';
       else if (f === 'length') re += '(' + TP_DUR + ')';
       else re += seg === greedyText ? '(.+)' : '(.+?)';   // title/artist
@@ -157,6 +160,11 @@ eq(P('# T', 'A1  So What'), { pos: 'A1', title: 'So What' }, 'vinyl side positio
 eq(P('#[1-2] T[4-]', '01 So What'), { pos: '01', title: 'So What' }, 'slices: pos 1-2, title 4-end');
 eq(P('T[9-]', '[bonus] So What'), { title: 'So What' }, 'slice: title from 9th char');
 eq(P('T[~5-]', 'So What Blue'), { title: 'Blue' }, 'slice: last 5 chars from end (trimmed)');
+// slice-to-delimiter [a:X] — from position a up to (excluding) the first X
+eq(P('#[1:.] T', '12. So What'), { pos: '12', title: 'So What' }, 'slice-to-delim: #[1:.] up to the first dot');
+eq(P('#[1:-]T', '007-So What'), { pos: '007', title: 'So What' }, 'slice-to-delim: #[1:-] up to the first dash');
+eq(P('#[1: ]T', '42 So What'), { pos: '42', title: 'So What' }, 'slice-to-delim: #[1: ] up to the first space');
+eq(P('A[1:(]', 'Miles Davis (feat. X)'), { artist: 'Miles Davis' }, 'slice-to-delim: A[1:(] up to the first paren');
 
 // h:mm:ss length
 eq(P('# T (L)', '1 Long One (1:02:33)'), { pos: '1', title: 'Long One', length: '1:02:33' }, 'h:mm:ss length');

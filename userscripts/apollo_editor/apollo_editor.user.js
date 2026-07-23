@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.23.113246
+// @version      2026.7.23.130912
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1388,7 +1388,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.23.113246';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.23.130912';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1752,7 +1752,10 @@
     .tc-tpp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-tpp-x:hover{color:#333}
     .tc-tpp-pat{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ebfa;flex-wrap:wrap}
     .tc-tpp-plbl{font:700 11px Arial;color:#8a7fae}
-    .tc-tpp-pi{flex:1;min-width:160px;font:13px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:5px 8px;color:#3d2a70}
+    .tc-tpp-piwrap{flex:1;min-width:160px;position:relative;display:flex}
+    .tc-tpp-pi{flex:1;min-width:0;font:13px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:5px 24px 5px 8px;color:#3d2a70}
+    .tc-tpp-piclr{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#b3a6d6;font-size:12px;line-height:1;padding:2px}.tc-tpp-piclr:hover{color:#c0392b}
+    .tc-tpp-piwrap.has .tc-tpp-piclr{display:block}
     .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
     .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
     .tc-tpp-split{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#8a7fae;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:#f1ebfb;border-color:#a98fe0}.tc-tpp-split b{color:#5f3ec0}
@@ -1763,7 +1766,7 @@
     .tc-tpp-src{flex:0 0 auto;display:flex;flex-direction:column;gap:4px}
     .tc-tpp-srctgl{align-self:flex-start;cursor:pointer;border:none;background:none;color:#5f3ec0;font:600 11px Arial;padding:2px}.tc-tpp-srctgl:hover{color:#3d2a70;text-decoration:underline}
     .tc-tpp-src.tc-collapsed .tc-tpp-ta{display:none}
-    .tc-tpp-ta{height:15vh;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
+    .tc-tpp-ta{height:15vh;min-height:44px;resize:vertical;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
     .tc-tpp-tblwrap{flex:1;min-height:0;overflow:auto;border:1px solid #eee;border-radius:5px}
     .tc-tpp-tbl{width:100%;border-collapse:collapse;font-size:12px}
     .tc-tpp-tbl th{position:sticky;top:0;background:#f7f4fc;text-align:left;font:600 10px Arial;letter-spacing:.03em;text-transform:uppercase;color:#8a7fae;padding:4px 6px;border-bottom:1px solid #e6ddf6}
@@ -1772,7 +1775,9 @@
     .tc-tpp-dot{width:14px;padding-left:8px!important}.tc-tpp-dot span{display:inline-block;width:8px;height:8px;border-radius:50%}
     .tc-tpp-pcell{width:120px}
     .tc-tpp-ov{width:112px;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 5px;color:#5f3ec0;background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
-    .tc-tpp-raw{color:#666;font:11px ui-monospace,Consolas,monospace;max-width:260px;cursor:text;user-select:text}
+    /* #456: raw stays fully visible/selectable — no ellipsis clipping (you select spans here to bind fields).
+       The td.tc-tpp-raw specificity beats the generic .tc-tpp-tbl td ellipsis rule above. */
+    .tc-tpp-tbl td.tc-tpp-raw{color:#666;font:11px ui-monospace,Consolas,monospace;max-width:320px;cursor:text;user-select:text;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
     .tc-tpp-empty{color:#ccc;font-style:italic}
     .tc-tpp-c{color:#222}
     .tc-tpp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
@@ -3067,11 +3072,13 @@
     const isFieldLetter = c => c === '#' || c === 'M' || c === 'T' || c === 'A' || c === 'L';
     const readSlice = (str, i) => {
       if (str[i] !== '[') return null;
-      const m = /^\[(~?)(\d*)-?(\d*)\]/.exec(str.slice(i));
-      if (!m) return null;
-      const a = m[2] === '' ? null : parseInt(m[2], 10), b = m[3] === '' ? null : parseInt(m[3], 10);
-      const hadDash = /-/.test(m[0]);
-      return { slice: hadDash ? { a, b, fromEnd: m[1] === '~' } : { a, b: a, fromEnd: m[1] === '~' }, next: i + m[0].length };
+      const close = str.indexOf(']', i); if (close < 0) return null;
+      const inner = str.slice(i + 1, close); let m;
+      // colon form [a:X] — from position a to (excluding) the first literal X (e.g. #[1:.] up to the first dot)
+      if ((m = /^(~?)(\d*):([\s\S]*)$/.exec(inner))) return { slice: { a: m[2] === '' ? null : parseInt(m[2], 10), fromEnd: m[1] === '~', toDelim: m[3] }, next: close + 1 };
+      // dash form [a-b] / [a] — numeric char range (1-based inclusive; ~ = from the end)
+      if ((m = /^(~?)(\d*)(-?)(\d*)$/.exec(inner))) { const a = m[2] === '' ? null : parseInt(m[2], 10), b = m[4] === '' ? null : parseInt(m[4], 10); return { slice: m[3] === '-' ? { a, b, fromEnd: m[1] === '~' } : { a, b: a, fromEnd: m[1] === '~' }, next: close + 1 }; }
+      return null;
     };
     for (let i = 0; i < pattern.length;) {
       const c = pattern[i];
@@ -3104,8 +3111,13 @@
       return { fields, exec(line) {
         const s = String(line), out = {};
         for (const seg of fieldSegs) {
-          const { a, b, fromEnd } = seg.slice; let start, end;
-          if (fromEnd) { const n = s.length; start = a == null ? 0 : n - a; end = b == null ? n : n - b + 1; }
+          const { a, b, fromEnd, toDelim } = seg.slice; let start, end;
+          if (toDelim != null) {   // [a:X] — from a to (excluding) the first X at/after a
+            start = fromEnd ? s.length - (a == null ? 0 : a) : (a == null ? 1 : a) - 1;
+            start = Math.max(0, start);
+            const idx = toDelim === '' ? -1 : s.indexOf(toDelim, start);
+            end = idx < 0 ? s.length : idx;
+          } else if (fromEnd) { const n = s.length; start = a == null ? 0 : n - a; end = b == null ? n : n - b + 1; }
           else { start = (a == null ? 1 : a) - 1; end = b == null ? s.length : b; }
           out[seg.field] = s.slice(Math.max(0, start), Math.max(0, end)).trim();
         }
@@ -3124,7 +3136,8 @@
       else if (seg.kind === 'skip') re += '.*?';
       else if (seg.kind === 'field') {
         const f = seg.field;
-        if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
+        if (seg.slice && seg.slice.toDelim != null) re += '(.+?)' + tpEsc(seg.slice.toDelim);   // X[a:delim] in flow: capture up to (excl.) the delim
+        else if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
         else if (f === 'medium') re += '(\\d+)';
         else if (f === 'length') re += '(' + TP_DUR + ')';
         else re += seg === greedyText ? '(.+)' : '(.+?)';
@@ -3160,7 +3173,7 @@
       <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" title="Maximize / restore">⛶</button><button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
-        <input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice">
+        <span class="tc-tpp-piwrap"><input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice · X[a:.] up to a char"><button type="button" class="tc-tpp-piclr" title="Clear pattern" tabindex="-1">✕</button></span>
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
         <button type="button" class="tc-tpp-split" title="Which separator a text field splits on when it repeats (A - T on 'a - b - c')">split: <b>first</b></button>
       </div>
@@ -3252,8 +3265,12 @@
     ta.oninput = () => { syncRows(); render(); };
     ta.onblur = () => { if (ta.value.trim()) setSrc(true); };   // fold away once seeded
     srctgl.onclick = () => { const collapse = !src.classList.contains('tc-collapsed'); setSrc(collapse); if (!collapse) ta.focus(); };
-    patIn.oninput = () => { _tpPattern = patIn.value; compiled.clear(); render(); };
-    p.querySelectorAll('.tc-tpp-chip').forEach(c => c.onclick = () => { patIn.value = c.dataset.p; _tpPattern = c.dataset.p; compiled.clear(); render(); patIn.focus(); });
+    const piwrap = $('.tc-tpp-piwrap');
+    const syncClr = () => piwrap.classList.toggle('has', !!patIn.value);   // #456 show the clear-✕ only when there's a pattern to clear
+    patIn.oninput = () => { _tpPattern = patIn.value; compiled.clear(); syncClr(); render(); };
+    $('.tc-tpp-piclr').onclick = () => { patIn.value = ''; _tpPattern = ''; compiled.clear(); syncClr(); render(); patIn.focus(); };
+    syncClr();
+    p.querySelectorAll('.tc-tpp-chip').forEach(c => c.onclick = () => { patIn.value = c.dataset.p; _tpPattern = c.dataset.p; compiled.clear(); syncClr(); render(); patIn.focus(); });
     $('.tc-tpp-split').onclick = () => { _splitLast = !_splitLast; $('.tc-tpp-split').innerHTML = 'split: <b>' + (_splitLast ? 'last' : 'first') + '</b>'; render(); };
 
     /* #456 v2 — interactive fix: select a span in a raw cell → a chip bar pops above it to bind
