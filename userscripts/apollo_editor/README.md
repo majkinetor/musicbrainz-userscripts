@@ -189,8 +189,11 @@ A second track parser (the `▦` tool, next to the native `☰` one — the nati
 **Slices** (for delimiter-free fixed-width text): a token can carry a 1-based char range — `T[6-]` (6th char to end), `T[6-20]`, `T[-5]` (first 5), `T[~3-]` (last 3) — or a **`[from:to]`** form that runs from `from` up to (excluding) the first `to` character. `from` is a position or a character; `to` is a character:
 - `#[1:.]` = position 1 to the first `.` (`12. Title` → `12`), also `#[1:-]`, `#[1: ]`
 - `L[(:)]` = from the first `(` to the first `)` (`So What (9:22)` → `9:22`)
+- Prefix a character with `~` for the **last** occurrence instead of the first — `L[~(:)]` on `Hide Me (Bop remix) - Stillhead (4:20)` still finds the real length (`4:20`), where plain `L[(:)]` would grab the title's own `(Bop remix)` first
 
 The preview is one row per pasted line: a **match dot** (green = matched · amber = matched via a per-row pattern · red = no match), the raw text, and the extracted **# / artist / title / length**. A messy line can get its **own pattern** in the row's `pattern` cell without disturbing the rest. **Apply** writes only the fields the pattern produced (so a title-only pattern won't touch lengths); its **▾ menu** applies a single field (only titles / artists / lengths / #s) or adds the missing tracks first when you pasted more lines than the medium has.
+
+For a tracklist where no single pattern fits every line, **🔒 Freeze matched** locks the current pattern onto every row that's still on `«default»` and already matches — those rows keep that pattern from then on. Then adjust the pattern to solve more rows and freeze again; repeat until everything's matched, without the earlier fixes coming undone.
 
 For a one-off messy line you don't want to write a pattern for, **select the span** in its **raw** cell — a little bar pops up (`#` · `A` · `T` · `L` · `✕`); click a field to bind that span to it (it writes a `T[a-b]`-style slice into the row's pattern), or `✕` to clear the row. Both the main pattern box and each row's pattern cell carry a small **✕** to clear them.
 

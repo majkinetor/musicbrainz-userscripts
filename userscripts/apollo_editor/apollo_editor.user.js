@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.23.154540
+// @version      2026.7.23.203607
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1388,7 +1388,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.23.154540';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.23.203607';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1759,6 +1759,7 @@
     .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
     .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
     .tc-tpp-split{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#8a7fae;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:#f1ebfb;border-color:#a98fe0}.tc-tpp-split b{color:#5f3ec0}
+    .tc-tpp-freeze{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-freeze:hover{background:#f1ebfb;border-color:#a98fe0}
     .tc-tpp-chipbar{position:fixed;z-index:100005;display:flex;gap:2px;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 4px 16px rgba(40,20,80,.32);padding:3px}
     .tc-tpp-chipbar button{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:bold 12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 8px;min-width:22px}.tc-tpp-chipbar button:hover{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     .tc-tpp-chipbar button[data-clr]{color:#c0392b}.tc-tpp-chipbar button[data-clr]:hover{background:#c0392b;color:#fff;border-color:#c0392b}
@@ -3079,12 +3080,16 @@
       const inner = str.slice(i + 1, close); let m;
       // colon form [FROM:TO] — FROM is a numeric position (~ = from end) OR a literal char to start
       // AFTER; TO is a literal char to stop BEFORE (empty = to end). e.g. #[1:.] (pos 1 → first dot),
-      // L[(:)] (first "(" → first ")"), both excluding the delimiters.
+      // L[(:)] (first "(" → first ")"), both excluding the delimiters. A leading ~ on a CHAR (not a
+      // position) means the LAST occurrence of that char, not the first — e.g. L[~(:)] for a title
+      // that has its own "(...)" before the real "(length)" (#456).
       const colon = inner.indexOf(':');
       if (colon >= 0) {
-        const left = inner.slice(0, colon), toDelim = inner.slice(colon + 1);
-        const pm = /^(~?)(\d*)$/.exec(left);
-        const slice = pm ? { a: pm[2] === '' ? null : parseInt(pm[2], 10), fromEnd: pm[1] === '~', toDelim } : { fromDelim: left, toDelim };
+        let left = inner.slice(0, colon); const hadTilde = left[0] === '~'; if (hadTilde) left = left.slice(1);
+        let toDelim = inner.slice(colon + 1); const toLast = toDelim[0] === '~'; if (toLast) toDelim = toDelim.slice(1);
+        const slice = /^\d*$/.test(left)
+          ? { a: left === '' ? null : parseInt(left, 10), fromEnd: hadTilde, toDelim, toLast }   // numeric position (~ = from end)
+          : { fromDelim: left, fromLast: hadTilde, toDelim, toLast };                             // literal char (~ = last occurrence)
         return { slice, next: close + 1 };
       }
       // dash form [a-b] / [a] — numeric char range (1-based inclusive; ~ = from the end)
@@ -3122,12 +3127,12 @@
       return { fields, exec(line) {
         const s = String(line), out = {};
         for (const seg of fieldSegs) {
-          const { a, b, fromEnd, fromDelim, toDelim } = seg.slice; let start, end;
-          if (fromDelim != null) { const fi = fromDelim === '' ? 0 : s.indexOf(fromDelim); if (fi < 0) { out[seg.field] = ''; continue; } start = fi + fromDelim.length; }
+          const { a, b, fromEnd, fromDelim, fromLast, toDelim, toLast } = seg.slice; let start, end;
+          if (fromDelim != null) { const fi = fromDelim === '' ? 0 : (fromLast ? s.lastIndexOf(fromDelim) : s.indexOf(fromDelim)); if (fi < 0) { out[seg.field] = ''; continue; } start = fi + fromDelim.length; }
           else if (fromEnd) start = a == null ? 0 : s.length - a;
           else start = (a == null ? 1 : a) - 1;
           start = Math.max(0, start);
-          if (toDelim != null) { const ti = toDelim === '' ? -1 : s.indexOf(toDelim, start); end = ti < 0 ? s.length : ti; }
+          if (toDelim != null) { let ti; if (toDelim === '') ti = -1; else if (toLast) { ti = s.lastIndexOf(toDelim); if (ti < start) ti = -1; } else ti = s.indexOf(toDelim, start); end = ti < 0 ? s.length : ti; }
           else if (fromEnd) end = b == null ? s.length : s.length - b + 1;
           else end = b == null ? s.length : b;
           out[seg.field] = s.slice(start, Math.max(start, end)).trim();
@@ -3147,7 +3152,11 @@
       else if (seg.kind === 'skip') re += '.*?';
       else if (seg.kind === 'field') {
         const f = seg.field;
-        if (seg.slice && (seg.slice.toDelim != null || seg.slice.fromDelim != null)) { const sl = seg.slice; re += (sl.fromDelim ? tpEsc(sl.fromDelim) : '') + (sl.toDelim ? '(.+?)' + tpEsc(sl.toDelim) : '(.+)'); }   // X[from:to] in flow: fromDelim(capture)toDelim
+        if (seg.slice && (seg.slice.toDelim != null || seg.slice.fromDelim != null)) {
+          const sl = seg.slice;
+          // skip to fromDelim: lazy .*? = first occurrence, greedy .* = last (~) — mirrors slice-mode's indexOf/lastIndexOf
+          re += (sl.fromDelim ? (sl.fromLast ? '.*' : '.*?') + tpEsc(sl.fromDelim) : '') + (sl.toDelim ? (sl.toLast ? '(.+)' : '(.+?)') + tpEsc(sl.toDelim) : '(.+)');
+        }   // X[from:to] in flow: skip-to-fromDelim, capture, toDelim
         else if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
         else if (f === 'medium') re += '(\\d+)';
         else if (f === 'length') re += '(' + TP_DUR + ')';
@@ -3188,9 +3197,10 @@
       <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" title="Maximize / restore">⛶</button><button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
-        <span class="tc-tpp-piwrap"><input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice · X[a:.] up to a char"><button type="button" class="tc-tpp-piclr" title="Clear pattern" tabindex="-1">✕</button></span>
+        <span class="tc-tpp-piwrap"><input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice · X[a:.] up to a char · X[~a:.] from the LAST occurrence"><button type="button" class="tc-tpp-piclr" title="Clear pattern" tabindex="-1">✕</button></span>
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
         <button type="button" class="tc-tpp-split" title="Which separator a text field splits on when it repeats (A - T on 'a - b - c')">split: <b>first</b></button>
+        <button type="button" class="tc-tpp-freeze" title="Lock this pattern onto every still-«default» row that already matches it, so a later pattern change won't affect them — then try a new pattern on what's left">🔒 Freeze matched</button>
       </div>
       <div class="tc-tpp-body">
         <div class="tc-tpp-src">
@@ -3288,6 +3298,15 @@
     syncClr();
     p.querySelectorAll('.tc-tpp-chip').forEach(c => c.onclick = () => { patIn.value = c.dataset.p; _tpPattern = c.dataset.p; compiled.clear(); syncClr(); render(); patIn.focus(); });
     $('.tc-tpp-split').onclick = () => { _splitLast = !_splitLast; $('.tc-tpp-split').innerHTML = 'split: <b>' + (_splitLast ? 'last' : 'first') + '</b>'; render(); };
+    // #456 round 5 — iterative refinement: lock the CURRENT pattern onto every row that's still on
+    // «default» and already matches, so trying a new pattern afterward only affects what's left.
+    // Repeat with a different pattern until every row is solved.
+    $('.tc-tpp-freeze').onclick = () => {
+      let n = 0;
+      rows.forEach(r => { if (r.override && r.override.trim()) return; if (parseRow(r)) { r.override = _tpPattern; n++; } });
+      render();
+      toast(n ? `Froze ${n} matched row${n !== 1 ? 's' : ''} to this pattern` : 'No still-default rows match this pattern');
+    };
 
     /* #456 v2 — interactive fix: select a span in a raw cell → a chip bar pops above it to bind
      * that span to a field for THAT row, writing a slice into its pattern cell (T[a-b], …). */

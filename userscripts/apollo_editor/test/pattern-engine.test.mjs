@@ -23,9 +23,12 @@ function tpTokenize(pattern, seps) {
     const inner = str.slice(i + 1, close); let m;
     const colon = inner.indexOf(':');
     if (colon >= 0) {
-      const left = inner.slice(0, colon), toDelim = inner.slice(colon + 1);
-      const pm = /^(~?)(\d*)$/.exec(left);
-      return { slice: pm ? { a: pm[2] === '' ? null : parseInt(pm[2], 10), fromEnd: pm[1] === '~', toDelim } : { fromDelim: left, toDelim }, next: close + 1 };
+      let left = inner.slice(0, colon); const hadTilde = left[0] === '~'; if (hadTilde) left = left.slice(1);
+      let toDelim = inner.slice(colon + 1); const toLast = toDelim[0] === '~'; if (toLast) toDelim = toDelim.slice(1);
+      const slice = /^\d*$/.test(left)
+        ? { a: left === '' ? null : parseInt(left, 10), fromEnd: hadTilde, toDelim, toLast }
+        : { fromDelim: left, fromLast: hadTilde, toDelim, toLast };
+      return { slice, next: close + 1 };
     }
     if ((m = /^(~?)(\d*)(-?)(\d*)$/.exec(inner))) { const a = m[2] === '' ? null : parseInt(m[2], 10), b = m[4] === '' ? null : parseInt(m[4], 10); return { slice: m[3] === '-' ? { a, b, fromEnd: m[1] === '~' } : { a, b: a, fromEnd: m[1] === '~' }, next: close + 1 }; }
     return null;
@@ -76,13 +79,13 @@ function tpCompile(pattern, opts = {}) {
         const s = String(line);
         const out = {};
         for (const seg of fieldSegs) {
-          const { a, b, fromEnd, fromDelim, toDelim } = seg.slice;
+          const { a, b, fromEnd, fromDelim, fromLast, toDelim, toLast } = seg.slice;
           let start, end;
-          if (fromDelim != null) { const fi = fromDelim === '' ? 0 : s.indexOf(fromDelim); if (fi < 0) { out[seg.field] = ''; continue; } start = fi + fromDelim.length; }
+          if (fromDelim != null) { const fi = fromDelim === '' ? 0 : (fromLast ? s.lastIndexOf(fromDelim) : s.indexOf(fromDelim)); if (fi < 0) { out[seg.field] = ''; continue; } start = fi + fromDelim.length; }
           else if (fromEnd) start = a == null ? 0 : s.length - a;
           else start = (a == null ? 1 : a) - 1;
           start = Math.max(0, start);
-          if (toDelim != null) { const ti = toDelim === '' ? -1 : s.indexOf(toDelim, start); end = ti < 0 ? s.length : ti; }
+          if (toDelim != null) { let ti; if (toDelim === '') ti = -1; else if (toLast) { ti = s.lastIndexOf(toDelim); if (ti < start) ti = -1; } else ti = s.indexOf(toDelim, start); end = ti < 0 ? s.length : ti; }
           else if (fromEnd) end = b == null ? s.length : s.length - b + 1;
           else end = b == null ? s.length : b;
           out[seg.field] = s.slice(start, Math.max(start, end)).trim();
@@ -103,7 +106,10 @@ function tpCompile(pattern, opts = {}) {
     else if (seg.kind === 'skip') re += '.*?';
     else if (seg.kind === 'field') {
       const f = seg.field;
-      if (seg.slice && (seg.slice.toDelim != null || seg.slice.fromDelim != null)) { const sl = seg.slice; re += (sl.fromDelim ? tpEsc(sl.fromDelim) : '') + (sl.toDelim ? '(.+?)' + tpEsc(sl.toDelim) : '(.+)'); }   // X[from:to] in flow
+      if (seg.slice && (seg.slice.toDelim != null || seg.slice.fromDelim != null)) {
+        const sl = seg.slice;
+        re += (sl.fromDelim ? (sl.fromLast ? '.*' : '.*?') + tpEsc(sl.fromDelim) : '') + (sl.toDelim ? (sl.toLast ? '(.+)' : '(.+?)') + tpEsc(sl.toDelim) : '(.+)');
+      }   // X[from:to] in flow
       else if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
       else if (f === 'medium') re += '(\\d+)';
       else if (f === 'length') re += '(' + TP_DUR + ')';
@@ -174,6 +180,12 @@ eq(P('A[1:(]', 'Miles Davis (feat. X)'), { artist: 'Miles Davis' }, 'slice-to-de
 eq(P('L[(:)]', 'So What (9:22)'), { length: '9:22' }, 'char-start slice: L[(:)] between parens');
 eq(P('# T L[(:)]', '1 So What (9:22)'), { pos: '1', title: 'So What', length: '9:22' }, 'char-start slice mixed in a flow pattern');
 eq(P('A[-:(]', 'Foo - Bar (x)'), { artist: 'Bar' }, 'char-start slice: A[-:(] from the dash to the paren');
+// ~ as "last occurrence" on a char delimiter (#456 round 5) — a title with its OWN "(...)" before the
+// real "(length)" needs the LAST "(" ; without ~ the first "(" wrongly grabs the title's parenthetical.
+eq(P('L[(:)]', 'Hide Me (Bop remix) - Stillhead (4:20)'), { length: 'Bop remix' }, 'plain [(:)] grabs the FIRST paren (wrong here) — the bug majkinetor hit');
+eq(P('L[~(:)]', 'Hide Me (Bop remix) - Stillhead (4:20)'), { length: '4:20' }, '~( fixes it: last "(" to its ")"');
+eq(P('L[~(:)]', 'So What (9:22)'), { length: '9:22' }, '~( still works with only one paren pair');
+eq(P('# T L[~(:)]', '1 Hide Me (Bop remix) - Stillhead (4:20)'), { pos: '1', title: 'Hide Me (Bop remix) - Stillhead', length: '4:20' }, '~( mixed into a flow pattern');
 
 // h:mm:ss length
 eq(P('# T (L)', '1 Long One (1:02:33)'), { pos: '1', title: 'Long One', length: '1:02:33' }, 'h:mm:ss length');
