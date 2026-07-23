@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.12
+// @version      2026.7.23
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -36,7 +36,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
-  const VERSION = '2026.6.29';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.7.23';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -1027,8 +1027,17 @@
     document.documentElement.classList.toggle('mmthf-dialog', blocking);        // baby pins: hide only when a dialog hosts none of ours
     document.documentElement.classList.toggle('mmthf-anydialog', dlgs.length > 0);  // main panel/badge: hide under ANY open dialog (#400)
   };
-  new MutationObserver(() => { injectAll(); syncDialog(); }).observe(document.documentElement, { childList: true, subtree: true });
-  syncDialog();
+  // #462: MB's jQuery-UI autocomplete menu (ul.ui-autocomplete) opens by toggling `display`
+  // — a style mutation the childList observer above never sees — so watch each menu's attrs
+  // directly and flag `mmthf-acopen` while any is visible, which hides overlapping babies.
+  const syncAc = () => {
+    const open = [...document.querySelectorAll('ul.ui-autocomplete')].some(u => u.offsetParent !== null && getComputedStyle(u).display !== 'none');
+    document.documentElement.classList.toggle('mmthf-acopen', open);
+  };
+  const acObs = new MutationObserver(syncAc);
+  const watchAcMenus = () => { document.querySelectorAll('ul.ui-autocomplete').forEach(u => { if (!u._mmthfAc) { u._mmthfAc = 1; acObs.observe(u, { attributes: true, attributeFilter: ['style', 'class'] }); } }); syncAc(); };
+  new MutationObserver(() => { injectAll(); syncDialog(); watchAcMenus(); }).observe(document.documentElement, { childList: true, subtree: true });
+  syncDialog(); watchAcMenus();
 
   // #252 Ctrl/Cmd+Enter submits the edit. The submit control differs per page, so
   // look in order: the release editor's "Enter edit" button, then the edit form's
@@ -1256,6 +1265,10 @@
          high-z babies would float on top of them and their dropdowns. Hide the
          babies while any MB dialog is open. */
       html.mmthf-dialog .mmthf-pin, html.mmthf-dialog .mmthf-bar, html.mmthf-dialog .mmthf-pop { opacity:0 !important; pointer-events:none !important; }
+      /* #462: MB's autocomplete menu (ul.ui-autocomplete @ z-index:100) drops down over the
+         field's own pin/bar — our high-z babies would cover the results. Hide them while any
+         lookup dropdown is open (it reappears the moment the menu closes). */
+      html.mmthf-acopen .mmthf-pin, html.mmthf-acopen .mmthf-bar { opacity:0 !important; pointer-events:none !important; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
       .mmthf-bar { position:absolute; z-index:9996; display:none; }
       /* deltav>0: the bar is injected in-flow after an ancestor, so it takes real layout space (pushes the
