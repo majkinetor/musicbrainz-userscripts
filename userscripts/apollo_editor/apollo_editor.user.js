@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.23.130912
+// @version      2026.7.23.154540
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1388,7 +1388,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.23.130912';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.23.154540';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1774,7 +1774,10 @@
     .tc-tpp-tr.notrk{opacity:.5}
     .tc-tpp-dot{width:14px;padding-left:8px!important}.tc-tpp-dot span{display:inline-block;width:8px;height:8px;border-radius:50%}
     .tc-tpp-pcell{width:120px}
-    .tc-tpp-ov{width:112px;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 5px;color:#5f3ec0;background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
+    .tc-tpp-ovwrap{position:relative;display:inline-flex;width:112px}
+    .tc-tpp-ov{width:100%;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 16px 2px 5px;color:#5f3ec0;background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
+    .tc-tpp-ovclr{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#c9bde6;font-size:10px;line-height:1;padding:1px}.tc-tpp-ovclr:hover{color:#c0392b}
+    .tc-tpp-ovwrap.has .tc-tpp-ovclr{display:block}
     /* #456: raw stays fully visible/selectable — no ellipsis clipping (you select spans here to bind fields).
        The td.tc-tpp-raw specificity beats the generic .tc-tpp-tbl td ellipsis rule above. */
     .tc-tpp-tbl td.tc-tpp-raw{color:#666;font:11px ui-monospace,Consolas,monospace;max-width:320px;cursor:text;user-select:text;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
@@ -3074,8 +3077,16 @@
       if (str[i] !== '[') return null;
       const close = str.indexOf(']', i); if (close < 0) return null;
       const inner = str.slice(i + 1, close); let m;
-      // colon form [a:X] — from position a to (excluding) the first literal X (e.g. #[1:.] up to the first dot)
-      if ((m = /^(~?)(\d*):([\s\S]*)$/.exec(inner))) return { slice: { a: m[2] === '' ? null : parseInt(m[2], 10), fromEnd: m[1] === '~', toDelim: m[3] }, next: close + 1 };
+      // colon form [FROM:TO] — FROM is a numeric position (~ = from end) OR a literal char to start
+      // AFTER; TO is a literal char to stop BEFORE (empty = to end). e.g. #[1:.] (pos 1 → first dot),
+      // L[(:)] (first "(" → first ")"), both excluding the delimiters.
+      const colon = inner.indexOf(':');
+      if (colon >= 0) {
+        const left = inner.slice(0, colon), toDelim = inner.slice(colon + 1);
+        const pm = /^(~?)(\d*)$/.exec(left);
+        const slice = pm ? { a: pm[2] === '' ? null : parseInt(pm[2], 10), fromEnd: pm[1] === '~', toDelim } : { fromDelim: left, toDelim };
+        return { slice, next: close + 1 };
+      }
       // dash form [a-b] / [a] — numeric char range (1-based inclusive; ~ = from the end)
       if ((m = /^(~?)(\d*)(-?)(\d*)$/.exec(inner))) { const a = m[2] === '' ? null : parseInt(m[2], 10), b = m[4] === '' ? null : parseInt(m[4], 10); return { slice: m[3] === '-' ? { a, b, fromEnd: m[1] === '~' } : { a, b: a, fromEnd: m[1] === '~' }, next: close + 1 }; }
       return null;
@@ -3111,15 +3122,15 @@
       return { fields, exec(line) {
         const s = String(line), out = {};
         for (const seg of fieldSegs) {
-          const { a, b, fromEnd, toDelim } = seg.slice; let start, end;
-          if (toDelim != null) {   // [a:X] — from a to (excluding) the first X at/after a
-            start = fromEnd ? s.length - (a == null ? 0 : a) : (a == null ? 1 : a) - 1;
-            start = Math.max(0, start);
-            const idx = toDelim === '' ? -1 : s.indexOf(toDelim, start);
-            end = idx < 0 ? s.length : idx;
-          } else if (fromEnd) { const n = s.length; start = a == null ? 0 : n - a; end = b == null ? n : n - b + 1; }
-          else { start = (a == null ? 1 : a) - 1; end = b == null ? s.length : b; }
-          out[seg.field] = s.slice(Math.max(0, start), Math.max(0, end)).trim();
+          const { a, b, fromEnd, fromDelim, toDelim } = seg.slice; let start, end;
+          if (fromDelim != null) { const fi = fromDelim === '' ? 0 : s.indexOf(fromDelim); if (fi < 0) { out[seg.field] = ''; continue; } start = fi + fromDelim.length; }
+          else if (fromEnd) start = a == null ? 0 : s.length - a;
+          else start = (a == null ? 1 : a) - 1;
+          start = Math.max(0, start);
+          if (toDelim != null) { const ti = toDelim === '' ? -1 : s.indexOf(toDelim, start); end = ti < 0 ? s.length : ti; }
+          else if (fromEnd) end = b == null ? s.length : s.length - b + 1;
+          else end = b == null ? s.length : b;
+          out[seg.field] = s.slice(start, Math.max(start, end)).trim();
         }
         return tpUsable(out) ? out : null;
       } };
@@ -3136,7 +3147,7 @@
       else if (seg.kind === 'skip') re += '.*?';
       else if (seg.kind === 'field') {
         const f = seg.field;
-        if (seg.slice && seg.slice.toDelim != null) re += '(.+?)' + tpEsc(seg.slice.toDelim);   // X[a:delim] in flow: capture up to (excl.) the delim
+        if (seg.slice && (seg.slice.toDelim != null || seg.slice.fromDelim != null)) { const sl = seg.slice; re += (sl.fromDelim ? tpEsc(sl.fromDelim) : '') + (sl.toDelim ? '(.+?)' + tpEsc(sl.toDelim) : '(.+)'); }   // X[from:to] in flow: fromDelim(capture)toDelim
         else if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
         else if (f === 'medium') re += '(\\d+)';
         else if (f === 'length') re += '(' + TP_DUR + ')';
@@ -3157,10 +3168,14 @@
   function openTrackPatternParser(mi) {
     document.getElementById('tc-tpppop')?.remove();
     let curMi = (mi != null ? mi : toolMedium());
+    _tpPattern = '#. T - A (L)';   // #456: open like the native parser — prefilled current tracklist in this format
     let rows = [];         // [{ raw, override }]
     let _splitLast = false;   // #456 v2 ‹first|last›: which separator instance a text field splits on
     const tracks = () => u(mediums()[curMi].tracks) || [];
     const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
+    // the current medium's tracklist rendered in the #. T - A (L) format, to seed the paste box
+    const acStr = t => (liveNames(t) || []).map(n => (u(n.name) || (u(n.artist) && u(u(n.artist).name)) || '') + (u(n.joinPhrase) || '')).join('').trim();
+    const currentText = () => tracks().map((t, i) => { const num = u(t.number) || (i + 1); const title = u(t.name) || ''; const artist = acStr(t); const len = u(t.formattedLength) || ''; return `${num}. ${title}` + (artist ? ` - ${artist}` : '') + (len ? ` (${len})` : ''); }).join('\n');
     const compiled = new Map();   // pattern+mode → compiled (cached)
     const compileFor = ov => { const key = (_splitLast ? 'L\x01' : 'F\x01') + (ov || _tpPattern); if (!compiled.has(key)) { try { compiled.set(key, tpCompile(ov || _tpPattern, { separators: TP_SEPS, splitLast: _splitLast })); } catch (e) { compiled.set(key, null); } } return compiled.get(key); };
     const parseRow = r => { const c = compileFor(r.override && r.override.trim()); try { return c ? c.exec(r.raw) : null; } catch (e) { return null; } };
@@ -3192,7 +3207,7 @@
     // #456: the paste box only seeds the rows, so fold it away once there's content (the raw
     // column keeps the source visible); the caret toggles it back to re-paste/edit.
     const setSrc = collapsed => { src.classList.toggle('tc-collapsed', collapsed); const n = rows.length; srctgl.textContent = (collapsed ? '▸ ' : '▾ ') + (collapsed && n ? `Paste tracklist (${n} line${n !== 1 ? 's' : ''})` : 'Paste tracklist'); };
-    const close = () => p.remove();
+    const close = () => { p.remove(); chipBar.remove(); document.removeEventListener('mousedown', outsideHide, true); };
 
     function syncRows() {
       const lines = ta.value.split('\n');
@@ -3210,11 +3225,12 @@
         const tr = document.createElement('tr'); tr.className = 'tc-tpp-tr' + (i >= nT ? ' notrk' : '');
         const cell = v => `<td class="tc-tpp-c" title="${esc(v || '')}">${esc(v || '')}</td>`;
         tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" title="${state === 'none' ? 'no match — adjust the pattern' : state === 'over' ? 'matched via a per-row pattern' : 'matched'}"></span></td>`
-          + `<td class="tc-tpp-pcell"><input class="tc-tpp-ov" spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"></td>`
+          + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" title="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
           + `<td class="tc-tpp-raw" title="${esc(r.raw)}">${esc(r.raw) || '<span class="tc-tpp-empty">(empty)</span>'}</td>`
           + cell(parsed && parsed.pos) + cell(parsed && parsed.artist) + cell(parsed && parsed.title) + cell(parsed && parsed.length);
-        const ov = tr.querySelector('.tc-tpp-ov');
-        ov.oninput = () => { r.override = ov.value; const pr = parseRow(r); const st = !pr ? 'none' : (r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].title = v || ''; }); refreshFoot(); };
+        const ov = tr.querySelector('.tc-tpp-ov'), ovwrap = tr.querySelector('.tc-tpp-ovwrap');
+        ov.oninput = () => { r.override = ov.value; ovwrap.classList.toggle('has', !!ov.value); const pr = parseRow(r); const st = !pr ? 'none' : (r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].title = v || ''; }); refreshFoot(); };
+        tr.querySelector('.tc-tpp-ovclr').onclick = () => { r.override = ''; render(); };
         tbody.appendChild(tr);
       });
       refreshFoot();
@@ -3278,7 +3294,7 @@
     const FIELD_CHIPS = [['#', 'pos'], ['A', 'artist'], ['T', 'title'], ['L', 'length']];
     const chipBar = document.createElement('div'); chipBar.className = 'tc-tpp-chipbar'; chipBar.style.display = 'none';
     chipBar.innerHTML = FIELD_CHIPS.map(([g, f]) => `<button type="button" data-f="${f}" data-g="${g}" title="Bind the selection to ${f}">${g}</button>`).join('') + '<button type="button" data-clr="1" title="Clear this row’s pattern">✕</button>';
-    p.appendChild(chipBar);
+    document.body.appendChild(chipBar);   // on body, not the modal — the modal's transform would otherwise re-base position:fixed (#456)
     let _selCtx = null;   // { rowIdx, a, b } — 1-based inclusive char range in the raw text
     const hideChips = () => { chipBar.style.display = 'none'; _selCtx = null; };
     // char offsets of the current selection within a raw cell (the cell text == the row's raw)
@@ -3316,7 +3332,8 @@
       else bindSlice(row, b.dataset.g, _selCtx.a, _selCtx.b);
       hideChips(); window.getSelection()?.removeAllRanges(); render();
     });
-    p.addEventListener('mousedown', e => { if (!chipBar.contains(e.target) && !e.target.closest('.tc-tpp-raw')) hideChips(); });
+    const outsideHide = e => { if (!chipBar.contains(e.target) && !e.target.closest('.tc-tpp-raw')) hideChips(); };
+    document.addEventListener('mousedown', outsideHide, true);   // removed in close()
 
     $('.tc-tpp-ok').onclick = () => apply('all', false);
     $('.tc-tpp-menu').onclick = openMenu;
@@ -3339,7 +3356,11 @@
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     };
-    render(); ta.focus();
+    // #456: seed the paste box with the current tracklist (like the native parser), so it opens showing what's there.
+    // Don't auto-focus when prefilled — focusing then clicking elsewhere would blur→auto-collapse the box.
+    const seed = currentText();
+    if (seed) { ta.value = seed; syncRows(); render(); }
+    else { render(); ta.focus(); }
   }
 
   /* ── Track length parser (#455) ────────────────────────────────────────────

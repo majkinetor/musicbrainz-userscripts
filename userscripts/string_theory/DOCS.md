@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-23 13:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-23 15:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -196,17 +196,19 @@ Set column sizes to predefined variants (Fit, Centered, Default).
 
 #### Pattern parser
 
-A second track parser (the `▦` tool, next to the native `☰` one — the native parser stays put) that fills a medium's tracklist from pasted text using a **pattern** — a one-line template that says what each line looks like, so you're not locked into the native parser's rigid format. Type a pattern, paste the list, review the live preview, Apply. The paste box folds away once you've pasted (the raw column keeps the source visible) — click **▸ Paste tracklist** to reopen it.
+A second track parser (the `▦` tool, next to the native `☰` one — the native parser stays put) that fills a medium's tracklist from pasted text using a **pattern** — a one-line template that says what each line looks like, so you're not locked into the native parser's rigid format. Type a pattern, paste the list, review the live preview, Apply. Like the native parser it **opens seeded with the current tracklist** (rendered as `#. T - A (L)`), so you can also use it to bulk-edit what's already there. The paste box folds away once you've pasted (the raw column keeps the source visible) — click **▸ Paste tracklist** to reopen it. A `⛶` button maximizes the window.
 
 **Tokens:** `#` track number · `T` title · `A` artist · `L` length · `M` medium · `_` skip noise. Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out. Text fields split on the **first** separator (`A - T` → artist = up to the first `-`, title = the rest) — flip the **split: first / last** toggle to split on the last instead.
 
 **Examples:** `#. T` → `1. So What` · `# A - T (L)` → `1 Miles Davis - So What (9:22)` · `# A - T (_` drops a trailing `(original edit)`.
 
-**Slices** (for delimiter-free fixed-width text): a token can carry a 1-based char range — `T[6-]` (6th char to end), `T[6-20]`, `T[-5]` (first 5), `T[~3-]` (last 3) — or a **stop-at-character** form `T[a:X]` that runs from position `a` up to (excluding) the first `X`, e.g. `#[1:.]` = position 1 to the first `.` (`12. Title` → `12`), `#[1:-]`, `#[1: ]`.
+**Slices** (for delimiter-free fixed-width text): a token can carry a 1-based char range — `T[6-]` (6th char to end), `T[6-20]`, `T[-5]` (first 5), `T[~3-]` (last 3) — or a **`[from:to]`** form that runs from `from` up to (excluding) the first `to` character. `from` is a position or a character; `to` is a character:
+- `#[1:.]` = position 1 to the first `.` (`12. Title` → `12`), also `#[1:-]`, `#[1: ]`
+- `L[(:)]` = from the first `(` to the first `)` (`So What (9:22)` → `9:22`)
 
 The preview is one row per pasted line: a **match dot** (green = matched · amber = matched via a per-row pattern · red = no match), the raw text, and the extracted **# / artist / title / length**. A messy line can get its **own pattern** in the row's `pattern` cell without disturbing the rest. **Apply** writes only the fields the pattern produced (so a title-only pattern won't touch lengths); its **▾ menu** applies a single field (only titles / artists / lengths / #s) or adds the missing tracks first when you pasted more lines than the medium has.
 
-For a one-off messy line you don't want to write a pattern for, **select the span** in its **raw** cell — a little bar pops up (`#` · `A` · `T` · `L` · `✕`); click a field to bind that span to it (it writes a `T[a-b]`-style slice into the row's pattern), or `✕` to clear the row. Maximize the window with the `⛶` button in the header.
+For a one-off messy line you don't want to write a pattern for, **select the span** in its **raw** cell — a little bar pops up (`#` · `A` · `T` · `L` · `✕`); click a field to bind that span to it (it writes a `T[a-b]`-style slice into the row's pattern), or `✕` to clear the row. Both the main pattern box and each row's pattern cell carry a small **✕** to clear them.
 
 #### Parse track lengths
 

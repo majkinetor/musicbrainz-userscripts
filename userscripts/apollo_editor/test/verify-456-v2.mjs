@@ -47,8 +47,8 @@ await page.evaluate(() => {
   document.querySelector('#tc-tpppop tbody').dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
 });
 await page.waitForTimeout(150);
-ck(await page.evaluate(() => getComputedStyle(document.querySelector('#tc-tpppop .tc-tpp-chipbar')).display !== 'none'), 'chip bar appears on raw selection');
-await page.click('#tc-tpppop .tc-tpp-chipbar button[data-g="T"]');
+ck(await page.evaluate(() => getComputedStyle(document.querySelector('.tc-tpp-chipbar')).display !== 'none'), 'chip bar appears on raw selection');
+await page.click('.tc-tpp-chipbar button[data-g="T"]');
 await page.waitForTimeout(200);
 const bound = await page.evaluate(() => { const tr = document.querySelector('#tc-tpppop tbody tr'); return { ov: tr.querySelector('.tc-tpp-ov').value, title: tr.querySelectorAll('.tc-tpp-c')[2].textContent }; });
 ck(/^T\[\d+-\d+\]$/.test(bound.ov), `row override became a title slice (${bound.ov})`);
