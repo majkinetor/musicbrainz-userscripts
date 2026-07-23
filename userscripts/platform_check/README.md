@@ -38,9 +38,12 @@ Matched links that are not already associated (colored & not circled) can be **i
 
 1. **Left click**<br>
     1. Title - Open link if found, open search for provider if not found (use [↗] button in the footer to open all)
-    2. Icon - Add link to the MB relationships (use [+] button in the footer to add all)
+    2. Icon - Open the release editor with the link(s) queued, ready to review and **Enter edit** (use [+] button in the footer to add all)
 2. **Right click**<br>
     1. Title - Open search for provider
+    2. Icon - Add the link(s) **silently in the background**: an inactive tab opens, submits the edit itself, and closes when done — you never leave the panel (#464)
+
+The `+`/icon add opens a **new tab** by default so the panel stays put; setup option **"Add links in a new tab"** turns that off, so it navigates the current tab instead (#464). Either way, **right-click** always adds in the background regardless of that setting.
 
 Setup option **Compact unmatched providers** keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search, exactly like clicking its row. Rows rise with a subtle fade so the panel doesn't jump as results stream in. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
 

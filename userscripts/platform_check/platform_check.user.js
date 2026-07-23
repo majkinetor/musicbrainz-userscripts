@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.23
+// @version      2026.7.23.225826
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -12,6 +12,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_openInTab
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      query.wikidata.org
@@ -44,6 +45,11 @@
 // so the script's own MB API calls + edit-page links stay on the same server.
 const MB_ORIGIN = location.origin;
 
+// #464: cross-tab signal for the background "right-click add" flow — the opener
+// listens for the background tab's "committed" postMessage so it can close that
+// tab and refresh, mirroring Credit Hoarder / Apollo Editor's own add-link channel.
+const PC_CHANNEL = ('BroadcastChannel' in window) ? new BroadcastChannel('platform-check-inject') : null;
+
 // ─── Release editor sub-pages (/edit, /edit-relationships) ────────────────
 // + click on /release stashes OK URLs in `pc:pending:<mbid>` and opens the
 // release's /edit page. We fill the "Add another link" input then set the
@@ -55,6 +61,19 @@ if (/\/release\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathname)) 
 if (/\/release-group\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathname)) {
     runInjectHelper('release-group');
     return;
+}
+// #464: a background-add tab (right-click on +) marks itself before auto-submitting
+// so that once MB redirects here to the clean release page, it can post "committed"
+// back to the opener and close itself — the opener never has to poll or refocus.
+if (/^\/release\/[0-9a-f-]{36}\/?(?:[?#]|$)/.test(window.location.pathname)) {
+    let closeMbid = null;
+    try { closeMbid = sessionStorage.getItem('pc:autocommit-close'); } catch (e) {}
+    if (closeMbid) {
+        try { sessionStorage.removeItem('pc:autocommit-close'); } catch (e) {}
+        if (PC_CHANNEL) { try { PC_CHANNEL.postMessage({ type: 'pc-edit-committed', mbid: closeMbid }); } catch (e) {} }
+        setTimeout(() => { try { window.close(); } catch (e) {} }, 80);
+        return;
+    }
 }
 
 // Safe setTimeout wrapper.  Firefox throws NS_ERROR_NOT_INITIALIZED from
@@ -132,6 +151,20 @@ async function runInjectHelper(entityType) {
         if (tab) tab.click();
         await pcWait(200);
         await injectInto(urls, key);
+        // #464: right-click "add in background" — auto-submit once the URLs are in,
+        // and mark this tab so the redirect back to the clean /release/<mbid> page
+        // (only that landing page is @match'd; release-group has no such page) can
+        // post "committed" + close itself. Only the release flow supports this.
+        const autoCommit = entityType === 'release' && /pc-autocommit/.test(location.hash);
+        if (autoCommit) {
+            const btn = await pcWaitFor(() => document.querySelector('button.submit.positive'), 5000);
+            if (btn && !btn.disabled) {
+                try { sessionStorage.setItem('pc:autocommit-close', mbid); } catch (e) {}
+                btn.click();
+            } else {
+                showInjectBanner('Platform Check: background add — no submit button found, review manually', [], { fail: true });
+            }
+        }
     } catch (e) {
         // Last-resort surface so the user sees *something* on the page when
         // a Firefox-specific exception kills the inject path silently.
@@ -637,7 +670,7 @@ container.innerHTML = `
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
   <div style="display: flex; align-items: center; gap: 6px;">
-    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add" style="${iconBtn}">+</span>
+    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
@@ -726,6 +759,10 @@ providerModal.innerHTML = `
           <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Use <b>barcodes</b></label>
         <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
           <option value="exists">if they exist</option><option value="strict">strictly</option></select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: + opens the release editor in a new tab, leaving this one on the panel. Off: it navigates this tab instead. Either way, right-click on + (or a platform icon) always adds silently in a background tab that submits and closes itself.">
+          <input type="checkbox" id="mb-open-new-tab" style="margin: 0; width: 16px; height: 16px;"> Add links in a <b>new tab</b></label>
       </div>
     </div>
 
@@ -1048,6 +1085,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-respect-format').checked = GM_getValue('pc:respect-format', true);
     document.getElementById('mb-format-mode').value = GM_getValue('pc:format-mode', 'exists');
     document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
+    document.getElementById('mb-open-new-tab').checked = GM_getValue('pc:open-new-tab', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -1104,6 +1142,9 @@ document.getElementById('mb-respect-format').addEventListener('change', e => {
 });
 document.getElementById('mb-format-mode').addEventListener('change', e => {
     GM_setValue('pc:format-mode', e.target.value);         // 'exists' (known incompatible only) | 'strict' (also undeterminable)
+});
+document.getElementById('mb-open-new-tab').addEventListener('change', e => {
+    GM_setValue('pc:open-new-tab', e.target.checked);      // #464 — off navigates the same tab instead of opening one
 });
 providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
@@ -1520,8 +1561,9 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Click-to-add on the main icon for verified ✓ + not-already-in-MB (and not withheld).
     const canAdd = url && ico.textContent === '✓' && !fromMbRels && !blocked;
     ico.style.cursor = canAdd ? 'pointer' : '';
-    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)` : '');
+    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)` : '');
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
+    ico.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
 
     // Icons-mode encoding — TWO INDEPENDENT dimensions:
     //   presence (pc-st-*) drives the icon fade + name colour: match = full · mismatch = gray · notfound = faint
@@ -1568,7 +1610,8 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     if (plat) {
         plat.style.cursor = canAdd ? 'pointer' : 'default';
         plat.onclick = canAdd ? () => addSingleUrl(p) : null;   // click-to-add works on the brand icon too
-        plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : (url ? a.title : `No ${PROVIDER_NAME[p]} URL found`);
+        plat.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
+        plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background` : (url ? a.title : `No ${PROVIDER_NAME[p]} URL found`);
     }
 
     // Discogs gets a master state in the left slot. Other platforms have an
@@ -4112,7 +4155,46 @@ function formatBlocks(platform) {
     if (remote.size === 0) return GM_getValue('pc:format-mode', 'exists') === 'strict';  // unknown → block only in strict
     return ![...remote].some(x => mbCats.has(x));              // known → block iff no shared category
 }
-function addSingleUrl(platform) {
+// #464: how the release editor opens for a queued add.
+//   - foreground: honors the "Add links in a new tab" setting (default on) — off
+//     navigates the current tab instead of spawning one chaban has to close by hand.
+//   - background (right-click): mirrors Credit Hoarder / Apollo Editor — an inactive
+//     GM tab injects the URL(s), auto-submits, and closes itself; runInjectHelper's
+//     autoCommit branch does the submit+close, we just wait for its postMessage here.
+//     Only release edits support this (release-group has no plain landing @match to
+//     detect the redirect on), so callers must pass a release mbid.
+function openReleaseEditTab(mbid_, { background = false } = {}) {
+    const url = `${MB_ORIGIN}/release/${mbid_}/edit`;
+    if (background) {
+        if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
+            appendLog('System', `Background add needs GM_openInTab — opening in a normal tab instead`, 'warn');
+            window.open(url, '_blank');
+            return;
+        }
+        const bgTab = GM_openInTab(`${url}#pc-autocommit`, { active: false, insert: true });
+        const onCommitted = (e) => {
+            if (!e.data || e.data.type !== 'pc-edit-committed' || e.data.mbid !== mbid_) return;
+            PC_CHANNEL.removeEventListener('message', onCommitted);
+            try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
+            appendLog('System', `Background add committed for ${mbid_} — refreshing`, 'ok');
+            location.reload();
+        };
+        PC_CHANNEL.addEventListener('message', onCommitted);
+        return;
+    }
+    if (GM_getValue('pc:open-new-tab', true)) {
+        const w = window.open(url, '_blank');
+        if (!w) appendLog('System', `window.open returned null — popup blocked?`, 'error');
+    } else {
+        location.href = url;
+    }
+}
+// Test hook only (#464) — no behavior change; lets verify-464.mjs exercise the
+// tab-open decision + background-commit channel without driving the full row UI
+// (which would mean faking a live ✓ match render for no added coverage).
+window.__pcTest464 = { openReleaseEditTab, PC_CHANNEL };
+
+function addSingleUrl(platform, background) {
     const cached = cacheGet(mbid, platform);
     if (!cached?.url) {
         appendLog('System', `Inject (click): no cached URL for ${platform} — abort`, 'warn');
@@ -4130,13 +4212,13 @@ function addSingleUrl(platform) {
         return;
     }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
-    appendLog('System', `Inject (click): queued ${platform} URL — opening release editor`, 'ok');
-    const w = window.open(`${MB_ORIGIN}/release/${mbid}/edit`, '_blank');
-    if (!w) appendLog('System', `window.open returned null — popup blocked?`, 'error');
+    appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${platform} URL — opening release editor`, 'ok');
+    openReleaseEditTab(mbid, { background });
 }
 
 // Click-to-add on the Discogs master slot — queues the master URL for the
-// release-group's edit page (different target than the release URLs).
+// release-group's edit page (different target than the release URLs). No
+// background variant: release-group has no plain landing page to detect commit on.
 function addMasterUrl(masterUrl) {
     const mb = mbDataGet(mbid);
     const rgMbid = mb?.releaseGroupMbid;
@@ -4146,10 +4228,12 @@ function addMasterUrl(masterUrl) {
     }
     GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
     appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
-    window.open(`${MB_ORIGIN}/release-group/${rgMbid}/edit`, '_blank');
+    const url = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
+    if (GM_getValue('pc:open-new-tab', true)) window.open(url, '_blank');
+    else location.href = url;
 }
 
-document.getElementById('mb-inject-btn').addEventListener('click', async (e) => {
+async function runInjectBtn(e, background) {
     const triggerBtn = e.currentTarget;
     // Bucket 1: URLs going onto the release.
     const pendingRelease = {};
@@ -4221,15 +4305,23 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
 
     if (releaseCount > 0) {
         GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
-        appendLog('System', `Inject: queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
-        window.open(`${MB_ORIGIN}/release/${mbid}/edit`, '_blank');
+        appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
+        openReleaseEditTab(mbid, { background });
     }
     if (rgCount > 0 && rgMbid) {
         GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
         appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
-        window.open(`${MB_ORIGIN}/release-group/${rgMbid}/edit`, '_blank');
+        // No background variant for release-group (no plain landing page to detect commit on).
+        // Same-tab navigation only applies when it's the ONLY tab being opened this
+        // click — the release bucket above may already be claiming the current tab.
+        const rgUrl = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
+        if (background) appendLog('System', `Background add doesn't cover the release-group master URL — opening it in a normal tab`, 'warn');
+        if (!background && releaseCount === 0 && !GM_getValue('pc:open-new-tab', true)) location.href = rgUrl;
+        else window.open(rgUrl, '_blank');
     }
-});
+}
+document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, false));
+document.getElementById('mb-inject-btn').addEventListener('contextmenu', (e) => { e.preventDefault(); runInjectBtn(e, true); });
 
 // "↗" — open found platform pages that are NOT already in MB (non-circled links,
 // source != 'MB rels') in their own new tabs. Circled = already an MB relationship.
