@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.23.103849
+// @version      2026.7.23.111314
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1377,7 +1377,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.23.103849';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.23.111314';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1737,6 +1737,7 @@
     .tc-tpp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
     .tc-tpp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
     .tc-tpp-med,.tc-tpp-med1{font:12px Arial;color:#444}
+    .tc-tpp-max{border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0 2px}.tc-tpp-max:hover{color:#5f3ec0}
     .tc-tpp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-tpp-x:hover{color:#333}
     .tc-tpp-pat{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ebfa;flex-wrap:wrap}
     .tc-tpp-plbl{font:700 11px Arial;color:#8a7fae}
@@ -3042,7 +3043,7 @@
   const TP_FIELDS = { '#': 'pos', 'T': 'title', 'A': 'artist', 'L': 'length', 'M': 'medium' };
   const TP_DUR = '\\d{1,2}:\\d{2}(?::\\d{2})?';
   const TP_SEPS = ['-', '–', '—', '/', ':'];
-  const TP_PRESETS = ['#. T', '# T L', '# A - T', '# A - T (L)', 'T L'];
+  const TP_PRESETS = ['#. T', '#. T - A (L)', '# T L', '# A - T', '# A - T (L)', 'T L'];   // #. T - A (L) = the native parser's format
   let _tpPattern = '#. T';   // remembered across opens this session
   const tpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const tpUsable = out => !!out && Object.values(out).some(v => v && String(v).trim());
@@ -3137,7 +3138,7 @@
       ? `<select class="tc-tpp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-tpp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" title="Maximize / restore">⛶</button><button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
         <input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice">
@@ -3236,6 +3237,13 @@
     $('.tc-tpp-ok').onclick = () => apply('all', false);
     $('.tc-tpp-menu').onclick = openMenu;
     $('.tc-tpp-x').onclick = close;
+    let _maxed = false, _prevBox = null;   // maximize toggle: fill the viewport, restore to the prior box
+    $('.tc-tpp-max').onclick = () => {
+      const btn = $('.tc-tpp-max');
+      if (!_maxed) { _prevBox = { left: p.style.left, top: p.style.top, width: p.style.width, height: p.style.height, transform: p.style.transform };
+        p.style.transform = 'none'; p.style.left = '2vw'; p.style.top = '2vh'; p.style.width = '96vw'; p.style.height = '94vh'; _maxed = true; btn.textContent = '❐'; btn.title = 'Restore'; }
+      else { Object.assign(p.style, _prevBox); _maxed = false; btn.textContent = '⛶'; btn.title = 'Maximize / restore'; }
+    };
     const medEl = $('.tc-tpp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
     p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!$('.tc-tpp-ok').disabled) apply('all', false); } };
     $('.tc-tpp-hd').onmousedown = e => {
