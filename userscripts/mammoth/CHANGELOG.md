@@ -1,5 +1,11 @@
 # Mammoth Changelog
 
+## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
+
+### Fixes
+
+1. Mammoth icons overlapping artist credit bubble ([#462](https://github.com/majkinetor/musicbrainz-userscripts/issues/462))
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features

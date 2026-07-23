@@ -1,5 +1,11 @@
 # Credit Hoarder Changelog
 
+## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
+
+### Features
+
+1. Support for The Metal Archives ([#453](https://github.com/majkinetor/musicbrainz-userscripts/issues/453))
+
 ## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
 
 - Small improvements

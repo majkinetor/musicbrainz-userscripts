@@ -1,5 +1,13 @@
 # Apollo Editor Changelog
 
+## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
+
+### Features
+
+1. Track parser with patterns ([#456](https://github.com/majkinetor/musicbrainz-userscripts/issues/456))
+1. Track length parser tool ([#455](https://github.com/majkinetor/musicbrainz-userscripts/issues/455))
+1. Unify the unambiguity across name + alias ([#445](https://github.com/majkinetor/musicbrainz-userscripts/issues/445))
+
 ## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
 
 ### Features

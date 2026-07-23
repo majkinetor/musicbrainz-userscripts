@@ -1,5 +1,30 @@
 # String Theory Changelog
 
+## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Track parser with patterns ([#456](https://github.com/majkinetor/musicbrainz-userscripts/issues/456))
+1. Track length parser tool ([#455](https://github.com/majkinetor/musicbrainz-userscripts/issues/455))
+1. Unify the unambiguity across name + alias ([#445](https://github.com/majkinetor/musicbrainz-userscripts/issues/445))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Support for The Metal Archives ([#453](https://github.com/majkinetor/musicbrainz-userscripts/issues/453))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Spotify track links ([#458](https://github.com/majkinetor/musicbrainz-userscripts/issues/458))
+1. Track links not set for certain track ([#463](https://github.com/majkinetor/musicbrainz-userscripts/issues/463))
+
+### [Mammoth](../mammoth/CHANGELOG.md)
+
+1. Mammoth icons overlapping artist credit bubble ([#462](https://github.com/majkinetor/musicbrainz-userscripts/issues/462))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Soundcloud log filter chip missing ([#452](https://github.com/majkinetor/musicbrainz-userscripts/issues/452))
+
 ## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

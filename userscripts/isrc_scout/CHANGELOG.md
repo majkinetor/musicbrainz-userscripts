@@ -1,5 +1,15 @@
 # ISRC Scout Changelog
 
+## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
+
+### Features
+
+1. Spotify track links ([#458](https://github.com/majkinetor/musicbrainz-userscripts/issues/458))
+
+### Fixes
+
+1. Track links not set for certain track ([#463](https://github.com/majkinetor/musicbrainz-userscripts/issues/463))
+
 ## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
 
 ### Features
