@@ -1,9 +1,12 @@
-// Probe #445 — (1) label split: an exact NAME hit the /ws/js search under-ranked below a
-// look-alike ("Tee Vee" a8122172, no aliases, ranked below "Tee-vee") resolves as a NAME
-// match, not "via exact alias". (2) UNIFIED unambiguity across name+alias: "STOO" is now
-// ambiguous — an artist NAMED "STOO" (614721af) AND Stuart Cambridge aliased "Stoo" — so
-// the unified check must DECLINE to auto-link (left low for the user), instead of the old
-// alias-blind behavior that confidently picked Stuart Cambridge's nickname alias.
+// Probe #445 — the unified exact-identity resolver (matchSlot → resolveByExactAlias).
+// (1) an exact NAME hit the /ws/js search under-ranked below a look-alike ("Tee Vee"
+//     a8122172, no aliases, ranked below "Tee-vee") resolves as a NAME match, not "via alias".
+// (2) case-exact beats case-fold: a credit matching several artists case-INSENSITIVELY but
+//     exactly ONE case-EXACTLY prefers that one — "Kasane Teto" hits both `kasane teto`
+//     (lolicore, name) and `重音テト` (alias "Kasane Teto"); the case-exact alias wins.
+// (The old STOO ambiguity fixture was dropped: the artist named "STOO" that made it
+//  ambiguous has since been merged/removed from MB, so it's no longer a stable case — and
+//  STOO now needs the short-alias auto-commit guard, tracked separately with majkinetor.)
 import { createRequire } from 'node:module';
 const { chromium } = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/')('playwright');
 import { readFile } from 'node:fs/promises';
@@ -14,7 +17,7 @@ const PROFILE = resolve(HERE, '..', '..', '..', '.pw-profile');
 const SCRIPT = resolve(HERE, '..', 'apollo_editor.user.js');
 const O = 'https://musicbrainz.org';
 const REL = 'a0c1a69e-e1a1-479f-a0ba-e01fb8d0ca87';   // "Deadspace" (from the issue)
-const TEEVEE = 'a8122172', STUART = 'f8e0e6ea';
+const TEEVEE = 'a8122172', KASANE = '98f7cec1';
 const log = (...a) => console.log('[probe-445]', ...a);
 
 const code = await readFile(SCRIPT, 'utf8');
@@ -32,19 +35,18 @@ if (!await page.evaluate(() => !!window.__apolloEditor)) { log('apollo API not e
 const r = await page.evaluate(async () => {
   const A = window.__apolloEditor;
   const m = async who => { const x = await A.matchSlot(who, null, null, []); return { gid: x.entity && x.entity.gid.slice(0, 8), name: x.entity && x.entity.name, src: x.source, conf: x.confidence }; };
-  return { teeVee: await m('Tee Vee'), stoo: await m('STOO') };
+  return { teeVee: await m('Tee Vee'), kasane: await m('Kasane Teto') };
 });
-log('Tee Vee →', r.teeVee.gid, `"${r.teeVee.name}"`, `source=${r.teeVee.src} conf=${r.teeVee.conf}`);
-log('STOO    →', r.stoo.gid, `"${r.stoo.name}"`, `source=${r.stoo.src} conf=${r.stoo.conf}`);
+log('Tee Vee     →', r.teeVee.gid, `"${r.teeVee.name}"`, `source=${r.teeVee.src} conf=${r.teeVee.conf}`);
+log('Kasane Teto →', r.kasane.gid, `"${r.kasane.name}"`, `source=${r.kasane.src} conf=${r.kasane.conf}`);
 
 let fail = 0; const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 check(r.teeVee.gid === TEEVEE, `"Tee Vee" resolves to the exact-name artist ${TEEVEE} (got ${r.teeVee.gid})`);
-check(r.teeVee.src !== 'alias', `"Tee Vee" is NOT labeled alias (it has no aliases) — got source=${r.teeVee.src}`);
-check(r.teeVee.src === 'search' && r.teeVee.conf === 'high', `"Tee Vee" is a confident NAME match (source=search, conf=high) — got ${r.teeVee.src}/${r.teeVee.conf}`);
-// #445 unification: "STOO" is ambiguous across name+alias → must NOT confidently auto-link
-check(r.stoo.conf !== 'high', `"STOO" is NOT a confident auto-link — ambiguous name+alias (got conf=${r.stoo.conf})`);
-check(r.stoo.src !== 'alias', `"STOO" is NOT alias-matched to Stuart Cambridge's nickname (got source=${r.stoo.src})`);
-check(r.stoo.gid !== STUART, `"STOO" does NOT wrongly link Stuart Cambridge ${STUART} (got ${r.stoo.gid})`);
+check(r.teeVee.src === 'search' && r.teeVee.conf === 'high', `"Tee Vee" is a confident NAME match (search/high) — got ${r.teeVee.src}/${r.teeVee.conf}`);
+// #445 case-exact-beats-case-fold: the case-exact alias holder wins over the wrong-case name
+check(r.kasane.gid === KASANE, `"Kasane Teto" resolves to 重音テト ${KASANE} (case-exact alias) — got ${r.kasane.gid}`);
+check(r.kasane.src === 'alias', `"Kasane Teto" is an alias match — got source=${r.kasane.src}`);
+check(r.kasane.conf === 'high', `"Kasane Teto" is now a confident auto-link (case-exact broke the tie) — got conf=${r.kasane.conf}`);
 console.log(fail ? `\n${fail} FAILURE(S)` : '\nALL ASSERTIONS PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);
