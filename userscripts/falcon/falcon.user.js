@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24.213335
+// @version      2026.7.24.223309
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24.213335';
+  const VERSION = '2026.7.24.223309';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -395,16 +395,43 @@
   }
   function editUrl(item) { return `${MB_ORIGIN}/${item.entityType}/${item.mbid}/edit`; }
 
-  async function workerLoop(iframe) {
+  // #467 (majkinetor, production hang): a MB edit form with typed-but-unsubmitted
+  // changes registers a STICKY "unsaved changes" flag (addEventListener('beforeunload'))
+  // — even removing the offending row afterward doesn't clear it (verified live).
+  // Reassigning .src on that SAME iframe then triggers a native "leave site?" confirm
+  // dialog, which — being a real modal — freezes the WHOLE TAB until a human dismisses
+  // it. That's what surfaced as "MB taking 100% CPU" / "blocked, worker dispatched OK
+  // but failed to load new queue item" in production: round 1 succeeded via a real
+  // form SUBMIT (browsers exempt actual submissions from the warning), but a
+  // rejected/duplicate url in round 1 left that worker's form dirty, and reassigning
+  // its .src to round 2's item hit the block.
+  // Fix: never reassign .src on an existing iframe between items — remove it and
+  // append a brand-new one instead. Verified live: 0 dialogs fired doing this,
+  // because deleting a frame isn't a "navigate away" the unsaved-changes warning
+  // applies to, unlike changing its location. Costs nothing (worker count still
+  // never grows with the queue), it's just a fresh DOM node per item instead of the
+  // literal same node.
+  function freshWorkerIframe(card) {
+    const body = card.querySelector('.falcon-worker-body');
+    const old = body.querySelector('iframe');
+    if (old) old.remove();
+    const f = document.createElement('iframe');
+    f.className = 'falcon-worker'; f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:#fff;';
+    body.appendChild(f);
+    return f;
+  }
+
+  async function workerLoop(card) {
     while (running) {
       const item = nextQueued();
       if (!item) break;
       item.status = 'active'; renderQueue();
       log('info', `${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
-      updateWorkerLabel(iframe, item);
+      const iframe = freshWorkerIframe(card);
+      updateWorkerLabel(card, item);
       iframe.src = editUrl(item);
       const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
-      if (!loaded) { item.status = 'failed'; item.error = 'edit page never loaded'; log('error', `${item.mbid}: edit page never loaded`); renderQueue(); continue; }
+      if (!loaded) { item.status = 'failed'; item.error = 'edit page never loaded'; log('error', `${item.mbid}: edit page never loaded`); updateWorkerLabel(card, null); renderQueue(); continue; }
       try {
         const r = await fillAndSubmit(iframe, item);
         item.urlResults = r.results;
@@ -425,7 +452,7 @@
         item.status = 'failed'; item.error = e.message || String(e);
         log('error', `${item.mbid}: ${item.error}`);
       }
-      updateWorkerLabel(iframe, null);
+      updateWorkerLabel(card, null);
       renderQueue();
     }
   }
@@ -434,17 +461,16 @@
   // it's on right now) plus a ⛶ toggle to view just that one large, so a failure can
   // actually be read instead of squinting at a 220x160 thumbnail. Zooming one worker
   // hides the others rather than trying to fit everything in a responsive grid.
-  let workerIframes = [];
-  let _zoomedWorker = null;   // index into workerIframes, or null
-  function updateWorkerLabel(iframe, item) {
-    const card = iframe.closest('.falcon-worker-card'); if (!card) return;
+  let workerCards = [];
+  let _zoomedWorker = null;   // index into workerCards, or null
+  function updateWorkerLabel(card, item) {
     const lbl = card.querySelector('.falcon-worker-lbl');
     if (lbl) lbl.textContent = item ? `${item.entityType}/${item.mbid.slice(0, 8)} — ${item.urls.length} link(s)` : 'idle';
   }
   function ensureWorkerIframes(n) {
     const strip = document.getElementById('falcon-workers'); if (!strip) return;
-    while (workerIframes.length < n) {
-      const idx = workerIframes.length;
+    while (workerCards.length < n) {
+      const idx = workerCards.length;
       const card = document.createElement('div');
       card.className = 'falcon-worker-card';
       card.style.cssText = 'border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;width:260px;height:210px;';
@@ -453,21 +479,20 @@
           <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555">idle</span>
           <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
         </div>
-        <iframe class="falcon-worker" style="flex:1;border:none;background:#fff;width:100%;"></iframe>`;
+        <div class="falcon-worker-body" style="flex:1;position:relative;"></div>`;
       card.querySelector('.falcon-worker-zoom').onclick = () => { _zoomedWorker = _zoomedWorker === idx ? null : idx; renderWorkerLayout(); };
       strip.appendChild(card);
-      workerIframes.push(card.querySelector('iframe'));
+      workerCards.push(card);
     }
-    while (workerIframes.length > n) {
-      const f = workerIframes.pop();
-      if (_zoomedWorker === workerIframes.length) _zoomedWorker = null;
-      f.closest('.falcon-worker-card')?.remove();
+    while (workerCards.length > n) {
+      const c = workerCards.pop();
+      if (_zoomedWorker === workerCards.length) _zoomedWorker = null;
+      c.remove();
     }
     renderWorkerLayout();
   }
   function renderWorkerLayout() {
-    workerIframes.forEach((f, i) => {
-      const card = f.closest('.falcon-worker-card'); if (!card) return;
+    workerCards.forEach((card, i) => {
       const zoomBtn = card.querySelector('.falcon-worker-zoom');
       if (_zoomedWorker === null) {
         card.style.display = ''; card.style.width = '260px'; card.style.height = '210px';
@@ -487,7 +512,7 @@
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
     ensureWorkerIframes(need);
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
-    workerIframes.forEach(f => workerLoop(f));
+    workerCards.forEach(c => workerLoop(c));
     updateRunBtn();
   }
   function stop() { running = false; log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
