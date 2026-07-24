@@ -71,7 +71,7 @@ await page.waitForTimeout(500);
 await page.addScriptTag({ content: code });
 await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 const seededQueue = await page.evaluate(() => window.__falconTest.getQueue());
-ck(seededQueue.length === 1 && seededQueue[0].urls?.[0] === 'https://example.com/seed', `falcon= param auto-seeds the queue (${JSON.stringify(seededQueue)})`);
+ck(seededQueue.length === 1 && seededQueue[0].urls?.[0]?.url === 'https://example.com/seed', `falcon= param auto-seeds the queue (${JSON.stringify(seededQueue)})`);
 const panelVisible = await page.evaluate(() => document.getElementById('falcon-panel')?.style.display);
 ck(panelVisible === 'flex', `panel auto-opens when seeded (display=${panelVisible})`);
 
@@ -116,8 +116,8 @@ await page.evaluate((artistB) => {
   window.__falconTest.setQueue([
     // NOT example.com/example.org — MB's client-side validation specifically rejects
     // those as placeholder URLs ("is just an example. Please enter the actual ...").
-    { id: 'a', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/falcontest1'], urlResults: null, status: 'queued', error: '' },
-    { id: 'b', entityType: 'artist', mbid: artistB, urls: ['https://myspace.com/falcontest2'], urlResults: null, status: 'queued', error: '' },
+    { id: 'a', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/falcontest1', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
+    { id: 'b', entityType: 'artist', mbid: artistB, urls: [{ url: 'https://myspace.com/falcontest2', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
   ]);
   window.__falconTest.cfg.workers = 1;   // single worker — proves it advances to the 2nd item in the SAME iframe
 }, ARTIST_B);
@@ -161,9 +161,9 @@ ck(noMergeResult.queueLen === 3, `queue grew to 3 items (got ${noMergeResult.que
 // 6c. nextQueued() must never hand out a second item for an entity that's already 'active'.
 const guardResult = await page.evaluate((artistB) => {
   window.__falconTest.setQueue([
-    { id: 'x', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/gx'], urlResults: null, status: 'active', error: '' },
-    { id: 'y', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/gy'], urlResults: null, status: 'queued', error: '' },
-    { id: 'z', entityType: 'artist', mbid: artistB, urls: ['https://myspace.com/gz'], urlResults: null, status: 'queued', error: '' },
+    { id: 'x', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/gx', linkTypeId: null }], urlResults: null, status: 'active', error: '' },
+    { id: 'y', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/gy', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
+    { id: 'z', entityType: 'artist', mbid: artistB, urls: [{ url: 'https://myspace.com/gz', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
   ]);
   return window.__falconTest.nextQueued()?.id;
 }, ARTIST_B);
@@ -174,7 +174,7 @@ posts = [];
 await page.evaluate(() => {
   window.__falconTest.stop();   // reset `running` from section 5 — start() no-ops while it's still true
   window.__falconTest.setQueue([
-    { id: 'g', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/grouptest1', 'https://myspace.com/grouptest2'], urlResults: null, status: 'queued', error: '' },
+    { id: 'g', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/grouptest1', linkTypeId: null }, { url: 'https://myspace.com/grouptest2', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
   ]);
   window.__falconTest.cfg.workers = 1;
 });

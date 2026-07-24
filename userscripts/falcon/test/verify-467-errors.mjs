@@ -57,7 +57,7 @@ await page.click('#falcon-launcher');   // ensurePanel() must run first — star
 await page.waitForSelector('#falcon-panel', { timeout: 5000 });
 await page.evaluate(() => {
   window.__falconTest.setQueue([
-    { id: 'e1', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://www.deezer.com/album/662911171'], urlResults: null, status: 'queued', error: '' },
+    { id: 'e1', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://www.deezer.com/album/662911171', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
   ]);
 });
 await page.evaluate(() => window.__falconTest.start());
@@ -82,8 +82,8 @@ ck(Math.abs(afterRestore - beforeMax) < 2, `restore returns to the original widt
 // 4. Per-worker maximize: zooming one hides the others and grows that one.
 await page.evaluate(() => {
   window.__falconTest.setQueue([
-    { id: 'z1', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/zoomtest1'], urlResults: null, status: 'queued', error: '' },
-    { id: 'z2', entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50', urls: ['https://myspace.com/zoomtest2'], urlResults: null, status: 'queued', error: '' },
+    { id: 'z1', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/zoomtest1', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
+    { id: 'z2', entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50', urls: [{ url: 'https://myspace.com/zoomtest2', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
   ]);
   window.__falconTest.cfg.workers = 2;
 });
