@@ -71,7 +71,7 @@ await page.waitForTimeout(500);
 await page.addScriptTag({ content: code });
 await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 const seededQueue = await page.evaluate(() => window.__falconTest.getQueue());
-ck(seededQueue.length === 1 && seededQueue[0].url === 'https://example.com/seed', `falcon= param auto-seeds the queue (${JSON.stringify(seededQueue)})`);
+ck(seededQueue.length === 1 && seededQueue[0].urls?.[0] === 'https://example.com/seed', `falcon= param auto-seeds the queue (${JSON.stringify(seededQueue)})`);
 const panelVisible = await page.evaluate(() => document.getElementById('falcon-panel')?.style.display);
 ck(panelVisible === 'flex', `panel auto-opens when seeded (display=${panelVisible})`);
 
@@ -116,8 +116,8 @@ await page.evaluate((artistB) => {
   window.__falconTest.setQueue([
     // NOT example.com/example.org — MB's client-side validation specifically rejects
     // those as placeholder URLs ("is just an example. Please enter the actual ...").
-    { id: 'a', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', url: 'https://myspace.com/falcontest1', status: 'queued', error: '' },
-    { id: 'b', entityType: 'artist', mbid: artistB, url: 'https://myspace.com/falcontest2', status: 'queued', error: '' },
+    { id: 'a', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/falcontest1'], urlResults: null, status: 'queued', error: '' },
+    { id: 'b', entityType: 'artist', mbid: artistB, urls: ['https://myspace.com/falcontest2'], urlResults: null, status: 'queued', error: '' },
   ]);
   window.__falconTest.cfg.workers = 1;   // single worker — proves it advances to the 2nd item in the SAME iframe
 }, ARTIST_B);
@@ -129,6 +129,62 @@ ck(finalQueue.every(i => i.status === 'done'), `both queue items committed (stat
 ck(posts.length === 2, `exactly 2 real form POSTs intercepted, one per artist (got ${posts.length})`);
 const workerCount = await page.evaluate(() => document.querySelectorAll('.falcon-worker').length);
 ck(workerCount === 1, `only 1 worker iframe was used for 2 queue items (got ${workerCount}) — proves same-tab reuse, no per-item open/close`);
+
+// 6. Grouping (majkinetor, #467): multiple URLs for the SAME entity must merge into
+// ONE queue item / one edit visit — never revisit (or, worse, concurrently visit)
+// the same mbid's edit page once per URL.
+await page.evaluate(() => window.__falconTest.setQueue([]));
+const groupResult = await page.evaluate((artistB) => {
+  const { addToQueue, getQueue } = window.__falconTest;
+  const r1 = addToQueue([{ entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', url: 'https://myspace.com/g1' }]);
+  const r2 = addToQueue([{ entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', url: 'https://myspace.com/g2' }]);   // same mbid, still queued -> should MERGE
+  const r3 = addToQueue([{ entityType: 'artist', mbid: artistB, url: 'https://myspace.com/g3' }]);   // different mbid -> new item
+  return { r1, r2, r3, queue: getQueue() };
+}, ARTIST_B);
+console.log('grouping:', JSON.stringify(groupResult, null, 1));
+ck(groupResult.queue.length === 2, `2 distinct entities -> 2 queue items, not 3 (got ${groupResult.queue.length})`);
+ck(groupResult.r2.merged === 1 && groupResult.r2.added === 0, `2nd url for the SAME mbid merges instead of creating a new item (${JSON.stringify(groupResult.r2)})`);
+const groupedItem = groupResult.queue.find(i => i.mbid === 'd31f76d2-1d8e-4271-8027-148f375979d7');
+ck(groupedItem && groupedItem.urls.length === 2, `grouped item carries both urls (${JSON.stringify(groupedItem?.urls)})`);
+
+// 6b. Once an item is no longer 'queued' (claimed/active), a later add for the same
+// mbid must NOT merge into it — it needs its own fresh item instead.
+const noMergeResult = await page.evaluate(() => {
+  const { addToQueue, getQueue } = window.__falconTest;
+  const q = getQueue(); q[0].status = 'active';   // simulate a worker having claimed it
+  const r = addToQueue([{ entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', url: 'https://myspace.com/g4' }]);
+  return { r, queueLen: getQueue().length };
+});
+ck(noMergeResult.r.added === 1 && noMergeResult.r.merged === 0, `no merge into an ACTIVE item — a fresh item is created instead (${JSON.stringify(noMergeResult.r)})`);
+ck(noMergeResult.queueLen === 3, `queue grew to 3 items (got ${noMergeResult.queueLen})`);
+
+// 6c. nextQueued() must never hand out a second item for an entity that's already 'active'.
+const guardResult = await page.evaluate((artistB) => {
+  window.__falconTest.setQueue([
+    { id: 'x', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/gx'], urlResults: null, status: 'active', error: '' },
+    { id: 'y', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/gy'], urlResults: null, status: 'queued', error: '' },
+    { id: 'z', entityType: 'artist', mbid: artistB, urls: ['https://myspace.com/gz'], urlResults: null, status: 'queued', error: '' },
+  ]);
+  return window.__falconTest.nextQueued()?.id;
+}, ARTIST_B);
+ck(guardResult === 'z', `nextQueued() skips the queued item ('y') whose entity is already active, picks the other entity ('z') instead (got '${guardResult}')`);
+
+// 7. A grouped item with 2 urls commits BOTH in a single edit-page visit (1 POST, not 2).
+posts = [];
+await page.evaluate(() => {
+  window.__falconTest.stop();   // reset `running` from section 5 — start() no-ops while it's still true
+  window.__falconTest.setQueue([
+    { id: 'g', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: ['https://myspace.com/grouptest1', 'https://myspace.com/grouptest2'], urlResults: null, status: 'queued', error: '' },
+  ]);
+  window.__falconTest.cfg.workers = 1;
+});
+await page.evaluate(() => window.__falconTest.start());
+await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 20000 }).catch(() => {});
+const groupedFinal = await page.evaluate(() => window.__falconTest.getQueue());
+console.log('grouped-commit queue:', JSON.stringify(groupedFinal, null, 1));
+ck(groupedFinal[0]?.status === 'done', `grouped item with 2 urls commits as 'done' (status=${groupedFinal[0]?.status})`);
+ck(groupedFinal[0]?.urlResults?.length === 2 && groupedFinal[0].urlResults.every(r => r.ok), `both urls recorded as added (${JSON.stringify(groupedFinal[0]?.urlResults)})`);
+ck(posts.length === 1, `exactly ONE form POST for both urls — one edit-page visit, not two (got ${posts.length})`);
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
