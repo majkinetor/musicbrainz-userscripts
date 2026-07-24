@@ -1,22 +1,27 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24.195124
-// @description  Add external links to a BATCH of MusicBrainz artists/labels at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, or hand it a queue via a `?falcon=` URL param (e.g. from Harmony).
+// @version      2026.7.24.210449
+// @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md
 // @match        https://*.musicbrainz.org/*
+// @match        https://harmony.pulsewidth.org.uk/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @noframes
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24.195124';
+  const VERSION = '2026.7.24.210449';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
+  // the ACTUAL MusicBrainz origin — used to build the outbound url when this script
+  // is running ON Harmony (there, MB_ORIGIN above is Harmony's own origin, not MB's).
+  const MB_TARGET = 'https://musicbrainz.org';
+  const ON_HARMONY = /(^|\.)harmony\.pulsewidth\.org\.uk$/i.test(location.hostname);
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md';
   // simple rocket glyph — reused at both launcher and panel-header size (currentColor)
   const ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
@@ -63,18 +68,27 @@
     renderLog();
   }
 
-  /* ── queue item shape: {id, entityType, mbid, urls, urlResults, status, error} ──
-     #467 (majkinetor): the same entity can carry several URLs — group those into
-     ONE item/one edit-page visit rather than revisiting the same mbid N times
-     (both unsafe — two workers must never load the same entity's /edit at once —
-     and wasteful). Grouping happens at add-time (see addToQueue); nextQueued()
-     additionally refuses to hand out a queued item whose entity is already
-     'active' in another worker, so a later-added item for the same entity can
-     never race the one already in flight. */
+  /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
+     urlResults, status, error} ── #467 (majkinetor): the same entity can carry
+     several URLs — group those into ONE item/one edit-page visit rather than
+     revisiting the same mbid N times (both unsafe — two workers must never load
+     the same entity's /edit at once — and wasteful). Grouping happens at add-time
+     (see addToQueue); nextQueued() additionally refuses to hand out a queued item
+     whose entity is already 'active' in another worker, so a later-added item for
+     the same entity can never race the one already in flight.
+     `linkTypeId` is optional — when present (e.g. from Harmony, which already
+     knows exactly which relationship type it wants) it's used to set the type
+     select if MB renders one instead of auto-classifying; when absent MB's own
+     classifier decides, same as before. The SAME url can legitimately appear
+     twice with two different linkTypeId values (Harmony does this for e.g. a
+     Bandcamp track that's both "stream for free" and "purchase for download") —
+     handled by fillAndSubmit via MB's own "Add another relationship" row rather
+     than re-typing the url, so dedup below is keyed on (url, linkTypeId), not url
+     alone. */
   let queue = [];
   let _idSeq = 0;
   let running = false;
-  const ENTITY_RE = /^(artist|label)$/;
+  const ENTITY_RE = /^(artist|label|recording)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   function normalizeEntityType(raw) {
@@ -82,44 +96,48 @@
     return ENTITY_RE.test(t) ? t : 'artist';
   }
   // accepts: "<mbid>,<url>" · "<mbid> <url>" · "<entityType>:<mbid>,<url>" ·
-  // or a full MB artist/label URL in place of the bare mbid.
+  // or a full MB artist/label/recording URL in place of the bare mbid.
   function parseLine(line) {
     const s = line.trim();
     if (!s || s.startsWith('#')) return null;
     let entityType = 'artist';
     let rest = s;
-    const etm = rest.match(/^(artist|label)\s*:\s*(.+)$/i);
+    const etm = rest.match(/^(artist|label|recording)\s*:\s*(.+)$/i);
     if (etm) { entityType = normalizeEntityType(etm[1]); rest = etm[2]; }
     const parts = rest.split(/[,\s]+/).filter(Boolean);
     if (parts.length < 2) return null;
     let [entityPart, ...urlParts] = parts;
     const url = urlParts.join(' ');
-    const um = entityPart.match(/musicbrainz\.org\/(artist|label)\/([0-9a-f-]{36})/i);
+    const um = entityPart.match(/musicbrainz\.org\/(artist|label|recording)\/([0-9a-f-]{36})/i);
     let mbid = entityPart;
     if (um) { entityType = normalizeEntityType(um[1]); mbid = um[2]; }
     if (!MBID_RE.test(mbid) || !/^https?:\/\//i.test(url)) return null;
-    return { entityType, mbid: mbid.toLowerCase(), url };
+    return { entityType, mbid: mbid.toLowerCase(), url, linkTypeId: null };
   }
   function parsePaste(text) {
     return String(text || '').split('\n').map(parseLine).filter(Boolean);
   }
-  // merges each parsed {entityType,mbid,url} into an existing STILL-QUEUED item for
-  // the same entity (never merges into an active/done/failed one — that item has
-  // already been claimed or finished), else creates a new one-URL item.
+  // merges each parsed {entityType,mbid,url,linkTypeId,note?} into an existing
+  // STILL-QUEUED item for the same entity (never merges into an active/done/failed
+  // one — that item has already been claimed or finished), else creates a new item.
   function addToQueue(parsed) {
     let merged = 0, added = 0;
     parsed.forEach(p => {
       const existing = queue.find(i => i.status === 'queued' && i.entityType === p.entityType && i.mbid === p.mbid);
+      const linkTypeId = p.linkTypeId || null;
       if (existing) {
-        if (!existing.urls.includes(p.url)) { existing.urls.push(p.url); merged++; }
+        if (!existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
+        if (p.note && !existing.note) existing.note = p.note;
         return;
       }
-      queue.push({ id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [p.url], urlResults: null, status: 'queued', error: '' });
+      queue.push({ id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', urlResults: null, status: 'queued', error: '' });
       added++;
     });
     return { merged, added };
   }
-  // `?falcon=<base64(JSON array of {entityType?,mbid,url}) or plain JSON>` — the Harmony handoff.
+  // `?falcon=<base64(JSON array of {entityType?,mbid,url,linkTypeId?}) or plain
+  // JSON>` — the Harmony handoff (also reachable directly from a Harmony page, see
+  // scrapeHarmonyActions()).
   function parseUrlParam() {
     const raw = new URLSearchParams(location.search).get('falcon');
     if (!raw) return null;
@@ -128,9 +146,72 @@
     try {
       const arr = JSON.parse(json);
       if (!Array.isArray(arr)) return null;
-      return arr.map(it => ({ entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || '') }))
+      return arr.map(it => ({ entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '' }))
         .filter(it => MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url));
     } catch (e) { log('warn', 'falcon= param present but not valid JSON: ' + e.message); return null; }
+  }
+  // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
+  // https://musicbrainz.org/<artist|label|recording>/<mbid>/edit
+  //   ?edit-<type>.url.0.text=<url>&edit-<type>.url.0.link_type_id=<id>
+  //   &edit-<type>.url.1.text=...&edit-<type>.url.1.link_type_id=...
+  //   &edit-<type>.edit_note=<text>
+  // Returns a FLAT array of {entityType,mbid,url,linkTypeId,note} tuples (one per
+  // url.N) ready for addToQueue, or [] if href isn't a recognized seed URL.
+  function parseHarmonySeedUrl(href) {
+    let u; try { u = new URL(href, MB_ORIGIN); } catch (e) { return []; }
+    const m = u.pathname.match(/^\/(artist|label|recording)\/([0-9a-f-]{36})\/edit\/?$/i);
+    if (!m) return [];
+    const entityType = normalizeEntityType(m[1]);
+    const mbid = m[2].toLowerCase();
+    const prefix = `edit-${m[1].toLowerCase()}.`;
+    const note = u.searchParams.get(prefix + 'edit_note') || '';
+    const byIndex = {};
+    for (const [key, val] of u.searchParams) {
+      if (!key.startsWith(prefix + 'url.')) continue;
+      const km = key.slice((prefix + 'url.').length).match(/^(\d+)\.(text|link_type_id)$/);
+      if (!km) continue;
+      (byIndex[km[1]] || (byIndex[km[1]] = {}))[km[2]] = val;
+    }
+    return Object.values(byIndex).filter(e => e.text).map(e => ({ entityType, mbid, url: e.text, linkTypeId: e.link_type_id || null, note }));
+  }
+  function encodeFalconPayload(tuples) {
+    const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined })));
+    return btoa(unescape(encodeURIComponent(json)));
+  }
+
+  /* ── Harmony bridge (#467, #459) ─────────────────────────────────────────
+     Running ON a Harmony actions page: every "Link external IDs" action IS
+     already a standard MB seed url (parseHarmonySeedUrl handles it) — scrape
+     them all, combine into one falcon= payload, and open MB with it in a new
+     tab instead of Harmony's own tab-per-entity popups. Harmony's actions
+     render asynchronously (client-rendered), so the button's count is kept
+     live by a short polling loop that settles once the count stops changing. */
+  function scrapeHarmonyActions() {
+    const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
+    const tuples = [];
+    anchors.forEach(a => { const href = a.getAttribute('href'); if (href) tuples.push(...parseHarmonySeedUrl(href)); });
+    return tuples;
+  }
+  let harmonyBtn = null;
+  function ensureHarmonyButton() {
+    const items = scrapeHarmonyActions();
+    if (!harmonyBtn) {
+      harmonyBtn = document.createElement('button');
+      harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
+      harmonyBtn.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;background:#1b2a4a;color:#fff;font:bold 13px Arial;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;transition:opacity .15s';
+      harmonyBtn.innerHTML = `<span style="display:flex;color:#ff9d5c">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
+      harmonyBtn.onclick = () => {
+        const found = scrapeHarmonyActions();
+        if (!found.length) { alert(`${NAME}: no "Link external IDs" actions found on this page.`); return; }
+        const payload = encodeFalconPayload(found);
+        window.open(`${MB_TARGET}/?falcon=${encodeURIComponent(payload)}`, '_blank');
+      };
+      document.body.appendChild(harmonyBtn);
+    }
+    const lbl = document.getElementById('falcon-harmony-lbl');
+    lbl.textContent = items.length ? `Send ${items.length} to Falcon` : 'No Falcon actions found yet…';
+    harmonyBtn.style.opacity = items.length ? '1' : '.6';
+    harmonyBtn.title = items.length ? `Opens MusicBrainz with all ${items.length} link(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
   }
 
   /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
@@ -181,23 +262,76 @@
       return true;
     } catch (e) { return false; }
   }
-  const editNoteText = (results) => {
+  const editNoteText = (results, harmonyNote) => {
     const added = results.filter(r => r.ok).map(r => r.url);
-    return `${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}\n\nBulk-added via the Falcon queue:\n${added.join('\n')}`;
+    const lines = [`${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}`, ''];
+    if (harmonyNote) lines.push(harmonyNote, '');
+    lines.push('Bulk-added via the Falcon queue:', ...added);
+    return lines.join('\n');
   };
 
-  // fill every URL in item.urls (one "Add another link" round-trip each) then submit
-  // ONCE for the whole group, all directly against the iframe's OWN document/window
-  // (same-origin — no postMessage needed, see #467). A url that MB rejects (e.g.
-  // already present) doesn't abort the rest — it's recorded in the returned
-  // per-url results and the others still go in. Only truly infra-level failures
-  // (no submit button, never redirected) throw; "nothing to submit" is signalled via
-  // `committed: false`, not a throw, since it isn't necessarily an error (every url
-  // in the group may simply already be on the entity).
+  // MB shows the relationship type as a plain read-only label when there's only one
+  // valid type for that url (nothing to set), or a <select class="link-type"> when
+  // ambiguous (e.g. Bandcamp: streaming vs purchase). When Harmony hands us an
+  // explicit linkTypeId, honor it whenever a select is actually present.
+  async function setRowLinkType(iframe, row, linkTypeId) {
+    if (!linkTypeId) return null;
+    const typeRow = row.nextElementSibling;
+    const select = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
+    if (!select) return null;   // unambiguous — MB already resolved it, nothing to override
+    if (![...select.options].some(o => o.value === String(linkTypeId))) return false;
+    const w = frameWin(iframe);
+    const setSel = Object.getOwnPropertyDescriptor(w.HTMLSelectElement.prototype, 'value').set;
+    setSel.call(select, String(linkTypeId));
+    select.dispatchEvent(new w.Event('change', { bubbles: true }));
+    return true;
+  }
+  // Harmony sometimes wants TWO relationship types on the IDENTICAL url (e.g. a
+  // Bandcamp track as both "stream for free" and "purchase for download") — MB
+  // supports this via the row's own "Add another relationship" control, not by
+  // re-typing the url again (that wouldn't create a second row at all).
+  async function addSecondRelationshipType(iframe, row, linkTypeId) {
+    if (!linkTypeId) return false;
+    const typeRow = row.nextElementSibling;
+    if (!typeRow || !typeRow.classList?.contains('relationship-item')) return false;
+    const addRow = typeRow.nextElementSibling;
+    const addBtn = addRow?.classList?.contains('add-relationship') ? addRow.querySelector('button.add-item') : null;
+    if (!addBtn) return false;
+    addBtn.click();
+    const newSelect = await waitFor(() => {
+      const s = typeRow.nextElementSibling;
+      if (!s || !s.classList?.contains('relationship-item')) return null;
+      const sel = s.querySelector('select.link-type');
+      return (sel && !sel.value) ? sel : null;
+    }, 3000);
+    if (!newSelect || ![...newSelect.options].some(o => o.value === String(linkTypeId))) return false;
+    const w = frameWin(iframe);
+    const setSel = Object.getOwnPropertyDescriptor(w.HTMLSelectElement.prototype, 'value').set;
+    setSel.call(newSelect, String(linkTypeId));
+    newSelect.dispatchEvent(new w.Event('change', { bubbles: true }));
+    return true;
+  }
+
+  // fill every URL in item.urls (one "Add another link" round-trip each, or a second
+  // relationship type on an already-present url) then submit ONCE for the whole
+  // group, all directly against the iframe's OWN document/window (same-origin — no
+  // postMessage needed, see #467). A url that MB rejects (e.g. already present)
+  // doesn't abort the rest — it's recorded in the returned per-url results and the
+  // others still go in. Only truly infra-level failures (no submit button, never
+  // redirected) throw; "nothing to submit" is signalled via `committed: false`, not
+  // a throw, since it isn't necessarily an error (every url in the group may simply
+  // already be on the entity).
   async function fillAndSubmit(iframe, item) {
     const results = [];
-    for (const url of item.urls) {
+    for (const { url, linkTypeId } of item.urls) {
       try {
+        const doc0 = frameDoc(iframe);
+        const existingRow = doc0 && [...doc0.querySelectorAll('tr.external-link-item')].find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url);
+        if (existingRow) {
+          const added = await addSecondRelationshipType(iframe, existingRow, linkTypeId);
+          results.push({ url, ok: added, error: added ? undefined : (linkTypeId ? 'could not add a second relationship type — this url is already present' : 'this url is already present') });
+          continue;
+        }
         const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
         if (!input) { results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
         const d2 = frameDoc(iframe), w2 = frameWin(iframe);
@@ -219,12 +353,13 @@
           results.push({ url, ok: false, error: mbError || 'URL row never appeared after Enter (MB gave no specific reason)' });
           continue;
         }
+        if (linkTypeId) await setRowLinkType(iframe, row, linkTypeId);
         results.push({ url, ok: true });
       } catch (e) { results.push({ url, ok: false, error: e.message || String(e) }); }
     }
     if (!results.some(r => r.ok)) return { committed: false, results };
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
-    setEditNote(d2, w2, editNoteText(results));
+    setEditNote(d2, w2, editNoteText(results, item.note));
     await wait(150);
     const btn = findSubmitButton(frameDoc(iframe));
     if (!btn) throw new Error('no submit button found');
@@ -379,7 +514,7 @@
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:8px 10px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:6px">
-        <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
+        <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>  /  recording:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
         <div style="display:flex;gap:6px;align-items:center">
           <button type="button" id="falcon-add" style="padding:4px 10px;cursor:pointer">+ Add to queue</button>
           <span style="margin-left:auto;color:#666">workers</span>
@@ -452,7 +587,7 @@
       <div style="display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid #f3f3f3" title="${it.error ? esc(it.error) : ''}">
         <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
         <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" style="color:#1b2a4a;text-decoration:none;font-weight:600">${it.entityType}/${it.mbid.slice(0, 8)}</a>
-        <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0] || '')}</span>
+        <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0]?.url || '')}</span>
         <span style="color:#999;text-transform:uppercase;font-size:9px">${it.status}</span>
       </div>`).join('') || '<div style="color:#999;padding:8px 0">Queue is empty — paste some lines above.</div>';
   }
@@ -468,20 +603,32 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
   /* ── boot ────────────────────────────────────────────────────────────── */
-  const seeded = parseUrlParam();
-  ensureLauncher();
-  if (seeded && seeded.length) {
-    addToQueue(seeded);
-    log('info', `seeded ${seeded.length} item(s) from the falcon= URL param`);
-    showPanel();
+  if (ON_HARMONY) {
+    ensureHarmonyButton();
+    // Harmony's actions render client-side after load — rescan until the count
+    // settles (3 unchanged reads), then stop polling.
+    let stableCount = 0, lastN = -1;
+    const iv = setInterval(() => {
+      const n = scrapeHarmonyActions().length;
+      ensureHarmonyButton();
+      if (n === lastN) { if (++stableCount >= 3) clearInterval(iv); } else { stableCount = 0; lastN = n; }
+    }, 1000);
+  } else {
+    const seeded = parseUrlParam();
+    ensureLauncher();
+    if (seeded && seeded.length) {
+      addToQueue(seeded);
+      log('info', `seeded ${seeded.length} item(s) from the falcon= URL param`);
+      showPanel();
+    }
+    window.addEventListener('keydown', e => {
+      if (!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey) return;
+      if ((e.key || '').toLowerCase() !== 'f') return;
+      e.preventDefault(); e.stopPropagation();
+      togglePanel();
+    });
   }
-  window.addEventListener('keydown', e => {
-    if (!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey) return;
-    if ((e.key || '').toLowerCase() !== 'f') return;
-    e.preventDefault(); e.stopPropagation();
-    togglePanel();
-  });
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, editUrl, nextQueued };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued };
 })();
