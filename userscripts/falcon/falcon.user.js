@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24
+// @version      2026.7.24.182416
 // @description  Add external links to a BATCH of MusicBrainz artists/labels at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, or hand it a queue via a `?falcon=` URL param (e.g. from Harmony).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24';
+  const VERSION = '2026.7.24.182416';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -24,6 +24,29 @@
     '<path d="M8 13.5 L5 19 L8.6 16.6 Z"/><path d="M16 13.5 L19 19 L15.4 16.6 Z"/>' +
     '<circle cx="12" cy="8.2" r="1.5" fill="currentColor" stroke="none"/>' +
     '<path d="M9.6 13.5 L9 19 L12 22 L15 19 L14.4 13.5 Z"/></svg>';
+
+  /* ── shared corner-slot convention (#468) ───────────────────────────────
+     Every floating launcher across these scripts (Apollo Editor, Art
+     Station, Scribe, Falcon) tags its element with data-mb-corner (which
+     screen corner) + data-mb-corner-order (priority — lower sits closest to
+     the actual corner) and calls mbRestackCorner() right after it shows /
+     hides / creates / removes its own element. No MutationObserver needed:
+     whichever script's state just changed triggers a full recompute that
+     repositions every element sharing that corner, regardless of load
+     order — so two independent scripts' buttons never land on the same
+     pixel. Duplicated per-script on purpose (no shared file to import). */
+  function mbRestackCorner(corner) {
+    const bottom = corner[0] === 'b', right = corner[1] === 'r';
+    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
+      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
+      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
+    let pos = 14;
+    els.forEach(el => {
+      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+      el.style[right ? 'right' : 'left'] = '14px';
+      pos += el.getBoundingClientRect().height + 8;
+    });
+  }
 
   /* ── settings ────────────────────────────────────────────────────────── */
   const cfg = {
@@ -219,12 +242,14 @@
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'falcon-launcher';
     launcher.title = `${NAME} — bulk link editor (Ctrl+Alt+F)`;
+    launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '10';
     launcher.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.55);color:#1b2a4a;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:background .15s,transform .1s;opacity:.55';
     launcher.innerHTML = ICON;
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.08)'; launcher.style.opacity = '1'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; launcher.style.opacity = '.55'; };
     launcher.onclick = () => togglePanel();
     document.body.appendChild(launcher);
+    mbRestackCorner('br');
   }
 
   let panel = null, tab = 'queue';

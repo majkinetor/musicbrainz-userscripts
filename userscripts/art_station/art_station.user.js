@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.21
+// @version      2026.7.24
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -26,6 +26,32 @@
   // and the type vocabulary). Everything downstream goes through ENT. (#241)
   const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
   if (!M) return;
+
+  /* ── shared corner-slot convention (#468) ───────────────────────────────
+     Every floating launcher across these scripts (Apollo Editor, Art
+     Station, Scribe, Falcon) tags its element with data-mb-corner (which
+     screen corner) + data-mb-corner-order (priority — lower sits closest to
+     the actual corner) and calls mbRestackCorner() right after it shows /
+     hides / creates / removes its own element. No MutationObserver needed:
+     whichever script's state just changed triggers a full recompute that
+     repositions every element sharing that corner, regardless of load
+     order — so two independent scripts' buttons never land on the same
+     pixel. Duplicated per-script on purpose (no shared file to import).
+     Apollo and Art Station share the same order (never both mount at once —
+     different page types), Falcon sits closer to the corner (order 10). */
+  function mbRestackCorner(corner) {
+    const bottom = corner[0] === 'b', right = corner[1] === 'r';
+    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
+      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
+      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
+    let pos = 14;
+    els.forEach(el => {
+      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+      el.style[right ? 'right' : 'left'] = '14px';
+      pos += el.getBoundingClientRect().height + 8;
+    });
+  }
+
   const IS_EVENT = M[1].toLowerCase() === 'event';
   const MBID = M[2];
   // #248 the native "add cover art" uploader page (also where integrations like
@@ -405,11 +431,13 @@
     let wrap = document.getElementById('as-switch-wrap');
     if (!wrap) {
       wrap = document.createElement('div'); wrap.id = 'as-switch-wrap';
+      wrap.dataset.mbCorner = 'br'; wrap.dataset.mbCornerOrder = '20';
       const sw = document.createElement('button'); sw.id = 'as-switch';
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
       const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙︎'; gear.title = 'Art Station setup';
       gear.onclick = openSetup;
       wrap.append(sw, gear); document.body.appendChild(wrap);   // label left, gear right — one pill
+      mbRestackCorner('br');
     }
     const sw = document.getElementById('as-switch');
     sw.textContent = _showOrig ? 'Art Station' : 'Original';

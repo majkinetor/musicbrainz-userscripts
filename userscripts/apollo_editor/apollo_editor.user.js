@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.23
+// @version      2026.7.24
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1387,8 +1387,32 @@
   }
 
   /* ════════════════════════ UI ════════════════════════ */
+  /* ── shared corner-slot convention (#468) ───────────────────────────────
+     Every floating launcher across these scripts (Apollo Editor, Art
+     Station, Scribe, Falcon) tags its element with data-mb-corner (which
+     screen corner) + data-mb-corner-order (priority — lower sits closest to
+     the actual corner) and calls mbRestackCorner() right after it shows /
+     hides / creates / removes its own element. No MutationObserver needed:
+     whichever script's state just changed triggers a full recompute that
+     repositions every element sharing that corner, regardless of load
+     order — so two independent scripts' buttons never land on the same
+     pixel. Duplicated per-script on purpose (no shared file to import).
+     Apollo and Art Station share the same order (never both mount at once —
+     different page types), Falcon sits closer to the corner (order 10). */
+  function mbRestackCorner(corner) {
+    const bottom = corner[0] === 'b', right = corner[1] === 'r';
+    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
+      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
+      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
+    let pos = 14;
+    els.forEach(el => {
+      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+      el.style[right ? 'right' : 'left'] = '14px';
+      pos += el.getBoundingClientRect().height + 8;
+    });
+  }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.23.204204';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.24';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4380,7 +4404,7 @@
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
-    style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) l.remove();
+    style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) { l.remove(); mbRestackCorner('br'); }
     const p = document.createElement('div'); p.id = 'tc-panel';
     p.innerHTML = `<div id="tc-hdr">${ICON}<b>Apollo Editor</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" title="close">✕</button></div>
       <div id="tc-body"></div>`;
@@ -4536,6 +4560,7 @@
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) { relabelLauncher(); return; }
     style(); const b = document.createElement('div'); b.id = 'tc-launch';
+    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '20';
     const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'Toggle Apollo / the original editor for ALL tabs — stays this way (across pages) until you switch back';
     lbl.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
@@ -4545,6 +4570,7 @@
     gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
     b.append(lbl, gear);
     document.body.appendChild(b); relabelLauncher();
+    mbRestackCorner('br');
   }
   function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
   let _tlPrev = false, _recPrev = false, _tlRefreshed = false;
@@ -4570,7 +4596,7 @@
       if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); else if (recSig() !== _lastRecSig) rerenderRec(); } else hideRecMirror(); }   // re-render when MB mutates a recording externally (e.g. cleared on a title edit)
       if (releaseInfoVisible()) applyReleaseInfo();
       applyDuplicates();   // #187: score the Add-release Duplicates tab when "Modify Duplicates" is on
-      if (editorEl()) { ensureLauncher(); wireTabFlush(); } else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }   // #135: the switch shows on every tab; #145: flush the takeover on tab clicks
+      if (editorEl()) { ensureLauncher(); wireTabFlush(); } else { const l = document.getElementById('tc-launch'); if (l) { l.remove(); mbRestackCorner('br'); } }   // #135: the switch shows on every tab; #145: flush the takeover on tab clicks
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
       applyZen();   // #141: keep zen state applied (and fill the nav title once the release model is ready)
     };
