@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.23
+// @version      2026.7.24
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3269,20 +3269,29 @@
       for (let idx = 0; idx < RELEASE.tracks.length; idx++) {
         const t = RELEASE.tracks[idx];
         if (!t.recId) continue;
-        const isrc = normalizeIsrc(t.pending) || normalizeIsrc((t.existing || [])[0] || '');
-        if (!p.album && !isValidIsrc(isrc)) continue;  // by-ISRC providers need an ISRC; album ones don't
-        if (linkedUrl(t, p)) continue;                 // already linked → leave monochrome
+        // #466: a recording can carry MULTIPLE ISRCs (a reissue/relabel gets its own code
+        // for the same recording) — a provider's catalogue may be indexed under any one of
+        // them, so keep every candidate here and try them in turn below instead of only
+        // ever trying the first (which silently missed tracks 8/10 on the reported release
+        // because Qobuz had them under the recording's OTHER isrc).
+        const isrcs = [normalizeIsrc(t.pending), ...(t.existing || []).map(normalizeIsrc)]
+          .filter((v, i, a) => isValidIsrc(v) && a.indexOf(v) === i);
+        if (!p.album && !isrcs.length) continue;   // by-ISRC providers need an ISRC; album ones don't
+        if (linkedUrl(t, p)) continue;              // already linked → leave monochrome
         const el = cell(idx, p.code);
         if (!el || !el.classList.contains('cand')) continue;
         el.className = 'ii-tl spin'; el.dataset.code = p.code;   // show all candidates spinning up front
-        jobs.push({ idx, isrc, t });
+        jobs.push({ idx, isrcs, t });
       }
       let next = 0;
       const worker = async () => {
         while (next < jobs.length) {
           const j = jobs[next++];
           let url = null;
-          try { url = await p.resolve(j.isrc, j.t, j.idx); } catch (e) { /* rate-limited / not found */ }
+          for (const isrc of (j.isrcs.length ? j.isrcs : [''])) {
+            try { url = await p.resolve(isrc, j.t, j.idx); } catch (e) { /* rate-limited / not found */ }
+            if (url) break;
+          }
           const fresh = cell(j.idx, p.code);
           if (fresh) {
             if (url) makeNew(j.idx, p, url);
@@ -3323,6 +3332,11 @@
       });
       return rows;
     }
+
+    // Test hook only (#466) — no behavior change; lets verify-466.mjs call a single
+    // provider's resolveProvider directly instead of the aggregate Find-links button,
+    // so the test doesn't also have to mock every other provider's network calls.
+    if (typeof window !== 'undefined') window.__isrcScoutTest466 = { PROV, resolveProvider };
 
     return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
