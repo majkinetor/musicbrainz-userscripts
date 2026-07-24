@@ -63,9 +63,11 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   ck(roundtrip?.some(t => t.entityType === 'label' && t.linkTypeId === '719'), 'linkTypeId survives the round-trip');
 }
 
-// 3. Live Harmony page: the button appears, finds real actions, and building its
-// payload produces a valid, larger-than-a-handful item count. Does NOT click it
-// (that would open a real new tab) — just verifies the scrape + count are live.
+// 3. Live Harmony page: the button appears, finds real actions (recordings included
+// again, majkinetor #467), and clicking it opens MB with a SHORT token in the URL —
+// the full batch (including recordings) lives in GM storage, not the URL, so there's
+// no length ceiling to hit regardless of batch size. window.open is stubbed for the
+// duration of the click so this never opens a real tab.
 {
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
@@ -75,28 +77,34 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.waitForTimeout(1500);
   const info = await page.evaluate(() => {
-    const items = window.__falconTest.scrapeHarmonyActions();   // raw — still includes recordings
+    const items = window.__falconTest.scrapeHarmonyActions();
     const btn = document.getElementById('falcon-harmony-btn');
-    const filtered = items.filter(t => t.entityType !== 'recording');
-    const fullUrlLen = `https://musicbrainz.org/?falcon=${encodeURIComponent(window.__falconTest.encodeFalconPayload(items))}`.length;
-    const filteredUrlLen = `https://musicbrainz.org/?falcon=${encodeURIComponent(window.__falconTest.encodeFalconPayload(filtered))}`.length;
     return {
       count: items.length, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, btnTitle: btn?.title,
       byType: items.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {}),
-      fullUrlLen, filteredUrlLen, filteredCount: filtered.length,
     };
   });
   console.log('live harmony scrape:', JSON.stringify(info));
   ck(info.btnExists, 'the "Send to Falcon" button is injected on a real Harmony actions page');
-  ck(info.count > 10, `raw scrapeHarmonyActions() still returns recordings too (got ${info.count})`);
-  ck((info.byType.artist || 0) > 0 && (info.byType.recording || 0) > 0, `raw scrape covers both artist and recording actions (${JSON.stringify(info.byType)})`);
-  // #467 follow-up: recordings excluded from what the button actually SENDS — a real
-  // batch's base64 payload blew past ~32,000 chars (measured) and MB's front-end
-  // dropped the connection (Firefox: PR_END_OF_FILE_ERROR) rather than erroring cleanly.
-  ck(new RegExp(`Send ${info.filteredCount} to Falcon`).test(info.btnText || ''), `button label shows the FILTERED (no-recordings) count, not the raw one (label="${info.btnText}", filtered count=${info.filteredCount})`);
-  ck(info.filteredCount < info.count, `recordings are indeed excluded from the sendable set (${info.filteredCount} < ${info.count})`);
-  ck(/recording link\(s\) skipped/.test(info.btnTitle || ''), `tooltip explains the skip (title="${info.btnTitle}")`);
-  ck(info.filteredUrlLen < 8000, `the filtered payload's URL is comfortably under typical server URL limits (${info.filteredUrlLen} chars, vs raw ${info.fullUrlLen})`);
+  ck(info.count > 10, `scrapeHarmonyActions() returns everything, recordings included (got ${info.count})`);
+  // this release's real, live action mix can shift over time (edits happen on MB) —
+  // just check it found SOME actions of some kind, not a specific type breakdown.
+  ck(Object.values(info.byType).some(n => n > 0), `scrape found real actions of at least one type (${JSON.stringify(info.byType)})`);
+  ck(new RegExp(`Send ${info.count} to Falcon`).test(info.btnText || ''), `button label shows the FULL count, recordings included (label="${info.btnText}", count=${info.count})`);
+  ck(!/skipped/.test(info.btnTitle || ''), `tooltip no longer mentions skipping anything now that the token transport removed the URL-length ceiling (title="${info.btnTitle}")`);
+
+  const clicked = await page.evaluate(() => new Promise(resolveClick => {
+    const origOpen = window.open;
+    window.open = url => { window.open = origOpen; resolveClick(url); return { closed: false }; };   // capture, don't actually open a tab
+    document.getElementById('falcon-harmony-btn').click();
+  }));
+  const token = new URL(clicked).searchParams.get('falcon');
+  console.log('captured window.open target:', clicked);
+  ck(!!token && clicked.length < 200, `the button opens a URL carrying only a short token, not the whole payload (token="${token}", url length=${clicked.length})`);
+  const storedArr = await page.evaluate(tok => JSON.parse(window.GM_getValue('falcon:pending:' + tok)), token);
+  console.log('stored payload count:', storedArr.length, 'by type:', JSON.stringify(storedArr.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {})));
+  ck(storedArr.length === info.count, `GM storage holds the FULL batch (${storedArr.length} vs scraped ${info.count})`);
+  ck(storedArr.some(t => t.entityType === 'recording'), 'recordings are present in the stored payload — no longer excluded');
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }
