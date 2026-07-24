@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.24
+// @version      2026.7.24.191253
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -38,7 +38,8 @@
      order — so two independent scripts' buttons never land on the same
      pixel. Duplicated per-script on purpose (no shared file to import).
      Apollo and Art Station share the same order (never both mount at once —
-     different page types), Falcon sits closer to the corner (order 10). */
+     different page types) and keep their historical closest-to-the-corner spot
+     (order 10); Falcon stacks above them (order 20). */
   function mbRestackCorner(corner) {
     const bottom = corner[0] === 'b', right = corner[1] === 'r';
     const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
@@ -431,7 +432,7 @@
     let wrap = document.getElementById('as-switch-wrap');
     if (!wrap) {
       wrap = document.createElement('div'); wrap.id = 'as-switch-wrap';
-      wrap.dataset.mbCorner = 'br'; wrap.dataset.mbCornerOrder = '20';
+      wrap.dataset.mbCorner = 'br'; wrap.dataset.mbCornerOrder = '10';
       const sw = document.createElement('button'); sw.id = 'as-switch';
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
       const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙︎'; gear.title = 'Art Station setup';

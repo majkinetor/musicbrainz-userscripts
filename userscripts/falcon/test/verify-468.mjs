@@ -1,7 +1,7 @@
 // #468 — shared corner-slot convention so independent scripts' floating launcher
-// buttons never land on the same pixel. Falcon (data-mb-corner="br", order 10) and
-// Apollo Editor / Art Station's switcher (order 20) should stack vertically instead
-// of overlapping when both are present on the same real page.
+// buttons never land on the same pixel. Apollo Editor / Art Station's switcher
+// (data-mb-corner="br", order 10) keep their historical closest-to-the-corner
+// spot; Falcon (order 20) stacks above them instead of overlapping.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -51,7 +51,7 @@ async function checkNoOverlap(page, selA, selB) {
   const r = await checkNoOverlap(page, '#falcon-launcher', '#tc-launch');
   console.log('Falcon vs Apollo:', JSON.stringify(r));
   ck(r.ok, `Falcon launcher and Apollo's #tc-launch do not overlap (${JSON.stringify(r)})`);
-  ck(r.rb && r.ra && r.rb.bottom <= r.ra.top, 'Apollo (order 20) sits ABOVE Falcon (order 10, closer to the corner)');
+  ck(r.ra && r.rb && r.ra.bottom <= r.rb.top, 'Falcon (order 20) sits ABOVE Apollo (order 10, keeps its old spot)');
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }
@@ -71,7 +71,7 @@ async function checkNoOverlap(page, selA, selB) {
   const r = await checkNoOverlap(page, '#falcon-launcher', '#as-switch-wrap');
   console.log('Falcon vs Art Station:', JSON.stringify(r));
   ck(r.ok, `Falcon launcher and Art Station's #as-switch-wrap do not overlap (${JSON.stringify(r)})`);
-  ck(r.rb && r.ra && r.rb.bottom <= r.ra.top, 'Art Station (order 20) sits ABOVE Falcon (order 10, closer to the corner)');
+  ck(r.ra && r.rb && r.ra.bottom <= r.rb.top, 'Falcon (order 20) sits ABOVE Art Station (order 10, keeps its old spot)');
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }
