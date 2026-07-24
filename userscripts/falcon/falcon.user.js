@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24.210449
+// @version      2026.7.24.213335
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24.210449';
+  const VERSION = '2026.7.24.213335';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -185,7 +185,15 @@
      them all, combine into one falcon= payload, and open MB with it in a new
      tab instead of Harmony's own tab-per-entity popups. Harmony's actions
      render asynchronously (client-rendered), so the button's count is kept
-     live by a short polling loop that settles once the count stops changing. */
+     live by a short polling loop that settles once the count stops changing.
+     Recordings are excluded from what actually gets SENT (though still
+     returned by a plain scrapeHarmonyActions() call) — a real release's
+     recording actions vastly outnumber its artist/label ones (86 total, 80
+     of them recordings, was measured live), and the resulting base64 payload
+     blew past ~32,000 characters, well past what MB's front-end will accept
+     in a URL — Firefox surfaced that as a bare PR_END_OF_FILE_ERROR instead
+     of a clean "414 URI Too Long". Revisit once there's a transport that
+     doesn't put the whole batch in the URL (#467). */
   function scrapeHarmonyActions() {
     const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
     const tuples = [];
@@ -194,15 +202,17 @@
   }
   let harmonyBtn = null;
   function ensureHarmonyButton() {
-    const items = scrapeHarmonyActions();
+    const all = scrapeHarmonyActions();
+    const items = all.filter(t => t.entityType !== 'recording');
+    const skipped = all.length - items.length;
     if (!harmonyBtn) {
       harmonyBtn = document.createElement('button');
       harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
       harmonyBtn.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;background:#1b2a4a;color:#fff;font:bold 13px Arial;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;transition:opacity .15s';
       harmonyBtn.innerHTML = `<span style="display:flex;color:#ff9d5c">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
       harmonyBtn.onclick = () => {
-        const found = scrapeHarmonyActions();
-        if (!found.length) { alert(`${NAME}: no "Link external IDs" actions found on this page.`); return; }
+        const found = scrapeHarmonyActions().filter(t => t.entityType !== 'recording');
+        if (!found.length) { alert(`${NAME}: no artist/label "Link external IDs" actions found on this page.`); return; }
         const payload = encodeFalconPayload(found);
         window.open(`${MB_TARGET}/?falcon=${encodeURIComponent(payload)}`, '_blank');
       };
@@ -211,7 +221,9 @@
     const lbl = document.getElementById('falcon-harmony-lbl');
     lbl.textContent = items.length ? `Send ${items.length} to Falcon` : 'No Falcon actions found yet…';
     harmonyBtn.style.opacity = items.length ? '1' : '.6';
-    harmonyBtn.title = items.length ? `Opens MusicBrainz with all ${items.length} link(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
+    harmonyBtn.title = items.length
+      ? `Opens MusicBrainz with ${items.length} artist/label link(s) queued in Falcon` + (skipped ? ` — ${skipped} recording link(s) skipped for now (too many for one url)` : '')
+      : 'Waiting for Harmony to render its actions…';
   }
 
   /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
