@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24
+// @version      2026.7.24.184019
 // @description  Add external links to a BATCH of MusicBrainz artists/labels at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, or hand it a queue via a `?falcon=` URL param (e.g. from Harmony).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24';
+  const VERSION = '2026.7.24.184019';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -40,8 +40,16 @@
     renderLog();
   }
 
-  /* ── queue item shape: {id, entityType, mbid, url, status, error} ─────── */
+  /* ── queue item shape: {id, entityType, mbid, urls, urlResults, status, error} ──
+     #467 (majkinetor): the same entity can carry several URLs — group those into
+     ONE item/one edit-page visit rather than revisiting the same mbid N times
+     (both unsafe — two workers must never load the same entity's /edit at once —
+     and wasteful). Grouping happens at add-time (see addToQueue); nextQueued()
+     additionally refuses to hand out a queued item whose entity is already
+     'active' in another worker, so a later-added item for the same entity can
+     never race the one already in flight. */
   let queue = [];
+  let _idSeq = 0;
   let running = false;
   const ENTITY_RE = /^(artist|label)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -72,8 +80,21 @@
   function parsePaste(text) {
     return String(text || '').split('\n').map(parseLine).filter(Boolean);
   }
-  function toQueueItems(parsed) {
-    return parsed.map((p, i) => ({ id: `${p.entityType}:${p.mbid}:${i}`, entityType: p.entityType, mbid: p.mbid, url: p.url, status: 'queued', error: '' }));
+  // merges each parsed {entityType,mbid,url} into an existing STILL-QUEUED item for
+  // the same entity (never merges into an active/done/failed one — that item has
+  // already been claimed or finished), else creates a new one-URL item.
+  function addToQueue(parsed) {
+    let merged = 0, added = 0;
+    parsed.forEach(p => {
+      const existing = queue.find(i => i.status === 'queued' && i.entityType === p.entityType && i.mbid === p.mbid);
+      if (existing) {
+        if (!existing.urls.includes(p.url)) { existing.urls.push(p.url); merged++; }
+        return;
+      }
+      queue.push({ id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [p.url], urlResults: null, status: 'queued', error: '' });
+      added++;
+    });
+    return { merged, added };
   }
   // `?falcon=<base64(JSON array of {entityType?,mbid,url}) or plain JSON>` — the Harmony handoff.
   function parseUrlParam() {
@@ -129,31 +150,46 @@
       return true;
     } catch (e) { return false; }
   }
-  const editNoteText = () => `${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}\n\nBulk-added via the Falcon queue.`;
+  const editNoteText = (results) => {
+    const added = results.filter(r => r.ok).map(r => r.url);
+    return `${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}\n\nBulk-added via the Falcon queue:\n${added.join('\n')}`;
+  };
 
-  // fill the "Add another link" field + submit, all directly against the iframe's OWN
-  // document/window (same-origin — no postMessage needed, see #467). Throws on failure
-  // with a message that becomes the queue row's error text.
+  // fill every URL in item.urls (one "Add another link" round-trip each) then submit
+  // ONCE for the whole group, all directly against the iframe's OWN document/window
+  // (same-origin — no postMessage needed, see #467). A url that MB rejects (e.g.
+  // already present) doesn't abort the rest — it's recorded in the returned
+  // per-url results and the others still go in. Only truly infra-level failures
+  // (no submit button, never redirected) throw; "nothing to submit" is signalled via
+  // `committed: false`, not a throw, since it isn't necessarily an error (every url
+  // in the group may simply already be on the entity).
   async function fillAndSubmit(iframe, item) {
-    const doc = frameDoc(iframe); if (!doc) throw new Error('cross-origin / no document');
-    const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
-    if (!input) throw new Error('no "Add another link" input ever appeared');
+    const results = [];
+    for (const url of item.urls) {
+      try {
+        const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
+        if (!input) { results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
+        const d2 = frameDoc(iframe), w2 = frameWin(iframe);
+        const setVal = Object.getOwnPropertyDescriptor(w2.HTMLInputElement.prototype, 'value').set;
+        input.focus();
+        setVal.call(input, url);
+        input.dispatchEvent(new w2.Event('input', { bubbles: true }));
+        input.dispatchEvent(new w2.Event('change', { bubbles: true }));
+        input.dispatchEvent(new w2.KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+        input.dispatchEvent(new w2.KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
+        input.blur();
+        const row = await waitFor(() => {
+          const dd = frameDoc(iframe); if (!dd) return null;
+          const r = [...dd.querySelectorAll('tr.external-link-item')].find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url);
+          return r || null;
+        }, 8000);
+        if (!row) { results.push({ url, ok: false, error: 'URL row never appeared after Enter — MB may already have this exact link' }); continue; }
+        results.push({ url, ok: true });
+      } catch (e) { results.push({ url, ok: false, error: e.message || String(e) }); }
+    }
+    if (!results.some(r => r.ok)) return { committed: false, results };
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
-    const setVal = Object.getOwnPropertyDescriptor(w2.HTMLInputElement.prototype, 'value').set;
-    input.focus();
-    setVal.call(input, item.url);
-    input.dispatchEvent(new w2.Event('input', { bubbles: true }));
-    input.dispatchEvent(new w2.Event('change', { bubbles: true }));
-    input.dispatchEvent(new w2.KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
-    input.dispatchEvent(new w2.KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
-    input.blur();
-    const row = await waitFor(() => {
-      const dd = frameDoc(iframe); if (!dd) return null;
-      const r = [...dd.querySelectorAll('tr.external-link-item')].find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === item.url);
-      return r || null;
-    }, 8000);
-    if (!row) throw new Error('URL row never appeared after Enter — MB may already have this exact link');
-    setEditNote(d2, w2, editNoteText());
+    setEditNote(d2, w2, editNoteText(results));
     await wait(150);
     const btn = findSubmitButton(frameDoc(iframe));
     if (!btn) throw new Error('no submit button found');
@@ -164,9 +200,17 @@
       try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
     }, 15000);
     if (!left) throw new Error('never redirected off /edit after submit — did it actually commit?');
+    return { committed: true, results };
   }
 
-  function nextQueued() { return queue.find(i => i.status === 'queued'); }
+  // never hand out a queued item for an entity that's ALREADY being worked on by
+  // another iframe — closes the race a later-added item for the same mbid would
+  // otherwise open (grouping at add-time only covers items still queued at that
+  // moment; this covers the rest).
+  function nextQueued() {
+    const activeKeys = new Set(queue.filter(i => i.status === 'active').map(i => i.entityType + ':' + i.mbid));
+    return queue.find(i => i.status === 'queued' && !activeKeys.has(i.entityType + ':' + i.mbid));
+  }
   function editUrl(item) { return `${MB_ORIGIN}/${item.entityType}/${item.mbid}/edit`; }
 
   async function workerLoop(iframe) {
@@ -174,14 +218,26 @@
       const item = nextQueued();
       if (!item) break;
       item.status = 'active'; renderQueue();
-      log('info', `${item.entityType} ${item.mbid} — loading edit page`);
+      log('info', `${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       iframe.src = editUrl(item);
       const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
       if (!loaded) { item.status = 'failed'; item.error = 'edit page never loaded'; log('error', `${item.mbid}: edit page never loaded`); renderQueue(); continue; }
       try {
-        await fillAndSubmit(iframe, item);
-        item.status = 'done';
-        log('info', `${item.entityType} ${item.mbid} — committed ${item.url}`);
+        const r = await fillAndSubmit(iframe, item);
+        item.urlResults = r.results;
+        const failedUrls = r.results.filter(x => !x.ok);
+        if (!r.committed) {
+          item.status = 'failed';
+          item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
+          log('error', `${item.mbid}: nothing added — ${item.error}`);
+        } else if (failedUrls.length) {
+          item.status = 'partial';
+          item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
+          log('warn', `${item.entityType} ${item.mbid} — committed ${r.results.length - failedUrls.length}/${r.results.length} link(s)`);
+        } else {
+          item.status = 'done';
+          log('info', `${item.entityType} ${item.mbid} — committed ${r.results.length} link(s)`);
+        }
       } catch (e) {
         item.status = 'failed'; item.error = e.message || String(e);
         log('error', `${item.mbid}: ${item.error}`);
@@ -237,35 +293,41 @@
         <span style="display:flex;color:#ff9d5c">${ICON}</span>
         <span style="flex:1;font-weight:700">${NAME} <span style="opacity:.7;font-weight:400">v${scriptVersion()}</span></span>
         <button type="button" id="falcon-tab-queue" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Queue</button>
+        <button type="button" id="falcon-tab-workers" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Workers</button>
         <button type="button" id="falcon-tab-log" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Log</button>
         <a href="${HELP_URL}" target="_blank" rel="noopener" style="color:#fff;opacity:.7;text-decoration:none;font-weight:700">?</a>
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:8px 10px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:6px">
-        <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>)" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
+        <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
         <div style="display:flex;gap:6px;align-items:center">
           <button type="button" id="falcon-add" style="padding:4px 10px;cursor:pointer">+ Add to queue</button>
           <span style="margin-left:auto;color:#666">workers</span>
-          <input type="number" id="falcon-workers" min="1" max="6" style="width:40px" />
+          <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
           <button type="button" id="falcon-run" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
         </div>
-        <div id="falcon-queue-list" style="border-top:1px solid #eee;padding-top:4px;overflow:auto;max-height:220px"></div>
-        <div id="falcon-workers" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <div id="falcon-queue-list" style="border-top:1px solid #eee;padding-top:4px;overflow:auto;max-height:280px"></div>
+      </div>
+      <div id="falcon-body-workers" style="display:none;padding:8px 10px;overflow:auto;flex:1">
+        <div style="color:#888;margin-bottom:6px">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</div>
+        <div id="falcon-workers" style="display:flex;gap:8px;flex-wrap:wrap"></div>
       </div>
       <div id="falcon-body-log" style="display:none;padding:8px 10px;overflow:auto;flex:1;font:10px monospace;white-space:pre-wrap"></div>`;
     document.body.appendChild(panel);
     document.getElementById('falcon-close').onclick = () => { panel.style.display = 'none'; };
-    const wIn = document.getElementById('falcon-workers'); wIn.value = cfg.workers;
+    const wIn = document.getElementById('falcon-worker-count'); wIn.value = cfg.workers;
     wIn.onchange = () => { cfg.workers = wIn.value; wIn.value = cfg.workers; };
     document.getElementById('falcon-add').onclick = () => {
       const ta = document.getElementById('falcon-paste');
-      const items = toQueueItems(parsePaste(ta.value));
-      if (!items.length) { log('warn', 'nothing parseable in the paste box'); return; }
-      queue.push(...items); ta.value = ''; renderQueue();
-      log('info', `queued ${items.length} item(s)`);
+      const parsed = parsePaste(ta.value);
+      if (!parsed.length) { log('warn', 'nothing parseable in the paste box'); return; }
+      const { merged, added } = addToQueue(parsed);
+      ta.value = ''; renderQueue();
+      log('info', `queued ${added} new item(s)` + (merged ? `, merged ${merged} url(s) into already-queued entities` : ''));
     };
-    document.getElementById('falcon-run').onclick = () => { if (running) stop(); else start(); };
+    document.getElementById('falcon-run').onclick = () => { if (running) stop(); else { start(); setTab('workers'); } };
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
+    document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
     document.getElementById('falcon-tab-log').onclick = () => setTab('log');
     // drag by header
     const hdr = document.getElementById('falcon-hdr');
@@ -277,20 +339,21 @@
   function setTab(t) {
     tab = t;
     document.getElementById('falcon-body-queue').style.display = t === 'queue' ? 'flex' : 'none';
+    document.getElementById('falcon-body-workers').style.display = t === 'workers' ? 'block' : 'none';
     document.getElementById('falcon-body-log').style.display = t === 'log' ? 'block' : 'none';
     if (t === 'log') renderLog();
   }
   function showPanel() { ensurePanel(); panel.style.display = 'flex'; renderQueue(); }
   function togglePanel() { ensurePanel(); if (panel.style.display === 'none') showPanel(); else panel.style.display = 'none'; }
 
-  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', failed: '#c0392b' };
+  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b' };
   function renderQueue() {
     const list = document.getElementById('falcon-queue-list'); if (!list) return;
     list.innerHTML = queue.map(it => `
       <div style="display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid #f3f3f3" title="${it.error ? esc(it.error) : ''}">
         <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
         <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" style="color:#1b2a4a;text-decoration:none;font-weight:600">${it.entityType}/${it.mbid.slice(0, 8)}</a>
-        <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.url)}</span>
+        <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0] || '')}</span>
         <span style="color:#999;text-transform:uppercase;font-size:9px">${it.status}</span>
       </div>`).join('') || '<div style="color:#999;padding:8px 0">Queue is empty — paste some lines above.</div>';
   }
@@ -309,7 +372,7 @@
   const seeded = parseUrlParam();
   ensureLauncher();
   if (seeded && seeded.length) {
-    queue = toQueueItems(seeded);
+    addToQueue(seeded);
     log('info', `seeded ${seeded.length} item(s) from the falcon= URL param`);
     showPanel();
   }
@@ -321,5 +384,5 @@
   });
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, toQueueItems, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, editUrl };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, editUrl, nextQueued };
 })();
