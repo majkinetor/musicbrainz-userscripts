@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.24
+// @version      2026.7.24.111109
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -158,12 +158,11 @@ async function runInjectHelper(entityType) {
         const autoCommit = entityType === 'release' && /pc-autocommit/.test(location.hash);
         if (autoCommit) {
             // #465 (chaban-mb): the release editor is the multi-step wizard, not the
-            // simple artist/label/place form — its submit button is #enter-edit, NOT
-            // button.submit.positive (that selector only matches the simple form, which
-            // is why the background add silently no-op'd here). Same finder Apollo's
-            // compact nav bar already uses for this exact form.
+            // simple artist/label/place form — its submit button is #enter-edit. Same
+            // finder Apollo's compact nav bar already uses for this exact form. This
+            // autoCommit branch only ever runs on that wizard (entityType === 'release'),
+            // so no button.submit.positive fallback here — it would never match.
             const findSubmit = () => document.querySelector('#enter-edit')
-                || document.querySelector('button.submit.positive')
                 || [...document.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''));
             const btn = await pcWaitFor(findSubmit, 5000);
             if (btn && !btn.disabled) {
