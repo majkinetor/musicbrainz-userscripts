@@ -75,15 +75,28 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.waitForTimeout(1500);
   const info = await page.evaluate(() => {
-    const items = window.__falconTest.scrapeHarmonyActions();
+    const items = window.__falconTest.scrapeHarmonyActions();   // raw — still includes recordings
     const btn = document.getElementById('falcon-harmony-btn');
-    return { count: items.length, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, byType: items.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {}) };
+    const filtered = items.filter(t => t.entityType !== 'recording');
+    const fullUrlLen = `https://musicbrainz.org/?falcon=${encodeURIComponent(window.__falconTest.encodeFalconPayload(items))}`.length;
+    const filteredUrlLen = `https://musicbrainz.org/?falcon=${encodeURIComponent(window.__falconTest.encodeFalconPayload(filtered))}`.length;
+    return {
+      count: items.length, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, btnTitle: btn?.title,
+      byType: items.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {}),
+      fullUrlLen, filteredUrlLen, filteredCount: filtered.length,
+    };
   });
   console.log('live harmony scrape:', JSON.stringify(info));
   ck(info.btnExists, 'the "Send to Falcon" button is injected on a real Harmony actions page');
-  ck(info.count > 10, `scraped a realistic number of actions from the live page (got ${info.count})`);
-  ck(/Send \d+ to Falcon/.test(info.btnText || ''), `button label shows the live count ("${info.btnText}")`);
-  ck((info.byType.artist || 0) > 0 && (info.byType.recording || 0) > 0, `covers both artist and recording actions (${JSON.stringify(info.byType)})`);
+  ck(info.count > 10, `raw scrapeHarmonyActions() still returns recordings too (got ${info.count})`);
+  ck((info.byType.artist || 0) > 0 && (info.byType.recording || 0) > 0, `raw scrape covers both artist and recording actions (${JSON.stringify(info.byType)})`);
+  // #467 follow-up: recordings excluded from what the button actually SENDS — a real
+  // batch's base64 payload blew past ~32,000 chars (measured) and MB's front-end
+  // dropped the connection (Firefox: PR_END_OF_FILE_ERROR) rather than erroring cleanly.
+  ck(new RegExp(`Send ${info.filteredCount} to Falcon`).test(info.btnText || ''), `button label shows the FILTERED (no-recordings) count, not the raw one (label="${info.btnText}", filtered count=${info.filteredCount})`);
+  ck(info.filteredCount < info.count, `recordings are indeed excluded from the sendable set (${info.filteredCount} < ${info.count})`);
+  ck(/recording link\(s\) skipped/.test(info.btnTitle || ''), `tooltip explains the skip (title="${info.btnTitle}")`);
+  ck(info.filteredUrlLen < 8000, `the filtered payload's URL is comfortably under typical server URL limits (${info.filteredUrlLen} chars, vs raw ${info.fullUrlLen})`);
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }

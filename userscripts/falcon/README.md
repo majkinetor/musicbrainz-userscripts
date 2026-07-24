@@ -20,7 +20,9 @@ Falcon avoids tabs entirely. Since MusicBrainz sends no `X-Frame-Options` / CSP 
 
 ### From Harmony
 
-Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner. Harmony's "Link external IDs" actions are already standard MusicBrainz seed URLs — Falcon decodes them directly (artist, label, *and* recording actions, including the case where the same URL needs two different relationship types, e.g. a Bandcamp track that's both "stream for free" and "purchase for download" — handled via MB's own "Add another relationship" row). Clicking the button opens MusicBrainz in a new tab with the whole batch queued and the panel open, ready to review and Start.
+Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner. Harmony's "Link external IDs" actions are already standard MusicBrainz seed URLs — Falcon decodes them directly, including the case where the same URL needs two different relationship types (e.g. a Bandcamp track that's both "stream for free" and "purchase for download" — handled via MB's own "Add another relationship" row). Clicking the button opens MusicBrainz in a new tab with the batch queued and the panel open, ready to review and Start.
+
+The button currently sends **artist and label** actions only — a release's *recording* actions usually vastly outnumber those, and packing all of them into one URL blows past what browsers/servers accept (a real 86-action release produced a 32,000-character url and MusicBrainz's front-end just dropped the connection rather than erroring cleanly). Bulk recording links are a planned follow-up with a transport that doesn't put the whole batch in the URL.
 
 ### From another script
 
