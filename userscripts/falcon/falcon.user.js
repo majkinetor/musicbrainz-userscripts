@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24.191253
+// @version      2026.7.24.195124
 // @description  Add external links to a BATCH of MusicBrainz artists/labels at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, or hand it a queue via a `?falcon=` URL param (e.g. from Harmony).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24.191253';
+  const VERSION = '2026.7.24.195124';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -161,6 +161,14 @@
     return doc.querySelector('button.submit.positive')
       || [...doc.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''));
   }
+  // #467 (majkinetor): when a url is rejected, MB almost always renders the REAL reason
+  // right on the page (e.g. "This URL is not allowed for artists.", "This relationship
+  // already exists.") — scrape it instead of guessing. Falls back to a generic message
+  // only when MB genuinely didn't show one.
+  function findFieldError(doc) {
+    const texts = [...doc.querySelectorAll('.error, .field-error')].map(el => (el.textContent || '').trim()).filter(Boolean);
+    return texts.length ? [...new Set(texts)].join(' / ') : null;
+  }
   function setEditNote(doc, win, text) {
     const ta = doc.querySelector('textarea.edit-note, textarea[name="edit-note"], textarea[name="edit_note"], #id-edit-note, .edit-note textarea');
     if (!ta) return false;
@@ -206,7 +214,11 @@
           const r = [...dd.querySelectorAll('tr.external-link-item')].find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url);
           return r || null;
         }, 8000);
-        if (!row) { results.push({ url, ok: false, error: 'URL row never appeared after Enter — MB may already have this exact link' }); continue; }
+        if (!row) {
+          const mbError = findFieldError(frameDoc(iframe));
+          results.push({ url, ok: false, error: mbError || 'URL row never appeared after Enter (MB gave no specific reason)' });
+          continue;
+        }
         results.push({ url, ok: true });
       } catch (e) { results.push({ url, ok: false, error: e.message || String(e) }); }
     }
@@ -242,6 +254,7 @@
       if (!item) break;
       item.status = 'active'; renderQueue();
       log('info', `${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
+      updateWorkerLabel(iframe, item);
       iframe.src = editUrl(item);
       const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
       if (!loaded) { item.status = 'failed'; item.error = 'edit page never loaded'; log('error', `${item.mbid}: edit page never loaded`); renderQueue(); continue; }
@@ -265,19 +278,60 @@
         item.status = 'failed'; item.error = e.message || String(e);
         log('error', `${item.mbid}: ${item.error}`);
       }
+      updateWorkerLabel(iframe, null);
       renderQueue();
     }
   }
 
+  // #467 (majkinetor): each worker gets its own card — a small label (which entity
+  // it's on right now) plus a ⛶ toggle to view just that one large, so a failure can
+  // actually be read instead of squinting at a 220x160 thumbnail. Zooming one worker
+  // hides the others rather than trying to fit everything in a responsive grid.
   let workerIframes = [];
+  let _zoomedWorker = null;   // index into workerIframes, or null
+  function updateWorkerLabel(iframe, item) {
+    const card = iframe.closest('.falcon-worker-card'); if (!card) return;
+    const lbl = card.querySelector('.falcon-worker-lbl');
+    if (lbl) lbl.textContent = item ? `${item.entityType}/${item.mbid.slice(0, 8)} — ${item.urls.length} link(s)` : 'idle';
+  }
   function ensureWorkerIframes(n) {
     const strip = document.getElementById('falcon-workers'); if (!strip) return;
     while (workerIframes.length < n) {
-      const f = document.createElement('iframe');
-      f.className = 'falcon-worker'; f.style.cssText = 'width:220px;height:160px;border:1px solid #ccc;border-radius:4px;background:#fff;';
-      strip.appendChild(f); workerIframes.push(f);
+      const idx = workerIframes.length;
+      const card = document.createElement('div');
+      card.className = 'falcon-worker-card';
+      card.style.cssText = 'border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;width:260px;height:210px;';
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:#f3f3f3;border-bottom:1px solid #ddd;font-size:10px">
+          <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555">idle</span>
+          <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
+        </div>
+        <iframe class="falcon-worker" style="flex:1;border:none;background:#fff;width:100%;"></iframe>`;
+      card.querySelector('.falcon-worker-zoom').onclick = () => { _zoomedWorker = _zoomedWorker === idx ? null : idx; renderWorkerLayout(); };
+      strip.appendChild(card);
+      workerIframes.push(card.querySelector('iframe'));
     }
-    while (workerIframes.length > n) { const f = workerIframes.pop(); f.remove(); }
+    while (workerIframes.length > n) {
+      const f = workerIframes.pop();
+      if (_zoomedWorker === workerIframes.length) _zoomedWorker = null;
+      f.closest('.falcon-worker-card')?.remove();
+    }
+    renderWorkerLayout();
+  }
+  function renderWorkerLayout() {
+    workerIframes.forEach((f, i) => {
+      const card = f.closest('.falcon-worker-card'); if (!card) return;
+      const zoomBtn = card.querySelector('.falcon-worker-zoom');
+      if (_zoomedWorker === null) {
+        card.style.display = ''; card.style.width = '260px'; card.style.height = '210px';
+        if (zoomBtn) { zoomBtn.textContent = '⛶'; zoomBtn.title = 'Maximize this worker'; }
+      } else if (_zoomedWorker === i) {
+        card.style.display = ''; card.style.width = '100%'; card.style.height = '560px';
+        if (zoomBtn) { zoomBtn.textContent = '❐'; zoomBtn.title = 'Restore'; }
+      } else {
+        card.style.display = 'none';
+      }
+    });
   }
   function start() {
     if (running) return;
@@ -321,6 +375,7 @@
         <button type="button" id="falcon-tab-workers" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Workers</button>
         <button type="button" id="falcon-tab-log" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Log</button>
         <a href="${HELP_URL}" target="_blank" rel="noopener" style="color:#fff;opacity:.7;text-decoration:none;font-weight:700">?</a>
+        <button type="button" id="falcon-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:8px 10px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:6px">
@@ -331,7 +386,7 @@
           <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
           <button type="button" id="falcon-run" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
         </div>
-        <div id="falcon-queue-list" style="border-top:1px solid #eee;padding-top:4px;overflow:auto;max-height:280px"></div>
+        <div id="falcon-queue-list" style="border-top:1px solid #eee;padding-top:4px;overflow:auto;flex:1"></div>
       </div>
       <div id="falcon-body-workers" style="display:none;padding:8px 10px;overflow:auto;flex:1">
         <div style="color:#888;margin-bottom:6px">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</div>
@@ -340,6 +395,7 @@
       <div id="falcon-body-log" style="display:none;padding:8px 10px;overflow:auto;flex:1;font:10px monospace;white-space:pre-wrap"></div>`;
     document.body.appendChild(panel);
     document.getElementById('falcon-close').onclick = () => { panel.style.display = 'none'; };
+    document.getElementById('falcon-maximize').onclick = toggleMaximize;
     const wIn = document.getElementById('falcon-worker-count'); wIn.value = cfg.workers;
     wIn.onchange = () => { cfg.workers = wIn.value; wIn.value = cfg.workers; };
     document.getElementById('falcon-add').onclick = () => {
@@ -370,6 +426,24 @@
   }
   function showPanel() { ensurePanel(); panel.style.display = 'flex'; renderQueue(); }
   function togglePanel() { ensurePanel(); if (panel.style.display === 'none') showPanel(); else panel.style.display = 'none'; }
+
+  // #467 (majkinetor): "maximize" — grows the whole panel (and, on the Workers tab,
+  // gives each worker card more natural room) so log/queue/worker content isn't
+  // squinted at in a 460px-wide box. Detaches from whatever corner it's anchored to
+  // (or wherever it's been dragged) and restores the exact prior box on toggle-back.
+  let _maxed = false, _prevBox = null;
+  function toggleMaximize() {
+    const btn = document.getElementById('falcon-maximize');
+    if (!_maxed) {
+      _prevBox = { left: panel.style.left, top: panel.style.top, right: panel.style.right, bottom: panel.style.bottom, width: panel.style.width, height: panel.style.height, maxWidth: panel.style.maxWidth, maxHeight: panel.style.maxHeight };
+      panel.style.left = '3vw'; panel.style.top = '3vh'; panel.style.right = 'auto'; panel.style.bottom = 'auto';
+      panel.style.width = '94vw'; panel.style.maxWidth = '94vw'; panel.style.height = '94vh'; panel.style.maxHeight = '94vh';
+      _maxed = true; if (btn) { btn.textContent = '❐'; btn.title = 'Restore'; }
+    } else {
+      if (_prevBox) Object.assign(panel.style, _prevBox);
+      _maxed = false; if (btn) { btn.textContent = '⛶'; btn.title = 'Maximize'; }
+    }
+  }
 
   const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b' };
   function renderQueue() {
@@ -409,5 +483,5 @@
   });
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, editUrl, nextQueued };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, editUrl, nextQueued };
 })();
