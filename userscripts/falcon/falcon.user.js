@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24.223309
+// @version      2026.7.24.225732
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24.223309';
+  const VERSION = '2026.7.24.225732';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -117,6 +117,23 @@
   function parsePaste(text) {
     return String(text || '').split('\n').map(parseLine).filter(Boolean);
   }
+  // resolves an entity's real name/title for display, instead of a truncated mbid —
+  // same-origin fetch to MB's own public API (no GM_xmlhttpRequest needed; Falcon's
+  // panel only ever renders on musicbrainz.org itself). Cached per entity since the
+  // same mbid can appear across several queue items.
+  const _nameCache = new Map();
+  async function fetchEntityName(entityType, mbid) {
+    const key = entityType + ':' + mbid;
+    if (_nameCache.has(key)) return _nameCache.get(key);
+    let name = null;
+    try {
+      const r = await fetch(`${MB_ORIGIN}/ws/2/${entityType}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
+      if (r.ok) { const j = await r.json(); name = j.title || j.name || null; }   // recordings: title; artist/label: name
+    } catch (e) { /* fall back to the mbid display below */ }
+    if (name) _nameCache.set(key, name);
+    return name;
+  }
+  function entityLabel(item) { return item.name || `${item.entityType}/${item.mbid.slice(0, 8)}`; }
   // merges each parsed {entityType,mbid,url,linkTypeId,note?} into an existing
   // STILL-QUEUED item for the same entity (never merges into an active/done/failed
   // one — that item has already been claimed or finished), else creates a new item.
@@ -130,7 +147,9 @@
         if (p.note && !existing.note) existing.note = p.note;
         return;
       }
-      queue.push({ id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', urlResults: null, status: 'queued', error: '' });
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', name: null, urlResults: null, status: 'queued', error: '' };
+      queue.push(item);
+      fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
     });
     return { merged, added };
@@ -400,18 +419,43 @@
   // — even removing the offending row afterward doesn't clear it (verified live).
   // Reassigning .src on that SAME iframe then triggers a native "leave site?" confirm
   // dialog, which — being a real modal — freezes the WHOLE TAB until a human dismisses
-  // it. That's what surfaced as "MB taking 100% CPU" / "blocked, worker dispatched OK
-  // but failed to load new queue item" in production: round 1 succeeded via a real
-  // form SUBMIT (browsers exempt actual submissions from the warning), but a
-  // rejected/duplicate url in round 1 left that worker's form dirty, and reassigning
-  // its .src to round 2's item hit the block.
-  // Fix: never reassign .src on an existing iframe between items — remove it and
-  // append a brand-new one instead. Verified live: 0 dialogs fired doing this,
-  // because deleting a frame isn't a "navigate away" the unsaved-changes warning
-  // applies to, unlike changing its location. Costs nothing (worker count still
-  // never grows with the queue), it's just a fresh DOM node per item instead of the
-  // literal same node.
-  function freshWorkerIframe(card) {
+  // it. Round 1 succeeded via a real form SUBMIT (browsers exempt actual submissions
+  // from the warning); the bug only bites when an item DOESN'T reach a real submit —
+  // a rejected/duplicate url leaves that iframe dirty, and reassigning ITS .src to
+  // the next item hits the block.
+  // So: only reuse the same iframe (cheap, and lets you watch one worker flow through
+  // several items) when the previous item cleanly reached a real submit — `committed`
+  // covers both 'done' and 'partial' (some urls in the group failed but at least one
+  // did submit). Anything else (never submitted, or the page never loaded) RETIRES
+  // that card in place — frozen, visible, inspectable (majkinetor: "leave open those
+  // that have issues") — and spawns a fresh replacement card to keep the queue
+  // moving, rather than fighting the same dirty iframe.
+  function retireCard(card, reason) {
+    card.dataset.retired = '1';
+    card.style.opacity = '.55';
+    const lbl = card.querySelector('.falcon-worker-lbl');
+    if (lbl) lbl.textContent = (lbl.textContent || '') + ' — stopped';
+    card.title = 'This worker hit an issue and was retired — kept visible for inspection. ' + (reason || '');
+  }
+  function spawnWorkerCard() {
+    const strip = document.getElementById('falcon-workers'); if (!strip) return null;
+    const idx = workerCards.length;
+    const card = document.createElement('div');
+    card.className = 'falcon-worker-card';
+    card.style.cssText = 'border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;width:260px;height:210px;';
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:#f3f3f3;border-bottom:1px solid #ddd;font-size:10px">
+        <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555">idle</span>
+        <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
+      </div>
+      <div class="falcon-worker-body" style="flex:1;position:relative;"></div>`;
+    card.querySelector('.falcon-worker-zoom').onclick = () => { _zoomedWorker = _zoomedWorker === idx ? null : idx; renderWorkerLayout(); };
+    strip.appendChild(card);
+    workerCards.push(card);
+    renderWorkerLayout();
+    return card;
+  }
+  function newIframeIn(card) {
     const body = card.querySelector('.falcon-worker-body');
     const old = body.querySelector('iframe');
     if (old) old.remove();
@@ -422,18 +466,27 @@
   }
 
   async function workerLoop(card) {
+    let iframe = null;
     while (running) {
       const item = nextQueued();
       if (!item) break;
       item.status = 'active'; renderQueue();
       log('info', `${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
-      const iframe = freshWorkerIframe(card);
+      if (!iframe) iframe = newIframeIn(card);   // first item on this card, or reusing after a clean commit
       updateWorkerLabel(card, item);
       iframe.src = editUrl(item);
       const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
-      if (!loaded) { item.status = 'failed'; item.error = 'edit page never loaded'; log('error', `${item.mbid}: edit page never loaded`); updateWorkerLabel(card, null); renderQueue(); continue; }
+      if (!loaded) {
+        item.status = 'failed'; item.error = 'edit page never loaded';
+        log('error', `${item.mbid}: edit page never loaded`);
+        retireCard(card, item.error); renderQueue();
+        const replacement = spawnWorkerCard();
+        if (replacement) workerLoop(replacement);
+        return;
+      }
+      let r = null;
       try {
-        const r = await fillAndSubmit(iframe, item);
+        r = await fillAndSubmit(iframe, item);
         item.urlResults = r.results;
         const failedUrls = r.results.filter(x => !x.ok);
         if (!r.committed) {
@@ -452,44 +505,38 @@
         item.status = 'failed'; item.error = e.message || String(e);
         log('error', `${item.mbid}: ${item.error}`);
       }
-      updateWorkerLabel(card, null);
       renderQueue();
+      if (r && r.committed) {
+        // a real submit happened — MB's dirty-flag is cleared, safe to keep this SAME
+        // iframe going for the next item (this is what lets you watch one worker
+        // flow through a run instead of every item spawning a new card).
+        updateWorkerLabel(card, null);
+        continue;
+      }
+      // anything else: this card's form may still be dirty — retire it in place
+      // (stays visible with its last state, per majkinetor) and hand off to a fresh
+      // replacement card rather than risk the beforeunload freeze.
+      retireCard(card, item.error);
+      const next = spawnWorkerCard();
+      if (next) workerLoop(next);
+      return;
     }
+    updateWorkerLabel(card, null);
   }
 
   // #467 (majkinetor): each worker gets its own card — a small label (which entity
   // it's on right now) plus a ⛶ toggle to view just that one large, so a failure can
   // actually be read instead of squinting at a 220x160 thumbnail. Zooming one worker
   // hides the others rather than trying to fit everything in a responsive grid.
+  // Cards accumulate as a visible history (retired ones dim + freeze in place, see
+  // above) rather than being torn down — only ever appended, never removed/reused
+  // across a Start click, so old state stays inspectable until the panel closes.
   let workerCards = [];
   let _zoomedWorker = null;   // index into workerCards, or null
   function updateWorkerLabel(card, item) {
+    if (card.dataset.retired) return;   // don't overwrite a retired card's frozen label
     const lbl = card.querySelector('.falcon-worker-lbl');
-    if (lbl) lbl.textContent = item ? `${item.entityType}/${item.mbid.slice(0, 8)} — ${item.urls.length} link(s)` : 'idle';
-  }
-  function ensureWorkerIframes(n) {
-    const strip = document.getElementById('falcon-workers'); if (!strip) return;
-    while (workerCards.length < n) {
-      const idx = workerCards.length;
-      const card = document.createElement('div');
-      card.className = 'falcon-worker-card';
-      card.style.cssText = 'border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;width:260px;height:210px;';
-      card.innerHTML = `
-        <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:#f3f3f3;border-bottom:1px solid #ddd;font-size:10px">
-          <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555">idle</span>
-          <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
-        </div>
-        <div class="falcon-worker-body" style="flex:1;position:relative;"></div>`;
-      card.querySelector('.falcon-worker-zoom').onclick = () => { _zoomedWorker = _zoomedWorker === idx ? null : idx; renderWorkerLayout(); };
-      strip.appendChild(card);
-      workerCards.push(card);
-    }
-    while (workerCards.length > n) {
-      const c = workerCards.pop();
-      if (_zoomedWorker === workerCards.length) _zoomedWorker = null;
-      c.remove();
-    }
-    renderWorkerLayout();
+    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${item.urls.length} link(s)` : 'idle';
   }
   function renderWorkerLayout() {
     workerCards.forEach((card, i) => {
@@ -510,9 +557,8 @@
     if (!queue.some(i => i.status === 'queued')) { log('warn', 'nothing queued'); return; }
     running = true;
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
-    ensureWorkerIframes(need);
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
-    workerCards.forEach(c => workerLoop(c));
+    for (let i = 0; i < need; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
     updateRunBtn();
   }
   function stop() { running = false; log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
@@ -538,7 +584,7 @@
   function ensurePanel() {
     if (panel) return;
     panel = document.createElement('div'); panel.id = 'falcon-panel';
-    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;right:14px;bottom:64px;width:460px;max-width:90vw;max-height:70vh;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
+    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:90vw;max-height:70vh;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
     panel.innerHTML = `
       <div id="falcon-hdr" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:#1b2a4a;color:#fff;cursor:move;user-select:none">
         <span style="display:flex;color:#ff9d5c">${ICON}</span>
@@ -585,7 +631,18 @@
     // drag by header
     const hdr = document.getElementById('falcon-hdr');
     let dragging = false, dx = 0, dy = 0;
-    hdr.addEventListener('mousedown', e => { if (e.target.closest('button, a')) return; dragging = true; const r = panel.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; e.preventDefault(); });
+    hdr.addEventListener('mousedown', e => {
+      if (e.target.closest('button, a')) return;
+      dragging = true;
+      const r = panel.getBoundingClientRect();
+      // detach from the centering transform BEFORE reading dx/dy — otherwise the
+      // first drag move jumps (translate(-50%,-50%) would double-apply against the
+      // new left/top). getBoundingClientRect() already reflects the transformed
+      // (visual) position, so this keeps the panel exactly where it looked like it was.
+      panel.style.transform = 'none'; panel.style.left = r.left + 'px'; panel.style.top = r.top + 'px'; panel.style.right = 'auto'; panel.style.bottom = 'auto';
+      dx = e.clientX - r.left; dy = e.clientY - r.top;
+      e.preventDefault();
+    });
     window.addEventListener('mousemove', e => { if (!dragging) return; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dy)) + 'px'; });
     window.addEventListener('mouseup', () => { dragging = false; });
   }
@@ -607,8 +664,8 @@
   function toggleMaximize() {
     const btn = document.getElementById('falcon-maximize');
     if (!_maxed) {
-      _prevBox = { left: panel.style.left, top: panel.style.top, right: panel.style.right, bottom: panel.style.bottom, width: panel.style.width, height: panel.style.height, maxWidth: panel.style.maxWidth, maxHeight: panel.style.maxHeight };
-      panel.style.left = '3vw'; panel.style.top = '3vh'; panel.style.right = 'auto'; panel.style.bottom = 'auto';
+      _prevBox = { left: panel.style.left, top: panel.style.top, right: panel.style.right, bottom: panel.style.bottom, width: panel.style.width, height: panel.style.height, maxWidth: panel.style.maxWidth, maxHeight: panel.style.maxHeight, transform: panel.style.transform };
+      panel.style.left = '3vw'; panel.style.top = '3vh'; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.transform = 'none';
       panel.style.width = '94vw'; panel.style.maxWidth = '94vw'; panel.style.height = '94vh'; panel.style.maxHeight = '94vh';
       _maxed = true; if (btn) { btn.textContent = '❐'; btn.title = 'Restore'; }
     } else {
@@ -623,7 +680,7 @@
     list.innerHTML = queue.map(it => `
       <div style="display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid #f3f3f3" title="${it.error ? esc(it.error) : ''}">
         <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
-        <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" style="color:#1b2a4a;text-decoration:none;font-weight:600">${it.entityType}/${it.mbid.slice(0, 8)}</a>
+        <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
         <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0]?.url || '')}</span>
         <span style="color:#999;text-transform:uppercase;font-size:9px">${it.status}</span>
       </div>`).join('') || '<div style="color:#999;padding:8px 0">Queue is empty — paste some lines above.</div>';
@@ -667,5 +724,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel };
 })();

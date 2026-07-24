@@ -13,10 +13,11 @@ Falcon avoids tabs entirely. Since MusicBrainz sends no `X-Frame-Options` / CSP 
 
 ## Usage
 
-1. Click the small rocket button in the bottom-right corner of any MusicBrainz page (or press **Ctrl+Alt+F**) to open the panel.
+1. Click the small rocket button in the bottom-right corner of any MusicBrainz page (or press **Ctrl+Alt+F**) to open the panel, which opens centered on screen (drag its header to move it).
 2. Paste one entity per line into the box: `<mbid>,<url>` (defaults to artist). Prefix with `label:` or `recording:` for those entity types, e.g. `label:<mbid>,<url>`. A full `musicbrainz.org/artist/<mbid>` URL works in place of the bare mbid too. Multiple lines for the same mbid are grouped into a single edit — Falcon never revisits (or, worse, concurrently visits) the same entity's edit page twice.
 3. Click **+ Add to queue**, set how many workers to run at once, then **▶ Start**. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). The panel itself has a **⛶** maximize toggle in the header too.
-4. Watch the queue list — each row shows a status dot (queued/in-progress/done/partial/failed) and, on failure, MB's own real error message on hover (e.g. *"This URL is not allowed for artists."*, *"This relationship already exists."* — scraped from the page, not guessed).
+4. Watch the queue list — each row shows the entity's real name (resolved from MB in the background; falls back to `type/mbid-prefix` until it loads), a status dot (queued/in-progress/done/partial/failed), and, on failure, MB's own real error message on hover (e.g. *"This URL is not allowed for artists."*, *"This relationship already exists."* — scraped from the page, not guessed).
+5. A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url) freezes that worker card in place — dimmed, showing its last state — instead of disappearing, so you can see what happened; a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card.
 
 ### From Harmony
 
