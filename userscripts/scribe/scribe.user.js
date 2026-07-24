@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.12
+// @version      2026.7.24
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -20,13 +20,36 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.9.222948';
+  const VERSION = '2026.7.24';
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
   // the PAGE window (MB.releaseEditor lives here); a userscript sandbox `window` is isolated,
   // so reach the editor model via unsafeWindow (same as Apollo). Falls back to window for tests.
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
+
+  /* ── shared corner-slot convention (#468) ───────────────────────────────
+     Every floating launcher across these scripts (Apollo Editor, Art
+     Station, Scribe, Falcon) tags its element with data-mb-corner (which
+     screen corner) + data-mb-corner-order (priority — lower sits closest to
+     the actual corner) and calls mbRestackCorner() right after it shows /
+     hides / creates / removes its own element. No MutationObserver needed:
+     whichever script's state just changed triggers a full recompute that
+     repositions every element sharing that corner, regardless of load
+     order — so two independent scripts' buttons never land on the same
+     pixel. Duplicated per-script on purpose (no shared file to import). */
+  function mbRestackCorner(corner) {
+    const bottom = corner[0] === 'b', right = corner[1] === 'r';
+    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
+      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
+      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
+    let pos = 14;
+    els.forEach(el => {
+      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+      el.style[right ? 'right' : 'left'] = '14px';
+      pos += el.getBoundingClientRect().height + 8;
+    });
+  }
 
   // ── settings (shared defaults with the field-bridge EE) ───────────────────
   const cfg = {
@@ -532,6 +555,7 @@
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'scribe-launcher';
+    launcher.dataset.mbCorner = 'bl'; launcher.dataset.mbCornerOrder = '10';
     launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;background:transparent;color:#7a2622;box-shadow:0 2px 9px rgba(0,0,0,.2);transition:background .15s,color .15s,transform .1s';
     launcher.innerHTML = SCRIBE_ICON;
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.06)'; };
@@ -547,6 +571,7 @@
     launcher.style.color = active ? '#2e9e5b' : '#7a2622';
     launcher.title = !_helperUp ? `${NAME} — start the extedit helper to enable`
       : active ? `${NAME} — editing this release · click to stop` : `${NAME} — edit this release as Markdown (Ctrl+Alt+R)`;
+    mbRestackCorner('bl');
   }
   async function pollHelper() {
     while (true) {
