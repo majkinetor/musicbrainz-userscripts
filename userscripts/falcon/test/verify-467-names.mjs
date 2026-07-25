@@ -40,23 +40,52 @@ ck(names.artist === 'Der Zirkel', `resolves a real artist name (got "${names.art
 ck(!!names.recording, `resolves a real recording title (got "${names.recording}")`);
 ck(names.bogus === null, `a non-existent mbid resolves to null, not a crash (got ${JSON.stringify(names.bogus)})`);
 
-// 1b. Rate-limit safety (majkinetor): a burst of lookups for DIFFERENT entities must
-// be spaced out, not fired concurrently — MB's /ws/2/ webservice enforces a real
-// per-IP rate limit, and a big batch (recordings are back, up to ~80 at once, #467)
-// must never hammer it. Firing 4 fresh (uncached) lookups at once should take
-// noticeably longer than one lookup alone, proving they're serialized with a gap.
+// 1b. Concurrency (majkinetor, #467: "fetch them in paralel with rate limit
+// protection as usual"): lookups for different entities must run IN PARALLEL (up
+// to mbThrottle's concurrency cap), not one after another with an artificial gap
+// — a strict serial 1.1s-apart approach was tried first and was too slow for a
+// big batch. Mocks fetch with a fixed artificial delay so this is deterministic
+// (a live-network timing assertion here was flaky — real request latency varies
+// run to run) — 4 requests through a 4-wide throttle should all finish around
+// ONE delay period, not four sequential ones.
 const timing = await page.evaluate(async () => {
-  const { fetchEntityName } = window.__falconTest;
-  const mbids = [
-    '5441c29d-3602-4898-b1a1-b77fa23b8e50', 'b31113ab-205d-461b-b431-5d5c52635117',
-    '04201e6d-c430-4a53-a9a0-56170825fbde', '20b03c7d-9e8a-42b9-8a96-bcc9564de034',
-  ];
+  const DELAY = 400;
+  const origFetch = window.fetch;
+  window.fetch = async () => { await new Promise(r => setTimeout(r, DELAY)); return new Response(JSON.stringify({ name: 'x' }), { status: 200 }); };
   const t0 = performance.now();
-  await Promise.all(mbids.map(m => fetchEntityName('artist', m)));
-  return performance.now() - t0;
+  await Promise.all([1, 2, 3, 4].map(n => window.__falconTest.mbThrottle.fetchJson(`https://musicbrainz.org/ws/2/artist/mock-${n}?fmt=json`)));
+  const elapsed = performance.now() - t0;
+  window.fetch = origFetch;
+  return elapsed;
 });
-console.log('4 concurrent fresh lookups took (ms):', timing);
-ck(timing > 3000, `4 fresh lookups fired at once are still spaced ~1.1s apart, not concurrent (took ${Math.round(timing)}ms, expect >3000ms for 3 gaps)`);
+console.log('4 mocked concurrent lookups (400ms each) took (ms):', timing);
+ck(timing < 800, `4 requests through the throttle run concurrently — ~1 delay period, not 4 sequential ones (took ${Math.round(timing)}ms with a 400ms mock delay, expect well under 1600ms)`);
+
+// 1c. Retry-After backoff (mirrors Credit Hoarder's api-mb.js throttle): a
+// 429/503 with a Retry-After header must be honored — retried after that delay
+// — not treated as an immediate hard failure.
+const backoff = await page.evaluate(async () => {
+  let hits = 0;
+  const origFetch = window.fetch;
+  const TARGET = '/ws/2/artist/00000000-0000-0000-0000-0000000000aa';
+  window.fetch = async (url, opts) => {
+    if (String(url).includes(TARGET)) {
+      hits++;
+      if (hits === 1) return new Response('', { status: 503, headers: { 'Retry-After': '1' } });
+      return new Response(JSON.stringify({ name: 'Retried OK' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    return origFetch(url, opts);
+  };
+  const t0 = performance.now();
+  const result = await window.__falconTest.mbThrottle.fetchJson(`https://musicbrainz.org${TARGET}?fmt=json`, 2);
+  const elapsed = performance.now() - t0;
+  window.fetch = origFetch;
+  return { hits, elapsed, result };
+});
+console.log('retry-after backoff:', JSON.stringify(backoff));
+ck(backoff.hits === 2, `a 503 with Retry-After is retried, not given up on immediately (got ${backoff.hits} attempt(s))`);
+ck(backoff.elapsed >= 900, `the retry actually waits out the Retry-After duration before trying again (${Math.round(backoff.elapsed)}ms, expect >=~1000ms)`);
+ck(backoff.result?.name === 'Retried OK', `the retried attempt's result is returned once it succeeds (got ${JSON.stringify(backoff.result)})`);
 
 // 2. entityLabel() falls back to entityType/mbid-prefix when no name is set yet.
 const fallback = await page.evaluate(() => window.__falconTest.entityLabel({ entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', name: null }));

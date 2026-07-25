@@ -20,7 +20,9 @@ Falcon avoids tabs entirely. Since MusicBrainz sends no `X-Frame-Options` / CSP 
 5. Set how many workers to run at once at the bottom, then **▶ Start**. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). The panel itself has a **⛶** maximize toggle in the header too.
 6. A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url) freezes that worker card in place — dimmed, showing its last state — instead of disappearing, so you can see what happened; a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card.
 
-Entity names are resolved one at a time with a deliberate gap between requests, never in a burst — MB's own webservice is real-rate-limited, and a big batch (see Harmony below) shouldn't hammer it just to look up display names. Names simply trickle in over a few seconds for a large queue; nothing else waits on them.
+Entity names resolve through the same rate-limit-aware throttle MB API calls use elsewhere in these scripts (a handful concurrently, cooperatively backing off on an actual 429/503 via its Retry-After header) — fast for a normal batch, but still polite to MB's webservice under a big one.
+
+A url that MB considers ambiguous (a Bandcamp track is the common case — could be "purchase for download", "streaming", etc.) needs an explicit relationship type MusicBrainz can't infer on its own; without one, Falcon reports that specific url as failed with a clear reason rather than letting it silently block the rest of its group's submission. Use **⇗** to open it in a tab and pick the type by hand.
 
 ### From Harmony
 

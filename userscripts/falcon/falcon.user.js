@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24.233215
+// @version      2026.7.25
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24.233215';
+  const VERSION = '2026.7.25';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -123,39 +123,65 @@
   function parsePaste(text) {
     return String(text || '').split('\n').map(parseLine).filter(Boolean);
   }
+  // Shared MB API throttle for name lookups (majkinetor, #467: "fetch them in
+  // paralel with rate limit protection as usual (retry after etc, see how CH
+  // does it") — mirrors Credit Hoarder's api-mb.js pattern: up to MAX_CONCURRENT
+  // requests in flight with NO artificial per-request gap (a strict serial
+  // 1.1s-apart queue was tried first and was simply too slow for a big batch),
+  // and on an actual 429/503 every in-flight request cooperatively backs off
+  // until a shared `pauseUntil` timestamp elapses (from the Retry-After header,
+  // or exponential backoff if MB didn't send one) — so the throttle only ever
+  // slows down in response to MB actually signalling overload, not preemptively.
+  const mbThrottle = (() => {
+    const MAX_CONCURRENT = 4;
+    let running = 0, pauseUntil = 0;
+    const queue = [];
+    async function waitForPause() {
+      let w = pauseUntil - Date.now();
+      while (w > 0) { await wait(w); w = pauseUntil - Date.now(); }
+    }
+    function drain() {
+      while (running < MAX_CONCURRENT && queue.length) {
+        running++;
+        const item = queue.shift();
+        run(item).finally(() => { running--; drain(); });
+      }
+    }
+    async function run(item) {
+      for (let attempt = 0; attempt <= item.retries; attempt++) {
+        await waitForPause();
+        try {
+          const res = await fetch(item.url, { headers: { Accept: 'application/json' } });
+          if (res.status === 429 || res.status === 503) {
+            const ra = parseInt(res.headers.get('Retry-After'), 10);
+            const waitMs = ra > 0 ? ra * 1000 : Math.min(1000 * Math.pow(2, attempt), 30000);
+            pauseUntil = Math.max(pauseUntil, Date.now() + waitMs);   // push forward only
+            continue;
+          }
+          if (!res.ok) { item.resolve(null); return; }
+          item.resolve(await res.json());
+          return;
+        } catch (e) {
+          if (attempt === item.retries) { item.resolve(null); return; }
+          await wait(500);
+        }
+      }
+      item.resolve(null);
+    }
+    return {
+      fetchJson: (url, retries) => new Promise(resolve => { queue.push({ url, retries: retries == null ? 3 : retries, resolve }); drain(); }),
+    };
+  })();
   // resolves an entity's real name/title for display, instead of a truncated mbid —
   // same-origin fetch to MB's own public API (no GM_xmlhttpRequest needed; Falcon's
-  // panel only ever renders on musicbrainz.org itself). Cached per entity since the
-  // same mbid can appear across several queue items.
-  //
-  // MB's /ws/2/ webservice enforces a real per-IP rate limit (~1 req/sec for
-  // anonymous use is the documented figure, and there's no guarantee an in-browser
-  // session gets a higher one) — a big batch (up to ~80 recordings now that the
-  // token transport brought them back, #467) must never fire dozens of these
-  // lookups at once. Every call is chained through ONE queue with a gap between
-  // requests, so a big batch's names just trickle in progressively (each row falls
-  // back to type/mbid-prefix until its turn comes up) instead of risking a
-  // 503/throttle from MB itself.
+  // panel only ever renders on musicbrainz.org itself), through the throttle above.
+  // Cached per entity since the same mbid can appear across several queue items.
   const _nameCache = new Map();
-  let _nameQueue = Promise.resolve();
-  function fetchEntityName(entityType, mbid) {
+  async function fetchEntityName(entityType, mbid) {
     const key = entityType + ':' + mbid;
-    if (_nameCache.has(key)) return Promise.resolve(_nameCache.get(key));
-    // `started` resolves with the NAME as soon as its own fetch completes (a lone
-    // lookup is never artificially slowed down); `_nameQueue` only advances 1.1s
-    // after that so the NEXT queued lookup can't start any sooner — the delay
-    // gates request spacing, not this call's own result.
-    const started = _nameQueue.then(() => _doFetchEntityName(entityType, mbid), () => _doFetchEntityName(entityType, mbid));
-    _nameQueue = started.then(() => wait(1100), () => wait(1100));
-    return started;
-  }
-  async function _doFetchEntityName(entityType, mbid) {
-    const key = entityType + ':' + mbid;
-    let name = null;
-    try {
-      const r = await fetch(`${MB_ORIGIN}/ws/2/${entityType}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
-      if (r.ok) { const j = await r.json(); name = j.title || j.name || null; }   // recordings: title; artist/label: name
-    } catch (e) { /* fall back to the mbid display below */ }
+    if (_nameCache.has(key)) return _nameCache.get(key);
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityType}/${mbid}?fmt=json`);
+    const name = j ? (j.title || j.name || null) : null;   // recordings: title; artist/label: name
     if (name) _nameCache.set(key, name);
     return name;
   }
@@ -433,6 +459,25 @@
           continue;
         }
         if (linkTypeId) await setRowLinkType(iframe, row, linkTypeId);
+        // #467 (majkinetor, production failure): an AMBIGUOUS url (a Bandcamp
+        // track is the common case — could be "purchase for download", "download
+        // for free", etc.) renders a REQUIRED relationship-type <select> that
+        // starts blank. If Falcon has no linkTypeId to set it, that blank select
+        // invalidates the WHOLE form — not just this row — and disables the
+        // submit button for the entire group, which used to surface as a bare
+        // "submit button disabled (form invalid?)" with no indication of why or
+        // which url caused it. Detect it here and remove the row instead of
+        // leaving an unresolvable dud blocking every other url in the group —
+        // report it as a clear, actionable failure (open the entity in a tab
+        // and pick the type by hand) rather than silently marking it ok.
+        const typeRow = row.nextElementSibling;
+        const ambiguousSelect = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
+        if (!linkTypeId && ambiguousSelect && !ambiguousSelect.value) {
+          const removeBtn = row.querySelector('button.remove-item');
+          if (removeBtn) removeBtn.click();
+          results.push({ url, ok: false, error: 'ambiguous relationship type — MusicBrainz needs you to pick one; use ⇗ "open in tab" to add this url manually' });
+          continue;
+        }
         results.push({ url, ok: true });
       } catch (e) { results.push({ url, ok: false, error: e.message || String(e) }); }
     }
@@ -445,12 +490,19 @@
     if (skipSubmit) return { committed: false, results, manual: true };
     const btn = findSubmitButton(frameDoc(iframe));
     if (!btn) throw new Error('no submit button found');
-    if (btn.disabled) throw new Error('submit button disabled (form invalid?)');
+    if (btn.disabled) {
+      const reason = findFieldError(frameDoc(iframe));
+      throw new Error(reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)');
+    }
     btn.click();
+    // #467 (majkinetor): observed real "never redirected" failures under 3
+    // concurrent workers all submitting heavy recording pages around the same
+    // time — bumped from 15s since that's tight once the browser is actually
+    // under that kind of concurrent load, not because a single submit is slow.
     const left = await waitFor(() => {
       const w = frameWin(iframe); if (!w) return null;
       try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
-    }, 15000);
+    }, 25000);
     if (!left) throw new Error('never redirected off /edit after submit — did it actually commit?');
     return { committed: true, results };
   }
@@ -531,13 +583,42 @@
     renderWorkerLayout();
     return card;
   }
+  // MB's own pages aren't responsive down to a worker card's small width — loaded
+  // at 260px wide, real content renders far outside that narrow viewport and
+  // never becomes visible at all, showing as a blank white box (majkinetor,
+  // #467, confirmed live: DOM had real, visible content, it was just laid out
+  // off-screen). Fix: render the iframe at MB's normal desktop width, then
+  // CSS-scale the whole thing down to exactly fill the card — MB always lays
+  // out the page the way it was actually designed to, and the card just shows a
+  // shrunk, still-legible thumbnail of it.
+  const IFRAME_NATIVE_W = 980;
+  function applyIframeScale(card) {
+    const body = card.querySelector('.falcon-worker-body');
+    const iframe = body?.querySelector('iframe');
+    if (!body || !iframe) return;
+    // body.clientHeight is unreliable here — observed reading 0 even once the
+    // card itself was fully laid out (flex:1 child of a column flex container
+    // whose own height came from a plain inline style; some engines don't
+    // settle its cross-size on the first pass). card's OWN clientWidth/Height
+    // are solid, so derive the body's actual area from those instead of
+    // trusting the (buggy) computed height on the flex child itself.
+    const header = card.children[0];
+    const w = card.clientWidth;
+    const h = card.clientHeight - (header ? header.clientHeight : 0);
+    if (!w || h <= 0) return;   // card is hidden (display:none) right now — nothing to size
+    const scale = w / IFRAME_NATIVE_W;
+    iframe.style.width = IFRAME_NATIVE_W + 'px';
+    iframe.style.height = Math.round(h / scale) + 'px';
+    iframe.style.transform = `scale(${scale})`;
+  }
   function newIframeIn(card) {
     const body = card.querySelector('.falcon-worker-body');
     const old = body.querySelector('iframe');
     if (old) old.remove();
     const f = document.createElement('iframe');
-    f.className = 'falcon-worker'; f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:#fff;';
+    f.className = 'falcon-worker'; f.style.cssText = 'position:absolute;top:0;left:0;border:none;background:#fff;transform-origin:0 0;';
     body.appendChild(f);
+    applyIframeScale(card);
     return f;
   }
 
@@ -626,6 +707,7 @@
       } else {
         card.style.display = 'none';
       }
+      if (card.style.display !== 'none') applyIframeScale(card);   // card size just changed — rescale its iframe to match
     });
   }
   function start() {
@@ -673,19 +755,17 @@
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column">
-        <div id="falcon-paste-wrap" style="padding:6px 10px;border-bottom:1px solid #eee;flex:0 0 auto">
-          <button type="button" id="falcon-paste-toggle" title="Paste entities to add to the queue" style="width:24px;height:24px;border-radius:50%;border:1px solid #ccc;background:#fafafa;cursor:pointer;font:14px/1 Arial;color:#1b2a4a">+</button>
-          <div id="falcon-paste-box" style="display:none;margin-top:6px">
-            <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>  /  recording:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
-            <div style="display:flex;gap:6px;margin-top:4px">
-              <button type="button" id="falcon-add" style="padding:4px 10px;cursor:pointer">+ Add to queue</button>
-            </div>
-          </div>
-        </div>
-        <div id="falcon-queue-toolbar" style="display:flex;align-items:center;gap:8px;padding:4px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
+        <div id="falcon-queue-toolbar" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
+          <button type="button" id="falcon-paste-toggle" title="Paste entities to add to the queue" style="width:26px;height:26px;border-radius:50%;border:1px solid #ccc;background:#fafafa;cursor:pointer;font:16px/1 Arial;color:#1b2a4a;flex:0 0 auto">+</button>
           <input type="checkbox" id="falcon-select-all" title="Select all" />
           <span id="falcon-select-count"></span>
           <button type="button" id="falcon-remove-selected" disabled style="margin-left:auto;padding:2px 8px;cursor:pointer">Remove selected</button>
+        </div>
+        <div id="falcon-paste-box" style="display:none;padding:6px 10px;border-bottom:1px solid #eee;flex:0 0 auto">
+          <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>  /  recording:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button type="button" id="falcon-add" style="padding:4px 10px;cursor:pointer">+ Add to queue</button>
+          </div>
         </div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-queue-bottom" style="display:flex;gap:6px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
@@ -831,7 +911,7 @@
       <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3">
         <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
-          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto;font-size:10px;width:12px">${expanded ? '▾' : '▸'}</button>
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
           <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
           <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0]?.url || '')}</span>
@@ -888,5 +968,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle };
 })();
