@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.232104
+// @version      2026.7.26.001512
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.232104';
+  const VERSION = '2026.7.26.001512';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -533,6 +533,27 @@
     });
     return dropped;
   }
+  // ⚠ NEVER remove a row that represents a PRE-EXISTING relationship.
+  // #467: checkRowUsable used to click "remove" on any row MB complained about
+  // — but when the complaint is "This relationship already exists", that row is
+  // REAL EXISTING DATA, and removing it stages a DELETION. Caught live on
+  // majkinetor's failing recording: a re-run over an already-imported entity had
+  // three `.rel-remove` markers staged against its qobuz relationship. It never
+  // reached the server (those runs all timed out), but a submit would have
+  // destroyed existing links. MB marks rows WE added with `rel-add`, so only
+  // those are ours to take back; anything unmarked pre-dates us — report the
+  // url as failed and leave the row strictly alone.
+  function isOurs(row) {
+    if (!row) return false;
+    if (row.querySelector('.rel-add') || /rel-add/.test(row.className)) return true;
+    const next = row.nextElementSibling;
+    return !!(next && next.classList?.contains('relationship-item') && next.querySelector('.rel-add'));
+  }
+  function removeIfOurs(row) {
+    if (!isOurs(row)) return false;
+    row.querySelector('button.remove-item')?.click();
+    return true;
+  }
   function checkRowUsable(doc, row, linkTypeId) {
     const typeRow = row.nextElementSibling;
     // scoped to just THIS row + its own type-row sibling — a real entity can
@@ -549,10 +570,10 @@
     // reported verbatim below — MB says it better than a guess would.
     const ambiguousSelect = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
     if (!linkTypeId && ambiguousSelect && !ambiguousSelect.value) {
-      row.querySelector('button.remove-item')?.click();
+      removeIfOurs(row);
       return 'ambiguous relationship type — MusicBrainz needs you to pick one; use ⇗ "open in tab" to add this url manually';
     }
-    if (errAlready) { row.querySelector('button.remove-item')?.click(); return errAlready; }
+    if (errAlready) { removeIfOurs(row); return errAlready; }
     return null;
   }
   async function fillAndSubmit(iframe, item, opts) {
@@ -593,7 +614,7 @@
           if (resolved && unresolved.length) {
             // the url was already on this entity — our seeded duplicate is just
             // dead weight whose blank select would block the whole submit.
-            unresolved.forEach(tr => tr.querySelector('button.remove-item')?.click());
+            unresolved.forEach(removeIfOurs);
             await wait(150);
             dbg(tag, `  already on entity -> dropped ${unresolved.length} seeded duplicate row(s)`);
             results.push({ url, ok: false, error: 'this url is already present on the entity' });
@@ -604,9 +625,16 @@
           // without one, checkRowUsable decides whether the row is committable
           // as-is and removes+reports it when it isn't, so one bad row can't
           // silently disable submit for the entire group.
-          if (linkTypeId) {
+          // Only type a row WE added. Re-typing a PRE-EXISTING relationship
+          // would rewrite curated data — caught live: a re-run was staging a
+          // rel-edit that changed an existing qobuz 'license' relationship to
+          // the type Harmony suggested. Falcon adds links; it doesn't
+          // reinterpret ones an editor already classified.
+          if (linkTypeId && isOurs(target)) {
             const set = await setRowLinkType(iframe, target, linkTypeId);
             dbg(tag, `  setRowLinkType(${linkTypeId}) = ${set}`);
+          } else if (linkTypeId) {
+            dbg(tag, `  leaving type alone — this relationship already existed before Falcon touched it`);
           }
           const reason = checkRowUsable(doc0, target, linkTypeId);
           dbg(tag, `  checkRowUsable -> ${reason ? 'REJECT: ' + reason : 'ok'}`);
@@ -659,6 +687,30 @@
     }
     dbg(tag, `per-url outcome: ${JSON.stringify(results.map(r => ({ u: r.url.slice(-40), ok: r.ok, e: r.error })))}`);
     if (!results.some(r => r.ok)) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
+    // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
+    // visibility): when every url is ALREADY on the entity with the right type,
+    // nothing changed and MB has no edit to create. It leaves "Enter edit"
+    // enabled regardless, so clicking it silently does nothing and Falcon sat
+    // out the full 50s before reporting "never redirected" — on a batch that was
+    // in fact already up to date. MB marks pending changes on the rows
+    // themselves, so ask it directly rather than submitting into the void.
+    // Verified live on his exact failing recording: 0 markers, submit enabled,
+    // click does nothing.
+    // ⚠ Falcon only ever ADDS links. A staged removal means something went
+    // wrong on our side (see isOurs/removeIfOurs) and submitting would destroy
+    // existing data, so refuse outright rather than risk it — a failed item is
+    // recoverable, a deleted relationship is not.
+    const doomed = (frameDoc(iframe)?.querySelectorAll('.rel-remove') || []).length;
+    if (doomed) {
+      dbg(tag, `NOT SUBMITTING — ${doomed} relationship REMOVAL(s) are staged and Falcon never intends removals; refusing to submit`);
+      return { committed: false, results: results.map(r => r.ok ? { ...r, ok: false, error: 'not submitted — the form had a relationship removal staged, which Falcon never intends (refused for safety)' } : r), fillMs: Date.now() - tFillStart };
+    }
+    const pending = (frameDoc(iframe)?.querySelectorAll('.rel-add, .rel-edit') || []).length;
+    if (!pending) {
+      dbg(tag, 'NOT SUBMITTING — MB shows no pending change; every url is already on the entity with this type');
+      return { committed: false, results, noop: true, fillMs: Date.now() - tFillStart };
+    }
+    dbg(tag, `${pending} pending relationship change(s) staged`);
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
     const noteSet = setEditNote(d2, w2, editNoteText(results, item.note));
     dbg(tag, `edit note set = ${noteSet}`);
@@ -946,7 +998,13 @@
         // can show where the time actually went (majkinetor, #467).
         item.timing = { worker: tag, loadMs, settleMs, fillMs: r.fillMs || 0, submitMs: r.submitMs || 0, totalMs: Date.now() - tNav };
         const failedUrls = r.results.filter(x => !x.ok);
-        if (!r.committed) {
+        if (r.noop) {
+          // everything was already there — the desired state holds, so this is
+          // a success with nothing to do, NOT a failure.
+          item.status = 'skipped';
+          item.error = '';
+          log('info', `${tag} ${entityLabel(item)} — already up to date, nothing to submit (${r.results.length} link(s) already present)`);
+        } else if (!r.committed) {
           item.status = 'failed';
           item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
           log('error', `${tag} ${item.mbid}: nothing added — ${item.error}`);
@@ -964,11 +1022,12 @@
         log('error', `${tag} ${item.mbid}: ${item.error}`);
       }
       renderQueue();
-      if (r && r.committed) {
-        // a real submit happened — this card keeps going (a fresh iframe loads
-        // the NEXT item next iteration, see above) rather than retiring, so you
-        // can watch one worker flow through a whole run instead of every single
-        // item spawning a new card.
+      if (r && (r.committed || r.noop)) {
+        // a real submit happened — or there was genuinely nothing to submit, in
+        // which case the form was never dirtied either. Both leave this card
+        // safe to keep going (a fresh iframe loads the NEXT item next
+        // iteration, see above) rather than retiring, so you can watch one
+        // worker flow through a whole run instead of every item spawning a card.
         updateWorkerLabel(card, null);
         continue;
       }
@@ -1397,7 +1456,7 @@
     }
   }
 
-  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce' };
+  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
   function renderRowDetail(it) {
     const results = it.urlResults || [];
     return it.urls.map(u => {
@@ -1460,7 +1519,7 @@
     const total = queue.length;
     if (!total) { bar.style.width = '0%'; txt.textContent = ''; return; }
     const settled = queue.filter(i => i.status !== 'queued' && i.status !== 'active').length;
-    const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial').length;
+    const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial').length;   // 'skipped' is a success (already up to date), not a problem
     const active = queue.filter(i => i.status === 'active').length;
     bar.style.width = Math.round((settled / total) * 100) + '%';
     bar.style.background = bad ? '#d68910' : '#2e9e5b';
