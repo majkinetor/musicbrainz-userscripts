@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25
+// @version      2026.7.25.123741
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25';
+  const VERSION = '2026.7.25.123741';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -547,23 +547,30 @@
   // — even removing the offending row afterward doesn't clear it (verified live).
   // Reassigning .src on that SAME iframe then triggers a native "leave site?" confirm
   // dialog, which — being a real modal — freezes the WHOLE TAB until a human dismisses
-  // it. Round 1 succeeded via a real form SUBMIT (browsers exempt actual submissions
-  // from the warning); the bug only bites when an item DOESN'T reach a real submit —
-  // a rejected/duplicate url leaves that iframe dirty, and reassigning ITS .src to
-  // the next item hits the block.
-  // So: only reuse the same iframe (cheap, and lets you watch one worker flow through
-  // several items) when the previous item cleanly reached a real submit — `committed`
-  // covers both 'done' and 'partial' (some urls in the group failed but at least one
-  // did submit). Anything else (never submitted, or the page never loaded) RETIRES
-  // that card in place — frozen, visible, inspectable (majkinetor: "leave open those
-  // that have issues") — and spawns a fresh replacement card to keep the queue
-  // moving, rather than fighting the same dirty iframe.
+  // it. That's why every item now gets a genuinely FRESH iframe (see workerLoop) —
+  // removing the old element outright, rather than reassigning .src, sidesteps the
+  // dialog regardless of whether the previous page was dirty.
+  // #467 follow-up (majkinetor: "the UI was unresponsive... full session"): a run
+  // with NO failures at all still went unresponsive over several minutes — pointing
+  // at leftover background activity (MB's own client JS: polling/retry timers) from
+  // EACH earlier document not being fully torn down by a plain .src reassignment,
+  // compounding across a long session. Always creating a fresh iframe (discarding
+  // the old one) fixes the in-flight case; retireCard below additionally discards
+  // the CURRENT iframe outright for a card that's done being useful, rather than
+  // leaving a dead/failed page's scripts running in the background indefinitely.
+  // The item's error text is already captured in the queue data model (that's what
+  // actually matters for inspection), so a static message replaces the live iframe.
   function retireCard(card, reason) {
     card.dataset.retired = '1';
     card.style.opacity = '.55';
     const lbl = card.querySelector('.falcon-worker-lbl');
     if (lbl) lbl.textContent = (lbl.textContent || '') + ' — stopped';
     card.title = 'This worker hit an issue and was retired — kept visible for inspection. ' + (reason || '');
+    const body = card.querySelector('.falcon-worker-body');
+    if (body) {
+      body.querySelector('iframe')?.remove();
+      body.innerHTML = `<div style="position:absolute;inset:0;padding:8px;overflow:auto;font-size:11px;color:#a33;white-space:pre-wrap;background:#fff">${esc(reason || 'stopped')}</div>`;
+    }
   }
   function spawnWorkerCard() {
     const strip = document.getElementById('falcon-workers'); if (!strip) return null;
@@ -623,13 +630,19 @@
   }
 
   async function workerLoop(card) {
-    let iframe = null;
     while (running) {
       const item = nextQueued();
       if (!item) break;
       item.status = 'active'; renderQueue();
       log('info', `${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
-      if (!iframe) iframe = newIframeIn(card);   // first item on this card, or reusing after a clean commit
+      // ALWAYS a fresh iframe, even after a clean commit on this same card — a
+      // real multi-item session showed the tab going fully unresponsive over
+      // time (majkinetor, #467), consistent with the previous item's document
+      // (its own polling/background JS) not being fully torn down by a plain
+      // `.src` reassignment. newIframeIn() removes the old element outright —
+      // that unambiguously kills its whole browsing context, whether it was
+      // clean or dirty — the card visually keeps flowing either way.
+      const iframe = newIframeIn(card);
       updateWorkerLabel(card, item);
       iframe.src = editUrl(item);
       const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
@@ -664,9 +677,10 @@
       }
       renderQueue();
       if (r && r.committed) {
-        // a real submit happened — MB's dirty-flag is cleared, safe to keep this SAME
-        // iframe going for the next item (this is what lets you watch one worker
-        // flow through a run instead of every item spawning a new card).
+        // a real submit happened — this card keeps going (a fresh iframe loads
+        // the NEXT item next iteration, see above) rather than retiring, so you
+        // can watch one worker flow through a whole run instead of every single
+        // item spawning a new card.
         updateWorkerLabel(card, null);
         continue;
       }
@@ -755,9 +769,14 @@
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column">
-        <div id="falcon-queue-toolbar" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
+        <div id="falcon-queue-toolbar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
           <button type="button" id="falcon-paste-toggle" title="Paste entities to add to the queue" style="width:26px;height:26px;border-radius:50%;border:1px solid #ccc;background:#fafafa;cursor:pointer;font:16px/1 Arial;color:#1b2a4a;flex:0 0 auto">+</button>
-          <input type="checkbox" id="falcon-select-all" title="Select all" />
+          <span style="width:1px;height:18px;background:#ddd;flex:0 0 auto"></span>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;flex:0 0 auto" title="Select all">
+            <input type="checkbox" id="falcon-select-all" />
+            <span>all</span>
+          </label>
+          <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail">Expand all</button>
           <span id="falcon-select-count"></span>
           <button type="button" id="falcon-remove-selected" disabled style="margin-left:auto;padding:2px 8px;cursor:pointer">Remove selected</button>
         </div>
@@ -820,6 +839,16 @@
       log('info', `removed ${removable.length} item(s) from the queue`);
       renderQueue();
     };
+    // #467 (majkinetor): toggles between expanding every row's url detail at
+    // once and collapsing them all — its own label reflects which action is
+    // next, kept in sync from renderQueue() since expanding/collapsing an
+    // individual row can also change whether "all" are currently expanded.
+    document.getElementById('falcon-expand-all').onclick = () => {
+      const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
+      if (allExpanded) _expandedIds.clear();
+      else queue.forEach(i => _expandedIds.add(i.id));
+      renderQueue();
+    };
     // one delegated listener for every row action — rows are fully re-rendered on
     // every renderQueue(), so per-element handlers would just leak; look the
     // clicked/changed item up by its data-id instead.
@@ -831,6 +860,12 @@
       if (removeBtn) { const id = removeBtn.dataset.id; queue = queue.filter(i => i.id !== id); _selectedIds.delete(id); _expandedIds.delete(id); renderQueue(); return; }
       const tabBtn = e.target.closest('.falcon-row-opentab');
       if (tabBtn) { const it = queue.find(i => i.id === tabBtn.dataset.id); if (it) openInTab(it); return; }
+      const statusBtn = e.target.closest('.falcon-row-status');
+      if (statusBtn) {
+        const it = queue.find(i => i.id === statusBtn.dataset.id);
+        if (it && (it.status === 'failed' || it.status === 'partial')) showItemPopup(it);
+        return;
+      }
     });
     list.addEventListener('change', e => {
       const chk = e.target.closest('.falcon-row-check');
@@ -915,7 +950,7 @@
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
           <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
           <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0]?.url || '')}</span>
-          <span style="color:#999;text-transform:uppercase;font-size:9px;flex:0 0 auto">${it.status}</span>
+          <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
         </div>
@@ -928,6 +963,59 @@
     if (removeBtn) removeBtn.disabled = _selectedIds.size === 0;
     const selectAll = document.getElementById('falcon-select-all');
     if (selectAll) { const selectable = queue.filter(i => i.status !== 'active'); selectAll.checked = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id)); }
+    const expandAllBtn = document.getElementById('falcon-expand-all');
+    if (expandAllBtn) {
+      const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
+      expandAllBtn.textContent = allExpanded ? 'Collapse all' : 'Expand all';
+    }
+  }
+
+  // #467 (majkinetor): "click the failed label, open its worker alone in a
+  // popup... show error in header" — a dedicated popup for ONE failed/partial
+  // item, its error shown prominently (not just on hover), its url detail
+  // below, and a maximize toggle matching the panel/worker-card convention.
+  // Doesn't need a live iframe — retired cards no longer keep one running
+  // (see retireCard) and the queue's own data model already has everything
+  // needed for inspection.
+  let _itemPopupId = null, _itemPopupMaxed = false;
+  function ensureItemPopup() {
+    if (document.getElementById('falcon-item-popup')) return;
+    const el = document.createElement('div');
+    el.id = 'falcon-item-popup';
+    el.style.cssText = 'display:none;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;max-width:92vw;max-height:70vh;background:#fff;border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.3);border:1px solid #ddd;overflow:hidden;flex-direction:column;font:12px -apple-system,Segoe UI,Arial,sans-serif';
+    el.innerHTML = `
+      <div id="falcon-item-popup-hdr" style="padding:8px 10px;background:#7a2020;color:#fff;display:flex;align-items:center;gap:8px">
+        <span id="falcon-item-popup-title" style="flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button type="button" id="falcon-item-popup-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px">⛶</button>
+        <button type="button" id="falcon-item-popup-close" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px">✕</button>
+      </div>
+      <div id="falcon-item-popup-error" style="padding:8px 10px;background:#fdecea;color:#a33;font-size:11px;white-space:pre-wrap;border-bottom:1px solid #f3c8c3"></div>
+      <div id="falcon-item-popup-body" style="padding:8px 10px;overflow:auto;flex:1"></div>
+      <div style="padding:8px 10px;border-top:1px solid #eee;display:flex;justify-content:flex-end">
+        <button type="button" id="falcon-item-popup-opentab" style="padding:4px 10px;cursor:pointer">⇗ Open in tab</button>
+      </div>`;
+    document.body.appendChild(el);
+    document.getElementById('falcon-item-popup-close').onclick = () => { el.style.display = 'none'; _itemPopupId = null; };
+    document.getElementById('falcon-item-popup-maximize').onclick = () => {
+      _itemPopupMaxed = !_itemPopupMaxed;
+      el.style.width = _itemPopupMaxed ? '94vw' : '520px';
+      el.style.height = _itemPopupMaxed ? '90vh' : '';
+      document.getElementById('falcon-item-popup-maximize').textContent = _itemPopupMaxed ? '❐' : '⛶';
+      document.getElementById('falcon-item-popup-maximize').title = _itemPopupMaxed ? 'Restore' : 'Maximize';
+    };
+    document.getElementById('falcon-item-popup-opentab').onclick = () => {
+      const it = queue.find(i => i.id === _itemPopupId);
+      if (it) openInTab(it);
+    };
+  }
+  function showItemPopup(item) {
+    ensureItemPopup();
+    _itemPopupId = item.id;
+    const el = document.getElementById('falcon-item-popup');
+    document.getElementById('falcon-item-popup-title').textContent = `${entityLabel(item)} — ${item.status.toUpperCase()}`;
+    document.getElementById('falcon-item-popup-error').textContent = item.error || '(no error message recorded)';
+    document.getElementById('falcon-item-popup-body').innerHTML = renderRowDetail(item) || '<div style="color:#999">No url detail available.</div>';
+    el.style.display = 'flex';
   }
   function renderLog() {
     const el = document.getElementById('falcon-body-log'); if (!el || tab !== 'log') return;
@@ -968,5 +1056,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup };
 })();
