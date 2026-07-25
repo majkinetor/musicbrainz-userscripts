@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.24.111109
+// @version      2026.7.25.204423
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -217,6 +217,19 @@ async function injectInto(urls, storageKey) {
         // store first (like HDtracks/Volumo), so prefer 74; fall back to 980 if that's the
         // only one MB offers for the row.
         { test: u => /qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u), ids: ['74', '980'], name: 'purchase for download' },
+        // SoundCloud (#469, chaban-mb): MB offers the whole "get the music" family
+        // for a SoundCloud URL (73/74/75/85/980) and picks none of them, so the row
+        // is left with a blank REQUIRED select and "Please select a link type for
+        // the URL you've entered" — which blocks the release editor's submit
+        // entirely (and therefore also #465's auto-submit), not just this one link.
+        // Verified live: both example sets from the issue render exactly this.
+        // 85 'stream for free' is the right default — a SoundCloud set is free
+        // streaming unless it's Go-only. Picking between 85 and 980 *correctly*
+        // needs the per-track monetization_model/policy signal chaban described
+        // (policy 'SNIP' + truncated durations => Go-gated => 980); that's a
+        // refinement, deliberately out of scope here since the reported problem is
+        // the blocked submission, not the choice of type.
+        { test: u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
     ];
     const wait = pcWait;
     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;

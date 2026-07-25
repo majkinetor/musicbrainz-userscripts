@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-24 19:13 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-25 20:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -861,6 +861,8 @@ The menu lists each credit with a **checkbox** (all on by default) — untick an
 
 Copy/Move act on the ticked credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
 
+<img width="650" src="../group_therapy/screenshots/copy.png" /> 
+
 ##### Set dates
 
 If the relationship you right-click carries a **date period** (e.g. a *recorded at “<place>”* with a date), the copy menu also offers **Set dates from (D1 → D2)…**. That date only **seeds** a picker — the tool no longer depends on the rel you invoked it from, so you're free to change it.
@@ -874,8 +876,6 @@ The **date picker** ([#398](https://github.com/majkinetor/musicbrainz-userscript
 
 > [!NOTE] 
 > **Fills blanks only — it can't overwrite or remove a date.** MusicBrainz's editor reducer merges a relationship update and keeps any existing non-empty date, so a date sent through it is only applied where there was none (which is why already-dated credits are shown but left unchanged). Overwriting or clearing a date would require driving MB's own edit dialog (which we deliberately don't do). See [#385](https://github.com/majkinetor/musicbrainz-userscripts/issues/385) for the details.
-
-<img width="650" src="../group_therapy/screenshots/copy.png" /> 
 
 ##### From release 
 
