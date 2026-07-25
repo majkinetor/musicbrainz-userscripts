@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.222807
+// @version      2026.7.25.225512
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.222807';
+  const VERSION = '2026.7.25.225512';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -544,6 +544,7 @@
     const tag = (opts && opts.tag) || '[w?]';
     const results = [];
     dbg(tag, `fillAndSubmit start — ${item.urls.length} url(s), skipSubmit=${skipSubmit}`);
+    const tFillStart = Date.now();
     // workerLoop navigates straight to buildSeedEditUrl(item) — MB's own seed-url
     // params (the same ones Harmony uses) pre-fill the FIRST occurrence of each
     // distinct url as the page renders, no typing needed at all (majkinetor,
@@ -641,14 +642,14 @@
       });
     }
     dbg(tag, `per-url outcome: ${JSON.stringify(results.map(r => ({ u: r.url.slice(-40), ok: r.ok, e: r.error })))}`);
-    if (!results.some(r => r.ok)) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable'); return { committed: false, results }; }
+    if (!results.some(r => r.ok)) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
     const noteSet = setEditNote(d2, w2, editNoteText(results, item.note));
     dbg(tag, `edit note set = ${noteSet}`);
     await wait(150);
     // manual-review path (openInTab, #467): fill the form and stop here — a human
     // reviews and clicks "Enter edit" themselves, exactly like a Harmony tab.
-    if (skipSubmit) return { committed: false, results, manual: true };
+    if (skipSubmit) return { committed: false, results, manual: true, fillMs: Date.now() - tFillStart };
     const btn = findSubmitButton(frameDoc(iframe));
     if (!btn) { dbg(tag, 'NOT SUBMITTING — no submit button found on the page'); throw new Error('no submit button found'); }
     if (btn.disabled) {
@@ -679,6 +680,7 @@
     // re-clicking only happens after the page has demonstrably gone nowhere for
     // that whole time, when nothing can still be in flight to disturb.
     const tSubmit = Date.now();
+    const fillMs = tSubmit - tFillStart;
     const MAX_CLICKS = 2;
     const pageLeft = () => {
       const w = frameWin(iframe); if (!w) return null;
@@ -708,7 +710,7 @@
       throw new Error(`never redirected off /edit after submit${pageErrs && pageErrs !== '(none)' ? ' — MB says: ' + pageErrs : ''}`);
     }
     dbg(tag, `submit landed in ${Date.now() - tSubmit}ms`);
-    return { committed: true, results };
+    return { committed: true, results, fillMs, submitMs: Date.now() - tSubmit };
   }
 
   // never hand out a queued item for an entity that's ALREADY being worked on by
@@ -906,7 +908,8 @@
         if (replacement) workerLoop(replacement);
         return;
       }
-      dbg(tag, `edit page loaded in ${Date.now() - tNav}ms`);
+      const loadMs = Date.now() - tNav;
+      dbg(tag, `edit page loaded in ${loadMs}ms`);
       // MB's client JS turns the seed params into rows a moment after load.
       // A seeded url can land in EITHER shape (see findRowsForUrl): a resolved
       // <a href> row, or — when MB couldn't classify it — an editable input
@@ -917,11 +920,15 @@
         const uniqueUrls = [...new Set(item.urls.map(u => u.url))];
         return uniqueUrls.every(u => !!findRowForUrl(doc, u)) ? true : null;
       }, 8000);
+      const settleMs = Date.now() - tNav - loadMs;
       dbg(tag, `seeded rows settled=${!!settled} after ${Date.now() - tNav}ms total`);
       let r = null;
       try {
         r = await fillAndSubmit(iframe, item, { tag });
         item.urlResults = r.results;
+        // per-stage timings, kept on the item so the end-of-run summary table
+        // can show where the time actually went (majkinetor, #467).
+        item.timing = { worker: tag, loadMs, settleMs, fillMs: r.fillMs || 0, submitMs: r.submitMs || 0, totalMs: Date.now() - tNav };
         const failedUrls = r.results.filter(x => !x.ok);
         if (!r.committed) {
           item.status = 'failed';
@@ -937,6 +944,7 @@
         }
       } catch (e) {
         item.status = 'failed'; item.error = e.message || String(e);
+        item.timing = { worker: tag, loadMs, settleMs, fillMs: 0, submitMs: 0, totalMs: Date.now() - tNav };
         log('error', `${tag} ${item.mbid}: ${item.error}`);
       }
       renderQueue();
@@ -959,7 +967,7 @@
     updateWorkerLabel(card, null);   // triggers its own re-render since this flips the card to idle (see above)
     // last worker out turns the jank heartbeat off — no point measuring thread
     // blocking once nothing of ours is running.
-    if (!queue.some(i => i.status === 'active')) stopHeartbeat();
+    if (!queue.some(i => i.status === 'active')) { stopHeartbeat(); logRunSummary(); }
   }
 
   // #467 (majkinetor): each worker gets its own card — a small label (which entity
@@ -1031,10 +1039,55 @@
     }, 500);
   }
   function stopHeartbeat() { if (_heartbeat) { clearInterval(_heartbeat); _heartbeat = null; } }
+
+  // #467 (majkinetor): "add to falcon log table with timing data as a summary".
+  // Printed once when the last worker goes idle. The point is to make WHERE the
+  // time goes obvious at a glance — the run that prompted this had ~30s submits
+  // purely because five workers were submitting at once (MB serialises edit
+  // submissions per user), which is invisible in a stream of interleaved lines
+  // but jumps out of a sorted table. Columns are the real stages: load = MB's
+  // edit page arriving, settle = MB turning seed params into rows, fill = our
+  // own DOM work, submit = click → redirect.
+  let _summaryPending = false, _runStartedAt = 0;
+  function logRunSummary() {
+    const rows = queue.filter(i => i.timing);
+    if (!rows.length || _summaryPending) return;
+    _summaryPending = true;
+    // let any last status writes land before snapshotting
+    setTimeout(() => {
+      _summaryPending = false;
+      const pad = (v, n, right) => { const s = String(v); return right ? s.padStart(n) : s.padEnd(n); };
+      const ms = v => (v == null ? '-' : String(Math.round(v)));
+      const nameW = Math.min(28, Math.max(6, ...rows.map(i => entityLabel(i).length)));
+      const head = `${pad('w', 4)} ${pad('entity', nameW)} ${pad('status', 8)} ${pad('load', 7, 1)} ${pad('settle', 7, 1)} ${pad('fill', 7, 1)} ${pad('submit', 8, 1)} ${pad('total', 8, 1)}`;
+      const lines = [head, '-'.repeat(head.length)];
+      rows.forEach(i => {
+        const t = i.timing;
+        lines.push(`${pad(t.worker || '', 4)} ${pad(entityLabel(i).slice(0, nameW), nameW)} ${pad(i.status, 8)} ${pad(ms(t.loadMs), 7, 1)} ${pad(ms(t.settleMs), 7, 1)} ${pad(ms(t.fillMs), 7, 1)} ${pad(ms(t.submitMs), 8, 1)} ${pad(ms(t.totalMs), 8, 1)}`);
+      });
+      const sum = k => rows.reduce((a, i) => a + (i.timing[k] || 0), 0);
+      const avg = k => Math.round(sum(k) / rows.length);
+      const maxSubmit = Math.max(...rows.map(i => i.timing.submitMs || 0));
+      lines.push('-'.repeat(head.length));
+      lines.push(`${pad('', 4)} ${pad(`${rows.length} item(s)`, nameW)} ${pad('avg', 8)} ${pad(avg('loadMs'), 7, 1)} ${pad(avg('settleMs'), 7, 1)} ${pad(avg('fillMs'), 7, 1)} ${pad(avg('submitMs'), 8, 1)} ${pad(avg('totalMs'), 8, 1)}`);
+      const byStatus = rows.reduce((m, i) => { m[i.status] = (m[i.status] || 0) + 1; return m; }, {});
+      // wall clock is NOT the sum of the item totals — workers overlap — so show
+      // both: the sum is how much work happened, the wall clock is how long you
+      // actually waited, and the gap between them is what concurrency bought.
+      const wallMs = _runStartedAt ? Date.now() - _runStartedAt : 0;
+      const fmt = m => (m >= 1000 ? (m / 1000).toFixed(1) + 's' : m + 'ms');
+      log('info', `run summary (all times ms)\n${lines.join('\n')}\n` +
+        `total run time: ${fmt(wallMs)} wall clock` +
+        (rows.length > 1 ? ` · ${fmt(sum('totalMs'))} of item work · avg ${fmt(Math.round(wallMs / rows.length))} per item` : '') + '\n' +
+        `totals: ${Object.entries(byStatus).map(([k, v]) => `${v} ${k}`).join(', ')}; slowest submit ${maxSubmit}ms; ${cfg.workers} worker(s)` +
+        (maxSubmit > 10000 ? `\nnote: submits this slow usually mean several workers submitted at once — MusicBrainz serialises edit submissions per user, so they queue behind each other. Fewer workers is often no slower overall.` : ''));
+    }, 300);
+  }
   function start() {
     if (running) return;
     if (!queue.some(i => i.status === 'queued')) { log('warn', 'nothing queued'); return; }
     running = true;
+    _runStartedAt = Date.now();
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
