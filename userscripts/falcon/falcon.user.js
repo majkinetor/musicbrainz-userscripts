@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.194511
+// @version      2026.7.25.210742
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.194511';
+  const VERSION = '2026.7.25.210742';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -58,6 +58,12 @@
   const cfg = {
     get workers() { const n = Number(GM_getValue('falcon:workers', 3)); return Math.max(1, Math.min(6, isFinite(n) ? n : 3)); },
     set workers(n) { GM_setValue('falcon:workers', Math.max(1, Math.min(6, Number(n) || 3))); },
+    // #467 (majkinetor): "Add worker window size so I can see better what is
+    // wrong [with] multiple windows" — the default thumbnail is too small to
+    // read a validation message, so make it adjustable and remember it. Card
+    // height tracks width at 4:5.
+    get workerSize() { const n = Number(GM_getValue('falcon:workerSize', 260)); return Math.max(200, Math.min(900, isFinite(n) ? n : 260)); },
+    set workerSize(n) { GM_setValue('falcon:workerSize', Math.max(200, Math.min(900, Number(n) || 260))); },
   };
 
   /* ── tiny logger — kept in-memory + console, surfaced in the panel's log tab ── */
@@ -643,8 +649,22 @@
     // never reuse a stale reference, and if the page hasn't moved shortly after
     // a click, re-query and try again (falling back to submitting the form
     // directly) rather than waiting out the whole timeout on one lost click.
+    // ⚠ Retry timing is load-bearing. A real submit on a busy MB routinely takes
+    // 2-7s (measured on majkinetor's own runs: 2366 / 2390 / 3872 / 6392 /
+    // 6557ms). An earlier version gave the FIRST attempt only a 4s window and
+    // then clicked again — which fired a second submit while the first was
+    // still in flight, and double-submitting this form leaves it wedged on
+    // /edit. That made things strictly worse: entire batches of 3 failed
+    // together, every time, until the queue thinned out. So the first click now
+    // gets the FULL patient wait, exactly as it did before retries existed;
+    // re-clicking only happens after the page has demonstrably gone nowhere for
+    // that whole time, when nothing can still be in flight to disturb.
     const tSubmit = Date.now();
-    const MAX_CLICKS = 3;
+    const MAX_CLICKS = 2;
+    const pageLeft = () => {
+      const w = frameWin(iframe); if (!w) return null;
+      try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
+    };
     let left = null;
     for (let attempt = 1; attempt <= MAX_CLICKS && !left; attempt++) {
       const doc = frameDoc(iframe);
@@ -653,24 +673,20 @@
       if (fresh.disabled) { dbg(tag, `submit attempt ${attempt}: button went disabled — ${findFieldError(doc) || '(no message)'}`); break; }
       dbg(tag, `submit attempt ${attempt}: clicking${fresh !== btn ? ' (button node was replaced since it was first found)' : ''}`);
       fresh.click();
-      if (attempt > 1) {
-        // a plain click has already been ignored once — go at the form itself.
-        const form = fresh.closest('form');
-        if (form) { dbg(tag, `submit attempt ${attempt}: also calling form.requestSubmit()`); try { form.requestSubmit ? form.requestSubmit(fresh) : form.submit(); } catch (e) { dbg(tag, `  requestSubmit threw: ${e.message || e}`); } }
-      }
-      // short window per attempt; the LAST attempt gets the full remaining
-      // budget, since by then a slow-but-real submit is the likelier story.
-      left = await waitFor(() => {
-        const w = frameWin(iframe); if (!w) return null;
-        try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
-      }, attempt === MAX_CLICKS ? 20000 : 4000);
-      if (!left) dbg(tag, `submit attempt ${attempt}: page still on /edit after the wait`);
+      left = await waitFor(pageLeft, 25000);
+      if (!left) dbg(tag, `submit attempt ${attempt}: page still on /edit after 25s`);
     }
     if (!left) {
-      let where = '(unreadable)';
-      try { where = frameWin(iframe).location.href; } catch (e) {}
-      dbg(tag, `SUBMIT DID NOT LAND — still on /edit after ${Date.now() - tSubmit}ms and ${MAX_CLICKS} click attempt(s); frame url: ${where}`);
-      throw new Error('never redirected off /edit after submit — did it actually commit?');
+      let where = '(unreadable)', pageErrs = '(unreadable)', btnState = '(unreadable)';
+      try {
+        const w = frameWin(iframe), d = frameDoc(iframe);
+        where = w.location.href;
+        pageErrs = findFieldError(d) || '(none)';
+        const b = findSubmitButton(d);
+        btnState = b ? `found, disabled=${b.disabled}` : 'gone';
+      } catch (e) {}
+      dbg(tag, `SUBMIT DID NOT LAND — ${Date.now() - tSubmit}ms, ${MAX_CLICKS} attempt(s); button: ${btnState}; MB errors: ${pageErrs}; frame url: ${where}`);
+      throw new Error(`never redirected off /edit after submit${pageErrs && pageErrs !== '(none)' ? ' — MB says: ' + pageErrs : ''}`);
     }
     dbg(tag, `submit landed in ${Date.now() - tSubmit}ms`);
     return { committed: true, results };
@@ -765,7 +781,7 @@
     const card = document.createElement('div');
     card.className = 'falcon-worker-card';
     card.dataset.idle = '1';
-    card.style.cssText = 'border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;width:260px;height:210px;';
+    card.style.cssText = `border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;flex:0 0 auto;width:${cfg.workerSize}px;height:${Math.round(cfg.workerSize * 0.8)}px;`;
     card.innerHTML = `
       <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:#f3f3f3;border-bottom:1px solid #ddd;font-size:10px">
         <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555">idle</span>
@@ -957,7 +973,7 @@
       const isIdle = card.dataset.idle === '1';
       if (_zoomedWorker === null) {
         if (isIdle) { card.style.display = 'none'; return; }
-        card.style.display = ''; card.style.width = '260px'; card.style.height = '210px';
+        card.style.display = ''; card.style.width = cfg.workerSize + 'px'; card.style.height = Math.round(cfg.workerSize * 0.8) + 'px';
         if (zoomBtn) { zoomBtn.textContent = '⛶'; zoomBtn.title = 'Maximize this worker'; }
       } else if (_zoomedWorker === i) {
         card.style.display = ''; card.style.width = '100%'; card.style.height = '560px';
@@ -1040,7 +1056,14 @@
         </div>
       </div>
       <div id="falcon-body-workers" style="display:none;padding:8px 10px;overflow:auto;flex:1">
-        <div style="color:#888;margin-bottom:6px">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#888">
+          <span style="flex:1">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</span>
+          <label style="display:flex;align-items:center;gap:5px;flex:0 0 auto" title="How large each worker card is drawn — bigger cards make it easier to read what a worker is actually showing">
+            <span>size</span>
+            <input type="range" id="falcon-worker-size" min="200" max="900" step="20" style="width:110px" />
+            <span id="falcon-worker-size-val" style="width:34px;text-align:right"></span>
+          </label>
+        </div>
         <div id="falcon-workers" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         <div id="falcon-workers-empty" style="display:none;color:#999;padding:8px 0">No active workers right now — idle ones are hidden here. Click ▶ Start to begin.</div>
       </div>
@@ -1156,6 +1179,15 @@
     const dbgBox = document.getElementById('falcon-log-debug');
     dbgBox.checked = debugOn();
     dbgBox.onchange = () => GM_setValue('falcon:debug', dbgBox.checked);
+    const sizeSlider = document.getElementById('falcon-worker-size');
+    const sizeVal = document.getElementById('falcon-worker-size-val');
+    sizeSlider.value = cfg.workerSize;
+    sizeVal.textContent = cfg.workerSize;
+    sizeSlider.oninput = () => {
+      cfg.workerSize = sizeSlider.value;
+      sizeVal.textContent = cfg.workerSize;
+      renderWorkerLayout();   // resizes every visible card AND rescales its iframe
+    };
     // drag by header
     const hdr = document.getElementById('falcon-hdr');
     let dragging = false, dx = 0, dy = 0;
