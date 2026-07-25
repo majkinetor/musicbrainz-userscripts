@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.131110
+// @version      2026.7.25.133708
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.131110';
+  const VERSION = '2026.7.25.133708';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -554,23 +554,21 @@
   // with NO failures at all still went unresponsive over several minutes — pointing
   // at leftover background activity (MB's own client JS: polling/retry timers) from
   // EACH earlier document not being fully torn down by a plain .src reassignment,
-  // compounding across a long session. Always creating a fresh iframe (discarding
-  // the old one) fixes the in-flight case; retireCard below additionally discards
-  // the CURRENT iframe outright for a card that's done being useful, rather than
-  // leaving a dead/failed page's scripts running in the background indefinitely.
-  // The item's error text is already captured in the queue data model (that's what
-  // actually matters for inspection), so a static message replaces the live iframe.
+  // compounding across a long session. Always creating a fresh iframe per item (see
+  // workerLoop) is the fix for that — a run no longer reassigns .src on one iframe
+  // across many sequential items, so nothing compounds. A single RETIRED card's one
+  // remaining iframe is bounded (that card processes nothing further), so — per
+  // majkinetor: "I want to have worker visible there, in its active state" — it's
+  // kept alive and inspectable rather than discarded. The error also gets its own
+  // banner right in the card (not just a hover tooltip), so it's visible once zoomed.
   function retireCard(card, reason) {
     card.dataset.retired = '1';
     card.style.opacity = '.55';
     const lbl = card.querySelector('.falcon-worker-lbl');
     if (lbl) lbl.textContent = (lbl.textContent || '') + ' — stopped';
     card.title = 'This worker hit an issue and was retired — kept visible for inspection. ' + (reason || '');
-    const body = card.querySelector('.falcon-worker-body');
-    if (body) {
-      body.querySelector('iframe')?.remove();
-      body.innerHTML = `<div style="position:absolute;inset:0;padding:8px;overflow:auto;font-size:11px;color:#a33;white-space:pre-wrap;background:#fff">${esc(reason || 'stopped')}</div>`;
-    }
+    const banner = card.querySelector('.falcon-worker-errbanner');
+    if (banner && reason) { banner.textContent = reason; banner.style.display = 'block'; }
   }
   function spawnWorkerCard() {
     const strip = document.getElementById('falcon-workers'); if (!strip) return null;
@@ -583,6 +581,7 @@
         <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555">idle</span>
         <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
       </div>
+      <div class="falcon-worker-errbanner" style="display:none;padding:4px 6px;background:#fdecea;color:#a33;font-size:10px;white-space:pre-wrap;border-bottom:1px solid #f3c8c3"></div>
       <div class="falcon-worker-body" style="flex:1;position:relative;"></div>`;
     card.querySelector('.falcon-worker-zoom').onclick = () => { _zoomedWorker = _zoomedWorker === idx ? null : idx; renderWorkerLayout(); };
     strip.appendChild(card);
@@ -599,6 +598,18 @@
   // out the page the way it was actually designed to, and the card just shows a
   // shrunk, still-legible thumbnail of it.
   const IFRAME_NATIVE_W = 980;
+  // low-level: given a target visible area (w x h), render the iframe at MB's
+  // natural desktop width and CSS-scale it down/up to exactly fill that area.
+  // Shared by worker cards AND the item popup (which reparents a card's LIVE
+  // iframe into itself, majkinetor: "I want to have worker visible there, in
+  // its active state" — a fresh reload would lose the exact failure state).
+  function sizeIframeFor(iframe, w, h) {
+    if (!iframe || !w || h <= 0) return;
+    const scale = w / IFRAME_NATIVE_W;
+    iframe.style.width = IFRAME_NATIVE_W + 'px';
+    iframe.style.height = Math.round(h / scale) + 'px';
+    iframe.style.transform = `scale(${scale})`;
+  }
   function applyIframeScale(card) {
     const body = card.querySelector('.falcon-worker-body');
     const iframe = body?.querySelector('iframe');
@@ -610,13 +621,11 @@
     // are solid, so derive the body's actual area from those instead of
     // trusting the (buggy) computed height on the flex child itself.
     const header = card.children[0];
+    const banner = card.querySelector('.falcon-worker-errbanner');
+    const bannerH = (banner && getComputedStyle(banner).display !== 'none') ? banner.clientHeight : 0;
     const w = card.clientWidth;
-    const h = card.clientHeight - (header ? header.clientHeight : 0);
-    if (!w || h <= 0) return;   // card is hidden (display:none) right now — nothing to size
-    const scale = w / IFRAME_NATIVE_W;
-    iframe.style.width = IFRAME_NATIVE_W + 'px';
-    iframe.style.height = Math.round(h / scale) + 'px';
-    iframe.style.transform = `scale(${scale})`;
+    const h = card.clientHeight - (header ? header.clientHeight : 0) - bannerH;
+    sizeIframeFor(iframe, w, h);
   }
   function newIframeIn(card) {
     const body = card.querySelector('.falcon-worker-body');
@@ -643,6 +652,7 @@
       // that unambiguously kills its whole browsing context, whether it was
       // clean or dirty — the card visually keeps flowing either way.
       const iframe = newIframeIn(card);
+      card.dataset.itemId = item.id;   // lets showItemPopup find "the worker that ran this item"
       updateWorkerLabel(card, item);
       iframe.src = editUrl(item);
       const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
@@ -721,6 +731,10 @@
       } else {
         card.style.display = 'none';
       }
+      // a retired card normally dims to signal "done, nothing to act on" — but
+      // zooming it in specifically to inspect its failure (from the queue tab's
+      // status-label click, #467) should show it at full readable opacity.
+      card.style.opacity = (card.dataset.retired === '1' && _zoomedWorker !== i) ? '.55' : '1';
       if (card.style.display !== 'none') applyIframeScale(card);   // card size just changed — rescale its iframe to match
     });
   }
@@ -859,9 +873,20 @@
       const statusBtn = e.target.closest('.falcon-row-status');
       if (statusBtn) {
         const it = queue.find(i => i.id === statusBtn.dataset.id);
-        if (it && (it.status === 'failed' || it.status === 'partial')) showItemPopup(it);
+        if (it && (it.status === 'failed' || it.status === 'partial')) focusItemWorker(it);
         return;
       }
+    });
+    // #467 (majkinetor): right-clicking the entity-type cell selects every
+    // queued/finished item of that SAME type at once — a quick way to bulk-act
+    // on (e.g. remove) just the recordings, or just the artists, in a mixed batch.
+    list.addEventListener('contextmenu', e => {
+      const typeCell = e.target.closest('.falcon-row-type');
+      if (!typeCell) return;
+      e.preventDefault();
+      const type = typeCell.dataset.type;
+      queue.filter(i => i.entityType === type && i.status !== 'active').forEach(i => _selectedIds.add(i.id));
+      renderQueue();
     });
     list.addEventListener('change', e => {
       const chk = e.target.closest('.falcon-row-check');
@@ -925,9 +950,9 @@
       const res = results.find(r => r.url === u.url);
       const icon = res ? (res.ok ? '✓' : '✗') : '·';
       const color = res ? (res.ok ? '#2e9e5b' : '#c0392b') : '#aaa';
-      return `<div style="display:flex;align-items:center;gap:6px;padding:2px 0 2px 30px;font-size:10.5px" title="${res && res.error ? esc(res.error) : ''}">
+      return `<div style="display:flex;align-items:center;gap:6px;padding:2px 0 2px 30px;font-size:10.5px;overflow:hidden" title="${res && res.error ? esc(res.error) : ''}">
         <span style="color:${color};width:10px;flex:0 0 auto;text-align:center">${icon}</span>
-        <span style="color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(u.url)}</span>
+        <a href="${esc(u.url)}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(u.url)}</a>
         ${u.linkTypeId ? `<span style="color:#999;flex:0 0 auto">type ${esc(u.linkTypeId)}</span>` : ''}
       </div>`;
     }).join('');
@@ -944,8 +969,11 @@
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
           <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
+          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(it.entityType.slice(0, 3))}</span>
           <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
-          <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0]?.url || '')}</span>
+          ${it.urls.length > 1
+            ? `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links</span>`
+            : `<a href="${esc(it.urls[0]?.url || '')}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.urls[0]?.url || '')}</a>`}
           <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
@@ -967,13 +995,26 @@
   }
 
   // #467 (majkinetor): "click the failed label, open its worker alone in a
-  // popup... show error in header" — a dedicated popup for ONE failed/partial
-  // item, its error shown prominently (not just on hover), its url detail
-  // below, and a maximize toggle matching the panel/worker-card convention.
-  // Doesn't need a live iframe — retired cards no longer keep one running
-  // (see retireCard) and the queue's own data model already has everything
-  // needed for inspection.
-  let _itemPopupId = null, _itemPopupMaxed = false;
+  // popup... show error in header" — then, after seeing a text-only version:
+  // "I didn't envision item details like this. I want to have worker visible
+  // there, in its active state." Tried REPARENTING the real iframe into a
+  // popup next — moving an iframe element to a new parent turned out to reset
+  // it to about:blank in Chromium (confirmed live), destroying the exact state
+  // we were trying to preserve. The iframe must never move, so instead: jump to
+  // the Workers tab and zoom the SAME card the retire/queue mechanism already
+  // keeps alive in place (see retireCard) — the real, untouched iframe, just
+  // shown larger, with its error now in a banner right on the card (not just a
+  // hover tooltip) so it's visible once zoomed. Falls back to a plain text
+  // popup (url list + error) only if the item was never picked up by any
+  // worker at all (so there's no card/iframe to jump to).
+  function focusItemWorker(item) {
+    const idx = workerCards.findIndex(c => c.dataset.itemId === item.id);
+    if (idx === -1) { showItemPopup(item); return; }
+    _zoomedWorker = idx;
+    setTab('workers');
+    renderWorkerLayout();
+  }
+  let _itemPopupId = null;
   function ensureItemPopup() {
     if (document.getElementById('falcon-item-popup')) return;
     const el = document.createElement('div');
@@ -982,7 +1023,6 @@
     el.innerHTML = `
       <div id="falcon-item-popup-hdr" style="padding:8px 10px;background:#7a2020;color:#fff;display:flex;align-items:center;gap:8px">
         <span id="falcon-item-popup-title" style="flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-        <button type="button" id="falcon-item-popup-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px">⛶</button>
         <button type="button" id="falcon-item-popup-close" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px">✕</button>
       </div>
       <div id="falcon-item-popup-error" style="padding:8px 10px;background:#fdecea;color:#a33;font-size:11px;white-space:pre-wrap;border-bottom:1px solid #f3c8c3"></div>
@@ -992,13 +1032,6 @@
       </div>`;
     document.body.appendChild(el);
     document.getElementById('falcon-item-popup-close').onclick = () => { el.style.display = 'none'; _itemPopupId = null; };
-    document.getElementById('falcon-item-popup-maximize').onclick = () => {
-      _itemPopupMaxed = !_itemPopupMaxed;
-      el.style.width = _itemPopupMaxed ? '94vw' : '520px';
-      el.style.height = _itemPopupMaxed ? '90vh' : '';
-      document.getElementById('falcon-item-popup-maximize').textContent = _itemPopupMaxed ? '❐' : '⛶';
-      document.getElementById('falcon-item-popup-maximize').title = _itemPopupMaxed ? 'Restore' : 'Maximize';
-    };
     document.getElementById('falcon-item-popup-opentab').onclick = () => {
       const it = queue.find(i => i.id === _itemPopupId);
       if (it) openInTab(it);
@@ -1010,7 +1043,7 @@
     const el = document.getElementById('falcon-item-popup');
     document.getElementById('falcon-item-popup-title').textContent = `${entityLabel(item)} — ${item.status.toUpperCase()}`;
     document.getElementById('falcon-item-popup-error').textContent = item.error || '(no error message recorded)';
-    document.getElementById('falcon-item-popup-body').innerHTML = renderRowDetail(item) || '<div style="color:#999">No url detail available.</div>';
+    document.getElementById('falcon-item-popup-body').innerHTML = renderRowDetail(item) || '<div style="color:#999">No url detail available — this item was never picked up by a worker.</div>';
     el.style.display = 'flex';
   }
   function renderLog() {
@@ -1052,5 +1085,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker };
 })();

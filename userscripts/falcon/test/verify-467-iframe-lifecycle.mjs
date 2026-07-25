@@ -3,14 +3,14 @@
 // unresponsive over time even with zero failures, pointing at leftover background
 // activity (MB's own client JS: polling/retry timers) from each earlier document
 // not being fully torn down by a plain `.src` reassignment on a REUSED iframe,
-// compounding across a long session. Two fixes:
-//  1. workerLoop now creates a genuinely FRESH iframe element for every item
-//     (removing the old one outright), even when the previous item committed
-//     cleanly — no more reusing the same iframe/reassigning its .src.
-//  2. retireCard discards its card's iframe entirely (rather than leaving a
-//     dead/failed page's scripts running in the background) and shows the
-//     error as a plain static message instead — the queue's own data model
-//     already has everything needed for inspection.
+// compounding across a long session. The fix: workerLoop now creates a genuinely
+// FRESH iframe element for every item (removing the old one outright), even when
+// the previous item committed cleanly — no more reusing the same iframe/
+// reassigning its .src, so nothing compounds across a run. A single RETIRED
+// card's one remaining iframe is bounded (that card processes nothing further)
+// so it's kept alive rather than discarded — majkinetor: "I want to have worker
+// visible there, in its active state" (verify-467-item-popup.mjs covers reusing
+// that live iframe from the queue tab's failed-item popup).
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -79,8 +79,9 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.close();
 }
 
-// 2. A retired card discards its iframe entirely (no live document left running
-// in the background) and shows the error as a plain static message instead.
+// 2. A retired card KEEPS its iframe alive (majkinetor: "I want to have worker
+// visible there, in its active state") — bounded to just this one card since it
+// processes nothing further, so it's not the compounding risk fix #1 addresses.
 {
   const page = ctx.pages()[0] || await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
@@ -110,14 +111,15 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
     return {
       cardExists: !!card,
       hasIframe: !!card?.querySelector('iframe'),
-      hasErrorText: !!card?.querySelector('.falcon-worker-body div'),
-      bodyText: card?.querySelector('.falcon-worker-body')?.textContent?.slice(0, 100),
+      label: card?.querySelector('.falcon-worker-lbl')?.textContent,
+      opacity: card ? getComputedStyle(card).opacity : null,
     };
   });
   console.log('retired card state:', JSON.stringify(retiredCardState));
   ck(retiredCardState.cardExists, 'the retired card exists and stays visible');
-  ck(!retiredCardState.hasIframe, 'the retired card has NO live iframe left — nothing can run in the background');
-  ck(retiredCardState.hasErrorText && retiredCardState.bodyText.length > 0, `the retired card shows a static error message instead ("${retiredCardState.bodyText}")`);
+  ck(retiredCardState.hasIframe, 'the retired card KEEPS its live iframe — inspectable in its exact failure state');
+  ck(/stopped/.test(retiredCardState.label || ''), `the label still marks it as stopped/retired ("${retiredCardState.label}")`);
+  ck(parseFloat(retiredCardState.opacity) < 1, `the card is still visually dimmed to signal it's retired (opacity=${retiredCardState.opacity})`);
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }
