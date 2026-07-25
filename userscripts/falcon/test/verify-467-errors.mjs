@@ -88,7 +88,7 @@ await page.evaluate(() => {
   window.__falconTest.cfg.workers = 2;
 });
 let posts = 0;
-await page.route('**/artist/*/edit', async (route, request) => {
+await page.route('**/artist/*/edit*', async (route, request) => {
   if (request.method() === 'POST') { posts++; const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://musicbrainz.org/artist/${mbid}` } }); }
   return route.continue();
 });
@@ -107,8 +107,18 @@ ck(zoomInfo[0].display !== 'none' && zoomInfo.slice(1).every(c => c.display === 
 ck(zoomInfo[0].width > 400, `zoomed worker card is meaningfully larger (${zoomInfo[0].width}px)`);
 await page.click('.falcon-worker-zoom');   // restore
 await page.waitForTimeout(200);
-const restoredInfo = await page.evaluate(() => [...document.querySelectorAll('.falcon-worker-card')].map(c => getComputedStyle(c).display));
-ck(restoredInfo.every(d => d !== 'none'), `un-zooming shows all worker cards again (${JSON.stringify(restoredInfo)})`);
+// #467 (majkinetor: "hide idle workers on Workers tab") — by this point both
+// items in THIS section have committed and gone idle, so un-zooming should
+// hide those specific cards — earlier sections in this same test file left
+// their OWN (retired, non-idle) cards around too (cards accumulate for the
+// whole panel session), so check per-card idle state rather than assuming
+// every card in the whole accumulated strip behaves the same way.
+await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status === 'done'), null, { timeout: 10000 });
+const cardStates = await page.evaluate(() => [...document.querySelectorAll('.falcon-worker-card')].map(c => ({ idle: c.dataset.idle === '1', retired: c.dataset.retired === '1', display: getComputedStyle(c).display })));
+console.log('card states once idle:', JSON.stringify(cardStates));
+ck(cardStates.some(c => c.idle), 'at least one card from this section is now idle');
+ck(cardStates.every(c => !c.idle || c.display === 'none'), `every IDLE card is hidden once un-zoomed (${JSON.stringify(cardStates)})`);
+ck(cardStates.every(c => c.idle || c.display !== 'none'), `non-idle (e.g. retired) cards from earlier sections stay visible (${JSON.stringify(cardStates)})`);
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');

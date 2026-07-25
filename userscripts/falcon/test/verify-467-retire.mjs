@@ -30,7 +30,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   let dialogs = 0; page.on('dialog', async d => { dialogs++; await d.dismiss(); });
   let posts = 0;
-  await page.route('**/artist/*/edit', async (route, request) => {
+  await page.route('**/artist/*/edit*', async (route, request) => {
     if (request.method() === 'POST') { posts++; const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://musicbrainz.org/artist/${mbid}` } }); }
     return route.continue();
   });
@@ -77,7 +77,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
 {
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
-  await page.route('**/artist/*/edit', async (route, request) => {
+  await page.route('**/artist/*/edit*', async (route, request) => {
     if (request.method() === 'POST') { const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://musicbrainz.org/artist/${mbid}` } }); }
     return route.continue();
   });

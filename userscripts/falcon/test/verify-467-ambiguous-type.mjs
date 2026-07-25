@@ -66,7 +66,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   let posts = 0;
-  await page.route('**/recording/*/edit', async (route, request) => {
+  await page.route('**/recording/*/edit*', async (route, request) => {
     if (request.method() === 'POST') { posts++; const mbid = (request.url().match(/\/recording\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://musicbrainz.org/recording/${mbid}` } }); }
     return route.continue();
   });

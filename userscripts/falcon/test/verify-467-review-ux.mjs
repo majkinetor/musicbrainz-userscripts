@@ -139,18 +139,23 @@ async function freshPage() {
   await page.close();
 }
 
-// 5. Open in a real tab: clicking ⇗ opens a genuine new tab at the entity's edit
-// page, fills the SAME way fillAndSubmit does for workers, but never clicks submit
-// — the human is expected to review and commit themselves.
+// 5. Open in a real tab: clicking ⇗ navigates straight to MB's own seed-url
+// format (the same one Harmony uses) — MB pre-fills the field NATIVELY as the
+// page renders, no JS typing simulation needed, and never clicks submit — the
+// human is expected to review and commit themselves. majkinetor, #467: the old
+// typing-simulation approach took 10+ seconds; this should be near-instant
+// (just the page's own load time).
 {
   const { page, errs } = await freshPage();
   await page.evaluate(() => window.__falconTest.setQueue([
     { id: 'tab1', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/opentabtest', linkTypeId: null }], name: null, urlResults: null, status: 'failed', error: 'previously failed' },
   ]));
+  const t0 = Date.now();
   const [popup] = await Promise.all([
     ctx.waitForEvent('page', { timeout: 8000 }),
     page.click('.falcon-row-opentab[data-id="tab1"]'),
   ]);
+  ck(/edit-artist\.url\.0\.text=/.test(popup.url()), `opens MB's own seed-url format directly, not a blank edit page (${popup.url()})`);
   await popup.waitForLoadState('domcontentloaded');
   console.log('opened tab url:', popup.url());
   ck(/\/artist\/d31f76d2-1d8e-4271-8027-148f375979d7\/edit/.test(popup.url()), `the new tab opens the entity's real edit page (${popup.url()})`);
@@ -160,12 +165,32 @@ async function freshPage() {
     const rows = [...document.querySelectorAll('tr.external-link-item')];
     return rows.some(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === 'https://myspace.com/opentabtest');
   }, null, { timeout: 12000 }).catch(() => {});
+  const elapsed = Date.now() - t0;
   const filled = await popup.evaluate(() => [...document.querySelectorAll('tr.external-link-item a[href]')].some(a => a.getAttribute('href') === 'https://myspace.com/opentabtest'));
-  ck(filled, 'the url is filled into the tab exactly as fillAndSubmit does for worker iframes');
+  console.log('elapsed ms until filled:', elapsed);
+  ck(filled, 'the url is pre-filled by MB itself from the seed url, no JS simulation needed');
+  ck(elapsed < 6000, `filling is near-instant — just page load, not 10+s of typing simulation (took ${elapsed}ms)`);
   const stillOnEditPage = /\/edit(?:[?#]|$)/.test(new URL(popup.url()).pathname);
   ck(stillOnEditPage, 'the tab is left on the edit page — nothing was auto-submitted, ready for the human to review and click Enter edit');
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await popup.close();
+  await page.close();
+}
+
+// 6. buildSeedEditUrl dedupes a duplicate url text (MB collapses it to one row
+// regardless) and openInTab logs that clearly rather than silently dropping it.
+{
+  const { page, errs } = await freshPage();
+  const seedUrl = await page.evaluate(() => window.__falconTest.buildSeedEditUrl({
+    entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', note: 'a note',
+    urls: [{ url: 'https://sagason.bandcamp.com/track/dual', linkTypeId: '268' }, { url: 'https://sagason.bandcamp.com/track/dual', linkTypeId: '254' }],
+  }));
+  console.log('dedup seed url:', seedUrl);
+  const params = new URL(seedUrl).searchParams;
+  ck(params.get('edit-recording.url.0.text') === 'https://sagason.bandcamp.com/track/dual' && params.get('edit-recording.url.0.link_type_id') === '268', 'the first occurrence of a duplicate url keeps its type');
+  ck(params.get('edit-recording.url.1.text') === null, `the second (duplicate-text) entry is not seeded as a separate index — MB would collapse it anyway (got "${params.get('edit-recording.url.1.text')}")`);
+  ck(params.get('edit-recording.edit_note') === 'a note', 'the edit note is seeded too');
+  ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }
 

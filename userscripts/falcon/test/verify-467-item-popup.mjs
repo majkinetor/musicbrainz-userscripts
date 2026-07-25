@@ -74,7 +74,7 @@ ck(closedDisplay === 'none', `closing the fallback popup hides it (display="${cl
 // label jumps to the Workers tab and zooms that SAME card (the actual iframe,
 // never moved/reloaded), with the error shown as a banner right on the card.
 {
-  await page.route('**/artist/*/edit', async (route, request) => {
+  await page.route('**/artist/*/edit*', async (route, request) => {
     if (request.method() === 'POST') { const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://musicbrainz.org/artist/${mbid}` } }); }
     return route.continue();
   });
@@ -122,7 +122,7 @@ ck(closedDisplay === 'none', `closing the fallback popup hides it (display="${cl
   ck(afterFocus.cardWidth === '100%', 'the real card is zoomed (maximized), not shown in a separate popup');
   ck(afterFocus.cardOpacity === '1', 'the zoomed retired card is shown at full opacity, not dimmed, so it is actually readable');
   ck(afterFocus.iframeStillSameElement && afterFocus.bodyLen === iframeBefore.bodyLen && afterFocus.url === iframeBefore.url, `the iframe is the SAME element with the SAME loaded content — never reloaded (before bodyLen=${iframeBefore.bodyLen}, after=${afterFocus.bodyLen})`);
-  ck(afterFocus.bannerVisible && /already exists/i.test(afterFocus.bannerText || ''), `the real error is shown as a banner right on the card (got "${afterFocus.bannerText}")`);
+  ck(afterFocus.bannerVisible && /already present on the entity/i.test(afterFocus.bannerText || ''), `the real error is shown as a banner right on the card (got "${afterFocus.bannerText}")`);
   ck(afterFocus.zoomBtnText === '❐', 'the card keeps its own maximize/restore toggle, now showing "restore"');
 }
 

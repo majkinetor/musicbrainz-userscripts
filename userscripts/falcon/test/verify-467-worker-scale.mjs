@@ -29,12 +29,17 @@ const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
 async function fakeSubmit(route, request, type) {
   if (request.method() === 'POST') {
+    // hold the "submit" open for a while — #467's hide-idle-workers feature
+    // hides a card the instant it has nothing left to do, so a fast fake
+    // route made this test's card disappear before it could be inspected.
+    // Keeping the item genuinely 'active' this long guarantees a real window.
+    await new Promise(r => setTimeout(r, 8000));
     const m = request.url().match(new RegExp(`/${type}/([0-9a-f-]{36})/edit`));
     return route.fulfill({ status: 302, headers: { Location: `https://musicbrainz.org/${type}/${m[1]}` } });
   }
   return route.continue();
 }
-await page.route('**/artist/*/edit', (route, request) => fakeSubmit(route, request, 'artist'));
+await page.route('**/artist/*/edit*', (route, request) => fakeSubmit(route, request, 'artist'));
 await page.goto('https://musicbrainz.org/', { waitUntil: 'domcontentloaded' });
 if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
 await page.waitForTimeout(500);

@@ -28,7 +28,7 @@ const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
 
 let posts = [];
-await page.route('**/artist/*/edit', async (route, request) => {
+await page.route('**/artist/*/edit*', async (route, request) => {
   if (request.method() === 'POST') {
     posts.push(request.url());
     // Simulate MB's real success response: redirect to the clean entity page.
@@ -116,8 +116,8 @@ await page.evaluate((artistB) => {
   window.__falconTest.setQueue([
     // NOT example.com/example.org — MB's client-side validation specifically rejects
     // those as placeholder URLs ("is just an example. Please enter the actual ...").
-    { id: 'a', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/falcontest1', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
-    { id: 'b', entityType: 'artist', mbid: artistB, urls: [{ url: 'https://myspace.com/falcontest2', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
+    { id: 'a', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/falcon-t-a1', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
+    { id: 'b', entityType: 'artist', mbid: artistB, urls: [{ url: 'https://myspace.com/falcon-t-b1', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
   ]);
   window.__falconTest.cfg.workers = 1;   // single worker — proves it advances to the 2nd item in the SAME iframe
 }, ARTIST_B);
@@ -174,7 +174,7 @@ posts = [];
 await page.evaluate(() => {
   window.__falconTest.stop();   // reset `running` from section 5 — start() no-ops while it's still true
   window.__falconTest.setQueue([
-    { id: 'g', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/grouptest1', linkTypeId: null }, { url: 'https://myspace.com/grouptest2', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
+    { id: 'g', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/falcon-t-g1', linkTypeId: null }, { url: 'https://myspace.com/falcon-t-g2', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
   ]);
   window.__falconTest.cfg.workers = 1;
 });

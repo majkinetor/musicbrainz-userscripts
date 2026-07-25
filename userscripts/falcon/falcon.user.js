@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.133708
+// @version      2026.7.25.170113
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.133708';
+  const VERSION = '2026.7.25.170113';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -425,18 +425,136 @@
   // redirected) throw; "nothing to submit" is signalled via `committed: false`, not
   // a throw, since it isn't necessarily an error (every url in the group may simply
   // already be on the entity).
+  // #467 (majkinetor): after a url row exists (whether just typed, or already
+  // pre-filled by MB's own seed-url params — see buildSeedEditUrl/workerLoop),
+  // this is the shared "is it actually usable" check: a genuinely-duplicate url
+  // MB rejected (real .error/.field-error text) or a REQUIRED relationship-type
+  // <select> still sitting blank because Falcon had no linkTypeId to give it —
+  // either one, left in place, invalidates the WHOLE form's submit button, not
+  // just this row. Removes the row and returns a clear, actionable reason;
+  // returns null when the row is fine as-is.
+  // Finds the row for a url, in EITHER state MB can leave it in:
+  //  - resolved: an <a href> link row (typed-and-classified, or seeded and
+  //    successfully auto-classified)
+  //  - unresolved: still an editable <input> holding the url text, which is
+  //    what a SEEDED url MB couldn't classify looks like (confirmed live: a
+  //    bandcamp track seeded onto a recording renders as an input row with a
+  //    blank required select and NO href). Matching only on `a[href]` missed
+  //    these entirely — the blank select then silently disabled submit for the
+  //    whole group while Falcon re-typed a duplicate of the same url.
+  function findRowForUrl(doc, url) {
+    if (!doc) return null;
+    const rows = [...doc.querySelectorAll('tr.external-link-item')];
+    return rows.find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url)
+      || rows.find(tr => (tr.querySelector('input')?.value || '') === url)
+      || null;
+  }
+  // Both states at once, for a url that can legitimately have TWO rows: when a
+  // url is ALREADY on the entity and we also seed it, MB keeps the existing
+  // resolved row AND adds our seeded copy as a separate unresolved input row.
+  // That extra row's blank required select disables submit for the whole group,
+  // so it has to be found and dropped even though the "real" row looks fine.
+  function findRowsForUrl(doc, url) {
+    const rows = doc ? [...doc.querySelectorAll('tr.external-link-item')] : [];
+    const match = rows.filter(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url || (tr.querySelector('input')?.value || '') === url);
+    return {
+      resolved: match.find(tr => !!tr.querySelector('a[href]')) || null,
+      unresolved: match.filter(tr => !tr.querySelector('a[href]') && !!tr.querySelector('input')),
+    };
+  }
+  // Final safety net before submit. Seeding a url that's ALREADY on the entity
+  // makes MB attach a SECOND, blank relationship row under that url's existing
+  // row (its own dual-relationship mechanism) rather than adding a new url row
+  // — confirmed live. That blank required select disables submit for the WHOLE
+  // form, and it isn't reachable by url lookup (the row carries no href of its
+  // own), so per-url checks can't see it. Sweeps every still-blank type select,
+  // removes its relationship row, and reports which url it belonged to (found
+  // by walking back to the owning external-link-item).
+  function sweepBlankTypeRows(doc) {
+    if (!doc) return [];
+    const dropped = [];
+    [...doc.querySelectorAll('select.link-type')].filter(s => !s.value).forEach(sel => {
+      const relRow = sel.closest('tr');
+      if (!relRow) return;
+      let owner = relRow.previousElementSibling;
+      while (owner && !owner.classList.contains('external-link-item')) owner = owner.previousElementSibling;
+      const url = owner?.querySelector('a[href]')?.getAttribute('href') || owner?.querySelector('input')?.value || null;
+      const removeBtn = relRow.querySelector('button.remove-item') || relRow.querySelector('button.remove-button');
+      if (removeBtn) { removeBtn.click(); dropped.push(url); }
+    });
+    return dropped;
+  }
+  function checkRowUsable(doc, row, linkTypeId) {
+    const typeRow = row.nextElementSibling;
+    // scoped to just THIS row + its own type-row sibling — a real entity can
+    // easily carry OTHER, unrelated .error/.field-error text elsewhere on the
+    // page (e.g. from a genuinely pre-existing relationship that has nothing
+    // to do with what was just seeded); a page-wide findFieldError() scrape
+    // here misattributed those to whichever url happened to be checked next.
+    const scope = [row, typeRow].filter(Boolean);
+    const errAlready = scope.map(el => [...el.querySelectorAll('.error, .field-error')].map(e => (e.textContent || '').trim()).filter(Boolean).join(' / ')).filter(Boolean).join(' / ');
+    // a blank REQUIRED type select is checked FIRST: MB's own text for it
+    // ("Please select a link type...") says what's wrong but not what to do
+    // about it, so this reports the actionable version instead. Any OTHER MB
+    // error (duplicate link, url not allowed for this entity type...) is
+    // reported verbatim below — MB says it better than a guess would.
+    const ambiguousSelect = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
+    if (!linkTypeId && ambiguousSelect && !ambiguousSelect.value) {
+      row.querySelector('button.remove-item')?.click();
+      return 'ambiguous relationship type — MusicBrainz needs you to pick one; use ⇗ "open in tab" to add this url manually';
+    }
+    if (errAlready) { row.querySelector('button.remove-item')?.click(); return errAlready; }
+    return null;
+  }
   async function fillAndSubmit(iframe, item, opts) {
     const skipSubmit = !!(opts && opts.skipSubmit);
     const results = [];
+    // workerLoop navigates straight to buildSeedEditUrl(item) — MB's own seed-url
+    // params (the same ones Harmony uses) pre-fill the FIRST occurrence of each
+    // distinct url as the page renders, no typing needed at all (majkinetor,
+    // #467: "why you didn't use URL params... it should basically be instant").
+    // MB collapses a REPEAT occurrence of the identical url text into that same
+    // one row, though, so a dual-relationship-type group (the same url twice
+    // with two different linkTypeIds) still needs its second occurrence added
+    // by hand via "Add another relationship" — occurrence-tracked below.
+    const seen = new Map();
     for (const { url, linkTypeId } of item.urls) {
+      const occurrence = seen.get(url) || 0;
+      seen.set(url, occurrence + 1);
       try {
         const doc0 = frameDoc(iframe);
-        const existingRow = doc0 && [...doc0.querySelectorAll('tr.external-link-item')].find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url);
-        if (existingRow) {
+        const existingRow = findRowForUrl(doc0, url);
+        if (existingRow && occurrence > 0) {
           const added = await addSecondRelationshipType(iframe, existingRow, linkTypeId);
           results.push({ url, ok: added, error: added ? undefined : (linkTypeId ? 'could not add a second relationship type — this url is already present' : 'this url is already present') });
           continue;
         }
+        if (existingRow) {
+          // First occurrence, row(s) already present — seeded by us, or
+          // genuinely already on the entity before Falcon touched it, or BOTH
+          // (in which case MB keeps the pre-existing resolved row and adds our
+          // seeded copy as a separate unresolved one).
+          const { resolved, unresolved } = findRowsForUrl(doc0, url);
+          if (resolved && unresolved.length) {
+            // the url was already on this entity — our seeded duplicate is just
+            // dead weight whose blank select would block the whole submit.
+            unresolved.forEach(tr => tr.querySelector('button.remove-item')?.click());
+            await wait(150);
+            results.push({ url, ok: false, error: 'this url is already present on the entity' });
+            continue;
+          }
+          const target = resolved || unresolved[0] || existingRow;
+          // applying a known linkTypeId also RESOLVES a row MB left unclassified;
+          // without one, checkRowUsable decides whether the row is committable
+          // as-is and removes+reports it when it isn't, so one bad row can't
+          // silently disable submit for the entire group.
+          if (linkTypeId) await setRowLinkType(iframe, target, linkTypeId);
+          const reason = checkRowUsable(doc0, target, linkTypeId);
+          if (reason) { results.push({ url, ok: false, error: reason }); continue; }
+          results.push({ url, ok: true });
+          continue;
+        }
+        // not pre-filled at all — type it, which runs MB's own url classifier.
         const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
         if (!input) { results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
         const d2 = frameDoc(iframe), w2 = frameWin(iframe);
@@ -459,27 +577,21 @@
           continue;
         }
         if (linkTypeId) await setRowLinkType(iframe, row, linkTypeId);
-        // #467 (majkinetor, production failure): an AMBIGUOUS url (a Bandcamp
-        // track is the common case — could be "purchase for download", "download
-        // for free", etc.) renders a REQUIRED relationship-type <select> that
-        // starts blank. If Falcon has no linkTypeId to set it, that blank select
-        // invalidates the WHOLE form — not just this row — and disables the
-        // submit button for the entire group, which used to surface as a bare
-        // "submit button disabled (form invalid?)" with no indication of why or
-        // which url caused it. Detect it here and remove the row instead of
-        // leaving an unresolvable dud blocking every other url in the group —
-        // report it as a clear, actionable failure (open the entity in a tab
-        // and pick the type by hand) rather than silently marking it ok.
-        const typeRow = row.nextElementSibling;
-        const ambiguousSelect = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
-        if (!linkTypeId && ambiguousSelect && !ambiguousSelect.value) {
-          const removeBtn = row.querySelector('button.remove-item');
-          if (removeBtn) removeBtn.click();
-          results.push({ url, ok: false, error: 'ambiguous relationship type — MusicBrainz needs you to pick one; use ⇗ "open in tab" to add this url manually' });
-          continue;
-        }
+        const reason = checkRowUsable(frameDoc(iframe), row, linkTypeId);
+        if (reason) { results.push({ url, ok: false, error: reason }); continue; }
         results.push({ url, ok: true });
       } catch (e) { results.push({ url, ok: false, error: e.message || String(e) }); }
+    }
+    // any type select still blank at this point would silently disable submit
+    // for the whole form — drop those rows and demote the urls they belonged to
+    // (see sweepBlankTypeRows) so the rest of the group can still commit.
+    const swept = sweepBlankTypeRows(frameDoc(iframe));
+    if (swept.length) {
+      await wait(200);
+      swept.forEach(sweptUrl => {
+        const hit = results.find(r => r.ok && (sweptUrl === null || r.url === sweptUrl));
+        if (hit) { hit.ok = false; hit.error = 'this url is already present on the entity (MusicBrainz wanted a second relationship type for it, and none was given)'; }
+      });
     }
     if (!results.some(r => r.ok)) return { committed: false, results };
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
@@ -516,30 +628,50 @@
     return queue.find(i => i.status === 'queued' && !activeKeys.has(i.entityType + ':' + i.mbid));
   }
   function editUrl(item) { return `${MB_ORIGIN}/${item.entityType}/${item.mbid}/edit`; }
+  // Same seed-url format Harmony itself uses (parseHarmonySeedUrl above decodes
+  // exactly this) — MB's OWN edit-page JS reads these query params and pre-fills
+  // the form NATIVELY as it renders, including auto-resolving an ambiguous
+  // relationship-type <select> to the seeded linkTypeId. majkinetor, #467: "why
+  // you didn't use URL params as usual so MB will set it immediately... it
+  // should basically be instant, just like when opened from Harmony" — measured
+  // live: ~2-3s (page load only) vs 10+s for typing simulation. One real
+  // limitation, also confirmed live: MB collapses a DUPLICATE url TEXT into a
+  // single row, so the same url seeded twice with two different linkTypeIds
+  // (Harmony's dual-relationship case) only keeps the first — deduped here,
+  // rare enough for a manual-review tab that the human can add the second by
+  // hand if they need it (they're already there reviewing).
+  function buildSeedEditUrl(item) {
+    const prefix = `edit-${item.entityType}.`;
+    const params = new URLSearchParams();
+    const seen = new Set();
+    let idx = 0;
+    item.urls.forEach(u => {
+      if (seen.has(u.url)) return;
+      seen.add(u.url);
+      params.set(`${prefix}url.${idx}.text`, u.url);
+      if (u.linkTypeId) params.set(`${prefix}url.${idx}.link_type_id`, u.linkTypeId);
+      idx++;
+    });
+    if (item.note) params.set(`${prefix}edit_note`, item.note);
+    return `${MB_TARGET}/${item.entityType}/${item.mbid}/edit?${params.toString()}`;
+  }
 
-  // "open in a real tab" (majkinetor, #467): same reason Harmony itself opens a tab
-  // per entity — a human can inspect, fix, and commit by hand. Uses the exact same
-  // fillAndSubmit form-filling procedure as the worker iframes (frameDoc/frameWin
-  // accept a window handle just as readily as an iframe — see above), just stopped
-  // short of clicking submit. Primary use: retrying something the queue couldn't
-  // commit automatically. window.open must be the very first thing that runs (no
-  // preceding await) or popup blockers treat it as not user-triggered.
+  // "open in a real tab" (majkinetor, #467): same reason Harmony itself opens a
+  // tab per entity — a human can inspect, fix, and commit by hand. Navigates
+  // straight to the seed url above rather than opening a blank edit page and
+  // simulating typing — MB fills+resolves everything on its own as the page
+  // renders, so there's nothing left for Falcon to do once the tab is open.
+  // window.open must be the very first thing that runs (no preceding await) or
+  // popup blockers treat it as not user-triggered.
   function openInTab(item) {
-    const tab = window.open(editUrl(item), '_blank');
+    const seedUrl = buildSeedEditUrl(item);
+    const tab = window.open(seedUrl, '_blank');
     if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
     item.status = 'manual'; item.error = ''; renderQueue();
-    log('info', `${entityLabel(item)} — opened in a new tab for manual review (${item.urls.length} link(s))`);
-    (async () => {
-      const loaded = await waitFor(() => { const d = frameDoc(tab); return d && d.readyState !== 'loading' ? true : null; }, 15000);
-      if (!loaded) { log('error', `${item.mbid}: the manually-opened tab never finished loading`); return; }
-      try {
-        const r = await fillAndSubmit(tab, item, { skipSubmit: true });
-        item.urlResults = r.results;
-        const failed = r.results.filter(x => !x.ok);
-        log(failed.length ? 'warn' : 'info', `${entityLabel(item)} — filled ${r.results.length - failed.length}/${r.results.length} link(s) in the manual tab, ready for you to review and submit` + (failed.length ? `; ${failed.length} couldn't be added: ${failed.map(x => `${x.url}: ${x.error}`).join('; ')}` : ''));
-      } catch (e) { log('error', `${item.mbid}: filling the manual tab failed — ${e.message || e}`); }
-      renderQueue();
-    })();
+    const uniqueUrls = new Set(item.urls.map(u => u.url)).size;
+    const dropped = item.urls.length - uniqueUrls;
+    const droppedNote = dropped ? ` (${dropped} duplicate-url/second-type entr${dropped === 1 ? 'y' : 'ies'} couldn't be seeded — add by hand if needed)` : '';
+    log('info', `${entityLabel(item)} — opened in a new tab, pre-filled instantly via MB's own seed-url params (${item.urls.length} link(s))${droppedNote}`);
   }
 
   // #467 (majkinetor, production hang): a MB edit form with typed-but-unsubmitted
@@ -575,6 +707,7 @@
     const idx = workerCards.length;
     const card = document.createElement('div');
     card.className = 'falcon-worker-card';
+    card.dataset.idle = '1';
     card.style.cssText = 'border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;width:260px;height:210px;';
     card.innerHTML = `
       <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:#f3f3f3;border-bottom:1px solid #ddd;font-size:10px">
@@ -654,7 +787,10 @@
       const iframe = newIframeIn(card);
       card.dataset.itemId = item.id;   // lets showItemPopup find "the worker that ran this item"
       updateWorkerLabel(card, item);
-      iframe.src = editUrl(item);
+      // #467 (majkinetor): navigate straight to the seed url — MB pre-fills
+      // every url as the page renders, so fillAndSubmit has little or nothing
+      // left to type. Measured live: ~2-3s vs 10+s for typing simulation.
+      iframe.src = buildSeedEditUrl(item);
       const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
@@ -664,6 +800,15 @@
         if (replacement) workerLoop(replacement);
         return;
       }
+      // readyState fires before MB's own client JS finishes turning the seed
+      // params into rows — wait for every distinct seeded url to actually
+      // exist as a row before fillAndSubmit reads any row/error state.
+      await waitFor(() => {
+        const doc = frameDoc(iframe); if (!doc) return null;
+        const uniqueUrls = [...new Set(item.urls.map(u => u.url))];
+        const rows = [...doc.querySelectorAll('tr.external-link-item')];
+        return uniqueUrls.every(u => rows.some(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === u)) ? true : null;
+      }, 8000);
       let r = null;
       try {
         r = await fillAndSubmit(iframe, item);
@@ -702,7 +847,7 @@
       if (next) workerLoop(next);
       return;
     }
-    updateWorkerLabel(card, null);
+    updateWorkerLabel(card, null);   // triggers its own re-render since this flips the card to idle (see above)
   }
 
   // #467 (majkinetor): each worker gets its own card — a small label (which entity
@@ -718,11 +863,26 @@
     if (card.dataset.retired) return;   // don't overwrite a retired card's frozen label
     const lbl = card.querySelector('.falcon-worker-lbl');
     if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${item.urls.length} link(s)` : 'idle';
+    // a freshly-spawned card starts hidden (marked idle at creation, #467's
+    // hide-idle-workers), so it must re-render the moment it actually GETS an
+    // item too, not just when it goes idle again — re-rendering only on the
+    // rare transition (not every label update) keeps this cheap.
+    const wasIdle = card.dataset.idle === '1';
+    const isIdleNow = !item;
+    card.dataset.idle = isIdleNow ? '1' : '';
+    if (wasIdle !== isIdleNow) renderWorkerLayout();
   }
   function renderWorkerLayout() {
+    let anyVisible = false;
     workerCards.forEach((card, i) => {
       const zoomBtn = card.querySelector('.falcon-worker-zoom');
+      // #467 (majkinetor): "hide idle workers on Workers tab" — an idle card
+      // (nothing currently loaded, or the whole run finished) has nothing worth
+      // looking at in the default thumbnail strip; only applies there — a
+      // specifically zoomed card stays visible even if it happens to go idle.
+      const isIdle = card.dataset.idle === '1';
       if (_zoomedWorker === null) {
+        if (isIdle) { card.style.display = 'none'; return; }
         card.style.display = ''; card.style.width = '260px'; card.style.height = '210px';
         if (zoomBtn) { zoomBtn.textContent = '⛶'; zoomBtn.title = 'Maximize this worker'; }
       } else if (_zoomedWorker === i) {
@@ -735,8 +895,10 @@
       // zooming it in specifically to inspect its failure (from the queue tab's
       // status-label click, #467) should show it at full readable opacity.
       card.style.opacity = (card.dataset.retired === '1' && _zoomedWorker !== i) ? '.55' : '1';
-      if (card.style.display !== 'none') applyIframeScale(card);   // card size just changed — rescale its iframe to match
+      if (card.style.display !== 'none') { applyIframeScale(card); anyVisible = true; }   // card size just changed — rescale its iframe to match
     });
+    const emptyMsg = document.getElementById('falcon-workers-empty');
+    if (emptyMsg) emptyMsg.style.display = anyVisible ? 'none' : 'block';
   }
   function start() {
     if (running) return;
@@ -806,6 +968,7 @@
       <div id="falcon-body-workers" style="display:none;padding:8px 10px;overflow:auto;flex:1">
         <div style="color:#888;margin-bottom:6px">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</div>
         <div id="falcon-workers" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="falcon-workers-empty" style="display:none;color:#999;padding:8px 0">No active workers right now — idle ones are hidden here. Click ▶ Start to begin.</div>
       </div>
       <div id="falcon-body-log" style="display:none;padding:8px 10px;overflow:auto;flex:1;font:10px monospace;white-space:pre-wrap"></div>`;
     document.body.appendChild(panel);
@@ -1085,5 +1248,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker };
 })();
