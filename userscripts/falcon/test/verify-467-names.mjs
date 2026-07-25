@@ -40,6 +40,24 @@ ck(names.artist === 'Der Zirkel', `resolves a real artist name (got "${names.art
 ck(!!names.recording, `resolves a real recording title (got "${names.recording}")`);
 ck(names.bogus === null, `a non-existent mbid resolves to null, not a crash (got ${JSON.stringify(names.bogus)})`);
 
+// 1b. Rate-limit safety (majkinetor): a burst of lookups for DIFFERENT entities must
+// be spaced out, not fired concurrently — MB's /ws/2/ webservice enforces a real
+// per-IP rate limit, and a big batch (recordings are back, up to ~80 at once, #467)
+// must never hammer it. Firing 4 fresh (uncached) lookups at once should take
+// noticeably longer than one lookup alone, proving they're serialized with a gap.
+const timing = await page.evaluate(async () => {
+  const { fetchEntityName } = window.__falconTest;
+  const mbids = [
+    '5441c29d-3602-4898-b1a1-b77fa23b8e50', 'b31113ab-205d-461b-b431-5d5c52635117',
+    '04201e6d-c430-4a53-a9a0-56170825fbde', '20b03c7d-9e8a-42b9-8a96-bcc9564de034',
+  ];
+  const t0 = performance.now();
+  await Promise.all(mbids.map(m => fetchEntityName('artist', m)));
+  return performance.now() - t0;
+});
+console.log('4 concurrent fresh lookups took (ms):', timing);
+ck(timing > 3000, `4 fresh lookups fired at once are still spaced ~1.1s apart, not concurrent (took ${Math.round(timing)}ms, expect >3000ms for 3 gaps)`);
+
 // 2. entityLabel() falls back to entityType/mbid-prefix when no name is set yet.
 const fallback = await page.evaluate(() => window.__falconTest.entityLabel({ entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', name: null }));
 ck(fallback === 'artist/d31f76d2', `falls back to entityType/mbid-prefix before the name resolves (got "${fallback}")`);
@@ -51,6 +69,7 @@ ck(withName === 'Der Zirkel', `uses the real name once resolved (got "${withName
 await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
 await page.click('#falcon-launcher');
 await page.waitForSelector('#falcon-panel', { timeout: 5000 });
+await page.click('#falcon-paste-toggle');   // paste box starts collapsed to a + button (#467 review UX)
 await page.fill('#falcon-paste', 'd31f76d2-1d8e-4271-8027-148f375979d7,https://myspace.com/nametest');
 await page.click('#falcon-add');
 const resolved = await page.waitForFunction(() => {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.24.225732
+// @version      2026.7.24.233215
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -10,11 +10,12 @@
 // @match        https://harmony.pulsewidth.org.uk/*
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_deleteValue
 // @noframes
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.24.225732';
+  const VERSION = '2026.7.24.233215';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -88,6 +89,11 @@
   let queue = [];
   let _idSeq = 0;
   let running = false;
+  // review-UX state (#467): which rows are checked (for bulk remove) / expanded
+  // (showing their full url list) — kept outside `queue` itself since it's pure
+  // display state, survives across renderQueue() calls (a full innerHTML replace).
+  let _selectedIds = new Set();
+  let _expandedIds = new Set();
   const ENTITY_RE = /^(artist|label|recording)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -121,10 +127,30 @@
   // same-origin fetch to MB's own public API (no GM_xmlhttpRequest needed; Falcon's
   // panel only ever renders on musicbrainz.org itself). Cached per entity since the
   // same mbid can appear across several queue items.
+  //
+  // MB's /ws/2/ webservice enforces a real per-IP rate limit (~1 req/sec for
+  // anonymous use is the documented figure, and there's no guarantee an in-browser
+  // session gets a higher one) — a big batch (up to ~80 recordings now that the
+  // token transport brought them back, #467) must never fire dozens of these
+  // lookups at once. Every call is chained through ONE queue with a gap between
+  // requests, so a big batch's names just trickle in progressively (each row falls
+  // back to type/mbid-prefix until its turn comes up) instead of risking a
+  // 503/throttle from MB itself.
   const _nameCache = new Map();
-  async function fetchEntityName(entityType, mbid) {
+  let _nameQueue = Promise.resolve();
+  function fetchEntityName(entityType, mbid) {
     const key = entityType + ':' + mbid;
-    if (_nameCache.has(key)) return _nameCache.get(key);
+    if (_nameCache.has(key)) return Promise.resolve(_nameCache.get(key));
+    // `started` resolves with the NAME as soon as its own fetch completes (a lone
+    // lookup is never artificially slowed down); `_nameQueue` only advances 1.1s
+    // after that so the NEXT queued lookup can't start any sooner — the delay
+    // gates request spacing, not this call's own result.
+    const started = _nameQueue.then(() => _doFetchEntityName(entityType, mbid), () => _doFetchEntityName(entityType, mbid));
+    _nameQueue = started.then(() => wait(1100), () => wait(1100));
+    return started;
+  }
+  async function _doFetchEntityName(entityType, mbid) {
+    const key = entityType + ':' + mbid;
     let name = null;
     try {
       const r = await fetch(`${MB_ORIGIN}/ws/2/${entityType}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
@@ -154,20 +180,38 @@
     });
     return { merged, added };
   }
-  // `?falcon=<base64(JSON array of {entityType?,mbid,url,linkTypeId?}) or plain
-  // JSON>` — the Harmony handoff (also reachable directly from a Harmony page, see
-  // scrapeHarmonyActions()).
+  // `?falcon=` accepts TWO schemes:
+  //   1. base64(JSON array of {entityType?,mbid,url,linkTypeId?,note?}) directly in
+  //      the URL — the documented contract for any external script to hand Falcon a
+  //      queue with one link.
+  //   2. a short random TOKEN keyed into GM storage (`falcon:pending:<token>`) — used
+  //      by the Harmony bridge itself (see ensureHarmonyButton below), since GM
+  //      storage is shared across every tab this SAME script runs in regardless of
+  //      domain. This is what lets a batch include recordings again: no JSON ever
+  //      has to fit in a URL, so there's no length ceiling to hit (#467's
+  //      PR_END_OF_FILE_ERROR was hitting exactly that ceiling on the base64 scheme).
+  //      A different script can't use this scheme — GM storage isn't shared BETWEEN
+  //      different userscripts, only within one script's own tabs — hence keeping
+  //      scheme 1 as the general contract.
+  function tryDecodeBase64Json(raw) {
+    let text; try { text = decodeURIComponent(escape(atob(raw))); } catch (e) { return null; }
+    try { JSON.parse(text); return text; } catch (e) { return null; }
+  }
   function parseUrlParam() {
     const raw = new URLSearchParams(location.search).get('falcon');
     if (!raw) return null;
-    let json = null;
-    try { json = decodeURIComponent(escape(atob(raw))); } catch (e) { json = raw; }
+    let json = tryDecodeBase64Json(raw);
+    if (json == null) {
+      const stored = GM_getValue('falcon:pending:' + raw, null);
+      if (stored != null) { json = stored; try { GM_deleteValue('falcon:pending:' + raw); } catch (e) {} }
+    }
+    if (json == null) { log('warn', 'falcon= param present but neither valid base64 JSON nor a known pending token'); return null; }
     try {
       const arr = JSON.parse(json);
       if (!Array.isArray(arr)) return null;
       return arr.map(it => ({ entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '' }))
         .filter(it => MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url));
-    } catch (e) { log('warn', 'falcon= param present but not valid JSON: ' + e.message); return null; }
+    } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
   }
   // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
   // https://musicbrainz.org/<artist|label|recording>/<mbid>/edit
@@ -201,48 +245,48 @@
   /* ── Harmony bridge (#467, #459) ─────────────────────────────────────────
      Running ON a Harmony actions page: every "Link external IDs" action IS
      already a standard MB seed url (parseHarmonySeedUrl handles it) — scrape
-     them all, combine into one falcon= payload, and open MB with it in a new
-     tab instead of Harmony's own tab-per-entity popups. Harmony's actions
-     render asynchronously (client-rendered), so the button's count is kept
-     live by a short polling loop that settles once the count stops changing.
-     Recordings are excluded from what actually gets SENT (though still
-     returned by a plain scrapeHarmonyActions() call) — a real release's
+     them all, combine into one queue, and open MB with it in a new tab
+     instead of Harmony's own tab-per-entity popups. Harmony's actions render
+     asynchronously (client-rendered), so the button's count is kept live by
+     a short polling loop that settles once the count stops changing.
+     Recordings ARE included again (majkinetor, #467) — a real release's
      recording actions vastly outnumber its artist/label ones (86 total, 80
-     of them recordings, was measured live), and the resulting base64 payload
-     blew past ~32,000 characters, well past what MB's front-end will accept
-     in a URL — Firefox surfaced that as a bare PR_END_OF_FILE_ERROR instead
-     of a clean "414 URI Too Long". Revisit once there's a transport that
-     doesn't put the whole batch in the URL (#467). */
+     recordings, measured live), and packing all of them into a base64
+     query-string payload blew past ~32,000 characters, past what MB's
+     front-end accepts (Firefox surfaced that as a bare PR_END_OF_FILE_ERROR
+     instead of a clean "414 URI Too Long"). The GM-storage-token scheme (see
+     parseUrlParam) sidesteps that entirely — nothing goes in the URL but a
+     short random token. */
   function scrapeHarmonyActions() {
     const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
     const tuples = [];
     anchors.forEach(a => { const href = a.getAttribute('href'); if (href) tuples.push(...parseHarmonySeedUrl(href)); });
     return tuples;
   }
+  function makePendingToken() {
+    return 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
   let harmonyBtn = null;
   function ensureHarmonyButton() {
-    const all = scrapeHarmonyActions();
-    const items = all.filter(t => t.entityType !== 'recording');
-    const skipped = all.length - items.length;
+    const items = scrapeHarmonyActions();
     if (!harmonyBtn) {
       harmonyBtn = document.createElement('button');
       harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
       harmonyBtn.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;background:#1b2a4a;color:#fff;font:bold 13px Arial;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;transition:opacity .15s';
       harmonyBtn.innerHTML = `<span style="display:flex;color:#ff9d5c">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
       harmonyBtn.onclick = () => {
-        const found = scrapeHarmonyActions().filter(t => t.entityType !== 'recording');
-        if (!found.length) { alert(`${NAME}: no artist/label "Link external IDs" actions found on this page.`); return; }
-        const payload = encodeFalconPayload(found);
-        window.open(`${MB_TARGET}/?falcon=${encodeURIComponent(payload)}`, '_blank');
+        const found = scrapeHarmonyActions();
+        if (!found.length) { alert(`${NAME}: no "Link external IDs" actions found on this page.`); return; }
+        const token = makePendingToken();
+        GM_setValue('falcon:pending:' + token, JSON.stringify(found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined }))));
+        window.open(`${MB_TARGET}/?falcon=${token}`, '_blank');
       };
       document.body.appendChild(harmonyBtn);
     }
     const lbl = document.getElementById('falcon-harmony-lbl');
     lbl.textContent = items.length ? `Send ${items.length} to Falcon` : 'No Falcon actions found yet…';
     harmonyBtn.style.opacity = items.length ? '1' : '.6';
-    harmonyBtn.title = items.length
-      ? `Opens MusicBrainz with ${items.length} artist/label link(s) queued in Falcon` + (skipped ? ` — ${skipped} recording link(s) skipped for now (too many for one url)` : '')
-      : 'Waiting for Harmony to render its actions…';
+    harmonyBtn.title = items.length ? `Opens MusicBrainz with ${items.length} link(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
   }
 
   /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
@@ -260,8 +304,11 @@
       tick();
     });
   }
-  function frameDoc(iframe) { try { return iframe.contentDocument; } catch (e) { return null; } }
-  function frameWin(iframe) { try { return iframe.contentWindow; } catch (e) { return null; } }
+  // accepts EITHER a worker <iframe> element OR a plain window handle (from
+  // window.open — used by the "open in a real tab" manual-review path, #467) —
+  // same-origin either way, so fillAndSubmit's own logic never needs to know which.
+  function frameDoc(target) { try { return ('contentDocument' in target) ? target.contentDocument : (target.document || null); } catch (e) { return null; } }
+  function frameWin(target) { try { return ('contentWindow' in target) ? target.contentWindow : target; } catch (e) { return null; } }
 
   function findAddLinkInput(doc) {
     const all = [...doc.querySelectorAll('input[type="text"], input[type="url"], input:not([type])')];
@@ -352,7 +399,8 @@
   // redirected) throw; "nothing to submit" is signalled via `committed: false`, not
   // a throw, since it isn't necessarily an error (every url in the group may simply
   // already be on the entity).
-  async function fillAndSubmit(iframe, item) {
+  async function fillAndSubmit(iframe, item, opts) {
+    const skipSubmit = !!(opts && opts.skipSubmit);
     const results = [];
     for (const { url, linkTypeId } of item.urls) {
       try {
@@ -392,6 +440,9 @@
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
     setEditNote(d2, w2, editNoteText(results, item.note));
     await wait(150);
+    // manual-review path (openInTab, #467): fill the form and stop here — a human
+    // reviews and clicks "Enter edit" themselves, exactly like a Harmony tab.
+    if (skipSubmit) return { committed: false, results, manual: true };
     const btn = findSubmitButton(frameDoc(iframe));
     if (!btn) throw new Error('no submit button found');
     if (btn.disabled) throw new Error('submit button disabled (form invalid?)');
@@ -413,6 +464,31 @@
     return queue.find(i => i.status === 'queued' && !activeKeys.has(i.entityType + ':' + i.mbid));
   }
   function editUrl(item) { return `${MB_ORIGIN}/${item.entityType}/${item.mbid}/edit`; }
+
+  // "open in a real tab" (majkinetor, #467): same reason Harmony itself opens a tab
+  // per entity — a human can inspect, fix, and commit by hand. Uses the exact same
+  // fillAndSubmit form-filling procedure as the worker iframes (frameDoc/frameWin
+  // accept a window handle just as readily as an iframe — see above), just stopped
+  // short of clicking submit. Primary use: retrying something the queue couldn't
+  // commit automatically. window.open must be the very first thing that runs (no
+  // preceding await) or popup blockers treat it as not user-triggered.
+  function openInTab(item) {
+    const tab = window.open(editUrl(item), '_blank');
+    if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
+    item.status = 'manual'; item.error = ''; renderQueue();
+    log('info', `${entityLabel(item)} — opened in a new tab for manual review (${item.urls.length} link(s))`);
+    (async () => {
+      const loaded = await waitFor(() => { const d = frameDoc(tab); return d && d.readyState !== 'loading' ? true : null; }, 15000);
+      if (!loaded) { log('error', `${item.mbid}: the manually-opened tab never finished loading`); return; }
+      try {
+        const r = await fillAndSubmit(tab, item, { skipSubmit: true });
+        item.urlResults = r.results;
+        const failed = r.results.filter(x => !x.ok);
+        log(failed.length ? 'warn' : 'info', `${entityLabel(item)} — filled ${r.results.length - failed.length}/${r.results.length} link(s) in the manual tab, ready for you to review and submit` + (failed.length ? `; ${failed.length} couldn't be added: ${failed.map(x => `${x.url}: ${x.error}`).join('; ')}` : ''));
+      } catch (e) { log('error', `${item.mbid}: filling the manual tab failed — ${e.message || e}`); }
+      renderQueue();
+    })();
+  }
 
   // #467 (majkinetor, production hang): a MB edit form with typed-but-unsubmitted
   // changes registers a STICKY "unsaved changes" flag (addEventListener('beforeunload'))
@@ -596,15 +672,27 @@
         <button type="button" id="falcon-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
-      <div id="falcon-body-queue" style="padding:8px 10px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:6px">
-        <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>  /  recording:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button type="button" id="falcon-add" style="padding:4px 10px;cursor:pointer">+ Add to queue</button>
-          <span style="margin-left:auto;color:#666">workers</span>
-          <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
-          <button type="button" id="falcon-run" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
+      <div id="falcon-body-queue" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column">
+        <div id="falcon-paste-wrap" style="padding:6px 10px;border-bottom:1px solid #eee;flex:0 0 auto">
+          <button type="button" id="falcon-paste-toggle" title="Paste entities to add to the queue" style="width:24px;height:24px;border-radius:50%;border:1px solid #ccc;background:#fafafa;cursor:pointer;font:14px/1 Arial;color:#1b2a4a">+</button>
+          <div id="falcon-paste-box" style="display:none;margin-top:6px">
+            <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>  /  recording:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button type="button" id="falcon-add" style="padding:4px 10px;cursor:pointer">+ Add to queue</button>
+            </div>
+          </div>
         </div>
-        <div id="falcon-queue-list" style="border-top:1px solid #eee;padding-top:4px;overflow:auto;flex:1"></div>
+        <div id="falcon-queue-toolbar" style="display:flex;align-items:center;gap:8px;padding:4px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
+          <input type="checkbox" id="falcon-select-all" title="Select all" />
+          <span id="falcon-select-count"></span>
+          <button type="button" id="falcon-remove-selected" disabled style="margin-left:auto;padding:2px 8px;cursor:pointer">Remove selected</button>
+        </div>
+        <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
+        <div id="falcon-queue-bottom" style="display:flex;gap:6px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
+          <span style="color:#666">workers</span>
+          <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
+          <button type="button" id="falcon-run" style="margin-left:auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
+        </div>
       </div>
       <div id="falcon-body-workers" style="display:none;padding:8px 10px;overflow:auto;flex:1">
         <div style="color:#888;margin-bottom:6px">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</div>
@@ -623,8 +711,53 @@
       const { merged, added } = addToQueue(parsed);
       ta.value = ''; renderQueue();
       log('info', `queued ${added} new item(s)` + (merged ? `, merged ${merged} url(s) into already-queued entities` : ''));
+      document.getElementById('falcon-paste-box').style.display = 'none';
     };
+    // paste box starts collapsed to a small (+) button (majkinetor, #467) — expands
+    // on click, auto-collapses again once something's added (above) or on blur if
+    // left empty (mirrors Apollo Editor's collapsible paste-box convention).
+    document.getElementById('falcon-paste-toggle').onclick = () => {
+      const box = document.getElementById('falcon-paste-box');
+      const opening = box.style.display === 'none';
+      box.style.display = opening ? 'block' : 'none';
+      if (opening) document.getElementById('falcon-paste').focus();
+    };
+    document.getElementById('falcon-paste').addEventListener('blur', function () {
+      if (!this.value.trim()) document.getElementById('falcon-paste-box').style.display = 'none';
+    });
     document.getElementById('falcon-run').onclick = () => { if (running) stop(); else { start(); setTab('workers'); } };
+    document.getElementById('falcon-select-all').onchange = function () {
+      const selectable = queue.filter(i => i.status !== 'active');
+      if (this.checked) selectable.forEach(i => _selectedIds.add(i.id));
+      else selectable.forEach(i => _selectedIds.delete(i.id));
+      renderQueue();
+    };
+    document.getElementById('falcon-remove-selected').onclick = () => {
+      const removable = [..._selectedIds].filter(id => { const it = queue.find(q => q.id === id); return it && it.status !== 'active'; });
+      if (!removable.length) return;
+      queue = queue.filter(i => !removable.includes(i.id));
+      removable.forEach(id => _selectedIds.delete(id));
+      log('info', `removed ${removable.length} item(s) from the queue`);
+      renderQueue();
+    };
+    // one delegated listener for every row action — rows are fully re-rendered on
+    // every renderQueue(), so per-element handlers would just leak; look the
+    // clicked/changed item up by its data-id instead.
+    const list = document.getElementById('falcon-queue-list');
+    list.addEventListener('click', e => {
+      const expandBtn = e.target.closest('.falcon-row-expand');
+      if (expandBtn) { const id = expandBtn.dataset.id; _expandedIds.has(id) ? _expandedIds.delete(id) : _expandedIds.add(id); renderQueue(); return; }
+      const removeBtn = e.target.closest('.falcon-row-remove');
+      if (removeBtn) { const id = removeBtn.dataset.id; queue = queue.filter(i => i.id !== id); _selectedIds.delete(id); _expandedIds.delete(id); renderQueue(); return; }
+      const tabBtn = e.target.closest('.falcon-row-opentab');
+      if (tabBtn) { const it = queue.find(i => i.id === tabBtn.dataset.id); if (it) openInTab(it); return; }
+    });
+    list.addEventListener('change', e => {
+      const chk = e.target.closest('.falcon-row-check');
+      if (!chk) return;
+      chk.checked ? _selectedIds.add(chk.dataset.id) : _selectedIds.delete(chk.dataset.id);
+      renderQueue();
+    });
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
     document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
     document.getElementById('falcon-tab-log').onclick = () => setTab('log');
@@ -674,16 +807,47 @@
     }
   }
 
-  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b' };
+  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce' };
+  function renderRowDetail(it) {
+    const results = it.urlResults || [];
+    return it.urls.map(u => {
+      const res = results.find(r => r.url === u.url);
+      const icon = res ? (res.ok ? '✓' : '✗') : '·';
+      const color = res ? (res.ok ? '#2e9e5b' : '#c0392b') : '#aaa';
+      return `<div style="display:flex;align-items:center;gap:6px;padding:2px 0 2px 30px;font-size:10.5px" title="${res && res.error ? esc(res.error) : ''}">
+        <span style="color:${color};width:10px;flex:0 0 auto;text-align:center">${icon}</span>
+        <span style="color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(u.url)}</span>
+        ${u.linkTypeId ? `<span style="color:#999;flex:0 0 auto">type ${esc(u.linkTypeId)}</span>` : ''}
+      </div>`;
+    }).join('');
+  }
   function renderQueue() {
     const list = document.getElementById('falcon-queue-list'); if (!list) return;
-    list.innerHTML = queue.map(it => `
-      <div style="display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid #f3f3f3" title="${it.error ? esc(it.error) : ''}">
-        <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
-        <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
-        <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0]?.url || '')}</span>
-        <span style="color:#999;text-transform:uppercase;font-size:9px">${it.status}</span>
-      </div>`).join('') || '<div style="color:#999;padding:8px 0">Queue is empty — paste some lines above.</div>';
+    list.innerHTML = queue.map(it => {
+      const expanded = _expandedIds.has(it.id);
+      const checked = _selectedIds.has(it.id);
+      const isActive = it.status === 'active';
+      return `
+      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3">
+        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : ''}">
+          <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto;font-size:10px;width:12px">${expanded ? '▾' : '▸'}</button>
+          <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
+          <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
+          <span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length > 1 ? `${it.urls.length} links` : esc(it.urls[0]?.url || '')}</span>
+          <span style="color:#999;text-transform:uppercase;font-size:9px;flex:0 0 auto">${it.status}</span>
+          <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
+          <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
+        </div>
+        ${expanded ? renderRowDetail(it) : ''}
+      </div>`;
+    }).join('') || '<div style="color:#999;padding:8px 0">Queue is empty — click + above to paste some entities.</div>';
+    const selCount = document.getElementById('falcon-select-count');
+    if (selCount) selCount.textContent = _selectedIds.size ? `${_selectedIds.size} selected` : '';
+    const removeBtn = document.getElementById('falcon-remove-selected');
+    if (removeBtn) removeBtn.disabled = _selectedIds.size === 0;
+    const selectAll = document.getElementById('falcon-select-all');
+    if (selectAll) { const selectable = queue.filter(i => i.status !== 'active'); selectAll.checked = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id)); }
   }
   function renderLog() {
     const el = document.getElementById('falcon-body-log'); if (!el || tab !== 'log') return;
@@ -724,5 +888,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds };
 })();
