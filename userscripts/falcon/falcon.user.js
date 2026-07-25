@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.170113
+// @version      2026.7.25.191833
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.170113';
+  const VERSION = '2026.7.25.191833';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -64,10 +64,18 @@
   const LOG = [];
   function log(level, msg) {
     const line = `[${new Date().toISOString().slice(11, 19)}] ${level.toUpperCase().padEnd(5)} ${msg}`;
-    LOG.push(line); if (LOG.length > 500) LOG.shift();
+    LOG.push(line); if (LOG.length > 1500) LOG.shift();
     try { (console[level] || console.log).call(console, '[Falcon]', msg); } catch (e) {}
     renderLog();
   }
+  // #467 (majkinetor, discussion #459): "some workers still randomly do not
+  // submit stuff for the unknown reason" — intermittent and not reproducible
+  // locally, so every step of a worker's run is traced at debug level, tagged
+  // with WHICH worker (they run concurrently, so untagged lines interleave into
+  // an unreadable mess). The goal is that a single real run's log says exactly
+  // where a worker stopped short, without needing a live repro.
+  const debugOn = () => GM_getValue('falcon:debug', true);
+  function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
      urlResults, status, error} ── #467 (majkinetor): the same entity can carry
@@ -508,7 +516,9 @@
   }
   async function fillAndSubmit(iframe, item, opts) {
     const skipSubmit = !!(opts && opts.skipSubmit);
+    const tag = (opts && opts.tag) || '[w?]';
     const results = [];
+    dbg(tag, `fillAndSubmit start — ${item.urls.length} url(s), skipSubmit=${skipSubmit}`);
     // workerLoop navigates straight to buildSeedEditUrl(item) — MB's own seed-url
     // params (the same ones Harmony uses) pre-fill the FIRST occurrence of each
     // distinct url as the page renders, no typing needed at all (majkinetor,
@@ -524,8 +534,10 @@
       try {
         const doc0 = frameDoc(iframe);
         const existingRow = findRowForUrl(doc0, url);
+        dbg(tag, `url[${occurrence}] ${url} (type=${linkTypeId || 'auto'}) — preexisting row: ${existingRow ? (existingRow.querySelector('a[href]') ? 'resolved' : 'unresolved-input') : 'none'}`);
         if (existingRow && occurrence > 0) {
           const added = await addSecondRelationshipType(iframe, existingRow, linkTypeId);
+          dbg(tag, `  repeat occurrence -> addSecondRelationshipType = ${added}`);
           results.push({ url, ok: added, error: added ? undefined : (linkTypeId ? 'could not add a second relationship type — this url is already present' : 'this url is already present') });
           continue;
         }
@@ -535,11 +547,13 @@
           // (in which case MB keeps the pre-existing resolved row and adds our
           // seeded copy as a separate unresolved one).
           const { resolved, unresolved } = findRowsForUrl(doc0, url);
+          dbg(tag, `  rows: resolved=${!!resolved} unresolved=${unresolved.length}`);
           if (resolved && unresolved.length) {
             // the url was already on this entity — our seeded duplicate is just
             // dead weight whose blank select would block the whole submit.
             unresolved.forEach(tr => tr.querySelector('button.remove-item')?.click());
             await wait(150);
+            dbg(tag, `  already on entity -> dropped ${unresolved.length} seeded duplicate row(s)`);
             results.push({ url, ok: false, error: 'this url is already present on the entity' });
             continue;
           }
@@ -548,15 +562,20 @@
           // without one, checkRowUsable decides whether the row is committable
           // as-is and removes+reports it when it isn't, so one bad row can't
           // silently disable submit for the entire group.
-          if (linkTypeId) await setRowLinkType(iframe, target, linkTypeId);
+          if (linkTypeId) {
+            const set = await setRowLinkType(iframe, target, linkTypeId);
+            dbg(tag, `  setRowLinkType(${linkTypeId}) = ${set}`);
+          }
           const reason = checkRowUsable(doc0, target, linkTypeId);
+          dbg(tag, `  checkRowUsable -> ${reason ? 'REJECT: ' + reason : 'ok'}`);
           if (reason) { results.push({ url, ok: false, error: reason }); continue; }
           results.push({ url, ok: true });
           continue;
         }
         // not pre-filled at all — type it, which runs MB's own url classifier.
+        dbg(tag, '  not seeded — falling back to typing it');
         const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
-        if (!input) { results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
+        if (!input) { dbg(tag, '  no "Add another link" input appeared within 12s'); results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
         const d2 = frameDoc(iframe), w2 = frameWin(iframe);
         const setVal = Object.getOwnPropertyDescriptor(w2.HTMLInputElement.prototype, 'value').set;
         input.focus();
@@ -573,14 +592,16 @@
         }, 8000);
         if (!row) {
           const mbError = findFieldError(frameDoc(iframe));
+          dbg(tag, `  typed row never appeared within 8s — MB said: ${mbError || '(nothing)'}`);
           results.push({ url, ok: false, error: mbError || 'URL row never appeared after Enter (MB gave no specific reason)' });
           continue;
         }
         if (linkTypeId) await setRowLinkType(iframe, row, linkTypeId);
         const reason = checkRowUsable(frameDoc(iframe), row, linkTypeId);
+        dbg(tag, `  typed ok, checkRowUsable -> ${reason ? 'REJECT: ' + reason : 'ok'}`);
         if (reason) { results.push({ url, ok: false, error: reason }); continue; }
         results.push({ url, ok: true });
-      } catch (e) { results.push({ url, ok: false, error: e.message || String(e) }); }
+      } catch (e) { dbg(tag, `  threw: ${e.message || e}`); results.push({ url, ok: false, error: e.message || String(e) }); }
     }
     // any type select still blank at this point would silently disable submit
     // for the whole form — drop those rows and demote the urls they belonged to
@@ -588,24 +609,31 @@
     const swept = sweepBlankTypeRows(frameDoc(iframe));
     if (swept.length) {
       await wait(200);
+      dbg(tag, `blank-select sweep removed ${swept.length} row(s): ${JSON.stringify(swept)}`);
       swept.forEach(sweptUrl => {
         const hit = results.find(r => r.ok && (sweptUrl === null || r.url === sweptUrl));
         if (hit) { hit.ok = false; hit.error = 'this url is already present on the entity (MusicBrainz wanted a second relationship type for it, and none was given)'; }
       });
     }
-    if (!results.some(r => r.ok)) return { committed: false, results };
+    dbg(tag, `per-url outcome: ${JSON.stringify(results.map(r => ({ u: r.url.slice(-40), ok: r.ok, e: r.error })))}`);
+    if (!results.some(r => r.ok)) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable'); return { committed: false, results }; }
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
-    setEditNote(d2, w2, editNoteText(results, item.note));
+    const noteSet = setEditNote(d2, w2, editNoteText(results, item.note));
+    dbg(tag, `edit note set = ${noteSet}`);
     await wait(150);
     // manual-review path (openInTab, #467): fill the form and stop here — a human
     // reviews and clicks "Enter edit" themselves, exactly like a Harmony tab.
     if (skipSubmit) return { committed: false, results, manual: true };
     const btn = findSubmitButton(frameDoc(iframe));
-    if (!btn) throw new Error('no submit button found');
+    if (!btn) { dbg(tag, 'NOT SUBMITTING — no submit button found on the page'); throw new Error('no submit button found'); }
     if (btn.disabled) {
       const reason = findFieldError(frameDoc(iframe));
+      const blanks = [...(frameDoc(iframe)?.querySelectorAll('select.link-type') || [])].filter(s => !s.value).length;
+      dbg(tag, `NOT SUBMITTING — submit disabled; page errors: ${reason || '(none)'}; still-blank type selects: ${blanks}`);
       throw new Error(reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)');
     }
+    dbg(tag, 'clicking submit');
+    const tSubmit = Date.now();
     btn.click();
     // #467 (majkinetor): observed real "never redirected" failures under 3
     // concurrent workers all submitting heavy recording pages around the same
@@ -615,7 +643,13 @@
       const w = frameWin(iframe); if (!w) return null;
       try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
     }, 25000);
-    if (!left) throw new Error('never redirected off /edit after submit — did it actually commit?');
+    if (!left) {
+      let where = '(unreadable)';
+      try { where = frameWin(iframe).location.href; } catch (e) {}
+      dbg(tag, `SUBMIT DID NOT LAND — still on /edit after ${Date.now() - tSubmit}ms; frame url: ${where}`);
+      throw new Error('never redirected off /edit after submit — did it actually commit?');
+    }
+    dbg(tag, `submit landed in ${Date.now() - tSubmit}ms`);
     return { committed: true, results };
   }
 
@@ -772,11 +806,12 @@
   }
 
   async function workerLoop(card) {
+    const tag = `[w${workerCards.indexOf(card) + 1}]`;
     while (running) {
       const item = nextQueued();
-      if (!item) break;
+      if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
       item.status = 'active'; renderQueue();
-      log('info', `${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
+      log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       // ALWAYS a fresh iframe, even after a clean commit on this same card — a
       // real multi-item session showed the tab going fully unresponsive over
       // time (majkinetor, #467), consistent with the previous item's document
@@ -790,45 +825,61 @@
       // #467 (majkinetor): navigate straight to the seed url — MB pre-fills
       // every url as the page renders, so fillAndSubmit has little or nothing
       // left to type. Measured live: ~2-3s vs 10+s for typing simulation.
+      const tNav = Date.now();
       iframe.src = buildSeedEditUrl(item);
-      const loaded = await waitFor(() => { const w = frameWin(iframe); return w && frameDoc(iframe) && frameDoc(iframe).readyState !== 'loading' ? true : null; }, 15000);
+      // A FRESH iframe starts on about:blank, whose readyState is already
+      // 'complete' — so a bare "readyState !== 'loading'" check passes
+      // INSTANTLY, against the blank document, before MB's page has loaded at
+      // all. Everything downstream then races a document that's about to be
+      // replaced. Require the frame to actually be ON this entity's edit page
+      // (and to have rendered the links section) before believing it's loaded.
+      const loaded = await waitFor(() => {
+        const w = frameWin(iframe), doc = frameDoc(iframe);
+        if (!w || !doc || doc.readyState === 'loading') return null;
+        let path = ''; try { path = w.location.pathname; } catch (e) { return null; }
+        if (!path.includes(item.mbid)) return null;   // still about:blank / previous doc
+        return doc.querySelector('tr.external-link-item, input') ? true : null;
+      }, 15000);
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
-        log('error', `${item.mbid}: edit page never loaded`);
+        log('error', `${tag} ${item.mbid}: edit page never loaded (waited 15s)`);
         retireCard(card, item.error); renderQueue();
         const replacement = spawnWorkerCard();
         if (replacement) workerLoop(replacement);
         return;
       }
-      // readyState fires before MB's own client JS finishes turning the seed
-      // params into rows — wait for every distinct seeded url to actually
-      // exist as a row before fillAndSubmit reads any row/error state.
-      await waitFor(() => {
+      dbg(tag, `edit page loaded in ${Date.now() - tNav}ms`);
+      // MB's client JS turns the seed params into rows a moment after load.
+      // A seeded url can land in EITHER shape (see findRowsForUrl): a resolved
+      // <a href> row, or — when MB couldn't classify it — an editable input
+      // row holding the url text. Matching only the href shape here meant every
+      // unclassifiable url burned the full 8s timeout for nothing.
+      const settled = await waitFor(() => {
         const doc = frameDoc(iframe); if (!doc) return null;
         const uniqueUrls = [...new Set(item.urls.map(u => u.url))];
-        const rows = [...doc.querySelectorAll('tr.external-link-item')];
-        return uniqueUrls.every(u => rows.some(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === u)) ? true : null;
+        return uniqueUrls.every(u => !!findRowForUrl(doc, u)) ? true : null;
       }, 8000);
+      dbg(tag, `seeded rows settled=${!!settled} after ${Date.now() - tNav}ms total`);
       let r = null;
       try {
-        r = await fillAndSubmit(iframe, item);
+        r = await fillAndSubmit(iframe, item, { tag });
         item.urlResults = r.results;
         const failedUrls = r.results.filter(x => !x.ok);
         if (!r.committed) {
           item.status = 'failed';
           item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
-          log('error', `${item.mbid}: nothing added — ${item.error}`);
+          log('error', `${tag} ${item.mbid}: nothing added — ${item.error}`);
         } else if (failedUrls.length) {
           item.status = 'partial';
           item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
-          log('warn', `${item.entityType} ${item.mbid} — committed ${r.results.length - failedUrls.length}/${r.results.length} link(s)`);
+          log('warn', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.length - failedUrls.length}/${r.results.length} link(s)`);
         } else {
           item.status = 'done';
-          log('info', `${item.entityType} ${item.mbid} — committed ${r.results.length} link(s)`);
+          log('info', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.length} link(s)`);
         }
       } catch (e) {
         item.status = 'failed'; item.error = e.message || String(e);
-        log('error', `${item.mbid}: ${item.error}`);
+        log('error', `${tag} ${item.mbid}: ${item.error}`);
       }
       renderQueue();
       if (r && r.committed) {
@@ -970,7 +1021,16 @@
         <div id="falcon-workers" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         <div id="falcon-workers-empty" style="display:none;color:#999;padding:8px 0">No active workers right now — idle ones are hidden here. Click ▶ Start to begin.</div>
       </div>
-      <div id="falcon-body-log" style="display:none;padding:8px 10px;overflow:auto;flex:1;font:10px monospace;white-space:pre-wrap"></div>`;
+      <div id="falcon-body-log" style="display:none;padding:0;overflow:hidden;flex:1;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
+          <button type="button" id="falcon-log-copy" style="padding:2px 8px;cursor:pointer">Copy log</button>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer" title="Detailed per-worker step tracing — leave on when reporting a problem">
+            <input type="checkbox" id="falcon-log-debug" /> <span>debug</span>
+          </label>
+          <span id="falcon-log-copied" style="color:#2e9e5b"></span>
+        </div>
+        <div id="falcon-log-text" style="overflow:auto;flex:1;padding:8px 10px;font:10px monospace;white-space:pre-wrap"></div>
+      </div>`;
     document.body.appendChild(panel);
     document.getElementById('falcon-close').onclick = () => { panel.style.display = 'none'; };
     document.getElementById('falcon-maximize').onclick = toggleMaximize;
@@ -1060,6 +1120,19 @@
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
     document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
     document.getElementById('falcon-tab-log').onclick = () => setTab('log');
+    // #467: the intermittent failures only show up on majkinetor's real runs,
+    // so the log has to be trivially shareable — one click to the clipboard.
+    document.getElementById('falcon-log-copy').onclick = async () => {
+      const note = document.getElementById('falcon-log-copied');
+      try {
+        await navigator.clipboard.writeText(LOG.join('\n'));
+        note.textContent = `copied ${LOG.length} line(s)`;
+      } catch (e) { note.textContent = 'copy failed — select the text manually'; }
+      setTimeout(() => { note.textContent = ''; }, 4000);
+    };
+    const dbgBox = document.getElementById('falcon-log-debug');
+    dbgBox.checked = debugOn();
+    dbgBox.onchange = () => GM_setValue('falcon:debug', dbgBox.checked);
     // drag by header
     const hdr = document.getElementById('falcon-hdr');
     let dragging = false, dx = 0, dy = 0;
@@ -1082,7 +1155,7 @@
     tab = t;
     document.getElementById('falcon-body-queue').style.display = t === 'queue' ? 'flex' : 'none';
     document.getElementById('falcon-body-workers').style.display = t === 'workers' ? 'block' : 'none';
-    document.getElementById('falcon-body-log').style.display = t === 'log' ? 'block' : 'none';
+    document.getElementById('falcon-body-log').style.display = t === 'log' ? 'flex' : 'none';
     if (t === 'log') renderLog();
   }
   function showPanel() { ensurePanel(); panel.style.display = 'flex'; renderQueue(); }
@@ -1210,7 +1283,7 @@
     el.style.display = 'flex';
   }
   function renderLog() {
-    const el = document.getElementById('falcon-body-log'); if (!el || tab !== 'log') return;
+    const el = document.getElementById('falcon-log-text'); if (!el || tab !== 'log') return;
     el.textContent = LOG.join('\n');
     el.scrollTop = el.scrollHeight;
   }
