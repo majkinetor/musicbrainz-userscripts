@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.214625
+// @version      2026.7.25.222807
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.214625';
+  const VERSION = '2026.7.25.222807';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -1091,10 +1091,16 @@
           </div>
         </div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
-        <div id="falcon-queue-bottom" style="display:flex;gap:6px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
-          <span style="color:#666">workers</span>
-          <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
-          <button type="button" id="falcon-run" style="margin-left:auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
+        <div id="falcon-queue-bottom" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
+          <span style="color:#666;flex:0 0 auto">workers</span>
+          <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px;flex:0 0 auto" />
+          <div id="falcon-progress-wrap" style="flex:1;display:flex;align-items:center;gap:6px;min-width:0">
+            <div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;min-width:40px">
+              <div id="falcon-progress-bar" style="height:100%;width:0%;background:#2e9e5b;transition:width .2s"></div>
+            </div>
+            <span id="falcon-progress-text" style="color:#666;font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
+          </div>
+          <button type="button" id="falcon-run" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
         </div>
       </div>
       <div id="falcon-body-workers" style="display:none;padding:8px 10px;overflow:auto;flex:1">
@@ -1145,7 +1151,10 @@
     document.getElementById('falcon-paste').addEventListener('blur', function () {
       if (!this.value.trim()) document.getElementById('falcon-paste-box').style.display = 'none';
     });
-    document.getElementById('falcon-run').onclick = () => { if (running) stop(); else { start(); setTab('workers'); } };
+    // #467 (majkinetor): "Do not switch to worker tab on start" — the queue list
+    // (with its progress bar) is the more useful view during a run; the Workers
+    // tab is for when you actually want to look inside one.
+    document.getElementById('falcon-run').onclick = () => { if (running) stop(); else start(); };
     document.getElementById('falcon-select-all').onchange = function () {
       const selectable = queue.filter(i => i.status !== 'active');
       if (this.checked) selectable.forEach(i => _selectedIds.add(i.id));
@@ -1330,6 +1339,25 @@
       const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
       expandAllBtn.textContent = allExpanded ? 'Collapse all' : 'Expand all';
     }
+    renderProgress();
+  }
+  // #467 (majkinetor): "Lets have a progress bar". Counts anything that has
+  // reached a terminal state as finished — done/partial/failed/manual all mean
+  // "this one is no longer waiting on us" — so the bar tracks the run, not just
+  // the successes. Bar turns amber if anything failed, so a run that completed
+  // but left casualties doesn't read as a clean green sweep.
+  function renderProgress() {
+    const bar = document.getElementById('falcon-progress-bar');
+    const txt = document.getElementById('falcon-progress-text');
+    if (!bar || !txt) return;
+    const total = queue.length;
+    if (!total) { bar.style.width = '0%'; txt.textContent = ''; return; }
+    const settled = queue.filter(i => i.status !== 'queued' && i.status !== 'active').length;
+    const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial').length;
+    const active = queue.filter(i => i.status === 'active').length;
+    bar.style.width = Math.round((settled / total) * 100) + '%';
+    bar.style.background = bad ? '#d68910' : '#2e9e5b';
+    txt.textContent = `${settled}/${total}` + (active ? ` · ${active} running` : '') + (bad ? ` · ${bad} problem${bad > 1 ? 's' : ''}` : '');
   }
 
   // #467 (majkinetor): "click the failed label, open its worker alone in a
