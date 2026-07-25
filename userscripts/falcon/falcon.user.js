@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.211539
+// @version      2026.7.25.214625
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.211539';
+  const VERSION = '2026.7.25.214625';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -72,7 +72,26 @@
     const line = `[${new Date().toISOString().slice(11, 19)}] ${level.toUpperCase().padEnd(5)} ${msg}`;
     LOG.push(line); if (LOG.length > 1500) LOG.shift();
     try { (console[level] || console.log).call(console, '[Falcon]', msg); } catch (e) {}
-    renderLog();
+    scheduleRender('log');
+  }
+  // #467 (majkinetor: "it was slow and UI was frozen after some time"): every
+  // log line used to re-render the whole log pane synchronously (join of up to
+  // 1500 lines + textContent + scroll), and every queue mutation re-rendered
+  // the entire queue list. Under 3 concurrent workers that's a lot of layout
+  // thrash on the SAME main thread the worker iframes are competing for.
+  // Coalesce instead: mark what's dirty and repaint once per animation frame.
+  let _dirty = {}, _rafPending = false;
+  function scheduleRender(what) {
+    _dirty[what] = true;
+    if (_rafPending) return;
+    _rafPending = true;
+    requestAnimationFrame(() => {
+      _rafPending = false;
+      const d = _dirty; _dirty = {};
+      if (d.queue) renderQueue();
+      if (d.log) renderLog();
+      if (d.workers) renderWorkerLayout();
+    });
   }
   // #467 (majkinetor, discussion #459): "some workers still randomly do not
   // submit stuff for the unknown reason" — intermittent and not reproducible
@@ -849,7 +868,7 @@
     while (running) {
       const item = nextQueued();
       if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
-      item.status = 'active'; renderQueue();
+      item.status = 'active'; scheduleRender('queue');
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       // ALWAYS a fresh iframe, even after a clean commit on this same card — a
       // real multi-item session showed the tab going fully unresponsive over
@@ -882,7 +901,7 @@
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
         log('error', `${tag} ${item.mbid}: edit page never loaded (waited 15s)`);
-        retireCard(card, item.error); renderQueue();
+        retireCard(card, item.error); scheduleRender('queue');
         const replacement = spawnWorkerCard();
         if (replacement) workerLoop(replacement);
         return;
@@ -938,6 +957,9 @@
       return;
     }
     updateWorkerLabel(card, null);   // triggers its own re-render since this flips the card to idle (see above)
+    // last worker out turns the jank heartbeat off — no point measuring thread
+    // blocking once nothing of ours is running.
+    if (!queue.some(i => i.status === 'active')) stopHeartbeat();
   }
 
   // #467 (majkinetor): each worker gets its own card — a small label (which entity
@@ -990,16 +1012,36 @@
     const emptyMsg = document.getElementById('falcon-workers-empty');
     if (emptyMsg) emptyMsg.style.display = anyVisible ? 'none' : 'block';
   }
+  // #467 (majkinetor: "UI was frozen after some time... Notice the 30s silence
+  // in log at the end"). That silence is itself the evidence: waitFor checks
+  // its predicate BEFORE its deadline, so a 25s timeout that returned at 37s
+  // means the main thread simply wasn't running our timers for most of that
+  // stretch — i.e. a genuine freeze, not a slow server. Whether it's MB's own
+  // page JS in the worker iframes or something Falcon does is the open
+  // question, so measure it: a heartbeat that reports how long the thread was
+  // actually blocked, right in the same log as everything else.
+  let _heartbeat = null;
+  function startHeartbeat() {
+    if (_heartbeat) return;
+    let last = Date.now();
+    _heartbeat = setInterval(() => {
+      const now = Date.now(), late = now - last - 500;
+      last = now;
+      if (late > 1500) log('warn', `UI thread was blocked for ~${(late / 1000).toFixed(1)}s (nothing could render or respond during that time)`);
+    }, 500);
+  }
+  function stopHeartbeat() { if (_heartbeat) { clearInterval(_heartbeat); _heartbeat = null; } }
   function start() {
     if (running) return;
     if (!queue.some(i => i.status === 'queued')) { log('warn', 'nothing queued'); return; }
     running = true;
+    startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
     for (let i = 0; i < need; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
     updateRunBtn();
   }
-  function stop() { running = false; log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
+  function stop() { running = false; stopHeartbeat(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
 
   /* ════════════════════════ UI ════════════════════════ */
   let launcher = null;
