@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.191833
+// @version      2026.7.25.194511
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.191833';
+  const VERSION = '2026.7.25.194511';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -632,21 +632,44 @@
       dbg(tag, `NOT SUBMITTING — submit disabled; page errors: ${reason || '(none)'}; still-blank type selects: ${blanks}`);
       throw new Error(reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)');
     }
-    dbg(tag, 'clicking submit');
+    // #467 (majkinetor): "One didn't pass, there was nothing in worker that was
+    // regarded as error and Enter button was enabled, with all links and types
+    // set." A valid form with an enabled button that still never submits points
+    // at the CLICK, not validation — and MB's editor is React: setting the edit
+    // note just above re-renders, which can DETACH the button node found
+    // earlier. Clicking a detached node silently does nothing, and the only
+    // symptom is the 25s "never redirected" timeout on a form that looks
+    // perfectly fine. So: re-query the button immediately before every click,
+    // never reuse a stale reference, and if the page hasn't moved shortly after
+    // a click, re-query and try again (falling back to submitting the form
+    // directly) rather than waiting out the whole timeout on one lost click.
     const tSubmit = Date.now();
-    btn.click();
-    // #467 (majkinetor): observed real "never redirected" failures under 3
-    // concurrent workers all submitting heavy recording pages around the same
-    // time — bumped from 15s since that's tight once the browser is actually
-    // under that kind of concurrent load, not because a single submit is slow.
-    const left = await waitFor(() => {
-      const w = frameWin(iframe); if (!w) return null;
-      try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
-    }, 25000);
+    const MAX_CLICKS = 3;
+    let left = null;
+    for (let attempt = 1; attempt <= MAX_CLICKS && !left; attempt++) {
+      const doc = frameDoc(iframe);
+      const fresh = findSubmitButton(doc);
+      if (!fresh) { dbg(tag, `submit attempt ${attempt}: button vanished from the page`); break; }
+      if (fresh.disabled) { dbg(tag, `submit attempt ${attempt}: button went disabled — ${findFieldError(doc) || '(no message)'}`); break; }
+      dbg(tag, `submit attempt ${attempt}: clicking${fresh !== btn ? ' (button node was replaced since it was first found)' : ''}`);
+      fresh.click();
+      if (attempt > 1) {
+        // a plain click has already been ignored once — go at the form itself.
+        const form = fresh.closest('form');
+        if (form) { dbg(tag, `submit attempt ${attempt}: also calling form.requestSubmit()`); try { form.requestSubmit ? form.requestSubmit(fresh) : form.submit(); } catch (e) { dbg(tag, `  requestSubmit threw: ${e.message || e}`); } }
+      }
+      // short window per attempt; the LAST attempt gets the full remaining
+      // budget, since by then a slow-but-real submit is the likelier story.
+      left = await waitFor(() => {
+        const w = frameWin(iframe); if (!w) return null;
+        try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
+      }, attempt === MAX_CLICKS ? 20000 : 4000);
+      if (!left) dbg(tag, `submit attempt ${attempt}: page still on /edit after the wait`);
+    }
     if (!left) {
       let where = '(unreadable)';
       try { where = frameWin(iframe).location.href; } catch (e) {}
-      dbg(tag, `SUBMIT DID NOT LAND — still on /edit after ${Date.now() - tSubmit}ms; frame url: ${where}`);
+      dbg(tag, `SUBMIT DID NOT LAND — still on /edit after ${Date.now() - tSubmit}ms and ${MAX_CLICKS} click attempt(s); frame url: ${where}`);
       throw new Error('never redirected off /edit after submit — did it actually commit?');
     }
     dbg(tag, `submit landed in ${Date.now() - tSubmit}ms`);
