@@ -100,10 +100,18 @@ await page.click('.falcon-worker-zoom');
 await page.waitForTimeout(200);
 const zoomInfo = await page.evaluate(() => {
   const cards = [...document.querySelectorAll('.falcon-worker-card')];
-  return cards.map(c => ({ display: getComputedStyle(c).display, width: c.getBoundingClientRect().width }));
+  return cards.map(c => {
+    const cs = getComputedStyle(c);
+    const r = c.getBoundingClientRect();
+    return { display: cs.display, width: r.width, left: r.left, onScreen: cs.display !== 'none' && r.right > 0 };
+  });
 });
 console.log('zoom layout:', JSON.stringify(zoomInfo));
-ck(zoomInfo[0].display !== 'none' && zoomInfo.slice(1).every(c => c.display === 'none'), `zooming worker 1 hides the other worker card(s) (${JSON.stringify(zoomInfo.map(c => c.display))})`);
+// #467: a card that's mid-item must NOT be display:none — that stops its iframe
+// rendering and its submit never lands (see verify-467-hidden-workers.mjs). So
+// "hidden" now means either display:none (safe, idle) or parked off-screen
+// (still live); what matters is that only the zoomed card is actually on screen.
+ck(zoomInfo[0].onScreen && zoomInfo.slice(1).every(c => !c.onScreen), `zooming worker 1 takes the other worker card(s) off screen (${JSON.stringify(zoomInfo.map(c => ({ d: c.display, on: c.onScreen })))})`);
 ck(zoomInfo[0].width > 400, `zoomed worker card is meaningfully larger (${zoomInfo[0].width}px)`);
 await page.click('.falcon-worker-zoom');   // restore
 await page.waitForTimeout(200);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.225512
+// @version      2026.7.25.232104
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.25.225512';
+  const VERSION = '2026.7.25.232104';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -67,10 +67,26 @@
   };
 
   /* ── tiny logger — kept in-memory + console, surfaced in the panel's log tab ── */
+  // #467 (majkinetor: "It closed the window so I couldnt take a log (fix it)").
+  // The log lived only in memory, so a tab that closed — or crashed, which is
+  // exactly when the log matters most — took the evidence with it. It's now
+  // mirrored into GM storage as it's written and restored on load, so the
+  // previous session's log is still there to copy afterwards.
   const LOG = [];
+  try { const saved = GM_getValue('falcon:log', null); if (saved) LOG.push(...JSON.parse(saved), '--- (above is the previous session, restored after the window closed) ---'); } catch (e) {}
+  let _persistTimer = null;
+  function persistLog() {
+    if (_persistTimer) return;
+    // batched — writing storage on every single line would be its own stall
+    _persistTimer = setTimeout(() => {
+      _persistTimer = null;
+      try { GM_setValue('falcon:log', JSON.stringify(LOG.slice(-1500))); } catch (e) {}
+    }, 1000);
+  }
   function log(level, msg) {
     const line = `[${new Date().toISOString().slice(11, 19)}] ${level.toUpperCase().padEnd(5)} ${msg}`;
     LOG.push(line); if (LOG.length > 1500) LOG.shift();
+    persistLog();
     try { (console[level] || console.log).call(console, '[Falcon]', msg); } catch (e) {}
     scheduleRender('log');
   }
@@ -1001,21 +1017,39 @@
       // looking at in the default thumbnail strip; only applies there — a
       // specifically zoomed card stays visible even if it happens to go idle.
       const isIdle = card.dataset.idle === '1';
+      // Hiding a card that's mid-item is the same trap as hiding the whole pane
+      // (see setTab): display:none stops its iframe rendering and its submit
+      // never lands. An idle card is safe to drop out of the DOM flow; a busy
+      // one gets parked off-screen instead so it keeps working while out of view.
+      const hide = () => {
+        if (isIdle) { card.style.display = 'none'; return; }
+        card.style.cssText = card.style.cssText.replace(/position:absolute;left:-100000px;top:0;/, '');
+        card.style.position = 'absolute'; card.style.left = '-100000px'; card.style.top = '0';
+        card.style.display = '';
+      };
+      const show = (w, h) => {
+        card.style.position = ''; card.style.left = ''; card.style.top = '';
+        card.style.display = ''; card.style.width = w; card.style.height = h;
+      };
       if (_zoomedWorker === null) {
         if (isIdle) { card.style.display = 'none'; return; }
-        card.style.display = ''; card.style.width = cfg.workerSize + 'px'; card.style.height = Math.round(cfg.workerSize * 0.8) + 'px';
+        show(cfg.workerSize + 'px', Math.round(cfg.workerSize * 0.8) + 'px');
         if (zoomBtn) { zoomBtn.textContent = '⛶'; zoomBtn.title = 'Maximize this worker'; }
       } else if (_zoomedWorker === i) {
-        card.style.display = ''; card.style.width = '100%'; card.style.height = '560px';
+        show('100%', '560px');
         if (zoomBtn) { zoomBtn.textContent = '❐'; zoomBtn.title = 'Restore'; }
       } else {
-        card.style.display = 'none';
+        hide();
       }
       // a retired card normally dims to signal "done, nothing to act on" — but
       // zooming it in specifically to inspect its failure (from the queue tab's
       // status-label click, #467) should show it at full readable opacity.
       card.style.opacity = (card.dataset.retired === '1' && _zoomedWorker !== i) ? '.55' : '1';
-      if (card.style.display !== 'none') { applyIframeScale(card); anyVisible = true; }   // card size just changed — rescale its iframe to match
+      // only count as "visible" (for the empty-state message) when it's actually
+      // on screen — an off-screen parked card is live but not something you see.
+      const onScreen = card.style.display !== 'none' && card.style.position !== 'absolute';
+      if (card.style.display !== 'none') applyIframeScale(card);   // card size just changed — rescale its iframe to match
+      if (onScreen) anyVisible = true;
     });
     const emptyMsg = document.getElementById('falcon-workers-empty');
     if (emptyMsg) emptyMsg.style.display = anyVisible ? 'none' : 'block';
@@ -1171,6 +1205,7 @@
       <div id="falcon-body-log" style="display:none;padding:0;overflow:hidden;flex:1;flex-direction:column">
         <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
           <button type="button" id="falcon-log-copy" style="padding:2px 8px;cursor:pointer">Copy log</button>
+          <button type="button" id="falcon-log-clear" style="padding:2px 8px;cursor:pointer">Clear</button>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer" title="Detailed per-worker step tracing — leave on when reporting a problem">
             <input type="checkbox" id="falcon-log-debug" /> <span>debug</span>
           </label>
@@ -1286,6 +1321,11 @@
       setTimeout(() => { note.textContent = ''; }, 4000);
     };
     const dbgBox = document.getElementById('falcon-log-debug');
+    document.getElementById('falcon-log-clear').onclick = () => {
+      LOG.length = 0;
+      try { GM_setValue('falcon:log', '[]'); } catch (e) {}
+      renderLog();
+    };
     dbgBox.checked = debugOn();
     dbgBox.onchange = () => GM_setValue('falcon:debug', dbgBox.checked);
     const sizeSlider = document.getElementById('falcon-worker-size');
@@ -1315,12 +1355,26 @@
     window.addEventListener('mousemove', e => { if (!dragging) return; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dy)) + 'px'; });
     window.addEventListener('mouseup', () => { dragging = false; });
   }
+  // ⚠ The Workers pane must NEVER be display:none while workers are running.
+  // #467 (majkinetor: "when worker tab is not open, it doesnt work"): a worker
+  // iframe inside a display:none container loads and fills fine, but its submit
+  // click goes nowhere — his log shows the button found and enabled, MB
+  // reporting no error, and the page simply never navigating for the full 50s;
+  // opening the tab made the same 3 items finish in 5s. Browsers don't run a
+  // display:none subtree's rendering, and the form submission dies with it.
+  // So hide it the way that keeps it fully live: parked off-screen, still laid
+  // out, still rendering. (Idle cards can still be display:none — they have no
+  // work in flight to lose. See renderWorkerLayout.)
+  const OFFSCREEN = 'position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;';
   function setTab(t) {
     tab = t;
     document.getElementById('falcon-body-queue').style.display = t === 'queue' ? 'flex' : 'none';
-    document.getElementById('falcon-body-workers').style.display = t === 'workers' ? 'block' : 'none';
+    const w = document.getElementById('falcon-body-workers');
+    if (t === 'workers') w.style.cssText = 'display:block;padding:8px 10px;overflow:auto;flex:1';
+    else w.style.cssText = OFFSCREEN + 'display:block;padding:8px 10px;';
     document.getElementById('falcon-body-log').style.display = t === 'log' ? 'flex' : 'none';
     if (t === 'log') renderLog();
+    if (t === 'workers') renderWorkerLayout();   // sizes were computed while off-screen; recompute for the real viewport
   }
   function showPanel() { ensurePanel(); panel.style.display = 'flex'; renderQueue(); }
   function togglePanel() { ensurePanel(); if (panel.style.display === 'none') showPanel(); else panel.style.display = 'none'; }
