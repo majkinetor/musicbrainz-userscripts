@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.27.004258
+// @version      2026.7.27.005457
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1525,6 +1525,20 @@
     style.textContent = [
       '.falcon-bar.falcon-compact .falcon-bt{display:none}',
       '.falcon-bar button{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}',
+      // Borderless (majkinetor: "its too intrusive"). A row of boxed native
+      // buttons competes with the queue list, which is the actual content. The
+      // affordance moves to hover, so a button still reads as a button when you
+      // go for it without drawing a frame around itself the rest of the time.
+      // #falcon-run keeps its solid fill — it sets background inline, which wins
+      // over this, and the primary action should stay the loud one.
+      // min-height matters: the native border was quietly providing 4px of the
+      // hit area, so dropping it shrank these to 16px tall. Targets stay
+      // generous whether or not there's a box drawn around them (#419).
+      '.falcon-bar button{background:none;border:none;border-radius:4px;color:inherit;padding:3px 8px;min-height:22px}',
+      '.falcon-bar button:hover:not(:disabled){background:rgba(0,0,0,.08)}',
+      '.falcon-bar button:active:not(:disabled){background:rgba(0,0,0,.14)}',
+      // disabled used to read as a greyed box; with no box it has to fade instead
+      '.falcon-bar button:disabled{opacity:.4;cursor:default}',
       '.falcon-bar .falcon-bi{display:inline-flex;line-height:1}',
       // with the label gone the button would shrink to a sliver of glyph, so
       // give the icon-only state a real hit area (no tiny targets — #419).
