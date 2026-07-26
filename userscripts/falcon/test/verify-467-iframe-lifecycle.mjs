@@ -5,17 +5,24 @@
 // not being fully torn down by a plain `.src` reassignment on a REUSED iframe,
 // compounding across a long session.
 //
-// ⚠ That diagnosis was wrong, and the fix it motivated (a genuinely FRESH
-// iframe element per item) turned out to be the more expensive half of the
-// Firefox freeze. Measured on production in Firefox: 2 dual-type items took
-// 256s with a fresh iframe each and 4.9s when the card's iframe was reused.
-// Building a new iframe per item is pathologically slow there, and it bought
-// nothing — navigating a same-origin iframe destroys the previous document
-// either way, so MB's timers die with it whether you swap the element or just
-// navigate it. workerLoop therefore REUSES the card's iframe and drives it with
-// location.replace() (which also keeps the session history from growing).
+// A fresh iframe per item is also what stops the tab being destroyed mid-run.
 //
-// This test now pins that: one iframe per card, reused across items. A RETIRED
+// Reusing it was tried, on a measurement (2 dual-type items: 256s with a fresh
+// iframe each, 4.9s reused) — but that measurement was taken while the dual-type
+// SEEDING bug was still present, so every later item was ALSO doing post-render
+// DOM poking on MB's React tree, which is what actually cost the time. With
+// seeding fixed, a fresh iframe per item measures the same (6 dual-type items in
+// Firefox on production: 12.97s / 12.25s fresh, ~12.4s reused).
+//
+// Meanwhile the reuse was killing majkinetor's tab. His logs isolate it exactly:
+// an item that FAILS retires its card and the next item gets a brand-new iframe
+// — fine, every time. An item that COMMITS keeps the same card, and the next
+// navigation of that already-used iframe takes the whole tab down, panel and
+// remaining queue with it. Seen across two builds, once via
+// contentWindow.location.replace() and again via plain .src, so it is the reuse
+// itself and not the navigation method.
+//
+// So: one iframe, one item, never re-navigated. A RETIRED
 // card's one remaining iframe is bounded (that card processes nothing further)
 // so it's kept alive rather than discarded — majkinetor: "I want to have worker
 // visible there, in its active state" (verify-467-item-popup.mjs covers reusing
@@ -78,7 +85,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status === 'done'), null, { timeout: 20000 });
   await page.waitForTimeout(300);
   console.log('iframe ids created over the run:', JSON.stringify(iframeIds));
-  ck(iframeIds.length === 1, `ONE iframe element is created and reused across both items — not rebuilt per item, which cost Firefox ~250s for the same work (got ${iframeIds.length})`);
+  ck(iframeIds.length === 2, `TWO distinct iframe elements — one per item, never re-navigating a used one (got ${iframeIds.length})`);
   ck(new Set(iframeIds).size === iframeIds.length, 'all created iframe ids are unique (no accidental duplicate reporting)');
   const cardCount = await page.evaluate(() => document.querySelectorAll('.falcon-worker-card').length);
   ck(cardCount === 1, `both items still ran on the SAME card (visual continuity preserved) despite fresh iframes underneath (got ${cardCount} card(s))`);

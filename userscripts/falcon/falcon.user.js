@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.221502
+// @version      2026.7.26.222621
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1085,21 +1085,25 @@
       if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
       item.status = 'active'; scheduleRender('queue');
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
-      // ⚠ REUSE this card's iframe across items; do NOT build a fresh one each
-      // time. Creating a new iframe per item (and thus tearing down the previous
-      // MB edit document) is pathologically slow in FIREFOX — reproduced on
-      // production: item 1 fine, then every later item blocked the main thread
-      // ~30-46s, freezing the whole tab (majkinetor, #467). Chromium tears the
-      // same documents down without complaint, which is why this never showed up
-      // in testing here until Firefox was tried.
-      // Reuse is safe precisely because of how failures are handled: a worker
-      // only continues on this card when the previous item genuinely committed,
-      // which means MB navigated the frame away and its form is not dirty.
-      // Anything that did NOT commit retires the card outright (see below) and
-      // spawns a fresh one, so a dirty form is never re-navigated — that's the
-      // beforeunload trap this originally guarded against, still covered.
-      let iframe = card.querySelector('.falcon-worker-body iframe');
-      if (!iframe) iframe = newIframeIn(card);
+      // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
+      // already been used.
+      //
+      // Reusing it was a speed fix of mine, and it is what has been killing
+      // majkinetor's tab (#467). His logs isolate it precisely: an item that
+      // FAILS retires its card and the next item gets a brand-new iframe —
+      // fine, every time. An item that COMMITS keeps the same card, and the
+      // next navigation of that already-used iframe takes the whole tab down,
+      // panel and remaining queue with it. Reproduced across two builds, once
+      // via contentWindow.location.replace() and again via plain .src, so it is
+      // the reuse itself and not the navigation method.
+      //
+      // The measurement that justified reuse (2 items: 256s -> 4.9s) was taken
+      // while the dual-type SEEDING bug was still present — back then every
+      // later item was also doing post-render DOM poking on MB's React tree,
+      // which is what actually cost the time. With seeding fixed, a fresh iframe
+      // per item measures the same as reuse, so the optimisation buys nothing
+      // and costs him runs.
+      const iframe = newIframeIn(card);
       card.dataset.itemId = item.id;   // lets showItemPopup find "the worker that ran this item"
       updateWorkerLabel(card, item);
       // #467 (majkinetor): navigate straight to the seed url — MB pre-fills
