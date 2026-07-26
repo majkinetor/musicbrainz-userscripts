@@ -1,6 +1,11 @@
 // #467 (majkinetor: "Lets have button to uncollapse all details") — a toolbar
 // button that expands every queue row's url detail at once, and toggles to
 // "Collapse all" once they're all open, instead of clicking each ▸ individually.
+//
+// The label is read off `.falcon-bt`, not the button's textContent: toolbar
+// buttons are icon + label spans so they can collapse to icon-only on a narrow
+// panel (see verify-toolbar-collapse.mjs), so textContent now carries the icon
+// glyph too.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
@@ -32,26 +37,26 @@ await page.evaluate(() => window.__falconTest.setQueue([
   { id: 'c', entityType: 'artist', mbid: 'b31113ab-205d-461b-b431-5d5c52635117', urls: [{ url: 'https://myspace.com/exp3', linkTypeId: null }], name: null, urlResults: null, status: 'queued', error: '' },
 ]));
 
-const initialLabel = await page.textContent('#falcon-expand-all');
+const initialLabel = await page.textContent('#falcon-expand-all .falcon-bt');
 ck(initialLabel === 'Expand all', `starts as "Expand all" when nothing is expanded (got "${initialLabel}")`);
 
 await page.click('#falcon-expand-all');
 const expandedCount = await page.evaluate(() => window.__falconTest.getExpandedIds().size);
-const labelAfterExpand = await page.textContent('#falcon-expand-all');
+const labelAfterExpand = await page.textContent('#falcon-expand-all .falcon-bt');
 console.log('expanded count:', expandedCount, 'label:', labelAfterExpand);
 ck(expandedCount === 3, `clicking it expands ALL 3 rows at once (got ${expandedCount})`);
 ck(labelAfterExpand === 'Collapse all', `label flips to "Collapse all" once everything is expanded (got "${labelAfterExpand}")`);
 
 await page.click('#falcon-expand-all');
 const expandedAfterCollapse = await page.evaluate(() => window.__falconTest.getExpandedIds().size);
-const labelAfterCollapse = await page.textContent('#falcon-expand-all');
+const labelAfterCollapse = await page.textContent('#falcon-expand-all .falcon-bt');
 console.log('expanded after collapse-all:', expandedAfterCollapse, 'label:', labelAfterCollapse);
 ck(expandedAfterCollapse === 0, `clicking it again collapses everything (got ${expandedAfterCollapse})`);
 ck(labelAfterCollapse === 'Expand all', `label flips back to "Expand all" (got "${labelAfterCollapse}")`);
 
 // expanding one row manually, then the rest via the button, still reaches "all expanded"
 await page.click('.falcon-row-expand[data-id="a"]');
-const labelPartial = await page.textContent('#falcon-expand-all');
+const labelPartial = await page.textContent('#falcon-expand-all .falcon-bt');
 ck(labelPartial === 'Expand all', `with only SOME rows expanded, the button still offers "Expand all" (got "${labelPartial}")`);
 await page.click('#falcon-expand-all');
 const allExpandedNow = await page.evaluate(() => window.__falconTest.getExpandedIds().size);

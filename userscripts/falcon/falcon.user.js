@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.175605
+// @version      2026.7.26.180813
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1315,8 +1315,42 @@
   }
 
   let panel = null, tab = 'queue';
+  // Standing rule across every script here (Art Station is the reference): a
+  // toolbar's labelled buttons collapse to icon-only rather than wrapping, with
+  // the tooltips carrying the meaning. Falcon needs it more than most — the
+  // panel is a 460px box the user can drag-resize and maximize, so its three
+  // bars go from roomy to cramped constantly.
+  //
+  // Widths are summed rather than read off scrollWidth: these bars use flex:1
+  // spacers (the progress bar, `margin-left:auto`), which absorb the overflow
+  // and make scrollWidth/offsetTop-based detection report a comfortable fit
+  // right up until it wraps.
+  function fitBar(bar) {
+    if (!bar) return;
+    bar.classList.remove('falcon-compact');            // measure with full labels
+    const kids = [...bar.children];
+    const gap = parseFloat(getComputedStyle(bar).gap) || 8;
+    let need = gap * Math.max(0, kids.length - 1);
+    kids.forEach(el => { if (!el.id || el.id !== 'falcon-progress-wrap') need += el.offsetWidth; });
+    bar.classList.toggle('falcon-compact', need > bar.clientWidth - 20);   // minus h-padding
+  }
+  function fitBars() {
+    if (!panel) return;
+    panel.querySelectorAll('.falcon-bar').forEach(fitBar);
+  }
+
   function ensurePanel() {
     if (panel) return;
+    const style = document.createElement('style');
+    style.textContent = [
+      '.falcon-bar.falcon-compact .falcon-bt{display:none}',
+      '.falcon-bar button{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}',
+      '.falcon-bar .falcon-bi{display:inline-flex;line-height:1}',
+      // with the label gone the button would shrink to a sliver of glyph, so
+      // give the icon-only state a real hit area (no tiny targets — #419).
+      '.falcon-bar.falcon-compact button{min-width:26px;justify-content:center}',
+    ].join('\n');
+    document.head.appendChild(style);
     panel = document.createElement('div'); panel.id = 'falcon-panel';
     panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:90vw;max-height:70vh;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
     panel.innerHTML = `
@@ -1331,12 +1365,12 @@
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column">
-        <div id="falcon-queue-toolbar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
+        <div id="falcon-queue-toolbar" class="falcon-bar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
           <input type="checkbox" id="falcon-select-all" title="Select all" style="flex:0 0 auto" />
-          <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail">Expand all</button>
+          <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail"><span class="falcon-bi">▾</span><span class="falcon-bt">Expand all</span></button>
           <button type="button" id="falcon-paste-toggle" title="Paste entities to add to the queue" style="width:26px;height:26px;border-radius:50%;border:1px solid #ccc;background:#fafafa;cursor:pointer;font:16px/1 Arial;color:#1b2a4a;flex:0 0 auto">+</button>
           <span id="falcon-select-count"></span>
-          <button type="button" id="falcon-remove-selected" disabled style="margin-left:auto;padding:2px 8px;cursor:pointer">Remove selected</button>
+          <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
         </div>
         <div id="falcon-paste-box" style="display:none;padding:6px 10px;border-bottom:1px solid #eee;flex:0 0 auto">
           <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>  /  recording:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
@@ -1345,8 +1379,8 @@
           </div>
         </div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
-        <div id="falcon-queue-bottom" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
-          <span style="color:#666;flex:0 0 auto">workers</span>
+        <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
+          <span class="falcon-bt" style="color:#666;flex:0 0 auto">workers</span>
           <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px;flex:0 0 auto" />
           <div id="falcon-progress-wrap" style="flex:1;display:flex;align-items:center;gap:6px;min-width:0">
             <div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;min-width:40px">
@@ -1354,7 +1388,7 @@
             </div>
             <span id="falcon-progress-text" style="color:#666;font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
           </div>
-          <button type="button" id="falcon-run" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
+          <button type="button" id="falcon-run" title="Start processing the queue" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
         </div>
       </div>
       <div id="falcon-body-workers" style="position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;display:block;padding:8px 10px;">
@@ -1370,17 +1404,20 @@
         <div id="falcon-workers-empty" style="display:none;color:#999;padding:8px 0">No active workers right now — idle ones are hidden here. Click ▶ Start to begin.</div>
       </div>
       <div id="falcon-body-log" style="display:none;padding:0;overflow:hidden;flex:1;flex-direction:column">
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
-          <button type="button" id="falcon-log-copy" style="padding:2px 8px;cursor:pointer">Copy log</button>
-          <button type="button" id="falcon-log-clear" style="padding:2px 8px;cursor:pointer">Clear</button>
+        <div class="falcon-bar" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
+          <button type="button" id="falcon-log-copy" title="Copy the log as Markdown, ready to paste into an issue" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">⧉</span><span class="falcon-bt">Copy log</span></button>
+          <button type="button" id="falcon-log-clear" title="Clear the log" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">🧹</span><span class="falcon-bt">Clear</span></button>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer" title="Detailed per-worker step tracing — leave on when reporting a problem">
-            <input type="checkbox" id="falcon-log-debug" /> <span>debug</span>
+            <input type="checkbox" id="falcon-log-debug" /> <span class="falcon-bt">debug</span>
           </label>
           <span id="falcon-log-copied" style="color:#2e9e5b"></span>
         </div>
         <div id="falcon-log-text" style="overflow:auto;flex:1;padding:8px 10px;font:10px monospace;white-space:pre-wrap"></div>
       </div>`;
     document.body.appendChild(panel);
+    // the panel is drag-resizable as well as maximizable, so the bars have to
+    // re-fit continuously, not just on the events we happen to hook.
+    try { new ResizeObserver(() => fitBars()).observe(panel); } catch (e) {}
     document.getElementById('falcon-close').onclick = () => { panel.style.display = 'none'; };
     document.getElementById('falcon-maximize').onclick = toggleMaximize;
     const wIn = document.getElementById('falcon-worker-count'); wIn.value = cfg.workers;
@@ -1549,8 +1586,9 @@
     document.getElementById('falcon-body-log').style.display = t === 'log' ? 'flex' : 'none';
     if (t === 'log') renderLog();
     if (t === 'workers') renderWorkerLayout();   // sizes were computed while off-screen; recompute for the real viewport
+    fitBars();   // a bar that was hidden measured 0-wide; re-fit now it's laid out
   }
-  function showPanel() { ensurePanel(); panel.style.display = 'flex'; renderQueue(); }
+  function showPanel() { ensurePanel(); panel.style.display = 'flex'; renderQueue(); fitBars(); }
   function togglePanel() { ensurePanel(); if (panel.style.display === 'none') showPanel(); else panel.style.display = 'none'; }
 
   // #467 (majkinetor): "maximize" — grows the whole panel (and, on the Workers tab,
@@ -1569,6 +1607,7 @@
       if (_prevBox) Object.assign(panel.style, _prevBox);
       _maxed = false; if (btn) { btn.textContent = '⛶'; btn.title = 'Maximize'; }
     }
+    fitBars();
   }
 
   const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
@@ -1618,9 +1657,16 @@
     const expandAllBtn = document.getElementById('falcon-expand-all');
     if (expandAllBtn) {
       const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
-      expandAllBtn.textContent = allExpanded ? 'Collapse all' : 'Expand all';
+      // write only the LABEL span — replacing the button's textContent would
+      // throw away the icon and the collapse markup along with it.
+      const bt = expandAllBtn.querySelector('.falcon-bt');
+      const bi = expandAllBtn.querySelector('.falcon-bi');
+      if (bt) bt.textContent = allExpanded ? 'Collapse all' : 'Expand all';
+      if (bi) bi.textContent = allExpanded ? '▴' : '▾';
+      expandAllBtn.title = allExpanded ? "Collapse every row's url detail" : "Expand every row's url detail";
     }
     renderProgress();
+    fitBars();
   }
   // #467 (majkinetor): "Lets have a progress bar". Counts anything that has
   // reached a terminal state as finished — done/partial/failed/manual all mean
@@ -1700,7 +1746,13 @@
   }
   function updateRunBtn() {
     const b = document.getElementById('falcon-run'); if (!b) return;
-    b.textContent = running ? '■ Stop' : '▶ Start';
+    // label/icon spans only — see the expand-all note; textContent would wipe
+    // out the collapse markup and leave the button stuck at full width.
+    const bt = b.querySelector('.falcon-bt'), bi = b.querySelector('.falcon-bi');
+    if (bt) bt.textContent = running ? 'Stop' : 'Start';
+    if (bi) bi.textContent = running ? '■' : '▶';
+    b.title = running ? 'Stop after the running workers finish their current item' : 'Start processing the queue';
+    fitBar(b.closest('.falcon-bar'));
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
