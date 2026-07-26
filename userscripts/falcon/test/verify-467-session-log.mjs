@@ -14,10 +14,12 @@
 // 2. Sessions were merged. Restore did LOG.push(...previous), so every log
 //    opened with the last run's lines stacked above the current ones.
 //
-// This also covers the forensics added for the still-unexplained report that the
-// panel vanishes mid-run: if the page unloads with work in flight, that fact is
-// recorded synchronously and surfaced on the next load, so "the tab navigated"
-// can never again look like "Falcon closed itself" or like a truncated log.
+// It also covers the unload forensics: if the page goes away, that fact is
+// recorded synchronously with the url, so a tab being closed out from under
+// Falcon can never again look like Falcon closing itself, or like a log that
+// merely stopped. That line is what identified the real culprit — chaban's
+// "Click buttons across tabs", which injects into Falcon's worker iframes and
+// closes the tab after a successful edit.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -101,28 +103,26 @@ const marked = await page.evaluate(id => {
   const raw = localStorage.getItem('falcon:session:' + id);
   return raw ? JSON.parse(raw).join('\n') : '';
 }, s3id);
-ck(/THE TAB NAVIGATED AWAY MID-RUN/.test(marked), 'unloading with work in flight records that the TAB navigated — not that Falcon closed itself');
+ck(/THIS TAB IS BEING UNLOADED/.test(marked), 'unloading records that the PAGE went away — not that Falcon closed itself');
 ck(/musicbrainz\.org/.test(marked), 'and records where it was when that happened');
 
-// reload: the killed session's log must come back, panel open, on the Log tab
+// reload: the killed session's log must still be there when you go looking
 await page.reload({ waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(500);
 await page.addScriptTag({ content: code });
 await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
 await page.waitForTimeout(500);
 const restored = await page.evaluate(() => {
-  const p = document.getElementById('falcon-panel');
-  return {
-    visible: !!p && (p.style.display || 'none') !== 'none',
-    logTab: getComputedStyle(document.getElementById('falcon-body-log')).display !== 'none',
-    text: document.getElementById('falcon-log-text').textContent,
-  };
+  document.getElementById('falcon-launcher').click();
+  document.getElementById('falcon-tab-log').click();
+  return { text: document.getElementById('falcon-log-text').textContent };
 });
-console.log('after reload — panel visible:', restored.visible, '| log tab:', restored.logTab);
-ck(restored.visible, 'after the tab navigates mid-run, the panel reopens by itself');
-ck(restored.logTab, 'showing the Log tab, so the evidence is the first thing seen');
+// The panel deliberately does NOT force itself open here any more: that was
+// scaffolding for chasing the tab-closing bug, and with the panel already open
+// at boot the launcher's first click toggled it shut. The log still survives and
+// is one click away, which is the part that matters.
 ck(/5441c29d/.test(restored.text), 'with the killed run\'s own lines restored');
-ck(/THE TAB NAVIGATED AWAY MID-RUN/.test(restored.text), 'and the explanation of what happened to it');
+ck(/THIS TAB IS BEING UNLOADED/.test(restored.text), 'and the explanation of what happened to it');
 ck(!/d31f76d2/.test(restored.text), 'still without dragging in older runs');
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
