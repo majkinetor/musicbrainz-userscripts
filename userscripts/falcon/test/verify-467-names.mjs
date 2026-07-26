@@ -98,9 +98,11 @@ ck(withName === 'Der Zirkel', `uses the real name once resolved (got "${withName
 await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
 await page.click('#falcon-launcher');
 await page.waitForSelector('#falcon-panel', { timeout: 5000 });
-await page.click('#falcon-paste-toggle');   // paste box starts collapsed to a + button (#467 review UX)
-await page.fill('#falcon-paste', 'd31f76d2-1d8e-4271-8027-148f375979d7,https://myspace.com/nametest');
-await page.click('#falcon-add');
+// the (+) paste box is gone — a queue arrives as JSON now (or via ?falcon= /
+// Harmony), so add the row the same way an import does.
+await page.evaluate(() => window.__falconTest.importQueueJson(JSON.stringify({
+  items: [{ entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://myspace.com/nametest' }] }],
+}), 'names-test'));
 const resolved = await page.waitForFunction(() => {
   const row = document.querySelector('#falcon-queue-list a');
   return row && row.textContent === 'Der Zirkel' ? row.textContent : null;

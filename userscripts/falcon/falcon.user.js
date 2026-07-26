@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.27.001951
+// @version      2026.7.27.004258
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -305,6 +305,13 @@
     }
     return {
       fetchJson: (url, retries) => new Promise(resolve => { queue.push({ url, retries: retries == null ? 3 : retries, resolve }); drain(); }),
+      // Drop everything not yet started, resolving each caller with null. Used
+      // when a run begins: a backlog of cosmetic name lookups must not spend the
+      // rate-limit budget the workers need. In-flight requests are left to
+      // finish — there are at most MAX_CONCURRENT of them and aborting mid-flight
+      // buys nothing.
+      cancelPending() { const n = queue.length; queue.splice(0).forEach(item => item.resolve(null)); return n; },
+      pendingCount: () => queue.length,
     };
   })();
   // resolves an entity's real name/title for display, instead of a truncated mbid —
@@ -312,9 +319,31 @@
   // panel only ever renders on musicbrainz.org itself), through the throttle above.
   // Cached per entity since the same mbid can appear across several queue items.
   const _nameCache = new Map();
+  // ⚠ Name lookups YIELD to a run (majkinetor: "any ongoing scanning for names
+  // should probably be stopped on starting the queue so not to slow it down or
+  // induce rate limit that would influence workers").
+  //
+  // They are cosmetic — a row shows `recording/2aa5e6cc` until its title lands —
+  // but they are not free: a big paste queues one /ws/2 call per entity, and
+  // MusicBrainz rate-limits per IP, so a backlog still in flight when Start is
+  // pressed competes with the workers' own edit-page loads for the same budget.
+  // A 503 there is not cosmetic at all; it fails the item.
+  //
+  // So a run suspends them: new lookups return immediately, and the throttle's
+  // whole pending backlog is dropped rather than deferred (those requests would
+  // otherwise still fire, just later, which is the same problem moved). Rows
+  // keep whatever label they already have.
+  let _namesSuspended = false;
+  function suspendNameLookups() {
+    _namesSuspended = true;
+    const dropped = mbThrottle.cancelPending();
+    if (dropped) dbg('[names]', `dropped ${dropped} pending name lookup(s) so they don't compete with the workers`);
+  }
+  function resumeNameLookups() { _namesSuspended = false; }
   async function fetchEntityName(entityType, mbid) {
     const key = entityType + ':' + mbid;
     if (_nameCache.has(key)) return _nameCache.get(key);
+    if (_namesSuspended) return null;
     const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityType}/${mbid}?fmt=json`);
     const name = j ? (j.title || j.name || null) : null;   // recordings: title; artist/label: name
     if (name) _nameCache.set(key, name);
@@ -341,6 +370,56 @@
     });
     return { merged, added };
   }
+  // Reads what the Export button writes, and is deliberately forgiving about the
+  // shape: the wrapper object `{items:[...]}`, or a bare array of items, or a
+  // bare array of the flat `{mbid,url,linkTypeId}` rows that `?falcon=` and
+  // Harmony use — someone hand-writing a queue shouldn't have to guess which.
+  //
+  // An imported item keeps its STATUS. Re-importing a finished run therefore
+  // shows what already happened rather than silently re-queueing committed
+  // edits; only rows that are still `queued` will be picked up by a worker. That
+  // makes "export a failed run, fix the bad urls, import, Start" work without
+  // duplicating everything that already succeeded.
+  function importQueueJson(text, sourceName) {
+    let data;
+    try { data = JSON.parse(text); } catch (e) { log('error', `${sourceName || 'import'}: not valid JSON — ${e.message}`); return { added: 0, merged: 0 }; }
+    const rows = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
+    if (!rows) { log('error', `${sourceName || 'import'}: no items found (expected {"items":[…]} or an array)`); return { added: 0, merged: 0 }; }
+
+    let added = 0, merged = 0, skipped = 0;
+    const flat = [];
+    rows.forEach(r => {
+      if (!r || typeof r !== 'object' || !MBID_RE.test(String(r.mbid || ''))) { skipped++; return; }
+      const type = normalizeEntityType(r.entityType);
+      if (Array.isArray(r.urls)) {
+        // full item: reinstate it whole, status and all
+        const urls = r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null }));
+        if (!urls.length) { skipped++; return; }
+        queue.push({
+          id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
+          note: r.note || '', name: r.name || null, urlResults: r.urlResults || null,
+          status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
+          error: r.error || '',
+        });
+        added++;
+      } else if (r.url) {
+        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '' });
+      } else skipped++;
+    });
+    if (flat.length) { const res = addToQueue(flat); added += res.added; merged += res.merged; }
+
+    renderQueue();
+    // names for anything that arrived without one — unless a run is under way,
+    // in which case these would compete with the workers for MB's rate limit.
+    queue.filter(i => !i.name && i.status === 'queued').forEach(i => {
+      fetchEntityName(i.entityType, i.mbid).then(n => { if (n) { i.name = n; scheduleRender('queue'); } });
+    });
+    log('info', `${sourceName || 'import'}: added ${added} item(s)`
+      + (merged ? `, merged ${merged} url(s)` : '')
+      + (skipped ? `, skipped ${skipped} unusable row(s)` : ''));
+    return { added, merged, skipped };
+  }
+
   // `?falcon=` accepts TWO schemes:
   //   1. base64(JSON array of {entityType?,mbid,url,linkTypeId?,note?}) directly in
   //      the URL — the documented contract for any external script to hand Falcon a
@@ -1243,6 +1322,7 @@
       logRunSummary();
       if (!queue.some(i => i.status === 'queued')) {
         running = false;
+        resumeNameLookups();   // the rate-limit budget is ours again
         updateRunBtn();
         log('info', '=== run finished — the tab and panel stay open; the log above is this session only ===');
         writeLogNow();
@@ -1388,13 +1468,14 @@
     _runStartedAt = Date.now();
     // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
     newSession(`${queue.filter(i => i.status === 'queued').length} queued, ${cfg.workers} worker(s), ${location.href}`);
+    suspendNameLookups();   // cosmetic lookups must not eat the workers' rate-limit budget
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
     for (let i = 0; i < need; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
     updateRunBtn();
   }
-  function stop() { running = false; stopHeartbeat(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
+  function stop() { running = false; stopHeartbeat(); resumeNameLookups(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
 
   /* ════════════════════════ UI ════════════════════════ */
   let launcher = null;
@@ -1467,15 +1548,11 @@
         <div id="falcon-queue-toolbar" class="falcon-bar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
           <input type="checkbox" id="falcon-select-all" title="Select all" style="flex:0 0 auto" />
           <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail"><span class="falcon-bi">▾</span><span class="falcon-bt">Expand all</span></button>
-          <button type="button" id="falcon-paste-toggle" title="Paste entities to add to the queue" style="width:26px;height:26px;border-radius:50%;border:1px solid #ccc;background:#fafafa;cursor:pointer;font:16px/1 Arial;color:#1b2a4a;flex:0 0 auto">+</button>
+          <button type="button" id="falcon-import" title="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">⭳</span><span class="falcon-bt">Import</span></button>
+          <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">⭱</span><span class="falcon-bt">Export</span></button>
+          <input type="file" id="falcon-import-file" accept="application/json,.json" style="display:none" />
           <span id="falcon-select-count"></span>
           <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
-        </div>
-        <div id="falcon-paste-box" style="display:none;padding:6px 10px;border-bottom:1px solid #eee;flex:0 0 auto">
-          <textarea id="falcon-paste" placeholder="One entity per line: <artist-mbid>,<url>  (or  artist:<mbid>,<url>  /  label:<mbid>,<url>  /  recording:<mbid>,<url>)  — multiple lines for the same mbid are grouped into one edit" style="width:100%;height:64px;box-sizing:border-box;font:11px monospace;resize:vertical"></textarea>
-          <div style="display:flex;gap:6px;margin-top:4px">
-            <button type="button" id="falcon-add" style="padding:4px 10px;cursor:pointer">+ Add to queue</button>
-          </div>
         </div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
@@ -1521,27 +1598,46 @@
     document.getElementById('falcon-maximize').onclick = toggleMaximize;
     const wIn = document.getElementById('falcon-worker-count'); wIn.value = cfg.workers;
     wIn.onchange = () => { cfg.workers = wIn.value; wIn.value = cfg.workers; };
-    document.getElementById('falcon-add').onclick = () => {
-      const ta = document.getElementById('falcon-paste');
-      const parsed = parsePaste(ta.value);
-      if (!parsed.length) { log('warn', 'nothing parseable in the paste box'); return; }
-      const { merged, added } = addToQueue(parsed);
-      ta.value = ''; renderQueue();
-      log('info', `queued ${added} new item(s)` + (merged ? `, merged ${merged} url(s) into already-queued entities` : ''));
-      document.getElementById('falcon-paste-box').style.display = 'none';
+    // ── JSON import / export ────────────────────────────────────────────────
+    // (majkinetor: "lets remove + and add json import/export instead")
+    //
+    // The paste box this replaces only understood Falcon's own `mbid,url` line
+    // format, which nothing else produces. A queue is far more useful as a file:
+    // it outlives the tab, it can be prepared elsewhere, and — because the
+    // export carries each item's STATUS and per-url outcome — a partly-finished
+    // run can be handed to someone else, kept as a record, or re-imported to
+    // retry just the parts that failed.
+    //
+    // parsePaste stays: the `?falcon=` url and the Harmony button still use it.
+    document.getElementById('falcon-export').onclick = () => {
+      if (!queue.length) { log('warn', 'nothing to export — the queue is empty'); return; }
+      const payload = {
+        falcon: scriptVersion(),
+        exported: new Date().toISOString(),
+        items: queue.map(i => ({
+          entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
+          urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
+          status: i.status, error: i.error || '', urlResults: i.urlResults || null,
+        })),
+      };
+      const name = `falcon-queue-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+      a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 10000);
+      log('info', `exported ${queue.length} item(s) to ${name}`);
     };
-    // paste box starts collapsed to a small (+) button (majkinetor, #467) — expands
-    // on click, auto-collapses again once something's added (above) or on blur if
-    // left empty (mirrors Apollo Editor's collapsible paste-box convention).
-    document.getElementById('falcon-paste-toggle').onclick = () => {
-      const box = document.getElementById('falcon-paste-box');
-      const opening = box.style.display === 'none';
-      box.style.display = opening ? 'block' : 'none';
-      if (opening) document.getElementById('falcon-paste').focus();
+    document.getElementById('falcon-import').onclick = () => document.getElementById('falcon-import-file').click();
+    document.getElementById('falcon-import-file').onchange = function () {
+      const file = this.files && this.files[0];
+      this.value = '';                    // so re-picking the same file still fires
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => importQueueJson(String(reader.result || ''), file.name);
+      reader.onerror = () => log('error', `could not read ${file.name}`);
+      reader.readAsText(file);
     };
-    document.getElementById('falcon-paste').addEventListener('blur', function () {
-      if (!this.value.trim()) document.getElementById('falcon-paste-box').style.display = 'none';
-    });
     // #467 (majkinetor): "Do not switch to worker tab on start" — the queue list
     // (with its progress bar) is the more useful view during a run; the Workers
     // tab is for when you actually want to look inside one.
@@ -1889,5 +1985,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload };
 })();
