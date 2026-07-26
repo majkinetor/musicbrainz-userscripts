@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.223437
+// @version      2026.7.26.223953
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -160,6 +160,42 @@
   try {
     window.addEventListener('pagehide', noteUnload);
     window.addEventListener('beforeunload', noteUnload);
+  } catch (e) {}
+
+  // ⚠ REFUSE TO LET ANYTHING CLOSE THIS TAB. (majkinetor, #467, repeatedly:
+  // "DO NOT, EVER, CLOSE THE TAB", "LEAVE THE TAB OPEN WHEN FALCON IS DONE".)
+  //
+  // His observation is what cracked this: other scripts open a MusicBrainz edit
+  // page by URL, and after a successful commit that page CLOSES ITSELF and
+  // returns to whatever invoked it. Falcon loads those very same seeded edit
+  // pages, just inside worker iframes — and `top.close()` from a frame closes
+  // the whole tab.
+  //
+  // It is allowed to, because a tab opened by `window.open()` (which is exactly
+  // how the Harmony button launches Falcon) is script-closeable. And a close
+  // fires NO beforeunload and NO pagehide, which is precisely the signature in
+  // his last log: truncated mid-line, no unload marker — the thing I had read as
+  // a content-process crash.
+  //
+  // This never reproduced here for the same reason: Playwright pages are opened
+  // with goto(), not by script, so Firefox silently ignores close() on them. The
+  // identical call is a no-op in my environment and fatal in his.
+  //
+  // Overriding on unsafeWindow matters: the call arrives from MusicBrainz's own
+  // code as `top.close()`, which resolves to the PAGE's real window object, not
+  // the userscript sandbox's wrapper.
+  try {
+    const realTop = (typeof unsafeWindow !== 'undefined' && unsafeWindow) ? unsafeWindow : window;
+    const nativeClose = realTop.close;
+    realTop.close = function falconRefusesToClose() {
+      try {
+        LOG.push(`[${new Date().toISOString().slice(11, 19)}] ERROR *** BLOCKED an attempt to CLOSE this tab *** — something called window.close() (MusicBrainz's own post-commit "close and return" behaviour, most likely). Falcon keeps the tab open. Report this line.`);
+        writeLogNow();
+        scheduleRender('log');
+      } catch (e) {}
+      return undefined;   // deliberately NOT calling nativeClose
+    };
+    realTop.close.__falconNative = nativeClose;
   } catch (e) {}
   function log(level, msg) {
     const line = `[${new Date().toISOString().slice(11, 19)}] ${level.toUpperCase().padEnd(5)} ${msg}`;
