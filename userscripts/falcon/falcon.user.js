@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.222621
+// @version      2026.7.26.223437
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -136,11 +136,14 @@
       if (LS) LS.setItem(LS_PREFIX + SESSION_ID, payload);
     } catch (e) {}
   }
-  // short debounce — localStorage is cheap enough that the old 10s window (which
-  // is what actually lost his log) buys nothing.
+  // Very short debounce. 500ms was still enough to lose the end of a run:
+  // majkinetor's log stopped MID-LINE with no unload marker, meaning the content
+  // process died outright rather than navigating, so nothing got the chance to
+  // flush. At 100ms a hard crash costs at most the last line or two, and
+  // localStorage is cheap enough to absorb the extra writes.
   function persistLog() {
     if (_persistTimer) return;
-    _persistTimer = setTimeout(() => { _persistTimer = null; writeLogNow(); }, 500);
+    _persistTimer = setTimeout(() => { _persistTimer = null; writeLogNow(); }, 100);
   }
   // Forensics for the bug he's reporting: the panel vanishing mid-run. If the
   // top-level page unloads while work is in flight, something navigated the tab
@@ -1000,6 +1003,34 @@
   // majkinetor: "I want to have worker visible there, in its active state" — it's
   // kept alive and inspectable rather than discarded. The error also gets its own
   // banner right in the card (not just a hover tooltip), so it's visible once zoomed.
+  // ⚠ Retired cards keep their iframe ALIVE on purpose — majkinetor: "I want to
+  // have worker visible there, in its active state" — but a full MusicBrainz
+  // edit document is heavy, and keeping every one of them for a long queue is
+  // unbounded growth in the content process. A run that reached the end and then
+  // died with its log truncated MID-LINE and no unload event (#467) is what a
+  // content-process crash looks like, and this is the obvious thing feeding it.
+  //
+  // So: keep the most recent few inspectable, and release the documents behind
+  // the older ones. The card, its label and its error banner all stay exactly as
+  // they were — only the heavy live document goes, replaced by a note saying so,
+  // which is the part nobody was going to scroll back to anyway.
+  const LIVE_RETIRED_MAX = 3;
+  function trimRetiredIframes() {
+    const retired = workerCards.filter(c => c.dataset.retired === '1' && c.querySelector('iframe'));
+    retired.slice(0, Math.max(0, retired.length - LIVE_RETIRED_MAX)).forEach(c => {
+      const f = c.querySelector('iframe');
+      if (!f) return;
+      f.remove();
+      const body = c.querySelector('.falcon-worker-body');
+      if (body && !body.querySelector('.falcon-worker-freed')) {
+        const note = document.createElement('div');
+        note.className = 'falcon-worker-freed';
+        note.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;color:#888;font:11px sans-serif;background:#fafafa';
+        note.textContent = 'page released to save memory — the error above is kept';
+        body.appendChild(note);
+      }
+    });
+  }
   function retireCard(card, reason) {
     card.dataset.retired = '1';
     card.style.opacity = '.55';
@@ -1008,6 +1039,7 @@
     card.title = 'This worker hit an issue and was retired — kept visible for inspection. ' + (reason || '');
     const banner = card.querySelector('.falcon-worker-errbanner');
     if (banner && reason) { banner.textContent = reason; banner.style.display = 'block'; }
+    trimRetiredIframes();
   }
   function spawnWorkerCard() {
     const strip = document.getElementById('falcon-workers'); if (!strip) return null;
