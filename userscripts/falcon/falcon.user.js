@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.215258
+// @version      2026.7.26.221502
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -458,6 +458,15 @@
   // window.open — used by the "open in a real tab" manual-review path, #467) —
   // same-origin either way, so fillAndSubmit's own logic never needs to know which.
   function frameDoc(target) { try { return ('contentDocument' in target) ? target.contentDocument : (target.document || null); } catch (e) { return null; } }
+  // ⚠ NEVER NAVIGATE THROUGH THE WINDOW THIS RETURNS.
+  // It is deliberately allowed to be the current window — fillAndSubmit is also
+  // driven directly against the page you're on (the "open in a real tab" path,
+  // and several tests). That makes it fine for reading and for filling, and
+  // categorically unsafe for navigating: under a userscript manager's Xray
+  // wrappers these handles are not always what they look like, and a navigation
+  // meant for a worker frame taking the whole tab — panel, workers and queue
+  // with it — is exactly how #467 lost a run. Navigate iframes via `.src`, which
+  // can only ever move the element it belongs to.
   function frameWin(target) { try { return ('contentWindow' in target) ? target.contentWindow : target; } catch (e) { return null; } }
 
   function findAddLinkInput(doc) {
@@ -1097,21 +1106,28 @@
       // every url as the page renders, so fillAndSubmit has little or nothing
       // left to type. Measured live: ~2-3s vs 10+s for typing simulation.
       const tNav = Date.now();
-      // ⚠ Navigate with location.replace(), NOT by assigning .src. Assigning
-      // .src pushes a new SESSION HISTORY entry each time, so a worker grinding
-      // through a queue accumulates one heavy MB edit document per item in that
-      // iframe's history (and Firefox's bfcache keeps them alive). That is what
-      // makes the freeze scale with queue length rather than showing up on item
-      // one. replace() reuses the current entry, so history stays at depth 1.
-      // Safe for the same reason reuse is safe: we only get here on a fresh card
-      // or after a genuine commit, never on a dirty form.
+      // ⚠ NAVIGATE THE IFRAME BY ASSIGNING .src, AND BY NOTHING ELSE.
+      //
+      // This briefly used `frameWin(iframe).location.replace(seedUrl)` to keep
+      // the frame's session history at depth 1. It cost majkinetor a run: his
+      // tab went away one second into item 2 — the first navigation of a REUSED
+      // iframe — taking the panel, the workers and the rest of the queue with it
+      // (#467: "the Falcon popup closes abruptly in the middle of the process").
+      //
+      // It never reproduced here, because these tests inject into the page's own
+      // realm while he runs inside a userscript manager's sandbox, where
+      // `contentWindow` comes back as an Xray wrapper and `w.location` cannot be
+      // relied on to still mean the FRAME's location. Assigning `.src` has no
+      // such ambiguity: it is a property of the element, it can only ever
+      // navigate that element, and it cannot reach the top window however the
+      // script is wrapped.
+      //
+      // The history argument was speculative anyway — the measured freeze fix
+      // was seeding both link types up front, and replace() was verified NOT to
+      // fix the 6-item freeze on its own. Reusing the iframe DOES stay: that one
+      // is measured (2 items, 256s -> 4.9s).
       const seedUrl = buildSeedEditUrl(item);
-      let navigated = false;
-      try {
-        const w = frameWin(iframe);
-        if (w && w.location && /\/(artist|label|recording)\//.test(w.location.pathname)) { w.location.replace(seedUrl); navigated = true; }
-      } catch (e) {}
-      if (!navigated) iframe.src = seedUrl;
+      iframe.src = seedUrl;
       // A FRESH iframe starts on about:blank, whose readyState is already
       // 'complete' — so a bare "readyState !== 'loading'" check passes
       // INSTANTLY, against the blank document, before MB's page has loaded at
