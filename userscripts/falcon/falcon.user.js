@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.180813
+// @version      2026.7.26.215258
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -81,31 +81,83 @@
   // exactly when the log matters most — took the evidence with it. It's now
   // mirrored into GM storage as it's written and restored on load, so the
   // previous session's log is still there to copy afterwards.
+  // majkinetor, #467, emphatically: "logs do not work correctly, as I can't get
+  // previous logs when it closes... I DON'T WANT LOGS FROM OTHER RUNS. I WANT
+  // YOU TO KEEP THE WINDOW OPEN AND HAVE A SINGLE LOG OF THAT SESSION."
+  //
+  // Two separate bugs were behind that, both fixed here.
+  //
+  // 1. NOTHING WAS EVER WRITTEN. The persist was debounced by 10s, and a run of
+  //    8 recordings takes about 10s — so on a short run the first write hadn't
+  //    fired yet when the tab went away, and `pagehide` + GM_setValue is not
+  //    reliably flushed by a real userscript manager on the way out. Net effect:
+  //    the one situation the log exists for was the one situation it was empty.
+  //
+  //    So the live mirror is now localStorage, not GM storage. It is synchronous,
+  //    same-origin, costs nothing next to an extension-storage round trip, and —
+  //    the point — survives the tab navigating within musicbrainz.org, which is
+  //    exactly the failure being chased.
+  //
+  // 2. SESSIONS WERE MERGED. The restore did `LOG.push(...previous)`, so every
+  //    log opened with the last run's lines above the current ones. Each run now
+  //    gets its own id and its own key; the panel shows THIS session only, and an
+  //    earlier session is reachable deliberately rather than pasted on top.
+  const LOG_PERSIST_MAX = 400;
+  const LS = (() => { try { return window.localStorage; } catch (e) { return null; } })();
+  const LS_PREFIX = 'falcon:session:';
+  // A session id has to be stable across a navigation (so a tab that gets
+  // navigated mid-run keeps appending to the same session rather than orphaning
+  // it) but must not collide between runs. Time-based, recorded in storage.
+  let SESSION_ID = '';
+  let _sessionSeq = 0;
   const LOG = [];
-  try { const saved = GM_getValue('falcon:log', null); if (saved) LOG.push(...JSON.parse(saved), '--- (above is the previous session, restored after the window closed) ---'); } catch (e) {}
-  // ⚠ GM_setValue is NOT free. In a real userscript manager it serialises to the
-  // extension's own storage; the test shims here make it a Map.set, so the cost
-  // is invisible to every test in this repo. Writing the whole log once a second
-  // during a run — tens of KB, while three MB pages render — is a plausible
-  // source of Firefox's "this page is slowing down" warning (#467), so keep the
-  // write rare, small, and skipped when nothing changed. The point of persisting
-  // is surviving a closed/crashed tab, and the pagehide flush covers that far
-  // better than a busy timer does.
-  const LOG_PERSIST_MAX = 400, LOG_PERSIST_MS = 10000;
+  function newSession(reason) {
+    // second-resolution alone collides when two runs start in the same second
+    // (which a test does, and an impatient re-Start does too), silently merging
+    // them back into one log — the exact thing this is meant to stop.
+    SESSION_ID = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++_sessionSeq);
+    LOG.length = 0;
+    try { if (LS) LS.setItem('falcon:session:current', SESSION_ID); } catch (e) {}
+    log('info', `=== session ${SESSION_ID} started (${reason}) ===`);
+  }
+  // reattach to an in-flight session after a navigation, so its log is continuous
+  try {
+    const cur = LS && LS.getItem('falcon:session:current');
+    const prev = cur && LS.getItem(LS_PREFIX + cur);
+    if (cur && prev) { SESSION_ID = cur; LOG.push(...JSON.parse(prev)); }
+  } catch (e) {}
   let _persistTimer = null, _lastPersisted = '';
   function writeLogNow() {
+    if (!SESSION_ID) return;
     try {
       const payload = JSON.stringify(LOG.slice(-LOG_PERSIST_MAX));
       if (payload === _lastPersisted) return;
       _lastPersisted = payload;
-      GM_setValue('falcon:log', payload);
+      if (LS) LS.setItem(LS_PREFIX + SESSION_ID, payload);
     } catch (e) {}
   }
+  // short debounce — localStorage is cheap enough that the old 10s window (which
+  // is what actually lost his log) buys nothing.
   function persistLog() {
     if (_persistTimer) return;
-    _persistTimer = setTimeout(() => { _persistTimer = null; writeLogNow(); }, LOG_PERSIST_MS);
+    _persistTimer = setTimeout(() => { _persistTimer = null; writeLogNow(); }, 500);
   }
-  try { window.addEventListener('pagehide', writeLogNow); } catch (e) {}
+  // Forensics for the bug he's reporting: the panel vanishing mid-run. If the
+  // top-level page unloads while work is in flight, something navigated the tab
+  // out from under us — record that fact synchronously, with where it went, so
+  // the next page load can say so instead of presenting a mysteriously short log.
+  function noteUnload(ev) {
+    try {
+      if (typeof queue !== 'undefined' && queue.some(i => i.status === 'active' || i.status === 'queued')) {
+        LOG.push(`[${new Date().toISOString().slice(11, 19)}] ERROR *** THE TAB NAVIGATED AWAY MID-RUN *** from ${location.href} — the panel and its workers were destroyed by the page unloading, NOT by Falcon closing them. Report this line.`);
+      }
+      writeLogNow();
+    } catch (e) {}
+  }
+  try {
+    window.addEventListener('pagehide', noteUnload);
+    window.addEventListener('beforeunload', noteUnload);
+  } catch (e) {}
   function log(level, msg) {
     const line = `[${new Date().toISOString().slice(11, 19)}] ${level.toUpperCase().padEnd(5)} ${msg}`;
     LOG.push(line); if (LOG.length > 1500) LOG.shift();
@@ -1150,7 +1202,21 @@
     updateWorkerLabel(card, null);   // triggers its own re-render since this flips the card to idle (see above)
     // last worker out turns the jank heartbeat off — no point measuring thread
     // blocking once nothing of ours is running.
-    if (!queue.some(i => i.status === 'active')) { stopHeartbeat(); logRunSummary(); }
+    // Last worker out. `running` used to stay true forever here, so once a run
+    // drained: the button still read "■ Stop", and clicking Start again did
+    // nothing at all (start() bails on `if (running) return`) — the only way to
+    // run a second batch was to reload the page. Clear the flag so the panel
+    // returns to a usable idle state instead of looking wedged.
+    if (!queue.some(i => i.status === 'active')) {
+      stopHeartbeat();
+      logRunSummary();
+      if (!queue.some(i => i.status === 'queued')) {
+        running = false;
+        updateRunBtn();
+        log('info', '=== run finished — the tab and panel stay open; the log above is this session only ===');
+        writeLogNow();
+      }
+    }
   }
 
   // #467 (majkinetor): each worker gets its own card — a small label (which entity
@@ -1289,6 +1355,8 @@
     if (!queue.some(i => i.status === 'queued')) { log('warn', 'nothing queued'); return; }
     running = true;
     _runStartedAt = Date.now();
+    // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
+    newSession(`${queue.filter(i => i.status === 'queued').length} queued, ${cfg.workers} worker(s), ${location.href}`);
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
@@ -1527,7 +1595,8 @@
     const dbgBox = document.getElementById('falcon-log-debug');
     document.getElementById('falcon-log-clear').onclick = () => {
       LOG.length = 0;
-      try { GM_setValue('falcon:log', '[]'); } catch (e) {}
+      _lastPersisted = '';
+      try { if (LS && SESSION_ID) LS.removeItem(LS_PREFIX + SESSION_ID); } catch (e) {}
       renderLog();
     };
     dbgBox.checked = debugOn();
@@ -1775,6 +1844,15 @@
       log('info', `seeded ${seeded.length} item(s) from the falcon= URL param`);
       showPanel();
     }
+    // A run that was killed by the tab navigating (majkinetor, #467: "the Falcon
+    // popup closes abruptly in the middle of the process... I cant obtain the
+    // logs as they do not exist") leaves its marker in the restored session.
+    // Don't make him go looking for it — reopen on the Log tab and say so.
+    if (LOG.some(l => l.includes('THE TAB NAVIGATED AWAY MID-RUN'))) {
+      log('error', 'the previous run was cut short because this tab navigated away. Its full log is above — copy it into the issue.');
+      showPanel();
+      setTab('log');
+    }
     window.addEventListener('keydown', e => {
       if (!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey) return;
       if ((e.key || '').toLowerCase() !== 'f') return;
@@ -1784,5 +1862,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload };
 })();
