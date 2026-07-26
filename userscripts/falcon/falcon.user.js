@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.124712
+// @version      2026.7.26.174528
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -525,6 +525,22 @@
       unresolved: match.filter(tr => !tr.querySelector('a[href]') && !!tr.querySelector('input')),
     };
   }
+  // Every relationship-type row hanging off `url`'s row(s) — MB renders one
+  // `tr.relationship-item` per type directly after the `tr.external-link-item`
+  // it belongs to. Used to tell whether a type Falcon wants is ALREADY on the
+  // page (seeded by MB itself) before reaching for the DOM-poking fallback.
+  function typeRowsForUrl(doc, url) {
+    const rows = doc ? [...doc.querySelectorAll('tr.external-link-item')] : [];
+    const owners = rows.filter(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url || (tr.querySelector('input')?.value || '') === url);
+    const out = [];
+    owners.forEach(owner => {
+      let n = owner.nextElementSibling;
+      while (n && n.classList?.contains('relationship-item')) { out.push(n); n = n.nextElementSibling; }
+    });
+    return out;
+  }
+  const hasTypeForUrl = (doc, url, linkTypeId) => typeRowsForUrl(doc, url)
+    .some(tr => tr.querySelector('select.link-type')?.value === String(linkTypeId));
   // Final safety net before submit. Seeding a url that's ALREADY on the entity
   // makes MB attach a SECOND, blank relationship row under that url's existing
   // row (its own dual-relationship mechanism) rather than adding a new url row
@@ -624,6 +640,15 @@
         const existingRow = findRowForUrl(doc0, url);
         dbg(tag, `url[${occurrence}] ${url} (type=${linkTypeId || 'auto'}) — preexisting row: ${existingRow ? (existingRow.querySelector('a[href]') ? 'resolved' : 'unresolved-input') : 'none'}`);
         if (existingRow && occurrence > 0) {
+          // Normal (seeded) path: buildSeedEditUrl gave this url+type its own
+          // slot, so MB has already rendered the second type and there is
+          // nothing to do. Only a non-seeded caller (fillAndSubmit driven
+          // directly, as the tests do) still needs the click-and-poke fallback.
+          if (linkTypeId && hasTypeForUrl(doc0, url, linkTypeId)) {
+            dbg(tag, `  repeat occurrence -> type ${linkTypeId} already seeded by MB, nothing to do`);
+            results.push({ url, ok: true });
+            continue;
+          }
           const added = await addSecondRelationshipType(iframe, existingRow, linkTypeId);
           dbg(tag, `  repeat occurrence -> addSecondRelationshipType = ${added}`);
           results.push({ url, ok: added, error: added ? undefined : (linkTypeId ? 'could not add a second relationship type — this url is already present' : 'this url is already present') });
@@ -844,11 +869,22 @@
   function buildSeedEditUrl(item) {
     const prefix = `edit-${item.entityType}.`;
     const params = new URLSearchParams();
+    // ⚠ Dedupe on url + link type, NOT on url alone. The same url under two
+    // different link types is a legitimate pair (a Bandcamp track that is both
+    // "stream for free" and "purchase for download"), and MB seeds it natively:
+    // two indexed slots with the same text and different link_type_id produce
+    // two relationships as the page renders. Collapsing them to one slot here
+    // was what forced the old "click MB's Add-another-relationship button and
+    // poke the new select" path — and THAT is what froze Firefox for 30-46s at
+    // a stretch (#467), because a same-origin iframe shares the parent's main
+    // thread, so MB's re-render storm on an already-rendered row blocked the
+    // whole tab. Seeded up front, the identical batch runs ~4s/item, no stalls.
     const seen = new Set();
     let idx = 0;
     item.urls.forEach(u => {
-      if (seen.has(u.url)) return;
-      seen.add(u.url);
+      const key = `${u.url} ${u.linkTypeId || ''}`;
+      if (seen.has(key)) return;
+      seen.add(key);
       params.set(`${prefix}url.${idx}.text`, u.url);
       if (u.linkTypeId) params.set(`${prefix}url.${idx}.link_type_id`, u.linkTypeId);
       idx++;
@@ -979,21 +1015,42 @@
       if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
       item.status = 'active'; scheduleRender('queue');
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
-      // ALWAYS a fresh iframe, even after a clean commit on this same card — a
-      // real multi-item session showed the tab going fully unresponsive over
-      // time (majkinetor, #467), consistent with the previous item's document
-      // (its own polling/background JS) not being fully torn down by a plain
-      // `.src` reassignment. newIframeIn() removes the old element outright —
-      // that unambiguously kills its whole browsing context, whether it was
-      // clean or dirty — the card visually keeps flowing either way.
-      const iframe = newIframeIn(card);
+      // ⚠ REUSE this card's iframe across items; do NOT build a fresh one each
+      // time. Creating a new iframe per item (and thus tearing down the previous
+      // MB edit document) is pathologically slow in FIREFOX — reproduced on
+      // production: item 1 fine, then every later item blocked the main thread
+      // ~30-46s, freezing the whole tab (majkinetor, #467). Chromium tears the
+      // same documents down without complaint, which is why this never showed up
+      // in testing here until Firefox was tried.
+      // Reuse is safe precisely because of how failures are handled: a worker
+      // only continues on this card when the previous item genuinely committed,
+      // which means MB navigated the frame away and its form is not dirty.
+      // Anything that did NOT commit retires the card outright (see below) and
+      // spawns a fresh one, so a dirty form is never re-navigated — that's the
+      // beforeunload trap this originally guarded against, still covered.
+      let iframe = card.querySelector('.falcon-worker-body iframe');
+      if (!iframe) iframe = newIframeIn(card);
       card.dataset.itemId = item.id;   // lets showItemPopup find "the worker that ran this item"
       updateWorkerLabel(card, item);
       // #467 (majkinetor): navigate straight to the seed url — MB pre-fills
       // every url as the page renders, so fillAndSubmit has little or nothing
       // left to type. Measured live: ~2-3s vs 10+s for typing simulation.
       const tNav = Date.now();
-      iframe.src = buildSeedEditUrl(item);
+      // ⚠ Navigate with location.replace(), NOT by assigning .src. Assigning
+      // .src pushes a new SESSION HISTORY entry each time, so a worker grinding
+      // through a queue accumulates one heavy MB edit document per item in that
+      // iframe's history (and Firefox's bfcache keeps them alive). That is what
+      // makes the freeze scale with queue length rather than showing up on item
+      // one. replace() reuses the current entry, so history stays at depth 1.
+      // Safe for the same reason reuse is safe: we only get here on a fresh card
+      // or after a genuine commit, never on a dirty form.
+      const seedUrl = buildSeedEditUrl(item);
+      let navigated = false;
+      try {
+        const w = frameWin(iframe);
+        if (w && w.location && /\/(artist|label|recording)\//.test(w.location.pathname)) { w.location.replace(seedUrl); navigated = true; }
+      } catch (e) {}
+      if (!navigated) iframe.src = seedUrl;
       // A FRESH iframe starts on about:blank, whose readyState is already
       // 'complete' — so a bare "readyState !== 'loading'" check passes
       // INSTANTLY, against the blank document, before MB's page has loaded at

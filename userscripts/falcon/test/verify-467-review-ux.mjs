@@ -177,18 +177,38 @@ async function freshPage() {
   await page.close();
 }
 
-// 6. buildSeedEditUrl dedupes a duplicate url text (MB collapses it to one row
-// regardless) and openInTab logs that clearly rather than silently dropping it.
+// 6. buildSeedEditUrl dedupes on url + LINK TYPE, not on url text alone.
+//
+// This assertion used to be the exact opposite, resting on the belief that MB
+// collapses a repeated url text into a single row. Measured on production, that
+// is false: seeding the same url twice under two different link_type_ids
+// renders BOTH relationships natively (selects read ["254","979"], 6/6 items).
+//
+// The wrong belief had a real cost. Collapsing the pair here forced Falcon to
+// bolt the second type on afterwards, by clicking MB's "Add another
+// relationship" and poking the new <select> — and that is what froze Firefox on
+// #467. A same-origin iframe shares its parent's main thread, so MB's re-render
+// storm over an already-rendered row blocked the whole tab in 30-46s chunks.
+// The identical batch of 6 dual-type items went from 297s (frozen, 1 of 6
+// submitted) to 12s with all 6 committed and zero main-thread stalls.
+//
+// Duplicates of the SAME (url, type) pair still collapse — those are genuinely
+// redundant.
 {
   const { page, errs } = await freshPage();
   const seedUrl = await page.evaluate(() => window.__falconTest.buildSeedEditUrl({
     entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', note: 'a note',
-    urls: [{ url: 'https://sagason.bandcamp.com/track/dual', linkTypeId: '268' }, { url: 'https://sagason.bandcamp.com/track/dual', linkTypeId: '254' }],
+    urls: [
+      { url: 'https://sagason.bandcamp.com/track/dual', linkTypeId: '268' },
+      { url: 'https://sagason.bandcamp.com/track/dual', linkTypeId: '254' },
+      { url: 'https://sagason.bandcamp.com/track/dual', linkTypeId: '268' },
+    ],
   }));
   console.log('dedup seed url:', seedUrl);
   const params = new URL(seedUrl).searchParams;
   ck(params.get('edit-recording.url.0.text') === 'https://sagason.bandcamp.com/track/dual' && params.get('edit-recording.url.0.link_type_id') === '268', 'the first occurrence of a duplicate url keeps its type');
-  ck(params.get('edit-recording.url.1.text') === null, `the second (duplicate-text) entry is not seeded as a separate index — MB would collapse it anyway (got "${params.get('edit-recording.url.1.text')}")`);
+  ck(params.get('edit-recording.url.1.text') === 'https://sagason.bandcamp.com/track/dual' && params.get('edit-recording.url.1.link_type_id') === '254', `the same url under a DIFFERENT type gets its own seed slot, so MB renders both natively (got "${params.get('edit-recording.url.1.text')}" / type ${params.get('edit-recording.url.1.link_type_id')})`);
+  ck(params.get('edit-recording.url.2.text') === null, `but an exact repeat of the same (url, type) pair is still collapsed (got "${params.get('edit-recording.url.2.text')}")`);
   ck(params.get('edit-recording.edit_note') === 'a note', 'the edit note is seeded too');
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
