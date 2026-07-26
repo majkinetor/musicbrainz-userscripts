@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.223953
+// @version      2026.7.26.225227
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -151,9 +151,13 @@
   // the next page load can say so instead of presenting a mysteriously short log.
   function noteUnload(ev) {
     try {
-      if (typeof queue !== 'undefined' && queue.some(i => i.status === 'active' || i.status === 'queued')) {
-        LOG.push(`[${new Date().toISOString().slice(11, 19)}] ERROR *** THE TAB NAVIGATED AWAY MID-RUN *** from ${location.href} — the panel and its workers were destroyed by the page unloading, NOT by Falcon closing them. Report this line.`);
-      }
+      // ⚠ Log EVERY unload, not only mid-run ones. This used to fire its marker
+      // only while items were still active or queued — so when the tab went away
+      // right AFTER a run completed, the queue was empty, nothing was written,
+      // and the silence read as "the tab was fine". A blind spot sitting exactly
+      // where the bug lives.
+      const busy = typeof queue !== 'undefined' && queue.some(i => i.status === 'active' || i.status === 'queued');
+      LOG.push(`[${new Date().toISOString().slice(11, 19)}] ERROR *** THIS TAB IS BEING UNLOADED (${busy ? 'MID-RUN' : 'after the run finished'}) *** from ${location.href} via ${(ev && ev.type) || '?'} — the panel and its workers are being destroyed by the page going away, NOT by Falcon closing them. Report this line.`);
       writeLogNow();
     } catch (e) {}
   }
@@ -1140,6 +1144,24 @@
     const old = body.querySelector('iframe');
     if (old) old.remove();
     const f = document.createElement('iframe');
+    // ⚠ THE SANDBOX IS WHAT KEEPS THE TAB ALIVE. Do not remove it, and do not
+    // add allow-top-navigation / allow-popups to it.
+    //
+    // A seeded MusicBrainz edit page closes itself and returns to the invoking
+    // page after a successful commit — the behaviour majkinetor recognised from
+    // other scripts. Falcon loads those same pages in these frames, so that
+    // "close and go back" was reaching out of the frame and taking the whole tab
+    // with it, repeatedly (#467). Blocking window.close() only covered the close
+    // half; a top-level navigation is the same bug wearing a different hat.
+    //
+    // Omitting allow-top-navigation makes it structurally impossible for the
+    // frame to navigate OR close the top window, whichever mechanism MB uses —
+    // the browser refuses it, so this doesn't depend on me having guessed the
+    // right one. Everything Falcon actually needs is still granted:
+    //   allow-same-origin  read and fill contentDocument (and MB stays logged in)
+    //   allow-scripts      MB's own React renders the form and validates urls
+    //   allow-forms        the edit actually submits
+    f.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms');
     f.className = 'falcon-worker'; f.style.cssText = 'position:absolute;top:0;left:0;border:none;background:#fff;transform-origin:0 0;';
     body.appendChild(f);
     applyIframeScale(card);
