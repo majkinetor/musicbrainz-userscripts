@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.25.204527
+// @version      2026.7.26.121255
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,8 +75,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.25.204527 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.24.191253\n  · Art Station v2026.7.24.191253\n  · Credit Hoarder v2026.7.23\n  · Group Therapy v2026.7.19\n  · ISRC Scout v2026.7.24\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.25.204423");
+  console.log('%c String Theory %c v2026.7.26.121255 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.24.191253\n  · Art Station v2026.7.24.191253\n  · Credit Hoarder v2026.7.23\n  · Group Therapy v2026.7.26.121121\n  · ISRC Scout v2026.7.24\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.25.204423");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -19731,7 +19731,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.19","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.19","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.26.121121","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.26.121121","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -19960,8 +19960,10 @@ ${lines}
     if (editBtn) {
       const tr = editBtn.closest('tr.track'), item = editBtn.closest('.relationship-item');
       if (item) { ev.preventDefault(); const rc = relClass(item);
-        if (rc && rc.kind === 'work') openWorkMenu(rc.work, ev.clientX, ev.clientY, rel => rel.item === item);   // #373 work credit pencil → work copy, scoped
-        else if (rc && rc.kind === 'rec' && tr) openCopyMenu(tr, ev.clientX, ev.clientY, rel => rel.item === item);
+        // #470 the pencil menu also carries "Replace role…" for this credit
+        const repl = replaceRoleMenuItems(item);
+        if (rc && rc.kind === 'work') openWorkMenu(rc.work, ev.clientX, ev.clientY, rel => rel.item === item, repl);   // #373 work credit pencil → work copy, scoped
+        else if (rc && rc.kind === 'rec' && tr) openCopyMenu(tr, ev.clientX, ev.clientY, rel => rel.item === item, repl);
         // recof pencil is handled above (#374 openRecOfMenu) where present; otherwise no recording menu
       }
       return;
@@ -20169,6 +20171,14 @@ ${lines}
         outline:2px solid rgba(46,158,91,.55); outline-offset:1px; border-radius:3px; }
       /* Consolidate RG (#349) — the release×role matrix modal */
       .gt-cons-ov{position:fixed;inset:0;z-index:2147483646;background:rgba(20,24,30,.44);display:flex;align-items:center;justify-content:center}
+      .gt-role-pick{width:520px;max-width:92vw;max-height:70vh;display:flex;flex-direction:column}
+      .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font:13px inherit;border:1px solid #c9ccd2;border-radius:4px}
+      .gt-role-list{overflow:auto;flex:1;padding:0 4px 8px}
+      .gt-role-row{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+      .gt-role-row:hover{background:#eef3fb}
+      .gt-role-name{font-weight:600;font-size:13px}
+      .gt-role-recent{font-weight:400;font-size:10px;color:#6b8fb5;margin-left:6px}
+      .gt-role-desc{font-size:11px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .gt-cons{background:#fff;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.35);width:min(920px,94vw);max-height:88vh;display:flex;flex-direction:column;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
       .gt-cons-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid #e7e9ee}
       .gt-cons-title{font-weight:700;font-size:14px;flex:1}
@@ -21801,7 +21811,7 @@ ${lines}
   // (so artists, ℗/© labels, recorded-at places, …) onto the ticked recordings
   // preselect (optional): a predicate rel→bool for which credits START ticked (#373 — the + / pencil
   // right-clicks scope the copy to one role group / one credit; others start unticked but stay selectable).
-  function openCopyMenu(sourceTr, x, y, preselect) {
+  function openCopyMenu(sourceTr, x, y, preselect, extraItems) {
     const srcRels = recordingRels(sourceTr).filter(r => !r.removed && r.other && !['work', 'url', 'recording'].includes(r.other.entityType));
     const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : ''), checked: preselect ? !!preselect(s) : true }));
     // before the checkboxes render, respect the preselect (e.checked) so the Copy count reflects the ticked subset (#373)
@@ -21844,6 +21854,7 @@ ${lines}
         items.push({ label: `Set dates from ${dl}…`, run: () => openDatePicker(clickedRel) });
       }
     }
+    if (extraItems && extraItems.length) items.push(...extraItems);   // #470 "Replace role…" from the pencil
     openMenu(x, y, items);
   }
 
@@ -21880,7 +21891,177 @@ ${lines}
       await new Promise(r => setTimeout(r, 70));
     }
   }
-  function openWorkMenu(workRef, x, y, preselect) {
+
+  /* ── #470 replace a role ───────────────────────────────────────────────────
+     "I'm editing a jazz release that is 100% instrumental. All the works have
+     'writer' instead of 'composer'. It'd be awesome if I could just mark all
+     writers on highlighted works and change them from 'writer' to 'composer'."
+
+     MB has no "change the type of this relationship" bulk action, so this is a
+     remove + re-add of the same pair under a different link type, driven
+     through the same editor dispatch everything else here uses. Scope mirrors
+     the ×-menu's: this ROLE everywhere, or this ROLE for this one target —
+     narrowed to the ticked recordings/works when there is a selection.
+
+     Attributes are deliberately NOT carried over: they belong to a specific
+     link type (a "drums (drum set)" attribute is meaningless on "composer"),
+     and MB would reject or silently drop them. Rels that HAVE attributes are
+     therefore flagged in the confirm step rather than quietly mangled — which
+     is the "it complicates on roles that have attributes" majkinetor called
+     out, handled by being explicit instead of clever.                        */
+
+  // the entity ends of a rel, as {src, other, credit}: `src` is the work or
+  // recording the credit hangs off, `other` the artist/label/… on the far end.
+  // credit always belongs to the far end, so it's read from whichever side that is.
+  function relEnds(rel) {
+    if (!rel) return null;
+    const isContainer = e => e && (e.entityType === 'work' || e.entityType === 'recording');
+    const a = rel.entity0, b = rel.entity1;
+    if (isContainer(a) && !isContainer(b)) return { src: a, other: b, credit: rel.entity1_credit || '' };
+    if (isContainer(b) && !isContainer(a)) return { src: b, other: a, credit: rel.entity0_credit || '' };
+    return null;
+  }
+  const relHasAttributes = rel => { try { return !!rel.attributes && [...W.MB.tree.iterate(rel.attributes)].length > 0; } catch (e) { return false; } };
+
+  // every link type valid for the SAME entity pair as `rel` — that's what MB
+  // will accept as a replacement. Deprecated types and the current type are
+  // dropped; the rest are sorted by name so the picker reads alphabetically.
+  function replacementRoles(rel) {
+    const lts = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {};
+    const cur = lts[rel.linkTypeID];
+    if (!cur) return [];
+    // MB keys link_type by BOTH numeric id and gid, so Object.values() yields
+    // every type twice — dedupe by id or the picker lists everything double.
+    const seen = new Set();
+    return Object.values(lts)
+      .filter(t => t && !t.deprecated && t.id !== cur.id && t.type0 === cur.type0 && t.type1 === cur.type1)
+      .filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true; })
+      .map(t => ({ id: t.id, name: t.name, desc: (t.description || '').replace(/<[^>]*>/g, '').trim() }))
+      .sort((p, q) => p.name.localeCompare(q.name));
+  }
+
+  const ROLE_HIST_KEY = 'gt-role-history';
+  const roleHistory = () => { try { return JSON.parse(GM_getValue(ROLE_HIST_KEY, '[]')) || []; } catch (e) { return []; } };
+  function rememberRole(id, name) {
+    try {
+      const h = roleHistory().filter(x => x.id !== id);
+      h.unshift({ id, name });
+      GM_setValue(ROLE_HIST_KEY, JSON.stringify(h.slice(0, 8)));
+    } catch (e) {}
+  }
+
+  // searchable role picker. Recently-used roles float to the top (majkinetor:
+  // "keep last ones in combo history") since a cleanup pass usually applies the
+  // same replacement over and over.
+  function openRolePicker(rel, count, onPick) {
+    const roles = replacementRoles(rel);
+    if (!roles.length) { toast('No other relationship types are valid for this pair'); return; }
+    const ov = el('div', 'gt-cons-ov'), panel = el('div', 'gt-cons gt-role-pick');
+    const hdr = el('div', 'gt-cons-hdr');
+    hdr.appendChild(el('span', null, `Replace with which role?  (${count} credit${count > 1 ? 's' : ''})`));
+    const close = el('button', 'gt-x', '✕'); close.title = 'Cancel'; hdr.appendChild(close);
+    panel.appendChild(hdr);
+    const search = el('input', 'gt-role-search');
+    search.type = 'text'; search.placeholder = 'Type to filter roles…';
+    panel.appendChild(search);
+    const list = el('div', 'gt-role-list');
+    panel.appendChild(list);
+    const done = () => { try { ov.remove(); } catch (e) {} };
+    close.addEventListener('click', done);
+    ov.addEventListener('mousedown', e => { if (e.target === ov) done(); });
+
+    let rows = [];
+    function render() {
+      const q = search.value.trim().toLowerCase();
+      const hist = roleHistory();
+      const rank = r => { const i = hist.findIndex(h => h.id === r.id); return i < 0 ? 999 : i; };
+      const shown = roles.filter(r => !q || r.name.toLowerCase().includes(q))
+        .sort((p, o) => (rank(p) - rank(o)) || p.name.localeCompare(o.name));
+      list.textContent = '';
+      rows = shown.slice(0, 200).map(r => {
+        const row = el('div', 'gt-role-row');
+        const nm = el('span', 'gt-role-name', r.name);
+        if (rank(r) < 999) nm.appendChild(el('span', 'gt-role-recent', ' recent'));
+        row.appendChild(nm);
+        if (r.desc) row.appendChild(el('span', 'gt-role-desc', r.desc.slice(0, 110)));
+        row.addEventListener('click', () => { rememberRole(r.id, r.name); done(); onPick(r); });
+        list.appendChild(row);
+        return row;
+      });
+      if (!shown.length) list.appendChild(el('div', 'gt-note', 'No role matches that filter'));
+    }
+    search.addEventListener('input', render);
+    search.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { e.preventDefault(); done(); }
+      if (e.key === 'Enter' && rows.length) { e.preventDefault(); rows[0].click(); }
+    });
+    render();
+    ov.appendChild(panel);
+    document.body.appendChild(ov);
+    setTimeout(() => { try { search.focus(); } catch (e) {} }, 30);
+  }
+
+  // remove + re-add each matching rel under `newLt`. Re-add FIRST, then remove:
+  // if a dispatch throws we bail with the original still intact rather than
+  // having deleted a credit we then failed to recreate.
+  function replaceRole(items, newLt, describe) {
+    const re = RE(); if (!re) { toast('MusicBrainz relationship editor not ready'); return 0; }
+    let n = 0, skipped = 0, lostAttrs = 0;
+    for (const it of items) {
+      const rel = relFromNode(it);
+      const ends = relEnds(rel);
+      if (!rel || !ends || !ends.src || ends.src.id == null) { skipped++; continue; }
+      if (relHasAttributes(rel)) lostAttrs++;
+      try {
+        dispatchRelationship(re, ends.src, ends.other, newLt.id, ends.credit, null, rel);
+      } catch (e) { skipped++; try { console.warn('[Group Therapy] replace-role dispatch failed:', e); } catch (_) {} continue; }
+      const rm = it.querySelector(REMOVE_SEL);
+      if (rm) { try { rm.click(); } catch (e) {} }
+      n++;
+    }
+    if (n) markUsed(describe(n));
+    const bits = [`Replaced ${n} credit${n > 1 ? 's' : ''} with “${newLt.name}”`];
+    if (lostAttrs) bits.push(`${lostAttrs} had attributes that could not carry over`);
+    if (skipped) bits.push(`${skipped} skipped (see console)`);
+    toast(bits.join(' — ') + ' — review & save');
+    return n;
+  }
+
+  // the two menu entries offered on a rel's pencil: this role everywhere, and
+  // this role only where the far end is this specific entity.
+  function replaceRoleMenuItems(item) {
+    const rel = relFromNode(item);
+    if (!rel || !relEnds(rel)) return [];
+    const btn = item.querySelector(REMOVE_SEL);
+    if (!btn) return [];
+    const roleLabel = pickRoleLabel(item.closest('tr')) || ltName(rel.linkTypeID);
+    const tgt = targetLabel(item);
+    const sel = selectionKeys();
+    const scoped = list => (sel.recs.size || sel.works.size) ? list.filter(i => itemInSelection(i, sel)) : list;
+    const byRole = scoped(collect(btn, 'role'));
+    const byRoleTgt = scoped(collect(btn, 'role-and-target'));
+    const scopeNote = (sel.recs.size || sel.works.size)
+      ? `scoped to ${[sel.recs.size && `${sel.recs.size} recording${sel.recs.size > 1 ? 's' : ''}`, sel.works.size && `${sel.works.size} work${sel.works.size > 1 ? 's' : ''}`].filter(Boolean).join(' + ')} selected`
+      : null;
+    const t = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+    const mk = (label, list, what) => ({
+      label, sub: String(list.length),
+      run: () => {
+        if (!list.length) { toast('Nothing matches that scope'); return; }
+        openRolePicker(rel, list.length, newLt =>
+          replaceRole(list, newLt, n => `Replaced ${what} with “${newLt.name}” on ${n} credit${n > 1 ? 's' : ''}` + (scopeNote ? ` (${scopeNote})` : '')));
+      },
+    });
+    const out = ['sep'];
+    if (scopeNote) out.push({ note: scopeNote });
+    out.push(
+      mk(`Replace role ${t(roleLabel, 34)}…`, byRole, `“${roleLabel}”`),
+      mk(`Replace ${t(roleLabel, 20)} for “${t(tgt, 20)}”…`, byRoleTgt, `“${roleLabel}” for “${tgt}”`),
+    );
+    return out;
+  }
+
+  function openWorkMenu(workRef, x, y, preselect, extraItems) {
     const srcWork = (workRef && workRef.entityType === 'work') ? workRef : workEntity(workRef);   // #373 accept a work entity (from a rel) or a checkbox
     if (!srcWork) { openMenu(x, y, [{ header: 'Could not read this work' }]); return; }
     const srcRels = workCreditRels(srcWork).filter(r => !r.removed);
@@ -21913,6 +22094,7 @@ ${lines}
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
         copyItem, moveItem);
     }
+    if (extraItems && extraItems.length) items.push(...extraItems);   // #470 "Replace role…" from the pencil
     openMenu(x, y, items);
   }
 
@@ -21937,7 +22119,7 @@ ${lines}
     document.body.addEventListener('mouseout', onOut);
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE, replacementRoles, replaceRole, replaceRoleMenuItems, relEnds, openRolePicker }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   // Self-guard the page: in the String Theory bundle this script runs on EVERY union-matched URL
