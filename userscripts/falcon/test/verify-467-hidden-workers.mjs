@@ -45,8 +45,11 @@ await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 await page.click('#falcon-launcher');
 await page.waitForSelector('#falcon-panel', { timeout: 5000 });
 
-// stay on the Queue tab for the whole run — this is the reported scenario
-await page.click('#falcon-tab-queue');
+// The reported scenario is stronger than "on the Queue tab": the user never
+// clicks ANY tab, so the panes keep whatever the initial markup gave them. That
+// markup used to hand the Workers pane display:none, which meant workers only
+// ran once you'd visited the Workers tab at least once. So do NOT click a tab
+// here — assert straight from the freshly-opened panel.
 const paneState = await page.evaluate(() => {
   const w = document.getElementById('falcon-body-workers');
   const cs = getComputedStyle(w);

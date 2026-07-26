@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.26.001512
+// @version      2026.7.26.011807
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -15,7 +15,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.26.001512';
+  const VERSION = '2026.7.26.011807';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -576,11 +576,22 @@
     if (errAlready) { removeIfOurs(row); return errAlready; }
     return null;
   }
+  // Every external link present BEFORE Falcon touches the form. Falcon only
+  // ever adds, so every one of these must still be there at submit time. This
+  // is checked structurally — by url — independently of MB's rel-* classes, so
+  // the protection can't be silently defeated by a markup change on MB's side.
+  function snapshotExistingUrls(doc) {
+    if (!doc) return [];
+    return [...doc.querySelectorAll('tr.external-link-item')]
+      .map(tr => tr.querySelector('a[href]')?.getAttribute('href'))
+      .filter(Boolean);
+  }
   async function fillAndSubmit(iframe, item, opts) {
     const skipSubmit = !!(opts && opts.skipSubmit);
     const tag = (opts && opts.tag) || '[w?]';
+    const baseline = (opts && opts.baseline) || snapshotExistingUrls(frameDoc(iframe));
     const results = [];
-    dbg(tag, `fillAndSubmit start — ${item.urls.length} url(s), skipSubmit=${skipSubmit}`);
+    dbg(tag, `fillAndSubmit start — ${item.urls.length} url(s), skipSubmit=${skipSubmit}, ${baseline.length} pre-existing link(s) to preserve`);
     const tFillStart = Date.now();
     // workerLoop navigates straight to buildSeedEditUrl(item) — MB's own seed-url
     // params (the same ones Harmony uses) pre-fill the FIRST occurrence of each
@@ -700,10 +711,24 @@
     // wrong on our side (see isOurs/removeIfOurs) and submitting would destroy
     // existing data, so refuse outright rather than risk it — a failed item is
     // recoverable, a deleted relationship is not.
+    // Two independent checks, because this is the one failure mode that
+    // destroys data rather than merely failing:
+    //   1. MB's own marker for a staged removal.
+    //   2. Structural — did any link that existed before we started disappear?
+    //      Survives MB renaming its CSS classes, which check 1 would not.
     const doomed = (frameDoc(iframe)?.querySelectorAll('.rel-remove') || []).length;
-    if (doomed) {
-      dbg(tag, `NOT SUBMITTING — ${doomed} relationship REMOVAL(s) are staged and Falcon never intends removals; refusing to submit`);
-      return { committed: false, results: results.map(r => r.ok ? { ...r, ok: false, error: 'not submitted — the form had a relationship removal staged, which Falcon never intends (refused for safety)' } : r), fillMs: Date.now() - tFillStart };
+    const nowUrls = new Set(snapshotExistingUrls(frameDoc(iframe)));
+    const vanished = baseline.filter(u => !nowUrls.has(u));
+    if (doomed || vanished.length) {
+      const why = doomed
+        ? `${doomed} relationship removal(s) staged`
+        : `${vanished.length} pre-existing link(s) vanished from the form: ${vanished.slice(0, 3).join(', ')}`;
+      dbg(tag, `REFUSING TO SUBMIT — ${why}. Falcon only ever adds links, so this form is not safe to commit.`);
+      return {
+        committed: false,
+        results: results.map(r => r.ok ? { ...r, ok: false, error: `not submitted — ${why}; Falcon never removes links, so it refused to commit this form` } : r),
+        fillMs: Date.now() - tFillStart,
+      };
     }
     const pending = (frameDoc(iframe)?.querySelectorAll('.rel-add, .rel-edit') || []).length;
     if (!pending) {
@@ -989,10 +1014,13 @@
         return uniqueUrls.every(u => !!findRowForUrl(doc, u)) ? true : null;
       }, 8000);
       const settleMs = Date.now() - tNav - loadMs;
+      // snapshot the entity's links BEFORE we touch anything — the submit gate
+      // compares against this to prove nothing pre-existing was lost (#467).
+      const baseline = snapshotExistingUrls(frameDoc(iframe));
       dbg(tag, `seeded rows settled=${!!settled} after ${Date.now() - tNav}ms total`);
       let r = null;
       try {
-        r = await fillAndSubmit(iframe, item, { tag });
+        r = await fillAndSubmit(iframe, item, { tag, baseline });
         item.urlResults = r.results;
         // per-stage timings, kept on the item so the end-of-run summary table
         // can show where the time actually went (majkinetor, #467).
@@ -1249,7 +1277,7 @@
           <button type="button" id="falcon-run" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px">▶ Start</button>
         </div>
       </div>
-      <div id="falcon-body-workers" style="display:none;padding:8px 10px;overflow:auto;flex:1">
+      <div id="falcon-body-workers" style="position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;display:block;padding:8px 10px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#888">
           <span style="flex:1">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</span>
           <label style="display:flex;align-items:center;gap:5px;flex:0 0 auto" title="How large each worker card is drawn — bigger cards make it easier to read what a worker is actually showing">
@@ -1413,6 +1441,13 @@
     });
     window.addEventListener('mousemove', e => { if (!dragging) return; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dy)) + 'px'; });
     window.addEventListener('mouseup', () => { dragging = false; });
+    // Normalise tab visibility through the same code path the tab buttons use,
+    // so the panes can never start in a state setTab() wouldn't produce. The
+    // Workers pane in particular must not be display:none (see setTab) — it was
+    // shipped that way in the initial markup, so workers only ran once you'd
+    // clicked the Workers tab at least once (majkinetor: "workers still not
+    // starting without watching them").
+    setTab(tab);
   }
   // ⚠ The Workers pane must NEVER be display:none while workers are running.
   // #467 (majkinetor: "when worker tab is not open, it doesnt work"): a worker
