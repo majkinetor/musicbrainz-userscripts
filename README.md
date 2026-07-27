@@ -1,6 +1,6 @@
 # Musicbrainz Toolset
 
-This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides/Userscripts), [picard plugins](https://picard-docs.musicbrainz.org/en/latest/extending/plugins.html) and [shell scripts](./scripts)) to be used with [MusicBrainz](https://musicbrainz.org). 
+This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides/Userscripts), [picard plugins](https://picard-docs.musicbrainz.org/en/latest/extending/plugins.html) and [shell scripts](./scripts)) to be used with [MusicBrainz](https://musicbrainz.org).
 
 > [!IMPORTANT]
 >  [String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
@@ -33,3 +33,7 @@ Find and verify URLs for a particular MusicBrainz release on online platforms
 
 [Scribe](./userscripts/scribe/README.md) <img src="./userscripts/scribe/scribe.svg" align="left" width="32"><br>
 Edit MusicBrainz in your real editor (VS Code, Vim, …)
+
+
+[Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
+Batch import entity external links
