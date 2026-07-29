@@ -2,12 +2,6 @@
 
 **Falcon** adds external links and other fields to a *batch* of MusicBrainz entities at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity.
 
-The following fields are currently supported:
-
-- External links: artists, labels, recordings
-- ISRC
-- Disambiguation: recordings
-
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/falcon/falcon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/falcon/falcon.user.js)
 - [Changelog](./CHANGELOG.md)
 
@@ -15,6 +9,12 @@ The following fields are currently supported:
 | --- | --- |
 | [![Queue](./screenshots/queue.jpg)](./screenshots/queue.jpg) | [![Workers](./screenshots/workers.jpg)](./screenshots/workers.jpg) |
 | A run in progress: 31 entities, 5 workers, mixed artists and recordings. Each row shows the resolved entity name, its status, and its link. | The **Workers** tab — the live iframes doing the work, sized by the slider. Each is a real MusicBrainz edit page being filled and submitted. |
+
+The following fields are currently supported:
+
+- External links: artists, labels, recordings
+- ISRC
+- Disambiguation: recordings
 
 ## Why
 
