@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.29.205138
+// @version      2026.7.29.212909
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -465,7 +465,7 @@
     .ii-hdr-status { font: 600 12px system-ui; color: #868e96; white-space: nowrap; padding-bottom: 7px; }
     .ii-hdr-status b { color: #6f42c1; }
     /* the Clear menu — a small dropdown anchored under its header button */
-    .ii-clear-wrap { position: relative; }
+    .ii-clear-wrap { position: relative; margin-left: auto; }   /* pins Clear + Find links to the toolbar's right edge */
     .ii-clear-menu { display: none; position: absolute; top: 100%; right: 0; z-index: 60; flex-direction: column;
       min-width: 128px; margin-top: 4px; background: #fff; border: 1px solid #d8dce1; border-radius: 6px;
       box-shadow: 0 6px 18px rgba(0,0,0,.14); padding: 4px; }
@@ -552,7 +552,10 @@
        (position: sticky, above) already gives it a positioning context for
        the handle. */
     .ii-col-resize { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 3; }
+    /* a persistent line so the handle is discoverable, not just a hover surprise (#471 review) */
+    .ii-col-resize::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 3px; width: 1px; background: #ced0d4; }
     .ii-col-resize:hover, .ii-col-resize.dragging { background: rgba(111,66,193,.35); }
+    .ii-col-resize:hover::after, .ii-col-resize.dragging::after { background: #6f42c1; width: 2px; }
     .ii-medrow td { background: #eef0f3; font-weight: 700; font-size: 11.5px; color: #495057;
       padding: 5px 10px; border-top: 1px solid #dee2e6; }
     #ii-table td { padding: 6px 10px; border-bottom: 1px solid #f1f3f5; vertical-align: top; }
@@ -2221,17 +2224,11 @@
         <!-- centered release / artist (Apollo Zen style) -->
         <div class="ii-zen"><div class="ii-zen-t" id="ii-rel-title"></div><div class="ii-zen-s" id="ii-rel-sub"></div></div>
         <div class="ii-hicons">
-          <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
-          <span class="ii-prog" id="ii-prog"></span>
-          <span class="ii-clear-wrap">
-            <button class="ii-hico" id="ii-clear-toggle" type="button" title="Clear…" aria-expanded="false">Clear <span class="ii-exact-car">▾</span></button>
-            <div class="ii-clear-menu" id="ii-clear-menu">
-              <button type="button" id="ii-clear-links">Clear Links</button>
-              <button type="button" id="ii-clear-isrcs">Clear ISRCs</button>
-              <button type="button" id="ii-clear-all">Clear All</button>
-            </div>
-          </span>
-          <!-- only Bulk/Export + config + maximize in the header; name/version/Log/Help live in the config window -->
+          <!-- #471 review: Find links / Clear / the progress readout all moved
+               back down into the toolbar (#ii-tools) — majkinetor wanted them
+               where they used to live, not up here. Only Bulk/Export + config +
+               maximize stay in the header; name/version/Log/Help live in the
+               config window. -->
           <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
           <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">⚙︎</button>
           <button class="ii-hico" id="ii-maximize-toggle" type="button" title="Maximize">⛶</button>
@@ -2331,8 +2328,10 @@
         <pre id="ii-log-out"></pre>
       </div>
 
-      <!-- #471: this row is now ISRC-provider import buttons only — Find links,
-           Clear and the progress readout moved up into the header (see #ii-hdr) -->
+      <!-- #471 review: Find links / Clear moved back here from the header
+           (pinned top-right, where Clear alone used to sit), and the progress
+           readout is back right of the "+" url-add button — both restored to
+           where majkinetor said they used to live. -->
       <div id="ii-tools">
         <span class="ii-sx-group" id="ii-sx-group">
           <button class="ii-tbtn sx" id="ii-sx-all" title="Search every track on SoundExchange">⟳ SoundExchange</button>
@@ -2356,6 +2355,16 @@
           <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
+        <span class="ii-prog" id="ii-prog"></span>
+        <span class="ii-clear-wrap">
+          <button class="ii-tbtn ghost" id="ii-clear-toggle" type="button" title="Clear…" aria-expanded="false">Clear <span class="ii-exact-car">▾</span></button>
+          <div class="ii-clear-menu" id="ii-clear-menu">
+            <button type="button" id="ii-clear-all">Clear All</button>
+            <button type="button" id="ii-clear-links">Clear Links</button>
+            <button type="button" id="ii-clear-isrcs">Clear ISRCs</button>
+          </div>
+        </span>
+        <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
       </div>
 
       <!-- floating provider menu (#181) — opened from any per-track button's ▾ -->
