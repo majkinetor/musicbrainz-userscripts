@@ -1,5 +1,30 @@
 # String Theory Changelog
 
+## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Change Discogs artist link button to normal MB button once linked ([#479](https://github.com/majkinetor/musicbrainz-userscripts/issues/479))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Resizable "Apply" dialog in ArtStation for big screens ([#473](https://github.com/majkinetor/musicbrainz-userscripts/issues/473))
+1. Adjust `@match` directives to accommodate for query strings ([#482](https://github.com/majkinetor/musicbrainz-userscripts/issues/482))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Option to replace a role ([#470](https://github.com/majkinetor/musicbrainz-userscripts/issues/470))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. ISRC and Links in one window ([#471](https://github.com/majkinetor/musicbrainz-userscripts/issues/471))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Normalize Tidal/Apple links ([#481](https://github.com/majkinetor/musicbrainz-userscripts/issues/481))
+1. Option to open release editor in same or new tab ([#464](https://github.com/majkinetor/musicbrainz-userscripts/issues/464))
+1. Soundcloud link type is not set ([#469](https://github.com/majkinetor/musicbrainz-userscripts/issues/469))
+
 ## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

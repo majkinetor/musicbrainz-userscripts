@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
+
+### Features
+
+1. ISRC and Links in one window ([#471](https://github.com/majkinetor/musicbrainz-userscripts/issues/471))
+
 ## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
 
 ### Features

@@ -1,5 +1,16 @@
 # Platform Check Changelog
 
+## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
+
+### Features
+
+1. Normalize Tidal/Apple links ([#481](https://github.com/majkinetor/musicbrainz-userscripts/issues/481))
+1. Option to open release editor in same or new tab ([#464](https://github.com/majkinetor/musicbrainz-userscripts/issues/464))
+
+### Fixes
+
+1. Soundcloud link type is not set ([#469](https://github.com/majkinetor/musicbrainz-userscripts/issues/469))
+
 ## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
 
 ### Fixes

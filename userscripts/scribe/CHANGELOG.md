@@ -1,5 +1,9 @@
 # Scribe — edit MusicBrainz in your editor Changelog
 
+## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
+
+- Small improvements
+
 ## [2026.7.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.12)
 
 ### Features

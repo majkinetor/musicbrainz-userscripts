@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
+
+### Fixes
+
+1. Change Discogs artist link button to normal MB button once linked ([#479](https://github.com/majkinetor/musicbrainz-userscripts/issues/479))
+
 ## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
 
 ### Features

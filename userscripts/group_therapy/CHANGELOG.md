@@ -1,5 +1,11 @@
 # Group Therapy
 
+## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
+
+### Features
+
+1. Option to replace a role ([#470](https://github.com/majkinetor/musicbrainz-userscripts/issues/470))
+
 ## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
 
 ### Features

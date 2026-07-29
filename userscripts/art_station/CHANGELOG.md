@@ -1,5 +1,15 @@
 # Art Station Changelog
 
+## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
+
+### Features
+
+1. Resizable "Apply" dialog in ArtStation for big screens ([#473](https://github.com/majkinetor/musicbrainz-userscripts/issues/473))
+
+### Fixes
+
+1. Adjust `@match` directives to accommodate for query strings ([#482](https://github.com/majkinetor/musicbrainz-userscripts/issues/482))
+
 ## [2026.7.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.21)
 
 - Small improvements
