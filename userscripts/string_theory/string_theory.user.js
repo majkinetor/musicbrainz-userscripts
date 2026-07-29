@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.29.193940
+// @version      2026.7.29.210346
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,13 +75,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.29.193940 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.24.191253\n  · Art Station v2026.7.29\n  · Credit Hoarder v2026.7.23\n  · Group Therapy v2026.7.26.121121\n  · ISRC Scout v2026.7.29\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.25.204423");
+  console.log('%c String Theory %c v2026.7.29.210346 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.29.210248\n  · Art Station v2026.7.29\n  · Credit Hoarder v2026.7.23\n  · Group Therapy v2026.7.26.121121\n  · ISRC Scout v2026.7.29\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.25.204423");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.24.191253","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.24.191253","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.29.210248","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.29.210248","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -805,9 +805,9 @@ try {
     } catch (e) {}
   })();
 
-  async function artistDiscogsUrls(gid) {
+  async function artistDiscogsUrls(gid, force) {
     if (!gid) return [];
-    if (_artistRelsCache.has(gid)) return _artistRelsCache.get(gid);
+    if (!force && _artistRelsCache.has(gid)) return _artistRelsCache.get(gid);
     let out = null;
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
@@ -983,11 +983,32 @@ try {
   const DISCOGS_MISMATCH_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12.5"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
   // after the artist's Discogs link changes (foreground return or background
   // postback): drop the stale caches and re-tag every slot crediting that artist.
+  //
+  // #479 (majkinetor: "it does change them, although probably due to rate limit
+  // it fails to always do so"): a single artistDiscogsUrls() call right after the
+  // edit landed can genuinely come back empty — not from a 429 (this hits MB's
+  // internal /ws/js/entity endpoint, which the request itself already retries on
+  // rate-limit), but from read-after-write lag: the edit was JUST committed, and
+  // the internal endpoint's data can take a beat to catch up. artistDiscogsUrls
+  // caches ANY successful response, including that stale empty one, so it and
+  // every slot that reuses the cache (the tagDiscogsForAll() call right below)
+  // then stay wrong until something else happens to drop the cache — the button
+  // never flips to normal. Retry with force=true (bypassing the cache each time)
+  // for a few seconds, since — unlike the general "does this artist have a
+  // Discogs link at all" check elsewhere — we know FOR CERTAIN a write just
+  // happened, so it's worth waiting for it to show up rather than accepting the
+  // first answer.
   async function reTagAfterDiscogsLink(gid, url, name) {
-    _artistRelsCache.delete(gid); _ddrop('rels', gid);
     _discogsResolveCache.delete(url); _ddrop('resolve', url);
-    const own = await artistDiscogsUrls(gid);
-    if (own && own.some(u => discogsIdOf(u) === discogsIdOf(url))) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); discMsg(`added Discogs link to ${name}`); }
+    const wantId = discogsIdOf(url);
+    let own = null;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      own = await artistDiscogsUrls(gid, true);
+      if (own && own.some(u => discogsIdOf(u) === wantId)) break;
+      if (attempt < 5) await _sleep(800 * (attempt + 1));
+    }
+    if (own && own.some(u => discogsIdOf(u) === wantId)) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); discMsg(`added Discogs link to ${name}`); }
+    else Log.warn('Discogs link for', name || gid, 'still not visible via /ws/js/entity after retrying — will keep showing as addable until the next check');
     await tagDiscogsForAll();
   }
   function addOrCreateDiscogsLink(slot, background) {
@@ -1480,7 +1501,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.24.191253';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.29.210248';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -7901,7 +7922,7 @@ try {
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
