@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.29
+// @version      2026.7.29.195246
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -433,7 +433,7 @@
     #ii-overlay.open { display: block; }
     #ii-modal {
       position: fixed; top: 4vh; left: 50%; transform: translateX(-50%);
-      width: 1080px; max-width: 96vw;
+      width: 1300px; max-width: 96vw;   /* #471: wider — the table now carries both ISRC and Links columns at once */
       /* a DEFINITE height (not just max-height) so the modal never grows as rows /
          candidates are added — the body scrolls inside a fixed frame and the footer
          stays put. !important so MusicBrainz's page CSS can't un-cap it. */
@@ -444,10 +444,13 @@
     #ii-modal.open { display: flex; }
     /* header: tabs (left) · centered release (Zen) · bulk + config (right) */
     #ii-hdr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-      padding: 6px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
+      padding: 4px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
     .ii-tabs { display: flex; gap: 2px; }
+    /* #471 (majkinetor: "reduce title which takes a lot of space") — both tabs' data
+       columns are always visible now, so the tabs themselves are a smaller control
+       (pick which action toolbar shows) and don't need this much vertical weight. */
     .ii-tab { background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer;
-      padding: 8px 16px 9px; font: 600 15px system-ui; color: #868e96; display: inline-flex; align-items: center; gap: 8px; }
+      padding: 6px 14px 7px; font: 600 13px system-ui; color: #868e96; display: inline-flex; align-items: center; gap: 6px; }
     .ii-tab:hover { color: #6c757d; }
     .ii-tab.on { color: #6f42c1; border-bottom-color: #6f42c1; }
     .ii-tab-badge { font: 700 10px system-ui; background: #eceff2; color: #6c757d; border-radius: 9px; padding: 1px 6px; }
@@ -835,7 +838,14 @@
       #ii-tools { padding: 7px 12px; gap: 5px; }
       .ii-exact-set { gap: 7px; }
 
-      /* table → one full-width card per track row (CSS-only, no DOM change) */
+      /* table → one full-width card per track row (CSS-only, no DOM change).
+         #471: ISRC and Links columns are always both present now (7 cells per row
+         instead of 5), so every cell gets its own explicit grid-row by nth-child —
+         a class-based selector on an inner div (the old .ii-existing rule) is NOT
+         a grid item and silently does nothing; only the <td> itself, as the grid's
+         direct child, can be positioned. That dead selector is why the Links-scope
+         cells fell back to browser auto-placement and their icon lists collapsed
+         to a near-zero-width column, wrapping one icon per line (#476's screenshot). */
       #ii-table { display: block; }
       #ii-table thead, #ii-table colgroup { display: none; }
       #ii-table tbody { display: block; }
@@ -843,11 +853,13 @@
         display: grid; grid-template-columns: 24px 1fr auto; align-items: start;
         column-gap: 8px; row-gap: 4px; padding: 9px 12px; border-bottom: 1px solid #e9ecef; }
       #ii-table tr:not(.ii-medrow) > td { display: block; border: none !important; padding: 0; }
-      #ii-table .ii-pos { grid-column: 1; grid-row: 1; }
-      #ii-table tr > td:nth-child(2) { grid-column: 2; grid-row: 1; }            /* track  */
-      #ii-table .ii-track-dur { grid-column: 3; grid-row: 1; text-align: right; }
-      #ii-table .ii-existing { grid-column: 2 / 4; grid-row: 2; width: auto; }
-      #ii-table tr > td:nth-child(5) { grid-column: 2 / 4; grid-row: 3; }        /* New ISRC */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(1) { grid-column: 1; grid-row: 1; }            /* # */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(2) { grid-column: 2; grid-row: 1; }            /* track */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(3) { grid-column: 3; grid-row: 1; text-align: right; }   /* dur */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(4) { grid-column: 2 / 4; grid-row: 2; width: auto; }     /* existing ISRC */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(5) { grid-column: 2 / 4; grid-row: 3; }                  /* new ISRC */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6) { grid-column: 2 / 4; grid-row: 4; }                  /* linked */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(7) { grid-column: 2 / 4; grid-row: 5; }                  /* add */
       #ii-table tr.ii-medrow { display: block; }
       #ii-table tr.ii-medrow td { display: block; }
       /* paint the whole card (not just cells, which would leave striped gaps) */
@@ -2327,13 +2339,16 @@
 
       <div id="ii-body">
         <table id="ii-table">
+          <!-- #471: ISRC and Links columns are always both visible (no more colgroup swap per scope) -->
           <colgroup id="ii-colgroup">
-            <col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">
+            <col style="width:32px"><col><col style="width:44px"><col style="width:108px"><col style="width:340px"><col style="width:160px"><col style="width:140px">
           </colgroup>
           <thead><tr>
             <th>#</th><th>Track</th><th></th>
-            <th><label class="ii-ex-all-lbl ii-only-isrc" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label><span class="ii-only-links">Linked</span></th>
-            <th><span class="ii-only-isrc">New ISRC</span><span class="ii-only-links">Add</span></th>
+            <th><label class="ii-ex-all-lbl" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label></th>
+            <th>New ISRC</th>
+            <th>Linked</th>
+            <th>Add</th>
           </tr></thead>
           <tbody id="ii-tbody"></tbody>
         </table>
@@ -2577,8 +2592,12 @@
     });
   }
 
-  // #301: the active scope (ISRCs / Links) — drives column labels, toolbar, footer
-  // (via .ii-only-isrc / .ii-only-links visibility) and the table column widths.
+  // #471: ISRCs and Links used to be exclusive tabs, each hiding the other's table
+  // columns — "I often have to switch back to ISRC tab before finding links". Both
+  // sets of columns are now always visible in one table (see #ii-colgroup above);
+  // "scope" only still picks which ACTION TOOLBAR shows below (the ISRC-provider
+  // import buttons vs the single "Find links" button — showing all of them at once
+  // would be cluttered) and which Bulk/Export pane and footer summary apply.
   let scope = store.get('scope', 'isrc') === 'links' ? 'links' : 'isrc';
   function setScope(s) {
     scope = (s === 'links') ? 'links' : 'isrc';
@@ -2586,14 +2605,6 @@
     modal.classList.toggle('ii-scope-isrc', scope === 'isrc');
     modal.classList.toggle('ii-scope-links', scope === 'links');
     modal.querySelectorAll('.ii-tab').forEach(t => t.classList.toggle('on', t.dataset.scope === scope));
-    const cg = modal.querySelector('#ii-colgroup');
-    if (cg) cg.innerHTML = (scope === 'links')
-      // #406: the LINKED column holds every existing streaming link (7+ on a well-linked
-      // release). At 150px they overflowed rightward *under the ADD header*, looking like
-      // addable candidates. Give LINKED room for ~8 icons on one row (and it wraps, not
-      // overflows, beyond that) so existing links stay in their own column.
-      ? '<col style="width:32px"><col><col style="width:44px"><col style="width:212px"><col style="width:196px">'
-      : '<col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">';
   }
 
   // Some tablets render MusicBrainz's desktop layout wider than the browser's
@@ -3403,7 +3414,7 @@
         lastMedium = t.mediumPos;
         const mr = document.createElement('tr');
         mr.className = 'ii-medrow';
-        mr.innerHTML = '<td colspan="5">Medium ' + t.mediumPos + (t.mediumTitle ? ': ' + esc(t.mediumTitle) : '') + '</td>';
+        mr.innerHTML = '<td colspan="7">Medium ' + t.mediumPos + (t.mediumTitle ? ': ' + esc(t.mediumTitle) : '') + '</td>';
         tbody.appendChild(mr);
       }
       const tr = document.createElement('tr');
@@ -3414,12 +3425,11 @@
           (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" title="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
           '</div><div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
-        // col 4 — Existing ISRC (ISRC scope) / Linked providers (Links scope)
-        '<td><div class="ii-existing ii-only-isrc">' + existingHtml(t.existing, t.pendingRemoval) + '</div>' +
-          '<div class="ii-only-links">' + TrackLinks.linkedHtml(t) + '</div></td>' +
-        // col 5 — New ISRC input + SoundExchange candidates (ISRC scope) / Add (Links scope).
+        // #471: ISRC and Links columns are separate cells now, always both visible —
+        // no more ii-only-isrc/ii-only-links split within a shared td.
+        '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</div></td>' +
         // .ii-cands is a sibling of .ii-inwrap (full-width, under the input), NOT inside it.
-        '<td><div class="ii-only-isrc"><div class="ii-inwrap">' +
+        '<td><div class="ii-inwrap">' +
           '<div class="ii-input-box">' +
             '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
             '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
@@ -3431,8 +3441,9 @@
             '<button class="ii-sxprov" type="button" tabindex="-1" title="Choose the ISRC provider for all tracks">▾</button>' +
           '</span>' +
           '<span class="ii-lookup"></span>' +
-          '</div><div class="ii-cands"></div></div>' +
-          '<div class="ii-only-links">' + TrackLinks.addHtml(t) + '</div></td>';
+          '</div><div class="ii-cands"></div></td>' +
+        '<td>' + TrackLinks.linkedHtml(t) + '</td>' +
+        '<td>' + TrackLinks.addHtml(t) + '</td>';
       const input = tr.querySelector('.ii-input');
       tr.querySelector('.ii-clear').addEventListener('click', () => clearRow(idx));
       input.addEventListener('input', () => {
