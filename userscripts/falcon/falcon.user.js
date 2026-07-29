@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.29
+// @version      2026.7.29.225558
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -361,9 +361,13 @@
       if (existing) {
         if (!existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
         if (p.note && !existing.note) existing.note = p.note;
+        // #474: disambiguation + ISRC — recording-only, additive (a later tuple
+        // for the same mbid shouldn't clobber a comment/isrc it already has).
+        if (p.comment && !existing.comment) existing.comment = p.comment;
+        if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', name: null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], name: null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
@@ -397,13 +401,14 @@
         if (!urls.length) { skipped++; return; }
         queue.push({
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
-          note: r.note || '', name: r.name || null, urlResults: r.urlResults || null,
+          note: r.note || '', comment: r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
+          name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
           error: r.error || '',
         });
         added++;
       } else if (r.url) {
-        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '' });
+        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', comment: r.comment || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
       } else skipped++;
     });
     if (flat.length) { const res = addToQueue(flat); added += res.added; merged += res.merged; }
@@ -449,7 +454,7 @@
     try {
       const arr = JSON.parse(json);
       if (!Array.isArray(arr)) return null;
-      return arr.map(it => ({ entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '' }))
+      return arr.map(it => ({ entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null }))
         .filter(it => MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url));
     } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
   }
@@ -478,7 +483,7 @@
     return Object.values(byIndex).filter(e => e.text).map(e => ({ entityType, mbid, url: e.text, linkTypeId: e.link_type_id || null, note }));
   }
   function encodeFalconPayload(tuples) {
-    const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined })));
+    const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined })));
     return btoa(unescape(encodeURIComponent(json)));
   }
 
@@ -497,10 +502,39 @@
      instead of a clean "414 URI Too Long"). The GM-storage-token scheme (see
      parseUrlParam) sidesteps that entirely — nothing goes in the URL but a
      short random token. */
+  // #474 (majkinetor): "ISRC should be fetched on Harmony side too when
+  // present." Checked a real Harmony actions page live — ISRCs are NOT in the
+  // recording "Link external IDs" hrefs at all; they live in one separate
+  // "Open with MagicISRC" action per release, handing off to a third-party
+  // tool: `?isrc1=...&isrc2=...&musicbrainzid=<release>`, positional to track
+  // order. Falcon has no independent view of the release's tracklist (it only
+  // knows what scrapeHarmonyActions finds), so the match is positional: the
+  // Nth distinct recording mbid to appear among the "Link external IDs"
+  // anchors gets isrcN. This assumes every track has at least one link action
+  // — true of every real Harmony page seen so far, but a track with zero
+  // links would shift every isrc after it. majkinetor is testing this by hand.
+  function scrapeHarmonyIsrcs() {
+    const a = [...document.querySelectorAll('a')].find(x => /open with magicisrc/i.test(x.textContent || ''));
+    const href = a && a.getAttribute('href');
+    if (!href) return [];
+    let u; try { u = new URL(href, location.href); } catch (e) { return []; }
+    const out = [];
+    for (const [k, v] of u.searchParams) {
+      const m = k.match(/^isrc(\d+)$/i);
+      if (m && v) out[+m[1] - 1] = v;
+    }
+    return out;
+  }
   function scrapeHarmonyActions() {
     const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
     const tuples = [];
     anchors.forEach(a => { const href = a.getAttribute('href'); if (href) tuples.push(...parseHarmonySeedUrl(href)); });
+    const isrcs = scrapeHarmonyIsrcs();
+    if (isrcs.length) {
+      const recOrder = [];
+      tuples.forEach(t => { if (t.entityType === 'recording' && !recOrder.includes(t.mbid)) recOrder.push(t.mbid); });
+      recOrder.forEach((mbid, i) => { if (isrcs[i]) tuples.forEach(t => { if (t.mbid === mbid) t.isrc = isrcs[i]; }); });
+    }
     return tuples;
   }
   function makePendingToken() {
@@ -518,7 +552,7 @@
         const found = scrapeHarmonyActions();
         if (!found.length) { alert(`${NAME}: no "Link external IDs" actions found on this page.`); return; }
         const token = makePendingToken();
-        GM_setValue('falcon:pending:' + token, JSON.stringify(found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined }))));
+        GM_setValue('falcon:pending:' + token, JSON.stringify(found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined }))));
         window.open(`${MB_TARGET}/?falcon=${token}`, '_blank');
       };
       document.body.appendChild(harmonyBtn);
@@ -1052,6 +1086,14 @@
       if (u.linkTypeId) params.set(`${prefix}url.${idx}.link_type_id`, u.linkTypeId);
       idx++;
     });
+    // #474: disambiguation + ISRC — recording-only fields, seeded the exact
+    // same way as everything else here (checked MB's own Form/Recording.pm:
+    // the field is internally called `comment`, and `isrcs` is a repeatable
+    // field keyed by index, same pattern as url.N above).
+    if (item.entityType === 'recording') {
+      if (item.comment) params.set(`${prefix}comment`, item.comment);
+      (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
+    }
     if (item.note) params.set(`${prefix}edit_note`, item.note);
     return `${MB_TARGET}/${item.entityType}/${item.mbid}/edit?${params.toString()}`;
   }
@@ -1648,6 +1690,7 @@
         exported: new Date().toISOString(),
         items: queue.map(i => ({
           entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
+          comment: i.comment || '', isrcs: i.isrcs || [],
           urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
           status: i.status, error: i.error || '', urlResults: i.urlResults || null,
         })),
@@ -1729,9 +1772,17 @@
     });
     list.addEventListener('change', e => {
       const chk = e.target.closest('.falcon-row-check');
-      if (!chk) return;
-      chk.checked ? _selectedIds.add(chk.dataset.id) : _selectedIds.delete(chk.dataset.id);
-      renderQueue();
+      if (chk) { chk.checked ? _selectedIds.add(chk.dataset.id) : _selectedIds.delete(chk.dataset.id); renderQueue(); return; }
+      // #474: disambiguation + ISRC — plain text fields, no validation here;
+      // MB's own edit form is what actually validates an ISRC on submit.
+      const commentInp = e.target.closest('.falcon-comment-input');
+      if (commentInp) { const it = queue.find(i => i.id === commentInp.dataset.id); if (it) it.comment = commentInp.value.trim(); return; }
+      const isrcInp = e.target.closest('.falcon-isrc-input');
+      if (isrcInp) {
+        const it = queue.find(i => i.id === isrcInp.dataset.id);
+        if (it) it.isrcs = isrcInp.value.split(',').map(s => s.trim().toUpperCase().replace(/[\s-]/g, '')).filter(Boolean);
+        return;
+      }
     });
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
     document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
@@ -1841,7 +1892,7 @@
   const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
   function renderRowDetail(it) {
     const results = it.urlResults || [];
-    return it.urls.map(u => {
+    const urlRows = it.urls.map(u => {
       const res = results.find(r => r.url === u.url);
       const icon = res ? (res.ok ? '✓' : '✗') : '·';
       const color = res ? (res.ok ? '#2e9e5b' : '#c0392b') : '#aaa';
@@ -1851,6 +1902,18 @@
         ${u.linkTypeId ? `<span style="color:#999;flex:0 0 auto">type ${esc(u.linkTypeId)}</span>` : ''}
       </div>`;
     }).join('');
+    // #474 (majkinetor: "make it addable via our interface, sender is responsible
+    // for filling it") — disambiguation + ISRC are recording-only MB fields
+    // (see buildSeedEditUrl), so only offered here for entityType 'recording'.
+    // No auto-computation: whatever's typed here is seeded verbatim.
+    const meta = it.entityType === 'recording' ? `
+      <div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 30px;font-size:10.5px">
+        <input type="text" class="falcon-comment-input" data-id="${it.id}" placeholder="disambiguation comment" value="${esc(it.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
+          style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+        <input type="text" class="falcon-isrc-input" data-id="${it.id}" placeholder="ISRC(s), comma-separated" value="${esc((it.isrcs || []).join(', '))}" ${it.status === 'active' ? 'disabled' : ''}
+          style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />
+      </div>` : '';
+    return urlRows + meta;
   }
   function renderQueue() {
     const list = document.getElementById('falcon-queue-list'); if (!list) return;
@@ -2017,5 +2080,5 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs };
 })();
