@@ -53,8 +53,8 @@ await page.waitForSelector('#ii-btn', { timeout: 20000 });
 await page.click('#ii-btn');
 await page.waitForSelector('#ii-sp-all', { timeout: 20000 });
 await page.waitForFunction(() => /Release "/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 });
-// switch to the Links tab and Find links (Spotify resolves by position — no ISRC needed)
-await page.click('.ii-tab[data-scope="links"]');
+// #471: Links columns are always visible now — no tab to switch. Find links
+// (Spotify resolves by position — no ISRC needed)
 await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.cand[data-code="sp"]').length > 0, null, { timeout: 20000 });
 await page.click('#ii-links-btn');
 await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.new[data-code="sp"], #ii-modal .ii-tl.absent[data-code="sp"]').length > 0, null, { timeout: 60000 }).catch(() => {});

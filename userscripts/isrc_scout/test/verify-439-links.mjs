@@ -43,8 +43,8 @@ await page.waitForSelector('#ii-btn', { timeout: 20000 });
 await page.click('#ii-btn');
 await page.waitForSelector('#ii-sc-all', { timeout: 20000 });
 await page.waitForFunction(() => /Release "/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 });
-// switch to the Links tab and Find links (SoundCloud resolves by position — no ISRC needed)
-await page.click('.ii-tab[data-scope="links"]');
+// #471: Links columns are always visible now — no tab to switch. Find links
+// (SoundCloud resolves by position — no ISRC needed)
 // wait for the table to render the SoundCloud candidate slots before resolving
 await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.cand[data-code="sc"]').length > 0, null, { timeout: 20000 });
 await page.click('#ii-links-btn');

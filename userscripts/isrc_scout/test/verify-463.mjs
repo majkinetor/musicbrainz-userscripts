@@ -37,7 +37,7 @@ await page.addScriptTag({ content: code });
 await page.waitForSelector('#ii-btn', { timeout: 20000 });
 await page.click('#ii-btn');
 await page.waitForFunction(() => /Release "/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 });
-await page.click('.ii-tab[data-scope="links"]');
+// #471: Links columns are always visible now — no tab to switch.
 await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.cand').length > 0, null, { timeout: 20000 });
 await page.click('#ii-links-btn');
 // wait until resolution settled (row 9 gets a new/absent marker, or a general timeout)
