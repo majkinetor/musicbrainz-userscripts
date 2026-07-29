@@ -96,6 +96,31 @@ ck(byMbid('22222222-2222-2222-2222-222222222222').length === 2 && byMbid('222222
   'second recording (dual-type, 2 anchors) still only counts once and gets isrc2 on BOTH its tuples');
 ck(byMbid('33333333-3333-3333-3333-333333333333').every(t => t.isrc === 'USRC10000003'), 'third recording gets isrc3');
 
+// ── fillAndSubmit: a link-less recording (comment/isrc only) must not be
+// refused at either of the two url-shaped gates. Exercised against a fake
+// "iframe" (just {document, contentWindow: window}) since fillAndSubmit only
+// ever reads doc.querySelectorAll(...) — no real MB edit page needed to prove
+// the GATE logic, only to prove an actual submit (out of scope here; that
+// needs a real logged-in edit page, covered by the live #467 suite). ────────
+await page.evaluate(() => { document.body.innerHTML = '<div id="scratch"></div>'; });
+const gateResult = await page.evaluate(async () => {
+  const fakeIframe = { document, contentWindow: window };
+  const item = { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], comment: 'live version', isrcs: ['USRC17607839'], note: '' };
+  return window.__falconTest.fillAndSubmit(fakeIframe, item, { tag: '[test]', baseline: [], skipSubmit: true });
+});
+console.log('link-less fillAndSubmit result:', JSON.stringify(gateResult));
+ck(gateResult.manual === true, `reaches the manual-review return (skipSubmit) instead of refusing early (got ${JSON.stringify(gateResult)})`);
+ck(gateResult.results.length === 0, 'no per-url results, as expected — there were no urls to process');
+
+// same item, but with NEITHER urls NOR comment/isrc — must still refuse, same as before #474
+const noopResult = await page.evaluate(async () => {
+  const fakeIframe = { document, contentWindow: window };
+  const item = { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], comment: '', isrcs: [], note: '' };
+  return window.__falconTest.fillAndSubmit(fakeIframe, item, { tag: '[test]', baseline: [], skipSubmit: true });
+});
+console.log('genuinely-empty fillAndSubmit result:', JSON.stringify(noopResult));
+ck(noopResult.committed === false && !noopResult.manual, `a truly empty item (no urls, no comment/isrc) still refuses (got ${JSON.stringify(noopResult)})`);
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.29.225558
+// @version      2026.7.29.233250
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -398,7 +398,11 @@
       if (Array.isArray(r.urls)) {
         // full item: reinstate it whole, status and all
         const urls = r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null }));
-        if (!urls.length) { skipped++; return; }
+        // #474: a recording carrying only a comment/isrc (no urls at all) is a
+        // legitimate item now that fillAndSubmit knows to look for one — only
+        // reject empty-urls rows that have nothing else to offer either.
+        const hasMeta = type === 'recording' && (r.comment || (Array.isArray(r.isrcs) && r.isrcs.some(Boolean)));
+        if (!urls.length && !hasMeta) { skipped++; return; }
         queue.push({
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
           note: r.note || '', comment: r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
@@ -933,7 +937,19 @@
       });
     }
     dbg(tag, `per-url outcome: ${JSON.stringify(results.map(r => ({ u: r.url.slice(-40), ok: r.ok, e: r.error })))}`);
-    if (!results.some(r => r.ok)) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
+    // #474: a recording queued with a comment/isrc (with or without urls) has
+    // something to submit even when no url in this group committed — MB's
+    // comment field and its ISRC list are plain fields with no .rel-add-style
+    // "this changed" marker at all (checked MB's own source: comment is a bare
+    // <input>, ISRC is a React FormRowTextList whose rows look identical
+    // whether seeded or pre-existing), so there's no reliable way to tell
+    // "genuinely new" from "already there" without an extra fetch per item.
+    // Trusting the sender here matches majkinetor's own scoping for this
+    // feature ("sender is responsible for filling it") — Falcon doesn't try
+    // to be clever about it, same as it doesn't verify a url is really new
+    // before offering to add it.
+    const hasFieldChange = !!(item.comment || (item.isrcs && item.isrcs.length));
+    if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no comment/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
     // visibility): when every url is ALREADY on the entity with the right type,
     // nothing changed and MB has no edit to create. It leaves "Enter edit"
@@ -967,11 +983,11 @@
       };
     }
     const pending = (frameDoc(iframe)?.querySelectorAll('.rel-add, .rel-edit') || []).length;
-    if (!pending) {
+    if (!pending && !hasFieldChange) {
       dbg(tag, 'NOT SUBMITTING — MB shows no pending change; every url is already on the entity with this type');
       return { committed: false, results, noop: true, fillMs: Date.now() - tFillStart };
     }
-    dbg(tag, `${pending} pending relationship change(s) staged`);
+    dbg(tag, `${pending} pending relationship change(s) staged` + (hasFieldChange ? ' + comment/isrc queued' : ''));
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
     const noteSet = setEditNote(d2, w2, editNoteText(results));
     dbg(tag, `edit note set = ${noteSet}`);
@@ -1925,13 +1941,15 @@
       <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3">
         <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
-          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
           <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(it.entityType.slice(0, 3))}</span>
           <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
           ${it.urls.length > 1
             ? `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links</span>`
-            : `<a href="${esc(it.urls[0]?.url || '')}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.urls[0]?.url || '')}</a>`}
+            : it.urls.length === 1
+              ? `<a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.urls[0].url)}</a>`
+              : `<span style="color:#999;font-style:italic;flex:1">no links — ${esc(it.comment) ? 'comment' : ''}${it.comment && (it.isrcs || []).length ? ' + ' : ''}${(it.isrcs || []).length ? 'ISRC' : ''}</span>`}
           <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
