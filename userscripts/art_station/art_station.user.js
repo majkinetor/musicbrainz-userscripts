@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.29
+// @version      2026.7.29.214322
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3399,7 +3399,12 @@
   .as-rp-out{font:12px/1.45 ui-monospace,Consolas,monospace;border:1px solid #cfc6e6;border-radius:7px;padding:9px 11px;resize:vertical;background:#faf9fe;color:#333;white-space:pre;overflow:auto}
   .as-rp-note{font-size:12px;color:#a05a00}
   .as-rp-copy{font-weight:600;color:var(--as-acc)}
-  .as-cm-box{background:#fff;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222}
+  /* #473 (vzell, big screens): the box is a flex column with .as-cm-list already
+     flex:1 1 auto + min-height:0 + overflow:auto (below), so it was already set up
+     to grow into extra room cleanly — just needed resize turned on. overflow:hidden
+     here is what CSS resize requires (any value other than visible), and min-*
+     keeps it from being dragged down to something unusable. */
+  .as-cm-box{background:#fff;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;resize:both;overflow:hidden}
   .as-cm-h{font-size:16px;font-weight:700;color:#3b2c70;margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .as-cm-h-t{flex:1;min-width:0}
   .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:#6f42c1;text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid #d9d2ee;border-radius:8px;background:#fff}
