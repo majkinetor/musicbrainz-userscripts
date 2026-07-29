@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.29.195246
+// @version      2026.7.29.205138
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -436,26 +436,22 @@
       width: 1300px; max-width: 96vw;   /* #471: wider — the table now carries both ISRC and Links columns at once */
       /* a DEFINITE height (not just max-height) so the modal never grows as rows /
          candidates are added — the body scrolls inside a fixed frame and the footer
-         stays put. !important so MusicBrainz's page CSS can't un-cap it. */
-      height: 92vh !important; max-height: 92vh !important; background: #fff;
+         stays put. #471 ("movable, resizable, maximize button"): dropped !important
+         from height so the corner resize handle and the maximize toggle can both
+         change it — nothing else on an MB page has fought for it since. */
+      height: 92vh; max-height: 92vh; min-width: 480px; min-height: 320px; background: #fff;
       border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,.3); z-index: 999999;
       display: none; flex-direction: column; font-family: system-ui, sans-serif;
-      color: #212529; overflow: hidden !important; }
+      color: #212529; overflow: hidden !important; resize: both; }
     #ii-modal.open { display: flex; }
-    /* header: tabs (left) · centered release (Zen) · bulk + config (right) */
+    /* header: status text (left) · centered release (Zen) · actions (right).
+       #471 (majkinetor: "reduce title which takes a lot of space") — the old
+       ISRCs/Links tabs were removed (both columns are always visible now), so
+       this row carries less weight than it used to. */
     #ii-hdr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-      padding: 4px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
-    .ii-tabs { display: flex; gap: 2px; }
-    /* #471 (majkinetor: "reduce title which takes a lot of space") — both tabs' data
-       columns are always visible now, so the tabs themselves are a smaller control
-       (pick which action toolbar shows) and don't need this much vertical weight. */
-    .ii-tab { background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer;
-      padding: 6px 14px 7px; font: 600 13px system-ui; color: #868e96; display: inline-flex; align-items: center; gap: 6px; }
-    .ii-tab:hover { color: #6c757d; }
-    .ii-tab.on { color: #6f42c1; border-bottom-color: #6f42c1; }
-    .ii-tab-badge { font: 700 10px system-ui; background: #eceff2; color: #6c757d; border-radius: 9px; padding: 1px 6px; }
-    .ii-tab-badge:empty { display: none; }
-    .ii-tab.on .ii-tab-badge { background: #efe9fb; color: #6f42c1; }
+      padding: 4px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0;
+      cursor: move; }   /* #471: drag anywhere on the header (not its buttons) to move the window */
+    #ii-hdr button, #ii-hdr input, #ii-hdr a { cursor: pointer; }
     .ii-zen { text-align: center; padding-bottom: 7px; min-width: 0; }
     .ii-zen-t { font: 600 12px system-ui; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-zen-s { font: 10.5px system-ui; color: #c3c8ce; }
@@ -464,14 +460,23 @@
       border: 1px solid #e3e3e8; border-radius: 6px; background: #fff; color: #6c757d; font-size: 14px; cursor: pointer; }
     .ii-hico:hover { background: #f1f3f5; color: #6f42c1; border-color: #d6c7ee; }
     .ii-hico.on { background: #efe9fb; color: #6f42c1; border-color: #d6c7ee; }
-    /* scope visibility — elements tagged .ii-only-isrc / .ii-only-links show with the active tab */
-    #ii-modal.ii-scope-links .ii-only-isrc, #ii-modal.ii-scope-isrc .ii-only-links { display: none !important; }
+    /* #471: plain status text where the ISRCs/Links tabs used to be — no columns
+       to gate anymore, so nothing is hidden by it; just counts. */
+    .ii-hdr-status { font: 600 12px system-ui; color: #868e96; white-space: nowrap; padding-bottom: 7px; }
+    .ii-hdr-status b { color: #6f42c1; }
+    /* the Clear menu — a small dropdown anchored under its header button */
+    .ii-clear-wrap { position: relative; }
+    .ii-clear-menu { display: none; position: absolute; top: 100%; right: 0; z-index: 60; flex-direction: column;
+      min-width: 128px; margin-top: 4px; background: #fff; border: 1px solid #d8dce1; border-radius: 6px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.14); padding: 4px; }
+    .ii-clear-menu.open { display: flex; }
+    .ii-clear-menu button { background: none; border: none; text-align: left; padding: 6px 10px; font-size: 12px;
+      border-radius: 4px; cursor: pointer; color: #212529; }
+    .ii-clear-menu button:hover { background: #f3eefc; color: #6f42c1; }
 
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-      padding: 8px 16px; border-bottom: 1px solid #eee; flex-shrink: 0; background: #fbfbfd;
-      position: relative; padding-right: 74px; }   /* reserve room so "Clear" stays pinned top-right and never wraps (#180) */
-    #ii-clear-pending { position: absolute; top: 8px; right: 16px; }
+      padding: 8px 16px; border-bottom: 1px solid #eee; flex-shrink: 0; background: #fbfbfd; }
     .ii-tbtn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px;
       font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; text-decoration: none;
       border: 1px solid #dee2e6; background: #fff; color: #343a40; white-space: nowrap; }
@@ -540,6 +545,14 @@
     #ii-table thead th { position: sticky; top: 0; z-index: 2; background: #f1f3f5;
       text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .3px; color: #6c757d; padding: 7px 10px; border-bottom: 1px solid #dee2e6; }
+    /* #471: resizable columns — a thin drag handle on the right edge of each
+       resizable header cell; dragging changes that column's <col> width only
+       (table-layout:fixed), so #ii-body scrolls horizontally past the widened
+       table rather than squeezing its neighbor. th's own sticky positioning
+       (position: sticky, above) already gives it a positioning context for
+       the handle. */
+    .ii-col-resize { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 3; }
+    .ii-col-resize:hover, .ii-col-resize.dragging { background: rgba(111,66,193,.35); }
     .ii-medrow td { background: #eef0f3; font-weight: 700; font-size: 11.5px; color: #495057;
       padding: 5px 10px; border-top: 1px solid #dee2e6; }
     #ii-table td { padding: 6px 10px; border-bottom: 1px solid #f1f3f5; vertical-align: top; }
@@ -633,8 +646,10 @@
     #ii-foot { position: absolute !important; left: 0; right: 0; bottom: 0; z-index: 2;
       display: flex; align-items: center; gap: 10px; padding: 9px 16px; height: 56px; box-sizing: border-box;
       border-top: 1px solid #dee2e6; background: #f8f9fa; }
-    #ii-foot .ii-summary { font-size: 12px; color: #495057; flex: 1; min-width: 0; }
+    #ii-foot .ii-summary { font-size: 12px; color: #495057; min-width: 0; }
+    #ii-foot #ii-summary { flex: 1; }   /* #471: both summaries show together — only the first grows */
     #ii-foot .ii-summary b { color: #212529; }
+    #ii-foot #ii-summary-links:not(:empty)::before { content: ' · '; color: #ced4da; }
     .ii-seq-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 9px;
       font-size: 11px; font-weight: 700; font-family: 'Courier New', monospace; color: #0f5132; background: #d1e7dd;
       border: 1px solid #a3cfbb; border-radius: 11px; vertical-align: middle; letter-spacing: .3px; }
@@ -2200,17 +2215,26 @@
     modal.addEventListener('click', e => e.stopPropagation());   // clicks inside don't reach the backdrop
     modal.innerHTML = `
       <div id="ii-hdr">
-        <!-- the two operations on a record: ISRCs and Links -->
-        <div class="ii-tabs">
-          <button class="ii-tab" data-scope="isrc" type="button">ISRCs <span class="ii-tab-badge" id="ii-badge-isrc"></span></button>
-          <button class="ii-tab" data-scope="links" type="button">Links <span class="ii-tab-badge" id="ii-badge-links"></span></button>
-        </div>
+        <!-- #471: no more ISRCs/Links tabs — both columns are always visible, so this
+             is now plain status text, not a control. -->
+        <div class="ii-hdr-status" id="ii-hdr-status"></div>
         <!-- centered release / artist (Apollo Zen style) -->
         <div class="ii-zen"><div class="ii-zen-t" id="ii-rel-title"></div><div class="ii-zen-s" id="ii-rel-sub"></div></div>
-        <!-- only Bulk/Export + config in the header; name/version/Log/Help live in the config window -->
         <div class="ii-hicons">
+          <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
+          <span class="ii-prog" id="ii-prog"></span>
+          <span class="ii-clear-wrap">
+            <button class="ii-hico" id="ii-clear-toggle" type="button" title="Clear…" aria-expanded="false">Clear <span class="ii-exact-car">▾</span></button>
+            <div class="ii-clear-menu" id="ii-clear-menu">
+              <button type="button" id="ii-clear-links">Clear Links</button>
+              <button type="button" id="ii-clear-isrcs">Clear ISRCs</button>
+              <button type="button" id="ii-clear-all">Clear All</button>
+            </div>
+          </span>
+          <!-- only Bulk/Export + config + maximize in the header; name/version/Log/Help live in the config window -->
           <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
           <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">⚙︎</button>
+          <button class="ii-hico" id="ii-maximize-toggle" type="button" title="Maximize">⛶</button>
         </div>
       </div>
 
@@ -2262,8 +2286,9 @@
 
       <div class="ii-pane" id="ii-bulk-pane">
         <h3><button class="ii-pane-x" title="Close">✕</button>Bulk / Export</h3>
-        <!-- ISRC scope: paste / apply / export ISRCs -->
-        <div class="ii-only-isrc">
+        <!-- #471: both sections always shown now (no ISRCs/Links scope toggle) -->
+        <div class="ii-cfg-grp">ISRCs</div>
+        <div>
           <div class="ii-help" style="margin-top:0">
             Paste one ISRC per line, in track order (blank line = skip a track). Lines like <code>3=USABC1234567</code>
             or <code>USABC1234567 | 1.3</code> target a specific track number. Or paste JSON exported below.
@@ -2276,8 +2301,8 @@
             <button class="ii-tbtn" id="ii-export-json">Export JSON</button>
           </div>
         </div>
-        <!-- Links scope: export the per-track streaming links (#301) -->
-        <div class="ii-only-links">
+        <div class="ii-cfg-grp" style="margin-top:16px">Links</div>
+        <div>
           <div class="ii-help" style="margin-top:0">
             Export this release's recording streaming links — what's already linked plus what <b>🔗 Find links</b> resolved (Deezer / Tidal / Bandcamp / Apple Music). Copied to the clipboard.
           </div>
@@ -2306,8 +2331,10 @@
         <pre id="ii-log-out"></pre>
       </div>
 
+      <!-- #471: this row is now ISRC-provider import buttons only — Find links,
+           Clear and the progress readout moved up into the header (see #ii-hdr) -->
       <div id="ii-tools">
-        <span class="ii-sx-group ii-only-isrc" id="ii-sx-group">
+        <span class="ii-sx-group" id="ii-sx-group">
           <button class="ii-tbtn sx" id="ii-sx-all" title="Search every track on SoundExchange">⟳ SoundExchange</button>
           <button class="ii-exact-toggle" id="ii-exact-toggle" type="button" title="Exact-match options" aria-expanded="false">exact <span class="ii-exact-car">▾</span></button>
           <span class="ii-exact-set" id="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
@@ -2316,22 +2343,19 @@
             <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
-        <button class="ii-tbtn dz ii-only-isrc" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
-        <button class="ii-tbtn sp ii-only-isrc" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
-        <button class="ii-tbtn bp ii-only-isrc" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
-        <button class="ii-tbtn td ii-only-isrc" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
-        <button class="ii-tbtn vo ii-only-isrc" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
-        <button class="ii-tbtn hd ii-only-isrc" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
-        <button class="ii-tbtn qz ii-only-isrc" id="ii-qz-all" title="Import ISRCs from Qobuz (needs Qobuz login in Platform Check)"><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
-        <button class="ii-tbtn am ii-only-isrc" id="ii-am-all" title="Import ISRCs from Apple Music"><span class="ii-bico">${SRC_ICON.am}</span><span class="ii-blabel">Apple</span></button>
-        <button class="ii-tbtn sc ii-only-isrc" id="ii-sc-all" title="Import ISRCs from a SoundCloud set"><span class="ii-bico">${SRC_ICON.sc}</span><span class="ii-blabel">SoundCloud</span></button>
-        <span class="ii-urladd ii-only-isrc" id="ii-urladd">
+        <button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
+        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
+        <button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
+        <button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
+        <button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
+        <button class="ii-tbtn hd" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
+        <button class="ii-tbtn qz" id="ii-qz-all" title="Import ISRCs from Qobuz (needs Qobuz login in Platform Check)"><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
+        <button class="ii-tbtn am" id="ii-am-all" title="Import ISRCs from Apple Music"><span class="ii-bico">${SRC_ICON.am}</span><span class="ii-blabel">Apple</span></button>
+        <button class="ii-tbtn sc" id="ii-sc-all" title="Import ISRCs from a SoundCloud set"><span class="ii-bico">${SRC_ICON.sc}</span><span class="ii-blabel">SoundCloud</span></button>
+        <span class="ii-urladd" id="ii-urladd">
           <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
-        <button class="ii-tbtn sx ii-only-links" id="ii-links-btn" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
-        <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn ghost ii-only-isrc" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
       <!-- floating provider menu (#181) — opened from any per-track button's ▾ -->
@@ -2345,19 +2369,20 @@
           </colgroup>
           <thead><tr>
             <th>#</th><th>Track</th><th></th>
-            <th><label class="ii-ex-all-lbl" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label></th>
-            <th>New ISRC</th>
-            <th>Linked</th>
-            <th>Add</th>
+            <th><label class="ii-ex-all-lbl" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">ISRC: linked</label></th>
+            <th>ISRC: new</th>
+            <th>Links: linked</th>
+            <th>Links: new</th>
           </tr></thead>
           <tbody id="ii-tbody"></tbody>
         </table>
       </div>
 
       <div id="ii-foot">
-        <span class="ii-summary ii-only-isrc" id="ii-summary"></span>
-        <span class="ii-summary ii-only-links" id="ii-summary-links"></span>
-        <button class="ii-tbtn ii-only-isrc" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
+        <!-- #471: both summaries always shown now (no ISRCs/Links scope toggle) -->
+        <span class="ii-summary" id="ii-summary"></span>
+        <span class="ii-summary" id="ii-summary-links"></span>
+        <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete ISRC</button>
         <button class="ii-tbtn ghost" id="ii-note-toggle" title="Edit note">✎ Edit note</button>
         <button class="ii-tbtn primary" id="ii-submit" title="Submit everything pending — entered ISRCs and resolved streaming links — in one go, then close">Submit to MusicBrainz</button>
       </div>
@@ -2372,8 +2397,6 @@
     progEl    = modal.querySelector('#ii-prog');
     submitBtn = modal.querySelector('#ii-submit');
 
-    // scope tabs (#301): the two operations on a record
-    modal.querySelectorAll('.ii-tab').forEach(t => t.addEventListener('click', () => setScope(t.dataset.scope)));
     // #341: right-click a LINKED link toggles its "ended" flag — Ctrl = whole track, Alt = that
     // provider everywhere; right-clicking an already-ended (faded) link reverts it. MIDDLE-click
     // (with the same modifiers) does the actual removal (#301). Left-click just opens the link.
@@ -2410,11 +2433,32 @@
     });
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
-    modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
+    modal.querySelector('#ii-maximize-toggle').addEventListener('click', toggleMaximize);
     modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
     // #406: no separate "Add links" button — the single Submit button below adds every
     // resolved link together with any pending ISRCs (right-click a candidate still adds one).
     modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);   // bulk SoundExchange — unchanged (#181)
+
+    // #471: "Clear" is now a small menu (Clear Links / Clear ISRCs / Clear All) —
+    // it used to only clear entered ISRCs, but now that resolved-but-unadded
+    // link candidates are equally visible, clearing needs to say which.
+    const clearToggle = modal.querySelector('#ii-clear-toggle'), clearMenu = modal.querySelector('#ii-clear-menu');
+    clearToggle.addEventListener('click', () => {
+      const open = clearMenu.classList.toggle('open');
+      clearToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    modal.querySelector('#ii-clear-links').addEventListener('click', () => { clearMenu.classList.remove('open'); TrackLinks.clearResolved(); toast('Cleared resolved links'); });
+    modal.querySelector('#ii-clear-isrcs').addEventListener('click', () => { clearMenu.classList.remove('open'); clearPending(); });
+    modal.querySelector('#ii-clear-all').addEventListener('click', () => { clearMenu.classList.remove('open'); TrackLinks.clearResolved(); clearPending(); toast('Cleared entered ISRCs and resolved links'); });
+    document.addEventListener('mousedown', e => {
+      if (!clearMenu.classList.contains('open')) return;
+      if (e.target.closest('.ii-clear-wrap')) return;
+      clearMenu.classList.remove('open'); clearToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    applyColWidths();
+    wireColumnResize();
+    wireModalDragResize();
 
     // Track-ISRC-provider menu (#181): the per-track [SX] buttons carry a ▾ that
     // opens this shared menu of providers available for THIS release; picking one
@@ -2594,17 +2638,88 @@
 
   // #471: ISRCs and Links used to be exclusive tabs, each hiding the other's table
   // columns — "I often have to switch back to ISRC tab before finding links". Both
-  // sets of columns are now always visible in one table (see #ii-colgroup above);
-  // "scope" only still picks which ACTION TOOLBAR shows below (the ISRC-provider
-  // import buttons vs the single "Find links" button — showing all of them at once
-  // would be cluttered) and which Bulk/Export pane and footer summary apply.
-  let scope = store.get('scope', 'isrc') === 'links' ? 'links' : 'isrc';
-  function setScope(s) {
-    scope = (s === 'links') ? 'links' : 'isrc';
-    store.set('scope', scope);
-    modal.classList.toggle('ii-scope-isrc', scope === 'isrc');
-    modal.classList.toggle('ii-scope-links', scope === 'links');
-    modal.querySelectorAll('.ii-tab').forEach(t => t.classList.toggle('on', t.dataset.scope === scope));
+  // sets of columns, both toolbars, and both Bulk/Export sections are now always
+  // visible at once (see #ii-colgroup, #ii-tools and #ii-bulk-pane above) — there's
+  // no separate "scope" left to track.
+
+  // #471 ("make table columns resizable") — a drag handle on the right edge of
+  // every header cell except the first (#, 32px, not worth resizing) and the
+  // last (Links: new — nothing to its right within the table). Dragging changes
+  // ONLY that column's <col> width (table-layout:fixed), so #ii-body scrolls
+  // horizontally past a widened table instead of squeezing a neighbor — the
+  // simplest model, and consistent with how a spreadsheet resizes a column.
+  // Widths persist per-browser via GM storage, keyed by column index.
+  const COL_MIN = 28;
+  function loadColWidths() { try { return JSON.parse(store.get('col_widths', '') || '{}') || {}; } catch (e) { return {}; } }
+  function saveColWidths(w) { store.set('col_widths', JSON.stringify(w)); }
+  function applyColWidths() {
+    const w = loadColWidths();
+    const cols = modal.querySelectorAll('#ii-colgroup col');
+    Object.keys(w).forEach(i => { if (cols[i]) cols[i].style.width = w[i] + 'px'; });
+  }
+  function wireColumnResize() {
+    const ths = [...modal.querySelectorAll('#ii-table thead th')];
+    const cols = [...modal.querySelectorAll('#ii-colgroup col')];
+    ths.forEach((th, i) => {
+      if (i === 0 || i === ths.length - 1 || th.querySelector('.ii-col-resize')) return;
+      const handle = document.createElement('span');
+      handle.className = 'ii-col-resize';
+      th.appendChild(handle);
+      let dragging = false, startX = 0, startW = 0;
+      handle.addEventListener('mousedown', e => {
+        dragging = true; handle.classList.add('dragging');
+        startX = e.clientX; startW = cols[i].getBoundingClientRect().width;
+        e.preventDefault(); e.stopPropagation();
+      });
+      window.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        cols[i].style.width = Math.max(COL_MIN, Math.round(startW + (e.clientX - startX))) + 'px';
+      });
+      window.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false; handle.classList.remove('dragging');
+        const w = loadColWidths();
+        w[i] = parseInt(cols[i].style.width, 10);
+        saveColWidths(w);
+      });
+    });
+  }
+
+  // #471 ("Lets make window movable, resizable and with maximize button") — same
+  // pattern Falcon's panel already uses: drag the header to move, CSS `resize`
+  // for free corner-resize, and a maximize toggle that detaches from centering
+  // and restores the exact prior box on toggle-back.
+  function wireModalDragResize() {
+    const hdr = modal.querySelector('#ii-hdr');
+    let dragging = false, dx = 0, dy = 0;
+    hdr.addEventListener('mousedown', e => {
+      if (e.target.closest('button, a, input')) return;
+      dragging = true;
+      const r = modal.getBoundingClientRect();
+      modal.style.transform = 'none'; modal.style.left = r.left + 'px'; modal.style.top = r.top + 'px';
+      dx = e.clientX - r.left; dy = e.clientY - r.top;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      modal.style.left = Math.max(0, Math.min(window.innerWidth - 80, e.clientX - dx)) + 'px';
+      modal.style.top = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dy)) + 'px';
+    });
+    window.addEventListener('mouseup', () => { dragging = false; });
+  }
+  let _maxed = false, _prevBox = null;
+  function toggleMaximize() {
+    const btn = modal.querySelector('#ii-maximize-toggle');
+    if (!_maxed) {
+      _prevBox = { left: modal.style.left, top: modal.style.top, width: modal.style.width, height: modal.style.height,
+        maxWidth: modal.style.maxWidth, maxHeight: modal.style.maxHeight, transform: modal.style.transform };
+      modal.style.left = '2vw'; modal.style.top = '2vh'; modal.style.transform = 'none';
+      modal.style.width = '96vw'; modal.style.maxWidth = '96vw'; modal.style.height = '96vh'; modal.style.maxHeight = '96vh';
+      _maxed = true; if (btn) { btn.textContent = '❐'; btn.title = 'Restore'; }
+    } else {
+      if (_prevBox) Object.assign(modal.style, _prevBox);
+      _maxed = false; if (btn) { btn.textContent = '⛶'; btn.title = 'Maximize'; }
+    }
   }
 
   // Some tablets render MusicBrainz's desktop layout wider than the browser's
@@ -2641,13 +2756,12 @@
       window.visualViewport.addEventListener('scroll', _vvSync);
     }
     refreshAuthState();
-    setScope(scope);   // #301: apply the active-scope classes + column widths before render
     if (!RELEASE) {
-      tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
       fetchRelease()
         .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels)
         .catch(err => {
-          tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
     } else {
       renderTracks();
@@ -3159,6 +3273,20 @@
       return addBatch(items);
     }
 
+    // #471 ("Clear Links" menu item) — a resolved-but-not-yet-added candidate
+    // (.ii-tl.new) lives only in the DOM, not in track state (see markLinked:
+    // t.recUrls only ever gets a url once it's genuinely ADDED), so clearing it
+    // is just re-rendering each row's ADD column back to its default unresolved
+    // state — nothing to touch on RELEASE.tracks, and already-linked
+    // relationships (the LINKED column) are untouched.
+    function clearResolved() {
+      (RELEASE ? RELEASE.tracks : []).forEach((t, idx) => {
+        const box = addBox(idx);
+        if (box) box.outerHTML = addHtml(t);
+      });
+      updateAddBtn();
+    }
+
     // ── DELETE (symmetric to add). Removing a relationship needs its internal id,
     // which WS2 doesn't expose — fetch it from /ws/js/entity (the rel editor's API)
     // and submit an EDIT_RELATIONSHIP_DELETE (92 — 91 is EDIT, a no-op for removal). ──
@@ -3277,15 +3405,14 @@
     }
     function updateAddBtn() {
       const m = missingCount();
-      const badge = modal.querySelector('#ii-badge-links');   // tab badge = tracks with no link
-      if (badge) badge.textContent = m ? (m + ' missing') : '';
       const n = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;   // resolved + addable now
       const linked = modal.querySelectorAll('.ii-tl-linked .ii-tl.linked').length;
       const total = RELEASE ? RELEASE.tracks.length : 0;
-      const sum = modal.querySelector('#ii-summary-links');   // #301: Links-scope status bar
+      const sum = modal.querySelector('#ii-summary-links');   // #301: links status bar (footer)
       if (sum) sum.innerHTML = '<b>' + total + '</b> tracks · <b>' + linked + '</b> link' + (linked === 1 ? '' : 's') +
         (m ? ' · <span style="color:#fd7e14">' + m + ' track' + (m === 1 ? '' : 's') + ' with none</span>' : '') +
         (n ? ' · <span style="color:#198754">' + n + ' to add</span>' : '');
+      updateHdrStatus();   // #471: header status text replaced the old Links-tab badge
       refreshSubmitBtn();   // #406: resolved links feed the shared Submit-to-MusicBrainz count
     }
 
@@ -3371,7 +3498,7 @@
     // so the test doesn't also have to mock every other provider's network calls.
     if (typeof window !== 'undefined') window.__isrcScoutTest466 = { PROV, resolveProvider, normalizeProviderUrl };
 
-    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
+    return { linkedHtml, addHtml, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
 
   /* ── render the track table ── */
@@ -3706,6 +3833,19 @@
     toast('Filled ' + count + ' track' + (count === 1 ? '' : 's') + ' with a +1 sequence');
   }
 
+  // #471: replaces the old ISRCs/Links tab badges — plain status text since both
+  // columns are always visible now, with nothing left for a tab to toggle.
+  let _isrcMissing = 0;
+  function updateHdrStatus() {
+    const el = modal && modal.querySelector('#ii-hdr-status');
+    if (!el) return;
+    const linksMissing = TrackLinks.missingCount();
+    const parts = [];
+    if (_isrcMissing) parts.push('<b>' + _isrcMissing + '</b> ISRC' + (_isrcMissing === 1 ? '' : 's') + ' missing');
+    if (linksMissing) parts.push('<b>' + linksMissing + '</b> link' + (linksMissing === 1 ? '' : 's') + ' missing');
+    el.innerHTML = parts.length ? parts.join(' · ') : 'All ISRCs and links present';
+  }
+
   function updateSummary() {
     const dupSet = highlightDuplicates();   // ISRCs on >1 recording — not submittable
     let valid = 0, bad = 0, dup = 0, crossDup = 0, missing = 0;
@@ -3721,8 +3861,8 @@
       if (dupSet.has(v)) { crossDup++; return; }            // same ISRC on another recording → blocked
       valid++;
     });
-    const isrcBadge = modal.querySelector('#ii-badge-isrc');   // #301: tab count
-    if (isrcBadge) isrcBadge.textContent = missing ? (missing + ' missing') : '';
+    _isrcMissing = missing;
+    updateHdrStatus();   // #471: header status text replaced the old ISRCs-tab badge
     const seq = iterativeSequence();
     summaryEl.innerHTML =
       '<b>' + RELEASE.tracks.length + '</b> tracks' +
