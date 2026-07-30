@@ -147,6 +147,17 @@ The Markdown ↔ MB conversion covers links, bold/italic, headings, nested bulle
 
 ## Tools
 
+Apollo supports all native tools and adds new ones:
+
+1. Native tools: [Track parser](https://musicbrainz.org/doc/How_to_Add_a_Release#The_Track_Parser_(Manual_entry)), Swamp, Reorder, Guess feat, [Guess case](https://musicbrainz.org/doc/Guess_Case)
+1. [Search & Replace](#search--replace)
+1. [Pattern parser](#pattern-parser)
+1. [Length parser](#length-parser)
+1. [Resize columns](#resize-columns)
+1. [External tools](#external-tools)
+
+### Customization
+
 Native tools are hidden and replaced by a configurable **Tools** bar. It is highly customizable, supports all native tools, some 3rd party tools and adds few new ones.
 
 <img width="1200" src="./screenshots/tools.png" />
@@ -161,8 +172,6 @@ The **Tools ▾** label opens a menu of the tools that *haven't* been put on the
 
 > [!TIP]
 > **Collapsing a tool's parameters** — right-click a tool's name to collapse it to just the name (dotted underline); its parameters then **fly out on hover** (and stay open while you're typing in them). Right-click again to pin them back inline. The collapsed/expanded choice is remembered per tool.
-
-Besides the integrated tools, there are a few new ones:
 
 ### Search & Replace
 
@@ -237,7 +246,7 @@ After invoking a tool, several options are offered:
 
 Once you've picked a source, a **‹ Sources** button in the header returns you to the chooser — handy when a fetched page has no parsable text (e.g. Spotify) and you want to try another link:
 
-<img width="800" src="./screenshots/len_parser.png" />
+<img width="600" src="./screenshots/len_parser.png" />
 
 Whichever source, it detects everything shaped like a time — `5:50`, `1′23″`, `1'23"`, `1:02:03` — and **ignores** track numbers, titles, years and other noise. The detected times appear as an **editable list**, each next to the track it will fill (item 1 → track 1, …). Because alignment is by order:
 
