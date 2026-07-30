@@ -1,8 +1,6 @@
 # Falcon <img src="./icon.svg" align="left" width="40" height="40">
 
-**Falcon** adds external links to a *batch* of MusicBrainz entities at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity.
-
-Falcon currently supports artists, labels, and recordings external links. The same worker mechanism applies to release and release group external links and to other settable fields — all are natural follow-ups, not yet built.
+**Falcon** adds external links and other fields to a *batch* of MusicBrainz entities at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/falcon/falcon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/falcon/falcon.user.js)
 - [Changelog](./CHANGELOG.md)
@@ -11,6 +9,12 @@ Falcon currently supports artists, labels, and recordings external links. The sa
 | --- | --- |
 | [![Queue](./screenshots/queue.jpg)](./screenshots/queue.jpg) | [![Workers](./screenshots/workers.jpg)](./screenshots/workers.jpg) |
 | A run in progress: 31 entities, 5 workers, mixed artists and recordings. Each row shows the resolved entity name, its status, and its link. | The **Workers** tab — the live iframes doing the work, sized by the slider. Each is a real MusicBrainz edit page being filled and submitted. |
+
+The following fields are currently supported:
+
+- External links: artists, labels, recordings
+- ISRC
+- Disambiguation: recordings
 
 ## Why
 
