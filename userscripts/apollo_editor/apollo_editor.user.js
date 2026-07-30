@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.30.111544
+// @version      2026.7.30.115358
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1434,7 +1434,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.30.111544';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.30.115358';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4831,12 +4831,25 @@
     const common = segs.reduce((n, s) => n + (s.t === 0 ? s.s.length : 0), 0);
     return common / Math.max(a.length, b.length, 1) < DUP_DIFF_CUTOFF;
   }
-  // graded length-gap shade — same as the recordings detailed highlight (#186). null under 1s.
-  function dupLenShade(gapMs) {
+  // #480 (majkinetor): "we don't need subsecond comparison as that is not a
+  // thing. Up to 3s difference should be very mild color and should go darker
+  // from there." Shared alpha curve for both the recordings detailed-highlight
+  // shade (lenShade) and this duplicates-panel one (dupLenShade) — they're
+  // deliberately kept as mirrors of each other (#186). Under 1s: no shade at
+  // all. 1-3s: a flat, mild tint — a gap this small is common and not worth
+  // alarming over. 3-5s: ramps up toward full strength. 5s+: solid/full.
+  function lenShadeAlpha(gapMs) {
     const g = Math.abs(gapMs || 0);
     if (g < 1000) return null;
-    if (g >= 5000) return { bg: '#d32f2f', fg: '#fff' };
-    return { bg: 'rgba(211,47,47,' + (0.2 + 0.6 * (g / 5000)).toFixed(2) + ')', fg: g >= 3500 ? '#fff' : '#7a0000' };
+    if (g >= 5000) return 1;
+    if (g < 3000) return 0.12;
+    return 0.12 + 0.68 * ((g - 3000) / 2000);
+  }
+  // graded length-gap shade — same as the recordings detailed highlight (#186). null under 1s.
+  function dupLenShade(gapMs) {
+    const a = lenShadeAlpha(gapMs); if (a === null) return null;
+    if (a >= 1) return { bg: '#d32f2f', fg: '#fff' };
+    return { bg: 'rgba(211,47,47,' + a.toFixed(2) + ')', fg: a >= 0.55 ? '#fff' : '#7a0000' };
   }
   function buildDupDetail(media, entered) {
     let gi = 0, rows = '';
@@ -5194,12 +5207,10 @@
   }
   function applyHlColor() { try { document.documentElement.style.setProperty('--tc-hl', SETTINGS.recHlColor || '#e53935'); } catch (e) {} }
   function lenShade(gapMs) {
-    const g = Math.abs(gapMs || 0);
-    if (g < 1000) return null;
+    const a = lenShadeAlpha(gapMs); if (a === null) return null;   // #480: shared curve with dupLenShade
     const { r, g: gg, b } = hlRgb();
-    if (g >= 5000) return { bg: `rgb(${r},${gg},${b})`, fg: '#fff' };
-    const a = (0.2 + 0.6 * (g / 5000)).toFixed(2);   // graded by gap; faint shades get dark tinted text, strong get white
-    return { bg: `rgba(${r},${gg},${b},${a})`, fg: g >= 3500 ? '#fff' : `rgb(${Math.round(r * 0.42)},${Math.round(gg * 0.42)},${Math.round(b * 0.42)})` };
+    if (a >= 1) return { bg: `rgb(${r},${gg},${b})`, fg: '#fff' };
+    return { bg: `rgba(${r},${gg},${b},${a.toFixed(2)})`, fg: a >= 0.55 ? '#fff' : `rgb(${Math.round(r * 0.42)},${Math.round(gg * 0.42)},${Math.round(b * 0.42)})` };
   }
   // read each track's recording association + the data needed to compare them side by side
   function readRecordings() {
@@ -7874,7 +7885,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
