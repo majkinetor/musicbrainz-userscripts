@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.29
+// @version      2026.7.30
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1586,14 +1586,30 @@
   // the old `.`-selector matched nothing, so failures spun to the timeout). Each
   // message is a .msg.<level> span; a real failure is .msg.error / .msg.warning.
   // Return that exact text so we can show ECAU's own message (#286). #242
+  // #478: ECAU kicks off TWO independent async operations on page load —
+  // app.processSeedingParameters() (the x_seed-driven fetch we're actually
+  // waiting on here) and app.addImportButtons() (populates ECAU's OWN
+  // "Import from X" button row from the release's existing external links —
+  // unrelated to our seeded fetch, checked live in ECAU's own source:
+  // ROpdebee/mb-userscripts src/mb_enhanced_cover_art_uploads/index.ts).
+  // Both log into the same #ROpdebee_log_container, so a transient failure
+  // fetching provider metadata for THAT button row ("Failed to add some
+  // provider import buttons…") was being misread as "the seeded fetch
+  // failed" — aborting and discarding an in-progress sourcing slot while the
+  // real fetch was still running and would have succeeded moments later
+  // (the reported bug: images already sourced get discarded because of an
+  // error that had nothing to do with them). Filter that message out before
+  // picking the most recent one.
+  const ECAU_UNRELATED_ERROR = /failed to add (?:some )?provider import buttons?/i;
   function ecauError(doc) {
     const cont = doc.querySelector('#ROpdebee_log_container'); if (!cont) return null;
-    const msgs = [...cont.querySelectorAll('.msg.error, .msg.warning')];
+    const msgs = [...cont.querySelectorAll('.msg.error, .msg.warning')].filter(m => !ECAU_UNRELATED_ERROR.test(m.textContent || ''));
     if (msgs.length) return (msgs[msgs.length - 1].textContent || '').replace(/\s+/g, ' ').trim() || null;
     const txt = (cont.textContent || '').replace(/\s+/g, ' ').trim();
-    if (txt && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
+    if (txt && !ECAU_UNRELATED_ERROR.test(txt) && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
     return null;
   }
+  if (typeof window !== 'undefined') window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
   // ECAU injects its own UI into the add page (the paste-URL box, the "Import from …"
   // buttons, the supported-providers link). Its presence is how we tell the manager
   // actually loaded it — used to warn in the source popover and to fail a sourcing

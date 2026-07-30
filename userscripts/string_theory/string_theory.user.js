@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.30.111652
+// @version      2026.7.30.113945
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,8 +75,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.30.111652 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.30.111544\n  · Art Station v2026.7.29\n  · Credit Hoarder v2026.7.23\n  · Group Therapy v2026.7.29\n  · ISRC Scout v2026.7.29\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
+  console.log('%c String Theory %c v2026.7.30.113945 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.30.111544\n  · Art Station v2026.7.30\n  · Credit Hoarder v2026.7.23\n  · Group Therapy v2026.7.29\n  · ISRC Scout v2026.7.29\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8003,7 +8003,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.29","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.29","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.30","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.30","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -9577,14 +9577,30 @@ try {
   // the old `.`-selector matched nothing, so failures spun to the timeout). Each
   // message is a .msg.<level> span; a real failure is .msg.error / .msg.warning.
   // Return that exact text so we can show ECAU's own message (#286). #242
+  // #478: ECAU kicks off TWO independent async operations on page load —
+  // app.processSeedingParameters() (the x_seed-driven fetch we're actually
+  // waiting on here) and app.addImportButtons() (populates ECAU's OWN
+  // "Import from X" button row from the release's existing external links —
+  // unrelated to our seeded fetch, checked live in ECAU's own source:
+  // ROpdebee/mb-userscripts src/mb_enhanced_cover_art_uploads/index.ts).
+  // Both log into the same #ROpdebee_log_container, so a transient failure
+  // fetching provider metadata for THAT button row ("Failed to add some
+  // provider import buttons…") was being misread as "the seeded fetch
+  // failed" — aborting and discarding an in-progress sourcing slot while the
+  // real fetch was still running and would have succeeded moments later
+  // (the reported bug: images already sourced get discarded because of an
+  // error that had nothing to do with them). Filter that message out before
+  // picking the most recent one.
+  const ECAU_UNRELATED_ERROR = /failed to add (?:some )?provider import buttons?/i;
   function ecauError(doc) {
     const cont = doc.querySelector('#ROpdebee_log_container'); if (!cont) return null;
-    const msgs = [...cont.querySelectorAll('.msg.error, .msg.warning')];
+    const msgs = [...cont.querySelectorAll('.msg.error, .msg.warning')].filter(m => !ECAU_UNRELATED_ERROR.test(m.textContent || ''));
     if (msgs.length) return (msgs[msgs.length - 1].textContent || '').replace(/\s+/g, ' ').trim() || null;
     const txt = (cont.textContent || '').replace(/\s+/g, ' ').trim();
-    if (txt && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
+    if (txt && !ECAU_UNRELATED_ERROR.test(txt) && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
     return null;
   }
+  if (typeof window !== 'undefined') window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
   // ECAU injects its own UI into the add page (the paste-URL box, the "Import from …"
   // buttons, the supported-providers link). Its presence is how we tell the manager
   // actually loaded it — used to warn in the source popover and to fail a sourcing
