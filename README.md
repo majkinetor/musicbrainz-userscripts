@@ -36,4 +36,4 @@ Edit MusicBrainz in your real editor (VS Code, Vim, …)
 
 
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
-Batch import entity external links
+Batch import entity fields
