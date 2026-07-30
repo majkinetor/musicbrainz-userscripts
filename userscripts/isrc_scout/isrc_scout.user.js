@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.30
+// @version      2026.7.30.175632
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2959,7 +2959,7 @@
     // Bandcamp album page (fetched once): ordered [{title, url}] from data-tralbum.
     let _bcList = null, _bcPromise = null;
     async function bcAlbum() {
-      if (_bcList) return _bcList;
+      if (_bcList && _bcList.length) return _bcList;   // an empty result (network hiccup, anti-bot, transient block) must NOT stick — retry on the next Find links click rather than caching a permanent miss for the rest of the page session
       if (_bcPromise) return _bcPromise;
       const url = RELEASE && RELEASE.bandcampUrl;
       if (!url) { _bcList = []; return _bcList; }
@@ -2992,7 +2992,7 @@
     // Apple Music album page (fetched once): ordered [{title, url}] from its ld+json.
     let _amList = null, _amPromise = null;
     async function amAlbum() {
-      if (_amList) return _amList;
+      if (_amList && _amList.length) return _amList;   // see bcAlbum: don't let a transient empty fetch stick forever
       if (_amPromise) return _amPromise;
       const url = RELEASE && RELEASE.appleUrl;
       if (!url) { _amList = []; return _amList; }
@@ -3021,7 +3021,7 @@
     // don't carry an ISRC yet / whose SoundCloud upload ISRC differs from MB's. #439
     let _scLinkList = null, _scLinkPromise = null;
     async function scAlbum() {
-      if (_scLinkList) return _scLinkList;
+      if (_scLinkList && _scLinkList.length) return _scLinkList;   // see bcAlbum: don't let a transient empty fetch stick forever
       if (_scLinkPromise) return _scLinkPromise;
       const setUrl = RELEASE && RELEASE.scUrl;
       if (!setUrl) { _scLinkList = []; return _scLinkList; }
@@ -3065,7 +3065,12 @@
     }
     let _spList = null, _spPromise = null;
     async function spAlbum() {
-      if (_spList) return _spList;
+      // an empty [] here (network hiccup, or open.spotify.com's anti-bot serving a
+      // consent/interstitial page instead of the real embed) used to get cached in
+      // _spList forever — and `if (_spList)` treats an empty array as truthy, so every
+      // later Find-links click silently kept reusing that permanent miss for the rest
+      // of the page session, with no way to retry short of a full page reload.
+      if (_spList && _spList.length) return _spList;
       if (_spPromise) return _spPromise;
       const id = RELEASE && RELEASE.spotifyId;
       if (!id) { _spList = []; return _spList; }

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-30 17:43 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-30 17:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -220,6 +220,7 @@ The following tokens can be used in constructing pattern (case sensitive):
 | `A`   | Artist       |
 | `L`   | Length       |
 | `M`   | Medium       |
+| `-`   | Separator    |
 | `_`   | Skip noise   |
 
 Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out.
