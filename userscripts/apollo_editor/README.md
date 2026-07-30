@@ -204,6 +204,7 @@ The following tokens can be used in constructing pattern (case sensitive):
 | `A`   | Artist       |
 | `L`   | Length       |
 | `M`   | Medium       |
+| `-`   | Separator    |
 | `_`   | Skip noise   |
 
 Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out.
