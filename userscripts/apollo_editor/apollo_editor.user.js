@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.30.120541
+// @version      2026.7.30.150534
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1159,6 +1159,9 @@
   /* ── live commit / reset / structural ops (no apply phase — every change writes through) ── */
   // write a whole track's artist credit from its slots: committed slots use the picked entity,
   // uncommitted ones stay as unresolved credited text.
+  // #483: guarded — #472 started watching track.artistCredit individually, so
+  // every ordinary commit (matching, auto-commit, a picked artist) tripped the
+  // "external change" watcher too, without this.
   function commitTrack(entry) {
     const track = koTrack(entry.mi, entry.ti), live = liveNames(track);
     // #366 map each already-set slot to the live full entity by GID, NOT by position. Positional lookup
@@ -1166,13 +1169,16 @@
     // entity — resurrecting a just-removed artist under the next slot's credited-as and dropping the last.
     const liveByGid = new Map();
     live.forEach(n => { const a = u(n.artist); const g = a && u(a.gid); if (g && !liveByGid.has(g)) liveByGid.set(g, a); });
-    track.artistCredit({
-      names: entry.slots.map(s => {
-        if (s.status === 'set') { const a = (s.gid && liveByGid.get(s.gid)) || s.entity || { name: s.name || s.creditedAs }; return { artist: a, name: s.creditedAs, joinPhrase: s.joinPhrase }; }
-        if (s.committed && s.entity) return { artist: s.entity, name: s.creditedAs, joinPhrase: s.joinPhrase };
-        return { artist: { name: s.creditedAs }, name: s.creditedAs, joinPhrase: s.joinPhrase };
-      })
-    });
+    _selfEdit = true;
+    try {
+      track.artistCredit({
+        names: entry.slots.map(s => {
+          if (s.status === 'set') { const a = (s.gid && liveByGid.get(s.gid)) || s.entity || { name: s.name || s.creditedAs }; return { artist: a, name: s.creditedAs, joinPhrase: s.joinPhrase }; }
+          if (s.committed && s.entity) return { artist: s.entity, name: s.creditedAs, joinPhrase: s.joinPhrase };
+          return { artist: { name: s.creditedAs }, name: s.creditedAs, joinPhrase: s.joinPhrase };
+        })
+      });
+    } finally { _selfEdit = false; }
   }
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
   function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
@@ -1248,10 +1254,13 @@
   function resetTrack(entry) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig) return;
     const t = koTrack(entry.mi, entry.ti);
-    t.artistCredit({ names: orig.names.map(o => ({ artist: o.artist, name: o.creditedAs, joinPhrase: o.joinPhrase })) });
-    try { t.name(orig.title); } catch (e) {}
-    try { t.number(orig.number); } catch (e) {}
-    try { if (typeof t.formattedLength === 'function') t.formattedLength(orig.length); } catch (e) {}
+    _selfEdit = true;
+    try {
+      t.artistCredit({ names: orig.names.map(o => ({ artist: o.artist, name: o.creditedAs, joinPhrase: o.joinPhrase })) });
+      try { t.name(orig.title); } catch (e) {}
+      try { t.number(orig.number); } catch (e) {}
+      try { if (typeof t.formattedLength === 'function') t.formattedLength(orig.length); } catch (e) {}
+    } finally { _selfEdit = false; }
     Log.info('reset track', entry.number, 'to original (all cells)');
   }
   let _selfEdit = false;   // true while WE mutate the tracklist, so the change-watcher ignores it
@@ -1298,13 +1307,25 @@
     _selfEdit = true;
     try { if (inp) { inp.value = String(n); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); } btn.click(); }
     finally { _selfEdit = false; }
-    // MB seeds each new track with the *previous* track's artist credit — clear it so new tracks are blank
-    if (med) { const tks = u(med.tracks) || []; for (let i = before; i < tks.length; i++) try { tks[i].artistCredit({ names: [{ artist: null, name: '', joinPhrase: '' }] }); } catch (e) {} }
+    // MB seeds each new track with the *previous* track's artist credit — clear it so new tracks are blank.
+    // #483: this ran AFTER the _selfEdit guard above already reset to false — its own guard now.
+    if (med) {
+      const tks = u(med.tracks) || [];
+      _selfEdit = true;
+      try { for (let i = before; i < tks.length; i++) try { tks[i].artistCredit({ names: [{ artist: null, name: '', joinPhrase: '' }] }); } catch (e) {} }
+      finally { _selfEdit = false; }
+    }
     Log.info('added', n, 'track(s) to medium', mi + 1);
     // refresh immediately (blank tracks need no matching) instead of the 400ms watcher + match pass
     MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
   }
-  function setTitle(entry, v) { koTrack(entry.mi, entry.ti).name(v); }
+  // #483: was unguarded — since #472 started watching track.name individually
+  // (to catch bookmarklets editing tracks in place), every normal title edit
+  // through Apollo's own mirror input ALSO tripped that watcher, scheduling a
+  // full mirror rebuild ~400ms later that yanked focus wherever the user had
+  // since moved it (tab/click to the next field). _selfEdit tells the watcher
+  // this write is ours, same guard already used for remove/move/reset/etc.
+  function setTitle(entry, v) { _selfEdit = true; try { koTrack(entry.mi, entry.ti).name(v); } finally { _selfEdit = false; } }
   function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.warn('set number failed', v, e.message); } }
   function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.warn('set length failed', v, e.message); } }
   // MB guess case: preview into track.previewName (no mutation) to detect the diff; click-type to apply
@@ -1434,7 +1455,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.7.30.120541';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.7.30.150534';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -3309,15 +3330,18 @@
       const s = stats();
       if (addMissing && s.n > s.nT) addTracks(curMi, s.n - s.nT);
       const nT = tracks().length; let wrote = 0;
-      rows.forEach((r, i) => {
-        if (i >= nT) return; const pr = parseRow(r); if (!pr) return;
-        const entry = { mi: curMi, ti: i };
-        if ((which === 'all' || which === 'title') && pr.title != null && pr.title !== '') setTitle(entry, pr.title);
-        if ((which === 'all' || which === 'artist') && pr.artist != null && pr.artist !== '') { try { koTrack(curMi, i).artistCredit({ names: [{ artist: null, name: pr.artist, joinPhrase: '' }] }); } catch (e) { Log.warn('set artist failed', e.message); } }
-        if ((which === 'all' || which === 'length') && pr.length && lpValid(pr.length)) setLength(entry, pr.length);
-        if ((which === 'all' || which === 'pos') && pr.pos != null && pr.pos !== '') setNumber(entry, pr.pos);
-        wrote++;
-      });
+      _selfEdit = true;   // #483: bulk-apply is our own write, and rebuild(true) below already does the one resync it needs
+      try {
+        rows.forEach((r, i) => {
+          if (i >= nT) return; const pr = parseRow(r); if (!pr) return;
+          const entry = { mi: curMi, ti: i };
+          if ((which === 'all' || which === 'title') && pr.title != null && pr.title !== '') setTitle(entry, pr.title);
+          if ((which === 'all' || which === 'artist') && pr.artist != null && pr.artist !== '') { try { koTrack(curMi, i).artistCredit({ names: [{ artist: null, name: pr.artist, joinPhrase: '' }] }); } catch (e) { Log.warn('set artist failed', e.message); } }
+          if ((which === 'all' || which === 'length') && pr.length && lpValid(pr.length)) setLength(entry, pr.length);
+          if ((which === 'all' || which === 'pos') && pr.pos != null && pr.pos !== '') setNumber(entry, pr.pos);
+          wrote++;
+        });
+      } finally { _selfEdit = false; }
       rebuild(true);
       Log.info('track parser: applied', which, 'from pattern', JSON.stringify(_tpPattern), 'to', wrote, 'row(s) on medium', curMi + 1);
       toast(`Applied ${wrote} row${wrote !== 1 ? 's' : ''} to Medium ${curMi + 1}`);
@@ -3669,15 +3693,18 @@
   function clearAllTracks() {
     if (!MODEL) return;
     if (!W.confirm('Unselect the artist of EVERY track? (the credited-as text, titles and lengths are kept; does not submit)')) return;
-    MODEL.tracks.forEach(t => {
-      try {
-        const ko = koTrack(t.mi, t.ti); const names = u(u(ko.artistCredit).names) || [];
-        // keep each credit's display text (the credited-as name, or the artist's name if none) but drop the
-        // selected entity — turning a matched artist back into unmatched text (artist: bare {name}), ready
-        // to re-match. Mirrors how commitTrack writes an unresolved slot.
-        ko.artistCredit({ names: names.map(n => { const text = u(n.name) || (n.artist && u(u(n.artist).name)) || ''; return { artist: { name: text }, name: text, joinPhrase: u(n.joinPhrase) || '' }; }) });
-      } catch (e) {}
-    });
+    _selfEdit = true;   // #483: bulk write across every track — rebuild(true) below is the one resync it needs
+    try {
+      MODEL.tracks.forEach(t => {
+        try {
+          const ko = koTrack(t.mi, t.ti); const names = u(u(ko.artistCredit).names) || [];
+          // keep each credit's display text (the credited-as name, or the artist's name if none) but drop the
+          // selected entity — turning a matched artist back into unmatched text (artist: bare {name}), ready
+          // to re-match. Mirrors how commitTrack writes an unresolved slot.
+          ko.artistCredit({ names: names.map(n => { const text = u(n.name) || (n.artist && u(u(n.artist).name)) || ''; return { artist: { name: text }, name: text, joinPhrase: u(n.joinPhrase) || '' }; }) });
+        } catch (e) {}
+      });
+    } finally { _selfEdit = false; }
     Log.info('cleared all track artist selections (kept credited-as text)'); rebuild(true);   // no re-match, or it would instantly re-link the kept text
   }
 
@@ -5481,7 +5508,7 @@
         const t = koTrack(m, i); if (!t) return;
         const rec = u(t.recording);
         const rn = rec ? u(rec.name) : null;
-        if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
+        if (rn != null && rn !== '' && u(t.name) !== rn) { _selfEdit = true; try { t.name(rn); } catch (x) {} finally { _selfEdit = false; } }
         if (u(t.updateRecordingTitle)) setCopy('title', { mi: m, ti: i }, false);   // now equal -> clear the moot flag
         const recAc = rec && u(rec.artistCredit), recNames = recAc && (u(recAc.names) || []);
         if (recNames && recNames.length) {
@@ -5495,7 +5522,7 @@
               let full = null; if (gid) { if (!_sideEntCache.has(gid)) _sideEntCache.set(gid, await fetchEntity(gid)); full = _sideEntCache.get(gid); }
               names.push({ artist: full || a, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' });   // full entity persists the match (#348)
             }
-            try { t.artistCredit({ names }); } catch (x) { Log.warn(`#443 side copy: track ${m}.${i} artistCredit setter threw: ${x && x.message}`); }
+            _selfEdit = true; try { t.artistCredit({ names }); } catch (x) { Log.warn(`#443 side copy: track ${m}.${i} artistCredit setter threw: ${x && x.message}`); } finally { _selfEdit = false; }
           }
           if (u(t.updateRecordingArtist)) setCopy('artist', { mi: m, ti: i }, false);
         }
@@ -5508,7 +5535,7 @@
         if (wholeSide) { (async () => { for (const row of recRows()) await copyRecToTrack(+row.dataset.mi, +row.dataset.ti); _tlRefreshed = false; scheduleSync(); rerenderRec(); })(); return; }   // #443 whole track side
         const setFromRec = (m, i) => {
           const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null;
-          if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} }
+          if (rn != null && rn !== '' && u(t.name) !== rn) { _selfEdit = true; try { t.name(rn); } catch (x) {} finally { _selfEdit = false; } }
           // #420: the track title now equals the recording's, so a pending "rename recording"
           // flag is a no-op — clear it (and its green indicator) instead of leaving it stale.
           if (t && u(t.updateRecordingTitle)) { setCopy('title', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: title copied from recording — cleared the now-moot rename-recording flag`); }
@@ -5549,7 +5576,7 @@
             names.push({ artist: full || a, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' });
           }
           try {
-            t.artistCredit({ names });
+            _selfEdit = true; try { t.artistCredit({ names }); } finally { _selfEdit = false; }
             // read back the WRITTEN track credit — ∅ here (vs a real gid in the recording) means
             // the entity link was dropped and only the credited text stuck (the "set without match" bug).
             const wrote = (u(u(t.artistCredit).names) || []).map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
