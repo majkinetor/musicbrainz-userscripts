@@ -18,11 +18,11 @@
 | --- | --- |
 | [Apollo Editor](../apollo_editor) | Per-track artist-credit resolution in the release editor |
 | [Art Station](../art_station) | Cover/event-art gallery editor |
-| [Credit Hoarder](../credit_hoarder) | Import per-track credits from Discogs / Tidal / Qobuz |
-| [Group Therapy](../group_therapy) | Relationship-editor batch/copy helpers |
+| [Credit Hoarder](../credit_hoarder) | Import credits from multiple sources|
+| [Group Therapy](../group_therapy) | Relationship-editor batch helpers |
 | [ISRC Scout](../isrc_scout) | Fill in missing ISRCs and streaming links |
 | [Mammoth](../mammoth) | Remember & recall edit notes and field values |
-| [Platform Check](../platform_check) | Find/verify a release's URLs on online platforms |
+| [Platform Check](../platform_check) | Find/verify/add a release's URLs on online platforms |
 
 - The bundled scripts are listed in [`members.txt`](./members.txt)
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
