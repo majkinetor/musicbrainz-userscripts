@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.29
+// @version      2026.7.30
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2725,13 +2725,22 @@
     window.addEventListener('mouseup', () => { dragging = false; });
   }
   let _maxed = false, _prevBox = null;
+  // #484: pulled out of toggleMaximize() so openModal() can reapply it — pinModalToViewport()
+  // (the mobile-viewport handling below) clears left/top/width/height/max-width/max-height/
+  // transform on every open on a DESKTOP viewport (clearModalViewportPin(), so the mobile pin
+  // never lingers once the window widens back out) — the exact same properties this sets. That
+  // silently wiped the maximized size on every reopen while _maxed stayed true, so the toggle
+  // button kept showing "Restore" for a window that had quietly gone back to its normal size.
+  function applyMaximizedStyle() {
+    modal.style.left = '2vw'; modal.style.top = '2vh'; modal.style.transform = 'none';
+    modal.style.width = '96vw'; modal.style.maxWidth = '96vw'; modal.style.height = '96vh'; modal.style.maxHeight = '96vh';
+  }
   function toggleMaximize() {
     const btn = modal.querySelector('#ii-maximize-toggle');
     if (!_maxed) {
       _prevBox = { left: modal.style.left, top: modal.style.top, width: modal.style.width, height: modal.style.height,
         maxWidth: modal.style.maxWidth, maxHeight: modal.style.maxHeight, transform: modal.style.transform };
-      modal.style.left = '2vw'; modal.style.top = '2vh'; modal.style.transform = 'none';
-      modal.style.width = '96vw'; modal.style.maxWidth = '96vw'; modal.style.height = '96vh'; modal.style.maxHeight = '96vh';
+      applyMaximizedStyle();
       _maxed = true; if (btn) { btn.textContent = '❐'; btn.title = 'Restore'; }
     } else {
       if (_prevBox) Object.assign(modal.style, _prevBox);
@@ -2767,8 +2776,9 @@
     overlay.classList.add('open');
     modal.classList.add('open');
     pinModalToViewport();
+    if (_maxed) applyMaximizedStyle();   // #484: pinModalToViewport() just cleared it on a desktop viewport
     if (window.visualViewport && !_vvSync) {
-      _vvSync = () => pinModalToViewport();
+      _vvSync = () => { pinModalToViewport(); if (_maxed) applyMaximizedStyle(); };   // #484: same wipe risk on resize/scroll while maximized
       window.visualViewport.addEventListener('resize', _vvSync);
       window.visualViewport.addEventListener('scroll', _vvSync);
     }

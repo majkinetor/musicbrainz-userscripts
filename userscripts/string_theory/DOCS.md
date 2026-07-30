@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-07-30 15:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-07-30 17:43 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -52,18 +52,18 @@ Beautification of native page, external links redesign, markdown annotation edit
 - **[Markdown annotation editor](#annotation-editor)** in *Additional information*.
 - A **front-cover thumbnail** is positioned under the external links, linking to the release's cover-art page
 - Batch removal of array elements - date and labels - using right click on (x) button
-- Help bubbles removed 
+- Help bubbles removed
 
-### Tracklist 
+### Tracklist
 
 **[Settings](#settings)**: *Modify Tracklist*
 
 Extremely fast and confident artist matching via multiple mechanisms, advanced tool setup, detailed highlighting, reverting inputs etc.
 
-<img width="1200" src="../apollo_editor/screenshots/tracklist.png" /> 
+<img width="1200" src="../apollo_editor/screenshots/tracklist.png" />
 
 - **[Auto match artist](#artist-matching)** based on release group, Discogs URL or name
-- **Artist selection** 
+- **Artist selection**
   - Picker with a **confidence** highlight
   - Option to apply pick to **all matching tracks or a single one** (the [Change](#toolbar) in toolbar)
   - **Ctrl-click** a search result to set that artist on every unresolved track
@@ -108,7 +108,7 @@ Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row a
 
 
 - **[Auto match artist](#recording-matching)** based on release group or name and Cutoff settings
-- **Recording picker** 
+- **Recording picker**
   - MusicBrainz suggestions, free-form search, linked "appears on" releases and confidence highlights
   - Paste a **recording MBID** or a MusicBrainz recording URL into the search field
   - Paste an **ISRC** (with or without separators) to resolve it via MusicBrainz — a single match links immediately, several are listed to choose from
@@ -121,7 +121,7 @@ Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row a
 - **Expand all media** — a release with many media loads with most collapsed; left-click expands single media, right-click all of them
 - Revert/Clear all inputs
 - Video recordings show a small video-camera marker next to its name
- 
+
 ### Duplicates
 
 **[Settings](#settings)**: *Modify Duplicates*
@@ -163,6 +163,17 @@ The Markdown ↔ MB conversion covers links, bold/italic, headings, nested bulle
 
 ### Tools
 
+Apollo supports all native tools and adds new ones:
+
+1. Native tools: [Track parser](https://musicbrainz.org/doc/How_to_Add_a_Release#The_Track_Parser_(Manual_entry)), Swamp, Reorder, Guess feat, [Guess case](https://musicbrainz.org/doc/Guess_Case)
+1. [Search & Replace](#search--replace)
+1. [Pattern parser](#pattern-parser)
+1. [Length parser](#length-parser)
+1. [Resize columns](#resize-columns)
+1. [External tools](#external-tools)
+
+#### Customization
+
 Native tools are hidden and replaced by a configurable **Tools** bar. It is highly customizable, supports all native tools, some 3rd party tools and adds few new ones.
 
 <img width="1200" src="../apollo_editor/screenshots/tools.png" />
@@ -172,13 +183,11 @@ The **Tools ▾** label opens a menu of the tools that *haven't* been put on the
 **Customization** lets you:
 
 - **Show tool on the bar** — select which tools sit on the bar and leave the rest in the **Tools ▾** menu
-- **Reorder** — drag the handle to set the order 
+- **Reorder** — drag the handle to set the order
 - **Icon / text** — toggle the `[icon]` and `[text]` segments to show either or both
 
 > [!TIP]
 > **Collapsing a tool's parameters** — right-click a tool's name to collapse it to just the name (dotted underline); its parameters then **fly out on hover** (and stay open while you're typing in them). Right-click again to pin them back inline. The collapsed/expanded choice is remembered per tool.
-
-Besides the integrated tools, there are a few new ones:
 
 #### Search & Replace
 
@@ -190,24 +199,50 @@ Search a string within track titles and replace it. Clicking the tool name start
 
 <img width="600" src="../apollo_editor/screenshots/search.png" />
 
-#### Resize Columns 
+#### Resize Columns
 
 Set column sizes to predefined variants (Fit, Centered, Default).
 
 #### Pattern parser
 
-A second track parser (the `▦` tool, next to the native `☰` one — the native parser stays put) that fills a medium's tracklist from pasted text using a **pattern** — a one-line template that says what each line looks like, so you're not locked into the native parser's rigid format. Type a pattern, paste the list, review the live preview, Apply. Like the native parser it **opens seeded with the current tracklist** (rendered as `#. T - A (L)`), so you can also use it to bulk-edit what's already there. The paste box folds away once you've pasted (the raw column keeps the source visible) — click **▸ Paste tracklist** to reopen it. A `⛶` button maximizes the window.
+Fill a medium's tracklist from pasted text using a **pattern**. Type a pattern, paste the list, review the live preview, apply. Like the native parser it **opens seeded with the current tracklist** (using pattern `#. T - A (L)`), so you can also use it to bulk-edit what's already there.
 
-**Tokens:** `#` track number · `T` title · `A` artist · `L` length · `M` medium · `_` skip noise. Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out. Text fields split on the **first** separator (`A - T` → artist = up to the first `-`, title = the rest) — flip the **split: first / last** toggle to split on the last instead.
+<img width="800" src="../apollo_editor/screenshots/pattern_parser.png" />
 
-**Examples:** `#. T` → `1. So What` · `# A - T (L)` → `1 Miles Davis - So What (9:22)` · `# A - T (_` drops a trailing `(original edit)`.
+##### Tokens
 
-**Slices** (for delimiter-free fixed-width text): a token can carry a 1-based char range — `T[6-]` (6th char to end), `T[6-20]`, `T[-5]` (first 5), `T[~3-]` (last 3) — or a **`[from:to]`** form that runs from `from` up to (excluding) the first `to` character. `from` is a position or a character; `to` is a character:
+The following tokens can be used in constructing pattern (case sensitive):
+
+| Token |   Meaning    |
+| ----- | ------------ |
+| `#`   | Track number |
+| `T`   | Title        |
+| `A`   | Artist       |
+| `L`   | Length       |
+| `M`   | Medium       |
+| `_`   | Skip noise   |
+
+Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out.
+Text fields split on the **first** separator (`A - T` → artist = up to the first `-`, title = the rest) — flip the **split: first / last** toggle to split on the last instead.
+
+**Examples:**
+
+- `#. T` → `1. So What`
+- `# A - T (L)` → `1 Miles Davis - So What (9:22)`
+- `# A - T (_` → drops a trailing `(original edit)`.
+
+**Slices**
+
+For delimiter-free fixed-width text.
+
+A token can carry a 1-based char range — `T[6-]` (6th char to end), `T[6-20]`, `T[-5]` (first 5), `T[~3-]` (last 3) — or a **`[from:to]`** form that runs from `from` up to (excluding) the first `to` character. `from` is a position or a character; `to` is a character:
 - `#[1:.]` = position 1 to the first `.` (`12. Title` → `12`), also `#[1:-]`, `#[1: ]`
 - `L[(:)]` = from the first `(` to the first `)` (`So What (9:22)` → `9:22`)
 - Prefix a character with `~` for the **last** occurrence instead of the first — `L[~(:)]` on `Hide Me (Bop remix) - Stillhead (4:20)` still finds the real length (`4:20`), where plain `L[(:)]` would grab the title's own `(Bop remix)` first
 
 The preview is one row per pasted line: a **match dot** (green = matched · amber = matched via a per-row pattern · red = no match), the raw text, and the extracted **# / artist / title / length**. A messy line can get its **own pattern** in the row's `pattern` cell without disturbing the rest. **Apply** writes only the fields the pattern produced (so a title-only pattern won't touch lengths); its **▾ menu** applies a single field (only titles / artists / lengths / #s) or adds the missing tracks first when you pasted more lines than the medium has.
+
+##### Freezing
 
 For a tracklist where no single pattern fits every line, **🔒 Freeze matched** locks the current pattern onto every row that's still on `«default»` and already matches — those rows keep that pattern from then on. Then adjust the pattern to solve more rows and freeze again; repeat until everything's matched, without the earlier fixes coming undone.
 
@@ -215,15 +250,19 @@ For a one-off messy line you don't want to write a pattern for, **select the spa
 
 #### Length parser
 
-Fill a medium's track **lengths** from any text — the native track parser wants a specific format, but lengths copied off a site (Bandcamp, foobar2000, …) rarely fit (track numbers land on their own lines, etc.). This just **greps every duration out of the text** and lets you review the result before writing anything.
+Fill a medium's track **lengths** from any text — the native track parser wants a specific format, but lengths copied off a site (Bandcamp, foobar2000, …) rarely fit (track numbers land on their own lines, etc.). It **greps every duration out of the text** and lets you review the result before writing anything.
 
-The panel is **side-by-side**: an input box on the left, the reviewable track list on the right. While the box is empty a **source chooser** sits over it:
+After invoking a tool, several options are offered:
+
+<img width="300" src="../apollo_editor/screenshots/len_parser_init.png" />
 
 - **Enter text** — type or paste a tracklist into the box.
 - **Paste from clipboard** — reads the clipboard directly.
 - **Parse from external link** — a **favicon per page linked on the release**; click one and it **fetches that page and reads its text right away** (no extra picker step). It narrows to the smallest part of the page that still holds at least a full tracklist's worth of durations, so nav/player/footer noise is skipped (e.g. it pulls all 20 lengths straight off a Bandcamp album page). When you Apply, the **source URL is added to the edit note**. (If a favicon can't load, it falls back to a clickable hostname chip.)
 
-Once you've picked a source, a **‹ Sources** button in the header returns you to the chooser — handy when a fetched page has no parsable text (e.g. Spotify) and you want to try another link.
+Once you've picked a source, a **‹ Sources** button in the header returns you to the chooser — handy when a fetched page has no parsable text (e.g. Spotify) and you want to try another link:
+
+<img width="600" src="../apollo_editor/screenshots/len_parser.png" />
 
 Whichever source, it detects everything shaped like a time — `5:50`, `1′23″`, `1'23"`, `1:02:03` — and **ignores** track numbers, titles, years and other noise. The detected times appear as an **editable list**, each next to the track it will fill (item 1 → track 1, …). Because alignment is by order:
 
@@ -235,7 +274,7 @@ Whichever source, it detects everything shaped like a time — `5:50`, `1′23�
 
 <!-- source: discussion #451 / issue #455 -->
 
-#### External tools 
+#### External tools
 
 Those tools need 3rd party userscript:
 
@@ -261,7 +300,7 @@ Activating either kind **clicks the element**, then Apollo re-reads the tracklis
 
 ### Matching
 
-Apollo can automatically match unresolved **artists** and **recordings**. Both work the same way: a *Match* button, a per-row **confidence**, and the single best candidate applied automatically while anything uncertain is left out. 
+Apollo can automatically match unresolved **artists** and **recordings**. Both work the same way: a *Match* button, a per-row **confidence**, and the single best candidate applied automatically while anything uncertain is left out.
 
 If _Auto-match on start_ is enabled in the [settings](#matching-options), matching will be automatically started on entering add/edit release page.
 
@@ -361,10 +400,10 @@ If any of the following options is on, script replaces the native interface elem
 - [Modify Release Information](#release-information)
 - [Modify Tracklist](#tracklist)
 - [Modify Recordings](#recordings)
-- [Modify Duplicates](#duplicates) 
-- [Modify annotations with Markdown](#annotation-editor) 
+- [Modify Duplicates](#duplicates)
+- [Modify annotations with Markdown](#annotation-editor)
 - [Modify header and footer](#modify-header-and-footer)
-- [Zen editing](#zen-editing) 
+- [Zen editing](#zen-editing)
 - [Auto confirm release submissions](#auto-confirm-release-submissions)
 
 ##### Modify header and footer
@@ -375,11 +414,11 @@ Hide the native step-tab row and footer and show a compact step switcher instead
 
 Hides MusicBrainz header and footer for minimal distraction.
 
-Hide everything above the Apollo nav bar - the site header, release title and entity tabs and the page footer — leaving just the Apollo interface. 
+Hide everything above the Apollo nav bar - the site header, release title and entity tabs and the page footer — leaving just the Apollo interface.
 
-The release title / artist (with version count) is shown in the navigation bar. 
+The release title / artist (with version count) is shown in the navigation bar.
 
-##### Auto confirm release submissions 
+##### Auto confirm release submissions
 
 When another site *seeds* the Add/Edit-release form, MusicBrainz shows a confirmation page before opening the editor; Apollo clicks its submit button so you skip that step (integrating [chaban's *Auto click confirm form submission*](https://greasyfork.org/en/scripts/536999) script). Acts only on that seed-confirmation page; add `?skip_confirmation` to a seed URL to bypass it once.
 
@@ -412,9 +451,9 @@ Applied to **both** tables (Tracklist and Recordings).
 | **Row layout** | normal | Row density: `compact` (tight) · `normal` · `cozy` (airy). |
 | **Alternate row colors** | Off | Tints every other row (and deepens the matched-box green on alternate rows). |
 | **Show grid** | Off | Toggle grid lines on rows and/or columns |
-| **Enlarge punctuation** | 3px | How much to enlarge confusable characters, in pixels (`0` = no enlargement; the invisible-char / missing-space markers still show under [detailed highlighting](#enable-detailed-highlighting)) | 
+| **Enlarge punctuation** | 3px | How much to enlarge confusable characters, in pixels (`0` = no enlargement; the invisible-char / missing-space markers still show under [detailed highlighting](#enable-detailed-highlighting)) |
 
-### Keyboard 
+### Keyboard
 
 |         Key         |            Description            |
 | ------------------- | --------------------------------- |
@@ -441,7 +480,7 @@ On the **Tracklist** tab the **Title** can't be styled while it's an editable `<
 
 A join phrase between two artists should have a space on both sides (`" & "`). Where one is **missing** a highlighted `␣` is drawn (`Gandhabba &␣Render`), and a join phrase **missing entirely** between two artists shows `␣?␣`
 
-Feature works on both the [Recordings](#recordings) and the [Tracklist](#tracklist) artists where the join input is outlined and flagged. 
+Feature works on both the [Recordings](#recordings) and the [Tracklist](#tracklist) artists where the join input is outlined and flagged.
 
 Shares the _Enlarge punctuation_ master switch (`0` = off).
 
