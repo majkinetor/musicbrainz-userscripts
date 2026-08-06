@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.30
+// @version      2026.8.6.211443
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -334,9 +334,6 @@
   function mount() {
     if (_mounted) return; _mounted = true;
     const anchor = document.querySelector('#content') || document.body;
-    // #367 record whether MB is actually SHOWING its IA-difficulties warning (it's always present but
-    // display:none'd unless the IA is down) — read it now, before we hide the native UI below
-    try { const cw = anchor.querySelector('.warning.caa-warning, .caa-warning'); _iaWarnShown = !!(cw && iaVisible(cw)); } catch (e) {}
     // #230: sit BELOW the MB header + the entity tabs. ul.tabs is nested in a
     // div.tabs child of #content, so climb to that #content-level ancestor.
     const childOf = (el) => { if (!el) return null; let n = el; while (n.parentElement && n.parentElement !== anchor) n = n.parentElement; return n.parentElement === anchor ? n : null; };
@@ -383,7 +380,7 @@
   // otherwise hide: the "IA is having difficulties — adding images unlikely to work" upload warning, and
   // darkened-item notices ("Cannot show cover art" / "hidden … takedown request"). A darkened item can't be
   // added to / removed / reordered, so while such a notice is up we disable editing.
-  let _iaDark = '', _iaDown = '', _iaWarnShown = false, _caaDarkened = false;
+  let _iaDark = '', _iaDown = '', _caaDarkened = false;
   const iaVisible = node => { for (let n = node; n && n.nodeType === 1 && n !== document.body; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden') return false; } return true; };
   // MB renders the darkened notice as a bare <h2> (+ <p>) directly under #content, in the current UI
   // language — grab it for display, but detection itself keys on the language-independent CAA 403.
@@ -397,10 +394,14 @@
   }
   function detectIaNotice() {
     const scope = document.getElementById('content') || document.body;
-    // #367: MB's `.caa-warning` is ALWAYS in the DOM, wrapped in display:none unless the IA is actually
-    // down — so trust its MB-visibility (captured at mount, before our own hiding could mask it), not text.
+    // #367/#487: MB's `.caa-warning` is ALWAYS in the DOM (on add-cover-art/add-event-art only —
+    // it's not rendered at all on the plain view page), wrapped in display:none until MB's own
+    // async archive.org rate-limit check (fired from its inline <script>) reveals it — so trust
+    // its LIVE MB-visibility, re-read on every call rather than snapshotted once at mount (#487:
+    // a one-time snapshot at mount ran before that async check could ever resolve, so it read
+    // "not shown yet" and never looked again).
     const w = scope.querySelector('.warning.caa-warning, .caa-warning');
-    const down = (w && _iaWarnShown) ? (w.textContent || '').replace(/\s+/g, ' ').trim() : '';
+    const down = (w && iaVisible(w)) ? (w.textContent || '').replace(/\s+/g, ' ').trim() : '';
     // #368: detected via the CAA 403 (darkened archive.org item) — language-independent, unlike the on-page
     // notice. Show MB's own localized wording when present, else a default.
     const dark = _caaDarkened ? (nativeDarkMsg() || 'This item is darkened at the Internet Archive — its cover art can’t be shown, added, removed or reordered.') : '';
@@ -418,7 +419,9 @@
     const scope = document.getElementById('content') || document.body;
     let t = null;
     _iaObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(detectIaNotice, 200); });
-    _iaObs.observe(scope, { childList: true, subtree: true, characterData: true });
+    // #487: attributes too — MB reveals .caa-warning via jQuery .parent().toggle(), which flips an
+    // inline style attribute, not childList/characterData (which is all this used to watch for).
+    _iaObs.observe(scope, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'class'] });
     setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } }, 15000);   // stop once the page settles
   }
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
