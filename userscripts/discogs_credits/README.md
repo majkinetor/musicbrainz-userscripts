@@ -1,4 +1,4 @@
-# Import Discogs Credits <img src="icon.png" align="left" width="48">
+# Import Discogs Credits (DEPRECATED) <img src="icon.png" align="left" width="48">
 
 UI for importing Discogs credits as MusicBrainz release relationships and a few general import helpers.
 
