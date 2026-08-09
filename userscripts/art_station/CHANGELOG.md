@@ -1,5 +1,11 @@
 # Art Station Changelog
 
+## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
+
+### Features
+
+1. Show warning about "The Internet Archive is currently experiencing difficulties" ([#487](https://github.com/majkinetor/musicbrainz-userscripts/issues/487))
+
 ## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
 
 ### Features

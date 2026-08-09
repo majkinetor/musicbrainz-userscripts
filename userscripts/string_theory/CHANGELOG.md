@@ -1,5 +1,23 @@
 # String Theory Changelog
 
+## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Length difference highlight improvement ([#480](https://github.com/majkinetor/musicbrainz-userscripts/issues/480))
+1. Input field focus lost when changing titles ([#483](https://github.com/majkinetor/musicbrainz-userscripts/issues/483))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Show warning about "The Internet Archive is currently experiencing difficulties" ([#487](https://github.com/majkinetor/musicbrainz-userscripts/issues/487))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. SX search button as item hover action ([#490](https://github.com/majkinetor/musicbrainz-userscripts/issues/490))
+1. Consider version info in SoundExchange lookup ([#486](https://github.com/majkinetor/musicbrainz-userscripts/issues/486))
+1. Find links permanently misses a provider after one failed fetch (Spotify) ([#485](https://github.com/majkinetor/musicbrainz-userscripts/issues/485))
+1. Maximized window state not restored ([#484](https://github.com/majkinetor/musicbrainz-userscripts/issues/484))
+
 ## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

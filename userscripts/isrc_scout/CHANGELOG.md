@@ -1,5 +1,17 @@
 # ISRC Scout Changelog
 
+## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
+
+### Features
+
+1. SX search button as item hover action ([#490](https://github.com/majkinetor/musicbrainz-userscripts/issues/490))
+1. Consider version info in SoundExchange lookup ([#486](https://github.com/majkinetor/musicbrainz-userscripts/issues/486))
+
+### Fixes
+
+1. Find links permanently misses a provider after one failed fetch (Spotify) ([#485](https://github.com/majkinetor/musicbrainz-userscripts/issues/485))
+1. Maximized window state not restored ([#484](https://github.com/majkinetor/musicbrainz-userscripts/issues/484))
+
 ## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
 
 ### Features

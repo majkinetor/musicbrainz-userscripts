@@ -1,5 +1,15 @@
 # Apollo Editor Changelog
 
+## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
+
+### Features
+
+1. Length difference highlight improvement ([#480](https://github.com/majkinetor/musicbrainz-userscripts/issues/480))
+
+### Fixes
+
+1. Input field focus lost when changing titles ([#483](https://github.com/majkinetor/musicbrainz-userscripts/issues/483))
+
 ## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
 
 ### Fixes

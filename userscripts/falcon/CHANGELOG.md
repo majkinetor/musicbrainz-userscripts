@@ -1,5 +1,11 @@
 # Falcon 
 
+## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
+
+### Features
+
+1. Batch add recording disambiguation and ISRC ([#474](https://github.com/majkinetor/musicbrainz-userscripts/issues/474))
+
 ## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
 
 ### Features
