@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.6.223329
+// @version      2026.8.9.125838
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -609,6 +609,14 @@
       background: #fde6c8; border: 1px solid #f1c690; border-radius: 3px; padding: 0 4px; }
     .ii-ex-pending samp { color: #8a5a00; text-decoration: line-through; }
     .ii-inwrap { display: flex; align-items: center; gap: 5px; }
+    /* #490: the initial "search SoundExchange by title/artist" entry point used to be a
+       permanently-visible text link under every row (spammy on a long tracklist) — now a
+       row-hover-only icon left of the input. Opacity/pointer-events toggle (not display)
+       so its slot stays reserved and nothing shifts when it fades in. */
+    .ii-sx-hover { flex-shrink: 0; width: 20px; height: 22px; padding: 0; border: none; background: none;
+      cursor: pointer; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .1s; }
+    tr:hover .ii-sx-hover { opacity: .55; pointer-events: auto; }
+    .ii-sx-hover:hover { opacity: 1 !important; }
     /* the × lives INSIDE the input box (part of the edit), so it doesn't shift the
        row layout / SX text alignment */
     .ii-input-box { position: relative; flex-shrink: 0; width: 150px; }
@@ -3609,8 +3617,11 @@
         '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</div></td>' +
         // .ii-cands is a sibling of .ii-inwrap (full-width, under the input), NOT inside it.
         '<td><div class="ii-inwrap">' +
+          // #490: initial "search SoundExchange by title/artist" entry point — a row-hover-only
+          // icon instead of a permanently-visible text link under every row.
+          '<button class="ii-sx-hover" type="button" tabindex="-1" title="Search SoundExchange by title/artist">🔍</button>' +
           '<div class="ii-input-box">' +
-            '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
+            '<input class="ii-input" type="text" maxlength="15" value="' + esc(t.pending) + '">' +
             '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
           '</div>' +
           // first track has no previous ISRC to increment — hide +1 but keep its slot so SX text stays aligned
@@ -3671,14 +3682,14 @@
         e.stopPropagation();
         modal.querySelector('#ii-prov-menu').classList.contains('open') ? closeProvMenu() : openProvMenu(provBtn);
       });
+      // #490: initial per-track entry point to the SoundExchange refine panel — the
+      // row-hover icon left of the input (replaces the old permanently-visible
+      // ".ii-cand-refine" text link that used to be appended into .ii-cands here,
+      // which also meant clearPending()'s ".ii-cands" wipe silently removed it).
+      const hoverSx = tr.querySelector('.ii-sx-hover');
+      if (hoverSx) hoverSx.addEventListener('click', () => openSxPanel(idx));
       tbody.appendChild(tr);
       validateInput(input, t);
-      // initial per-track entry point to the SoundExchange refine panel
-      const rf = document.createElement('div');
-      rf.className = 'ii-cand-refine';
-      rf.textContent = '⚙ search SoundExchange…';
-      rf.addEventListener('click', () => openSxPanel(idx));
-      tr.querySelector('.ii-cands').appendChild(rf);
     });
     updateSummary();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
