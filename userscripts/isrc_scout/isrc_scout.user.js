@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.9.125838
+// @version      2026.8.9.133258
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -614,9 +614,11 @@
        row-hover-only icon left of the input. Opacity/pointer-events toggle (not display)
        so its slot stays reserved and nothing shifts when it fades in. */
     .ii-sx-hover { flex-shrink: 0; width: 20px; height: 22px; padding: 0; border: none; background: none;
-      cursor: pointer; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .1s; }
+      cursor: pointer; color: #6c757d; opacity: 0; pointer-events: none; transition: opacity .1s;
+      display: flex; align-items: center; justify-content: center; }
+    .ii-sx-hover svg { display: block; }
     tr:hover .ii-sx-hover { opacity: .55; pointer-events: auto; }
-    .ii-sx-hover:hover { opacity: 1 !important; }
+    .ii-sx-hover:hover { opacity: 1 !important; color: #343a40; }
     /* the × lives INSIDE the input box (part of the edit), so it doesn't shift the
        row layout / SX text alignment */
     .ii-input-box { position: relative; flex-shrink: 0; width: 150px; }
@@ -641,7 +643,10 @@
     .ii-sx:hover { background: #dde8f7; color: #1b3f6e; }
     .ii-sx:disabled { opacity: .4; cursor: default; }
     .ii-sx:disabled:hover { background: #eef3fb; color: #2c5d9b; }
-    .ii-cands { margin-top: 4px; display: flex; flex-direction: column; gap: 3px; width: auto; }
+    /* #490: margin-left matches .ii-sx-hover's width (20px) + .ii-inwrap's gap (5px), so the
+       candidate list — a sibling of .ii-inwrap, not a child — lines up with the input box
+       instead of starting flush left under the hover icon. */
+    .ii-cands { margin-top: 4px; margin-left: 25px; display: flex; flex-direction: column; gap: 3px; width: auto; }
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
     .ii-cand:hover { background: #f0f6ff; border-color: #9ec5fe; }
@@ -3619,7 +3624,9 @@
         '<td><div class="ii-inwrap">' +
           // #490: initial "search SoundExchange by title/artist" entry point — a row-hover-only
           // icon instead of a permanently-visible text link under every row.
-          '<button class="ii-sx-hover" type="button" tabindex="-1" title="Search SoundExchange by title/artist">🔍</button>' +
+          '<button class="ii-sx-hover" type="button" tabindex="-1" title="Search SoundExchange by title/artist">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20" y2="20"/></svg>' +
+          '</button>' +
           '<div class="ii-input-box">' +
             '<input class="ii-input" type="text" maxlength="15" value="' + esc(t.pending) + '">' +
             '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
