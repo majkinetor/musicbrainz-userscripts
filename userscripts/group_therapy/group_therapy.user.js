@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.29
+// @version      2026.8.10
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1005,6 +1005,13 @@
   }
 
   const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
+  // #491: does this link type even support relationship-level dates? "recorded at" is defined for BOTH
+  // recording-place (has_dates true — the Place entity carries no date of its own) AND recording-event
+  // (has_dates false — the Event entity already has one), so name-based matching alone can't tell them
+  // apart. has_dates is missing from the cache when the type hasn't loaded yet — default true (unknown)
+  // rather than silently hiding a genuinely datable row.
+  const ltHasDates = id => { const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id]; return !lt || lt.has_dates !== false; };
+  if (typeof window !== 'undefined') window.__gtTest = Object.assign(window.__gtTest || {}, { ltHasDates });   // test hook only (#491) — no behaviour change
   // grouping key for a copy spec: link type + its attribute typeIDs (so drums ≠ shakers ≠ vocals)
   const roleKeyOfSpec = s => { let a = ''; try { if (s.attributes) a = [...W.MB.tree.iterate(s.attributes)].map(x => x.typeID).sort((p, q) => p - q).join(','); } catch (e) {} return s.linkTypeID + '#' + a; };
   // display label for a copy spec — MB's own rendered role label when the rel is on the page
@@ -1165,7 +1172,10 @@
     let uid = 0;
     const tracks = dpRows().map(tr => {
       const credits = recordingRels(tr)
-        .filter(r => !r.removed && r.other && r.other.entityType !== 'url' && r.item !== skipItem)
+        // #491: exclude relationship types that don't support dates at all (e.g. recording-event
+        // "recorded at" — the Event carries its own date) so this tool can't offer, pre-select, or
+        // stamp a date onto something MB has no date field for in the first place.
+        .filter(r => !r.removed && r.other && r.other.entityType !== 'url' && r.item !== skipItem && ltHasDates(r.linkTypeID))
         .map(r => ({ id: ++uid, rel: r, tr, dated: dpDated(r), name: val(r.other.name) || '?', credit: r.credit && r.credit !== val(r.other.name) ? r.credit : '' }));
       return { tr, pos: posLabel(tr) || '?', title: val((recordingEntity(tr) || {}).name) || '', credits };
     }).filter(t => t.credits.length);
