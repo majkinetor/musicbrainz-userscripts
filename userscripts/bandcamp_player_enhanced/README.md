@@ -1,6 +1,6 @@
 # Bandcamp Player Enhanced <img src="icon.svg" align="left" width="48">
 
-Bandcamp album player with keyboard shortcuts.
+Bandcamp album player with keyboard shortcuts, preview and various customizations.
 
 <img width="1000" src="./screenshots/player.png" />
 
