@@ -201,6 +201,43 @@ assert.deepEqual(qEng.tracklistRels.map(r => [r.track.position, r.linkType, r.ar
 ]);
 assert.ok(qEng.tracklistRels.every(r => r.artist.resource_url === '' && r.entityType === 'artist'));
 
+// #492: Mastering Engineer is release-level in MB (artist→recording "mastering" is
+// deprecated) — Qobuz has no separate release-level credits section, so per-track mastering
+// credits route to `artistRoles` (release-level), NOT `tracklistRels` (per-recording), where
+// they used to silently fail at dispatch (resolveLinkTypeId rejects the deprecated pair).
+// Real-world case from the report: two different mastering engineers on the same release,
+// split across tracks (Eblis Alvarez on most, Frank Merritt on track 2) — both camelCase and
+// spaced Qobuz spellings are exercised.
+const qMastering = qobuzToEngine([
+    { index: 1, credits: [
+        { name: 'Diego Manrique', roles: ['Composer'] },
+        { name: 'Eblis Alvarez',  roles: ['MasteringEngineer'] },
+    ] },
+    { index: 2, credits: [
+        { name: 'Diego Manrique', roles: ['Composer'] },
+        { name: 'Frank Merritt',  roles: ['Mastering Engineer'] },
+    ] },
+    { index: 3, credits: [
+        { name: 'Diego Manrique', roles: ['Composer'] },
+        { name: 'Eblis Alvarez',  roles: ['MasteringEngineer'] },
+    ] },
+]);
+// mastering never lands in tracklistRels (would hit the deprecated artist→recording pair)
+assert.ok(qMastering.tracklistRels.every(r => r.linkType !== 'mastering'), 'mastering must not appear in tracklistRels');
+assert.deepEqual(qMastering.tracklistRels.map(r => [r.track.position, r.linkType, r.artist.name]), [
+    ['1', 'composer', 'Diego Manrique'],
+    ['2', 'composer', 'Diego Manrique'],
+    ['3', 'composer', 'Diego Manrique'],
+]);
+// mastering lands in artistRoles (release-level) instead, with no `track` field, one entry
+// per occurrence (session-level dedup across tracks is dispatch.js's job, not the parser's)
+assert.deepEqual(qMastering.artistRoles.map(r => [r.linkType, r.entityType, r.artist.name]), [
+    ['mastering', 'artist', 'Eblis Alvarez'],
+    ['mastering', 'artist', 'Frank Merritt'],
+    ['mastering', 'artist', 'Eblis Alvarez'],
+]);
+assert.ok(qMastering.artistRoles.every(r => !('track' in r)), 'artistRoles entries must not carry a track (release-level, not per-recording)');
+
 // #411: a comma-packed credit of multi-word personal names is split into one artist per name
 // (same role each), dropping any Qobuz combined-artist URL — even when linked (that URL 404s).
 // Names whose leading segment is a single token, and band-joiner names, are left whole.

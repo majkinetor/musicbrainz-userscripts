@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.23
+// @version      2026.8.11.171021
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2503,8 +2503,8 @@
     "Assistant Engineer": { target: "recording", rel: "engineer", attributes: ["assistant"] },
     "RecordingEngineer": { target: "recording", rel: "recording" },
     "Recording Engineer": { target: "recording", rel: "recording" },
-    "MasteringEngineer": { target: "recording", rel: "mastering" },
-    "Mastering Engineer": { target: "recording", rel: "mastering" },
+    "MasteringEngineer": { target: "release", rel: "mastering" },
+    "Mastering Engineer": { target: "release", rel: "mastering" },
     "Editor": { target: "recording", rel: "editor" },
     "Remixer": { target: "recording", rel: "remixer" },
     "Conductor": { target: "recording", rel: "conductor" },
@@ -2578,6 +2578,7 @@
   }
   function qobuzToEngine(parsedTracks) {
     const tracklistRels = [];
+    const artistRoles = [];
     const tracklist = [];
     const skipped = [];
     for (const t of parsedTracks) {
@@ -2599,14 +2600,15 @@
             if (Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, role)) {
               const plan = QOBUZ_ROLE_MAP[role];
               if (!plan) continue;
-              tracklistRels.push({
+              const rel = {
                 linkType: plan.rel,
                 entityType: "artist",
                 attributes: [...plan.attributes || []],
-                artist: { name: nm, anv: "", resource_url: url },
+                artist: { name: nm, anv: "", resource_url: url }
                 // #353 Qobuz artist id (composer/performer) → exact link
-                track
-              });
+              };
+              if (plan.target === "release") artistRoles.push(rel);
+              else tracklistRels.push({ ...rel, track });
               continue;
             }
             const rels = getArtistRoles({ name: nm, anv: "", role, resource_url: url });
@@ -2627,7 +2629,7 @@
         }
       }
     }
-    return { tracklistRels, tracklist, skipped };
+    return { tracklistRels, artistRoles, tracklist, skipped };
   }
   function fetchQobuzAlbumPage(pageUrl) {
     return new Promise((resolve, reject) => {
@@ -7734,15 +7736,15 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
-      log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+      const { tracklistRels, artistRoles, tracklist, skipped } = qobuzToEngine(tracks);
+      log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s)${artistRoles.length ? ` + ${artistRoles.length} release-level relationship(s)` : ""} across ${tracklist.length} track(s)`);
       skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
-      if (!tracklistRels.length) {
+      if (!tracklistRels.length && !artistRoles.length) {
         log.warn("No importable Qobuz credits found.");
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
+      const parts = { companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
       return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     };
     const scrape = () => {

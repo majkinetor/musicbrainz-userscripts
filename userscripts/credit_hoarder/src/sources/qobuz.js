@@ -32,7 +32,20 @@ import { splitCombinedNames } from './split-names.js';   // #411 shared multi-ar
  *  are listed. `null` = recognised but never imported (Main Artist duplicates
  *  the track artist credit; Associated Performer / Studio Personnel are too
  *  vague). #311: instruments (Bass, Drums, Guitar…) aren't here — they're
- *  recognised via INSTRUMENTS and resolved through getArtistRoles. */
+ *  recognised via INSTRUMENTS and resolved through getArtistRoles.
+ *
+ *  #492: `target: 'release'` (mastering only) routes to `artistRoles`
+ *  (release-level) instead of `tracklistRels` (per-recording) — MB's
+ *  artist→recording "mastering" link type is deprecated (mastering is
+ *  release-level only), so a per-track entry here always failed silently at
+ *  dispatch (resolveLinkTypeId rejects the deprecated pair, dispatch counts
+ *  it as `failed` with no "Not imported" line, since it was never in the
+ *  v1-scope skip list). Tidal/Apple already route around this the same way
+ *  (TIDAL_RELEASE_ROLE_MAP's 'Mastered By', APPLE_SKIP) — Qobuz has no
+ *  separate release-level credits section to scrape, so distinct per-track
+ *  mastering engineers (this can genuinely differ by track) each become
+ *  their own release-level "Mastered By" credit; the same artist repeated
+ *  across tracks collapses to one dispatch via dispatch.js's session dedup. */
 export const QOBUZ_ROLE_MAP = {
     'Composer':            { target: 'work',      rel: 'composer' },
     'Lyricist':            { target: 'work',      rel: 'lyricist' },
@@ -51,8 +64,8 @@ export const QOBUZ_ROLE_MAP = {
     'Assistant Engineer':  { target: 'recording', rel: 'engineer', attributes: ['assistant'] },
     'RecordingEngineer':   { target: 'recording', rel: 'recording' },
     'Recording Engineer':  { target: 'recording', rel: 'recording' },
-    'MasteringEngineer':   { target: 'recording', rel: 'mastering' },
-    'Mastering Engineer':  { target: 'recording', rel: 'mastering' },
+    'MasteringEngineer':   { target: 'release',   rel: 'mastering' },
+    'Mastering Engineer':  { target: 'release',   rel: 'mastering' },
     'Editor':              { target: 'recording', rel: 'editor' },
     'Remixer':             { target: 'recording', rel: 'remixer' },
     'Conductor':           { target: 'recording', rel: 'conductor' },
@@ -186,8 +199,9 @@ export function extractQobuzAlbumInfo(html) {
  * (same contract as `tidalToEngine`). Qobuz exposes names only — every
  * credit goes through name search + review (`resource_url: ''`).
  *
- * v1 imports the roles `QOBUZ_ROLE_MAP` targets at work/recording
- * (Composer, Lyricist, Writer, Arranger, Producer, Mixer, Engineer, …).
+ * v1 imports the roles `QOBUZ_ROLE_MAP` targets at work/recording/release
+ * (Composer, Lyricist, Writer, Arranger, Producer, Mixer, Engineer, …;
+ * Mastering Engineer → release-level, see #492 above `QOBUZ_ROLE_MAP`).
  * `MusicPublisher` is reported in `skipped` (work-publisher seeding
  * deferred, as in the Tidal source) — except the `Copyright Control`
  * placeholder, which is dropped outright. Null-mapped roles (MainArtist,
@@ -195,6 +209,7 @@ export function extractQobuzAlbumInfo(html) {
  */
 export function qobuzToEngine(parsedTracks) {
     const tracklistRels = [];
+    const artistRoles = [];
     const tracklist = [];
     const skipped = [];
     for (const t of parsedTracks) {
@@ -217,13 +232,16 @@ export function qobuzToEngine(parsedTracks) {
                     if (Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, role)) {
                         const plan = QOBUZ_ROLE_MAP[role];
                         if (!plan) continue;   // Main Artist & friends — never imported
-                        tracklistRels.push({
+                        const rel = {
                             linkType:   plan.rel,
                             entityType: 'artist',
                             attributes: [...(plan.attributes || [])],
                             artist: { name: nm, anv: '', resource_url: url },   // #353 Qobuz artist id (composer/performer) → exact link
-                            track,
-                        });
+                        };
+                        // #492: release-level (mastering) — no `track`, so it dispatches once
+                        // per distinct artist against the release, not per recording.
+                        if (plan.target === 'release') artistRoles.push(rel);
+                        else tracklistRels.push({ ...rel, track });
                         continue;
                     }
                     // #311: instrument role → shared resolver (INSTRUMENTS → instrument rel)
@@ -242,7 +260,7 @@ export function qobuzToEngine(parsedTracks) {
             }
         }
     }
-    return { tracklistRels, tracklist, skipped };
+    return { tracklistRels, artistRoles, tracklist, skipped };
 }
 
 /** Fetch the store page HTML cross-origin via GM_xmlhttpRequest

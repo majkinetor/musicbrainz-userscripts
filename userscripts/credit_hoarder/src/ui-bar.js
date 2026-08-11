@@ -1609,11 +1609,11 @@ function runQobuzImport(qobuzUrl, getOpts, cancelled, collect) {
         li.querySelector('details').appendChild(pre);
         _logs.appendChild(li);
         if (!tracks.length) { log.warn('No Qobuz credits found — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-        const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
-        log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+        const { tracklistRels, artistRoles, tracklist, skipped } = qobuzToEngine(tracks);
+        log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s)${artistRoles.length ? ` + ${artistRoles.length} release-level relationship(s)` : ''} across ${tracklist.length} track(s)`);
         skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
-        if (!tracklistRels.length) { log.warn('No importable Qobuz credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-        const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
+        if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable Qobuz credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+        const parts = { companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
         return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     };
 
