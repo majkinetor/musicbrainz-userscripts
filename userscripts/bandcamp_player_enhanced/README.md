@@ -2,6 +2,8 @@
 
 Bandcamp album player with keyboard shortcuts.
 
+<img width="1000" src="./screenshots/player.png" />
+
 ## Shortcuts
 
 Control bandcamp player with keyboard:
