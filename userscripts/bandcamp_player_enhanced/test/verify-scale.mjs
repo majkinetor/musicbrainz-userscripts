@@ -49,6 +49,7 @@ ck(!/^courier/i.test(before.fontFamily), `font stack no longer leads with Courie
 // must track the new (smaller) rendered height, not stay pinned to the 100% value
 await page.click('#bcp-settings');
 await page.waitForTimeout(150);
+const panelAt100 = await page.evaluate(() => { const b = document.getElementById('bcp-settings-panel').getBoundingClientRect(); return { width: b.width, height: b.height }; });
 await page.fill('#bcp-opt-scale', '70');
 await page.dispatchEvent('#bcp-opt-scale', 'input');
 await page.waitForTimeout(200);
@@ -59,12 +60,12 @@ ck(shrunk.bodyPadding === shrunk.barHeight, `page top-padding tracks the SHRUNK 
 ck(Math.abs(shrunk.ddTop - (shrunk.barHeight + 2)) <= 1, `dropdown offset tracks the shrunk bar too (${shrunk.ddTop} vs ~${shrunk.barHeight + 2})`);
 ck(Math.abs(shrunk.spTop - (shrunk.barHeight + 2)) <= 1, `settings panel offset tracks the shrunk bar too (${shrunk.spTop} vs ~${shrunk.barHeight + 2})`);
 
-// 3) the settings panel itself must stay usable/on-screen while shrunk (still open, still clickable)
-const panelStillOpenAndUsable = await page.evaluate(() => {
-  const sp = document.getElementById('bcp-settings-panel');
-  return sp.classList.contains('open') && sp.getBoundingClientRect().width > 0;
-});
-ck(panelStillOpenAndUsable, 'settings panel stays open and visible through a live scale change');
+// 3) the settings panel's own SIZE must NOT shrink with the bar (counter-zoomed, per request)
+const panelAt70 = await page.evaluate(() => { const sp = document.getElementById('bcp-settings-panel'); return { open: sp.classList.contains('open'), width: sp.getBoundingClientRect().width, height: sp.getBoundingClientRect().height }; });
+console.log('settings panel size: 100% =', JSON.stringify(panelAt100), '| 70% bar scale =', JSON.stringify(panelAt70));
+ck(panelAt70.open === true, 'settings panel stays open through a live scale change');
+ck(Math.abs(panelAt70.width - panelAt100.width) < 2 && Math.abs(panelAt70.height - panelAt100.height) < 2,
+  `settings panel renders at the SAME absolute size regardless of the bar's scale (100%: ${panelAt100.width}x${panelAt100.height}, 70%: ${panelAt70.width}x${panelAt70.height})`);
 
 // 4) persists across reload
 await page.reload({ waitUntil: 'domcontentloaded' });

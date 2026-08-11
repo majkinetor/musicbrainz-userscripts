@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.08.11.122337
+// @version      2026.08.11.124018
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
-// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9IiMxNDE0MTQiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
+// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md
 // @match        https://*.bandcamp.com/album/*
 // @grant        none
@@ -23,6 +23,8 @@
     const MUTE_KEY      = 'bcp_muted';
     const BAR_H         = 72;
     const PREVIEW_SECS  = 30; // seconds to play per track in preview mode
+    const VERSION       = '2026.08.11.124018'; // keep in sync with @version — @grant none, so no GM_info to read it from
+    const HOMEPAGE_URL  = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md';
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,7 +71,7 @@
     // ─── Hide-element options persistence ──────────────────────────────────────────
 
     const HIDE_KEY      = 'bcp_hide_opts';
-    const HIDE_DEFAULTS = { player: true, tracklist: true, tags: true };
+    const HIDE_DEFAULTS = { player: false, tracklist: false, tags: false };
 
     function loadHideOpts() {
         try {
@@ -89,7 +91,7 @@
     const THEME_KEY = 'bcp_theme';
 
     function loadTheme() {
-        try { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch(e) { return 'dark'; }
+        try { return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light'; } catch(e) { return 'light'; }
     }
     function saveTheme(t) {
         try { localStorage.setItem(THEME_KEY, t); } catch(e) {}
@@ -388,6 +390,9 @@
         bar.id = 'bc-sticky-player';
         bar.classList.toggle('bcp-light', theme === 'light');
         bar.style.zoom = String(scale / 100);
+        // #bcp-settings-panel counter-zooms itself back to 100% below (nested `zoom` values
+        // multiply), so the Scale slider affects the player bar only — not its own dialog.
+        bar.style.setProperty('--bcp-scale-factor', String(scale / 100));
         bar.innerHTML = `
 <style>
 /* theme tokens — dark is the default palette; .bcp-light overrides below */
@@ -572,8 +577,11 @@
 .bcp-track-num { min-width: 28px; color: var(--bcp-text-5); font-size: 11px; text-align: right; flex-shrink: 0; }
 .bcp-track-item.active .bcp-track-num { color: var(--bcp-accent); }
 
-/* settings panel */
+/* settings panel — deliberately NOT affected by the Scale slider (nested zoom values
+   multiply, so countering the ambient --bcp-scale-factor here cancels the bar's own zoom
+   back out to 100% for this subtree only) */
 #bcp-settings-panel {
+    zoom: calc(1 / var(--bcp-scale-factor, 1));
     position: fixed; top: ${BAR_H + 2}px; right: 12px;
     z-index: 999998; background: var(--bcp-bg-panel);
     border: 1px solid var(--bcp-accent); border-radius: 4px;
@@ -582,6 +590,14 @@
     display: none; font-family: Consolas, Menlo, 'Liberation Mono', Monaco, 'Courier New', monospace;
 }
 #bcp-settings-panel.open { display: block; }
+.bcp-settings-hdr {
+    display: flex; align-items: baseline; gap: 6px;
+    white-space: nowrap;
+}
+.bcp-settings-name { font-size: 12px; font-weight: bold; color: var(--bcp-text-1); }
+.bcp-settings-ver  { font-size: 10px; color: var(--bcp-text-4); }
+.bcp-settings-gh   { font-size: 10px; color: var(--bcp-accent); text-decoration: none; margin-left: auto; }
+.bcp-settings-gh:hover { text-decoration: underline; }
 #bcp-settings-panel .bcp-opt-label {
     font-size: 9px; color: var(--bcp-text-5); text-transform: uppercase; letter-spacing: 0.08em;
     margin: 0 0 6px; padding-top: 8px; border-top: 1px solid var(--bcp-border);
@@ -643,6 +659,12 @@
 <div id="bcp-dropdown"></div>
 
 <div id="bcp-settings-panel">
+    <div class="bcp-settings-hdr">
+        <span class="bcp-settings-name">Bandcamp Player Enhanced</span>
+        <span class="bcp-settings-ver" title="installed script version">v${VERSION}</span>
+        <a class="bcp-settings-gh" href="${HOMEPAGE_URL}" target="_blank" rel="noopener" title="Open the README on GitHub">GitHub ↗</a>
+    </div>
+
     <div class="bcp-opt-label">Theme</div>
     <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-dark"  ${theme === 'dark'  ? 'checked' : ''}> Dark</label>
     <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-light" ${theme === 'light' ? 'checked' : ''}> Light</label>
@@ -707,7 +729,11 @@
         // ── wheel seek (anywhere inside the bar) ─────────────────────────────────
         // Scrolling up = forward 5s, scrolling down = rewind 5s.
         // Shift+wheel = 30s jumps. Page scroll is suppressed while over the bar.
+        // Exception: while the track dropdown is open and the wheel is over IT, let the
+        // browser scroll the list naturally instead of hijacking it for seek.
         bar.addEventListener('wheel', (e) => {
+            const dd = document.getElementById('bcp-dropdown');
+            if (dd && dd.classList.contains('open') && dd.contains(e.target)) return;
             e.preventDefault();
             e.stopPropagation();
             const amount = e.shiftKey ? SEEK_LARGE : SEEK_SMALL;
@@ -800,6 +826,7 @@
             scaleVal.textContent = scale + '%';
             saveScale(scale);
             bar.style.zoom = String(scale / 100);
+            bar.style.setProperty('--bcp-scale-factor', String(scale / 100));
             repositionOverlays();
         });
 

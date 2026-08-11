@@ -15,14 +15,18 @@ Control bandcamp player with keyboard:
 | ArrowRight | Forward 5 or 30 (with SHIFT) seconds, mouse scroll over player |
 | P          | Album preview (30s per song)                                   |
 
+Mouse wheel over the player bar seeks the same way; wheel over an open track list instead
+scrolls the list.
+
 ## Settings
 
 Click the ⚙ button on the player bar to open its settings:
 
-- **Theme** — Dark (default) or Light.
-- **Scale** — 70%–130% (default 100%), for when the bar feels too big or too small.
+- **Theme** — Light (default) or Dark.
+- **Scale** — 70%–130% (default 100%), for when the bar feels too big or too small. Only the
+  player bar scales — the settings panel itself always stays full-size.
 - **Hide on page** — which native page elements get hidden: the native Bandcamp player, the
-  track list, and the tags row can each be toggled independently.
+  track list, and the tags row can each be toggled independently (off by default).
 
 Choices apply immediately and persist across page loads.
 

@@ -27,22 +27,22 @@ await page.waitForTimeout(500);
 
 const barBg = () => page.evaluate(() => getComputedStyle(document.getElementById('bc-sticky-player')).backgroundColor);
 
-// 1) default is dark
+// 1) default is light
 const defaultBg = await barBg();
 console.log('default bar background:', defaultBg);
-ck(defaultBg === 'rgb(20, 20, 20)', `defaults to the dark theme (got ${defaultBg})`);
+ck(defaultBg === 'rgb(255, 255, 255)', `defaults to the light theme (got ${defaultBg})`);
 
-// 2) switch to light via the settings panel, live, no reload
+// 2) switch to dark via the settings panel, live, no reload
 await page.click('#bcp-settings');
 await page.waitForTimeout(150);
-await page.click('#bcp-opt-theme-light');
+await page.click('#bcp-opt-theme-dark');
 await page.waitForTimeout(150);
-const lightBg = await barBg();
-console.log('after choosing Light:', lightBg);
-ck(lightBg === 'rgb(255, 255, 255)', `switching to Light applies live, no reload (got ${lightBg})`);
+const darkBg = await barBg();
+console.log('after choosing Dark:', darkBg);
+ck(darkBg === 'rgb(20, 20, 20)', `switching to Dark applies live, no reload (got ${darkBg})`);
 
 const isLightClass = await page.evaluate(() => document.getElementById('bc-sticky-player').classList.contains('bcp-light'));
-ck(isLightClass === true, 'bcp-light class is applied to the bar');
+ck(isLightClass === false, 'bcp-light class is removed from the bar');
 
 // 3) persists across a fresh page load
 await page.reload({ waitUntil: 'domcontentloaded' });
@@ -51,18 +51,18 @@ await page.addScriptTag({ content: code });
 await page.waitForSelector('#bc-sticky-player', { timeout: 15000 });
 await page.waitForTimeout(500);
 const afterReloadBg = await barBg();
-const radioChecked = await page.evaluate(() => document.getElementById('bcp-opt-theme-light').checked);
-console.log('after reload:', afterReloadBg, 'light radio checked:', radioChecked);
-ck(afterReloadBg === 'rgb(255, 255, 255)', `theme choice persists across reload (got ${afterReloadBg})`);
-ck(radioChecked === true, 'the Light radio reflects the persisted choice on reload');
+const radioChecked = await page.evaluate(() => document.getElementById('bcp-opt-theme-dark').checked);
+console.log('after reload:', afterReloadBg, 'dark radio checked:', radioChecked);
+ck(afterReloadBg === 'rgb(20, 20, 20)', `theme choice persists across reload (got ${afterReloadBg})`);
+ck(radioChecked === true, 'the Dark radio reflects the persisted choice on reload');
 
-// 4) switch back to Dark, confirm round-trip
+// 4) switch back to Light, confirm round-trip
 await page.click('#bcp-settings');
 await page.waitForTimeout(150);
-await page.click('#bcp-opt-theme-dark');
+await page.click('#bcp-opt-theme-light');
 await page.waitForTimeout(150);
-const backToDark = await barBg();
-ck(backToDark === 'rgb(20, 20, 20)', `switching back to Dark works (got ${backToDark})`);
+const backToLight = await barBg();
+ck(backToLight === 'rgb(255, 255, 255)', `switching back to Light works (got ${backToLight})`);
 
 const realErrs = errs.filter(e => !/play\(\) request was interrupted by a call to pause\(\)/.test(e));
 ck(realErrs.length === 0, 'no unexpected page errors: ' + JSON.stringify(realErrs.slice(0, 3)));

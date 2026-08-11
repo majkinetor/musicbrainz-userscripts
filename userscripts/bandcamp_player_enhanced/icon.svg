@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <title>Bandcamp Player Enhanced</title>
-  <circle cx="64" cy="64" r="58" fill="#141414" stroke="#1da0c3" stroke-width="7"/>
+  <circle cx="64" cy="64" r="58" fill="none" stroke="#1da0c3" stroke-width="7"/>
   <polygon points="48,38 96,64 48,90" fill="#1da0c3"/>
 </svg>
