@@ -17,7 +17,11 @@ Control bandcamp player with keyboard:
 
 ## Settings
 
-Click the ⚙ button on the player bar to choose which native page elements get hidden: the
-native Bandcamp player, the track list, and the tags row can each be toggled independently.
-Choices persist across page loads.
+Click the ⚙ button on the player bar to open its settings:
+
+- **Theme** — Dark (default) or Light.
+- **Hide on page** — which native page elements get hidden: the native Bandcamp player, the
+  track list, and the tags row can each be toggled independently.
+
+Choices apply immediately and persist across page loads.
 

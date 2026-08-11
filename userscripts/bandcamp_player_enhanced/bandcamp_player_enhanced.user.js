@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
-// @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
-// @version      2026.08.11
-// @author       majkinetor
 // @namespace    http://violentmonkey.net/
+// @version      2026.08.11
+// @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
+// @author       majkinetor
+// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9IiMxNDE0MTQiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md
 // @match        https://*.bandcamp.com/album/*
 // @grant        none
 // @license      MIT
-// @author       majkinetor
 // @downloadURL  https://update.greasyfork.org/scripts/571566/Bandcamp%20Player%20Enhanced.user.js
 // @updateURL    https://update.greasyfork.org/scripts/571566/Bandcamp%20Player%20Enhanced.meta.js
 // ==/UserScript==
@@ -82,6 +83,19 @@
     }
 
     let hideOpts = loadHideOpts();
+
+    // ─── Theme persistence ──────────────────────────────────────────────────────────
+
+    const THEME_KEY = 'bcp_theme';
+
+    function loadTheme() {
+        try { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch(e) { return 'dark'; }
+    }
+    function saveTheme(t) {
+        try { localStorage.setItem(THEME_KEY, t); } catch(e) {}
+    }
+
+    let theme = loadTheme();
 
     // ─── Artist / album info ───────────────────────────────────────────────────────
 
@@ -353,15 +367,47 @@
 
         const bar = document.createElement('div');
         bar.id = 'bc-sticky-player';
+        bar.classList.toggle('bcp-light', theme === 'light');
         bar.innerHTML = `
 <style>
+/* theme tokens — dark is the default palette; .bcp-light overrides below */
+#bc-sticky-player {
+    --bcp-bg:        #141414;
+    --bcp-bg-panel:  #181818;
+    --bcp-scroll-trk:#111111;
+    --bcp-border:    #1e1e1e;
+    --bcp-border-btn:#2e2e2e;
+    --bcp-track-bg:  #2a2a2a;
+    --bcp-accent:    #1da0c3;
+    --bcp-text-1:    #ffffff;
+    --bcp-text-2:    #e0e0e0;
+    --bcp-text-3:    #999999;
+    --bcp-text-4:    #666666;
+    --bcp-text-5:    #454545;
+    --bcp-hover-bg:  rgba(255,255,255,0.04);
+}
+#bc-sticky-player.bcp-light {
+    --bcp-bg:        #ffffff;
+    --bcp-bg-panel:  #f4f4f4;
+    --bcp-scroll-trk:#eaeaea;
+    --bcp-border:    #e2e2e2;
+    --bcp-border-btn:#d6d6d6;
+    --bcp-track-bg:  #d8d8d8;
+    --bcp-accent:    #147d99;
+    --bcp-text-1:    #111111;
+    --bcp-text-2:    #2c2c2c;
+    --bcp-text-3:    #666666;
+    --bcp-text-4:    #888888;
+    --bcp-text-5:    #aaaaaa;
+    --bcp-hover-bg:  rgba(0,0,0,0.045);
+}
 #bc-sticky-player {
     position: fixed; top: 0; left: 0; right: 0;
     z-index: 999999;
     font-family: 'Courier New', monospace;
-    background: #141414;
-    border-bottom: 2px solid #1da0c3;
-    color: #e8e8e8;
+    background: var(--bcp-bg);
+    border-bottom: 2px solid var(--bcp-accent);
+    color: var(--bcp-text-2);
     display: flex; flex-direction: column;
     box-shadow: 0 2px 20px rgba(29,160,195,0.15);
     user-select: none;
@@ -379,13 +425,13 @@
     height: 22px;
     display: flex; align-items: center;
     padding: 0 10px 2px;
-    border-top: 1px solid #1e1e1e;
+    border-top: 1px solid var(--bcp-border);
     overflow: hidden;
     gap: 0;
 }
 #bcp-album-info {
     font-size: 10px;
-    color: #888;
+    color: var(--bcp-text-3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -394,12 +440,12 @@
     max-width: 40%;
     letter-spacing: 0.02em;
 }
-#bcp-album-info .bcp-artist { color: #aaa; }
-#bcp-album-info .bcp-sep    { color: #444; margin: 0 4px; }
-#bcp-album-info .bcp-album  { color: #666; }
+#bcp-album-info .bcp-artist { color: var(--bcp-text-3); }
+#bcp-album-info .bcp-sep    { color: var(--bcp-text-5); margin: 0 4px; }
+#bcp-album-info .bcp-album  { color: var(--bcp-text-4); }
 #bcp-row2-spacer { flex: 1; }
 #bcp-tags-label {
-    font-size: 8px; color: #333;
+    font-size: 8px; color: var(--bcp-text-5);
     text-transform: uppercase; letter-spacing: 0.1em;
     flex-shrink: 0; margin-right: 5px;
 }
@@ -409,18 +455,18 @@
     flex-direction: row-reverse;
 }
 .bcp-tag {
-    font-size: 11px; color: #ccc;
+    font-size: 11px; color: var(--bcp-text-2);
     background: transparent; border: none;
     padding: 0 2px;
     white-space: nowrap;
     letter-spacing: 0.03em;
     font-family: 'Courier New', monospace;
 }
-.bcp-tag::before { content: '#'; color: #555; }
+.bcp-tag::before { content: '#'; color: var(--bcp-text-5); }
 
 /* transport buttons — fixed identical size */
 .bcp-btn {
-    background: none; border: 1px solid #2e2e2e; color: #888;
+    background: none; border: 1px solid var(--bcp-border-btn); color: var(--bcp-text-3);
     border-radius: 3px;
     width: 34px; height: 28px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -428,14 +474,14 @@
     transition: border-color .12s, color .12s, background .12s;
     flex-shrink: 0; padding: 0;
 }
-.bcp-btn:hover { border-color: #1da0c3; color: #1da0c3; background: rgba(29,160,195,0.08); }
-#bcp-play { border-color: #1da0c3; color: #1da0c3; width: 36px; }
+.bcp-btn:hover { border-color: var(--bcp-accent); color: var(--bcp-accent); background: rgba(29,160,195,0.08); }
+#bcp-play { border-color: var(--bcp-accent); color: var(--bcp-accent); width: 36px; }
 #bcp-play:hover { background: rgba(29,160,195,0.18); }
 
 /* preview button */
 #bcp-preview {
     font-size: 10px; letter-spacing: 0.04em; width: auto; padding: 0 8px;
-    color: #666; border-color: #2a2a2a;
+    color: var(--bcp-text-4); border-color: var(--bcp-track-bg);
 }
 #bcp-preview.active { color: #f90; border-color: #f90; background: rgba(255,153,0,0.08); }
 #bcp-preview:hover  { color: #f90; border-color: #f90; background: rgba(255,153,0,0.1); }
@@ -448,85 +494,87 @@
     padding: 4px 6px; border-radius: 3px;
     transition: background .12s;
 }
-#bcp-info:hover { background: rgba(255,255,255,0.04); }
-#bcp-meta  { font-size: 11px; color: #1da0c3; white-space: nowrap; flex-shrink: 0; letter-spacing: 0.03em; }
-#bcp-title { font-size: 13px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#bcp-info-hint { font-size: 10px; color: #383838; white-space: nowrap; flex-shrink: 0; margin-left: auto; padding-left: 6px; }
+#bcp-info:hover { background: var(--bcp-hover-bg); }
+#bcp-meta  { font-size: 11px; color: var(--bcp-accent); white-space: nowrap; flex-shrink: 0; letter-spacing: 0.03em; }
+#bcp-title { font-size: 13px; font-weight: bold; color: var(--bcp-text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#bcp-info-hint { font-size: 10px; color: var(--bcp-text-5); white-space: nowrap; flex-shrink: 0; margin-left: auto; padding-left: 6px; }
 
 /* time */
-#bcp-time { font-size: 12px; color: #888; flex-shrink: 0; min-width: 90px; text-align: center; letter-spacing: 0.04em; }
+#bcp-time { font-size: 12px; color: var(--bcp-text-3); flex-shrink: 0; min-width: 90px; text-align: center; letter-spacing: 0.04em; }
 
 /* seek */
 .bcp-seek { flex: 0 1 180px; min-width: 80px; display: flex; align-items: center; }
 .bcp-range {
     -webkit-appearance: none; appearance: none;
     width: 100%; height: 3px; border-radius: 2px;
-    background: #2a2a2a; outline: none; cursor: pointer; accent-color: #1da0c3;
+    background: var(--bcp-track-bg); outline: none; cursor: pointer; accent-color: var(--bcp-accent);
 }
-.bcp-range::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 11px; border-radius: 50%; background: #1da0c3; cursor: pointer; }
+.bcp-range::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 11px; border-radius: 50%; background: var(--bcp-accent); cursor: pointer; }
 
 /* volume */
 .bcp-vol-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 #bcp-vol-icon {
-    color: #666; cursor: pointer;
+    color: var(--bcp-text-4); cursor: pointer;
     display: inline-flex; align-items: center;
     padding: 2px; border-radius: 2px;
     transition: color .12s; line-height: 0;
 }
-#bcp-vol-icon:hover { color: #1da0c3; }
-#bcp-vol-icon.muted { color: #444; }
+#bcp-vol-icon:hover { color: var(--bcp-accent); }
+#bcp-vol-icon.muted { color: var(--bcp-text-5); }
 .bcp-vol {
     -webkit-appearance: none; appearance: none;
     width: 70px; height: 3px; border-radius: 2px;
-    background: #2a2a2a; outline: none; cursor: pointer; accent-color: #1da0c3;
+    background: var(--bcp-track-bg); outline: none; cursor: pointer; accent-color: var(--bcp-accent);
 }
-.bcp-vol::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #1da0c3; cursor: pointer; }
+.bcp-vol::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: var(--bcp-accent); cursor: pointer; }
 
 /* dropdown */
 #bcp-dropdown {
     position: fixed; top: ${BAR_H + 2}px; left: 0; right: 0;
-    z-index: 999998; background: #181818;
-    border-bottom: 2px solid #1da0c3;
+    z-index: 999998; background: var(--bcp-bg-panel);
+    border-bottom: 2px solid var(--bcp-accent);
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     max-height: 320px; overflow-y: auto;
     display: none; font-family: 'Courier New', monospace;
 }
 #bcp-dropdown.open { display: block; }
 #bcp-dropdown::-webkit-scrollbar { width: 6px; }
-#bcp-dropdown::-webkit-scrollbar-track { background: #111; }
-#bcp-dropdown::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 3px; }
+#bcp-dropdown::-webkit-scrollbar-track { background: var(--bcp-scroll-trk); }
+#bcp-dropdown::-webkit-scrollbar-thumb { background: var(--bcp-border-btn); border-radius: 3px; }
 .bcp-track-item {
-    padding: 8px 16px; font-size: 12px; color: #777; cursor: pointer;
+    padding: 8px 16px; font-size: 12px; color: var(--bcp-text-3); cursor: pointer;
     display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid #1c1c1c;
+    border-bottom: 1px solid var(--bcp-border);
     transition: background .1s, color .1s;
 }
-.bcp-track-item:hover { background: rgba(29,160,195,0.08); color: #eee; }
-.bcp-track-item.active { color: #1da0c3; font-weight: bold; background: rgba(29,160,195,0.06); }
-.bcp-track-num { min-width: 28px; color: #383838; font-size: 11px; text-align: right; flex-shrink: 0; }
-.bcp-track-item.active .bcp-track-num { color: #1da0c3; }
+.bcp-track-item:hover { background: rgba(29,160,195,0.08); color: var(--bcp-text-1); }
+.bcp-track-item.active { color: var(--bcp-accent); font-weight: bold; background: rgba(29,160,195,0.06); }
+.bcp-track-num { min-width: 28px; color: var(--bcp-text-5); font-size: 11px; text-align: right; flex-shrink: 0; }
+.bcp-track-item.active .bcp-track-num { color: var(--bcp-accent); }
 
 /* settings panel */
 #bcp-settings-panel {
     position: fixed; top: ${BAR_H + 2}px; right: 12px;
-    z-index: 999998; background: #181818;
-    border: 1px solid #1da0c3; border-radius: 4px;
+    z-index: 999998; background: var(--bcp-bg-panel);
+    border: 1px solid var(--bcp-accent); border-radius: 4px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     padding: 10px 14px;
     display: none; font-family: 'Courier New', monospace;
 }
 #bcp-settings-panel.open { display: block; }
 #bcp-settings-panel .bcp-opt-label {
-    font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.08em;
-    margin-bottom: 6px;
+    font-size: 9px; color: var(--bcp-text-5); text-transform: uppercase; letter-spacing: 0.08em;
+    margin: 0 0 6px; padding-top: 8px; border-top: 1px solid var(--bcp-border);
 }
+#bcp-settings-panel .bcp-opt-label:first-child { padding-top: 0; border-top: none; }
 #bcp-settings-panel label {
     display: flex; align-items: center; gap: 7px;
-    font-size: 12px; color: #ccc; white-space: nowrap;
+    font-size: 12px; color: var(--bcp-text-2); white-space: nowrap;
     padding: 3px 0; cursor: pointer;
 }
-#bcp-settings-panel input[type="checkbox"] { accent-color: #1da0c3; cursor: pointer; }
-#bcp-settings.open { border-color: #1da0c3; color: #1da0c3; }
+#bcp-settings-panel input[type="checkbox"],
+#bcp-settings-panel input[type="radio"] { accent-color: var(--bcp-accent); cursor: pointer; }
+#bcp-settings.open { border-color: var(--bcp-accent); color: var(--bcp-accent); }
 </style>
 
 <div id="bcp-row1">
@@ -567,6 +615,10 @@
 <div id="bcp-dropdown"></div>
 
 <div id="bcp-settings-panel">
+    <div class="bcp-opt-label">Theme</div>
+    <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-dark"  ${theme === 'dark'  ? 'checked' : ''}> Dark</label>
+    <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-light" ${theme === 'light' ? 'checked' : ''}> Light</label>
+
     <div class="bcp-opt-label">Hide on page</div>
     <label><input type="checkbox" id="bcp-opt-player"    ${hideOpts.player    ? 'checked' : ''}> Native player</label>
     <label><input type="checkbox" id="bcp-opt-tracklist" ${hideOpts.tracklist ? 'checked' : ''}> Track list</label>
@@ -684,6 +736,15 @@
                 hideOpts = { ...hideOpts, [key]: cb.checked };
                 saveHideOpts(hideOpts);
                 hidePageElements();   // live — no reload needed
+            });
+        });
+        [['bcp-opt-theme-dark', 'dark'], ['bcp-opt-theme-light', 'light']].forEach(([id, val]) => {
+            const rb = document.getElementById(id);
+            rb.addEventListener('change', () => {
+                if (!rb.checked) return;
+                theme = val;
+                saveTheme(theme);
+                bar.classList.toggle('bcp-light', theme === 'light');   // live — swaps the CSS variable set
             });
         });
 
