@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.08.11
+// @version      2026.08.11.122337
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9IiMxNDE0MTQiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
@@ -96,6 +96,25 @@
     }
 
     let theme = loadTheme();
+
+    // ─── Scale persistence ──────────────────────────────────────────────────────────
+
+    const SCALE_KEY  = 'bcp_scale';
+    const SCALE_MIN  = 70;
+    const SCALE_MAX  = 130;
+    const SCALE_STEP = 5;
+
+    function loadScale() {
+        try {
+            const v = parseInt(localStorage.getItem(SCALE_KEY), 10);
+            return (v && v >= SCALE_MIN && v <= SCALE_MAX) ? v : 100;
+        } catch(e) { return 100; }
+    }
+    function saveScale(v) {
+        try { localStorage.setItem(SCALE_KEY, String(v)); } catch(e) {}
+    }
+
+    let scale = loadScale();
 
     // ─── Artist / album info ───────────────────────────────────────────────────────
 
@@ -368,6 +387,7 @@
         const bar = document.createElement('div');
         bar.id = 'bc-sticky-player';
         bar.classList.toggle('bcp-light', theme === 'light');
+        bar.style.zoom = String(scale / 100);
         bar.innerHTML = `
 <style>
 /* theme tokens — dark is the default palette; .bcp-light overrides below */
@@ -404,7 +424,7 @@
 #bc-sticky-player {
     position: fixed; top: 0; left: 0; right: 0;
     z-index: 999999;
-    font-family: 'Courier New', monospace;
+    font-family: Consolas, Menlo, 'Liberation Mono', Monaco, 'Courier New', monospace;
     background: var(--bcp-bg);
     border-bottom: 2px solid var(--bcp-accent);
     color: var(--bcp-text-2);
@@ -460,7 +480,7 @@
     padding: 0 2px;
     white-space: nowrap;
     letter-spacing: 0.03em;
-    font-family: 'Courier New', monospace;
+    font-family: Consolas, Menlo, 'Liberation Mono', Monaco, 'Courier New', monospace;
 }
 .bcp-tag::before { content: '#'; color: var(--bcp-text-5); }
 
@@ -535,7 +555,7 @@
     border-bottom: 2px solid var(--bcp-accent);
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     max-height: 320px; overflow-y: auto;
-    display: none; font-family: 'Courier New', monospace;
+    display: none; font-family: Consolas, Menlo, 'Liberation Mono', Monaco, 'Courier New', monospace;
 }
 #bcp-dropdown.open { display: block; }
 #bcp-dropdown::-webkit-scrollbar { width: 6px; }
@@ -559,7 +579,7 @@
     border: 1px solid var(--bcp-accent); border-radius: 4px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     padding: 10px 14px;
-    display: none; font-family: 'Courier New', monospace;
+    display: none; font-family: Consolas, Menlo, 'Liberation Mono', Monaco, 'Courier New', monospace;
 }
 #bcp-settings-panel.open { display: block; }
 #bcp-settings-panel .bcp-opt-label {
@@ -575,6 +595,14 @@
 #bcp-settings-panel input[type="checkbox"],
 #bcp-settings-panel input[type="radio"] { accent-color: var(--bcp-accent); cursor: pointer; }
 #bcp-settings.open { border-color: var(--bcp-accent); color: var(--bcp-accent); }
+.bcp-scale-row { display: flex; align-items: center; gap: 8px; padding: 3px 0 6px; }
+.bcp-scale-row input[type="range"] {
+    -webkit-appearance: none; appearance: none; flex: 1;
+    width: 110px; height: 3px; border-radius: 2px;
+    background: var(--bcp-track-bg); outline: none; cursor: pointer; accent-color: var(--bcp-accent);
+}
+.bcp-scale-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: var(--bcp-accent); cursor: pointer; }
+#bcp-scale-val { font-size: 11px; color: var(--bcp-text-3); min-width: 34px; text-align: right; }
 </style>
 
 <div id="bcp-row1">
@@ -619,6 +647,12 @@
     <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-dark"  ${theme === 'dark'  ? 'checked' : ''}> Dark</label>
     <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-light" ${theme === 'light' ? 'checked' : ''}> Light</label>
 
+    <div class="bcp-opt-label">Scale</div>
+    <div class="bcp-scale-row">
+        <input type="range" id="bcp-opt-scale" min="${SCALE_MIN}" max="${SCALE_MAX}" step="${SCALE_STEP}" value="${scale}">
+        <span id="bcp-scale-val">${scale}%</span>
+    </div>
+
     <div class="bcp-opt-label">Hide on page</div>
     <label><input type="checkbox" id="bcp-opt-player"    ${hideOpts.player    ? 'checked' : ''}> Native player</label>
     <label><input type="checkbox" id="bcp-opt-tracklist" ${hideOpts.tracklist ? 'checked' : ''}> Track list</label>
@@ -626,7 +660,20 @@
 </div>`;
 
         document.body.insertBefore(bar, document.body.firstChild);
-        document.body.style.paddingTop = BAR_H + 'px';
+
+        // BAR_H assumes 100% zoom; at any other scale the bar's real rendered height
+        // differs, so the page's own top-padding (which makes room for a `position:
+        // fixed` bar) and the dropdown/settings-panel's `top` offset (baked into the
+        // CSS above as BAR_H+2) would drift out of sync with it. Re-measure after
+        // every zoom change instead of trusting the static BAR_H.
+        function repositionOverlays() {
+            const h = bar.getBoundingClientRect().height || BAR_H;
+            document.body.style.paddingTop = h + 'px';
+            const dd = document.getElementById('bcp-dropdown'), sp = document.getElementById('bcp-settings-panel');
+            if (dd) dd.style.top = (h + 2) + 'px';
+            if (sp) sp.style.top = (h + 2) + 'px';
+        }
+        repositionOverlays();
 
         // ── transport ────────────────────────────────────────────────────────────
         document.getElementById('bcp-prev').addEventListener('click', (e) => {
@@ -746,6 +793,14 @@
                 saveTheme(theme);
                 bar.classList.toggle('bcp-light', theme === 'light');   // live — swaps the CSS variable set
             });
+        });
+        const scaleInput = document.getElementById('bcp-opt-scale'), scaleVal = document.getElementById('bcp-scale-val');
+        scaleInput.addEventListener('input', () => {
+            scale = parseInt(scaleInput.value, 10);
+            scaleVal.textContent = scale + '%';
+            saveScale(scale);
+            bar.style.zoom = String(scale / 100);
+            repositionOverlays();
         });
 
         document.addEventListener('click', (e) => {

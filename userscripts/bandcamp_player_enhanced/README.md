@@ -1,4 +1,4 @@
-# Bandcamp Player Enhanced
+# Bandcamp Player Enhanced <img src="icon.svg" align="left" width="48">
 
 Bandcamp album player with keyboard shortcuts.
 
@@ -20,6 +20,7 @@ Control bandcamp player with keyboard:
 Click the ⚙ button on the player bar to open its settings:
 
 - **Theme** — Dark (default) or Light.
+- **Scale** — 70%–130% (default 100%), for when the bar feels too big or too small.
 - **Hide on page** — which native page elements get hidden: the native Bandcamp player, the
   track list, and the tags row can each be toggled independently.
 
