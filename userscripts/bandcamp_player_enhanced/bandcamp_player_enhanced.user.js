@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
-// @version      2026.01.01
+// @version      2026.08.11
 // @author       majkinetor
 // @namespace    http://violentmonkey.net/
 // @match        https://*.bandcamp.com/album/*
@@ -64,6 +64,24 @@
             return s === '1';
         } catch(e) { return false; }
     }
+
+    // ─── Hide-element options persistence ──────────────────────────────────────────
+
+    const HIDE_KEY      = 'bcp_hide_opts';
+    const HIDE_DEFAULTS = { player: true, tracklist: true, tags: true };
+
+    function loadHideOpts() {
+        try {
+            const raw = localStorage.getItem(HIDE_KEY);
+            if (!raw) return { ...HIDE_DEFAULTS };
+            return { ...HIDE_DEFAULTS, ...JSON.parse(raw) };
+        } catch(e) { return { ...HIDE_DEFAULTS }; }
+    }
+    function saveHideOpts(opts) {
+        try { localStorage.setItem(HIDE_KEY, JSON.stringify(opts)); } catch(e) {}
+    }
+
+    let hideOpts = loadHideOpts();
 
     // ─── Artist / album info ───────────────────────────────────────────────────────
 
@@ -299,19 +317,21 @@
 
     // ─── Hide page elements ────────────────────────────────────────────────────────
 
+    // Re-callable: rebuilds the same <style> tag from current hideOpts, so toggling a
+    // setting live (from the settings panel) just drops/adds that rule — no need to
+    // touch elements' own inline styles, and no duplicate <style> tags pile up.
     function hidePageElements() {
-        const s = document.createElement('style');
-        s.id = 'bcp-hide-native';
-        s.textContent = `
-            .inline_player, #player, .html5-player,
-            div[id="player"], div.player-section    { display: none !important; }
-            .track_list, ol.track_list,
-            table.track_list                        { display: none !important; }
-            .tralbumData.tralbum-tags, .tags,
-            .tag-list, div.tralbum-tags,
-            p.tags-inner                            { display: none !important; }
-        `;
-        document.head.appendChild(s);
+        let s = document.getElementById('bcp-hide-native');
+        if (!s) {
+            s = document.createElement('style');
+            s.id = 'bcp-hide-native';
+            document.head.appendChild(s);
+        }
+        const rules = [];
+        if (hideOpts.player)    rules.push('.inline_player, #player, .html5-player, div[id="player"], div.player-section { display: none !important; }');
+        if (hideOpts.tracklist) rules.push('.track_list, ol.track_list, table.track_list { display: none !important; }');
+        if (hideOpts.tags)      rules.push('.tralbumData.tralbum-tags, .tags, .tag-list, div.tralbum-tags, p.tags-inner { display: none !important; }');
+        s.textContent = rules.join('\n');
     }
 
     // ─── SVG icons ────────────────────────────────────────────────────────────────
@@ -485,6 +505,28 @@
 .bcp-track-item.active { color: #1da0c3; font-weight: bold; background: rgba(29,160,195,0.06); }
 .bcp-track-num { min-width: 28px; color: #383838; font-size: 11px; text-align: right; flex-shrink: 0; }
 .bcp-track-item.active .bcp-track-num { color: #1da0c3; }
+
+/* settings panel */
+#bcp-settings-panel {
+    position: fixed; top: ${BAR_H + 2}px; right: 12px;
+    z-index: 999998; background: #181818;
+    border: 1px solid #1da0c3; border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    padding: 10px 14px;
+    display: none; font-family: 'Courier New', monospace;
+}
+#bcp-settings-panel.open { display: block; }
+#bcp-settings-panel .bcp-opt-label {
+    font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 6px;
+}
+#bcp-settings-panel label {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: #ccc; white-space: nowrap;
+    padding: 3px 0; cursor: pointer;
+}
+#bcp-settings-panel input[type="checkbox"] { accent-color: #1da0c3; cursor: pointer; }
+#bcp-settings.open { border-color: #1da0c3; color: #1da0c3; }
 </style>
 
 <div id="bcp-row1">
@@ -509,6 +551,8 @@
         <span id="bcp-vol-icon" title="Mute/unmute (click)">${SVG_VOL}</span>
         <input type="range" class="bcp-vol" id="bcp-vol" min="0" max="1" step="0.02" value="${savedVol}">
     </div>
+
+    <button class="bcp-btn" id="bcp-settings" title="Settings">&#9881;</button>
 </div>
 
 <div id="bcp-row2">
@@ -520,7 +564,14 @@
     <div id="bcp-tags-list"></div>
 </div>
 
-<div id="bcp-dropdown"></div>`;
+<div id="bcp-dropdown"></div>
+
+<div id="bcp-settings-panel">
+    <div class="bcp-opt-label">Hide on page</div>
+    <label><input type="checkbox" id="bcp-opt-player"    ${hideOpts.player    ? 'checked' : ''}> Native player</label>
+    <label><input type="checkbox" id="bcp-opt-tracklist" ${hideOpts.tracklist ? 'checked' : ''}> Track list</label>
+    <label><input type="checkbox" id="bcp-opt-tags"      ${hideOpts.tags      ? 'checked' : ''}> Tags</label>
+</div>`;
 
         document.body.insertBefore(bar, document.body.firstChild);
         document.body.style.paddingTop = BAR_H + 'px';
@@ -616,7 +667,33 @@
             e.stopPropagation();
             dropdown.classList.contains('open') ? dropdown.classList.remove('open') : openDropdown();
         });
-        document.addEventListener('click', (e) => { if (!bar.contains(e.target)) dropdown.classList.remove('open'); });
+
+        // ── settings panel ──────────────────────────────────────────────────────
+        const settingsBtn   = document.getElementById('bcp-settings');
+        const settingsPanel = document.getElementById('bcp-settings-panel');
+
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.remove('open');
+            const open = settingsPanel.classList.toggle('open');
+            settingsBtn.classList.toggle('open', open);
+        });
+        [['bcp-opt-player', 'player'], ['bcp-opt-tracklist', 'tracklist'], ['bcp-opt-tags', 'tags']].forEach(([id, key]) => {
+            const cb = document.getElementById(id);
+            cb.addEventListener('change', () => {
+                hideOpts = { ...hideOpts, [key]: cb.checked };
+                saveHideOpts(hideOpts);
+                hidePageElements();   // live — no reload needed
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!bar.contains(e.target)) dropdown.classList.remove('open');
+            if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+                settingsPanel.classList.remove('open');
+                settingsBtn.classList.remove('open');
+            }
+        });
 
         return {
             seekEl, volEl,
