@@ -36,4 +36,7 @@ Edit MusicBrainz in your real editor (VS Code, Vim, …)
 
 
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
-Batch import entity fields
+Batch import entity fields from Harmony and standalone
+
+[Bandcamp Player Enhanced](./userscripts/bandcamp_player_enhanced/README.md)<img src="./userscripts/bandcamp_player_enhanced/icon.svg" align="left" width="32"><br>
+Bandcamp album player with keyboard shortcuts
