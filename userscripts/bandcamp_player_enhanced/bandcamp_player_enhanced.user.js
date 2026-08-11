@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.08.11.124018
+// @version      2026.08.11.125458
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
@@ -23,7 +23,7 @@
     const MUTE_KEY      = 'bcp_muted';
     const BAR_H         = 72;
     const PREVIEW_SECS  = 30; // seconds to play per track in preview mode
-    const VERSION       = '2026.08.11.124018'; // keep in sync with @version — @grant none, so no GM_info to read it from
+    const VERSION       = '2026.08.11.125458'; // keep in sync with @version — @grant none, so no GM_info to read it from
     const HOMEPAGE_URL  = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md';
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@
     // ─── Hide-element options persistence ──────────────────────────────────────────
 
     const HIDE_KEY      = 'bcp_hide_opts';
-    const HIDE_DEFAULTS = { player: false, tracklist: false, tags: false };
+    const HIDE_DEFAULTS = { player: true, tracklist: false, tags: false };
 
     function loadHideOpts() {
         try {
@@ -117,6 +117,22 @@
     }
 
     let scale = loadScale();
+
+    // ─── Preload-track-1 option persistence ────────────────────────────────────────
+    // Preloading clicks + briefly (muted) plays track 1 to warm the buffer — Bandcamp's own
+    // JS treats that as "this tab started playing," which can pause a DIFFERENT Bandcamp tab
+    // that's genuinely playing (multiple albums open at once). Opt-out for that case.
+
+    const PRELOAD_KEY = 'bcp_preload';
+
+    function loadPreloadEnabled() {
+        try { return localStorage.getItem(PRELOAD_KEY) !== '0'; } catch(e) { return true; }
+    }
+    function savePreloadEnabled(v) {
+        try { localStorage.setItem(PRELOAD_KEY, v ? '1' : '0'); } catch(e) {}
+    }
+
+    let preloadEnabled = loadPreloadEnabled();
 
     // ─── Artist / album info ───────────────────────────────────────────────────────
 
@@ -199,6 +215,7 @@
 
     function preloadFirstTrack() {
         if (preloadDone) return;
+        if (!preloadEnabled) { preloadDone = true; preloadReady = true; return; }
         if (!window.TralbumData?.trackinfo?.length) return;
 
         // Find the clickable element inside the first track row
@@ -610,6 +627,7 @@
 }
 #bcp-settings-panel input[type="checkbox"],
 #bcp-settings-panel input[type="radio"] { accent-color: var(--bcp-accent); cursor: pointer; }
+.bcp-opt-hint { font-size: 10px; color: var(--bcp-text-4); }
 #bcp-settings.open { border-color: var(--bcp-accent); color: var(--bcp-accent); }
 .bcp-scale-row { display: flex; align-items: center; gap: 8px; padding: 3px 0 6px; }
 .bcp-scale-row input[type="range"] {
@@ -675,6 +693,9 @@
         <span id="bcp-scale-val">${scale}%</span>
     </div>
 
+    <div class="bcp-opt-label">Playback</div>
+    <label><input type="checkbox" id="bcp-opt-preload" ${preloadEnabled ? 'checked' : ''}> Preload track 1 <span class="bcp-opt-hint">(can pause other Bandcamp tabs)</span></label>
+
     <div class="bcp-opt-label">Hide on page</div>
     <label><input type="checkbox" id="bcp-opt-player"    ${hideOpts.player    ? 'checked' : ''}> Native player</label>
     <label><input type="checkbox" id="bcp-opt-tracklist" ${hideOpts.tracklist ? 'checked' : ''}> Track list</label>
@@ -729,13 +750,23 @@
         // ── wheel seek (anywhere inside the bar) ─────────────────────────────────
         // Scrolling up = forward 5s, scrolling down = rewind 5s.
         // Shift+wheel = 30s jumps. Page scroll is suppressed while over the bar.
-        // Exception: while the track dropdown is open and the wheel is over IT, let the
-        // browser scroll the list naturally instead of hijacking it for seek.
+        // Exceptions: while the track dropdown is open and the wheel is over IT, let the
+        // browser scroll the list naturally instead of hijacking it for seek; over the volume
+        // control, wheel adjusts volume instead (applyVol/isMuted are declared further below,
+        // but this callback only ever RUNS on a later wheel event, by which point they exist).
         bar.addEventListener('wheel', (e) => {
             const dd = document.getElementById('bcp-dropdown');
             if (dd && dd.classList.contains('open') && dd.contains(e.target)) return;
             e.preventDefault();
             e.stopPropagation();
+            if (e.target.closest('.bcp-vol-wrap')) {
+                // isMuted is the raw closure variable here (unlike the keyboard handler
+                // outside buildPlayer(), which only sees it wrapped as controls.isMuted()).
+                const cur = parseFloat(volEl.value);
+                const next = e.deltaY < 0 ? Math.min(1, cur + VOL_STEP) : Math.max(0, cur - VOL_STEP);
+                applyVol(next, isMuted && next > 0 ? false : isMuted);
+                return;
+            }
             const amount = e.shiftKey ? SEEK_LARGE : SEEK_SMALL;
             // deltaY > 0 = scroll down = rewind; deltaY < 0 = scroll up = forward
             seekRelative(e.deltaY < 0 ? amount : -amount);
@@ -810,6 +841,11 @@
                 saveHideOpts(hideOpts);
                 hidePageElements();   // live — no reload needed
             });
+        });
+        document.getElementById('bcp-opt-preload').addEventListener('change', (e) => {
+            preloadEnabled = e.target.checked;
+            savePreloadEnabled(preloadEnabled);
+            // takes effect next page load — preloadDone already latched for THIS load
         });
         [['bcp-opt-theme-dark', 'dark'], ['bcp-opt-theme-light', 'light']].forEach(([id, val]) => {
             const rb = document.getElementById(id);
