@@ -37,3 +37,6 @@ Click the ⚙ button on the player bar to open its settings:
 
 Choices apply immediately and persist across page loads.
 
+<img width="500" src="./screenshots/config.png" />
+
+
