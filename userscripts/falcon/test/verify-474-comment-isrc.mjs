@@ -121,6 +121,21 @@ const noopResult = await page.evaluate(async () => {
 console.log('genuinely-empty fillAndSubmit result:', JSON.stringify(noopResult));
 ck(noopResult.committed === false && !noopResult.manual, `a truly empty item (no urls, no comment/isrc) still refuses (got ${JSON.stringify(noopResult)})`);
 
+// #495 (majkinetor, live: a release item whose url got rejected still
+// attempted a submit on a form with nothing real staged, which is what got
+// the release editor stuck showing fabricated new-release validation
+// errors) — comment/isrcs are only ever seeded for entityType 'recording'
+// (a release's `comment` means its #494 cover-art image comment, never
+// submitted here at all), so a release item carrying a stray comment must
+// NOT be treated as "something to submit" the way a recording's is.
+const releaseStrayCommentResult = await page.evaluate(async () => {
+  const fakeIframe = { document, contentWindow: window };
+  const item = { entityType: 'release', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], comment: 'stray cover-art comment', isrcs: [], note: '' };
+  return window.__falconTest.fillAndSubmit(fakeIframe, item, { tag: '[test]', baseline: [], skipSubmit: true });
+});
+console.log('release-with-stray-comment fillAndSubmit result:', JSON.stringify(releaseStrayCommentResult));
+ck(releaseStrayCommentResult.committed === false && !releaseStrayCommentResult.manual, `a release item's comment (cover-art semantics, not this form's) does not count as a field change (got ${JSON.stringify(releaseStrayCommentResult)})`);
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
