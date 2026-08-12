@@ -1,9 +1,10 @@
 // #498 (chaban-mb via majkinetor) — after a release is added to MB FROM
 // Harmony, Harmony's own actions page carries that release's mbid in its own
 // query string (`?...&release_mbid=<mbid>`). "Send to Falcon" should open
-// Falcon's panel on THAT release's relationship editor instead of MB's bare
-// homepage, so credits import (only possible after creation, not during it)
-// is one less manual navigation away.
+// Falcon's panel on THAT release's own page (not its relationship editor —
+// chaban-mb's own correction: provider links/tagging/collection all happen
+// from the plain release page, none of it from inside the rel editor)
+// instead of MB's bare homepage.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
@@ -22,7 +23,7 @@ await ctx.addInitScript(() => {
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 
 // 1. Harmony URL carrying a real release_mbid — the button must open the
-//    panel on that release's edit-relationships page, not the bare homepage.
+//    panel on that release's own page, not the bare homepage.
 {
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
@@ -37,7 +38,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
     document.getElementById('falcon-harmony-btn').click();
   }));
   console.log('captured window.open target:', clicked);
-  ck(clicked.startsWith(`https://musicbrainz.org/release/${RELEASE_MBID}/edit-relationships?falcon=`), `opens the release's own edit-relationships page with the token still attached (got "${clicked}")`);
+  ck(clicked.startsWith(`https://musicbrainz.org/release/${RELEASE_MBID}?falcon=`), `opens the release's own plain page with the token still attached, not the relationship editor (got "${clicked}")`);
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }
