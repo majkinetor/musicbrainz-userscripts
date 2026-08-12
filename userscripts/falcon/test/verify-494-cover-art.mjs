@@ -189,8 +189,42 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   ck(body.get('add-cover-art.nonce') === 'noncevalue', 'nonce from the sign response is submitted');
   ck(body.get('add-cover-art.type_id') === '2', `front type_id resolved from the scraped form's checkbox label (got ${body.get('add-cover-art.type_id')})`);
   ck(body.get('add-cover-art.comment') === 'my comment', 'item.comment submitted as the image comment');
-  ck(body.get('add-cover-art.edit_note') === 'my edit note', 'item.note submitted as the edit note');
+  const editNote = body.get('add-cover-art.edit_note') || '';
+  ck(editNote.startsWith('my edit note'), `item.note submitted as (the start of) the edit note (got "${editNote}")`);
+  ck(/Falcon v.* by majkinetor/.test(editNote), `the usual Falcon signature is appended, same as every other Falcon edit (got "${editNote}")`);
   ck(body.get('csrf_token') === 'tok123', 'hidden CSRF field carried through from the scraped form');
+  ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
+  await page.close();
+}
+
+// 6. Export (majkinetor, #494 follow-up): a release row's `cover` was missing
+//    from the exported JSON entirely, and `isrcs` — recording-only — showed up
+//    as a stray [] on every type including release/artist.
+{
+  const page = await ctx.newPage();
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await page.goto('https://musicbrainz.org/', { waitUntil: 'domcontentloaded' });
+  await page.addScriptTag({ content: code });
+  await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+  await page.click('#falcon-launcher');
+  await page.waitForSelector('#falcon-panel', { timeout: 5000 });
+  await page.evaluate(() => window.__falconTest.setQueue([
+    { id: 'r1', entityType: 'release', mbid: 'cccccccc-1111-0000-0000-000000000000', urls: [], note: '', comment: 'img comment', isrcs: [], cover: { url: 'https://example.invalid/best.jpg', candidates: [{ provider: 'Deezer', url: 'https://example.invalid/best.jpg' }] }, name: null, urlResults: null, status: 'queued', error: '' },
+    { id: 'a1', entityType: 'artist', mbid: 'dddddddd-1111-0000-0000-000000000000', urls: [{ url: 'https://example.invalid/a', linkTypeId: null }], note: '', comment: '', isrcs: [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' },
+  ]));
+  const exported = await page.evaluate(() => new Promise(resolveExport => {
+    const origCreate = URL.createObjectURL;
+    URL.createObjectURL = (blob) => { blob.text().then(t => { URL.createObjectURL = origCreate; resolveExport(JSON.parse(t)); }); return 'blob:test'; };
+    document.getElementById('falcon-export').click();
+  }));
+  const relRow = exported.items.find(i => i.entityType === 'release');
+  const artRow = exported.items.find(i => i.entityType === 'artist');
+  console.log('exported release row:', JSON.stringify(relRow));
+  console.log('exported artist row:', JSON.stringify(artRow));
+  ck(relRow && relRow.cover && relRow.cover.url === 'https://example.invalid/best.jpg', `release row's cover is present in export (got ${JSON.stringify(relRow?.cover)})`);
+  ck(relRow && !('isrcs' in relRow), `release row has no stray isrcs field (keys: ${Object.keys(relRow || {})})`);
+  ck(artRow && !('isrcs' in artRow), `artist row has no stray isrcs field either (keys: ${Object.keys(artRow || {})})`);
+  ck(!('cover' in artRow), 'artist row has no cover field (release-only)');
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }

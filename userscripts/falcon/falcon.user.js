@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12
+// @version      2026.8.12.191729
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12';
+  const VERSION = '2026.8.12.191729';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -762,9 +762,10 @@
   // already seeded it into the textarea by the time this runs — pushing it
   // again duplicated the line (#475: "the edit notes repeat the line
   // 'Matched recording while importing ... with Harmony'").
+  const FALCON_SIGNATURE = () => `${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}`;
   const editNoteText = (results) => {
     const added = results.filter(r => r.ok).map(r => r.url);
-    const lines = [`${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}`, '', 'Bulk-added via the Falcon queue:', ...added];
+    const lines = [FALCON_SIGNATURE(), '', 'Bulk-added via the Falcon queue:', ...added];
     return lines.join('\n');
   };
 
@@ -1421,7 +1422,12 @@
       p.append('add-cover-art.mime_type', mime);
       if (frontId) p.append('add-cover-art.type_id', frontId);
       p.append('add-cover-art.comment', item.comment || '');
-      p.append('add-cover-art.edit_note', item.note || '');
+      // Every other Falcon edit carries the "Falcon vX.Y.Z by majkinetor - <help
+      // url>" signature (see editNoteText) — cover art gets it too (majkinetor,
+      // #494 follow-up: "add falcon edit message as usual"), appended after
+      // whatever note the item already carries (e.g. from Harmony) rather than
+      // replacing it.
+      p.append('add-cover-art.edit_note', [item.note, FALCON_SIGNATURE()].filter(Boolean).join('\n\n'));
       const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
       if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
 
@@ -1916,12 +1922,21 @@
       const payload = {
         falcon: scriptVersion(),
         exported: new Date().toISOString(),
-        items: queue.map(i => ({
-          entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
-          comment: i.comment || '', isrcs: i.isrcs || [],
-          urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
-          status: i.status, error: i.error || '', urlResults: i.urlResults || null,
-        })),
+        items: queue.map(i => {
+          const item = {
+            entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
+            comment: i.comment || '',
+            urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
+            status: i.status, error: i.error || '', urlResults: i.urlResults || null,
+          };
+          // #494/#496: isrc is a recording-only field — always including it
+          // (even as []) on artist/release rows reads as if they support it too.
+          if (i.entityType === 'recording') item.isrcs = i.isrcs || [];
+          // #494: cover art is a release item's whole payload — was missing
+          // from export entirely.
+          if (i.entityType === 'release') item.cover = { url: (i.cover && i.cover.url) || '', candidates: (i.cover && i.cover.candidates) || [] };
+          return item;
+        }),
       };
       const name = `falcon-queue-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
       const a = document.createElement('a');
