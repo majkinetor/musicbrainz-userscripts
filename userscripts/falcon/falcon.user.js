@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.220539
+// @version      2026.8.12.220948
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.220539';
+  const VERSION = '2026.8.12.220948';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -1233,7 +1233,19 @@
       const reason = findFieldError(frameDoc(iframe));
       const blanks = [...(frameDoc(iframe)?.querySelectorAll('select.link-type') || [])].filter(s => !s.value).length;
       dbg(tag, `NOT SUBMITTING — submit disabled; page errors: ${reason || '(none)'}; still-blank type selects: ${blanks}`);
-      throw new Error(reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)');
+      // #495 (majkinetor, live on both test.musicbrainz.org and production): a
+      // known MusicBrainz client bug — the release editor's own validation
+      // can report "a release title is required" etc. on an EXISTING release
+      // that plainly has one (checked live: window.MB.releaseEditor's actual
+      // data model has the real title/tracklist at the same moment the
+      // validator claims none of it exists — a genuine MB-side state
+      // disconnect, not bad data). Not something Falcon can route around
+      // reliably (no interaction reproducibly clears it), so just name it
+      // plainly instead of leaving a wall of "add a medium"/"track titles
+      // required" text that reads like this release is actually broken.
+      const knownBug = item.entityType === 'release' && /a release title is required/i.test(reason || '');
+      const note = knownBug ? ' (this looks like a known MusicBrainz client bug on an otherwise-fine release, not bad data — retry, or use ⇗ to finish it by hand)' : '';
+      throw new Error((reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)') + note);
     }
     // #467 (majkinetor): "One didn't pass, there was nothing in worker that was
     // regarded as error and Enter button was enabled, with all links and types
