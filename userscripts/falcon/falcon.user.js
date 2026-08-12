@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.202651
+// @version      2026.8.12.204759
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.202651';
+  const VERSION = '2026.8.12.204759';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -1449,20 +1449,48 @@
   // same entity. `priorLinks` ({status,error}) is passed when that path
   // already ran on this SAME item; omitted entirely for the cover-only case
   // (#494's original shape), so existing callers/tests are unaffected.
+  // A registered image mime type from its URL extension — used when
+  // blob.type doesn't look trustworthy (see below).
+  function mimeFromUrl(url) {
+    const ext = (String(url).split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i) || [])[1];
+    return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' }[(ext || '').toLowerCase()] || null;
+  }
   async function runCoverItem(item, tag, card, priorLinks) {
     updateWorkerLabel(card, item);
     const tStart = Date.now();
     let coverError = '';
     try {
       if (!item.cover.url) throw new Error('no cover image URL yet (still resolving, or none found on this release)');
-      log('info', `${tag} release ${item.mbid} — fetching cover image`);
-      const blob = await gmFetch(item.cover.url);
-      const mime = blob.type || 'image/jpeg';
-
-      log('info', `${tag} release ${item.mbid} — signing upload`);
-      const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
-      if (!signRes.ok) throw new Error('sign ' + signRes.status);
-      const signed = await signRes.json();   // {action, image_id, formdata, nonce}
+      // majkinetor (#494 follow-up, live failure — "sign 400", "since we have
+      // candidates, maybe we should go with the next one"): try the picked
+      // candidate first, then fall through the rest (original scrape order)
+      // on any fetch/sign failure, instead of failing the whole item outright
+      // over one bad candidate.
+      const order = [item.cover.url, ...((item.cover.candidates || []).map(c => c.url))]
+        .filter((u, i, arr) => u && arr.indexOf(u) === i);
+      let blob, mime, signed, lastErr = null;
+      for (const url of order) {
+        try {
+          log('info', `${tag} release ${item.mbid} — fetching cover image${url === item.cover.url ? '' : ' (fallback candidate)'}`);
+          blob = await gmFetch(url);
+          // GM_xmlhttpRequest doesn't always populate blob.type reliably from
+          // the response's real Content-Type (seen live: a 400 from the sign
+          // endpoint, which rejects an unrecognized mime_type) — trust it
+          // only when it actually looks like an image mime, else sniff from
+          // the URL's own extension.
+          mime = /^image\//.test(blob.type) ? blob.type : (mimeFromUrl(url) || 'image/jpeg');
+          log('info', `${tag} release ${item.mbid} — signing upload (${mime})`);
+          const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
+          if (!signRes.ok) throw new Error('sign ' + signRes.status);
+          signed = await signRes.json();   // {action, image_id, formdata, nonce}
+          if (url !== item.cover.url) { item.cover.url = url; dbg(tag, `release ${item.mbid}: fell back to a working candidate (${url})`); }
+          break;
+        } catch (e) {
+          lastErr = e;
+          dbg(tag, `release ${item.mbid}: candidate ${url} failed — ${e.message || e}`);
+        }
+      }
+      if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
 
       log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB)`);
       const fd = new FormData();
@@ -2464,7 +2492,7 @@
   // Test hook only (#467) — no behavior change.
   window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
-    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem,
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl,
     // #495
     entityUrlSegment, activateReleaseEditNoteTab };
 })();
