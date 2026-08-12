@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.213304
+// @version      2026.8.12.215500
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.213304';
+  const VERSION = '2026.8.12.215500';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2052,6 +2052,7 @@
           </div>
           <button type="button" id="falcon-run" title="Start processing the queue" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
         </div>
+        <div id="falcon-cover-warning" style="display:none;padding:5px 10px;background:#fdf3e3;color:#8a5a00;font-size:10.5px;border-top:1px solid #f0e0bb;flex:0 0 auto"></div>
       </div>
       <div id="falcon-body-workers" style="position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;display:block;padding:8px 10px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#888">
@@ -2446,6 +2447,7 @@
       expandAllBtn.title = allExpanded ? "Collapse every row's url detail" : "Expand every row's url detail";
     }
     renderProgress();
+    renderCoverWarning();
     fitBars();
   }
   // #467 (majkinetor): "Lets have a progress bar". Counts anything that has
@@ -2471,6 +2473,19 @@
     bar.style.width = Math.round((settled / total) * 100) + '%';
     bar.style.background = bad ? '#d68910' : '#2e9e5b';
     txt.textContent = `${settled}/${total}` + (active ? ` · ${active} running` : '') + (bad ? ` · ${bad} problem${bad > 1 ? 's' : ''}` : '');
+  }
+  // #494 follow-up (majkinetor: "that requires row to be in view. Lets put the
+  // warning bellow the progress bar so its visible all the time") — a
+  // standing summary of every release in the queue whose existingCount check
+  // (see checkExistingCoverArt) came back positive, always visible instead of
+  // needing that row expanded/scrolled into view.
+  function renderCoverWarning() {
+    const el = document.getElementById('falcon-cover-warning'); if (!el) return;
+    const dupes = queue.filter(i => i.entityType === 'release' && i.cover && i.cover.existingCount);
+    if (!dupes.length) { el.style.display = 'none'; el.textContent = ''; return; }
+    el.style.display = 'block';
+    const names = dupes.map(i => `${entityLabel(i)} (${i.cover.existingCount})`).join(', ');
+    el.textContent = `⚠ ${dupes.length} release${dupes.length > 1 ? 's' : ''} already ${dupes.length > 1 ? 'have' : 'has'} cover art — ${names}`;
   }
 
   // #467 (majkinetor): "click the failed label, open its worker alone in a

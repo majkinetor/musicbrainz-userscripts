@@ -75,6 +75,21 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   ck(info.dupWarningText.includes('already has 3 cover images'), `expanded row shows the "already has N cover images" warning (got: ${JSON.stringify(info.dupWarningText.slice(0, 300))})`);
   ck(/already has 3 cover images/.test(info.dupSummaryTitle), `collapsed row's title attribute also carries the warning for hover discovery (got "${info.dupSummaryTitle}")`);
   ck(!info.cleanWarningPresent, 'a release confirmed to have zero existing covers shows no warning at all');
+
+  // majkinetor: "that requires row to be in view. Lets put the warning
+  // bellow the progress bar so its visible all the time" — collapse BOTH
+  // rows so neither's own warning is visible, and confirm the standing
+  // banner still reports the duplicate regardless.
+  const banner = await page.evaluate(() => {
+    document.querySelectorAll('.falcon-row-expand').forEach(b => b.click());   // collapse both
+    const el = document.getElementById('falcon-cover-warning');
+    return { display: getComputedStyle(el).display, text: el.textContent };
+  });
+  console.log('persistent cover-warning banner:', JSON.stringify(banner));
+  ck(banner.display === 'block', `the banner stays visible even with every row collapsed (got display="${banner.display}")`);
+  ck(banner.text.includes('1 release already has cover art') && banner.text.includes('(3)'), `banner names the affected release with its count (got "${banner.text}")`);
+  ck(!banner.text.includes('cccccccc'.slice(0, 8)), 'the clean (existingCount 0) release is not listed in the banner');
+
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
 }
