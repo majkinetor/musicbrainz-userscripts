@@ -229,6 +229,69 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.close();
 }
 
+// 7. mimeFromUrl + candidate fallback (majkinetor, #494 follow-up — live "sign
+//    400" on a real release): GM_xmlhttpRequest doesn't always report a
+//    trustworthy blob.type, so a non-image content-type must fall back to
+//    sniffing the URL's own extension; and when a candidate's fetch/sign
+//    fails outright, runCoverItem falls through to the next one rather than
+//    failing the whole item over a single bad candidate.
+{
+  const page = ctx.pages()[0] || await ctx.newPage();
+  await page.goto('https://musicbrainz.org/', { waitUntil: 'domcontentloaded' });
+  await page.addScriptTag({ content: code });
+  await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+  const sniffed = await page.evaluate(() => ({
+    jpg: window.__falconTest.mimeFromUrl('https://cdn.example/covers/abc.jpg?x=1'),
+    jpeg: window.__falconTest.mimeFromUrl('https://cdn.example/covers/abc.JPEG'),
+    png: window.__falconTest.mimeFromUrl('https://cdn.example/covers/abc.png'),
+    none: window.__falconTest.mimeFromUrl('https://cdn.example/covers/abc'),
+  }));
+  console.log('mimeFromUrl:', JSON.stringify(sniffed));
+  ck(sniffed.jpg === 'image/jpeg' && sniffed.jpeg === 'image/jpeg', `.jpg/.JPEG sniffed as image/jpeg (got ${JSON.stringify(sniffed)})`);
+  ck(sniffed.png === 'image/png', 'png sniffed correctly');
+  ck(sniffed.none === null, 'no recognizable extension -> null, not a guess');
+
+  const page2 = await ctx.newPage();
+  const errs = []; page2.on('pageerror', e => errs.push(e.message));
+  const signCalls = [];
+  await page2.route('**/ws/js/cover-art-upload/**', route => {
+    const mime = new URL(route.request().url()).searchParams.get('mime_type');
+    signCalls.push(mime);
+    // first sign attempt (the octet-stream-served candidate) fails outright —
+    // exercises the candidate-fallback path regardless of what mime it sent.
+    if (signCalls.length === 1) return route.fulfill({ status: 400, body: 'bad mime' });
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ action: 'https://fake-archive.invalid/upload2', image_id: 555, nonce: 'n2', formdata: {} }) });
+  });
+  await page2.route('https://fake-archive.invalid/upload2', route => route.fulfill({ status: 200, body: 'ok' }));
+  await page2.route('**/release/*/add-cover-art', route => {
+    if (route.request().method() === 'GET') return route.fulfill({ status: 200, contentType: 'text/html', body: '<form method="POST" action="/x"></form>' });
+    route.fulfill({ status: 200, body: 'ok' });
+  });
+  // served with a wrong/generic content-type on purpose, to force the
+  // extension-sniff path — and it's also the one whose SIGN fails, so this
+  // single candidate exercises both fixes at once.
+  await page2.route('**/fake-badmime.jpg', route => route.fulfill({ status: 200, contentType: 'application/octet-stream', headers: { 'access-control-allow-origin': '*' }, body: onePxPngBuffer(15, 15) }));
+  await page2.route('**/fake-fallback-cover.jpg', route => route.fulfill({ status: 200, contentType: 'image/jpeg', headers: { 'access-control-allow-origin': '*' }, body: onePxPngBuffer(15, 15) }));
+  await page2.goto('https://musicbrainz.org/', { waitUntil: 'domcontentloaded' });
+  await page2.addScriptTag({ content: code });
+  await page2.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+  const result2 = await page2.evaluate(async () => {
+    const item = {
+      mbid: 'eeeeeeee-0000-0000-0000-000000000000', comment: '', note: '',
+      cover: { url: 'https://musicbrainz.org/fake-badmime.jpg', candidates: [{ provider: 'Bad', url: 'https://musicbrainz.org/fake-badmime.jpg' }, { provider: 'Good', url: 'https://musicbrainz.org/fake-fallback-cover.jpg' }] },
+      status: 'active',
+    };
+    await window.__falconTest.runCoverItem(item, '[test]', { querySelector: () => null, dataset: {} });
+    return { status: item.status, error: item.error, coverUrl: item.cover.url };
+  });
+  console.log('candidate-fallback result:', JSON.stringify(result2), 'sign mimes tried:', JSON.stringify(signCalls));
+  ck(result2.status === 'done', `falls through to the working candidate and finishes done (got ${JSON.stringify(result2)})`);
+  ck(result2.coverUrl === 'https://musicbrainz.org/fake-fallback-cover.jpg', `item.cover.url updates to the candidate that actually worked (got ${result2.coverUrl})`);
+  ck(signCalls[0] === 'image/jpeg', `even the failing candidate's mime was sniffed from its .jpg extension, not the wrong octet-stream content-type (got ${signCalls[0]})`);
+  ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
+  await page2.close();
+}
+
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);
