@@ -59,6 +59,15 @@ await page.evaluate(() => window.__falconTest.setQueue([
   ck(rowInfo.r2status === 'done', `an already-done item of the toggled-off type keeps its real status, untouched (got "${rowInfo.r2status}")`);
   ck(rowInfo.a1status === 'queued', `a different (still-on) type is unaffected (got "${rowInfo.a1status}")`);
 
+  // majkinetor, live: "progress bar max items remains old" — with release
+  // toggled off, the excluded (still-queued) r1 must drop out of the
+  // denominator, or the bar can never reach 100%. Queue here: a1/a2 queued
+  // (eligible), r1 queued (excluded), r2 done -> total should be 3 (not 4),
+  // settled 1.
+  const progress = await page.evaluate(() => document.getElementById('falcon-progress-text')?.textContent);
+  console.log('progress text with release excluded:', progress);
+  ck(progress === '1/3', `excluded still-queued items drop out of the denominator (got "${progress}")`);
+
   const next = await page.evaluate(() => {
     const picked = [];
     let n;
@@ -79,8 +88,10 @@ await page.evaluate(() => window.__falconTest.setQueue([
   const info = await page.evaluate(() => ({
     r1status: document.querySelector('.falcon-row[data-id="r1"] .falcon-row-status')?.textContent.trim(),
     eligible: (() => { const n = window.__falconTest.nextQueued(); return n && n.id; })(),
+    progress: document.getElementById('falcon-progress-text')?.textContent,
   }));
   console.log('after toggling back on:', JSON.stringify(info));
+  ck(info.progress === '1/4', `re-enabling the type restores it to the denominator too (got "${info.progress}")`);
   ck(info.r1status === 'queued', `re-enabled type's row goes back to plain "queued" (got "${info.r1status}")`);
 }
 
