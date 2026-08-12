@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.9
+// @version      2026.8.12
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -634,7 +634,7 @@
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
-      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits"${n?'':' disabled'}>${commitInner(n)}</button>
+      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits — right-click to submit immediately, no review"${n?'':' disabled'}>${commitInner(n)}</button>
     </div>`;
   }
   const commitInner = n => `<span class="as-bi">✓</span><span class="as-bt">Enter edit</span>${n ? ` <span class="as-cnt2">(${n})</span>` : ''}`;
@@ -909,7 +909,7 @@
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     root.querySelectorAll('.as-prov img').forEach(img => img.onerror = () => { const s = img.closest('.as-prov'); if (s) s.style.display = 'none'; });   // #249 hide a missing provider favicon
-    const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
+    const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) { commit.onclick = enterEdit; commit.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; }   // #493: right-click — skip the review dialog
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
     wireComments();
@@ -1107,7 +1107,7 @@
   const maybeClearSel = () => { if (SETTINGS.clearSelAfterOp) clearSel(); };
   function refreshStaged() {
     const n = opsCount(); const c = root.querySelector('.as-commit');
-    if (c) { c.innerHTML = commitInner(n); c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; fitToolbar(); }
+    if (c) { c.innerHTML = commitInner(n); c.disabled = !n; if (!c.disabled) { c.onclick = enterEdit; c.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; } fitToolbar(); }   // #493
   }
   // #234: when the toolbar's real items + gaps can't fit one row (the flex
   // spacers would have to collapse and it'd wrap), collapse the labelled buttons
@@ -2381,7 +2381,11 @@
     return plan;
   }
 
-  function enterEdit() {
+  // #493: right-click "Enter edit" skips the review dialog and submits straight away —
+  // with a digital provider you're usually adding just one image, so there's nothing
+  // to actually review. `immediate` builds the same overlay (so progress/errors are
+  // still visible) but fires the run right away instead of waiting for a "Run" click.
+  function enterEdit(immediate) {
     document.getElementById('as-commit')?.remove();
     const plan = buildPlan();
     const ov = document.createElement('div'); ov.id = 'as-commit';
@@ -2403,7 +2407,9 @@
     const goBtn = ov.querySelector('.as-cm-go');
     const setGoLabel = () => goBtn.textContent = dryEl.checked ? 'Dry run' : 'Submit edits';
     dryEl.onchange = setGoLabel; setGoLabel();
-    goBtn.onclick = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
+    const go = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
+    goBtn.onclick = go;
+    if (immediate) go();
   }
   // #278: per-row progress bar pinned on the right of each op row. `pct` null →
   // leave the width; `state` colours it (busy=indeterminate sweep, ''=in-progress
@@ -3161,7 +3167,9 @@
   .as-btn{display:inline-flex;align-items:center;gap:5px}
   /* #234: compact toolbar — hide button labels (keep icons + tooltips) when it would otherwise wrap */
   .as-bar.as-compact .as-bt{display:none}
-  .as-btn:hover{background:#f6f3fd}
+  /* #493: :not(:disabled) — a disabled .as-commit (white text, unconditional) hovered with
+     the plain rule below got a pale lavender background under its own white text, unreadable */
+  .as-btn:hover:not(:disabled){background:#f6f3fd}
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
   /* #275: the Repeat (failed) button is red to signal the error state */
