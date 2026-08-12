@@ -60,6 +60,8 @@ Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appe
 
 The whole batch travels via a short random token backed by the userscript's own storage rather than a `?falcon=` payload in the URL — that avoids the URL-length ceiling a large batch used to hit.
 
+If Harmony's own URL carries the release's mbid (`?...&release_mbid=<mbid>` — present right after adding a release from Harmony), the button opens the panel on that release's relationship editor instead of MusicBrainz's homepage, so credits import — only possible once the release exists, not during its creation — is one less manual navigation away.
+
 ### Recording disambiguation and ISRC
 
 A recording queue item can also carry a **disambiguation comment** and one or more **ISRCs** — expand its row to fill them in directly (no computation, no lookup: whatever's typed there is seeded verbatim, same as a url). Both ride along with that recording's own edit — nothing else is submitted for them separately.
