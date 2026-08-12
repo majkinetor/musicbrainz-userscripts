@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.202651
+// @version      2026.8.12.203520
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.202651';
+  const VERSION = '2026.8.12.203520';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -247,6 +247,13 @@
   // display state, survives across renderQueue() calls (a full innerHTML replace).
   let _selectedIds = new Set();
   let _expandedIds = new Set();
+  // #497 (majkinetor): per-entity-type processing toggle, shown as chips in
+  // the queue toolbar ("artist 5", "release 7", ...). All ON by default —
+  // turning one off excludes every QUEUED item of that type from the run
+  // (nextQueued skips them) without removing them from the queue; an
+  // already-active/done/failed item is untouched by toggling since this only
+  // gates what a worker picks up NEXT, not history.
+  let _disabledTypes = new Set();
   // #494: 'release' can carry BOTH a urls[] link (via the normal iframe/form
   // pipeline, like every other type — #495) AND a cover (via the upload API,
   // never the form; see runCoverItem) — a release item's worker turn runs
@@ -1260,7 +1267,9 @@
   // moment; this covers the rest).
   function nextQueued() {
     const activeKeys = new Set(queue.filter(i => i.status === 'active').map(i => i.entityType + ':' + i.mbid));
-    return queue.find(i => i.status === 'queued' && !activeKeys.has(i.entityType + ':' + i.mbid));
+    // #497: a toggled-off type's queued items sit out this run entirely —
+    // still in the queue, just never handed to a worker while off.
+    return queue.find(i => i.status === 'queued' && !_disabledTypes.has(i.entityType) && !activeKeys.has(i.entityType + ':' + i.mbid));
   }
   function editUrl(item) { return `${MB_ORIGIN}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit`; }
   // Same seed-url format Harmony itself uses (parseHarmonySeedUrl above decodes
@@ -1704,7 +1713,11 @@
     if (!queue.some(i => i.status === 'active')) {
       stopHeartbeat();
       logRunSummary();
-      if (!queue.some(i => i.status === 'queued')) {
+      // #497: a queued item whose type is toggled off will never be picked up
+      // (see nextQueued) — don't count it as "still to do," or a run whose
+      // only leftovers are excluded types would sit forever looking active
+      // with every worker actually idle.
+      if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) {
         running = false;
         resumeNameLookups();   // the rate-limit budget is ours again
         updateRunBtn();
@@ -1863,6 +1876,8 @@
       return;
     }
     if (!queue.some(i => i.status === 'queued')) { log('warn', 'nothing queued'); return; }
+    // #497: everything queued is a toggled-off type — nothing would actually run.
+    if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) { log('warn', 'nothing queued that isn\'t excluded by a toggled-off type chip'); return; }
     running = true;
     _runStartedAt = Date.now();
     // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
@@ -1967,6 +1982,7 @@
           <span id="falcon-select-count"></span>
           <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
         </div>
+        <div id="falcon-type-chips" style="display:none;gap:6px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid #eee"></div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
           <span class="falcon-bt" style="color:#666;flex:0 0 auto">workers</span>
@@ -2089,6 +2105,14 @@
       else queue.forEach(i => _expandedIds.add(i.id));
       renderQueue();
     };
+    // #497: same delegated-listener reasoning — the chip strip is fully
+    // rebuilt by renderTypeChips() on every renderQueue().
+    document.getElementById('falcon-type-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.falcon-type-chip'); if (!chip) return;
+      const t = chip.dataset.type;
+      _disabledTypes.has(t) ? _disabledTypes.delete(t) : _disabledTypes.add(t);
+      renderQueue();
+    });
     // one delegated listener for every row action — rows are fully re-rendered on
     // every renderQueue(), so per-element handlers would just leak; look the
     // clicked/changed item up by its data-id instead.
@@ -2292,15 +2316,40 @@
       </div>` : '';
     return urlRows + meta;
   }
+  // #497: one chip per distinct entity type currently in the queue, showing
+  // its count — click to toggle whether that type's still-queued items get
+  // picked up by the next run. Rebuilt on every renderQueue() so it always
+  // reflects the current queue contents (types can appear/disappear as items
+  // are added/removed).
+  function renderTypeChips() {
+    const wrap = document.getElementById('falcon-type-chips'); if (!wrap) return;
+    const counts = {};
+    queue.forEach(i => { counts[i.entityType] = (counts[i.entityType] || 0) + 1; });
+    const types = Object.keys(counts).sort();
+    if (!types.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+    wrap.style.display = 'flex';
+    wrap.innerHTML = types.map(t => {
+      const on = !_disabledTypes.has(t);
+      const label = TYPE_BADGE[t] || t.slice(0, 3);
+      return `<button type="button" class="falcon-type-chip" data-type="${esc(t)}" title="${on ? `Click to exclude every ${esc(t)} item from the next run` : `Click to include every ${esc(t)} item in the next run`}"
+        style="border:1px solid ${on ? '#1b2a4a' : '#ddd'};background:${on ? '#1b2a4a' : '#f5f5f5'};color:${on ? '#fff' : '#999'};border-radius:12px;padding:2px 10px;font-size:10.5px;cursor:pointer;text-transform:uppercase">${esc(label)} ${counts[t]}</button>`;
+    }).join('');
+  }
   function renderQueue() {
+    renderTypeChips();
     const list = document.getElementById('falcon-queue-list'); if (!list) return;
     list.innerHTML = queue.map(it => {
       const expanded = _expandedIds.has(it.id);
       const checked = _selectedIds.has(it.id);
       const isActive = it.status === 'active';
+      // #497: still queued, but its type is toggled off — won't be picked up
+      // by the next run. Dimmed + a distinct label, but the underlying
+      // item.status stays 'queued' (this is a queue-level filter, not an
+      // outcome — an already active/done/failed item is never affected).
+      const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
       return `
-      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3">
-        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : ''}">
+      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3;${excluded ? 'opacity:.45' : ''}">
+        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
           <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : it.entityType === 'release' ? 'Show/edit cover art image' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
@@ -2314,7 +2363,7 @@
               // their whole payload — so they always land here; show it
               // alongside comment/ISRC, each only when actually non-empty.
               : `<span style="color:#999;font-style:italic;flex:1">no links — ${[it.comment ? 'comment' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover && it.cover.url ? 'cover' : ''].filter(Boolean).join(' + ') || '—'}</span>`}
-          <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${it.status}</span>
+          <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${excluded ? 'excluded' : it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
         </div>
@@ -2466,5 +2515,7 @@
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem,
     // #495
-    entityUrlSegment, activateReleaseEditNoteTab };
+    entityUrlSegment, activateReleaseEditNoteTab,
+    // #497
+    getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); } };
 })();
