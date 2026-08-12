@@ -13,9 +13,11 @@
 
 The following fields are currently supported:
 
-- External links: artists, labels, recordings
+- External links: artists, labels, recordings, release, rg
+- Cover art
 - ISRC
 - Disambiguation: recordings
+- Edit note
 
 ## Why
 
