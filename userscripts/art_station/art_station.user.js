@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.12
+// @version      2026.8.12.144654
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -634,7 +634,7 @@
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
-      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits — right-click to submit immediately, no review"${n?'':' disabled'}>${commitInner(n)}</button>
+      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits — right-click to skip the &quot;Run&quot; click and start immediately"${n?'':' disabled'}>${commitInner(n)}</button>
     </div>`;
   }
   const commitInner = n => `<span class="as-bi">✓</span><span class="as-bt">Enter edit</span>${n ? ` <span class="as-cnt2">(${n})</span>` : ''}`;
@@ -2381,10 +2381,12 @@
     return plan;
   }
 
-  // #493: right-click "Enter edit" skips the review dialog and submits straight away —
-  // with a digital provider you're usually adding just one image, so there's nothing
-  // to actually review. `immediate` builds the same overlay (so progress/errors are
-  // still visible) but fires the run right away instead of waiting for a "Run" click.
+  // #493: right-click "Enter edit" still OPENS the review dialog (so the plan is visible,
+  // same as a normal left-click) but starts the run automatically instead of waiting for a
+  // "Run" click — for a single-image digital-provider upload there's nothing to actually
+  // decide, just cut the extra click. `immediate` defers the auto-run past the next paint
+  // (double rAF) so the dialog genuinely renders open first, rather than firing in the same
+  // synchronous tick and never visibly appearing before the run's own DOM updates take over.
   function enterEdit(immediate) {
     document.getElementById('as-commit')?.remove();
     const plan = buildPlan();
@@ -2409,7 +2411,7 @@
     dryEl.onchange = setGoLabel; setGoLabel();
     const go = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
     goBtn.onclick = go;
-    if (immediate) go();
+    if (immediate) requestAnimationFrame(() => requestAnimationFrame(go));   // let the dialog actually paint first
   }
   // #278: per-row progress bar pinned on the right of each op row. `pct` null →
   // leave the width; `state` colours it (busy=indeterminate sweep, ''=in-progress
