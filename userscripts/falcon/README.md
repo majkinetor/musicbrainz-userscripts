@@ -16,6 +16,7 @@ The following fields are currently supported:
 - External links: artists, labels, recordings
 - ISRC
 - Disambiguation: recordings
+- Cover art: releases
 
 ## Why
 
@@ -50,6 +51,12 @@ The whole batch travels via a short random token backed by the userscript's own 
 ### Recording disambiguation and ISRC
 
 A recording queue item can also carry a **disambiguation comment** and one or more **ISRCs** — expand its row to fill them in directly (no computation, no lookup: whatever's typed there is seeded verbatim, same as a url). Both ride along with that recording's own edit — nothing else is submitted for them separately.
+
+### Release cover art
+
+When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes one extra queue item for the release itself, showing "cover" in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
+
+Unlike every other entity type, a cover-art item isn't submitted through MusicBrainz's edit-relationships form at all — there isn't one for cover art. Falcon drives MB's own upload API directly (sign → upload → register), the same one [Art Station](../art_station) uses.
 
 ### From another script
 

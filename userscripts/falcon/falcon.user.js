@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.9
+// @version      2026.8.12
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -11,11 +11,13 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
+// @grant        GM_xmlhttpRequest
+// @connect      *
 // @noframes
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.26.124712';
+  const VERSION = '2026.8.12';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -205,7 +207,11 @@
   function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
-     urlResults, status, error} ── #467 (majkinetor): the same entity can carry
+     comment, isrcs, cover: {url, candidates: [{provider,url,width?,height?,size?}]},
+     urlResults, status, error} ── entityType 'release' (#494) is cover-art-only:
+     urls/isrcs stay empty, and `cover.url` — auto-picked by pickBestCover, always
+     user-editable — is its whole payload; it skips the iframe/form worker path
+     entirely (see runCoverItem). #467 (majkinetor): the same entity can carry
      several URLs — group those into ONE item/one edit-page visit rather than
      revisiting the same mbid N times (both unsafe — two workers must never load
      the same entity's /edit at once — and wasteful). Grouping happens at add-time
@@ -229,7 +235,10 @@
   // display state, survives across renderQueue() calls (a full innerHTML replace).
   let _selectedIds = new Set();
   let _expandedIds = new Set();
-  const ENTITY_RE = /^(artist|label|recording)$/;
+  // #494: 'release' is cover-art-only — it never gets a urls[] link and never
+  // goes through the iframe/form pipeline (buildSeedEditUrl has no release
+  // form to seed); see runCoverItem.
+  const ENTITY_RE = /^(artist|label|recording|release)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   function normalizeEntityType(raw) {
@@ -356,6 +365,24 @@
   function addToQueue(parsed) {
     let merged = 0, added = 0;
     parsed.forEach(p => {
+      // #494: a release tuple carries coverCandidates instead of a url — no
+      // urls[]/isrcs, and its own dedup/merge (a Harmony batch produces at
+      // most one release tuple per page, but re-sending the same page
+      // shouldn't duplicate the row).
+      if (p.entityType === 'release') {
+        const existingRel = queue.find(i => i.status === 'queued' && i.entityType === 'release' && i.mbid === p.mbid);
+        if (existingRel) {
+          (p.coverCandidates || []).forEach(c => { if (!existingRel.cover.candidates.some(x => x.url === c.url)) existingRel.cover.candidates.push(c); });
+          merged++;
+          return;
+        }
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', comment: p.comment || '', isrcs: [], cover: { url: '', candidates: p.coverCandidates || [] }, name: null, urlResults: null, status: 'queued', error: '' };
+        queue.push(relItem);
+        fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); } });
+        pickBestCover(relItem);
+        added++;
+        return;
+      }
       const existing = queue.find(i => i.status === 'queued' && i.entityType === p.entityType && i.mbid === p.mbid);
       const linkTypeId = p.linkTypeId || null;
       if (existing) {
@@ -367,7 +394,7 @@
         if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], name: null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
@@ -395,17 +422,21 @@
     rows.forEach(r => {
       if (!r || typeof r !== 'object' || !MBID_RE.test(String(r.mbid || ''))) { skipped++; return; }
       const type = normalizeEntityType(r.entityType);
-      if (Array.isArray(r.urls)) {
+      // #494: a release row has no urls[] at all — its payload is r.cover
+      // (and, pre-resolution, r.coverCandidates).
+      const hasCover = type === 'release' && (r.cover?.url || (Array.isArray(r.coverCandidates) && r.coverCandidates.length));
+      if (Array.isArray(r.urls) || hasCover) {
         // full item: reinstate it whole, status and all
-        const urls = r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null }));
+        const urls = Array.isArray(r.urls) ? r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null })) : [];
         // #474: a recording carrying only a comment/isrc (no urls at all) is a
         // legitimate item now that fillAndSubmit knows to look for one — only
         // reject empty-urls rows that have nothing else to offer either.
         const hasMeta = type === 'recording' && (r.comment || (Array.isArray(r.isrcs) && r.isrcs.some(Boolean)));
-        if (!urls.length && !hasMeta) { skipped++; return; }
+        if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
         queue.push({
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
           note: r.note || '', comment: r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
+          cover: { url: r.cover?.url || '', candidates: Array.isArray(r.cover?.candidates) ? r.cover.candidates : (Array.isArray(r.coverCandidates) ? r.coverCandidates : []) },
           name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
           error: r.error || '',
@@ -458,8 +489,18 @@
     try {
       const arr = JSON.parse(json);
       if (!Array.isArray(arr)) return null;
-      return arr.map(it => ({ entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null }))
-        .filter(it => MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url));
+      return arr.map(it => {
+        // #494: a release tuple carries coverCandidates instead of a url.
+        if (normalizeEntityType(it.entityType) === 'release') {
+          return {
+            entityType: 'release', mbid: String(it.mbid || '').toLowerCase(),
+            coverCandidates: Array.isArray(it.coverCandidates)
+              ? it.coverCandidates.filter(c => c && c.url).map(c => ({ provider: String(c.provider || ''), url: String(c.url), width: Number(c.width) || undefined, height: Number(c.height) || undefined, size: Number(c.size) || undefined }))
+              : [],
+          };
+        }
+        return { entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null };
+      }).filter(it => it.entityType === 'release' ? (MBID_RE.test(it.mbid) && it.coverCandidates.length) : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
     } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
   }
   // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
@@ -541,12 +582,98 @@
     }
     return tuples;
   }
+  // #494: Harmony sometimes annotates a cover figure's caption with a plain
+  // "WxH, SIZE unit, FORMAT" label (e.g. "1200×1200, 703.99 kB, JPEG" — seen
+  // verbatim in the issue's own example HTML) alongside "Type: front Source:
+  // X". Parsing it lets pickBestCover skip a network fetch entirely for that
+  // candidate. It is NOT reliably present (live testing this session — both a
+  // clean fetch and majkinetor's own logged-out browser — only ever showed
+  // "Type: front Source: X", no size caption), so this is an optimization,
+  // never a requirement: candidates missing it fall back to fetch+measure.
+  function parseCoverCaptionMeta(figure) {
+    const labels = [...figure.querySelectorAll('figcaption .label')].map(el => (el.textContent || '').trim());
+    for (const t of labels) {
+      const m = t.match(/^(\d+)\s*[×x]\s*(\d+)\s*,\s*([\d.]+)\s*(B|kB|MB)\b/i);
+      if (!m) continue;
+      const unit = m[4].toLowerCase();
+      const mult = unit === 'mb' ? 1000 * 1000 : unit === 'kb' ? 1000 : 1;
+      return { width: +m[1], height: +m[2], size: Math.round(parseFloat(m[3]) * mult) };
+    }
+    return null;
+  }
+  // Collects one candidate per non-Discogs cover figure — the direct <a href>
+  // (Harmony's own best copy per provider), not the smaller thumbnail <img
+  // src>. Best-across-providers is picked later by pickBestCover.
+  function scrapeHarmonyCover() {
+    const mbLink = [...document.querySelectorAll('a')].find(a => /^open in musicbrainz$/i.test((a.textContent || '').trim()));
+    const href = mbLink && mbLink.getAttribute('href');
+    const m = href && href.match(/musicbrainz\.org\/release\/([0-9a-f-]{36})/i);
+    if (!m) return null;
+    const mbid = m[1].toLowerCase();
+    const candidates = [...document.querySelectorAll('figure.cover-image[data-provider]')]
+      .filter(f => (f.getAttribute('data-provider') || '').toLowerCase() !== 'discogs')
+      .map(f => {
+        const a = f.querySelector('a[href]');
+        if (!a) return null;
+        return { provider: f.getAttribute('data-provider') || '', url: a.getAttribute('href'), ...(parseCoverCaptionMeta(f) || {}) };
+      })
+      .filter(Boolean);
+    return candidates.length ? { mbid, coverCandidates: candidates } : null;
+  }
+  // Cross-origin image fetch as a Blob. Cover candidates live on arbitrary
+  // provider CDNs (Deezer, Spotify, Qobuz, Apple, Tidal, ...), not
+  // musicbrainz.org/harmony.pulsewidth.org.uk, so a plain fetch() would hit
+  // page CORS — GM_xmlhttpRequest bypasses it. Same helper (and same need) as
+  // Art Station's gmFetch (art_station.user.js).
+  function gmFetch(url) {
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'GET', url, responseType: 'blob', timeout: 30000,
+        onload: r => { (r.status >= 200 && r.status < 300 && r.response) ? resolve(r.response) : reject(new Error('fetch ' + r.status)); },
+        onerror: () => reject(new Error('network error')),
+        ontimeout: () => reject(new Error('timed out')),
+      });
+    });
+  }
+  async function measureCandidate(url) {
+    const blob = await gmFetch(url);
+    const bitmap = await createImageBitmap(blob);
+    const { width, height } = bitmap;
+    if (bitmap.close) bitmap.close();
+    return { width, height, size: blob.size, blob };
+  }
+  // #494: picks the release's best cover — highest resolution, then lowest
+  // size. Runs AFTER the item is already queued (fire-and-forget, mirroring
+  // fetchEntityName's post-add enrichment at addToQueue) rather than before
+  // Harmony's window.open(), since an await there risks the popup being
+  // blocked. Candidates that already carry caption metadata (see
+  // parseCoverCaptionMeta) cost no fetch at all; the rest are measured live.
+  async function pickBestCover(item) {
+    const candidates = (item.cover && item.cover.candidates) || [];
+    if (!candidates.length) return;
+    let best = null;
+    const consider = (c, width, height, size) => {
+      const area = width * height;
+      if (!best || area > best.area || (area === best.area && size < best.size)) best = { url: c.url, provider: c.provider, area, size, width, height };
+    };
+    for (const c of candidates) {
+      if (c.width && c.height && c.size) { consider(c, c.width, c.height, c.size); continue; }
+      try { const m = await measureCandidate(c.url); consider(c, m.width, m.height, m.size); }
+      catch (e) { dbg('[cover]', `${item.mbid}: ${c.provider} candidate failed to measure — ${e.message}`); }
+    }
+    if (!best) return;
+    item.cover.url = best.url;
+    dbg('[cover]', `${item.mbid}: picked ${best.provider} (${best.width}x${best.height}, ${best.size}b) of ${candidates.length} candidate(s)`);
+    scheduleRender('queue');
+  }
   function makePendingToken() {
     return 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   }
   let harmonyBtn = null;
   function ensureHarmonyButton() {
     const items = scrapeHarmonyActions();
+    const cover = scrapeHarmonyCover();
+    const total = items.length + (cover ? 1 : 0);
     if (!harmonyBtn) {
       harmonyBtn = document.createElement('button');
       harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
@@ -554,17 +681,20 @@
       harmonyBtn.innerHTML = `<span style="display:flex;color:#ff9d5c">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
       harmonyBtn.onclick = () => {
         const found = scrapeHarmonyActions();
-        if (!found.length) { alert(`${NAME}: no "Link external IDs" actions found on this page.`); return; }
+        const foundCover = scrapeHarmonyCover();
+        if (!found.length && !foundCover) { alert(`${NAME}: no "Link external IDs" actions or cover art found on this page.`); return; }
         const token = makePendingToken();
-        GM_setValue('falcon:pending:' + token, JSON.stringify(found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined }))));
+        const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined }));
+        if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates });
+        GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
         window.open(`${MB_TARGET}/?falcon=${token}`, '_blank');
       };
       document.body.appendChild(harmonyBtn);
     }
     const lbl = document.getElementById('falcon-harmony-lbl');
-    lbl.textContent = items.length ? `Send ${items.length} to Falcon` : 'No Falcon actions found yet…';
-    harmonyBtn.style.opacity = items.length ? '1' : '.6';
-    harmonyBtn.title = items.length ? `Opens MusicBrainz with ${items.length} link(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
+    lbl.textContent = total ? `Send ${total} to Falcon` : 'No Falcon actions found yet…';
+    harmonyBtn.style.opacity = total ? '1' : '.6';
+    harmonyBtn.title = total ? `Opens MusicBrainz with ${total} item(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
   }
 
   /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
@@ -1122,6 +1252,16 @@
   // window.open must be the very first thing that runs (no preceding await) or
   // popup blockers treat it as not user-triggered.
   function openInTab(item) {
+    // #494: release items have no edit-relationships form to seed — the
+    // closest manual fallback is MB's own add-cover-art page (no seeding
+    // possible there either, it's a plain upload form).
+    if (item.entityType === 'release') {
+      const tab = window.open(`${MB_ORIGIN}/release/${item.mbid}/add-cover-art`, '_blank');
+      if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
+      item.status = 'manual'; item.error = ''; renderQueue();
+      log('info', `${entityLabel(item)} — opened MusicBrainz's add-cover-art page in a new tab for manual completion`);
+      return;
+    }
     const seedUrl = buildSeedEditUrl(item);
     const tab = window.open(seedUrl, '_blank');
     if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
@@ -1229,12 +1369,84 @@
     return f;
   }
 
+  // #494: release items skip the iframe/form pipeline entirely — cover art
+  // has no MB edit-relationships form to seed. Ported from Art Station's
+  // proven sign -> upload -> register cover-art API flow
+  // (art_station.user.js): GET /ws/js/cover-art-upload/<mbid> reserves an
+  // image_id/nonce + an archive.org presigned upload target, POST the file
+  // bytes there, then POST the release's own add-cover-art form with that
+  // id/nonce (scraped fresh for its CSRF/type_id fields, same as Art
+  // Station's getPostForm/copyHidden/typeMapOf).
+  async function runCoverItem(item, tag, card) {
+    updateWorkerLabel(card, item);
+    const tStart = Date.now();
+    try {
+      if (!item.cover.url) throw new Error('no cover image URL yet (still resolving, or none found on this release)');
+      log('info', `${tag} release ${item.mbid} — fetching cover image`);
+      const blob = await gmFetch(item.cover.url);
+      const mime = blob.type || 'image/jpeg';
+
+      log('info', `${tag} release ${item.mbid} — signing upload`);
+      const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
+      if (!signRes.ok) throw new Error('sign ' + signRes.status);
+      const signed = await signRes.json();   // {action, image_id, formdata, nonce}
+
+      log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB)`);
+      const fd = new FormData();
+      Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
+      fd.append('file', blob, 'cover.' + (mime.split('/')[1] || 'jpg'));
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', signed.action);
+        xhr.timeout = 300000;
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('upload ' + xhr.status));
+        xhr.onerror = () => reject(new Error('upload network error'));
+        xhr.ontimeout = () => reject(new Error('upload timed out'));
+        xhr.send(fd);
+      });
+
+      log('info', `${tag} release ${item.mbid} — registering`);
+      const addUrl = `${MB_ORIGIN}/release/${item.mbid}/add-cover-art`;
+      const formHtml = await fetch(addUrl, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET add-cover-art ' + r.status); return r.text(); });
+      const formDoc = new DOMParser().parseFromString(formHtml, 'text/html');
+      const form = [...formDoc.querySelectorAll('form')].find(f => (f.getAttribute('method') || '').toUpperCase() === 'POST');
+      if (!form) throw new Error('add-cover-art form not found');
+      const p = new URLSearchParams();
+      form.querySelectorAll('input[type=hidden]').forEach(h => { if (h.name && !/\.(id|position|nonce|mime_type|comment|type_id)$/.test(h.name)) p.append(h.name, h.value); });
+      let frontId = null;
+      form.querySelectorAll('input[name="add-cover-art.type_id"]').forEach(cb => { const l = cb.closest('label'); if (l && /front/i.test(l.textContent || '')) frontId = cb.value; });
+      p.append('add-cover-art.id', signed.image_id);
+      p.append('add-cover-art.position', '1');
+      p.append('add-cover-art.nonce', signed.nonce);
+      p.append('add-cover-art.mime_type', mime);
+      if (frontId) p.append('add-cover-art.type_id', frontId);
+      p.append('add-cover-art.comment', item.comment || '');
+      p.append('add-cover-art.edit_note', item.note || '');
+      const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
+      if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
+
+      item.status = 'done';
+      item.timing = { worker: tag, totalMs: Date.now() - tStart };
+      log('info', `${tag} release ${item.mbid} — cover art added`);
+    } catch (e) {
+      item.status = 'failed';
+      item.error = e.message || String(e);
+      item.timing = { worker: tag, totalMs: Date.now() - tStart };
+      log('error', `${tag} release ${item.mbid}: ${item.error}`);
+    }
+    updateWorkerLabel(card, null);
+    scheduleRender('queue');
+  }
   async function workerLoop(card) {
     const tag = `[w${workerCards.indexOf(card) + 1}]`;
     while (running) {
       const item = nextQueued();
       if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
       item.status = 'active'; scheduleRender('queue');
+      if (item.entityType === 'release') {
+        await runCoverItem(item, tag, card);
+        continue;
+      }
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
       // already been used.
@@ -1403,7 +1615,7 @@
   function updateWorkerLabel(card, item) {
     if (card.dataset.retired) return;   // don't overwrite a retired card's frozen label
     const lbl = card.querySelector('.falcon-worker-lbl');
-    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${item.urls.length} link(s)` : 'idle';
+    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${item.entityType === 'release' ? 'cover art' : item.urls.length + ' link(s)'}` : 'idle';
     // a freshly-spawned card starts hidden (marked idle at creation, #467's
     // hide-idle-workers), so it must re-render the moment it actually GETS an
     // item too, not just when it goes idle again — re-rendering only on the
@@ -1774,6 +1986,13 @@
         if (it && (it.status === 'failed' || it.status === 'partial')) focusItemWorker(it);
         return;
       }
+      // #494: swap the picked cover to a different candidate provider.
+      const pickBtn = e.target.closest('.falcon-cover-pick');
+      if (pickBtn) {
+        const it = queue.find(i => i.id === pickBtn.dataset.id);
+        if (it && it.status !== 'active') { it.cover.url = pickBtn.dataset.url; renderQueue(); }
+        return;
+      }
     });
     // #467 (majkinetor): right-clicking the entity-type cell selects every
     // queued/finished item of that SAME type at once — a quick way to bulk-act
@@ -1799,6 +2018,11 @@
         if (it) it.isrcs = isrcInp.value.split(',').map(s => s.trim().toUpperCase().replace(/[\s-]/g, '')).filter(Boolean);
         return;
       }
+      // #494: "Falcon side — accept URL for the image" — the auto-picked
+      // candidate is always user-editable/overridable, same spirit as the
+      // comment/ISRC fields above.
+      const coverInp = e.target.closest('.falcon-cover-input');
+      if (coverInp) { const it = queue.find(i => i.id === coverInp.dataset.id); if (it) it.cover.url = coverInp.value.trim(); return; }
     });
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
     document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
@@ -1928,6 +2152,20 @@
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
         <input type="text" class="falcon-isrc-input" data-id="${it.id}" placeholder="ISRC(s), comma-separated" value="${esc((it.isrcs || []).join(', '))}" ${it.status === 'active' ? 'disabled' : ''}
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />
+      </div>`
+      // #494: cover art has no urls[] row to show — the image URL IS the
+      // payload, so it gets the same input treatment (auto-picked from
+      // Harmony's candidates but always user-editable/overridable), plus a
+      // provider picker when more than one candidate was found.
+      : it.entityType === 'release' ? `
+      <div style="display:flex;flex-direction:column;gap:4px;padding:3px 0 3px 30px;font-size:10.5px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="text" class="falcon-cover-input" data-id="${it.id}" placeholder="${it.cover.candidates.length && !it.cover.url ? 'resolving best cover…' : 'cover image URL'}" value="${esc(it.cover.url || '')}" ${it.status === 'active' ? 'disabled' : ''}
+            style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+          <input type="text" class="falcon-comment-input" data-id="${it.id}" placeholder="image comment (optional)" value="${esc(it.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
+            style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+        </div>
+        ${it.cover.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${it.cover.candidates.map(c => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-url="${esc(c.url)}" title="${esc(c.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${c.url === it.cover.url ? '#1b2a4a' : '#ddd'};background:${c.url === it.cover.url ? '#eef1fa' : '#fff'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:#444">${esc(c.provider)}${c.width ? ` ${c.width}×${c.height}` : ''}</button>`).join('')}</div>` : ''}
       </div>` : '';
     return urlRows + meta;
   }
@@ -1941,7 +2179,7 @@
       <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3">
         <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
-          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : it.entityType === 'release' ? 'Show/edit cover art image' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
           <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(it.entityType.slice(0, 3))}</span>
           <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
@@ -1949,7 +2187,10 @@
             ? `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links</span>`
             : it.urls.length === 1
               ? `<a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.urls[0].url)}</a>`
-              : `<span style="color:#999;font-style:italic;flex:1">no links — ${esc(it.comment) ? 'comment' : ''}${it.comment && (it.isrcs || []).length ? ' + ' : ''}${(it.isrcs || []).length ? 'ISRC' : ''}</span>`}
+              // #494: release rows never carry a urls[] entry — cover art is
+              // their whole payload — so they always land here; show it
+              // alongside comment/ISRC, each only when actually non-empty.
+              : `<span style="color:#999;font-style:italic;flex:1">no links — ${[it.comment ? 'comment' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover && it.cover.url ? 'cover' : ''].filter(Boolean).join(' + ') || '—'}</span>`}
           <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
@@ -2098,5 +2339,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+    // #494
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem };
 })();
