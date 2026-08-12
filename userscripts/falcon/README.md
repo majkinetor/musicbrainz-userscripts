@@ -13,10 +13,22 @@
 
 The following fields are currently supported:
 
-- External links: artists, labels, recordings
+- External links: artists, labels, recordings, releases, release groups
 - ISRC
 - Disambiguation: recordings
 - Cover art: releases
+
+## Field usage by entity type
+
+| field | artist | label | recording | release | release group |
+| --- | --- | --- | --- | --- | --- |
+| External links | yes | yes | yes | yes | yes |
+| ISRC | — | — | yes | — | — |
+| Disambiguation comment | — | — | yes | — | — |
+| Cover art | — | — | — | yes | — |
+| Image comment | — | — | — | yes | — |
+
+A release item can carry external links *and* cover art at once — two independent MusicBrainz edits on the same entity, run one after the other regardless of how the other one goes (a rejected link doesn't block the cover upload, and vice versa; the row ends up **partial** if only one of the two went through).
 
 ## Why
 
@@ -60,7 +72,7 @@ Unlike every other entity type, a cover-art item isn't submitted through MusicBr
 
 ### From another script
 
-Any other script can hand Falcon a queue directly via a URL parameter: append `?falcon=<base64(JSON)>` to any `musicbrainz.org` URL, where the JSON is an array of `{ "entityType": "artist" | "label" | "recording", "mbid": "...", "url": "...", "linkTypeId"?: "...", "note"?: "...", "isrc"?: "..." }` (`linkTypeId` is optional — when present it's used to set MB's relationship-type dropdown if one is shown; otherwise MB auto-classifies as usual; `isrc`, recording-only, is added alongside the url). Falcon detects the param on load, seeds the queue, and opens the panel automatically (does not auto-start — review, then click Start). (The GM-storage-token scheme Harmony uses above only works between Falcon's own two ends, since userscript storage isn't shared across different scripts — the base64 form is the contract for everyone else.)
+Any other script can hand Falcon a queue directly via a URL parameter: append `?falcon=<base64(JSON)>` to any `musicbrainz.org` URL, where the JSON is an array of `{ "entityType": "artist" | "label" | "recording" | "release" | "release_group", "mbid": "...", "url": "...", "linkTypeId"?: "...", "note"?: "...", "isrc"?: "..." }` (`linkTypeId` is optional — when present it's used to set MB's relationship-type dropdown if one is shown; otherwise MB auto-classifies as usual; `isrc`, recording-only, is added alongside the url). Note `entityType` is `release_group` (underscore) even though MusicBrainz's own URL for that entity uses a hyphen (`/release-group/<mbid>`) — Falcon maps between the two internally. Falcon detects the param on load, seeds the queue, and opens the panel automatically (does not auto-start — review, then click Start). (The GM-storage-token scheme Harmony uses above only works between Falcon's own two ends, since userscript storage isn't shared across different scripts — the base64 form is the contract for everyone else.)
 
 ### Reporting a problem
 

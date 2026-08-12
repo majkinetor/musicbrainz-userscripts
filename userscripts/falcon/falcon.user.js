@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.191729
+// @version      2026.8.12.194540
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.191729';
+  const VERSION = '2026.8.12.194540';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -208,10 +208,22 @@
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
      comment, isrcs, cover: {url, candidates: [{provider,url,width?,height?,size?}]},
-     urlResults, status, error} ── entityType 'release' (#494) is cover-art-only:
-     urls/isrcs stay empty, and `cover.url` — auto-picked by pickBestCover, always
-     user-editable — is its whole payload; it skips the iframe/form worker path
-     entirely (see runCoverItem). #467 (majkinetor): the same entity can carry
+     urlResults, status, error} ── entityType is one of artist/label/recording/
+     release/release_group. Field usage by type (#496 — the rest are always
+     present on the item internally for simplicity, but only these are ever
+     read/rendered):
+       - urls[]: all types (release_group and release included, #495)
+       - isrcs[]: recording only
+       - comment: recording (disambiguation) and release (cover image comment)
+         — same field, different MB-side meaning per type
+       - cover: release only — auto-picked by pickBestCover, always
+         user-editable. A release item can have urls[] AND cover at once (two
+         independent MB edits on the same entity — see workerLoop's `needsCover`
+         handling and runCoverItem's `priorLinks` merge) or either alone.
+     A release_group/release/artist/label/recording item with urls[] goes
+     through the normal iframe/form worker path; a release's cover goes
+     through runCoverItem's upload-API path instead — never both through the
+     same mechanism. #467 (majkinetor): the same entity can carry
      several URLs — group those into ONE item/one edit-page visit rather than
      revisiting the same mbid N times (both unsafe — two workers must never load
      the same entity's /edit at once — and wasteful). Grouping happens at add-time
@@ -235,30 +247,41 @@
   // display state, survives across renderQueue() calls (a full innerHTML replace).
   let _selectedIds = new Set();
   let _expandedIds = new Set();
-  // #494: 'release' is cover-art-only — it never gets a urls[] link and never
-  // goes through the iframe/form pipeline (buildSeedEditUrl has no release
-  // form to seed); see runCoverItem.
-  const ENTITY_RE = /^(artist|label|recording|release)$/;
+  // #494: 'release' can carry BOTH a urls[] link (via the normal iframe/form
+  // pipeline, like every other type — #495) AND a cover (via the upload API,
+  // never the form; see runCoverItem) — a release item's worker turn runs
+  // whichever of those it actually has. 'release_group' (#495) is a plain
+  // urls[]-only type, same pipeline as artist/label/recording, no special
+  // casing — MB's URL path for it is 'release-group' (hyphen) even though the
+  // internal entityType value and seed-param prefix use 'release_group'
+  // (underscore, matching MB's own `edit-release_group.` seed params); see
+  // entityUrlSegment.
+  const ENTITY_RE = /^(artist|label|recording|release|release_group)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   function normalizeEntityType(raw) {
-    const t = String(raw || 'artist').trim().toLowerCase();
+    const t = String(raw || 'artist').trim().toLowerCase().replace(/-/g, '_');
     return ENTITY_RE.test(t) ? t : 'artist';
   }
+  // MB's own URL path segment for an entity type — every type matches its
+  // entityType verbatim except release_group, whose real path is
+  // 'release-group' (hyphen) while the internal value/seed-param prefix stays
+  // 'release_group' (underscore, MB's own inconsistency — verified live).
+  function entityUrlSegment(entityType) { return entityType === 'release_group' ? 'release-group' : entityType; }
   // accepts: "<mbid>,<url>" · "<mbid> <url>" · "<entityType>:<mbid>,<url>" ·
-  // or a full MB artist/label/recording URL in place of the bare mbid.
+  // or a full MB entity URL in place of the bare mbid.
   function parseLine(line) {
     const s = line.trim();
     if (!s || s.startsWith('#')) return null;
     let entityType = 'artist';
     let rest = s;
-    const etm = rest.match(/^(artist|label|recording)\s*:\s*(.+)$/i);
+    const etm = rest.match(/^(artist|label|recording|release|release[_-]group)\s*:\s*(.+)$/i);
     if (etm) { entityType = normalizeEntityType(etm[1]); rest = etm[2]; }
     const parts = rest.split(/[,\s]+/).filter(Boolean);
     if (parts.length < 2) return null;
     let [entityPart, ...urlParts] = parts;
     const url = urlParts.join(' ');
-    const um = entityPart.match(/musicbrainz\.org\/(artist|label|recording)\/([0-9a-f-]{36})/i);
+    const um = entityPart.match(/musicbrainz\.org\/(artist|label|recording|release|release-group)\/([0-9a-f-]{36})/i);
     let mbid = entityPart;
     if (um) { entityType = normalizeEntityType(um[1]); mbid = um[2]; }
     if (!MBID_RE.test(mbid) || !/^https?:\/\//i.test(url)) return null;
@@ -353,8 +376,8 @@
     const key = entityType + ':' + mbid;
     if (_nameCache.has(key)) return _nameCache.get(key);
     if (_namesSuspended) return null;
-    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityType}/${mbid}?fmt=json`);
-    const name = j ? (j.title || j.name || null) : null;   // recordings: title; artist/label: name
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityUrlSegment(entityType)}/${mbid}?fmt=json`);
+    const name = j ? (j.title || j.name || null) : null;   // recordings/releases/RGs: title; artist/label: name
     if (name) _nameCache.set(key, name);
     return name;
   }
@@ -365,18 +388,22 @@
   function addToQueue(parsed) {
     let merged = 0, added = 0;
     parsed.forEach(p => {
-      // #494: a release tuple carries coverCandidates instead of a url — no
-      // urls[]/isrcs, and its own dedup/merge (a Harmony batch produces at
-      // most one release tuple per page, but re-sending the same page
-      // shouldn't duplicate the row).
-      if (p.entityType === 'release') {
+      // #494/#495: a cover-shaped tuple (coverCandidates, no url — only ever
+      // 'release', from Harmony's cover scraper) merges into/creates a release
+      // item's `cover`, entirely separately from urls[] — a release item can
+      // have BOTH a cover AND urls (added via the generic path just below,
+      // same as any other type), landing in the same item since both paths
+      // dedup on (entityType, mbid) identically.
+      if (p.entityType === 'release' && p.coverCandidates) {
         const existingRel = queue.find(i => i.status === 'queued' && i.entityType === 'release' && i.mbid === p.mbid);
         if (existingRel) {
-          (p.coverCandidates || []).forEach(c => { if (!existingRel.cover.candidates.some(x => x.url === c.url)) existingRel.cover.candidates.push(c); });
+          const before = existingRel.cover.candidates.length;
+          p.coverCandidates.forEach(c => { if (!existingRel.cover.candidates.some(x => x.url === c.url)) existingRel.cover.candidates.push(c); });
+          if (existingRel.cover.candidates.length > before) pickBestCover(existingRel);
           merged++;
           return;
         }
-        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', comment: p.comment || '', isrcs: [], cover: { url: '', candidates: p.coverCandidates || [] }, name: null, urlResults: null, status: 'queued', error: '' };
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', comment: p.comment || '', isrcs: [], cover: { url: '', candidates: p.coverCandidates }, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); } });
         pickBestCover(relItem);
@@ -490,33 +517,36 @@
       const arr = JSON.parse(json);
       if (!Array.isArray(arr)) return null;
       return arr.map(it => {
-        // #494: a release tuple carries coverCandidates instead of a url.
-        if (normalizeEntityType(it.entityType) === 'release') {
+        // #494/#495: a cover-shaped tuple (coverCandidates, no url — only
+        // ever 'release') is kept separate from a normal url tuple, which
+        // works the same for 'release'/'release_group' as every other type.
+        if (normalizeEntityType(it.entityType) === 'release' && Array.isArray(it.coverCandidates)) {
           return {
             entityType: 'release', mbid: String(it.mbid || '').toLowerCase(),
-            coverCandidates: Array.isArray(it.coverCandidates)
-              ? it.coverCandidates.filter(c => c && c.url).map(c => ({ provider: String(c.provider || ''), url: String(c.url), width: Number(c.width) || undefined, height: Number(c.height) || undefined, size: Number(c.size) || undefined }))
-              : [],
+            coverCandidates: it.coverCandidates.filter(c => c && c.url).map(c => ({ provider: String(c.provider || ''), url: String(c.url), width: Number(c.width) || undefined, height: Number(c.height) || undefined, size: Number(c.size) || undefined })),
           };
         }
         return { entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null };
-      }).filter(it => it.entityType === 'release' ? (MBID_RE.test(it.mbid) && it.coverCandidates.length) : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
+      }).filter(it => it.coverCandidates ? (MBID_RE.test(it.mbid) && it.coverCandidates.length) : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
     } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
   }
   // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
-  // https://musicbrainz.org/<artist|label|recording>/<mbid>/edit
+  // https://musicbrainz.org/<artist|label|recording|release|release-group>/<mbid>/edit
   //   ?edit-<type>.url.0.text=<url>&edit-<type>.url.0.link_type_id=<id>
   //   &edit-<type>.url.1.text=...&edit-<type>.url.1.link_type_id=...
   //   &edit-<type>.edit_note=<text>
   // Returns a FLAT array of {entityType,mbid,url,linkTypeId,note} tuples (one per
   // url.N) ready for addToQueue, or [] if href isn't a recognized seed URL.
+  // Harmony itself doesn't offer release/release-group "Link external IDs"
+  // actions yet (#495) — this just keeps the parser consistent/ready for when
+  // it does; release/RG links are queued via paste or `?falcon=` JSON for now.
   function parseHarmonySeedUrl(href) {
     let u; try { u = new URL(href, MB_ORIGIN); } catch (e) { return []; }
-    const m = u.pathname.match(/^\/(artist|label|recording)\/([0-9a-f-]{36})\/edit\/?$/i);
+    const m = u.pathname.match(/^\/(artist|label|recording|release|release-group)\/([0-9a-f-]{36})\/edit\/?$/i);
     if (!m) return [];
-    const entityType = normalizeEntityType(m[1]);
+    const entityType = normalizeEntityType(m[1]);   // 'release-group' -> 'release_group'
     const mbid = m[2].toLowerCase();
-    const prefix = `edit-${m[1].toLowerCase()}.`;
+    const prefix = `edit-${entityType}.`;
     const note = u.searchParams.get(prefix + 'edit_note') || '';
     const byIndex = {};
     for (const [key, val] of u.searchParams) {
@@ -756,6 +786,19 @@
       ta.dispatchEvent(new win.Event('change', { bubbles: true }));
       return true;
     } catch (e) { return false; }
+  }
+  // #495: the release editor's own "Enter edit" button lives inside its
+  // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
+  // active) — a bare element.click() on the tab link does nothing (jQuery UI
+  // binds its handler expecting a real event), so dispatch a genuine
+  // MouseEvent instead, exactly as a real click would arrive. No-op (returns
+  // false) on any page that isn't actually tabbed this way.
+  function activateReleaseEditNoteTab(doc) {
+    const nav = doc.querySelector('#release-editor .ui-tabs-nav, #release-editor ul.ui-tabs-nav');
+    const a = nav && [...nav.querySelectorAll('a')].find(x => (x.getAttribute('href') || '') === '#edit-note');
+    if (!a) return false;
+    a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: doc.defaultView }));
+    return true;
   }
   // harmonyNote is deliberately NOT re-inserted here: buildSeedEditUrl already
   // put it in the page's edit_note query param, so MB's own rendering has
@@ -1122,6 +1165,16 @@
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
     const noteSet = setEditNote(d2, w2, editNoteText(results));
     dbg(tag, `edit note set = ${noteSet}`);
+    // #495: unlike artist/label/recording's single-purpose edit page, the
+    // release editor is tabbed (Release information / Tracklist / Recordings
+    // / Edit note) and keeps its own "Enter edit" button (#enter-edit) inside
+    // the Edit note tab panel, display:none until that tab is genuinely
+    // activated — verified live: a bare .click() doesn't trigger jQuery UI's
+    // tab handler, but dispatching a real MouseEvent on the tab's own <a
+    // href="#edit-note"> does. Filling the External Links section above
+    // happens on the default-active Information tab regardless, so this only
+    // needs to run once, right before we go looking for the submit button.
+    if (item.entityType === 'release') activateReleaseEditNoteTab(d2);
     await wait(150);
     // manual-review path (openInTab, #467): fill the form and stop here — a human
     // reviews and clicks "Enter edit" themselves, exactly like a Harmony tab.
@@ -1197,7 +1250,7 @@
     const activeKeys = new Set(queue.filter(i => i.status === 'active').map(i => i.entityType + ':' + i.mbid));
     return queue.find(i => i.status === 'queued' && !activeKeys.has(i.entityType + ':' + i.mbid));
   }
-  function editUrl(item) { return `${MB_ORIGIN}/${item.entityType}/${item.mbid}/edit`; }
+  function editUrl(item) { return `${MB_ORIGIN}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit`; }
   // Same seed-url format Harmony itself uses (parseHarmonySeedUrl above decodes
   // exactly this) — MB's OWN edit-page JS reads these query params and pre-fills
   // the form NATIVELY as it renders, including auto-resolving an ambiguous
@@ -1242,7 +1295,7 @@
       (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
     }
     if (item.note) params.set(`${prefix}edit_note`, item.note);
-    return `${MB_TARGET}/${item.entityType}/${item.mbid}/edit?${params.toString()}`;
+    return `${MB_TARGET}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit?${params.toString()}`;
   }
 
   // "open in a real tab" (majkinetor, #467): same reason Harmony itself opens a
@@ -1370,17 +1423,24 @@
     return f;
   }
 
-  // #494: release items skip the iframe/form pipeline entirely — cover art
-  // has no MB edit-relationships form to seed. Ported from Art Station's
+  // #494: release cover art has no MB edit-relationships form to seed, so it
+  // never goes through the iframe/form pipeline — ported from Art Station's
   // proven sign -> upload -> register cover-art API flow
   // (art_station.user.js): GET /ws/js/cover-art-upload/<mbid> reserves an
   // image_id/nonce + an archive.org presigned upload target, POST the file
   // bytes there, then POST the release's own add-cover-art form with that
   // id/nonce (scraped fresh for its CSRF/type_id fields, same as Art
   // Station's getPostForm/copyHidden/typeMapOf).
-  async function runCoverItem(item, tag, card) {
+  //
+  // #495: a release item can ALSO carry urls[] now (added through the normal
+  // iframe/form path, same as any other type) — two unrelated MB edits on the
+  // same entity. `priorLinks` ({status,error}) is passed when that path
+  // already ran on this SAME item; omitted entirely for the cover-only case
+  // (#494's original shape), so existing callers/tests are unaffected.
+  async function runCoverItem(item, tag, card, priorLinks) {
     updateWorkerLabel(card, item);
     const tStart = Date.now();
+    let coverError = '';
     try {
       if (!item.cover.url) throw new Error('no cover image URL yet (still resolving, or none found on this release)');
       log('info', `${tag} release ${item.mbid} — fetching cover image`);
@@ -1431,15 +1491,24 @@
       const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
       if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
 
-      item.status = 'done';
-      item.timing = { worker: tag, totalMs: Date.now() - tStart };
       log('info', `${tag} release ${item.mbid} — cover art added`);
     } catch (e) {
-      item.status = 'failed';
-      item.error = e.message || String(e);
-      item.timing = { worker: tag, totalMs: Date.now() - tStart };
-      log('error', `${tag} release ${item.mbid}: ${item.error}`);
+      coverError = e.message || String(e);
+      log('error', `${tag} release ${item.mbid}: cover art — ${coverError}`);
     }
+    const coverOk = !coverError;
+    if (priorLinks) {
+      const linksOk = priorLinks.status === 'done' || priorLinks.status === 'skipped';
+      if (linksOk && coverOk) { item.status = priorLinks.status; item.error = ''; }
+      else if (linksOk && !coverOk) { item.status = 'partial'; item.error = `cover art: ${coverError}`; }
+      else if (!linksOk && coverOk) { item.status = priorLinks.status === 'failed' ? 'partial' : priorLinks.status; item.error = priorLinks.error ? `links: ${priorLinks.error}` : ''; }
+      else { item.status = 'failed'; item.error = [priorLinks.error && `links: ${priorLinks.error}`, `cover art: ${coverError}`].filter(Boolean).join(' | '); }
+      dbg(tag, `release ${item.mbid} — combined outcome: links=${priorLinks.status} cover=${coverOk ? 'ok' : 'failed'} -> ${item.status}`);
+    } else {
+      item.status = coverOk ? 'done' : 'failed';
+      item.error = coverOk ? '' : coverError;
+    }
+    item.timing = { worker: tag, totalMs: Date.now() - tStart };
     updateWorkerLabel(card, null);
     scheduleRender('queue');
   }
@@ -1449,10 +1518,16 @@
       const item = nextQueued();
       if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
       item.status = 'active'; scheduleRender('queue');
-      if (item.entityType === 'release') {
+      // #494/#495: a release item with a cover but NO urls is cover-only —
+      // skip the iframe/form pipeline entirely (nothing to seed a form with).
+      // One WITH urls falls through to the normal pipeline below like any
+      // other type, and picks up the cover step afterward at each exit (see
+      // needsCover below) since the two are independent MB edits.
+      if (item.entityType === 'release' && !item.urls.length) {
         await runCoverItem(item, tag, card);
         continue;
       }
+      const needsCover = item.entityType === 'release' && !!item.cover.url;
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
       // already been used.
@@ -1517,6 +1592,10 @@
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
         log('error', `${tag} ${item.mbid}: edit page never loaded (waited 15s)`);
+        // #495: the cover upload is a plain API call, independent of this
+        // iframe — still worth attempting even though the link form never
+        // loaded.
+        if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
         retireCard(card, item.error); scheduleRender('queue');
         const replacement = spawnWorkerCard();
         if (replacement) workerLoop(replacement);
@@ -1570,6 +1649,10 @@
         item.timing = { worker: tag, loadMs, settleMs, fillMs: 0, submitMs: 0, totalMs: Date.now() - tNav };
         log('error', `${tag} ${item.mbid}: ${item.error}`);
       }
+      // #495: the cover upload is independent of how the link submission went
+      // (or whether it ran at all) — run it and fold its outcome into
+      // item.status/error before deciding whether this card can keep going.
+      if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
       renderQueue();
       if (r && (r.committed || r.noop)) {
         // a real submit happened — or there was genuinely nothing to submit, in
@@ -2145,6 +2228,9 @@
   }
 
   const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
+  // #495: a bare slice(0,3) collides — 'release' and 'release_group' both give
+  // 'rel'. Everything else still just takes its natural first 3 letters.
+  const TYPE_BADGE = { release_group: 'rg' };
   function renderRowDetail(it) {
     const results = it.urlResults || [];
     const urlRows = it.urls.map(u => {
@@ -2196,8 +2282,8 @@
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
           <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : it.entityType === 'release' ? 'Show/edit cover art image' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
-          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(it.entityType.slice(0, 3))}</span>
-          <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
+          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
+          <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
           ${it.urls.length > 1
             ? `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links</span>`
             : it.urls.length === 1
@@ -2356,5 +2442,7 @@
   // Test hook only (#467) — no behavior change.
   window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
-    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem };
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem,
+    // #495
+    entityUrlSegment, activateReleaseEditNoteTab };
 })();
