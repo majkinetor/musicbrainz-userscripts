@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.194540
+// @version      2026.8.12.201942
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.194540';
+  const VERSION = '2026.8.12.201942';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -1582,12 +1582,22 @@
       // all. Everything downstream then races a document that's about to be
       // replaced. Require the frame to actually be ON this entity's edit page
       // (and to have rendered the links section) before believing it's loaded.
+      // #495 (majkinetor, live on test.musicbrainz.org: "worker goes too fast
+      // over it... didn't add link"): a bare `input` fallback (meant to catch
+      // "no links yet, but the add-link input is ready") is satisfied by ANY
+      // input on the page — fine on artist/recording's small single-purpose
+      // form, but a release edit page has many unrelated inputs (title,
+      // barcode, tracklist...) that render well before the External Links
+      // section itself mounts, so this used to pass instantly and let the
+      // worker start filling before there was anything to fill. Matching
+      // findAddLinkInput's specific placeholder text instead of a bare
+      // `input` fixes it for every type, not just release.
       const loaded = await waitFor(() => {
         const w = frameWin(iframe), doc = frameDoc(iframe);
         if (!w || !doc || doc.readyState === 'loading') return null;
         let path = ''; try { path = w.location.pathname; } catch (e) { return null; }
         if (!path.includes(item.mbid)) return null;   // still about:blank / previous doc
-        return doc.querySelector('tr.external-link-item, input') ? true : null;
+        return (doc.querySelector('tr.external-link-item') || findAddLinkInput(doc)) ? true : null;
       }, 15000);
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
