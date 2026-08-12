@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.205844
+// @version      2026.8.12.211445
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.205844';
+  const VERSION = '2026.8.12.211445';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -407,13 +407,15 @@
           const before = existingRel.cover.candidates.length;
           p.coverCandidates.forEach(c => { if (!existingRel.cover.candidates.some(x => x.url === c.url)) existingRel.cover.candidates.push(c); });
           if (existingRel.cover.candidates.length > before) pickBestCover(existingRel);
+          if (existingRel.cover.existingCount == null) checkExistingCoverArt(existingRel);
           merged++;
           return;
         }
-        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', comment: p.comment || '', isrcs: [], cover: { url: '', candidates: p.coverCandidates }, name: null, urlResults: null, status: 'queued', error: '' };
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', comment: p.comment || '', isrcs: [], cover: { url: '', candidates: p.coverCandidates, existingCount: null }, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); } });
         pickBestCover(relItem);
+        checkExistingCoverArt(relItem);
         added++;
         return;
       }
@@ -467,14 +469,16 @@
         // reject empty-urls rows that have nothing else to offer either.
         const hasMeta = type === 'recording' && (r.comment || (Array.isArray(r.isrcs) && r.isrcs.some(Boolean)));
         if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
-        queue.push({
+        const reItem = {
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
           note: r.note || '', comment: r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
-          cover: { url: r.cover?.url || '', candidates: Array.isArray(r.cover?.candidates) ? r.cover.candidates : (Array.isArray(r.coverCandidates) ? r.coverCandidates : []) },
+          cover: { url: r.cover?.url || '', candidates: Array.isArray(r.cover?.candidates) ? r.cover.candidates : (Array.isArray(r.coverCandidates) ? r.coverCandidates : []), existingCount: null },
           name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
           error: r.error || '',
-        });
+        };
+        queue.push(reItem);
+        if (hasCover && reItem.status === 'queued') checkExistingCoverArt(reItem);
         added++;
       } else if (r.url) {
         flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', comment: r.comment || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
@@ -702,6 +706,25 @@
     item.cover.url = best.url;
     dbg('[cover]', `${item.mbid}: picked ${best.provider} (${best.width}x${best.height}, ${best.size}b) of ${candidates.length} candidate(s)`);
     scheduleRender('queue');
+  }
+  // #494 follow-up (majkinetor): "Harmony always presents cover art even if
+  // it is already present on MB... adding cover is not idempotent. We could
+  // at minimum show if release has any covers as a warning." The Cover Art
+  // Archive's own public API (no auth, CORS-open) is the standard way to
+  // check — 404 means no cover art at all, a JSON body's `images` count is
+  // how many exist already. Same fire-and-forget-after-queuing shape as
+  // pickBestCover; sets item.cover.existingCount (null while unknown, 0 once
+  // confirmed there's nothing there) for renderRowDetail to warn on.
+  async function checkExistingCoverArt(item) {
+    try {
+      const res = await fetch(`https://coverartarchive.org/release/${item.mbid}`, { headers: { Accept: 'application/json' } });
+      if (res.status === 404) { item.cover.existingCount = 0; scheduleRender('queue'); return; }
+      if (!res.ok) return;   // transient error — leave existingCount unknown rather than assert "none"
+      const data = await res.json();
+      item.cover.existingCount = Array.isArray(data.images) ? data.images.length : 0;
+      dbg('[cover]', `${item.mbid}: ${item.cover.existingCount} existing cover image(s) on the Cover Art Archive`);
+      scheduleRender('queue');
+    } catch (e) { dbg('[cover]', `${item.mbid}: existing-cover-art check failed — ${e.message}`); }
   }
   function makePendingToken() {
     return 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
@@ -2345,6 +2368,7 @@
             style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
         </div>
         ${it.cover.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${it.cover.candidates.map(c => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-url="${esc(c.url)}" title="${esc(c.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${c.url === it.cover.url ? '#1b2a4a' : '#ddd'};background:${c.url === it.cover.url ? '#eef1fa' : '#fff'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:#444">${esc(c.provider)}${c.width ? ` ${c.width}×${c.height}` : ''}</button>`).join('')}</div>` : ''}
+        ${it.cover.existingCount ? `<div style="color:#a35b00;font-size:10px">⚠ this release already has ${it.cover.existingCount} cover image${it.cover.existingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
     return urlRows + meta;
   }
@@ -2394,7 +2418,7 @@
               // #494: release rows never carry a urls[] entry — cover art is
               // their whole payload — so they always land here; show it
               // alongside comment/ISRC, each only when actually non-empty.
-              : `<span style="color:#999;font-style:italic;flex:1">no links — ${[it.comment ? 'comment' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover && it.cover.url ? 'cover' : ''].filter(Boolean).join(' + ') || '—'}</span>`}
+              : `<span style="color:#999;font-style:italic;flex:1" title="${it.cover && it.cover.existingCount ? esc(`already has ${it.cover.existingCount} cover image${it.cover.existingCount === 1 ? '' : 's'} — this may duplicate it`) : ''}">no links — ${[it.comment ? 'comment' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover && it.cover.url ? (it.cover.existingCount ? 'cover ⚠' : 'cover') : ''].filter(Boolean).join(' + ') || '—'}</span>`}
           <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${excluded ? 'excluded' : it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
@@ -2545,7 +2569,7 @@
   // Test hook only (#467) — no behavior change.
   window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
-    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl,
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
     entityUrlSegment, activateReleaseEditNoteTab,
     // #497
