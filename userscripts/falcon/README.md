@@ -60,7 +60,7 @@ Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appe
 
 The whole batch travels via a short random token backed by the userscript's own storage rather than a `?falcon=` payload in the URL — that avoids the URL-length ceiling a large batch used to hit.
 
-If Harmony's own URL carries the release's mbid (`?...&release_mbid=<mbid>` — present right after adding a release from Harmony), the button opens the panel on that release's relationship editor instead of MusicBrainz's homepage, so credits import — only possible once the release exists, not during its creation — is one less manual navigation away.
+If Harmony's own URL carries the release's mbid (`?...&release_mbid=<mbid>` — present right after adding a release from Harmony), the button opens the panel on that release's own page instead of MusicBrainz's homepage — not its relationship editor, since provider links Harmony doesn't cover, tagging, and adding to a collection all happen from the release page itself.
 
 ### Recording disambiguation and ISRC
 
