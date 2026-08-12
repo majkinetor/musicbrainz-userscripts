@@ -111,6 +111,37 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.close();
 }
 
+// 4. majkinetor, live: "It shows but only after 20 or so seconds... It
+//    should be prioritized" — on a big batch, checkExistingCoverArt's fetch
+//    was sitting behind every other item's cosmetic name lookup in
+//    mbThrottle's shared FIFO queue. Its priority=true call now jumps to the
+//    FRONT of the still-WAITING queue (can't preempt the MAX_CONCURRENT=4
+//    already in flight, but skips everything else waiting behind them).
+{
+  const page = await ctx.newPage();
+  await page.route('**/ws/2/artist/**', async route => { await new Promise(r => setTimeout(r, 3000)); route.fulfill({ status: 200, contentType: 'application/json', body: '{"name":"slow"}' }); });
+  await page.route('**/ws/2/release/eeeeeeee-3333-0000-0000-000000000000?fmt=json', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ 'cover-art-archive': { count: 1 } }) }));
+  await page.goto('https://musicbrainz.org/', { waitUntil: 'domcontentloaded' });
+  await page.addScriptTag({ content: code });
+  await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+  const order = await page.evaluate(async () => {
+    const seen = [];
+    // fill every concurrent slot (4) plus a backlog behind them with slow,
+    // low-priority "name lookup" style fetches, matching a big batch queued
+    // ahead of the cover item.
+    const slow = Array.from({ length: 8 }, (_, i) =>
+      window.__falconTest.mbThrottle.fetchJson(`/ws/2/artist/slow-${i}?fmt=json`).then(() => seen.push(`slow-${i}`)));
+    await new Promise(r => setTimeout(r, 50));   // let the first 4 actually start (become in-flight)
+    const priorityDone = window.__falconTest.checkExistingCoverArt({ mbid: 'eeeeeeee-3333-0000-0000-000000000000', cover: { existingCount: null } }).then(() => seen.push('priority-cover'));
+    await Promise.all([...slow, priorityDone]);
+    return seen;
+  });
+  console.log('resolution order:', JSON.stringify(order));
+  const priorityIdx = order.indexOf('priority-cover');
+  ck(priorityIdx >= 0 && priorityIdx < 5, `the priority cover check resolves near the front, not after all 8 slow lookups (resolved at position ${priorityIdx} of ${order.length})`);
+  await page.close();
+}
+
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);

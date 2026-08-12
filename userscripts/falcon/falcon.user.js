@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.220948
+// @version      2026.8.12.221303
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.220948';
+  const VERSION = '2026.8.12.221303';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -343,7 +343,12 @@
       item.resolve(null);
     }
     return {
-      fetchJson: (url, retries) => new Promise(resolve => { queue.push({ url, retries: retries == null ? 3 : retries, resolve }); drain(); }),
+      // #494 follow-up (majkinetor, live: a duplicate-cover-art warning took
+      // ~20s to appear on a batch with a full recording list ahead of it —
+      // "It should be prioritized"): `priority` jumps the FRONT of this
+      // FIFO queue rather than the back, for the (rare) callers whose result
+      // is actionable, not cosmetic like a name lookup.
+      fetchJson: (url, retries, priority) => new Promise(resolve => { const entry = { url, retries: retries == null ? 3 : retries, resolve }; priority ? queue.unshift(entry) : queue.push(entry); drain(); }),
       // Drop everything not yet started, resolving each caller with null. Used
       // when a run begins: a backlog of cosmetic name lookups must not spend the
       // rate-limit budget the workers need. In-flight requests are left to
@@ -722,7 +727,9 @@
   // item.cover.existingCount (null while unknown, 0 once confirmed there's
   // nothing there) for renderRowDetail to warn on.
   async function checkExistingCoverArt(item) {
-    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${item.mbid}?fmt=json`);
+    // priority: this is actionable safety info, not cosmetic like a name
+    // lookup — it shouldn't sit behind a whole batch's worth of those.
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${item.mbid}?fmt=json`, undefined, true);
     if (!j) { dbg('[cover]', `${item.mbid}: existing-cover-art check failed (no response)`); return; }   // transient — leave unknown rather than assert "none"
     item.cover.existingCount = (j['cover-art-archive'] && j['cover-art-archive'].count) || 0;
     dbg('[cover]', `${item.mbid}: ${item.cover.existingCount} existing cover image(s) per MB's own cover-art-archive field`);
