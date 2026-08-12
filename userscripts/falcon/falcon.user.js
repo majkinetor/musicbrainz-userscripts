@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.212205
+// @version      2026.8.12.213304
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.212205';
+  const VERSION = '2026.8.12.213304';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -709,22 +709,24 @@
   }
   // #494 follow-up (majkinetor): "Harmony always presents cover art even if
   // it is already present on MB... adding cover is not idempotent. We could
-  // at minimum show if release has any covers as a warning." The Cover Art
-  // Archive's own public API (no auth, CORS-open) is the standard way to
-  // check — 404 means no cover art at all, a JSON body's `images` count is
-  // how many exist already. Same fire-and-forget-after-queuing shape as
-  // pickBestCover; sets item.cover.existingCount (null while unknown, 0 once
-  // confirmed there's nothing there) for renderRowDetail to warn on.
+  // at minimum show if release has any covers as a warning." Originally
+  // called the Cover Art Archive's own API directly, but that's a genuine
+  // cross-origin request and it started failing outright live ("Failed to
+  // fetch" — a real userscript-manager sandbox is more restrictive here than
+  // a plain devtools fetch, unlike Falcon's other cross-origin need which
+  // goes through GM_xmlhttpRequest for exactly this reason). MB's own WS2
+  // release endpoint already reports the same information same-origin —
+  // `cover-art-archive.count` — so use that instead: no cross-origin call at
+  // all, through the same throttle every other MB lookup here uses. Same
+  // fire-and-forget-after-queuing shape as pickBestCover; sets
+  // item.cover.existingCount (null while unknown, 0 once confirmed there's
+  // nothing there) for renderRowDetail to warn on.
   async function checkExistingCoverArt(item) {
-    try {
-      const res = await fetch(`https://coverartarchive.org/release/${item.mbid}`, { headers: { Accept: 'application/json' } });
-      if (res.status === 404) { item.cover.existingCount = 0; scheduleRender('queue'); return; }
-      if (!res.ok) return;   // transient error — leave existingCount unknown rather than assert "none"
-      const data = await res.json();
-      item.cover.existingCount = Array.isArray(data.images) ? data.images.length : 0;
-      dbg('[cover]', `${item.mbid}: ${item.cover.existingCount} existing cover image(s) on the Cover Art Archive`);
-      scheduleRender('queue');
-    } catch (e) { dbg('[cover]', `${item.mbid}: existing-cover-art check failed — ${e.message}`); }
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${item.mbid}?fmt=json`);
+    if (!j) { dbg('[cover]', `${item.mbid}: existing-cover-art check failed (no response)`); return; }   // transient — leave unknown rather than assert "none"
+    item.cover.existingCount = (j['cover-art-archive'] && j['cover-art-archive'].count) || 0;
+    dbg('[cover]', `${item.mbid}: ${item.cover.existingCount} existing cover image(s) per MB's own cover-art-archive field`);
+    scheduleRender('queue');
   }
   function makePendingToken() {
     return 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);

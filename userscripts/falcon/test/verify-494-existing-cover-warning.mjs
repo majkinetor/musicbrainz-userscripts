@@ -1,8 +1,13 @@
 // #494 follow-up (majkinetor): "Harmony always presents cover art even if it
 // is already present on MB... adding cover is not idempotent. We could at
 // minimum show if release has any covers as a warning." checkExistingCoverArt
-// queries the Cover Art Archive's public API (404 = none, images[] = count)
-// and renderRowDetail/renderQueue surface it as a warning.
+// originally called the Cover Art Archive's own API directly, but that's a
+// real cross-origin request and it started failing live with "Failed to
+// fetch" on majkinetor's actual release (verified: MB's own WS2 response for
+// that exact release succeeds fine and already reports
+// cover-art-archive.count=1 same-origin) — so it now reads that field off
+// MB's own /ws/2/release endpoint instead, no cross-origin call at all.
+// renderRowDetail/renderQueue surface the result as a warning.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
@@ -18,13 +23,16 @@ await ctx.addInitScript(() => {
 });
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 
-// 1. checkExistingCoverArt: 404 -> 0, real images[] -> count, transient error
-//    -> leaves it unknown (null) rather than falsely asserting "none".
+// 1. checkExistingCoverArt: cover-art-archive.count=0 -> 0, count=2 -> 2, no
+//    response at all -> leaves it unknown (null) rather than falsely
+//    asserting "none".
 {
   const page = await ctx.newPage();
-  await page.route('**/coverartarchive.org/release/aaaaaaaa-0000-0000-0000-000000000000', route => route.fulfill({ status: 404, body: 'Not Found' }));
-  await page.route('**/coverartarchive.org/release/bbbbbbbb-0000-0000-0000-000000000000', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ images: [{ id: 1 }, { id: 2 }] }) }));
-  await page.route('**/coverartarchive.org/release/cccccccc-0000-0000-0000-000000000000', route => route.fulfill({ status: 503, body: 'busy' }));
+  await page.route('**/ws/2/release/aaaaaaaa-0000-0000-0000-000000000000?fmt=json', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ 'cover-art-archive': { count: 0, front: false } }) }));
+  await page.route('**/ws/2/release/bbbbbbbb-0000-0000-0000-000000000000?fmt=json', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ 'cover-art-archive': { count: 2, front: true } }) }));
+  // 500, not 503/429 — those two retry with backoff inside mbThrottle, which
+  // would just slow this test down for no extra coverage.
+  await page.route('**/ws/2/release/cccccccc-0000-0000-0000-000000000000?fmt=json', route => route.fulfill({ status: 500, body: 'error' }));
   await page.goto('https://musicbrainz.org/', { waitUntil: 'domcontentloaded' });
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
@@ -36,9 +44,9 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
     return { none: none.cover.existingCount, some: some.cover.existingCount, err: err.cover.existingCount };
   });
   console.log('checkExistingCoverArt results:', JSON.stringify(results));
-  ck(results.none === 0, `404 (no cover art at all) -> existingCount 0 (got ${results.none})`);
-  ck(results.some === 2, `2 images in the CAA response -> existingCount 2 (got ${results.some})`);
-  ck(results.err === null, `a transient 503 leaves existingCount unknown rather than asserting "none" (got ${results.err})`);
+  ck(results.none === 0, `cover-art-archive.count=0 -> existingCount 0 (got ${results.none})`);
+  ck(results.some === 2, `cover-art-archive.count=2 -> existingCount 2 (got ${results.some})`);
+  ck(results.err === null, `a failed WS2 lookup leaves existingCount unknown rather than asserting "none" (got ${results.err})`);
   await page.close();
 }
 
@@ -75,7 +83,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
 {
   const page = await ctx.newPage();
   let hit = false;
-  await page.route('**/coverartarchive.org/release/**', route => { hit = true; route.fulfill({ status: 404, body: 'nf' }); });
+  await page.route('**/ws/2/release/dddddddd-2222-0000-0000-000000000000?fmt=json', route => { hit = true; route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ 'cover-art-archive': { count: 0, front: false } }) }); });
   await page.goto('https://musicbrainz.org/', { waitUntil: 'domcontentloaded' });
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
@@ -83,8 +91,8 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
     { entityType: 'release', mbid: 'dddddddd-2222-0000-0000-000000000000', coverCandidates: [{ provider: 'Deezer', url: 'https://example.invalid/z.jpg' }] },
   ]));
   await page.waitForTimeout(500);
-  console.log('coverartarchive hit during addToQueue:', hit);
-  ck(hit, 'queuing a release with cover candidates automatically checks the Cover Art Archive');
+  console.log('WS2 release lookup hit during addToQueue:', hit);
+  ck(hit, 'queuing a release with cover candidates automatically checks MB\'s own cover-art-archive field');
   await page.close();
 }
 
