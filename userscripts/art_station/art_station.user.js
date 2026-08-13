@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.12.144654
+// @version      2026.8.13
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -401,7 +401,21 @@
     // a one-time snapshot at mount ran before that async check could ever resolve, so it read
     // "not shown yet" and never looked again).
     const w = scope.querySelector('.warning.caa-warning, .caa-warning');
-    const down = (w && iaVisible(w)) ? (w.textContent || '').replace(/\s+/g, ' ').trim() : '';
+    let down = (w && iaVisible(w)) ? (w.textContent || '').replace(/\s+/g, ' ').trim() : '';
+    // #487 follow-up (majkinetor, live: MB's own warning genuinely showed, but
+    // Art Station's never did): traced it — MB reveals `.caa-warning` via
+    // jQuery within ~1-2s of the async check resolving (fast, confirmed live),
+    // but a React re-render of that same region moments later replaces the
+    // node wholesale, resetting it back to its template-default hidden state
+    // — jQuery's one-shot toggle never gets reapplied. So a purely "live
+    // snapshot" read (the #487 fix) flickers true then false within the same
+    // second, and Art Station's own render() calls just aren't guaranteed to
+    // land inside that narrow window. Latch it instead: once genuinely seen
+    // revealed, keep showing it even if a later read finds the node reset —
+    // the real-world condition (archive.org overloaded) doesn't actually
+    // resolve that fast, so a stale-but-true warning is a far safer failure
+    // mode than silently dropping a real one.
+    if (!down && _iaDown) down = _iaDown;
     // #368: detected via the CAA 403 (darkened archive.org item) — language-independent, unlike the on-page
     // notice. Show MB's own localized wording when present, else a default.
     const dark = _caaDarkened ? (nativeDarkMsg() || 'This item is darkened at the Internet Archive — its cover art can’t be shown, added, removed or reordered.') : '';
@@ -422,7 +436,15 @@
     // #487: attributes too — MB reveals .caa-warning via jQuery .parent().toggle(), which flips an
     // inline style attribute, not childList/characterData (which is all this used to watch for).
     _iaObs.observe(scope, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'class'] });
-    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } }, 15000);   // stop once the page settles
+    // #487 follow-up (majkinetor, live: the notice never showed up even though
+    // MB's own native warning was genuinely visible): measured live, on a real
+    // "Internet Archive is currently experiencing difficulties" occurrence,
+    // MB's own async archive.org health check took OVER 20s to resolve — well
+    // past the 15s this used to watch for. Ironic self-defeating timeout: the
+    // one scenario this exists to catch (IA being slow) is exactly the one a
+    // short timeout misses. 2 minutes comfortably covers a slow response; a
+    // stray observer on one small subtree for that long costs nothing.
+    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } }, 120000);   // stop once the page settles
   }
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
   // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.

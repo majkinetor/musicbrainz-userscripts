@@ -65,6 +65,24 @@ const after = await page.evaluate(() => {
 console.log('after MB reveals the warning:', JSON.stringify(after));
 ck(!!after && /experiencing difficulties/i.test(after), `Art Station's own banner appears once MB reveals the warning (got ${JSON.stringify(after)})`);
 
+// #487 follow-up (majkinetor, live: MB's own native warning genuinely showed,
+// but Art Station's own banner never did): traced it on a real occurrence —
+// MB reveals `.caa-warning` via jQuery within ~1-2s (fast, confirmed live),
+// but a React re-render of that same region moments later replaces the node
+// wholesale, resetting it back to display:none — jQuery's one-shot toggle
+// never gets reapplied. A purely live snapshot read flickers true-then-false
+// within the same second. Simulate exactly that: reveal, then reset it back
+// to hidden (as the React re-render does), and confirm Art Station's own
+// banner LATCHES rather than disappearing again.
+await page.evaluate(() => { document.getElementById('test-ia-wrap').style.display = 'none'; });
+await page.waitForTimeout(600);
+const afterReset = await page.evaluate(() => {
+  const el = document.querySelector('.as-ia.as-ia-warn');
+  return el ? (el.textContent || '').trim() : null;
+});
+console.log('after MB\'s own re-render resets the wrapper back to hidden:', JSON.stringify(afterReset));
+ck(!!afterReset && /experiencing difficulties/i.test(afterReset), `Art Station's banner stays latched instead of disappearing again (got ${JSON.stringify(afterReset)})`);
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
