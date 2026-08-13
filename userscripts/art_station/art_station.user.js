@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.13
+// @version      2026.8.13.134221
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -436,15 +436,23 @@
     // #487: attributes too — MB reveals .caa-warning via jQuery .parent().toggle(), which flips an
     // inline style attribute, not childList/characterData (which is all this used to watch for).
     _iaObs.observe(scope, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'class'] });
-    // #487 follow-up (majkinetor, live: the notice never showed up even though
-    // MB's own native warning was genuinely visible): measured live, on a real
-    // "Internet Archive is currently experiencing difficulties" occurrence,
-    // MB's own async archive.org health check took OVER 20s to resolve — well
-    // past the 15s this used to watch for. Ironic self-defeating timeout: the
-    // one scenario this exists to catch (IA being slow) is exactly the one a
-    // short timeout misses. 2 minutes comfortably covers a slow response; a
-    // stray observer on one small subtree for that long costs nothing.
-    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } }, 120000);   // stop once the page settles
+    // #487 follow-up (majkinetor, live: "still doesn't work frequently. If I
+    // switch to native then go back it shows always" — the manual toggle
+    // forces a fresh check later, once the race below has settled, which is
+    // exactly what this backstop automates): a MutationObserver only fires
+    // once per coalesced batch of DOM changes — if MB's jQuery reveal and its
+    // OWN later React re-render (which resets `.caa-warning` back to the
+    // template's display:none, see detectIaNotice) land in the SAME batch,
+    // the observer can deliver only the batch's final (hidden-again) state
+    // and never dispatch a callback for the fleeting true moment in between —
+    // so even the #487-follow-up latch has nothing to latch onto. A plain
+    // interval poll doesn't have that blind spot: it just samples current
+    // state on a fixed cadence, so it can't miss a moment squeezed inside one
+    // mutation batch. 2 minutes comfortably covers even a slow archive.org
+    // response (measured live: up to 20s+); a 1s poll on one small subtree
+    // for that long costs nothing.
+    const iv = setInterval(detectIaNotice, 1000);
+    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } clearInterval(iv); }, 120000);   // stop once the page settles
   }
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
   // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.

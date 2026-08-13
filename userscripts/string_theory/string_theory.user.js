@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.13.131423
+// @version      2026.8.13.134318
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,8 +75,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.13.131423 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.13\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.9\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
+  console.log('%c String Theory %c v2026.8.13.134318 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.13.134221\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.9\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8042,7 +8042,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.13","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.13","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.13.134221","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.13.134221","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -8466,15 +8466,23 @@ try {
     // #487: attributes too — MB reveals .caa-warning via jQuery .parent().toggle(), which flips an
     // inline style attribute, not childList/characterData (which is all this used to watch for).
     _iaObs.observe(scope, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'class'] });
-    // #487 follow-up (majkinetor, live: the notice never showed up even though
-    // MB's own native warning was genuinely visible): measured live, on a real
-    // "Internet Archive is currently experiencing difficulties" occurrence,
-    // MB's own async archive.org health check took OVER 20s to resolve — well
-    // past the 15s this used to watch for. Ironic self-defeating timeout: the
-    // one scenario this exists to catch (IA being slow) is exactly the one a
-    // short timeout misses. 2 minutes comfortably covers a slow response; a
-    // stray observer on one small subtree for that long costs nothing.
-    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } }, 120000);   // stop once the page settles
+    // #487 follow-up (majkinetor, live: "still doesn't work frequently. If I
+    // switch to native then go back it shows always" — the manual toggle
+    // forces a fresh check later, once the race below has settled, which is
+    // exactly what this backstop automates): a MutationObserver only fires
+    // once per coalesced batch of DOM changes — if MB's jQuery reveal and its
+    // OWN later React re-render (which resets `.caa-warning` back to the
+    // template's display:none, see detectIaNotice) land in the SAME batch,
+    // the observer can deliver only the batch's final (hidden-again) state
+    // and never dispatch a callback for the fleeting true moment in between —
+    // so even the #487-follow-up latch has nothing to latch onto. A plain
+    // interval poll doesn't have that blind spot: it just samples current
+    // state on a fixed cadence, so it can't miss a moment squeezed inside one
+    // mutation batch. 2 minutes comfortably covers even a slow archive.org
+    // response (measured live: up to 20s+); a 1s poll on one small subtree
+    // for that long costs nothing.
+    const iv = setInterval(detectIaNotice, 1000);
+    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } clearInterval(iv); }, 120000);   // stop once the page settles
   }
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
   // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.
