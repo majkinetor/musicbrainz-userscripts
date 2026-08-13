@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.12.223444
+// @version      2026.8.13
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.12.223444';
+  const VERSION = '2026.8.13';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -424,10 +424,24 @@
         added++;
         return;
       }
+      // #500 (majkinetor): a release whose recordings have NO external links
+      // at all (only a cover + ISRCs) left scrapeHarmonyActions with zero
+      // recording tuples to zip isrcs onto — dropped silently, since Falcon
+      // had no independent view of the tracklist to place them on otherwise.
+      // This tuple carries no mbid/url of its own yet — resolveIsrcFallback
+      // fetches the release's actual tracklist and re-enters addToQueue with
+      // real per-recording isrc tuples once it has one, same
+      // queue-first-resolve-after shape as #494's cover candidates.
+      if (p.entityType === 'recording' && p.pendingIsrcs) {
+        resolveIsrcFallback(p.pendingIsrcs.mbid, p.pendingIsrcs.isrcs, p.pendingIsrcs.note);
+        return;
+      }
       const existing = queue.find(i => i.status === 'queued' && i.entityType === p.entityType && i.mbid === p.mbid);
       const linkTypeId = p.linkTypeId || null;
       if (existing) {
-        if (!existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
+        // #500: a url-less tuple (isrc-only fallback resolution) has nothing
+        // to add to urls[] — only #474's comment/isrc fields.
+        if (p.url && !existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
         if (p.note && !existing.note) existing.note = p.note;
         // #474: disambiguation + ISRC — recording-only, additive (a later tuple
         // for the same mbid shouldn't clobber a comment/isrc it already has).
@@ -435,12 +449,28 @@
         if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
     });
     return { merged, added };
+  }
+  // #500: fetches the release's real tracklist (recording mbids in track
+  // order) and places each Nth ISRC onto the Nth recording — the same
+  // positional convention scrapeHarmonyActions already uses when it DOES
+  // have link-tuples to zip onto, just resolved from MB's own API instead of
+  // scraped anchors when there are none.
+  async function resolveIsrcFallback(releaseMbid, isrcs, note) {
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${releaseMbid}?inc=recordings&fmt=json`, undefined, true);
+    if (!j || !Array.isArray(j.media)) { dbg('[isrc]', `${releaseMbid}: tracklist fetch failed, cannot place ${isrcs.length} ISRC(s)`); return; }
+    const recMbids = [];
+    for (const m of j.media) for (const t of (m.tracks || [])) recMbids.push(t.recording && t.recording.id);
+    const tuples = [];
+    isrcs.forEach((isrc, i) => { if (isrc && recMbids[i]) tuples.push({ entityType: 'recording', mbid: recMbids[i], note, isrc }); });
+    if (!tuples.length) { dbg('[isrc]', `${releaseMbid}: no ISRC could be matched to a track position`); return; }
+    const res = addToQueue(tuples);
+    log('info', `resolved ${res.added + res.merged} ISRC-only recording(s) from ${releaseMbid}'s tracklist (Harmony had no external links to zip them onto)`);
   }
   // Reads what the Export button writes, and is deliberately forgiving about the
   // shape: the wrapper object `{items:[...]}`, or a bare array of items, or a
@@ -542,8 +572,22 @@
             coverCandidates: it.coverCandidates.filter(c => c && c.url).map(c => ({ provider: String(c.provider || ''), url: String(c.url), width: Number(c.width) || undefined, height: Number(c.height) || undefined, size: Number(c.size) || undefined })),
           };
         }
+        // #500: an isrc-only fallback tuple carries no url/mbid of its own —
+        // just the release it needs to resolve a tracklist from.
+        if (it.pendingIsrcs && it.pendingIsrcs.mbid) {
+          return {
+            entityType: 'recording',
+            pendingIsrcs: {
+              mbid: String(it.pendingIsrcs.mbid).toLowerCase(),
+              isrcs: Array.isArray(it.pendingIsrcs.isrcs) ? it.pendingIsrcs.isrcs.map(x => String(x || '')) : [],
+              note: it.pendingIsrcs.note ? String(it.pendingIsrcs.note) : '',
+            },
+          };
+        }
         return { entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null };
-      }).filter(it => it.coverCandidates ? (MBID_RE.test(it.mbid) && it.coverCandidates.length) : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
+      }).filter(it => it.coverCandidates ? (MBID_RE.test(it.mbid) && it.coverCandidates.length)
+        : it.pendingIsrcs ? (MBID_RE.test(it.pendingIsrcs.mbid) && it.pendingIsrcs.isrcs.some(Boolean))
+        : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
     } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
   }
   // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
@@ -604,9 +648,12 @@
   // anchors gets isrcN. This assumes every track has at least one link action
   // — true of every real Harmony page seen so far, but a track with zero
   // links would shift every isrc after it. majkinetor is testing this by hand.
-  function scrapeHarmonyIsrcs() {
+  function harmonyMagicIsrcHref() {
     const a = [...document.querySelectorAll('a')].find(x => /open with magicisrc/i.test(x.textContent || ''));
-    const href = a && a.getAttribute('href');
+    return a && a.getAttribute('href');
+  }
+  function scrapeHarmonyIsrcs() {
+    const href = harmonyMagicIsrcHref();
     if (!href) return [];
     let u; try { u = new URL(href, location.href); } catch (e) { return []; }
     const out = [];
@@ -615,6 +662,24 @@
       if (m && v) out[+m[1] - 1] = v;
     }
     return out;
+  }
+  // #500 (majkinetor): "Harmony ISRC sending does not work when there are no
+  // links" — a release whose recordings have zero "Link external IDs"
+  // actions (only a cover + ISRCs) leaves scrapeHarmonyActions with nothing
+  // to zip isrcs onto at all, so they were dropped entirely rather than
+  // shifted. The SAME MagicISRC href already carries the release's own mbid
+  // (`musicbrainzid`) and a ready-made edit note (`edit-note`) — enough to
+  // resolve the real tracklist later (see resolveIsrcFallback) instead of
+  // relying on scraped anchors that don't exist here.
+  function harmonyIsrcFallback() {
+    const href = harmonyMagicIsrcHref();
+    if (!href) return null;
+    let u; try { u = new URL(href, location.href); } catch (e) { return null; }
+    const mbid = u.searchParams.get('musicbrainzid');
+    if (!mbid || !MBID_RE.test(mbid)) return null;
+    const isrcs = scrapeHarmonyIsrcs();
+    if (!isrcs.some(Boolean)) return null;
+    return { mbid: mbid.toLowerCase(), isrcs, note: u.searchParams.get('edit-note') || '' };
   }
   function scrapeHarmonyActions() {
     const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
@@ -756,7 +821,10 @@
   function ensureHarmonyButton() {
     const items = scrapeHarmonyActions();
     const cover = scrapeHarmonyCover();
-    const total = items.length + (cover ? 1 : 0);
+    // #500: the isrc fallback only matters when there are no recording
+    // tuples for scrapeHarmonyActions to have already zipped isrcs onto.
+    const isrcFallback = items.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
+    const total = items.length + (cover ? 1 : 0) + (isrcFallback ? isrcFallback.isrcs.filter(Boolean).length : 0);
     if (!harmonyBtn) {
       harmonyBtn = document.createElement('button');
       harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
@@ -765,10 +833,12 @@
       harmonyBtn.onclick = () => {
         const found = scrapeHarmonyActions();
         const foundCover = scrapeHarmonyCover();
-        if (!found.length && !foundCover) { alert(`${NAME}: no "Link external IDs" actions or cover art found on this page.`); return; }
+        const foundIsrcFallback = found.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
+        if (!found.length && !foundCover && !foundIsrcFallback) { alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`); return; }
         const token = makePendingToken();
         const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined }));
         if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates });
+        if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
         GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
         const relMbid = harmonyReleaseMbid();
         const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}` : `${MB_TARGET}/?falcon=${token}`;
@@ -2636,5 +2706,7 @@
     // #495
     entityUrlSegment, activateReleaseEditNoteTab,
     // #497
-    getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); } };
+    getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); },
+    // #500
+    harmonyIsrcFallback, resolveIsrcFallback };
 })();
