@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.13.134221
+// @version      2026.8.13.193439
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3370,7 +3370,16 @@
   .as-src-custom:not(:empty){margin:6px 0 2px}
   .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
   .as-src-all{justify-content:center;font-weight:700;color:#fff;background:var(--as-acc);border-color:var(--as-acc);margin-top:3px}
-  .as-src-all:hover{background:#4e329f;border-color:#4e329f}
+  /* #502 (chaban-mb): the generic .as-btn:hover:not(:disabled) rule (#493) has
+     the SAME specificity (one class + two pseudo-classes) as a bare
+     .as-src-all:hover — a tie that source order alone happened to resolve
+     correctly for .as-commit's own :hover:not(:disabled) rule (see below) but
+     NOT for this one, since it never had the :not(:disabled) to match. Its
+     pale lavender hover background then won outright, leaving this button's
+     white text unreadable on it — same failure mode as #493, different
+     button. Matching :not(:disabled) restores the tie (already positioned
+     after the generic rule, so it wins it) instead of just losing outright. */
+  .as-src-all:hover:not(:disabled){background:#4e329f;border-color:#4e329f}
   .as-src-ic{width:16px;height:16px;object-fit:contain;flex:0 0 auto}
   .as-src-n{opacity:.85}
   .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
