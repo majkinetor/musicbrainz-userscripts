@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.13
+// @version      2026.8.14
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.13';
+  const VERSION = '2026.8.14';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2441,7 +2441,12 @@
     fitBars();
   }
 
-  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
+  const DOT = { queued: '#999999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
+  // #506 (majkinetor): "queue processing status fields should have color which
+  // should be used for row background in unintrusive way" — same palette as the
+  // status dot, just a faint tint (~7% alpha) so it reads at a glance without
+  // fighting the row's text for attention.
+  const ROW_BG = Object.fromEntries(Object.entries(DOT).map(([k, v]) => [k, v + '12']));
   // #495: a bare slice(0,3) collides — 'release' and 'release_group' both give
   // 'rel'. Everything else still just takes its natural first 3 letters.
   const TYPE_BADGE = { release_group: 'rg' };
@@ -2517,7 +2522,7 @@
       // outcome — an already active/done/failed item is never affected).
       const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
       return `
-      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3;${excluded ? 'opacity:.45' : ''}">
+      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3;background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
         <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
           <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : it.entityType === 'release' ? 'Show/edit cover art image' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
