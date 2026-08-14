@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.7.19
+// @version      2026.8.14.144435
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -13,6 +13,8 @@
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==
 
 (() => {
@@ -4822,10 +4824,32 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       _optsHost.appendChild(wrap);
       return sel;
     }
+    const gmLoad = (key) => {
+      try {
+        const v = GM_getValue(key, void 0);
+        if (v !== void 0) return v;
+      } catch (e) {
+      }
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw != null) {
+          GM_setValue(key, raw);
+          return raw;
+        }
+      } catch (e) {
+      }
+      return void 0;
+    };
+    const gmSave = (key, raw) => {
+      try {
+        GM_setValue(key, raw);
+      } catch (e) {
+      }
+    };
     const OPTS_KEY = "discogs-importer-opts";
     let savedOpts = {};
     try {
-      savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
+      savedOpts = JSON.parse(gmLoad(OPTS_KEY) || "{}");
     } catch (e) {
     }
     if (!savedOpts.createWorksReset421) {
@@ -4833,7 +4857,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       savedOpts.createWorksReset421 = true;
       delete savedOpts.createWorks;
       try {
-        localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts));
+        gmSave(OPTS_KEY, JSON.stringify(savedOpts));
       } catch (e) {
       }
     }
@@ -4937,7 +4961,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     });
     const saveOpts = () => {
       try {
-        localStorage.setItem(OPTS_KEY, JSON.stringify({
+        gmSave(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
           useWorks: useWorksCb.checked,
@@ -4984,7 +5008,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     outputDiv.append(reviewSlot, logPanel);
     outputDiv.dataset.logfilter = "all";
     const applyLogOpen = () => {
-      const open = localStorage.getItem(LOG_OPEN_KEY) === "1";
+      const open = gmLoad(LOG_OPEN_KEY) === "1";
       outputDiv.classList.toggle("log-open", open);
       logToggleBtn.classList.toggle("active", open);
     };
@@ -4996,7 +5020,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       outputDiv.classList.toggle("log-open", open);
       logToggleBtn.classList.toggle("active", open);
       try {
-        localStorage.setItem(LOG_OPEN_KEY, open ? "1" : "0");
+        gmSave(LOG_OPEN_KEY, open ? "1" : "0");
       } catch (e) {
       }
     };
@@ -5045,7 +5069,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       outputDiv.classList.add("log-open");
       logToggleBtn.classList.add("active");
       try {
-        localStorage.setItem(LOG_OPEN_KEY, "1");
+        gmSave(LOG_OPEN_KEY, "1");
       } catch (e) {
       }
       outputDiv.dataset.logfilter = f;

@@ -168,6 +168,16 @@ export async function injectUserscript(page) {
             scriptHandler: 'Playwright',
             version: 'test',
         };
+        // #501: a real (Map-backed) GM_getValue/GM_setValue, not a no-op — settings
+        // (discogs-importer-opts, discogs-importer-log-open) live there now.
+        (function () {
+            if (window.GM_getValue) return;
+            const store = new Map();
+            window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
+            window.GM_setValue = (k, v) => store.set(k, v);
+            window.GM_deleteValue = k => store.delete(k);
+            window.__gmStore = store;
+        })();
     `;
     await page.addScriptTag({ content: shim + code });
     // Wait for the script's import bar to appear (means it's bootstrapped).
