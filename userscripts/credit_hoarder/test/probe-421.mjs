@@ -10,10 +10,18 @@ const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-p
 const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
 await page.addInitScript(() => {
-  window.GM_getValue = (k, d) => d; window.GM_setValue = () => {}; window.GM_xmlhttpRequest = () => {};
+  // #501: a real (Map-backed) GM store, not a no-op — settings now live there,
+  // not in localStorage, once the one-time migration below adopts them.
+  const gmStore = new Map();
+  window.GM_getValue = (k, d) => gmStore.has(k) ? gmStore.get(k) : d;
+  window.GM_setValue = (k, v) => gmStore.set(k, v);
+  window.__gmStore = gmStore;
+  window.GM_xmlhttpRequest = () => {};
   window.GM_info = { script: { name: 'CH', version: 't', homepageURL: 'x' } };
   window.unsafeWindow = window;
-  // a veteran user with the dangerous mode saved (pre-#421 state)
+  // a veteran user with the dangerous mode saved (pre-#421 state) — seeded into
+  // localStorage (the pre-#501 world); GM storage is empty, so the migration
+  // shim adopts this on first load.
   window.localStorage.setItem('discogs-importer-opts', JSON.stringify({ tracklist: true, createWorksMode: 'when-missing' }));
 });
 await page.goto('https://musicbrainz.org/release/3cc7b91d-d9c3-4b1e-9d52-37c15aa17fc4/edit-relationships', { waitUntil: 'domcontentloaded' });
@@ -25,7 +33,7 @@ await page.waitForTimeout(1000);
 
 const r = await page.evaluate(() => {
   const sel = [...document.querySelectorAll('.discogs-select-wrap select')].find(s => [...s.options].some(o => o.value === 'when-needed'));
-  const opts0 = JSON.parse(localStorage.getItem('discogs-importer-opts'));
+  const opts0 = JSON.parse(window.__gmStore.get('discogs-importer-opts'));
   const out = { options: [...sel.options].map(o => o.value), initial: sel.value, resetTo: opts0.createWorksMode, flag: opts0.createWorksReset421 === true };
   // select 'when needed' → popup must appear
   sel.value = 'when-needed'; sel.dispatchEvent(new Event('change', { bubbles: true }));
@@ -36,7 +44,7 @@ const r = await page.evaluate(() => {
   ov?.querySelector('button')?.click();
   out.popupClosed = !document.querySelector('.discogs-cw-warn-ov');
   // the change handler also saved — the reset flag must survive that save
-  const opts1 = JSON.parse(localStorage.getItem('discogs-importer-opts'));
+  const opts1 = JSON.parse(window.__gmStore.get('discogs-importer-opts'));
   out.afterSave = { mode: opts1.createWorksMode, flag: opts1.createWorksReset421 === true };
   // selecting 'never' must NOT pop the warning
   sel.value = 'never'; sel.dispatchEvent(new Event('change', { bubbles: true }));

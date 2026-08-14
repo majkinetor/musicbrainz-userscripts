@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.08.11.125458
+// @version      2026.08.14.143404
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md
 // @match        https://*.bandcamp.com/album/*
-// @grant        none
+// @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
 // @license      MIT
 // @downloadURL  https://update.greasyfork.org/scripts/571566/Bandcamp%20Player%20Enhanced.user.js
 // @updateURL    https://update.greasyfork.org/scripts/571566/Bandcamp%20Player%20Enhanced.meta.js
@@ -23,8 +25,29 @@
     const MUTE_KEY      = 'bcp_muted';
     const BAR_H         = 72;
     const PREVIEW_SECS  = 30; // seconds to play per track in preview mode
-    const VERSION       = '2026.08.11.125458'; // keep in sync with @version — @grant none, so no GM_info to read it from
+    const VERSION       = '2026.08.14.143404'; // keep in sync with @version (fallback when GM_info is unavailable)
     const HOMEPAGE_URL  = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md';
+    // #501: unsafeWindow reaches the page's own real `window` — Bandcamp's inline
+    // script attaches TralbumData directly to it, invisible through a sandboxed
+    // `window` reference once real @grant entries (GM_getValue/GM_setValue, added
+    // for settings below) take this script out of the old @grant-none passthrough
+    // mode. Falls through to plain `window` when unsafeWindow isn't defined
+    // (Playwright/test mode).
+    const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
+        : (typeof window !== 'undefined') ? window : globalThis;
+    // #501: settings persistence lives in GM storage (backed up/synced by the
+    // script manager) instead of localStorage (browser-profile-only — invisible to
+    // a script manager backup/restore or a move to another browser). One-time
+    // migration: if GM storage is empty but an old localStorage value exists,
+    // adopt it once and write through to GM storage from then on; the old
+    // localStorage key is left in place, unused, so nothing is destructively
+    // deleted.
+    function gmLoad(key) {
+        try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
+        try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
+        return undefined;
+    }
+    function gmSave(key, raw) { try { GM_setValue(key, raw); } catch (e) {} }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -44,26 +67,27 @@
 
     // ─── Volume persistence ────────────────────────────────────────────────────────
     // Use sessionStorage for cross-page persistence within the tab;
-    // also write to localStorage so new tabs inherit the value.
+    // also write to GM storage so new tabs inherit the value.
 
     function saveVol(v, muted) {
         try {
-            localStorage.setItem(VOL_KEY,  v);
-            localStorage.setItem(MUTE_KEY, muted ? '1' : '0');
+            gmSave(VOL_KEY,  v);
+            gmSave(MUTE_KEY, muted ? '1' : '0');
             sessionStorage.setItem(VOL_KEY,  v);
             sessionStorage.setItem(MUTE_KEY, muted ? '1' : '0');
         } catch(e) {}
     }
     function loadVol() {
         try {
-            // prefer sessionStorage (same tab, most recent)
-            const v = parseFloat(sessionStorage.getItem(VOL_KEY) ?? localStorage.getItem(VOL_KEY));
+            // prefer sessionStorage (same tab, most recent) — genuinely tab-scoped,
+            // not a "setting" — then the GM-stored default that seeds new tabs
+            const v = parseFloat(sessionStorage.getItem(VOL_KEY) ?? gmLoad(VOL_KEY));
             return isNaN(v) ? 1 : Math.max(0, Math.min(1, v));
         } catch(e) { return 1; }
     }
     function loadMuted() {
         try {
-            const s = sessionStorage.getItem(MUTE_KEY) ?? localStorage.getItem(MUTE_KEY);
+            const s = sessionStorage.getItem(MUTE_KEY) ?? gmLoad(MUTE_KEY);
             return s === '1';
         } catch(e) { return false; }
     }
@@ -75,13 +99,13 @@
 
     function loadHideOpts() {
         try {
-            const raw = localStorage.getItem(HIDE_KEY);
+            const raw = gmLoad(HIDE_KEY);
             if (!raw) return { ...HIDE_DEFAULTS };
             return { ...HIDE_DEFAULTS, ...JSON.parse(raw) };
         } catch(e) { return { ...HIDE_DEFAULTS }; }
     }
     function saveHideOpts(opts) {
-        try { localStorage.setItem(HIDE_KEY, JSON.stringify(opts)); } catch(e) {}
+        try { gmSave(HIDE_KEY, JSON.stringify(opts)); } catch(e) {}
     }
 
     let hideOpts = loadHideOpts();
@@ -91,10 +115,10 @@
     const THEME_KEY = 'bcp_theme';
 
     function loadTheme() {
-        try { return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light'; } catch(e) { return 'light'; }
+        try { return gmLoad(THEME_KEY) === 'dark' ? 'dark' : 'light'; } catch(e) { return 'light'; }
     }
     function saveTheme(t) {
-        try { localStorage.setItem(THEME_KEY, t); } catch(e) {}
+        try { gmSave(THEME_KEY, t); } catch(e) {}
     }
 
     let theme = loadTheme();
@@ -108,12 +132,12 @@
 
     function loadScale() {
         try {
-            const v = parseInt(localStorage.getItem(SCALE_KEY), 10);
+            const v = parseInt(gmLoad(SCALE_KEY), 10);
             return (v && v >= SCALE_MIN && v <= SCALE_MAX) ? v : 100;
         } catch(e) { return 100; }
     }
     function saveScale(v) {
-        try { localStorage.setItem(SCALE_KEY, String(v)); } catch(e) {}
+        try { gmSave(SCALE_KEY, String(v)); } catch(e) {}
     }
 
     let scale = loadScale();
@@ -126,10 +150,10 @@
     const PRELOAD_KEY = 'bcp_preload';
 
     function loadPreloadEnabled() {
-        try { return localStorage.getItem(PRELOAD_KEY) !== '0'; } catch(e) { return true; }
+        try { return gmLoad(PRELOAD_KEY) !== '0'; } catch(e) { return true; }
     }
     function savePreloadEnabled(v) {
-        try { localStorage.setItem(PRELOAD_KEY, v ? '1' : '0'); } catch(e) {}
+        try { gmSave(PRELOAD_KEY, v ? '1' : '0'); } catch(e) {}
     }
 
     let preloadEnabled = loadPreloadEnabled();
@@ -138,9 +162,9 @@
 
     function getAlbumInfo() {
         let artist = '', album = '';
-        if (window.TralbumData) {
-            artist = window.TralbumData.artist || '';
-            album  = window.TralbumData.current?.title || '';
+        if (pageWindow.TralbumData) {
+            artist = pageWindow.TralbumData.artist || '';
+            album  = pageWindow.TralbumData.current?.title || '';
         }
         if (!artist) {
             const el = document.querySelector('#band-name-location .title, .albumTitle ~ .artist, span[itemprop="byArtist"] span, #name-section p span');
@@ -160,8 +184,8 @@
     // ─── Track info ────────────────────────────────────────────────────────────────
 
     function getAllTracks() {
-        if (window.TralbumData?.trackinfo?.length)
-            return window.TralbumData.trackinfo.map(t => t.title || '');
+        if (pageWindow.TralbumData?.trackinfo?.length)
+            return pageWindow.TralbumData.trackinfo.map(t => t.title || '');
         const rows = document.querySelectorAll('.track_row_view');
         if (rows.length)
             return Array.from(rows).map(r => { const t = r.querySelector('.track-title, .title'); return t ? t.textContent.trim() : ''; });
@@ -171,9 +195,9 @@
 
     function getCurrentIndex() {
         const audio = getAudio();
-        if (audio?.src && window.TralbumData?.trackinfo?.length) {
+        if (audio?.src && pageWindow.TralbumData?.trackinfo?.length) {
             const src = audio.src;
-            const idx = window.TralbumData.trackinfo.findIndex(t =>
+            const idx = pageWindow.TralbumData.trackinfo.findIndex(t =>
                 t.file && Object.values(t.file).some(url => {
                     const key = url.split('?')[0].split('/').pop().split('.')[0];
                     return key && src.includes(key);
@@ -216,7 +240,7 @@
     function preloadFirstTrack() {
         if (preloadDone) return;
         if (!preloadEnabled) { preloadDone = true; preloadReady = true; return; }
-        if (!window.TralbumData?.trackinfo?.length) return;
+        if (!pageWindow.TralbumData?.trackinfo?.length) return;
 
         // Find the clickable element inside the first track row
         const firstRow = document.querySelector('.track_row_view');

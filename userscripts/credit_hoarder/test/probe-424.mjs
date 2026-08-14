@@ -11,7 +11,12 @@ const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-p
 const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
 await page.addInitScript(() => {
-  window.GM_getValue = (k, d) => d; window.GM_setValue = () => {}; window.GM_xmlhttpRequest = () => {};
+  // #501: a real (Map-backed) GM store, not a no-op — settings now live there.
+  const gmStore = new Map();
+  window.GM_getValue = (k, d) => gmStore.has(k) ? gmStore.get(k) : d;
+  window.GM_setValue = (k, v) => gmStore.set(k, v);
+  window.__gmStore = gmStore;
+  window.GM_xmlhttpRequest = () => {};
   window.GM_info = { script: { name: 'CH', version: 't', homepageURL: 'x' } };
   window.unsafeWindow = window;
   window.localStorage.removeItem('discogs-importer-opts');
@@ -44,7 +49,7 @@ const r = await page.evaluate(() => {
     useLbl.click();
     await sleep(100);
     out.afterUncheck = { disabled: sel.disabled, opacity: wrap.style.opacity };
-    const saved0 = JSON.parse(localStorage.getItem('discogs-importer-opts') || '{}');
+    const saved0 = JSON.parse(window.__gmStore.get('discogs-importer-opts') || '{}');
     out.savedOff = saved0.useWorks === false && saved0.createWorksMode === 'never';
     // re-check with 'create needed' selected → warning pops
     sel.disabled = false; sel.value = 'when-needed'; sel.dispatchEvent(new Event('change', { bubbles: true }));
@@ -53,7 +58,7 @@ const r = await page.evaluate(() => {
     await sleep(150);
     out.warnOnEnable = !!document.querySelector('.discogs-cw-warn-ov');
     document.querySelector('.discogs-cw-warn-ov button')?.click();
-    const saved1 = JSON.parse(localStorage.getItem('discogs-importer-opts') || '{}');
+    const saved1 = JSON.parse(window.__gmStore.get('discogs-importer-opts') || '{}');
     out.savedOn = saved1.useWorks === true && saved1.createWorksMode === 'when-needed' && saved1.createWorksReset421 === true;
     out.reDisabled = sel.disabled;
     return out;

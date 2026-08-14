@@ -376,7 +376,7 @@ The same gestures work on the **track side** too (setting the track from its rec
 
 ## Settings
 
-Accessed using the **⚙** button on the interface switcher button **Original / Apollo**. Settings are saved in the browser (localStorage) and persist across releases.
+Accessed using the **⚙** button on the interface switcher button **Original / Apollo**. Settings are saved via the userscript manager's own storage — covered by its backup/restore and cross-browser sync, unlike a plain browser localStorage save — and persist across releases.
 
 ### General
 

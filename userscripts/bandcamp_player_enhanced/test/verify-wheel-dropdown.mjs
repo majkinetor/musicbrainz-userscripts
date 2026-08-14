@@ -20,6 +20,12 @@ const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
 const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
+// #501: GM_getValue/GM_setValue mock backed by real (namespaced) localStorage.
+await page.addInitScript(() => {
+    window.GM_getValue = (k, d) => { const v = localStorage.getItem('__gm__' + k); return v === null ? d : v; };
+    window.GM_setValue = (k, v) => { localStorage.setItem('__gm__' + k, v); };
+    window.GM_deleteValue = k => localStorage.removeItem('__gm__' + k);
+});
 
 await page.goto(ALBUM_URL, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(500);

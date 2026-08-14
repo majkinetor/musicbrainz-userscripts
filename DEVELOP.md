@@ -50,6 +50,50 @@ Run the dry run first and read the plan. `--yes` must be run on a clean `main`.
 - `skip changelog`, `wontfix` — excluded from the changelog.
 - `released` — applied by the publish run so an issue is only ever changelogged once.
 
+## Conventions
+
+### Settings storage
+
+**User-facing settings/preferences use `GM_setValue`/`GM_getValue`, never `localStorage`.**
+GM storage is covered by the userscript manager's own backup/restore and cross-browser sync;
+`localStorage` is scoped to the browser profile and isn't — a user restoring a manager backup or
+moving to a new browser silently loses every localStorage-based setting (#501). It's also
+per-script, unlike `localStorage` which every script on the same origin shares — two scripts using
+the same literal key string will otherwise leak state into each other by accident, not by design.
+
+- Declare `// @grant GM_getValue` and `// @grant GM_setValue` in the userscript header.
+- `localStorage`/`sessionStorage` are still the right tool for things that are genuinely NOT a
+  setting: TTL caches (e.g. a resolved-link cache), shared auth/session tokens read by more than
+  one script off the same MB origin, and tab-scoped ephemeral state (`sessionStorage` only — a
+  volume level mid-playback, not a durable preference).
+- When migrating an existing script off `localStorage`, use a one-time, non-destructive shim —
+  adopt the old localStorage value into GM storage if GM storage is empty, then write through to
+  GM storage from then on; leave the old localStorage key in place (unused) rather than deleting
+  it, so a bug in the migration never loses data:
+  ```js
+  const gmLoad = (key) => {
+    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
+    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
+    return undefined;
+  };
+  const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
+  ```
+- A script that needs page-context globals (e.g. reading a variable another page script attached
+  to `window`) can't combine that with `@grant none` once it also needs `GM_setValue`/`GM_getValue`
+  — `@grant none` runs the script unsandboxed in the page's own context, which is mutually
+  exclusive with declaring real grants. Use `@grant unsafeWindow` instead and read page globals off
+  a `pageWindow` that falls through to plain `window` when `unsafeWindow` isn't defined (Playwright
+  / test mode):
+  ```js
+  const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
+      : (typeof window !== 'undefined') ? window : globalThis;
+  ```
+- Playwright tests must mock `GM_getValue`/`GM_setValue` with something that actually stores a
+  value (a `Map`, or — if the test does a real `page.reload()` and needs the value to survive it —
+  namespaced `localStorage` keys via `page.addInitScript`), not a no-op (`() => {}` / `() => d`).
+  A no-op silently swallows every save, which reads as "it works" right up until a persistence
+  test's assertions quietly stop meaning anything.
+
 ## Bot identity
 
 AI-driven commits/issues use the **`claude-ai-milic`** account; the token lives in

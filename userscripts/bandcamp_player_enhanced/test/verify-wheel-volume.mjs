@@ -17,6 +17,14 @@ const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
 const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
+// #501: GM_getValue/GM_setValue mock backed by real (namespaced) localStorage —
+// unlike an in-page Map, this survives a real page.reload() the same way actual
+// GM storage would.
+await page.addInitScript(() => {
+    window.GM_getValue = (k, d) => { const v = localStorage.getItem('__gm__' + k); return v === null ? d : v; };
+    window.GM_setValue = (k, v) => { localStorage.setItem('__gm__' + k, v); };
+    window.GM_deleteValue = k => localStorage.removeItem('__gm__' + k);
+});
 
 await page.goto(ALBUM_URL, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(500);
@@ -24,8 +32,10 @@ await page.addScriptTag({ content: code });
 await page.waitForSelector('#bc-sticky-player', { timeout: 15000 });
 await page.waitForTimeout(500);
 
-// pin a known starting volume so the before/after comparison is deterministic
-await page.evaluate(() => { localStorage.setItem('bcp_volume', '0.5'); localStorage.setItem('bcp_muted', '0'); });
+// pin a known starting volume so the before/after comparison is deterministic —
+// seeded directly into the GM mock's namespaced key (the migration fallback path
+// isn't what this test is exercising; verify-501 covers migration itself).
+await page.evaluate(() => { localStorage.setItem('__gm__bcp_volume', '0.5'); localStorage.setItem('__gm__bcp_muted', '0'); });
 await page.reload({ waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(500);
 await page.addScriptTag({ content: code });

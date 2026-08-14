@@ -1,6 +1,6 @@
 // Adds a Dark/Light theme option alongside the hide-page-elements options. The whole player's
 // CSS is driven by custom properties on #bc-sticky-player; .bcp-light overrides them. Verifies
-// theme applies live (no reload), persists via localStorage, and the settings panel itself is
+// theme applies live (no reload), persists via GM storage, and the settings panel itself is
 // legible in both themes.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
@@ -18,6 +18,14 @@ const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
 const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
+// #501: GM_getValue/GM_setValue mock backed by real (namespaced) localStorage —
+// unlike an in-page Map, this survives a real page.reload() the same way actual
+// GM storage would, which this test's persistence check relies on.
+await page.addInitScript(() => {
+    window.GM_getValue = (k, d) => { const v = localStorage.getItem('__gm__' + k); return v === null ? d : v; };
+    window.GM_setValue = (k, v) => { localStorage.setItem('__gm__' + k, v); };
+    window.GM_deleteValue = k => localStorage.removeItem('__gm__' + k);
+});
 
 await page.goto(ALBUM_URL, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(500);
