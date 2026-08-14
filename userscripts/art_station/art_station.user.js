@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.13.193439
+// @version      2026.8.14
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -939,7 +939,16 @@
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     root.querySelectorAll('.as-prov img').forEach(img => img.onerror = () => { const s = img.closest('.as-prov'); if (s) s.style.display = 'none'; });   // #249 hide a missing provider favicon
-    const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) { commit.onclick = enterEdit; commit.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; }   // #493: right-click — skip the review dialog
+    // #503 (majkinetor, live: a plain left click "immediately entered edit" —
+    // same as right-click, un-distinguishable in his own log): `onclick`
+    // always calls its handler with the click Event as the first argument.
+    // Assigning `enterEdit` directly meant every left click invoked
+    // `enterEdit(clickEvent)` — and a MouseEvent object is truthy, so
+    // `if (immediate)` read true on EVERY click, not just the real
+    // right-click path below. A destructive "Remove Front" batch nearly
+    // auto-committed on a routine click. Wrapping strips the event so a
+    // left click genuinely calls enterEdit() with no argument (falsy).
+    const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) { commit.onclick = () => enterEdit(); commit.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; }   // #493: right-click — skip the review dialog
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
     wireComments();
@@ -1137,7 +1146,7 @@
   const maybeClearSel = () => { if (SETTINGS.clearSelAfterOp) clearSel(); };
   function refreshStaged() {
     const n = opsCount(); const c = root.querySelector('.as-commit');
-    if (c) { c.innerHTML = commitInner(n); c.disabled = !n; if (!c.disabled) { c.onclick = enterEdit; c.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; } fitToolbar(); }   // #493
+    if (c) { c.innerHTML = commitInner(n); c.disabled = !n; if (!c.disabled) { c.onclick = () => enterEdit(); c.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; } fitToolbar(); }   // #493 (#503: onclick must not pass the click Event through as `immediate`)
   }
   // #234: when the toolbar's real items + gaps can't fit one row (the flex
   // spacers would have to collapse and it'd wrap), collapse the labelled buttons
