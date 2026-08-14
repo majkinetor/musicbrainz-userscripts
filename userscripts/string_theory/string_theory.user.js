@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.115715
+// @version      2026.8.14.194103
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -42,6 +42,7 @@
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/oauth2/oob*
 // @match        https://www.beatport.com/release/*
+// @grant        GM_listValues
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      isrc-api.soundexchange.com
@@ -75,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.14.115715 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.14.115259\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.9\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
+  console.log('%c String Theory %c v2026.8.14.194103 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.14.115259\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.14\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -22321,7 +22322,7 @@ ${lines}
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.9","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.9","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.14","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.14","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -22523,6 +22524,28 @@ ${lines}
     set:  (k, v) => { try { GM_setValue(k, v); } catch (e) {} },
     del:  (k)    => { try { GM_deleteValue(k); } catch (e) {} },
   };
+  // #501 follow-up (majkinetor, live: cluttered script-manager config from
+  // short-lived derived tokens riding along in a sync backup): same interface
+  // as `store` above, but backed by localStorage for values that are cheaply
+  // re-derived and gain nothing from syncing — access tokens silently
+  // re-minted from a refresh token, an app-level client-credentials token, an
+  // in-progress removal draft. The long-lived oauth_refresh_token itself
+  // STAYS on `store` (GM) — losing that means re-authorizing on every
+  // machine, which is the one thing here actually worth syncing.
+  const localStore = {
+    get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del: (k)    => { try { localStorage.removeItem(k); } catch (e) {} },
+  };
+  // #501 follow-up: one-time sweep deleting any oauth_access_token/
+  // oauth_access_expiry/tidal_token/tidal_token_exp/pending_removals_* a
+  // PRE-fix install already wrote to GM storage — everything above now
+  // reads/writes localStorage instead, so anything still in GM storage under
+  // these names is dead weight riding along in a sync backup for no reason.
+  try {
+    ['oauth_access_token', 'oauth_access_expiry', 'tidal_token', 'tidal_token_exp'].forEach(store.del);
+    (GM_listValues() || []).forEach(k => { if (k.startsWith('pending_removals_')) GM_deleteValue(k); });
+  } catch (e) {}
 
   /* ═══════════════════════════════════════════════════════════════════════
      GENERIC HTTP (GM_xmlhttpRequest promisified)
@@ -23353,11 +23376,12 @@ ${lines}
     return ac.map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('');
   }
   // Persisted pending Remove-ISRC edits for this release: { recId: [isrcs] }.
+  // A per-release draft, not a setting — #501 follow-up: localStorage, not GM.
   function pendKey() { return 'pending_removals_' + mbid; }
-  function loadPendingRemovals() { try { return JSON.parse(store.get(pendKey(), '') || '{}') || {}; } catch (e) { return {}; } }
+  function loadPendingRemovals() { try { return JSON.parse(localStorage.getItem(pendKey()) || '{}') || {}; } catch (e) { return {}; } }
   function savePendingRemovals(map) {
     const has = map && Object.keys(map).some(k => (map[k] || []).length);
-    if (has) store.set(pendKey(), JSON.stringify(map)); else store.del(pendKey());
+    try { if (has) localStorage.setItem(pendKey(), JSON.stringify(map)); else localStorage.removeItem(pendKey()); } catch (e) {}
   }
   function recordPendingRemoval(recId, isrcs) {
     const map = loadPendingRemovals();
@@ -23398,13 +23422,13 @@ ${lines}
       const j = JSON.parse(r.responseText || '{}');
       if (!j.refresh_token) throw new Error(j.error_description || j.error || ('token exchange failed (' + r.status + ')'));
       store.set('oauth_refresh_token', j.refresh_token);
-      store.set('oauth_access_token', j.access_token || '');
-      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      localStore.set('oauth_access_token', j.access_token || '');
+      localStore.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
     },
 
     async accessToken() {
-      const tok = store.get('oauth_access_token', '');
-      const exp = store.get('oauth_access_expiry', 0);
+      const tok = localStore.get('oauth_access_token', '');
+      const exp = localStore.get('oauth_access_expiry', 0);
       if (tok && Date.now() < exp - 60000) return tok;
       const refresh = this.refreshTok();
       if (!refresh) throw new Error('not authorized — open ⚙ Setup');
@@ -23417,13 +23441,14 @@ ${lines}
       const r = await gmPost(OAUTH.tokenUrl, body, { 'Content-Type': 'application/x-www-form-urlencoded' });
       const j = JSON.parse(r.responseText || '{}');
       if (!j.access_token) throw new Error(j.error_description || j.error || ('token refresh failed (' + r.status + ')'));
-      store.set('oauth_access_token', j.access_token);
-      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      localStore.set('oauth_access_token', j.access_token);
+      localStore.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
       return j.access_token;
     },
 
     signOut() {
-      ['oauth_refresh_token', 'oauth_access_token', 'oauth_access_expiry'].forEach(store.del);
+      store.del('oauth_refresh_token');
+      ['oauth_access_token', 'oauth_access_expiry'].forEach(localStore.del);
     },
   };
 
@@ -24058,15 +24083,15 @@ ${lines}
      TIDAL  (official API; app token via client-credentials — no user login)
   ═══════════════════════════════════════════════════════════════════════ */
   async function tidalToken() {
-    const tok = store.get('tidal_token', ''), exp = store.get('tidal_token_exp', 0);
+    const tok = localStore.get('tidal_token', ''), exp = localStore.get('tidal_token_exp', 0);
     if (tok && Date.now() < exp - 60000) return tok;
     const basic = btoa(TIDAL.clientId + ':' + TIDAL.clientSecret);
     const r = await gmPost(TIDAL.tokenUrl, 'grant_type=client_credentials',
       { 'Authorization': 'Basic ' + basic, 'Content-Type': 'application/x-www-form-urlencoded' });
     const j = JSON.parse(r.responseText || '{}');
     if (!j.access_token) throw new Error('Tidal auth failed (' + r.status + ')' + (j.error ? ': ' + j.error : ''));
-    store.set('tidal_token', j.access_token);
-    store.set('tidal_token_exp', Date.now() + ((j.expires_in || 14400) * 1000));
+    localStore.set('tidal_token', j.access_token);
+    localStore.set('tidal_token_exp', Date.now() + ((j.expires_in || 14400) * 1000));
     return j.access_token;
   }
   function isoDurToMmSs(iso) {
@@ -29032,7 +29057,7 @@ ${lines}
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.14","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.14","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -29046,9 +29071,23 @@ const MB_ORIGIN = location.origin;
 // tab and refresh, mirroring Credit Hoarder / Apollo Editor's own add-link channel.
 const PC_CHANNEL = ('BroadcastChannel' in window) ? new BroadcastChannel('platform-check-inject') : null;
 
+// #501 follow-up (majkinetor, live: his script-manager config was visibly
+// cluttered with these): one-time sweep deleting any pc:cache:v2:*/
+// pc:mbdata:*/pc:pending:* entries a PRE-fix install already wrote to GM
+// storage — cacheGet/mbDataGet/the pending-handoff reader all moved to
+// localStorage above, so anything still sitting in GM storage under these
+// prefixes is dead weight riding along in a sync backup for no reason.
+// Best-effort and cheap (a filter over already-tiny key lists); harmless to
+// re-run every load once nothing's left to find.
+try {
+    (GM_listValues() || []).forEach(k => {
+        if (k.startsWith('pc:cache:v2:') || k.startsWith('pc:mbdata:') || k.startsWith('pc:pending:')) GM_deleteValue(k);
+    });
+} catch (e) {}
+
 // ─── Release editor sub-pages (/edit, /edit-relationships) ────────────────
-// + click on /release stashes OK URLs in `pc:pending:<mbid>` and opens the
-// release's /edit page. We fill the "Add another link" input then set the
+// + click on /release stashes OK URLs in `pc:pending:<mbid>` (localStorage)
+// and opens the release's /edit page. We fill the "Add another link" input then set the
 // type chooser in the next-sibling <tr.relationship-item>'s <select.link-type>.
 if (/\/release\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathname)) {
     runInjectHelper('release');
@@ -29129,7 +29168,7 @@ async function runInjectHelper(entityType) {
         const mbid = (window.location.pathname.match(re) || [])[1];
         if (!mbid) return;
         const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
-        const raw  = GM_getValue(key, null);
+        const raw  = localStorage.getItem(key);
         // No pending payload means the user navigated to /edit themselves,
         // not via the panel's + button. Stay silent — banner noise on every
         // direct edit-page visit is worse than the diagnostic value (the
@@ -29321,7 +29360,7 @@ async function injectInto(urls, storageKey) {
         }
     }
 
-    if (injected > 0) GM_setValue(storageKey, null);
+    if (injected > 0) localStorage.removeItem(storageKey);
     // Set the edit note (as the script used to), and report the result quietly
     // inline next to the External links heading instead of a centred popup.
     const okUrls = reports.filter(r => r.ok).map(r => r.url);
@@ -31031,19 +31070,26 @@ async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label
 // `url` may be null when we've definitively concluded "no match exists on
 // this platform" (so we don't keep re-searching for niche releases that
 // genuinely aren't on Spotify/Bandcamp).
+// #501 follow-up (majkinetor, live: his script-manager config was cluttered
+// with pc:cache:v2:*/pc:mbdata:*/pc:pending:* entries riding along in a sync
+// backup) — these are same-origin (musicbrainz.org-only @match, no
+// cross-domain handoff need, unlike e.g. falcon's Harmony bridge or
+// isrc_scout's Beatport OAuth handoff), so localStorage is the right layer:
+// it's still shared across every musicbrainz.org tab, just not swept into a
+// script-manager sync/backup the way a real setting should be.
 function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
 function cacheGet(mbid, platform) {
-    const raw = GM_getValue(cacheKey(mbid, platform), null);
+    const raw = localStorage.getItem(cacheKey(mbid, platform));
     if (!raw) return null;
     try { return JSON.parse(raw); } catch { return null; }
 }
 function cacheSet(mbid, platform, entry) {
     if (!entry) return;
-    GM_setValue(cacheKey(mbid, platform), JSON.stringify(entry));
+    try { localStorage.setItem(cacheKey(mbid, platform), JSON.stringify(entry)); } catch (e) {}
 }
 function cacheClear(mbid) {
-    for (const p of ALL_PROVIDERS) GM_setValue(cacheKey(mbid, p), null);   // all providers — not a stale hardcoded subset (else ↻ leaves Tidal/Beatport/Volumo cached)
-    GM_setValue(mbDataKey(mbid), null);
+    for (const p of ALL_PROVIDERS) localStorage.removeItem(cacheKey(mbid, p));   // all providers — not a stale hardcoded subset (else ↻ leaves Tidal/Beatport/Volumo cached)
+    localStorage.removeItem(mbDataKey(mbid));
 }
 
 // MB-level metadata cache (artist, album, mbTracks, etc.) — written once per
@@ -31053,13 +31099,13 @@ function cacheClear(mbid) {
 // halting on "Halted: API status 503".
 function mbDataKey(mbid) { return `pc:mbdata:${mbid}`; }
 function mbDataGet(mbid) {
-    const raw = GM_getValue(mbDataKey(mbid), null);
+    const raw = localStorage.getItem(mbDataKey(mbid));
     if (!raw) return null;
     try { return JSON.parse(raw); } catch { return null; }
 }
 function mbDataSet(mbid, entry) {
     if (!entry) return;
-    GM_setValue(mbDataKey(mbid), JSON.stringify(entry));
+    try { localStorage.setItem(mbDataKey(mbid), JSON.stringify(entry)); } catch (e) {}
 }
 
 // Apply a cached row to the UI and log the hit. Preserves the cache entry's
@@ -33102,7 +33148,7 @@ document.getElementById('mb-refresh-btn').addEventListener('click', () => {
 });
 
 // + INJECT button: collect every confirmed (✓) URL that ISN'T already in MB's
-// url-rels, stash it under `pc:pending:<mbid>` in GM storage, and open the
+// url-rels, stash it under `pc:pending:<mbid>` in localStorage, and open the
 // edit-relationships page in a new tab. The companion handler that runs on
 // that page (same script, @match'd against /edit-relationships) reads the
 // pending entry and dispatches each URL into MB's relationship editor.
@@ -33227,7 +33273,7 @@ function addSingleUrl(platform, background) {
         flashInfo(rowAnchor(platform), 'Format mismatch — not added');
         return;
     }
-    GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
+    localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${platform} URL — opening release editor`, 'ok');
     openReleaseEditTab(mbid, { background });
 }
@@ -33242,7 +33288,7 @@ function addMasterUrl(masterUrl) {
         appendLog('System', `Master add: no release-group MBID known for this release`, 'error');
         return;
     }
-    GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
+    localStorage.setItem(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
     appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
     const url = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
     if (GM_getValue('pc:open-new-tab', true)) window.open(url, '_blank');
@@ -33320,12 +33366,12 @@ async function runInjectBtn(e, background) {
     }
 
     if (releaseCount > 0) {
-        GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
+        localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
         appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
         openReleaseEditTab(mbid, { background });
     }
     if (rgCount > 0 && rgMbid) {
-        GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
+        localStorage.setItem(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
         appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
         // No background variant for release-group (no plain landing page to detect commit on).
         // Same-tab navigation only applies when it's the ONLY tab being opened this

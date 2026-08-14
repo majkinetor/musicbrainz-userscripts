@@ -12,9 +12,9 @@ await page.addInitScript(()=>{const store=new Map();window.__store=store;window.
 await page.goto(`https://musicbrainz.org/release/${MBID}`,{waitUntil:'domcontentloaded'});
 if(page.url().includes('/login')){console.log('NOT LOGGED IN');await ctx.close();process.exit(3);}
 await page.waitForTimeout(1200); await page.addScriptTag({content:code});
-await page.waitForFunction((mbid)=>{const raw=window.__store.get('pc:cache:v2:soundcloud:'+mbid);try{return !!(raw&&JSON.parse(raw).url);}catch{return false;}},MBID,{timeout:60000}).catch(()=>{});
+await page.waitForFunction((mbid)=>{const raw=localStorage.getItem('pc:cache:v2:soundcloud:'+mbid);try{return !!(raw&&JSON.parse(raw).url);}catch{return false;}},MBID,{timeout:60000}).catch(()=>{});
 await page.waitForTimeout(500);
-const r=await page.evaluate((mbid)=>{let c=null;try{c=JSON.parse(window.__store.get('pc:cache:v2:soundcloud:'+mbid)||'null');}catch{}return{cache:c,rowExists:!!document.getElementById('row-soundcloud')};},MBID);
+const r=await page.evaluate((mbid)=>{let c=null;try{c=JSON.parse(localStorage.getItem('pc:cache:v2:soundcloud:'+mbid)||'null');}catch{}return{cache:c,rowExists:!!document.getElementById('row-soundcloud')};},MBID);
 let fail=0;const ck=(c,m)=>{console.log((c?'ok  : ':'FAIL: ')+m);if(!c)fail++;};
 console.log(JSON.stringify(r.cache));
 ck(r.rowExists,'SoundCloud row rendered');

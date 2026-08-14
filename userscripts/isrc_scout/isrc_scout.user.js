@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.9
+// @version      2026.8.14
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -13,6 +13,7 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
+// @grant        GM_listValues
 // @grant        GM_openInTab
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
@@ -237,6 +238,28 @@
     set:  (k, v) => { try { GM_setValue(k, v); } catch (e) {} },
     del:  (k)    => { try { GM_deleteValue(k); } catch (e) {} },
   };
+  // #501 follow-up (majkinetor, live: cluttered script-manager config from
+  // short-lived derived tokens riding along in a sync backup): same interface
+  // as `store` above, but backed by localStorage for values that are cheaply
+  // re-derived and gain nothing from syncing — access tokens silently
+  // re-minted from a refresh token, an app-level client-credentials token, an
+  // in-progress removal draft. The long-lived oauth_refresh_token itself
+  // STAYS on `store` (GM) — losing that means re-authorizing on every
+  // machine, which is the one thing here actually worth syncing.
+  const localStore = {
+    get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del: (k)    => { try { localStorage.removeItem(k); } catch (e) {} },
+  };
+  // #501 follow-up: one-time sweep deleting any oauth_access_token/
+  // oauth_access_expiry/tidal_token/tidal_token_exp/pending_removals_* a
+  // PRE-fix install already wrote to GM storage — everything above now
+  // reads/writes localStorage instead, so anything still in GM storage under
+  // these names is dead weight riding along in a sync backup for no reason.
+  try {
+    ['oauth_access_token', 'oauth_access_expiry', 'tidal_token', 'tidal_token_exp'].forEach(store.del);
+    (GM_listValues() || []).forEach(k => { if (k.startsWith('pending_removals_')) GM_deleteValue(k); });
+  } catch (e) {}
 
   /* ═══════════════════════════════════════════════════════════════════════
      GENERIC HTTP (GM_xmlhttpRequest promisified)
@@ -1067,11 +1090,12 @@
     return ac.map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('');
   }
   // Persisted pending Remove-ISRC edits for this release: { recId: [isrcs] }.
+  // A per-release draft, not a setting — #501 follow-up: localStorage, not GM.
   function pendKey() { return 'pending_removals_' + mbid; }
-  function loadPendingRemovals() { try { return JSON.parse(store.get(pendKey(), '') || '{}') || {}; } catch (e) { return {}; } }
+  function loadPendingRemovals() { try { return JSON.parse(localStorage.getItem(pendKey()) || '{}') || {}; } catch (e) { return {}; } }
   function savePendingRemovals(map) {
     const has = map && Object.keys(map).some(k => (map[k] || []).length);
-    if (has) store.set(pendKey(), JSON.stringify(map)); else store.del(pendKey());
+    try { if (has) localStorage.setItem(pendKey(), JSON.stringify(map)); else localStorage.removeItem(pendKey()); } catch (e) {}
   }
   function recordPendingRemoval(recId, isrcs) {
     const map = loadPendingRemovals();
@@ -1112,13 +1136,13 @@
       const j = JSON.parse(r.responseText || '{}');
       if (!j.refresh_token) throw new Error(j.error_description || j.error || ('token exchange failed (' + r.status + ')'));
       store.set('oauth_refresh_token', j.refresh_token);
-      store.set('oauth_access_token', j.access_token || '');
-      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      localStore.set('oauth_access_token', j.access_token || '');
+      localStore.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
     },
 
     async accessToken() {
-      const tok = store.get('oauth_access_token', '');
-      const exp = store.get('oauth_access_expiry', 0);
+      const tok = localStore.get('oauth_access_token', '');
+      const exp = localStore.get('oauth_access_expiry', 0);
       if (tok && Date.now() < exp - 60000) return tok;
       const refresh = this.refreshTok();
       if (!refresh) throw new Error('not authorized — open ⚙ Setup');
@@ -1131,13 +1155,14 @@
       const r = await gmPost(OAUTH.tokenUrl, body, { 'Content-Type': 'application/x-www-form-urlencoded' });
       const j = JSON.parse(r.responseText || '{}');
       if (!j.access_token) throw new Error(j.error_description || j.error || ('token refresh failed (' + r.status + ')'));
-      store.set('oauth_access_token', j.access_token);
-      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      localStore.set('oauth_access_token', j.access_token);
+      localStore.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
       return j.access_token;
     },
 
     signOut() {
-      ['oauth_refresh_token', 'oauth_access_token', 'oauth_access_expiry'].forEach(store.del);
+      store.del('oauth_refresh_token');
+      ['oauth_access_token', 'oauth_access_expiry'].forEach(localStore.del);
     },
   };
 
@@ -1772,15 +1797,15 @@
      TIDAL  (official API; app token via client-credentials — no user login)
   ═══════════════════════════════════════════════════════════════════════ */
   async function tidalToken() {
-    const tok = store.get('tidal_token', ''), exp = store.get('tidal_token_exp', 0);
+    const tok = localStore.get('tidal_token', ''), exp = localStore.get('tidal_token_exp', 0);
     if (tok && Date.now() < exp - 60000) return tok;
     const basic = btoa(TIDAL.clientId + ':' + TIDAL.clientSecret);
     const r = await gmPost(TIDAL.tokenUrl, 'grant_type=client_credentials',
       { 'Authorization': 'Basic ' + basic, 'Content-Type': 'application/x-www-form-urlencoded' });
     const j = JSON.parse(r.responseText || '{}');
     if (!j.access_token) throw new Error('Tidal auth failed (' + r.status + ')' + (j.error ? ': ' + j.error : ''));
-    store.set('tidal_token', j.access_token);
-    store.set('tidal_token_exp', Date.now() + ((j.expires_in || 14400) * 1000));
+    localStore.set('tidal_token', j.access_token);
+    localStore.set('tidal_token_exp', Date.now() + ((j.expires_in || 14400) * 1000));
     return j.access_token;
   }
   function isoDurToMmSs(iso) {

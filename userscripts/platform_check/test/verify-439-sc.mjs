@@ -52,13 +52,13 @@ await page.evaluate((href) => {
 await page.addScriptTag({ content: code });
 // wait for PC's SoundCloud scan to write its cache entry
 await page.waitForFunction((mbid) => {
-  const raw = window.__store.get('pc:cache:v2:soundcloud:' + mbid);
+  const raw = localStorage.getItem('pc:cache:v2:soundcloud:' + mbid);
   try { return !!(raw && JSON.parse(raw).url); } catch { return false; }
 }, MBID, { timeout: 60000 }).catch(() => {});
 await page.waitForTimeout(500);
 
 const r = await page.evaluate((mbid) => {
-  let cache = null; try { cache = JSON.parse(window.__store.get('pc:cache:v2:soundcloud:' + mbid) || 'null'); } catch {}
+  let cache = null; try { cache = JSON.parse(localStorage.getItem('pc:cache:v2:soundcloud:' + mbid) || 'null'); } catch {}
   const row = document.getElementById('row-soundcloud');
   return { rowExists: !!row, cache, barcodeDiff: !!(row && (row.hasAttribute('data-barcode-diff') || row.className.includes('barcode'))) };
 }, MBID);
