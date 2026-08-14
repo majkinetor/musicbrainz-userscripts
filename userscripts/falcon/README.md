@@ -11,51 +11,47 @@
 | [![Queue](./screenshots/queue.jpg)](./screenshots/queue.jpg) | [![Workers](./screenshots/workers.jpg)](./screenshots/workers.jpg) |
 | A run in progress: 31 entities, 5 workers, mixed artists and recordings. Each row shows the resolved entity name, its status, and its link. | The **Workers** tab — the live iframes doing the work, sized by the slider. Each is a real MusicBrainz edit page being filled and submitted. |
 
-Bulk-linking a batch of artists has no good options today (the recurring case: an importer like Harmony hands you 20-50 artists that each need a Bandcamp/Discogs/etc. link). MusicBrainz has no write API for some attributes so every tool has to drive the real edit page. A tab per entity (as Harmony and other tools do) is extremelly bad UX: a popup storm you then have to drive and close by hand.
+Bulk-linking has no good options today (the recurring case: an importer like Harmony hands you 20-50 artists/records that each need an exeternal link). MusicBrainz has no write API for some attributes so every tool has to drive the real edit page.
 
-Falcon provides unified interface to bulk edit entities regardless if it is done via API or form manipulation.  
+Falcon provides unified interface to bulk edit supported entity attributes, regardless if it is done via API or form manipulation.  
 
 ## Usage
 
-Populate a queue via [Harmony](https://harmony.pulsewidth.org.uk) or by importing a JSON, then execute it. Each worker generally takes between 1 and 2 seconds per queue entity.
+Populate a queue via [Harmony](https://harmony.pulsewidth.org.uk) or by importing a JSON:
 
 1. Click the small rocket button in the bottom-right corner of any MusicBrainz page
 2. Populate queue from [Harmony button](#from-harmony) or import a [JSON file](#json-model)
 3. Review the queue (remove some entities or change attributes), then press Start button to process it.
-    - Right-click a row's entity-type column to select every item of that same type at once so you can remove them
-    - Or, click the chips in the header (`art`/`lbl`/`rec`/`rel`/`rg`) to exclude all instances of specific entity without removing them from queue 
+   - Right-click a row's entity-type column to select every item of that same type at once so you can remove them
+   - Or, click the chips in the header (`art`/`lbl`/`rec`/`rel`/`rg`) to exclude all instances of specific entity without removing them from queue 
 
 Each queue row shows the entity's name, a [status](#statuses) dot, and, on failure, MB's own real error message on hover (e.g. *"This URL is not allowed for artists."*, *"This relationship already exists."* — scraped from the page, not guessed).
+
+A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url etc.) retires that card in place — dimmed but still live and inspectable (nothing is discarded) — while a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card, building a fresh iframe for each new item rather than re-navigating a used one. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). 
 
 > [!NOTE] 
 > Click a red **FAILED**/**PARTIAL** status label to jump straight to that item's real worker in the **Workers** tab — the exact live page it left off on (not a fresh reload), zoomed large, with the error shown as a banner right on the card. Falls back to a plain text popup only for an item no worker ever picked up.
 
-A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url etc.) retires that card in place — dimmed but still live and inspectable (nothing is discarded) — while a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card, building a fresh iframe for each new item rather than re-navigating a used one. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). The panel itself has a **⛶** maximize toggle in the header too.
-
 Each row also has **⇗** (open this entity's edit page in a real tab, pre-filled the same way a worker would — but left for you to review and click "Enter edit" yourself; useful for retrying something the queue couldn't commit automatically). 
 
-> [!NOTE] 
-> **Export** writes the queue back out *with each item's status and per-url outcome*, so a partly-finished run can be kept as a record, or re-imported to retry only what failed — items that already show `done` are not re-run.
+**Export** writes the queue back out *with each item's status and per-url outcome*, so a partly-finished run can be kept as a record, or re-imported to retry only what failed — items that already show `done` are not re-run.
 
 ### From Harmony
 
 Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner, covering every entity type Harmony offers. Clicking the button opens MusicBrainz in a new tab with the batch queued and the panel open, ready to review and Start.
 
-The whole batch travels via a short random token backed by the userscript's own storage rather than a `?falcon=` payload in the URL — that avoids the URL-length ceiling a large batch used to hit.
-
-#### Recording disambiguation and ISRC
-
-A recording queue item can also carry a **disambiguation comment** and one or more **ISRCs** — expand its row to fill them in directly (no computation, no lookup: whatever's typed there is seeded verbatim, same as a url). Both ride along with that recording's own edit — nothing else is submitted for them separately.
+Harmony integration fills Falcon queue with external links for all entities, recording isrcs and cover.
 
 #### Cover art
 
 When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes a queue item for the release itself, showing *cover* in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, set its **type** (Front, Back, Booklet, …), add a **comment** for that specific image, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
 
-A release's cover art is a list (`cover[]` in the [JSON model](#json-model)) — Falcon only ever populates one entry from Harmony today, but the UI renders one row per entry, so an item carrying several (e.g. hand-written in an imported JSON) shows and uploads all of them, each with its own type/comment.
+Falcon currently adds front cover art from Harmony, although it generally supports a list (which can be hand-written [JSON](#json-model)).
 
 A cover-art item is added via API (sign → upload → register), the same one [Art Station](../art_station) uses.
 
-Harmony offers cover art whether or not the release already has some — adding one isn't idempotent the way links are. Falcon checks the Cover Art Archive as soon as a release item is queued and, if it already has cover art, the warning is shown.
+> [!WARNING] 
+> Harmony offers cover art whether or not the release already has some — adding one isn't idempotent the way links are. Falcon checks the Cover Art Archive as soon as a release item is queued and, if it already has cover art, the warning is shown.
 
 ## How it works
 
@@ -86,7 +82,7 @@ Field usage by entity type
 | External links | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
 | Disambiguation | — | — | yes | — | — |
-| Cover art | — | — | — | yes (array — see [below](#cover-art)) | — |
+| Cover art | — | — | — | yes (array)| — |
 
 ## JSON model
 
@@ -136,17 +132,15 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
 | `isrcs[]` | array of string | recording-only |
 | `cover[]` | array of `{url, comment, type, candidates}` | release-only — the cover art to upload. An **array**: a release can carry more than one cover image, though Falcon today only ever populates one entry from Harmony. Each entry's own `comment` is that image's upload comment (unrelated to `disambiguation`); `type` is MB's cover-art type (`Front`, `Back`, `Booklet`, `Medium`, …, default `Front`); `candidates` are not-yet-measured alternates Falcon is still picking a winner from |
 | `name` | string or null | display name — re-fetched if omitted, so it's optional |
-| `status` | string | `queued` (default if omitted/unrecognized) / `active` / `done` / `partial` / `failed` / `manual` / `skipped` — re-importing an Export lets you keep or retry each item |
+| `status` | string | item processing [status](#statuses) |
 | `error` | string | last error message, if any |
 | `urlResults` | array or null | per-url ✓/✗ outcome from the last run, shown on hover in the expanded row |
-
-A minimal add-only item just needs `entityType`, `mbid`, and `urls[]` — or, for a recording, `disambiguation`/`isrcs[]` in place of `urls[]` (see [Recording disambiguation and ISRC](#recording-disambiguation-and-isrc)) — every other field defaults sanely. This is also exactly what a re-imported Export round-trips through unchanged. (A pre-#496 export's `comment` field — on either a recording or a release — is still accepted on import and mapped onto `disambiguation`/`cover[0].comment` respectively, so older saved files keep working.)
 
 The `?falcon=` URL parameter ([From another script](#from-another-script)) uses a lighter, flattened subset of this same model — one row per url instead of a grouped `urls[]` — meant for a single script call rather than a saved file.
 
 ### From another script
 
-Any other script can hand Falcon a queue directly via a URL parameter: append `?falcon=<base64(JSON)>` to any `musicbrainz.org` URL, where the JSON is an array of `{ "entityType": "artist" | "label" | "recording" | "release" | "release_group", "mbid": "...", "url": "...", "linkTypeId"?: "...", "note"?: "...", "isrc"?: "..." }` (`linkTypeId` is optional — when present it's used to set MB's relationship-type dropdown if one is shown; otherwise MB auto-classifies as usual; `isrc`, recording-only, is added alongside the url). Note `entityType` is `release_group` (underscore) even though MusicBrainz's own URL for that entity uses a hyphen (`/release-group/<mbid>`) — Falcon maps between the two internally. Falcon detects the param on load, seeds the queue, and opens the panel automatically (does not auto-start — review, then click Start). (The GM-storage-token scheme Harmony uses above only works between Falcon's own two ends, since userscript storage isn't shared across different scripts — the base64 form is the contract for everyone else.)
+Any other script can hand Falcon a queue directly via a URL parameter: append `?falcon=<base64(JSON)>` to any `musicbrainz.org` URL. Falcon detects the param on load, seeds the queue, and opens the panel automatically (does not auto-start). 
 
 ### Options
 
@@ -161,7 +155,6 @@ The **Log** tab traces every worker step — which entity it loaded, how each ur
 | Shortcut | Action |
 | --- | --- |
 | **Ctrl+Alt+F** | Open / close the Falcon panel |
-
 
 ## Note
 
