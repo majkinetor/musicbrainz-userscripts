@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.194103
+// @version      2026.8.14.195705
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.14.194103 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.14.115259\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.14\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
+  console.log('%c String Theory %c v2026.8.14.195705 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.14.115259\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.14.195613\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -22322,7 +22322,7 @@ ${lines}
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.14","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.14","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.14.195613","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.14.195613","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -22363,7 +22363,7 @@ ${lines}
   if (/oauth2\/oob$/.test(location.pathname)) {
     const code = new URLSearchParams(location.search).get('code');
     if (code) {
-      try { GM_setValue('oauth_oob_code', { code: code, ts: Date.now() }); } catch (e) {}
+      try { GM_setValue('ii:oauth_oob_code', { code: code, ts: Date.now() }); } catch (e) {}
       const finishOob = () => {
         try { window.close(); } catch (e) {}
         // Browsers block window.close() on a tab that has navigated (authorize → oob);
@@ -22426,7 +22426,7 @@ ${lines}
           url:    (t.slug && t.id) ? 'https://www.beatport.com/track/' + t.slug + '/' + t.id : '',   // #387 per-track link
         };
       });
-      try { GM_setValue('beatport_harvest_' + bpId, { ts: Date.now(), tracks: tracks }); } catch (e) {}
+      try { GM_setValue('ii:beatport_harvest_' + bpId, { ts: Date.now(), tracks: tracks }); } catch (e) {}
       return true;
     };
     const t0 = Date.now();
@@ -22437,8 +22437,8 @@ ${lines}
         // one Platform Check's ↗/link opened — must stay put; we still harvest
         // it (populating the cache) but leave it on screen.
         try {
-          const flag = GM_getValue('beatport_close_' + bpId, 0);
-          if (flag && (Date.now() - flag < 120000)) { GM_deleteValue('beatport_close_' + bpId); window.close(); }
+          const flag = GM_getValue('ii:beatport_close_' + bpId, 0);
+          if (flag && (Date.now() - flag < 120000)) { GM_deleteValue('ii:beatport_close_' + bpId); window.close(); }
         } catch (e) {}
         return;
       }
@@ -22519,33 +22519,29 @@ ${lines}
   /* ═══════════════════════════════════════════════════════════════════════
      GM STORAGE HELPERS
   ═══════════════════════════════════════════════════════════════════════ */
+  // #501 follow-up (majkinetor: "tidy up config prefixes, some have them,
+  // some don't") — every GM-stored key now carries the `ii:` prefix,
+  // transparently: call sites still pass the bare name (`store.get('col_widths', …)`),
+  // `store` prepends it. One-time, non-destructive migration folded into
+  // `get`: if the new prefixed key is empty but the old bare one has a value,
+  // adopt it (and write it through under the new name); the old key is left
+  // in place, unused.
   const store = {
-    get:  (k, d) => { try { return GM_getValue(k, d); } catch (e) { return d; } },
-    set:  (k, v) => { try { GM_setValue(k, v); } catch (e) {} },
-    del:  (k)    => { try { GM_deleteValue(k); } catch (e) {} },
+    get:  (k, d) => { try { const v = GM_getValue('ii:' + k, undefined); if (v !== undefined) return v; const old = GM_getValue(k, undefined); if (old !== undefined) { GM_setValue('ii:' + k, old); return old; } return d; } catch (e) { return d; } },
+    set:  (k, v) => { try { GM_setValue('ii:' + k, v); } catch (e) {} },
+    del:  (k)    => { try { GM_deleteValue('ii:' + k); } catch (e) {} },
   };
-  // #501 follow-up (majkinetor, live: cluttered script-manager config from
-  // short-lived derived tokens riding along in a sync backup): same interface
-  // as `store` above, but backed by localStorage for values that are cheaply
-  // re-derived and gain nothing from syncing — access tokens silently
-  // re-minted from a refresh token, an app-level client-credentials token, an
-  // in-progress removal draft. The long-lived oauth_refresh_token itself
-  // STAYS on `store` (GM) — losing that means re-authorizing on every
-  // machine, which is the one thing here actually worth syncing.
+  // majkinetor: "Tokens should go into GM storage, so that we don't have to
+  // initialize plugins on every place" — auth tokens, INCLUDING the
+  // short-lived derived ones, stay on `store` (GM) on purpose; localStorage
+  // below is only for things that are genuinely local, like a per-release
+  // in-progress draft.
   const localStore = {
-    get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
-    del: (k)    => { try { localStorage.removeItem(k); } catch (e) {} },
+    get: (k, d) => { try { const v = localStorage.getItem('ii:' + k); if (v !== null) return JSON.parse(v); const old = localStorage.getItem(k); if (old !== null) { const parsed = JSON.parse(old); localStorage.setItem('ii:' + k, old); return parsed; } return d; } catch (e) { return d; } },
+    set: (k, v) => { try { localStorage.setItem('ii:' + k, JSON.stringify(v)); } catch (e) {} },
+    del: (k)    => { try { localStorage.removeItem('ii:' + k); } catch (e) {} },
   };
-  // #501 follow-up: one-time sweep deleting any oauth_access_token/
-  // oauth_access_expiry/tidal_token/tidal_token_exp/pending_removals_* a
-  // PRE-fix install already wrote to GM storage — everything above now
-  // reads/writes localStorage instead, so anything still in GM storage under
-  // these names is dead weight riding along in a sync backup for no reason.
-  try {
-    ['oauth_access_token', 'oauth_access_expiry', 'tidal_token', 'tidal_token_exp'].forEach(store.del);
-    (GM_listValues() || []).forEach(k => { if (k.startsWith('pending_removals_')) GM_deleteValue(k); });
-  } catch (e) {}
+  if (typeof window !== 'undefined') window.__isrcScoutTestStore = { store, localStore };   // test hook only (#501) — no behaviour change
 
   /* ═══════════════════════════════════════════════════════════════════════
      GENERIC HTTP (GM_xmlhttpRequest promisified)
@@ -23378,10 +23374,10 @@ ${lines}
   // Persisted pending Remove-ISRC edits for this release: { recId: [isrcs] }.
   // A per-release draft, not a setting — #501 follow-up: localStorage, not GM.
   function pendKey() { return 'pending_removals_' + mbid; }
-  function loadPendingRemovals() { try { return JSON.parse(localStorage.getItem(pendKey()) || '{}') || {}; } catch (e) { return {}; } }
+  function loadPendingRemovals() { return localStore.get(pendKey(), {}); }
   function savePendingRemovals(map) {
     const has = map && Object.keys(map).some(k => (map[k] || []).length);
-    try { if (has) localStorage.setItem(pendKey(), JSON.stringify(map)); else localStorage.removeItem(pendKey()); } catch (e) {}
+    if (has) localStore.set(pendKey(), map); else localStore.del(pendKey());
   }
   function recordPendingRemoval(recId, isrcs) {
     const map = loadPendingRemovals();
@@ -23422,13 +23418,13 @@ ${lines}
       const j = JSON.parse(r.responseText || '{}');
       if (!j.refresh_token) throw new Error(j.error_description || j.error || ('token exchange failed (' + r.status + ')'));
       store.set('oauth_refresh_token', j.refresh_token);
-      localStore.set('oauth_access_token', j.access_token || '');
-      localStore.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      store.set('oauth_access_token', j.access_token || '');
+      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
     },
 
     async accessToken() {
-      const tok = localStore.get('oauth_access_token', '');
-      const exp = localStore.get('oauth_access_expiry', 0);
+      const tok = store.get('oauth_access_token', '');
+      const exp = store.get('oauth_access_expiry', 0);
       if (tok && Date.now() < exp - 60000) return tok;
       const refresh = this.refreshTok();
       if (!refresh) throw new Error('not authorized — open ⚙ Setup');
@@ -23441,14 +23437,14 @@ ${lines}
       const r = await gmPost(OAUTH.tokenUrl, body, { 'Content-Type': 'application/x-www-form-urlencoded' });
       const j = JSON.parse(r.responseText || '{}');
       if (!j.access_token) throw new Error(j.error_description || j.error || ('token refresh failed (' + r.status + ')'));
-      localStore.set('oauth_access_token', j.access_token);
-      localStore.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      store.set('oauth_access_token', j.access_token);
+      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
       return j.access_token;
     },
 
     signOut() {
       store.del('oauth_refresh_token');
-      ['oauth_access_token', 'oauth_access_expiry'].forEach(localStore.del);
+      ['oauth_access_token', 'oauth_access_expiry'].forEach(store.del);
     },
   };
 
@@ -24083,15 +24079,15 @@ ${lines}
      TIDAL  (official API; app token via client-credentials — no user login)
   ═══════════════════════════════════════════════════════════════════════ */
   async function tidalToken() {
-    const tok = localStore.get('tidal_token', ''), exp = localStore.get('tidal_token_exp', 0);
+    const tok = store.get('tidal_token', ''), exp = store.get('tidal_token_exp', 0);
     if (tok && Date.now() < exp - 60000) return tok;
     const basic = btoa(TIDAL.clientId + ':' + TIDAL.clientSecret);
     const r = await gmPost(TIDAL.tokenUrl, 'grant_type=client_credentials',
       { 'Authorization': 'Basic ' + basic, 'Content-Type': 'application/x-www-form-urlencoded' });
     const j = JSON.parse(r.responseText || '{}');
     if (!j.access_token) throw new Error('Tidal auth failed (' + r.status + ')' + (j.error ? ': ' + j.error : ''));
-    localStore.set('tidal_token', j.access_token);
-    localStore.set('tidal_token_exp', Date.now() + ((j.expires_in || 14400) * 1000));
+    store.set('tidal_token', j.access_token);
+    store.set('tidal_token_exp', Date.now() + ((j.expires_in || 14400) * 1000));
     return j.access_token;
   }
   function isoDurToMmSs(iso) {
