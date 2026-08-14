@@ -20,6 +20,14 @@ async function loadWithPreload(enabled) {
   const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
   const page = ctx.pages()[0] || await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
+  // #501: GM_getValue/GM_setValue mock backed by real (namespaced) localStorage.
+  // A fresh context per call here, so the plain-localStorage seed below still
+  // flows through the one-time migration fallback path exactly once, as intended.
+  await page.addInitScript(() => {
+    window.GM_getValue = (k, d) => { const v = localStorage.getItem('__gm__' + k); return v === null ? d : v; };
+    window.GM_setValue = (k, v) => { localStorage.setItem('__gm__' + k, v); };
+    window.GM_deleteValue = k => localStorage.removeItem('__gm__' + k);
+  });
   await page.goto(ALBUM_URL, { waitUntil: 'domcontentloaded' });
   if (!enabled) await page.evaluate(() => localStorage.setItem('bcp_preload', '0'));
   await page.waitForTimeout(500);
