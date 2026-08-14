@@ -13,7 +13,7 @@
 
 Adding data in automated way has no good options today. For example, an importer like [Harmony] hands you 20-50 artists/records/labels that each need an exeternal link and other data like isrcs and covers. MusicBrainz has no write API for some attributes so external tools can only open tabs that users are expected to individually hadle.
 
-Falcon provides unified interface to bulk edit supported entity attributes, regardless if it is done via API or form manipulation.  
+Falcon provides unified interface to bulk edit supported entity [attributes](#attributes), regardless if it is done via API or form manipulation.  
 
 ## Usage
 
