@@ -40,7 +40,7 @@ await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
 // entirely for artist/label (MB's form has no such fields there) ──────────
 const recUrl = await page.evaluate(() => window.__falconTest.buildSeedEditUrl({
   entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7',
-  comment: 'live version', isrcs: ['USRC17607839', 'GBUM71505078'],
+  disambiguation: 'live version', isrcs: ['USRC17607839', 'GBUM71505078'],
   urls: [{ url: 'https://tidal.com/track/120024260', linkTypeId: '979' }],
 }));
 const recParams = new URL(recUrl).searchParams;
@@ -50,7 +50,7 @@ ck(recParams.get('edit-recording.isrcs.0.value') === 'USRC17607839' && recParams
 
 const artUrl = await page.evaluate(() => window.__falconTest.buildSeedEditUrl({
   entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50',
-  comment: 'should be ignored', isrcs: ['USRC17607839'],
+  disambiguation: 'should be ignored', isrcs: ['USRC17607839'],
   urls: [{ url: 'https://myspace.com/x' }],
 }));
 const artParams = new URL(artUrl).searchParams;
@@ -62,14 +62,14 @@ ck(artParams.get('edit-artist.comment') === null && artParams.get('edit-artist.i
 await page.evaluate(() => window.__falconTest.setQueue([]));
 const merged = await page.evaluate(() => {
   window.__falconTest.addToQueue([
-    { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', url: 'https://tidal.com/track/1', comment: 'DJ mix edit', isrc: 'USRC17607839' },
-    { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', url: 'https://tidal.com/track/1', comment: 'overwrite attempt', isrc: 'USRC17607839' },   // same isrc again — must not duplicate
+    { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', url: 'https://tidal.com/track/1', disambiguation: 'DJ mix edit', isrc: 'USRC17607839' },
+    { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', url: 'https://tidal.com/track/1', disambiguation: 'overwrite attempt', isrc: 'USRC17607839' },   // same isrc again — must not duplicate
     { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', url: 'https://www.deezer.com/track/2', isrc: 'GBUM71505078' },   // second url, second isrc, no comment
   ]);
   return window.__falconTest.getQueue()[0];
 });
-console.log('merged item:', JSON.stringify({ comment: merged.comment, isrcs: merged.isrcs, urls: merged.urls.length }));
-ck(merged.comment === 'DJ mix edit', `first comment wins, later ones don't clobber it (got "${merged.comment}")`);
+console.log('merged item:', JSON.stringify({ disambiguation: merged.disambiguation, isrcs: merged.isrcs, urls: merged.urls.length }));
+ck(merged.disambiguation === 'DJ mix edit', `first disambiguation wins, later ones don't clobber it (got "${merged.disambiguation}")`);
 ck(JSON.stringify(merged.isrcs) === JSON.stringify(['USRC17607839', 'GBUM71505078']), `isrcs accumulate without duplicating a repeat (got ${JSON.stringify(merged.isrcs)})`);
 ck(merged.urls.length === 2, `both distinct urls grouped onto the one item (got ${merged.urls.length})`);
 
@@ -105,36 +105,37 @@ ck(byMbid('33333333-3333-3333-3333-333333333333').every(t => t.isrc === 'USRC100
 await page.evaluate(() => { document.body.innerHTML = '<div id="scratch"></div>'; });
 const gateResult = await page.evaluate(async () => {
   const fakeIframe = { document, contentWindow: window };
-  const item = { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], comment: 'live version', isrcs: ['USRC17607839'], note: '' };
+  const item = { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], disambiguation: 'live version', isrcs: ['USRC17607839'], note: '' };
   return window.__falconTest.fillAndSubmit(fakeIframe, item, { tag: '[test]', baseline: [], skipSubmit: true });
 });
 console.log('link-less fillAndSubmit result:', JSON.stringify(gateResult));
 ck(gateResult.manual === true, `reaches the manual-review return (skipSubmit) instead of refusing early (got ${JSON.stringify(gateResult)})`);
 ck(gateResult.results.length === 0, 'no per-url results, as expected — there were no urls to process');
 
-// same item, but with NEITHER urls NOR comment/isrc — must still refuse, same as before #474
+// same item, but with NEITHER urls NOR disambiguation/isrc — must still refuse, same as before #474
 const noopResult = await page.evaluate(async () => {
   const fakeIframe = { document, contentWindow: window };
-  const item = { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], comment: '', isrcs: [], note: '' };
+  const item = { entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], disambiguation: '', isrcs: [], note: '' };
   return window.__falconTest.fillAndSubmit(fakeIframe, item, { tag: '[test]', baseline: [], skipSubmit: true });
 });
 console.log('genuinely-empty fillAndSubmit result:', JSON.stringify(noopResult));
-ck(noopResult.committed === false && !noopResult.manual, `a truly empty item (no urls, no comment/isrc) still refuses (got ${JSON.stringify(noopResult)})`);
+ck(noopResult.committed === false && !noopResult.manual, `a truly empty item (no urls, no disambiguation/isrc) still refuses (got ${JSON.stringify(noopResult)})`);
 
-// #495 (majkinetor, live: a release item whose url got rejected still
+// #495/#496 (majkinetor, live: a release item whose url got rejected still
 // attempted a submit on a form with nothing real staged, which is what got
 // the release editor stuck showing fabricated new-release validation
-// errors) — comment/isrcs are only ever seeded for entityType 'recording'
-// (a release's `comment` means its #494 cover-art image comment, never
-// submitted here at all), so a release item carrying a stray comment must
-// NOT be treated as "something to submit" the way a recording's is.
-const releaseStrayCommentResult = await page.evaluate(async () => {
+// errors) — disambiguation/isrcs are only ever seeded for entityType
+// 'recording'. A release item's OWN comment field now lives inside
+// cover[].comment (#496's rename), a wholly different property that
+// hasFieldChange never even looks at — so a release item carrying a cover
+// comment must NOT be treated as "something to submit" on this form.
+const releaseCoverCommentResult = await page.evaluate(async () => {
   const fakeIframe = { document, contentWindow: window };
-  const item = { entityType: 'release', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], comment: 'stray cover-art comment', isrcs: [], note: '' };
+  const item = { entityType: 'release', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', urls: [], isrcs: [], note: '', cover: [{ url: '', comment: 'stray cover-art comment', type: 'Front', candidates: [] }] };
   return window.__falconTest.fillAndSubmit(fakeIframe, item, { tag: '[test]', baseline: [], skipSubmit: true });
 });
-console.log('release-with-stray-comment fillAndSubmit result:', JSON.stringify(releaseStrayCommentResult));
-ck(releaseStrayCommentResult.committed === false && !releaseStrayCommentResult.manual, `a release item's comment (cover-art semantics, not this form's) does not count as a field change (got ${JSON.stringify(releaseStrayCommentResult)})`);
+console.log('release-with-cover-comment fillAndSubmit result:', JSON.stringify(releaseCoverCommentResult));
+ck(releaseCoverCommentResult.committed === false && !releaseCoverCommentResult.manual, `a release item's cover[].comment (cover-art semantics, not this form's) does not count as a field change (got ${JSON.stringify(releaseCoverCommentResult)})`);
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');

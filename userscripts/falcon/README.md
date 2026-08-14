@@ -24,9 +24,8 @@ The following fields are currently supported:
 | --- | --- | --- | --- | --- | --- |
 | External links | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
-| Disambiguation comment | — | — | yes | — | — |
-| Cover art | — | — | — | yes | — |
-| Image comment | — | — | — | yes | — |
+| Disambiguation | — | — | yes | — | — |
+| Cover art | — | — | — | yes (array — see [below](#release-cover-art)) | — |
 
 A release item can carry external links *and* cover art at once — two independent MusicBrainz edits on the same entity, run one after the other regardless of how the other one goes (a rejected link doesn't block the cover upload, and vice versa; the row ends up **partial** if only one of the two went through).
 
@@ -53,7 +52,7 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
       "entityType": "recording",
       "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7",
       "urls": [],
-      "comment": "live version",
+      "disambiguation": "live version",
       "isrcs": ["NLTH62000001"],
       "status": "queued"
     },
@@ -61,8 +60,7 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
       "entityType": "release",
       "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
       "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
-      "comment": "front cover",
-      "cover": { "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "candidates": [] },
+      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "comment": "page 1", "type": "Booklet", "candidates": [] }],
       "status": "queued"
     }
   ]
@@ -75,15 +73,15 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
 | `mbid` | string | the entity's MBID |
 | `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
 | `note` | string | edit note |
-| `comment` | string | recording-only: disambiguation comment. release-only: cover image comment. Not read for artist/label/release_group |
+| `disambiguation` | string | recording-only — MB's own disambiguation comment field |
 | `isrcs[]` | array of string | recording-only |
-| `cover` | `{url, candidates}` | release-only: the cover art to upload (`url`), plus any not-yet-measured `candidates` Falcon is still picking a winner from |
+| `cover[]` | array of `{url, comment, type, candidates}` | release-only — the cover art to upload. An **array**: a release can carry more than one cover image, though Falcon today only ever populates one entry from Harmony. Each entry's own `comment` is that image's upload comment (unrelated to `disambiguation`); `type` is MB's cover-art type (`Front`, `Back`, `Booklet`, `Medium`, …, default `Front`); `candidates` are not-yet-measured alternates Falcon is still picking a winner from |
 | `name` | string or null | display name — re-fetched if omitted, so it's optional |
 | `status` | string | `queued` (default if omitted/unrecognized) / `active` / `done` / `partial` / `failed` / `manual` / `skipped` — re-importing an Export lets you keep or retry each item |
 | `error` | string | last error message, if any |
 | `urlResults` | array or null | per-url ✓/✗ outcome from the last run, shown on hover in the expanded row |
 
-A minimal add-only item just needs `entityType`, `mbid`, and `urls[]` — or, for a recording, `comment`/`isrcs[]` in place of `urls[]` (see [Recording disambiguation and ISRC](#recording-disambiguation-and-isrc)) — every other field defaults sanely. This is also exactly what a re-imported Export round-trips through unchanged.
+A minimal add-only item just needs `entityType`, `mbid`, and `urls[]` — or, for a recording, `disambiguation`/`isrcs[]` in place of `urls[]` (see [Recording disambiguation and ISRC](#recording-disambiguation-and-isrc)) — every other field defaults sanely. This is also exactly what a re-imported Export round-trips through unchanged. (A pre-#496 export's `comment` field — on either a recording or a release — is still accepted on import and mapped onto `disambiguation`/`cover[0].comment` respectively, so older saved files keep working.)
 
 The `?falcon=` URL parameter ([From another script](#from-another-script)) uses a lighter, flattened subset of this same model — one row per url instead of a grouped `urls[]` — meant for a single script call rather than a saved file.
 
@@ -126,7 +124,9 @@ A recording queue item can also carry a **disambiguation comment** and one or mo
 
 ### Release cover art
 
-When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes one extra queue item for the release itself, showing "cover" in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
+When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes one extra queue item for the release itself, showing "cover" in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, set its **type** (Front, Back, Booklet, …), add a **comment** for that specific image, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
+
+A release's cover art is a list (`cover[]` in the [JSON model](#json-model)) — Falcon only ever populates one entry from Harmony today, but the UI renders one row per entry, so an item carrying several (e.g. hand-written in an imported JSON) shows and uploads all of them, each with its own type/comment.
 
 Unlike every other entity type, a cover-art item isn't submitted through MusicBrainz's edit-relationships form at all — there isn't one for cover art. Falcon drives MB's own upload API directly (sign → upload → register), the same one [Art Station](../art_station) uses.
 

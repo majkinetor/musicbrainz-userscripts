@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14
+// @version      2026.8.14.185430
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.14';
+  const VERSION = '2026.8.14.185430';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -207,19 +207,29 @@
   function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
-     comment, isrcs, cover: {url, candidates: [{provider,url,width?,height?,size?}]},
-     urlResults, status, error} ── entityType is one of artist/label/recording/
-     release/release_group. Field usage by type (#496 — the rest are always
-     present on the item internally for simplicity, but only these are ever
-     read/rendered):
+     disambiguation, isrcs, cover: [{url, comment, type, candidates:
+     [{provider,url,width?,height?,size?}]}], coverExistingCount, urlResults,
+     status, error} ── entityType is one of artist/label/recording/release/
+     release_group. Field usage by type (#496 — the rest are always present on
+     the item internally for simplicity, but only these are ever read/rendered):
        - urls[]: all types (release_group and release included, #495)
        - isrcs[]: recording only
-       - comment: recording (disambiguation) and release (cover image comment)
-         — same field, different MB-side meaning per type
-       - cover: release only — auto-picked by pickBestCover, always
-         user-editable. A release item can have urls[] AND cover at once (two
-         independent MB edits on the same entity — see workerLoop's `needsCover`
-         handling and runCoverItem's `priorLinks` merge) or either alone.
+       - disambiguation: recording only (MB's own form field for this is
+         internally called `comment`, but Falcon's own field is named for what
+         it actually is — #496: "don't use `comment` for two unrelated things")
+       - cover[]: release only — an ARRAY (a release can carry more than one
+         cover image; Falcon today only ever populates one entry from Harmony,
+         but the shape supports more so a future batch/JSON import can add
+         several at once, #496). Each entry's own `comment` is THAT image's
+         upload comment (e.g. "page 1"), unrelated to `disambiguation`. `type`
+         is the MB cover-art type (front/back/booklet/…), default 'front'.
+         `url` is auto-picked by pickBestCover, always user-editable.
+         coverExistingCount (item-level, not per-cover-entry — it's a fact
+         about the RELEASE, not about any one image being added) is set by
+         checkExistingCoverArt. A release item can have urls[] AND cover[] at
+         once (independent MB edits on the same entity — see workerLoop's
+         `needsCover` handling and runCoverItem's `priorLinks` merge) or
+         either alone.
      A release_group/release/artist/label/recording item with urls[] goes
      through the normal iframe/form worker path; a release's cover goes
      through runCoverItem's upload-API path instead — never both through the
@@ -265,6 +275,26 @@
   // entityUrlSegment.
   const ENTITY_RE = /^(artist|label|recording|release|release_group)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // #496: MB's own cover-art type vocabulary — same list as Art Station's
+  // COVER_TYPES (art_station.user.js), kept identical so a type picked here
+  // maps onto the exact same label MB's own add-cover-art form shows.
+  const COVER_TYPES = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Raw/Unedited', 'Matrix/Runout', 'Top', 'Bottom', 'Panel', 'Other'];
+  const newCoverEntry = (url, candidates) => ({ url: url || '', comment: '', type: 'Front', candidates: candidates || [] });
+  // #496: accepts the current array shape, the pre-#496 single-object shape
+  // ({url, candidates}), and the even older bare top-level `coverCandidates`
+  // — so a JSON file exported before this change still imports cleanly.
+  function normalizeCoverForImport(r) {
+    if (Array.isArray(r.cover)) return r.cover.filter(c => c && typeof c === 'object').map(c => ({
+      url: String(c.url || ''), comment: String(c.comment || ''), type: String(c.type || 'Front'),
+      candidates: Array.isArray(c.candidates) ? c.candidates : [],
+    }));
+    if (r.cover && typeof r.cover === 'object') return [{
+      url: String(r.cover.url || ''), comment: String(r.comment || ''), type: 'Front',
+      candidates: Array.isArray(r.cover.candidates) ? r.cover.candidates : [],
+    }];
+    if (Array.isArray(r.coverCandidates) && r.coverCandidates.length) return [newCoverEntry('', r.coverCandidates)];
+    return [];
+  }
 
   function normalizeEntityType(raw) {
     const t = String(raw || 'artist').trim().toLowerCase().replace(/-/g, '_');
@@ -409,14 +439,16 @@
       if (p.entityType === 'release' && p.coverCandidates) {
         const existingRel = queue.find(i => i.status === 'queued' && i.entityType === 'release' && i.mbid === p.mbid);
         if (existingRel) {
-          const before = existingRel.cover.candidates.length;
-          p.coverCandidates.forEach(c => { if (!existingRel.cover.candidates.some(x => x.url === c.url)) existingRel.cover.candidates.push(c); });
-          if (existingRel.cover.candidates.length > before) pickBestCover(existingRel);
-          if (existingRel.cover.existingCount == null) checkExistingCoverArt(existingRel);
+          if (!existingRel.cover.length) existingRel.cover.push(newCoverEntry());
+          const entry = existingRel.cover[0];
+          const before = entry.candidates.length;
+          p.coverCandidates.forEach(c => { if (!entry.candidates.some(x => x.url === c.url)) entry.candidates.push(c); });
+          if (entry.candidates.length > before) pickBestCover(existingRel);
+          if (existingRel.coverExistingCount == null) checkExistingCoverArt(existingRel);
           merged++;
           return;
         }
-        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', comment: p.comment || '', isrcs: [], cover: { url: '', candidates: p.coverCandidates, existingCount: null }, name: null, urlResults: null, status: 'queued', error: '' };
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', disambiguation: '', isrcs: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); } });
         pickBestCover(relItem);
@@ -444,12 +476,12 @@
         if (p.url && !existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
         if (p.note && !existing.note) existing.note = p.note;
         // #474: disambiguation + ISRC — recording-only, additive (a later tuple
-        // for the same mbid shouldn't clobber a comment/isrc it already has).
-        if (p.comment && !existing.comment) existing.comment = p.comment;
+        // for the same mbid shouldn't clobber a disambiguation/isrc it already has).
+        if (p.disambiguation && !existing.disambiguation) existing.disambiguation = p.disambiguation;
         if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], cover: [], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
@@ -493,21 +525,22 @@
     rows.forEach(r => {
       if (!r || typeof r !== 'object' || !MBID_RE.test(String(r.mbid || ''))) { skipped++; return; }
       const type = normalizeEntityType(r.entityType);
-      // #494: a release row has no urls[] at all — its payload is r.cover
-      // (and, pre-resolution, r.coverCandidates).
-      const hasCover = type === 'release' && (r.cover?.url || (Array.isArray(r.coverCandidates) && r.coverCandidates.length));
+      // #494: a release row has no urls[] at all — its payload is r.cover.
+      const coverArr = type === 'release' ? normalizeCoverForImport(r) : [];
+      const hasCover = coverArr.some(c => c.url || (c.candidates && c.candidates.length));
       if (Array.isArray(r.urls) || hasCover) {
         // full item: reinstate it whole, status and all
         const urls = Array.isArray(r.urls) ? r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null })) : [];
-        // #474: a recording carrying only a comment/isrc (no urls at all) is a
-        // legitimate item now that fillAndSubmit knows to look for one — only
-        // reject empty-urls rows that have nothing else to offer either.
-        const hasMeta = type === 'recording' && (r.comment || (Array.isArray(r.isrcs) && r.isrcs.some(Boolean)));
+        // #474: a recording carrying only a disambiguation/isrc (no urls at
+        // all) is a legitimate item now that fillAndSubmit knows to look for
+        // one — only reject empty-urls rows that have nothing else to offer.
+        // (r.comment accepted too — pre-#496 exports used that field name.)
+        const hasMeta = type === 'recording' && (r.disambiguation || r.comment || (Array.isArray(r.isrcs) && r.isrcs.some(Boolean)));
         if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
         const reItem = {
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
-          note: r.note || '', comment: r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
-          cover: { url: r.cover?.url || '', candidates: Array.isArray(r.cover?.candidates) ? r.cover.candidates : (Array.isArray(r.coverCandidates) ? r.coverCandidates : []), existingCount: null },
+          note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
+          cover: coverArr, coverExistingCount: null,
           name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
           error: r.error || '',
@@ -516,7 +549,7 @@
         if (hasCover && reItem.status === 'queued') checkExistingCoverArt(reItem);
         added++;
       } else if (r.url) {
-        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', comment: r.comment || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
+        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
       } else skipped++;
     });
     if (flat.length) { const res = addToQueue(flat); added += res.added; merged += res.merged; }
@@ -760,7 +793,10 @@
   // blocked. Candidates that already carry caption metadata (see
   // parseCoverCaptionMeta) cost no fetch at all; the rest are measured live.
   async function pickBestCover(item) {
-    const candidates = (item.cover && item.cover.candidates) || [];
+    // #496: cover[] is an array, but Falcon only ever auto-picks for the
+    // first entry — the one entry Harmony's candidates land in today.
+    const entry = item.cover && item.cover[0];
+    const candidates = (entry && entry.candidates) || [];
     if (!candidates.length) return;
     let best = null;
     const consider = (c, width, height, size) => {
@@ -773,7 +809,7 @@
       catch (e) { dbg('[cover]', `${item.mbid}: ${c.provider} candidate failed to measure — ${e.message}`); }
     }
     if (!best) return;
-    item.cover.url = best.url;
+    entry.url = best.url;
     dbg('[cover]', `${item.mbid}: picked ${best.provider} (${best.width}x${best.height}, ${best.size}b) of ${candidates.length} candidate(s)`);
     scheduleRender('queue');
   }
@@ -789,15 +825,17 @@
   // `cover-art-archive.count` — so use that instead: no cross-origin call at
   // all, through the same throttle every other MB lookup here uses. Same
   // fire-and-forget-after-queuing shape as pickBestCover; sets
-  // item.cover.existingCount (null while unknown, 0 once confirmed there's
-  // nothing there) for renderRowDetail to warn on.
+  // item.coverExistingCount (null while unknown, 0 once confirmed there's
+  // nothing there) for renderRowDetail to warn on — item-level, not per-cover-
+  // entry, since it's a fact about the RELEASE, not about any one image
+  // being added (#496).
   async function checkExistingCoverArt(item) {
     // priority: this is actionable safety info, not cosmetic like a name
     // lookup — it shouldn't sit behind a whole batch's worth of those.
     const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${item.mbid}?fmt=json`, undefined, true);
     if (!j) { dbg('[cover]', `${item.mbid}: existing-cover-art check failed (no response)`); return; }   // transient — leave unknown rather than assert "none"
-    item.cover.existingCount = (j['cover-art-archive'] && j['cover-art-archive'].count) || 0;
-    dbg('[cover]', `${item.mbid}: ${item.cover.existingCount} existing cover image(s) per MB's own cover-art-archive field`);
+    item.coverExistingCount = (j['cover-art-archive'] && j['cover-art-archive'].count) || 0;
+    dbg('[cover]', `${item.mbid}: ${item.coverExistingCount} existing cover image(s) per MB's own cover-art-archive field`);
     scheduleRender('queue');
   }
   function makePendingToken() {
@@ -1257,8 +1295,8 @@
     // `comment` means its cover-art image comment (#494), never submitted
     // here at all, so it must not count as "something to submit" for THIS
     // form.
-    const hasFieldChange = item.entityType === 'recording' && !!(item.comment || (item.isrcs && item.isrcs.length));
-    if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no comment/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
+    const hasFieldChange = item.entityType === 'recording' && !!(item.disambiguation || (item.isrcs && item.isrcs.length));
+    if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no disambiguation/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
     // visibility): when every url is ALREADY on the entity with the right type,
     // nothing changed and MB has no edit to create. It leaves "Enter edit"
@@ -1296,7 +1334,7 @@
       dbg(tag, 'NOT SUBMITTING — MB shows no pending change; every url is already on the entity with this type');
       return { committed: false, results, noop: true, fillMs: Date.now() - tFillStart };
     }
-    dbg(tag, `${pending} pending relationship change(s) staged` + (hasFieldChange ? ' + comment/isrc queued' : ''));
+    dbg(tag, `${pending} pending relationship change(s) staged` + (hasFieldChange ? ' + disambiguation/isrc queued' : ''));
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
     const noteSet = setEditNote(d2, w2, editNoteText(results));
     dbg(tag, `edit note set = ${noteSet}`);
@@ -1437,10 +1475,12 @@
     });
     // #474: disambiguation + ISRC — recording-only fields, seeded the exact
     // same way as everything else here (checked MB's own Form/Recording.pm:
-    // the field is internally called `comment`, and `isrcs` is a repeatable
-    // field keyed by index, same pattern as url.N above).
+    // MB's own field is internally called `comment` — Falcon's own field is
+    // named `disambiguation` instead, #496, but the wire param name below is
+    // MB's, not ours — and `isrcs` is a repeatable field keyed by index, same
+    // pattern as url.N above).
     if (item.entityType === 'recording') {
-      if (item.comment) params.set(`${prefix}comment`, item.comment);
+      if (item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
       (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
     }
     if (item.note) params.set(`${prefix}edit_note`, item.note);
@@ -1592,87 +1632,103 @@
     const ext = (String(url).split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i) || [])[1];
     return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' }[(ext || '').toLowerCase()] || null;
   }
+  // #496: uploads ONE cover[] entry (sign -> upload -> register). `position`
+  // is this entry's 1-based slot within THIS run (entries submit as separate
+  // add-cover-art POSTs — MB has no batch-upload endpoint — so each needs its
+  // own position; existing gallery art isn't touched either way).
+  async function uploadOneCover(item, entry, tag, position) {
+    if (!entry.url) throw new Error('no cover image URL yet (still resolving, or none found on this release)');
+    // majkinetor (#494 follow-up, live failure — "sign 400", "since we have
+    // candidates, maybe we should go with the next one"): try the picked
+    // candidate first, then fall through the rest (original scrape order)
+    // on any fetch/sign failure, instead of failing the whole item outright
+    // over one bad candidate.
+    const order = [entry.url, ...((entry.candidates || []).map(c => c.url))]
+      .filter((u, i, arr) => u && arr.indexOf(u) === i);
+    let blob, mime, signed, lastErr = null;
+    for (const url of order) {
+      try {
+        log('info', `${tag} release ${item.mbid} — fetching cover image${url === entry.url ? '' : ' (fallback candidate)'}`);
+        blob = await gmFetch(url);
+        // GM_xmlhttpRequest doesn't always populate blob.type reliably from
+        // the response's real Content-Type (seen live: a 400 from the sign
+        // endpoint, which rejects an unrecognized mime_type) — trust it
+        // only when it actually looks like an image mime, else sniff from
+        // the URL's own extension.
+        mime = /^image\//.test(blob.type) ? blob.type : (mimeFromUrl(url) || 'image/jpeg');
+        log('info', `${tag} release ${item.mbid} — signing upload (${mime})`);
+        const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
+        if (!signRes.ok) throw new Error('sign ' + signRes.status);
+        signed = await signRes.json();   // {action, image_id, formdata, nonce}
+        if (url !== entry.url) { entry.url = url; dbg(tag, `release ${item.mbid}: fell back to a working candidate (${url})`); }
+        break;
+      } catch (e) {
+        lastErr = e;
+        dbg(tag, `release ${item.mbid}: candidate ${url} failed — ${e.message || e}`);
+      }
+    }
+    if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
+
+    log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB)`);
+    const fd = new FormData();
+    Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
+    fd.append('file', blob, 'cover.' + (mime.split('/')[1] || 'jpg'));
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', signed.action);
+      xhr.timeout = 300000;
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('upload ' + xhr.status));
+      xhr.onerror = () => reject(new Error('upload network error'));
+      xhr.ontimeout = () => reject(new Error('upload timed out'));
+      xhr.send(fd);
+    });
+
+    log('info', `${tag} release ${item.mbid} — registering (${entry.type})`);
+    const addUrl = `${MB_ORIGIN}/release/${item.mbid}/add-cover-art`;
+    const formHtml = await fetch(addUrl, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET add-cover-art ' + r.status); return r.text(); });
+    const formDoc = new DOMParser().parseFromString(formHtml, 'text/html');
+    const form = [...formDoc.querySelectorAll('form')].find(f => (f.getAttribute('method') || '').toUpperCase() === 'POST');
+    if (!form) throw new Error('add-cover-art form not found');
+    const p = new URLSearchParams();
+    form.querySelectorAll('input[type=hidden]').forEach(h => { if (h.name && !/\.(id|position|nonce|mime_type|comment|type_id)$/.test(h.name)) p.append(h.name, h.value); });
+    // #496: match the entry's own `type` (default 'Front') to MB's own
+    // type_id checkbox by its visible label — was hardcoded to always find
+    // "front" regardless of what the row asked for.
+    let typeId = null;
+    const wantType = (entry.type || 'Front').trim().toLowerCase();
+    form.querySelectorAll('input[name="add-cover-art.type_id"]').forEach(cb => { const l = cb.closest('label'); if (l && (l.textContent || '').trim().toLowerCase() === wantType) typeId = cb.value; });
+    if (!typeId) form.querySelectorAll('input[name="add-cover-art.type_id"]').forEach(cb => { const l = cb.closest('label'); if (!typeId && l && /front/i.test(l.textContent || '')) typeId = cb.value; });   // fall back to Front if the exact label wasn't found on MB's form
+    p.append('add-cover-art.id', signed.image_id);
+    p.append('add-cover-art.position', String(position));
+    p.append('add-cover-art.nonce', signed.nonce);
+    p.append('add-cover-art.mime_type', mime);
+    if (typeId) p.append('add-cover-art.type_id', typeId);
+    p.append('add-cover-art.comment', entry.comment || '');
+    // Every other Falcon edit carries the "Falcon vX.Y.Z by majkinetor - <help
+    // url>" signature (see editNoteText) — cover art gets it too (majkinetor,
+    // #494 follow-up: "add falcon edit message as usual"), appended after
+    // whatever note the item already carries (e.g. from Harmony) rather than
+    // replacing it.
+    p.append('add-cover-art.edit_note', [item.note, FALCON_SIGNATURE()].filter(Boolean).join('\n\n'));
+    const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
+    if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
+    log('info', `${tag} release ${item.mbid} — cover art added (${entry.type})`);
+  }
   async function runCoverItem(item, tag, card, priorLinks) {
     updateWorkerLabel(card, item);
     const tStart = Date.now();
-    let coverError = '';
-    try {
-      if (!item.cover.url) throw new Error('no cover image URL yet (still resolving, or none found on this release)');
-      // majkinetor (#494 follow-up, live failure — "sign 400", "since we have
-      // candidates, maybe we should go with the next one"): try the picked
-      // candidate first, then fall through the rest (original scrape order)
-      // on any fetch/sign failure, instead of failing the whole item outright
-      // over one bad candidate.
-      const order = [item.cover.url, ...((item.cover.candidates || []).map(c => c.url))]
-        .filter((u, i, arr) => u && arr.indexOf(u) === i);
-      let blob, mime, signed, lastErr = null;
-      for (const url of order) {
-        try {
-          log('info', `${tag} release ${item.mbid} — fetching cover image${url === item.cover.url ? '' : ' (fallback candidate)'}`);
-          blob = await gmFetch(url);
-          // GM_xmlhttpRequest doesn't always populate blob.type reliably from
-          // the response's real Content-Type (seen live: a 400 from the sign
-          // endpoint, which rejects an unrecognized mime_type) — trust it
-          // only when it actually looks like an image mime, else sniff from
-          // the URL's own extension.
-          mime = /^image\//.test(blob.type) ? blob.type : (mimeFromUrl(url) || 'image/jpeg');
-          log('info', `${tag} release ${item.mbid} — signing upload (${mime})`);
-          const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
-          if (!signRes.ok) throw new Error('sign ' + signRes.status);
-          signed = await signRes.json();   // {action, image_id, formdata, nonce}
-          if (url !== item.cover.url) { item.cover.url = url; dbg(tag, `release ${item.mbid}: fell back to a working candidate (${url})`); }
-          break;
-        } catch (e) {
-          lastErr = e;
-          dbg(tag, `release ${item.mbid}: candidate ${url} failed — ${e.message || e}`);
-        }
+    // #496: cover[] can carry more than one entry — upload each independently;
+    // one failing doesn't stop the rest. Overall coverOk only if ALL succeed.
+    const errs = [];
+    for (let i = 0; i < item.cover.length; i++) {
+      try { await uploadOneCover(item, item.cover[i], tag, i + 1); }
+      catch (e) {
+        const msg = e.message || String(e);
+        errs.push(item.cover.length > 1 ? `${item.cover[i].type || 'Front'}: ${msg}` : msg);
+        log('error', `${tag} release ${item.mbid}: cover art (${item.cover[i].type || 'Front'}) — ${msg}`);
       }
-      if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
-
-      log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB)`);
-      const fd = new FormData();
-      Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
-      fd.append('file', blob, 'cover.' + (mime.split('/')[1] || 'jpg'));
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', signed.action);
-        xhr.timeout = 300000;
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('upload ' + xhr.status));
-        xhr.onerror = () => reject(new Error('upload network error'));
-        xhr.ontimeout = () => reject(new Error('upload timed out'));
-        xhr.send(fd);
-      });
-
-      log('info', `${tag} release ${item.mbid} — registering`);
-      const addUrl = `${MB_ORIGIN}/release/${item.mbid}/add-cover-art`;
-      const formHtml = await fetch(addUrl, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET add-cover-art ' + r.status); return r.text(); });
-      const formDoc = new DOMParser().parseFromString(formHtml, 'text/html');
-      const form = [...formDoc.querySelectorAll('form')].find(f => (f.getAttribute('method') || '').toUpperCase() === 'POST');
-      if (!form) throw new Error('add-cover-art form not found');
-      const p = new URLSearchParams();
-      form.querySelectorAll('input[type=hidden]').forEach(h => { if (h.name && !/\.(id|position|nonce|mime_type|comment|type_id)$/.test(h.name)) p.append(h.name, h.value); });
-      let frontId = null;
-      form.querySelectorAll('input[name="add-cover-art.type_id"]').forEach(cb => { const l = cb.closest('label'); if (l && /front/i.test(l.textContent || '')) frontId = cb.value; });
-      p.append('add-cover-art.id', signed.image_id);
-      p.append('add-cover-art.position', '1');
-      p.append('add-cover-art.nonce', signed.nonce);
-      p.append('add-cover-art.mime_type', mime);
-      if (frontId) p.append('add-cover-art.type_id', frontId);
-      p.append('add-cover-art.comment', item.comment || '');
-      // Every other Falcon edit carries the "Falcon vX.Y.Z by majkinetor - <help
-      // url>" signature (see editNoteText) — cover art gets it too (majkinetor,
-      // #494 follow-up: "add falcon edit message as usual"), appended after
-      // whatever note the item already carries (e.g. from Harmony) rather than
-      // replacing it.
-      p.append('add-cover-art.edit_note', [item.note, FALCON_SIGNATURE()].filter(Boolean).join('\n\n'));
-      const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
-      if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
-
-      log('info', `${tag} release ${item.mbid} — cover art added`);
-    } catch (e) {
-      coverError = e.message || String(e);
-      log('error', `${tag} release ${item.mbid}: cover art — ${coverError}`);
     }
+    const coverError = errs.join(' | ');
     const coverOk = !coverError;
     if (priorLinks) {
       const linksOk = priorLinks.status === 'done' || priorLinks.status === 'skipped';
@@ -1704,7 +1760,7 @@
         await runCoverItem(item, tag, card);
         continue;
       }
-      const needsCover = item.entityType === 'release' && !!item.cover.url;
+      const needsCover = item.entityType === 'release' && item.cover.some(c => c.url);
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
       // already been used.
@@ -2214,16 +2270,16 @@
         items: queue.map(i => {
           const item = {
             entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
-            comment: i.comment || '',
             urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
             status: i.status, error: i.error || '', urlResults: i.urlResults || null,
           };
-          // #494/#496: isrc is a recording-only field — always including it
-          // (even as []) on artist/release rows reads as if they support it too.
-          if (i.entityType === 'recording') item.isrcs = i.isrcs || [];
-          // #494: cover art is a release item's whole payload — was missing
-          // from export entirely.
-          if (i.entityType === 'release') item.cover = { url: (i.cover && i.cover.url) || '', candidates: (i.cover && i.cover.candidates) || [] };
+          // #496: disambiguation (recording) and cover[] (release) are
+          // type-specific — only including them where the type actually uses
+          // them, same reasoning as isrcs[] just below.
+          if (i.entityType === 'recording') { item.disambiguation = i.disambiguation || ''; item.isrcs = i.isrcs || []; }
+          // #494/#496: cover art is a release item's whole payload — an
+          // array of {url, comment, type, candidates}, one entry per image.
+          if (i.entityType === 'release') item.cover = (i.cover || []).map(c => ({ url: c.url || '', comment: c.comment || '', type: c.type || 'Front', candidates: c.candidates || [] }));
           return item;
         }),
       };
@@ -2298,11 +2354,13 @@
         if (it && (it.status === 'failed' || it.status === 'partial')) focusItemWorker(it);
         return;
       }
-      // #494: swap the picked cover to a different candidate provider.
+      // #494/#496: swap the picked cover to a different candidate provider,
+      // for the specific cover[] entry the button belongs to.
       const pickBtn = e.target.closest('.falcon-cover-pick');
       if (pickBtn) {
         const it = queue.find(i => i.id === pickBtn.dataset.id);
-        if (it && it.status !== 'active') { it.cover.url = pickBtn.dataset.url; renderQueue(); }
+        const entry = it && it.cover[+pickBtn.dataset.idx];
+        if (entry && it.status !== 'active') { entry.url = pickBtn.dataset.url; renderQueue(); }
         return;
       }
     });
@@ -2322,19 +2380,23 @@
       if (chk) { chk.checked ? _selectedIds.add(chk.dataset.id) : _selectedIds.delete(chk.dataset.id); renderQueue(); return; }
       // #474: disambiguation + ISRC — plain text fields, no validation here;
       // MB's own edit form is what actually validates an ISRC on submit.
-      const commentInp = e.target.closest('.falcon-comment-input');
-      if (commentInp) { const it = queue.find(i => i.id === commentInp.dataset.id); if (it) it.comment = commentInp.value.trim(); return; }
+      const disambigInp = e.target.closest('.falcon-disambiguation-input');
+      if (disambigInp) { const it = queue.find(i => i.id === disambigInp.dataset.id); if (it) it.disambiguation = disambigInp.value.trim(); return; }
       const isrcInp = e.target.closest('.falcon-isrc-input');
       if (isrcInp) {
         const it = queue.find(i => i.id === isrcInp.dataset.id);
         if (it) it.isrcs = isrcInp.value.split(',').map(s => s.trim().toUpperCase().replace(/[\s-]/g, '')).filter(Boolean);
         return;
       }
-      // #494: "Falcon side — accept URL for the image" — the auto-picked
+      // #494/#496: "Falcon side — accept URL for the image" — the auto-picked
       // candidate is always user-editable/overridable, same spirit as the
-      // comment/ISRC fields above.
+      // disambiguation/ISRC fields above. Each targets its own cover[] entry.
       const coverInp = e.target.closest('.falcon-cover-input');
-      if (coverInp) { const it = queue.find(i => i.id === coverInp.dataset.id); if (it) it.cover.url = coverInp.value.trim(); return; }
+      if (coverInp) { const it = queue.find(i => i.id === coverInp.dataset.id); const entry = it && it.cover[+coverInp.dataset.idx]; if (entry) entry.url = coverInp.value.trim(); return; }
+      const coverTypeSel = e.target.closest('.falcon-cover-type');
+      if (coverTypeSel) { const it = queue.find(i => i.id === coverTypeSel.dataset.id); const entry = it && it.cover[+coverTypeSel.dataset.idx]; if (entry) entry.type = coverTypeSel.value; return; }
+      const coverCommentInp = e.target.closest('.falcon-cover-comment-input');
+      if (coverCommentInp) { const it = queue.find(i => i.id === coverCommentInp.dataset.id); const entry = it && it.cover[+coverCommentInp.dataset.idx]; if (entry) entry.comment = coverCommentInp.value.trim(); return; }
     });
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
     document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
@@ -2468,25 +2530,32 @@
     // No auto-computation: whatever's typed here is seeded verbatim.
     const meta = it.entityType === 'recording' ? `
       <div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 30px;font-size:10.5px">
-        <input type="text" class="falcon-comment-input" data-id="${it.id}" placeholder="disambiguation comment" value="${esc(it.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
+        <input type="text" class="falcon-disambiguation-input" data-id="${it.id}" placeholder="disambiguation comment" value="${esc(it.disambiguation || '')}" ${it.status === 'active' ? 'disabled' : ''}
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
         <input type="text" class="falcon-isrc-input" data-id="${it.id}" placeholder="ISRC(s), comma-separated" value="${esc((it.isrcs || []).join(', '))}" ${it.status === 'active' ? 'disabled' : ''}
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />
       </div>`
-      // #494: cover art has no urls[] row to show — the image URL IS the
+      // #494/#496: cover art has no urls[] row to show — the image URL IS the
       // payload, so it gets the same input treatment (auto-picked from
       // Harmony's candidates but always user-editable/overridable), plus a
-      // provider picker when more than one candidate was found.
+      // type picker and a provider picker when more than one candidate was
+      // found. cover[] is an array — one row per entry (Falcon only ever
+      // populates one today, but a JSON import can carry more).
       : it.entityType === 'release' ? `
-      <div style="display:flex;flex-direction:column;gap:4px;padding:3px 0 3px 30px;font-size:10.5px">
-        <div style="display:flex;align-items:center;gap:6px">
-          <input type="text" class="falcon-cover-input" data-id="${it.id}" placeholder="${it.cover.candidates.length && !it.cover.url ? 'resolving best cover…' : 'cover image URL'}" value="${esc(it.cover.url || '')}" ${it.status === 'active' ? 'disabled' : ''}
-            style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
-          <input type="text" class="falcon-comment-input" data-id="${it.id}" placeholder="image comment (optional)" value="${esc(it.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
-            style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
-        </div>
-        ${it.cover.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${it.cover.candidates.map(c => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-url="${esc(c.url)}" title="${esc(c.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${c.url === it.cover.url ? '#1b2a4a' : '#ddd'};background:${c.url === it.cover.url ? '#eef1fa' : '#fff'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:#444">${esc(c.provider)}${c.width ? ` ${c.width}×${c.height}` : ''}</button>`).join('')}</div>` : ''}
-        ${it.cover.existingCount ? `<div style="color:#a35b00;font-size:10px">⚠ this release already has ${it.cover.existingCount} cover image${it.cover.existingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
+      <div style="display:flex;flex-direction:column;gap:6px;padding:3px 0 3px 30px;font-size:10.5px">
+        ${it.cover.map((c, idx) => `
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="text" class="falcon-cover-input" data-id="${it.id}" data-idx="${idx}" placeholder="${c.candidates.length && !c.url ? 'resolving best cover…' : 'cover image URL'}" value="${esc(c.url || '')}" ${it.status === 'active' ? 'disabled' : ''}
+              style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+            <select class="falcon-cover-type" data-id="${it.id}" data-idx="${idx}" ${it.status === 'active' ? 'disabled' : ''} title="Cover art type"
+              style="font-size:10.5px;padding:2px 4px;border:1px solid #ddd;border-radius:3px">${COVER_TYPES.map(t => `<option value="${esc(t)}"${(c.type || 'Front') === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+            <input type="text" class="falcon-cover-comment-input" data-id="${it.id}" data-idx="${idx}" placeholder="image comment (optional)" value="${esc(c.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
+              style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+          </div>
+          ${c.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${c.candidates.map(cand => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-idx="${idx}" data-url="${esc(cand.url)}" title="${esc(cand.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${cand.url === c.url ? '#1b2a4a' : '#ddd'};background:${cand.url === c.url ? '#eef1fa' : '#fff'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:#444">${esc(cand.provider)}${cand.width ? ` ${cand.width}×${cand.height}` : ''}</button>`).join('')}</div>` : ''}
+        </div>`).join('')}
+        ${it.coverExistingCount ? `<div style="color:#a35b00;font-size:10px">⚠ this release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
     return urlRows + meta;
   }
@@ -2525,7 +2594,7 @@
       <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3;background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
         <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
-          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : it.entityType === 'release' ? 'Show/edit cover art image' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit disambiguation & ISRC' : it.entityType === 'release' ? 'Show/edit cover art image' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
           <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
           <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
@@ -2533,10 +2602,10 @@
             ? `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links</span>`
             : it.urls.length === 1
               ? `<a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.urls[0].url)}</a>`
-              // #494: release rows never carry a urls[] entry — cover art is
-              // their whole payload — so they always land here; show it
-              // alongside comment/ISRC, each only when actually non-empty.
-              : `<span style="color:#999;font-style:italic;flex:1" title="${it.cover && it.cover.existingCount ? esc(`already has ${it.cover.existingCount} cover image${it.cover.existingCount === 1 ? '' : 's'} — this may duplicate it`) : ''}">no links — ${[it.comment ? 'comment' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover && it.cover.url ? (it.cover.existingCount ? 'cover ⚠' : 'cover') : ''].filter(Boolean).join(' + ') || '—'}</span>`}
+              // #494/#496: release rows never carry a urls[] entry — cover art
+              // is their whole payload — so they always land here; show it
+              // alongside disambiguation/ISRC, each only when actually non-empty.
+              : `<span style="color:#999;font-style:italic;flex:1" title="${it.coverExistingCount ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : ''}">no links — ${[it.disambiguation ? 'disambiguation' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover.some(c => c.url) ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : ''].filter(Boolean).join(' + ') || '—'}</span>`}
           <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${excluded ? 'excluded' : it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
@@ -2596,10 +2665,10 @@
   // needing that row expanded/scrolled into view.
   function renderCoverWarning() {
     const el = document.getElementById('falcon-cover-warning'); if (!el) return;
-    const dupes = queue.filter(i => i.entityType === 'release' && i.cover && i.cover.existingCount);
+    const dupes = queue.filter(i => i.entityType === 'release' && i.coverExistingCount);
     if (!dupes.length) { el.style.display = 'none'; el.textContent = ''; return; }
     el.style.display = 'block';
-    const names = dupes.map(i => `${entityLabel(i)} (${i.cover.existingCount})`).join(', ');
+    const names = dupes.map(i => `${entityLabel(i)} (${i.coverExistingCount})`).join(', ');
     el.textContent = `⚠ ${dupes.length} release${dupes.length > 1 ? 's' : ''} already ${dupes.length > 1 ? 'have' : 'has'} cover art — ${names}`;
   }
 

@@ -48,8 +48,9 @@ const artist = queue.find(i => i.entityType === 'artist');
 const recording = queue.find(i => i.entityType === 'recording');
 const release = queue.find(i => i.entityType === 'release');
 ck(artist && artist.status === 'done' && artist.urls.length === 1, `artist row round-trips with its documented status/urls (got status=${artist?.status}, urls=${artist?.urls.length})`);
-ck(recording && recording.comment === 'live version' && recording.isrcs.length === 1 && recording.isrcs[0] === 'NLTH62000001', `recording row round-trips comment + isrcs as documented (got comment="${recording?.comment}", isrcs=${JSON.stringify(recording?.isrcs)})`);
-ck(release && release.cover && release.cover.url.includes('dzcdn'), `release row round-trips its cover.url as documented (got cover=${JSON.stringify(release?.cover)})`);
+ck(recording && recording.disambiguation === 'live version' && recording.isrcs.length === 1 && recording.isrcs[0] === 'NLTH62000001', `recording row round-trips disambiguation + isrcs as documented (got disambiguation="${recording?.disambiguation}", isrcs=${JSON.stringify(recording?.isrcs)})`);
+ck(release && Array.isArray(release.cover) && release.cover[0] && release.cover[0].url.includes('dzcdn'), `release row round-trips its cover[0].url as documented (got cover=${JSON.stringify(release?.cover)})`);
+ck(release && release.cover[0].comment === 'page 1' && release.cover[0].type === 'Booklet', `release row round-trips the cover entry's own comment/type as documented (got ${JSON.stringify(release?.cover?.[0])})`);
 ck(release && release.urls.length === 1 && release.urls[0].linkTypeId === '75', `release row ALSO keeps its urls[] alongside cover (documented as both-at-once) (got ${JSON.stringify(release?.urls)})`);
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
