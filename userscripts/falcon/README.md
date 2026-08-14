@@ -30,6 +30,63 @@ The following fields are currently supported:
 
 A release item can carry external links *and* cover art at once — two independent MusicBrainz edits on the same entity, run one after the other regardless of how the other one goes (a rejected link doesn't block the cover upload, and vice versa; the row ends up **partial** if only one of the two went through).
 
+## JSON model
+
+Falcon has no per-entity form — the file loaded by **Import**, written by **Export**, and used internally is the actual interface for batch loading; Harmony and `?falcon=` are just producers of this same shape. Root is either a bare array of items or `{"items": [...]}` (Export writes the latter, with `falcon`/`exported` metadata alongside):
+
+```json
+{
+  "falcon": "2026.8.14",
+  "exported": "2026-08-14T10:00:00.000Z",
+  "items": [
+    {
+      "entityType": "artist",
+      "mbid": "d31f76d2-1d8e-4271-8027-148f375979d7",
+      "name": "Der Zirkel",
+      "note": "via Falcon",
+      "urls": [{ "url": "https://myspace.com/x", "linkTypeId": null }],
+      "status": "done",
+      "error": "",
+      "urlResults": null
+    },
+    {
+      "entityType": "recording",
+      "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7",
+      "urls": [],
+      "comment": "live version",
+      "isrcs": ["NLTH62000001"],
+      "status": "queued"
+    },
+    {
+      "entityType": "release",
+      "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
+      "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
+      "comment": "front cover",
+      "cover": { "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "candidates": [] },
+      "status": "queued"
+    }
+  ]
+}
+```
+
+| field | type | meaning |
+| --- | --- | --- |
+| `entityType` | string | one of `artist`, `label`, `recording`, `release`, `release_group` |
+| `mbid` | string | the entity's MBID |
+| `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
+| `note` | string | edit note |
+| `comment` | string | recording-only: disambiguation comment. release-only: cover image comment. Not read for artist/label/release_group |
+| `isrcs[]` | array of string | recording-only |
+| `cover` | `{url, candidates}` | release-only: the cover art to upload (`url`), plus any not-yet-measured `candidates` Falcon is still picking a winner from |
+| `name` | string or null | display name — re-fetched if omitted, so it's optional |
+| `status` | string | `queued` (default if omitted/unrecognized) / `active` / `done` / `partial` / `failed` / `manual` / `skipped` — re-importing an Export lets you keep or retry each item |
+| `error` | string | last error message, if any |
+| `urlResults` | array or null | per-url ✓/✗ outcome from the last run, shown on hover in the expanded row |
+
+A minimal add-only item just needs `entityType`, `mbid`, and `urls[]` — or, for a recording, `comment`/`isrcs[]` in place of `urls[]` (see [Recording disambiguation and ISRC](#recording-disambiguation-and-isrc)) — every other field defaults sanely. This is also exactly what a re-imported Export round-trips through unchanged.
+
+The `?falcon=` URL parameter ([From another script](#from-another-script)) uses a lighter, flattened subset of this same model — one row per url instead of a grouped `urls[]` — meant for a single script call rather than a saved file.
+
 ## Why
 
 Bulk-linking a batch of artists (the recurring case: an importer like Harmony hands you 20-50 artists that each need a Bandcamp/Discogs/etc. link) has no good options today — MusicBrainz has no write API for relationships (`/ws/2/` only supports tags/ratings/ISRCs/collections), so every tool has to drive the real edit page. The obvious approach — a tab per artist — is what Harmony already does, and it's bad UX: a popup storm you then have to close by hand (or via a "submit all open tabs" helper).
