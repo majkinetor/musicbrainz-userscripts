@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.142325
+// @version      2026.8.14.142702
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,8 +75,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.14.142325 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.14\n  · Art Station v2026.8.14.115259\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.9\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
+  console.log('%c String Theory %c v2026.8.14.142702 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.14\n  · Art Station v2026.8.14.142647\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.9\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8054,7 +8054,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14.115259","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14.115259","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14.142647","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14.142647","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -8129,9 +8129,21 @@ try {
   const footerStyle = document.createElement('style');
   footerStyle.textContent = '#content div.buttons.ui-helper-clearfix{display:none!important}';
   appendEl(footerStyle);
+  // #501: settings persistence lives in GM storage (backed up/synced by the script
+  // manager) instead of localStorage (browser-profile-only — invisible to a script
+  // manager backup/restore or a move to another browser). One-time migration: if GM
+  // storage is empty but an old localStorage value exists, adopt it once and write
+  // through to GM storage from then on; the old localStorage key is left in place,
+  // unused, so nothing is destructively deleted.
+  const gmLoad = (key) => {
+    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
+    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
+    return undefined;
+  };
+  const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // saved prefs read directly here (the SETTINGS object is built later) so the initial
   // Original/footer state is applied flash-free, before first paint.
-  let _savedPrefs = {}; try { _savedPrefs = JSON.parse(localStorage.getItem('artstation:settings') || '{}'); } catch (e) {}
+  let _savedPrefs = {}; try { _savedPrefs = JSON.parse(gmLoad('artstation:settings') || '{}'); } catch (e) {}
   earlyHide.disabled = !!_savedPrefs.showOrig;
   footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false;
   // #248 the add page: take the whole thing over. Move the native uploader form
@@ -8279,8 +8291,8 @@ try {
     } catch (e) { asLog.debug('archive.org: metadata unavailable — ' + ((e && e.message) || e)); }   // size is a nicety — never block the gallery
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
-  function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true }; try { return Object.assign(d, JSON.parse(gmLoad('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function save() { try { gmSave('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
   // MB's page (its DB) is the source of truth for the cover list — it includes images
@@ -8551,8 +8563,8 @@ try {
   }
   // #283 remember the log window across sessions: open?/minimized?/position
   const LOGWIN_KEY = 'artstation:logwin';
-  const loadLogWin = () => { try { return JSON.parse(localStorage.getItem(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
-  const saveLogWin = (patch) => { try { localStorage.setItem(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
+  const loadLogWin = () => { try { return JSON.parse(gmLoad(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
+  const saveLogWin = (patch) => { try { gmSave(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
   // #283 the Log button opens this popup: the full session log + a Copy control.
   function openLog() {
     document.getElementById('as-logpop')?.remove();
