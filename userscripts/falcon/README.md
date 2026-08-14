@@ -37,6 +37,8 @@ Each row also has **⇗** (open this entity's edit page in a real tab, pre-fille
 
 Open a [Harmony] **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner, covering every entity type Harmony offers. Clicking the button opens MusicBrainz in a new tab with the batch queued and the panel open, ready to review and Start.
 
+<img src="./screenshots/harmony.png" width="400">
+
 Harmony integration fills Falcon queue with external links for all entities, recording isrcs and cover.
 
 #### Cover art
