@@ -21,9 +21,12 @@ async function run(format) {
   const page = await context.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.addInitScript(({ MBID, BC_URL, format }) => {
+    // #501 follow-up: pc:pending:*/pc:cache:v2:* now live in real localStorage,
+    // not GM storage — seed there instead of the (still-real, for genuine
+    // settings) GM mock below.
+    localStorage.setItem(`pc:pending:${MBID}`, JSON.stringify({ bandcamp: BC_URL }));
+    localStorage.setItem(`pc:cache:v2:bandcamp:${MBID}`, JSON.stringify({ url: BC_URL, tracks: 8, format, source: 'test' }));
     const store = new Map();
-    store.set(`pc:pending:${MBID}`, JSON.stringify({ bandcamp: BC_URL }));
-    store.set(`pc:cache:v2:bandcamp:${MBID}`, JSON.stringify({ url: BC_URL, tracks: 8, format, source: 'test' }));
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
     window.GM_setValue = (k, v) => { store.set(k, v); };
     window.GM_xmlhttpRequest = () => {};
