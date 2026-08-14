@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.9
+// @version      2026.8.14
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -11,11 +11,13 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
+// @grant        GM_xmlhttpRequest
+// @connect      *
 // @noframes
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.7.26.124712';
+  const VERSION = '2026.8.14';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -205,7 +207,23 @@
   function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
-     urlResults, status, error} ── #467 (majkinetor): the same entity can carry
+     comment, isrcs, cover: {url, candidates: [{provider,url,width?,height?,size?}]},
+     urlResults, status, error} ── entityType is one of artist/label/recording/
+     release/release_group. Field usage by type (#496 — the rest are always
+     present on the item internally for simplicity, but only these are ever
+     read/rendered):
+       - urls[]: all types (release_group and release included, #495)
+       - isrcs[]: recording only
+       - comment: recording (disambiguation) and release (cover image comment)
+         — same field, different MB-side meaning per type
+       - cover: release only — auto-picked by pickBestCover, always
+         user-editable. A release item can have urls[] AND cover at once (two
+         independent MB edits on the same entity — see workerLoop's `needsCover`
+         handling and runCoverItem's `priorLinks` merge) or either alone.
+     A release_group/release/artist/label/recording item with urls[] goes
+     through the normal iframe/form worker path; a release's cover goes
+     through runCoverItem's upload-API path instead — never both through the
+     same mechanism. #467 (majkinetor): the same entity can carry
      several URLs — group those into ONE item/one edit-page visit rather than
      revisiting the same mbid N times (both unsafe — two workers must never load
      the same entity's /edit at once — and wasteful). Grouping happens at add-time
@@ -229,27 +247,48 @@
   // display state, survives across renderQueue() calls (a full innerHTML replace).
   let _selectedIds = new Set();
   let _expandedIds = new Set();
-  const ENTITY_RE = /^(artist|label|recording)$/;
+  // #497 (majkinetor): per-entity-type processing toggle, shown as chips in
+  // the queue toolbar ("artist 5", "release 7", ...). All ON by default —
+  // turning one off excludes every QUEUED item of that type from the run
+  // (nextQueued skips them) without removing them from the queue; an
+  // already-active/done/failed item is untouched by toggling since this only
+  // gates what a worker picks up NEXT, not history.
+  let _disabledTypes = new Set();
+  // #494: 'release' can carry BOTH a urls[] link (via the normal iframe/form
+  // pipeline, like every other type — #495) AND a cover (via the upload API,
+  // never the form; see runCoverItem) — a release item's worker turn runs
+  // whichever of those it actually has. 'release_group' (#495) is a plain
+  // urls[]-only type, same pipeline as artist/label/recording, no special
+  // casing — MB's URL path for it is 'release-group' (hyphen) even though the
+  // internal entityType value and seed-param prefix use 'release_group'
+  // (underscore, matching MB's own `edit-release_group.` seed params); see
+  // entityUrlSegment.
+  const ENTITY_RE = /^(artist|label|recording|release|release_group)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   function normalizeEntityType(raw) {
-    const t = String(raw || 'artist').trim().toLowerCase();
+    const t = String(raw || 'artist').trim().toLowerCase().replace(/-/g, '_');
     return ENTITY_RE.test(t) ? t : 'artist';
   }
+  // MB's own URL path segment for an entity type — every type matches its
+  // entityType verbatim except release_group, whose real path is
+  // 'release-group' (hyphen) while the internal value/seed-param prefix stays
+  // 'release_group' (underscore, MB's own inconsistency — verified live).
+  function entityUrlSegment(entityType) { return entityType === 'release_group' ? 'release-group' : entityType; }
   // accepts: "<mbid>,<url>" · "<mbid> <url>" · "<entityType>:<mbid>,<url>" ·
-  // or a full MB artist/label/recording URL in place of the bare mbid.
+  // or a full MB entity URL in place of the bare mbid.
   function parseLine(line) {
     const s = line.trim();
     if (!s || s.startsWith('#')) return null;
     let entityType = 'artist';
     let rest = s;
-    const etm = rest.match(/^(artist|label|recording)\s*:\s*(.+)$/i);
+    const etm = rest.match(/^(artist|label|recording|release|release[_-]group)\s*:\s*(.+)$/i);
     if (etm) { entityType = normalizeEntityType(etm[1]); rest = etm[2]; }
     const parts = rest.split(/[,\s]+/).filter(Boolean);
     if (parts.length < 2) return null;
     let [entityPart, ...urlParts] = parts;
     const url = urlParts.join(' ');
-    const um = entityPart.match(/musicbrainz\.org\/(artist|label|recording)\/([0-9a-f-]{36})/i);
+    const um = entityPart.match(/musicbrainz\.org\/(artist|label|recording|release|release-group)\/([0-9a-f-]{36})/i);
     let mbid = entityPart;
     if (um) { entityType = normalizeEntityType(um[1]); mbid = um[2]; }
     if (!MBID_RE.test(mbid) || !/^https?:\/\//i.test(url)) return null;
@@ -304,7 +343,12 @@
       item.resolve(null);
     }
     return {
-      fetchJson: (url, retries) => new Promise(resolve => { queue.push({ url, retries: retries == null ? 3 : retries, resolve }); drain(); }),
+      // #494 follow-up (majkinetor, live: a duplicate-cover-art warning took
+      // ~20s to appear on a batch with a full recording list ahead of it —
+      // "It should be prioritized"): `priority` jumps the FRONT of this
+      // FIFO queue rather than the back, for the (rare) callers whose result
+      // is actionable, not cosmetic like a name lookup.
+      fetchJson: (url, retries, priority) => new Promise(resolve => { const entry = { url, retries: retries == null ? 3 : retries, resolve }; priority ? queue.unshift(entry) : queue.push(entry); drain(); }),
       // Drop everything not yet started, resolving each caller with null. Used
       // when a run begins: a backlog of cosmetic name lookups must not spend the
       // rate-limit budget the workers need. In-flight requests are left to
@@ -344,8 +388,8 @@
     const key = entityType + ':' + mbid;
     if (_nameCache.has(key)) return _nameCache.get(key);
     if (_namesSuspended) return null;
-    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityType}/${mbid}?fmt=json`);
-    const name = j ? (j.title || j.name || null) : null;   // recordings: title; artist/label: name
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityUrlSegment(entityType)}/${mbid}?fmt=json`);
+    const name = j ? (j.title || j.name || null) : null;   // recordings/releases/RGs: title; artist/label: name
     if (name) _nameCache.set(key, name);
     return name;
   }
@@ -356,10 +400,48 @@
   function addToQueue(parsed) {
     let merged = 0, added = 0;
     parsed.forEach(p => {
+      // #494/#495: a cover-shaped tuple (coverCandidates, no url — only ever
+      // 'release', from Harmony's cover scraper) merges into/creates a release
+      // item's `cover`, entirely separately from urls[] — a release item can
+      // have BOTH a cover AND urls (added via the generic path just below,
+      // same as any other type), landing in the same item since both paths
+      // dedup on (entityType, mbid) identically.
+      if (p.entityType === 'release' && p.coverCandidates) {
+        const existingRel = queue.find(i => i.status === 'queued' && i.entityType === 'release' && i.mbid === p.mbid);
+        if (existingRel) {
+          const before = existingRel.cover.candidates.length;
+          p.coverCandidates.forEach(c => { if (!existingRel.cover.candidates.some(x => x.url === c.url)) existingRel.cover.candidates.push(c); });
+          if (existingRel.cover.candidates.length > before) pickBestCover(existingRel);
+          if (existingRel.cover.existingCount == null) checkExistingCoverArt(existingRel);
+          merged++;
+          return;
+        }
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', comment: p.comment || '', isrcs: [], cover: { url: '', candidates: p.coverCandidates, existingCount: null }, name: null, urlResults: null, status: 'queued', error: '' };
+        queue.push(relItem);
+        fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); } });
+        pickBestCover(relItem);
+        checkExistingCoverArt(relItem);
+        added++;
+        return;
+      }
+      // #500 (majkinetor): a release whose recordings have NO external links
+      // at all (only a cover + ISRCs) left scrapeHarmonyActions with zero
+      // recording tuples to zip isrcs onto — dropped silently, since Falcon
+      // had no independent view of the tracklist to place them on otherwise.
+      // This tuple carries no mbid/url of its own yet — resolveIsrcFallback
+      // fetches the release's actual tracklist and re-enters addToQueue with
+      // real per-recording isrc tuples once it has one, same
+      // queue-first-resolve-after shape as #494's cover candidates.
+      if (p.entityType === 'recording' && p.pendingIsrcs) {
+        resolveIsrcFallback(p.pendingIsrcs.mbid, p.pendingIsrcs.isrcs, p.pendingIsrcs.note);
+        return;
+      }
       const existing = queue.find(i => i.status === 'queued' && i.entityType === p.entityType && i.mbid === p.mbid);
       const linkTypeId = p.linkTypeId || null;
       if (existing) {
-        if (!existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
+        // #500: a url-less tuple (isrc-only fallback resolution) has nothing
+        // to add to urls[] — only #474's comment/isrc fields.
+        if (p.url && !existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
         if (p.note && !existing.note) existing.note = p.note;
         // #474: disambiguation + ISRC — recording-only, additive (a later tuple
         // for the same mbid shouldn't clobber a comment/isrc it already has).
@@ -367,12 +449,28 @@
         if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: [{ url: p.url, linkTypeId }], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], name: null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', comment: p.comment || '', isrcs: p.isrc ? [p.isrc] : [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
     });
     return { merged, added };
+  }
+  // #500: fetches the release's real tracklist (recording mbids in track
+  // order) and places each Nth ISRC onto the Nth recording — the same
+  // positional convention scrapeHarmonyActions already uses when it DOES
+  // have link-tuples to zip onto, just resolved from MB's own API instead of
+  // scraped anchors when there are none.
+  async function resolveIsrcFallback(releaseMbid, isrcs, note) {
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${releaseMbid}?inc=recordings&fmt=json`, undefined, true);
+    if (!j || !Array.isArray(j.media)) { dbg('[isrc]', `${releaseMbid}: tracklist fetch failed, cannot place ${isrcs.length} ISRC(s)`); return; }
+    const recMbids = [];
+    for (const m of j.media) for (const t of (m.tracks || [])) recMbids.push(t.recording && t.recording.id);
+    const tuples = [];
+    isrcs.forEach((isrc, i) => { if (isrc && recMbids[i]) tuples.push({ entityType: 'recording', mbid: recMbids[i], note, isrc }); });
+    if (!tuples.length) { dbg('[isrc]', `${releaseMbid}: no ISRC could be matched to a track position`); return; }
+    const res = addToQueue(tuples);
+    log('info', `resolved ${res.added + res.merged} ISRC-only recording(s) from ${releaseMbid}'s tracklist (Harmony had no external links to zip them onto)`);
   }
   // Reads what the Export button writes, and is deliberately forgiving about the
   // shape: the wrapper object `{items:[...]}`, or a bare array of items, or a
@@ -395,21 +493,27 @@
     rows.forEach(r => {
       if (!r || typeof r !== 'object' || !MBID_RE.test(String(r.mbid || ''))) { skipped++; return; }
       const type = normalizeEntityType(r.entityType);
-      if (Array.isArray(r.urls)) {
+      // #494: a release row has no urls[] at all — its payload is r.cover
+      // (and, pre-resolution, r.coverCandidates).
+      const hasCover = type === 'release' && (r.cover?.url || (Array.isArray(r.coverCandidates) && r.coverCandidates.length));
+      if (Array.isArray(r.urls) || hasCover) {
         // full item: reinstate it whole, status and all
-        const urls = r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null }));
+        const urls = Array.isArray(r.urls) ? r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null })) : [];
         // #474: a recording carrying only a comment/isrc (no urls at all) is a
         // legitimate item now that fillAndSubmit knows to look for one — only
         // reject empty-urls rows that have nothing else to offer either.
         const hasMeta = type === 'recording' && (r.comment || (Array.isArray(r.isrcs) && r.isrcs.some(Boolean)));
-        if (!urls.length && !hasMeta) { skipped++; return; }
-        queue.push({
+        if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
+        const reItem = {
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
           note: r.note || '', comment: r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
+          cover: { url: r.cover?.url || '', candidates: Array.isArray(r.cover?.candidates) ? r.cover.candidates : (Array.isArray(r.coverCandidates) ? r.coverCandidates : []), existingCount: null },
           name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
           error: r.error || '',
-        });
+        };
+        queue.push(reItem);
+        if (hasCover && reItem.status === 'queued') checkExistingCoverArt(reItem);
         added++;
       } else if (r.url) {
         flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', comment: r.comment || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
@@ -458,24 +562,51 @@
     try {
       const arr = JSON.parse(json);
       if (!Array.isArray(arr)) return null;
-      return arr.map(it => ({ entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null }))
-        .filter(it => MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url));
+      return arr.map(it => {
+        // #494/#495: a cover-shaped tuple (coverCandidates, no url — only
+        // ever 'release') is kept separate from a normal url tuple, which
+        // works the same for 'release'/'release_group' as every other type.
+        if (normalizeEntityType(it.entityType) === 'release' && Array.isArray(it.coverCandidates)) {
+          return {
+            entityType: 'release', mbid: String(it.mbid || '').toLowerCase(),
+            coverCandidates: it.coverCandidates.filter(c => c && c.url).map(c => ({ provider: String(c.provider || ''), url: String(c.url), width: Number(c.width) || undefined, height: Number(c.height) || undefined, size: Number(c.size) || undefined })),
+          };
+        }
+        // #500: an isrc-only fallback tuple carries no url/mbid of its own —
+        // just the release it needs to resolve a tracklist from.
+        if (it.pendingIsrcs && it.pendingIsrcs.mbid) {
+          return {
+            entityType: 'recording',
+            pendingIsrcs: {
+              mbid: String(it.pendingIsrcs.mbid).toLowerCase(),
+              isrcs: Array.isArray(it.pendingIsrcs.isrcs) ? it.pendingIsrcs.isrcs.map(x => String(x || '')) : [],
+              note: it.pendingIsrcs.note ? String(it.pendingIsrcs.note) : '',
+            },
+          };
+        }
+        return { entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null };
+      }).filter(it => it.coverCandidates ? (MBID_RE.test(it.mbid) && it.coverCandidates.length)
+        : it.pendingIsrcs ? (MBID_RE.test(it.pendingIsrcs.mbid) && it.pendingIsrcs.isrcs.some(Boolean))
+        : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
     } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
   }
   // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
-  // https://musicbrainz.org/<artist|label|recording>/<mbid>/edit
+  // https://musicbrainz.org/<artist|label|recording|release|release-group>/<mbid>/edit
   //   ?edit-<type>.url.0.text=<url>&edit-<type>.url.0.link_type_id=<id>
   //   &edit-<type>.url.1.text=...&edit-<type>.url.1.link_type_id=...
   //   &edit-<type>.edit_note=<text>
   // Returns a FLAT array of {entityType,mbid,url,linkTypeId,note} tuples (one per
   // url.N) ready for addToQueue, or [] if href isn't a recognized seed URL.
+  // Harmony itself doesn't offer release/release-group "Link external IDs"
+  // actions yet (#495) — this just keeps the parser consistent/ready for when
+  // it does; release/RG links are queued via paste or `?falcon=` JSON for now.
   function parseHarmonySeedUrl(href) {
     let u; try { u = new URL(href, MB_ORIGIN); } catch (e) { return []; }
-    const m = u.pathname.match(/^\/(artist|label|recording)\/([0-9a-f-]{36})\/edit\/?$/i);
+    const m = u.pathname.match(/^\/(artist|label|recording|release|release-group)\/([0-9a-f-]{36})\/edit\/?$/i);
     if (!m) return [];
-    const entityType = normalizeEntityType(m[1]);
+    const entityType = normalizeEntityType(m[1]);   // 'release-group' -> 'release_group'
     const mbid = m[2].toLowerCase();
-    const prefix = `edit-${m[1].toLowerCase()}.`;
+    const prefix = `edit-${entityType}.`;
     const note = u.searchParams.get(prefix + 'edit_note') || '';
     const byIndex = {};
     for (const [key, val] of u.searchParams) {
@@ -517,9 +648,12 @@
   // anchors gets isrcN. This assumes every track has at least one link action
   // — true of every real Harmony page seen so far, but a track with zero
   // links would shift every isrc after it. majkinetor is testing this by hand.
-  function scrapeHarmonyIsrcs() {
+  function harmonyMagicIsrcHref() {
     const a = [...document.querySelectorAll('a')].find(x => /open with magicisrc/i.test(x.textContent || ''));
-    const href = a && a.getAttribute('href');
+    return a && a.getAttribute('href');
+  }
+  function scrapeHarmonyIsrcs() {
+    const href = harmonyMagicIsrcHref();
     if (!href) return [];
     let u; try { u = new URL(href, location.href); } catch (e) { return []; }
     const out = [];
@@ -528,6 +662,24 @@
       if (m && v) out[+m[1] - 1] = v;
     }
     return out;
+  }
+  // #500 (majkinetor): "Harmony ISRC sending does not work when there are no
+  // links" — a release whose recordings have zero "Link external IDs"
+  // actions (only a cover + ISRCs) leaves scrapeHarmonyActions with nothing
+  // to zip isrcs onto at all, so they were dropped entirely rather than
+  // shifted. The SAME MagicISRC href already carries the release's own mbid
+  // (`musicbrainzid`) and a ready-made edit note (`edit-note`) — enough to
+  // resolve the real tracklist later (see resolveIsrcFallback) instead of
+  // relying on scraped anchors that don't exist here.
+  function harmonyIsrcFallback() {
+    const href = harmonyMagicIsrcHref();
+    if (!href) return null;
+    let u; try { u = new URL(href, location.href); } catch (e) { return null; }
+    const mbid = u.searchParams.get('musicbrainzid');
+    if (!mbid || !MBID_RE.test(mbid)) return null;
+    const isrcs = scrapeHarmonyIsrcs();
+    if (!isrcs.some(Boolean)) return null;
+    return { mbid: mbid.toLowerCase(), isrcs, note: u.searchParams.get('edit-note') || '' };
   }
   function scrapeHarmonyActions() {
     const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
@@ -541,12 +693,138 @@
     }
     return tuples;
   }
+  // #494: Harmony sometimes annotates a cover figure's caption with a plain
+  // "WxH, SIZE unit, FORMAT" label (e.g. "1200×1200, 703.99 kB, JPEG" — seen
+  // verbatim in the issue's own example HTML) alongside "Type: front Source:
+  // X". Parsing it lets pickBestCover skip a network fetch entirely for that
+  // candidate. It is NOT reliably present (live testing this session — both a
+  // clean fetch and majkinetor's own logged-out browser — only ever showed
+  // "Type: front Source: X", no size caption), so this is an optimization,
+  // never a requirement: candidates missing it fall back to fetch+measure.
+  function parseCoverCaptionMeta(figure) {
+    const labels = [...figure.querySelectorAll('figcaption .label')].map(el => (el.textContent || '').trim());
+    for (const t of labels) {
+      const m = t.match(/^(\d+)\s*[×x]\s*(\d+)\s*,\s*([\d.]+)\s*(B|kB|MB)\b/i);
+      if (!m) continue;
+      const unit = m[4].toLowerCase();
+      const mult = unit === 'mb' ? 1000 * 1000 : unit === 'kb' ? 1000 : 1;
+      return { width: +m[1], height: +m[2], size: Math.round(parseFloat(m[3]) * mult) };
+    }
+    return null;
+  }
+  // Collects one candidate per non-Discogs cover figure — the direct <a href>
+  // (Harmony's own best copy per provider), not the smaller thumbnail <img
+  // src>. Best-across-providers is picked later by pickBestCover.
+  function scrapeHarmonyCover() {
+    const mbLink = [...document.querySelectorAll('a')].find(a => /^open in musicbrainz$/i.test((a.textContent || '').trim()));
+    const href = mbLink && mbLink.getAttribute('href');
+    const m = href && href.match(/musicbrainz\.org\/release\/([0-9a-f-]{36})/i);
+    if (!m) return null;
+    const mbid = m[1].toLowerCase();
+    const candidates = [...document.querySelectorAll('figure.cover-image[data-provider]')]
+      .filter(f => (f.getAttribute('data-provider') || '').toLowerCase() !== 'discogs')
+      .map(f => {
+        const a = f.querySelector('a[href]');
+        if (!a) return null;
+        return { provider: f.getAttribute('data-provider') || '', url: a.getAttribute('href'), ...(parseCoverCaptionMeta(f) || {}) };
+      })
+      .filter(Boolean);
+    return candidates.length ? { mbid, coverCandidates: candidates } : null;
+  }
+  // Cross-origin image fetch as a Blob. Cover candidates live on arbitrary
+  // provider CDNs (Deezer, Spotify, Qobuz, Apple, Tidal, ...), not
+  // musicbrainz.org/harmony.pulsewidth.org.uk, so a plain fetch() would hit
+  // page CORS — GM_xmlhttpRequest bypasses it. Same helper (and same need) as
+  // Art Station's gmFetch (art_station.user.js).
+  function gmFetch(url) {
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'GET', url, responseType: 'blob', timeout: 30000,
+        onload: r => { (r.status >= 200 && r.status < 300 && r.response) ? resolve(r.response) : reject(new Error('fetch ' + r.status)); },
+        onerror: () => reject(new Error('network error')),
+        ontimeout: () => reject(new Error('timed out')),
+      });
+    });
+  }
+  async function measureCandidate(url) {
+    const blob = await gmFetch(url);
+    const bitmap = await createImageBitmap(blob);
+    const { width, height } = bitmap;
+    if (bitmap.close) bitmap.close();
+    return { width, height, size: blob.size, blob };
+  }
+  // #494: picks the release's best cover — highest resolution, then lowest
+  // size. Runs AFTER the item is already queued (fire-and-forget, mirroring
+  // fetchEntityName's post-add enrichment at addToQueue) rather than before
+  // Harmony's window.open(), since an await there risks the popup being
+  // blocked. Candidates that already carry caption metadata (see
+  // parseCoverCaptionMeta) cost no fetch at all; the rest are measured live.
+  async function pickBestCover(item) {
+    const candidates = (item.cover && item.cover.candidates) || [];
+    if (!candidates.length) return;
+    let best = null;
+    const consider = (c, width, height, size) => {
+      const area = width * height;
+      if (!best || area > best.area || (area === best.area && size < best.size)) best = { url: c.url, provider: c.provider, area, size, width, height };
+    };
+    for (const c of candidates) {
+      if (c.width && c.height && c.size) { consider(c, c.width, c.height, c.size); continue; }
+      try { const m = await measureCandidate(c.url); consider(c, m.width, m.height, m.size); }
+      catch (e) { dbg('[cover]', `${item.mbid}: ${c.provider} candidate failed to measure — ${e.message}`); }
+    }
+    if (!best) return;
+    item.cover.url = best.url;
+    dbg('[cover]', `${item.mbid}: picked ${best.provider} (${best.width}x${best.height}, ${best.size}b) of ${candidates.length} candidate(s)`);
+    scheduleRender('queue');
+  }
+  // #494 follow-up (majkinetor): "Harmony always presents cover art even if
+  // it is already present on MB... adding cover is not idempotent. We could
+  // at minimum show if release has any covers as a warning." Originally
+  // called the Cover Art Archive's own API directly, but that's a genuine
+  // cross-origin request and it started failing outright live ("Failed to
+  // fetch" — a real userscript-manager sandbox is more restrictive here than
+  // a plain devtools fetch, unlike Falcon's other cross-origin need which
+  // goes through GM_xmlhttpRequest for exactly this reason). MB's own WS2
+  // release endpoint already reports the same information same-origin —
+  // `cover-art-archive.count` — so use that instead: no cross-origin call at
+  // all, through the same throttle every other MB lookup here uses. Same
+  // fire-and-forget-after-queuing shape as pickBestCover; sets
+  // item.cover.existingCount (null while unknown, 0 once confirmed there's
+  // nothing there) for renderRowDetail to warn on.
+  async function checkExistingCoverArt(item) {
+    // priority: this is actionable safety info, not cosmetic like a name
+    // lookup — it shouldn't sit behind a whole batch's worth of those.
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${item.mbid}?fmt=json`, undefined, true);
+    if (!j) { dbg('[cover]', `${item.mbid}: existing-cover-art check failed (no response)`); return; }   // transient — leave unknown rather than assert "none"
+    item.cover.existingCount = (j['cover-art-archive'] && j['cover-art-archive'].count) || 0;
+    dbg('[cover]', `${item.mbid}: ${item.cover.existingCount} existing cover image(s) per MB's own cover-art-archive field`);
+    scheduleRender('queue');
+  }
   function makePendingToken() {
     return 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+  // #498 (chaban-mb via majkinetor): after a release is added to MB FROM
+  // Harmony, Harmony's own actions page carries that release's mbid right in
+  // its query string (`?...&release_mbid=<mbid>`) — landing Falcon's panel on
+  // that release's own page instead of MB's bare homepage skips a manual
+  // navigation. The target is the plain release page, NOT its relationship
+  // editor (chaban-mb's own correction: provider links Harmony doesn't cover,
+  // tagging, and adding to a collection all happen from there, none of it
+  // from inside the relationship editor — matching what MB's native
+  // post-creation redirect already does without Harmony's "Redirect to
+  // Release Actions" setting turned on).
+  function harmonyReleaseMbid() {
+    const v = new URLSearchParams(location.search).get('release_mbid');
+    return v && MBID_RE.test(v) ? v.toLowerCase() : null;
   }
   let harmonyBtn = null;
   function ensureHarmonyButton() {
     const items = scrapeHarmonyActions();
+    const cover = scrapeHarmonyCover();
+    // #500: the isrc fallback only matters when there are no recording
+    // tuples for scrapeHarmonyActions to have already zipped isrcs onto.
+    const isrcFallback = items.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
+    const total = items.length + (cover ? 1 : 0) + (isrcFallback ? isrcFallback.isrcs.filter(Boolean).length : 0);
     if (!harmonyBtn) {
       harmonyBtn = document.createElement('button');
       harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
@@ -554,17 +832,24 @@
       harmonyBtn.innerHTML = `<span style="display:flex;color:#ff9d5c">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
       harmonyBtn.onclick = () => {
         const found = scrapeHarmonyActions();
-        if (!found.length) { alert(`${NAME}: no "Link external IDs" actions found on this page.`); return; }
+        const foundCover = scrapeHarmonyCover();
+        const foundIsrcFallback = found.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
+        if (!found.length && !foundCover && !foundIsrcFallback) { alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`); return; }
         const token = makePendingToken();
-        GM_setValue('falcon:pending:' + token, JSON.stringify(found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined }))));
-        window.open(`${MB_TARGET}/?falcon=${token}`, '_blank');
+        const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined }));
+        if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates });
+        if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
+        GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
+        const relMbid = harmonyReleaseMbid();
+        const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}` : `${MB_TARGET}/?falcon=${token}`;
+        window.open(target, '_blank');
       };
       document.body.appendChild(harmonyBtn);
     }
     const lbl = document.getElementById('falcon-harmony-lbl');
-    lbl.textContent = items.length ? `Send ${items.length} to Falcon` : 'No Falcon actions found yet…';
-    harmonyBtn.style.opacity = items.length ? '1' : '.6';
-    harmonyBtn.title = items.length ? `Opens MusicBrainz with ${items.length} link(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
+    lbl.textContent = total ? `Send ${total} to Falcon` : 'No Falcon actions found yet…';
+    harmonyBtn.style.opacity = total ? '1' : '.6';
+    harmonyBtn.title = total ? `Opens MusicBrainz with ${total} item(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
   }
 
   /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
@@ -627,14 +912,28 @@
       return true;
     } catch (e) { return false; }
   }
+  // #495: the release editor's own "Enter edit" button lives inside its
+  // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
+  // active) — a bare element.click() on the tab link does nothing (jQuery UI
+  // binds its handler expecting a real event), so dispatch a genuine
+  // MouseEvent instead, exactly as a real click would arrive. No-op (returns
+  // false) on any page that isn't actually tabbed this way.
+  function activateReleaseEditNoteTab(doc) {
+    const nav = doc.querySelector('#release-editor .ui-tabs-nav, #release-editor ul.ui-tabs-nav');
+    const a = nav && [...nav.querySelectorAll('a')].find(x => (x.getAttribute('href') || '') === '#edit-note');
+    if (!a) return false;
+    a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: doc.defaultView }));
+    return true;
+  }
   // harmonyNote is deliberately NOT re-inserted here: buildSeedEditUrl already
   // put it in the page's edit_note query param, so MB's own rendering has
   // already seeded it into the textarea by the time this runs — pushing it
   // again duplicated the line (#475: "the edit notes repeat the line
   // 'Matched recording while importing ... with Harmony'").
+  const FALCON_SIGNATURE = () => `${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}`;
   const editNoteText = (results) => {
     const added = results.filter(r => r.ok).map(r => r.url);
-    const lines = [`${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}`, '', 'Bulk-added via the Falcon queue:', ...added];
+    const lines = [FALCON_SIGNATURE(), '', 'Bulk-added via the Falcon queue:', ...added];
     return lines.join('\n');
   };
 
@@ -948,7 +1247,17 @@
     // feature ("sender is responsible for filling it") — Falcon doesn't try
     // to be clever about it, same as it doesn't verify a url is really new
     // before offering to add it.
-    const hasFieldChange = !!(item.comment || (item.isrcs && item.isrcs.length));
+    // #495 (majkinetor, live: a release item whose url got rejected still
+    // attempted to submit — "worker now has to set links for the submit
+    // button to appear" turned out to be the actual signal: MB's release
+    // editor gets stuck showing fabricated new-release validation errors
+    // specifically when asked to submit a form with NOTHING genuinely
+    // changed on it). `comment`/`isrcs` are only ever seeded into the form
+    // for entityType 'recording' (see buildSeedEditUrl) — a release item's
+    // `comment` means its cover-art image comment (#494), never submitted
+    // here at all, so it must not count as "something to submit" for THIS
+    // form.
+    const hasFieldChange = item.entityType === 'recording' && !!(item.comment || (item.isrcs && item.isrcs.length));
     if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no comment/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
     // visibility): when every url is ALREADY on the entity with the right type,
@@ -991,6 +1300,16 @@
     const d2 = frameDoc(iframe), w2 = frameWin(iframe);
     const noteSet = setEditNote(d2, w2, editNoteText(results));
     dbg(tag, `edit note set = ${noteSet}`);
+    // #495: unlike artist/label/recording's single-purpose edit page, the
+    // release editor is tabbed (Release information / Tracklist / Recordings
+    // / Edit note) and keeps its own "Enter edit" button (#enter-edit) inside
+    // the Edit note tab panel, display:none until that tab is genuinely
+    // activated — verified live: a bare .click() doesn't trigger jQuery UI's
+    // tab handler, but dispatching a real MouseEvent on the tab's own <a
+    // href="#edit-note"> does. Filling the External Links section above
+    // happens on the default-active Information tab regardless, so this only
+    // needs to run once, right before we go looking for the submit button.
+    if (item.entityType === 'release') activateReleaseEditNoteTab(d2);
     await wait(150);
     // manual-review path (openInTab, #467): fill the form and stop here — a human
     // reviews and clicks "Enter edit" themselves, exactly like a Harmony tab.
@@ -1001,7 +1320,19 @@
       const reason = findFieldError(frameDoc(iframe));
       const blanks = [...(frameDoc(iframe)?.querySelectorAll('select.link-type') || [])].filter(s => !s.value).length;
       dbg(tag, `NOT SUBMITTING — submit disabled; page errors: ${reason || '(none)'}; still-blank type selects: ${blanks}`);
-      throw new Error(reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)');
+      // #495 (majkinetor, live on both test.musicbrainz.org and production): a
+      // known MusicBrainz client bug — the release editor's own validation
+      // can report "a release title is required" etc. on an EXISTING release
+      // that plainly has one (checked live: window.MB.releaseEditor's actual
+      // data model has the real title/tracklist at the same moment the
+      // validator claims none of it exists — a genuine MB-side state
+      // disconnect, not bad data). Not something Falcon can route around
+      // reliably (no interaction reproducibly clears it), so just name it
+      // plainly instead of leaving a wall of "add a medium"/"track titles
+      // required" text that reads like this release is actually broken.
+      const knownBug = item.entityType === 'release' && /a release title is required/i.test(reason || '');
+      const note = knownBug ? ' (this looks like a known MusicBrainz client bug on an otherwise-fine release, not bad data — retry, or use ⇗ to finish it by hand)' : '';
+      throw new Error((reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)') + note);
     }
     // #467 (majkinetor): "One didn't pass, there was nothing in worker that was
     // regarded as error and Enter button was enabled, with all links and types
@@ -1064,9 +1395,11 @@
   // moment; this covers the rest).
   function nextQueued() {
     const activeKeys = new Set(queue.filter(i => i.status === 'active').map(i => i.entityType + ':' + i.mbid));
-    return queue.find(i => i.status === 'queued' && !activeKeys.has(i.entityType + ':' + i.mbid));
+    // #497: a toggled-off type's queued items sit out this run entirely —
+    // still in the queue, just never handed to a worker while off.
+    return queue.find(i => i.status === 'queued' && !_disabledTypes.has(i.entityType) && !activeKeys.has(i.entityType + ':' + i.mbid));
   }
-  function editUrl(item) { return `${MB_ORIGIN}/${item.entityType}/${item.mbid}/edit`; }
+  function editUrl(item) { return `${MB_ORIGIN}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit`; }
   // Same seed-url format Harmony itself uses (parseHarmonySeedUrl above decodes
   // exactly this) — MB's OWN edit-page JS reads these query params and pre-fills
   // the form NATIVELY as it renders, including auto-resolving an ambiguous
@@ -1111,7 +1444,7 @@
       (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
     }
     if (item.note) params.set(`${prefix}edit_note`, item.note);
-    return `${MB_TARGET}/${item.entityType}/${item.mbid}/edit?${params.toString()}`;
+    return `${MB_TARGET}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit?${params.toString()}`;
   }
 
   // "open in a real tab" (majkinetor, #467): same reason Harmony itself opens a
@@ -1122,6 +1455,16 @@
   // window.open must be the very first thing that runs (no preceding await) or
   // popup blockers treat it as not user-triggered.
   function openInTab(item) {
+    // #494: release items have no edit-relationships form to seed — the
+    // closest manual fallback is MB's own add-cover-art page (no seeding
+    // possible there either, it's a plain upload form).
+    if (item.entityType === 'release') {
+      const tab = window.open(`${MB_ORIGIN}/release/${item.mbid}/add-cover-art`, '_blank');
+      if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
+      item.status = 'manual'; item.error = ''; renderQueue();
+      log('info', `${entityLabel(item)} — opened MusicBrainz's add-cover-art page in a new tab for manual completion`);
+      return;
+    }
     const seedUrl = buildSeedEditUrl(item);
     const tab = window.open(seedUrl, '_blank');
     if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
@@ -1229,12 +1572,139 @@
     return f;
   }
 
+  // #494: release cover art has no MB edit-relationships form to seed, so it
+  // never goes through the iframe/form pipeline — ported from Art Station's
+  // proven sign -> upload -> register cover-art API flow
+  // (art_station.user.js): GET /ws/js/cover-art-upload/<mbid> reserves an
+  // image_id/nonce + an archive.org presigned upload target, POST the file
+  // bytes there, then POST the release's own add-cover-art form with that
+  // id/nonce (scraped fresh for its CSRF/type_id fields, same as Art
+  // Station's getPostForm/copyHidden/typeMapOf).
+  //
+  // #495: a release item can ALSO carry urls[] now (added through the normal
+  // iframe/form path, same as any other type) — two unrelated MB edits on the
+  // same entity. `priorLinks` ({status,error}) is passed when that path
+  // already ran on this SAME item; omitted entirely for the cover-only case
+  // (#494's original shape), so existing callers/tests are unaffected.
+  // A registered image mime type from its URL extension — used when
+  // blob.type doesn't look trustworthy (see below).
+  function mimeFromUrl(url) {
+    const ext = (String(url).split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i) || [])[1];
+    return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' }[(ext || '').toLowerCase()] || null;
+  }
+  async function runCoverItem(item, tag, card, priorLinks) {
+    updateWorkerLabel(card, item);
+    const tStart = Date.now();
+    let coverError = '';
+    try {
+      if (!item.cover.url) throw new Error('no cover image URL yet (still resolving, or none found on this release)');
+      // majkinetor (#494 follow-up, live failure — "sign 400", "since we have
+      // candidates, maybe we should go with the next one"): try the picked
+      // candidate first, then fall through the rest (original scrape order)
+      // on any fetch/sign failure, instead of failing the whole item outright
+      // over one bad candidate.
+      const order = [item.cover.url, ...((item.cover.candidates || []).map(c => c.url))]
+        .filter((u, i, arr) => u && arr.indexOf(u) === i);
+      let blob, mime, signed, lastErr = null;
+      for (const url of order) {
+        try {
+          log('info', `${tag} release ${item.mbid} — fetching cover image${url === item.cover.url ? '' : ' (fallback candidate)'}`);
+          blob = await gmFetch(url);
+          // GM_xmlhttpRequest doesn't always populate blob.type reliably from
+          // the response's real Content-Type (seen live: a 400 from the sign
+          // endpoint, which rejects an unrecognized mime_type) — trust it
+          // only when it actually looks like an image mime, else sniff from
+          // the URL's own extension.
+          mime = /^image\//.test(blob.type) ? blob.type : (mimeFromUrl(url) || 'image/jpeg');
+          log('info', `${tag} release ${item.mbid} — signing upload (${mime})`);
+          const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
+          if (!signRes.ok) throw new Error('sign ' + signRes.status);
+          signed = await signRes.json();   // {action, image_id, formdata, nonce}
+          if (url !== item.cover.url) { item.cover.url = url; dbg(tag, `release ${item.mbid}: fell back to a working candidate (${url})`); }
+          break;
+        } catch (e) {
+          lastErr = e;
+          dbg(tag, `release ${item.mbid}: candidate ${url} failed — ${e.message || e}`);
+        }
+      }
+      if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
+
+      log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB)`);
+      const fd = new FormData();
+      Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
+      fd.append('file', blob, 'cover.' + (mime.split('/')[1] || 'jpg'));
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', signed.action);
+        xhr.timeout = 300000;
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('upload ' + xhr.status));
+        xhr.onerror = () => reject(new Error('upload network error'));
+        xhr.ontimeout = () => reject(new Error('upload timed out'));
+        xhr.send(fd);
+      });
+
+      log('info', `${tag} release ${item.mbid} — registering`);
+      const addUrl = `${MB_ORIGIN}/release/${item.mbid}/add-cover-art`;
+      const formHtml = await fetch(addUrl, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET add-cover-art ' + r.status); return r.text(); });
+      const formDoc = new DOMParser().parseFromString(formHtml, 'text/html');
+      const form = [...formDoc.querySelectorAll('form')].find(f => (f.getAttribute('method') || '').toUpperCase() === 'POST');
+      if (!form) throw new Error('add-cover-art form not found');
+      const p = new URLSearchParams();
+      form.querySelectorAll('input[type=hidden]').forEach(h => { if (h.name && !/\.(id|position|nonce|mime_type|comment|type_id)$/.test(h.name)) p.append(h.name, h.value); });
+      let frontId = null;
+      form.querySelectorAll('input[name="add-cover-art.type_id"]').forEach(cb => { const l = cb.closest('label'); if (l && /front/i.test(l.textContent || '')) frontId = cb.value; });
+      p.append('add-cover-art.id', signed.image_id);
+      p.append('add-cover-art.position', '1');
+      p.append('add-cover-art.nonce', signed.nonce);
+      p.append('add-cover-art.mime_type', mime);
+      if (frontId) p.append('add-cover-art.type_id', frontId);
+      p.append('add-cover-art.comment', item.comment || '');
+      // Every other Falcon edit carries the "Falcon vX.Y.Z by majkinetor - <help
+      // url>" signature (see editNoteText) — cover art gets it too (majkinetor,
+      // #494 follow-up: "add falcon edit message as usual"), appended after
+      // whatever note the item already carries (e.g. from Harmony) rather than
+      // replacing it.
+      p.append('add-cover-art.edit_note', [item.note, FALCON_SIGNATURE()].filter(Boolean).join('\n\n'));
+      const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
+      if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
+
+      log('info', `${tag} release ${item.mbid} — cover art added`);
+    } catch (e) {
+      coverError = e.message || String(e);
+      log('error', `${tag} release ${item.mbid}: cover art — ${coverError}`);
+    }
+    const coverOk = !coverError;
+    if (priorLinks) {
+      const linksOk = priorLinks.status === 'done' || priorLinks.status === 'skipped';
+      if (linksOk && coverOk) { item.status = priorLinks.status; item.error = ''; }
+      else if (linksOk && !coverOk) { item.status = 'partial'; item.error = `cover art: ${coverError}`; }
+      else if (!linksOk && coverOk) { item.status = priorLinks.status === 'failed' ? 'partial' : priorLinks.status; item.error = priorLinks.error ? `links: ${priorLinks.error}` : ''; }
+      else { item.status = 'failed'; item.error = [priorLinks.error && `links: ${priorLinks.error}`, `cover art: ${coverError}`].filter(Boolean).join(' | '); }
+      dbg(tag, `release ${item.mbid} — combined outcome: links=${priorLinks.status} cover=${coverOk ? 'ok' : 'failed'} -> ${item.status}`);
+    } else {
+      item.status = coverOk ? 'done' : 'failed';
+      item.error = coverOk ? '' : coverError;
+    }
+    item.timing = { worker: tag, totalMs: Date.now() - tStart };
+    updateWorkerLabel(card, null);
+    scheduleRender('queue');
+  }
   async function workerLoop(card) {
     const tag = `[w${workerCards.indexOf(card) + 1}]`;
     while (running) {
       const item = nextQueued();
       if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
       item.status = 'active'; scheduleRender('queue');
+      // #494/#495: a release item with a cover but NO urls is cover-only —
+      // skip the iframe/form pipeline entirely (nothing to seed a form with).
+      // One WITH urls falls through to the normal pipeline below like any
+      // other type, and picks up the cover step afterward at each exit (see
+      // needsCover below) since the two are independent MB edits.
+      if (item.entityType === 'release' && !item.urls.length) {
+        await runCoverItem(item, tag, card);
+        continue;
+      }
+      const needsCover = item.entityType === 'release' && !!item.cover.url;
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
       // already been used.
@@ -1289,16 +1759,30 @@
       // all. Everything downstream then races a document that's about to be
       // replaced. Require the frame to actually be ON this entity's edit page
       // (and to have rendered the links section) before believing it's loaded.
+      // #495 (majkinetor, live on test.musicbrainz.org: "worker goes too fast
+      // over it... didn't add link"): a bare `input` fallback (meant to catch
+      // "no links yet, but the add-link input is ready") is satisfied by ANY
+      // input on the page — fine on artist/recording's small single-purpose
+      // form, but a release edit page has many unrelated inputs (title,
+      // barcode, tracklist...) that render well before the External Links
+      // section itself mounts, so this used to pass instantly and let the
+      // worker start filling before there was anything to fill. Matching
+      // findAddLinkInput's specific placeholder text instead of a bare
+      // `input` fixes it for every type, not just release.
       const loaded = await waitFor(() => {
         const w = frameWin(iframe), doc = frameDoc(iframe);
         if (!w || !doc || doc.readyState === 'loading') return null;
         let path = ''; try { path = w.location.pathname; } catch (e) { return null; }
         if (!path.includes(item.mbid)) return null;   // still about:blank / previous doc
-        return doc.querySelector('tr.external-link-item, input') ? true : null;
+        return (doc.querySelector('tr.external-link-item') || findAddLinkInput(doc)) ? true : null;
       }, 15000);
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
         log('error', `${tag} ${item.mbid}: edit page never loaded (waited 15s)`);
+        // #495: the cover upload is a plain API call, independent of this
+        // iframe — still worth attempting even though the link form never
+        // loaded.
+        if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
         retireCard(card, item.error); scheduleRender('queue');
         const replacement = spawnWorkerCard();
         if (replacement) workerLoop(replacement);
@@ -1352,6 +1836,10 @@
         item.timing = { worker: tag, loadMs, settleMs, fillMs: 0, submitMs: 0, totalMs: Date.now() - tNav };
         log('error', `${tag} ${item.mbid}: ${item.error}`);
       }
+      // #495: the cover upload is independent of how the link submission went
+      // (or whether it ran at all) — run it and fold its outcome into
+      // item.status/error before deciding whether this card can keep going.
+      if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
       renderQueue();
       if (r && (r.committed || r.noop)) {
         // a real submit happened — or there was genuinely nothing to submit, in
@@ -1381,7 +1869,11 @@
     if (!queue.some(i => i.status === 'active')) {
       stopHeartbeat();
       logRunSummary();
-      if (!queue.some(i => i.status === 'queued')) {
+      // #497: a queued item whose type is toggled off will never be picked up
+      // (see nextQueued) — don't count it as "still to do," or a run whose
+      // only leftovers are excluded types would sit forever looking active
+      // with every worker actually idle.
+      if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) {
         running = false;
         resumeNameLookups();   // the rate-limit budget is ours again
         updateRunBtn();
@@ -1403,7 +1895,7 @@
   function updateWorkerLabel(card, item) {
     if (card.dataset.retired) return;   // don't overwrite a retired card's frozen label
     const lbl = card.querySelector('.falcon-worker-lbl');
-    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${item.urls.length} link(s)` : 'idle';
+    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${item.entityType === 'release' ? 'cover art' : item.urls.length + ' link(s)'}` : 'idle';
     // a freshly-spawned card starts hidden (marked idle at creation, #467's
     // hide-idle-workers), so it must re-render the moment it actually GETS an
     // item too, not just when it goes idle again — re-rendering only on the
@@ -1540,6 +2032,8 @@
       return;
     }
     if (!queue.some(i => i.status === 'queued')) { log('warn', 'nothing queued'); return; }
+    // #497: everything queued is a toggled-off type — nothing would actually run.
+    if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) { log('warn', 'nothing queued that isn\'t excluded by a toggled-off type chip'); return; }
     running = true;
     _runStartedAt = Date.now();
     // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
@@ -1622,7 +2116,18 @@
     ].join('\n');
     document.head.appendChild(style);
     panel = document.createElement('div'); panel.id = 'falcon-panel';
-    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:90vw;max-height:70vh;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
+    // #495 (majkinetor, live: "if I first maximize the page, it doesn't go
+    // empty... in unmaximized state it is simply moved off window" —
+    // reproduced: the panel's own box was rendering as short as ~170px,
+    // squeezing every row onto one sliver instead of showing normally).
+    // Root cause: `max-height` alone doesn't give a `display:flex` column an
+    // actual height to distribute — without a real `height`, #falcon-queue-list's
+    // `flex:1` has no space to grow into and the whole panel just shrinks to
+    // its non-flexible children's content size, which collapses hard on a
+    // smaller viewport/queue. A real `height` alongside the existing
+    // `max-height` cap fixes it (viewport-capped either way, just no longer
+    // degenerate on the way there).
+    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:90vw;height:70vh;max-height:70vh;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
     panel.innerHTML = `
       <div id="falcon-hdr" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:#1b2a4a;color:#fff;cursor:move;user-select:none">
         <span style="display:flex;color:#ff9d5c">${ICON}</span>
@@ -1644,6 +2149,7 @@
           <span id="falcon-select-count"></span>
           <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
         </div>
+        <div id="falcon-type-chips" style="display:none;gap:6px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid #eee"></div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
           <span class="falcon-bt" style="color:#666;flex:0 0 auto">workers</span>
@@ -1656,6 +2162,7 @@
           </div>
           <button type="button" id="falcon-run" title="Start processing the queue" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
         </div>
+        <div id="falcon-cover-warning" style="display:none;padding:5px 10px;background:#fdf3e3;color:#8a5a00;font-size:10.5px;border-top:1px solid #f0e0bb;flex:0 0 auto"></div>
       </div>
       <div id="falcon-body-workers" style="position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;display:block;padding:8px 10px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#888">
@@ -1704,12 +2211,21 @@
       const payload = {
         falcon: scriptVersion(),
         exported: new Date().toISOString(),
-        items: queue.map(i => ({
-          entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
-          comment: i.comment || '', isrcs: i.isrcs || [],
-          urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
-          status: i.status, error: i.error || '', urlResults: i.urlResults || null,
-        })),
+        items: queue.map(i => {
+          const item = {
+            entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
+            comment: i.comment || '',
+            urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
+            status: i.status, error: i.error || '', urlResults: i.urlResults || null,
+          };
+          // #494/#496: isrc is a recording-only field — always including it
+          // (even as []) on artist/release rows reads as if they support it too.
+          if (i.entityType === 'recording') item.isrcs = i.isrcs || [];
+          // #494: cover art is a release item's whole payload — was missing
+          // from export entirely.
+          if (i.entityType === 'release') item.cover = { url: (i.cover && i.cover.url) || '', candidates: (i.cover && i.cover.candidates) || [] };
+          return item;
+        }),
       };
       const name = `falcon-queue-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
       const a = document.createElement('a');
@@ -1757,6 +2273,14 @@
       else queue.forEach(i => _expandedIds.add(i.id));
       renderQueue();
     };
+    // #497: same delegated-listener reasoning — the chip strip is fully
+    // rebuilt by renderTypeChips() on every renderQueue().
+    document.getElementById('falcon-type-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.falcon-type-chip'); if (!chip) return;
+      const t = chip.dataset.type;
+      _disabledTypes.has(t) ? _disabledTypes.delete(t) : _disabledTypes.add(t);
+      renderQueue();
+    });
     // one delegated listener for every row action — rows are fully re-rendered on
     // every renderQueue(), so per-element handlers would just leak; look the
     // clicked/changed item up by its data-id instead.
@@ -1772,6 +2296,13 @@
       if (statusBtn) {
         const it = queue.find(i => i.id === statusBtn.dataset.id);
         if (it && (it.status === 'failed' || it.status === 'partial')) focusItemWorker(it);
+        return;
+      }
+      // #494: swap the picked cover to a different candidate provider.
+      const pickBtn = e.target.closest('.falcon-cover-pick');
+      if (pickBtn) {
+        const it = queue.find(i => i.id === pickBtn.dataset.id);
+        if (it && it.status !== 'active') { it.cover.url = pickBtn.dataset.url; renderQueue(); }
         return;
       }
     });
@@ -1799,6 +2330,11 @@
         if (it) it.isrcs = isrcInp.value.split(',').map(s => s.trim().toUpperCase().replace(/[\s-]/g, '')).filter(Boolean);
         return;
       }
+      // #494: "Falcon side — accept URL for the image" — the auto-picked
+      // candidate is always user-editable/overridable, same spirit as the
+      // comment/ISRC fields above.
+      const coverInp = e.target.closest('.falcon-cover-input');
+      if (coverInp) { const it = queue.find(i => i.id === coverInp.dataset.id); if (it) it.cover.url = coverInp.value.trim(); return; }
     });
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
     document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
@@ -1905,7 +2441,15 @@
     fitBars();
   }
 
-  const DOT = { queued: '#999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
+  const DOT = { queued: '#999999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
+  // #506 (majkinetor): "queue processing status fields should have color which
+  // should be used for row background in unintrusive way" — same palette as the
+  // status dot, just a faint tint (~7% alpha) so it reads at a glance without
+  // fighting the row's text for attention.
+  const ROW_BG = Object.fromEntries(Object.entries(DOT).map(([k, v]) => [k, v + '12']));
+  // #495: a bare slice(0,3) collides — 'release' and 'release_group' both give
+  // 'rel'. Everything else still just takes its natural first 3 letters.
+  const TYPE_BADGE = { release_group: 'rg' };
   function renderRowDetail(it) {
     const results = it.urlResults || [];
     const urlRows = it.urls.map(u => {
@@ -1928,29 +2472,72 @@
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
         <input type="text" class="falcon-isrc-input" data-id="${it.id}" placeholder="ISRC(s), comma-separated" value="${esc((it.isrcs || []).join(', '))}" ${it.status === 'active' ? 'disabled' : ''}
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />
+      </div>`
+      // #494: cover art has no urls[] row to show — the image URL IS the
+      // payload, so it gets the same input treatment (auto-picked from
+      // Harmony's candidates but always user-editable/overridable), plus a
+      // provider picker when more than one candidate was found.
+      : it.entityType === 'release' ? `
+      <div style="display:flex;flex-direction:column;gap:4px;padding:3px 0 3px 30px;font-size:10.5px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="text" class="falcon-cover-input" data-id="${it.id}" placeholder="${it.cover.candidates.length && !it.cover.url ? 'resolving best cover…' : 'cover image URL'}" value="${esc(it.cover.url || '')}" ${it.status === 'active' ? 'disabled' : ''}
+            style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+          <input type="text" class="falcon-comment-input" data-id="${it.id}" placeholder="image comment (optional)" value="${esc(it.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
+            style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+        </div>
+        ${it.cover.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${it.cover.candidates.map(c => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-url="${esc(c.url)}" title="${esc(c.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${c.url === it.cover.url ? '#1b2a4a' : '#ddd'};background:${c.url === it.cover.url ? '#eef1fa' : '#fff'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:#444">${esc(c.provider)}${c.width ? ` ${c.width}×${c.height}` : ''}</button>`).join('')}</div>` : ''}
+        ${it.cover.existingCount ? `<div style="color:#a35b00;font-size:10px">⚠ this release already has ${it.cover.existingCount} cover image${it.cover.existingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
     return urlRows + meta;
   }
+  // #497: one chip per distinct entity type currently in the queue, showing
+  // its count — click to toggle whether that type's still-queued items get
+  // picked up by the next run. Rebuilt on every renderQueue() so it always
+  // reflects the current queue contents (types can appear/disappear as items
+  // are added/removed).
+  function renderTypeChips() {
+    const wrap = document.getElementById('falcon-type-chips'); if (!wrap) return;
+    const counts = {};
+    queue.forEach(i => { counts[i.entityType] = (counts[i.entityType] || 0) + 1; });
+    const types = Object.keys(counts).sort();
+    if (!types.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+    wrap.style.display = 'flex';
+    wrap.innerHTML = types.map(t => {
+      const on = !_disabledTypes.has(t);
+      const label = TYPE_BADGE[t] || t.slice(0, 3);
+      return `<button type="button" class="falcon-type-chip" data-type="${esc(t)}" title="${on ? `Click to exclude every ${esc(t)} item from the next run` : `Click to include every ${esc(t)} item in the next run`}"
+        style="border:1px solid ${on ? '#1b2a4a' : '#ddd'};background:${on ? '#1b2a4a' : '#f5f5f5'};color:${on ? '#fff' : '#999'};border-radius:12px;padding:2px 10px;font-size:10.5px;cursor:pointer;text-transform:uppercase">${esc(label)} ${counts[t]}</button>`;
+    }).join('');
+  }
   function renderQueue() {
+    renderTypeChips();
     const list = document.getElementById('falcon-queue-list'); if (!list) return;
     list.innerHTML = queue.map(it => {
       const expanded = _expandedIds.has(it.id);
       const checked = _selectedIds.has(it.id);
       const isActive = it.status === 'active';
+      // #497: still queued, but its type is toggled off — won't be picked up
+      // by the next run. Dimmed + a distinct label, but the underlying
+      // item.status stays 'queued' (this is a queue-level filter, not an
+      // outcome — an already active/done/failed item is never affected).
+      const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
       return `
-      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3">
-        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : ''}">
+      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid #f3f3f3;background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
+        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
-          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit comment & ISRC' : it.entityType === 'release' ? 'Show/edit cover art image' : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:#777;flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
-          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(it.entityType.slice(0, 3))}</span>
-          <a href="${MB_ORIGIN}/${it.entityType}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
+          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
+          <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
           ${it.urls.length > 1
             ? `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links</span>`
             : it.urls.length === 1
               ? `<a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.urls[0].url)}</a>`
-              : `<span style="color:#999;font-style:italic;flex:1">no links — ${esc(it.comment) ? 'comment' : ''}${it.comment && (it.isrcs || []).length ? ' + ' : ''}${(it.isrcs || []).length ? 'ISRC' : ''}</span>`}
-          <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${it.status}</span>
+              // #494: release rows never carry a urls[] entry — cover art is
+              // their whole payload — so they always land here; show it
+              // alongside comment/ISRC, each only when actually non-empty.
+              : `<span style="color:#999;font-style:italic;flex:1" title="${it.cover && it.cover.existingCount ? esc(`already has ${it.cover.existingCount} cover image${it.cover.existingCount === 1 ? '' : 's'} — this may duplicate it`) : ''}">no links — ${[it.comment ? 'comment' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover && it.cover.url ? (it.cover.existingCount ? 'cover ⚠' : 'cover') : ''].filter(Boolean).join(' + ') || '—'}</span>`}
+          <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${excluded ? 'excluded' : it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
         </div>
@@ -1975,6 +2562,7 @@
       expandAllBtn.title = allExpanded ? "Collapse every row's url detail" : "Expand every row's url detail";
     }
     renderProgress();
+    renderCoverWarning();
     fitBars();
   }
   // #467 (majkinetor): "Lets have a progress bar". Counts anything that has
@@ -1986,7 +2574,13 @@
     const bar = document.getElementById('falcon-progress-bar');
     const txt = document.getElementById('falcon-progress-text');
     if (!bar || !txt) return;
-    const total = queue.length;
+    // #497 (majkinetor, live: "progress bar max items remains old"): a
+    // toggled-off type's still-queued items will never settle (nextQueued
+    // skips them), so counting them in the denominator meant the bar could
+    // never reach 100% while any type was excluded. An item that already
+    // reached a terminal state BEFORE being excluded still counts — this
+    // only drops the ones currently sitting out.
+    const total = queue.filter(i => !(i.status === 'queued' && _disabledTypes.has(i.entityType))).length;
     if (!total) { bar.style.width = '0%'; txt.textContent = ''; return; }
     const settled = queue.filter(i => i.status !== 'queued' && i.status !== 'active').length;
     const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial').length;   // 'skipped' is a success (already up to date), not a problem
@@ -1994,6 +2588,19 @@
     bar.style.width = Math.round((settled / total) * 100) + '%';
     bar.style.background = bad ? '#d68910' : '#2e9e5b';
     txt.textContent = `${settled}/${total}` + (active ? ` · ${active} running` : '') + (bad ? ` · ${bad} problem${bad > 1 ? 's' : ''}` : '');
+  }
+  // #494 follow-up (majkinetor: "that requires row to be in view. Lets put the
+  // warning bellow the progress bar so its visible all the time") — a
+  // standing summary of every release in the queue whose existingCount check
+  // (see checkExistingCoverArt) came back positive, always visible instead of
+  // needing that row expanded/scrolled into view.
+  function renderCoverWarning() {
+    const el = document.getElementById('falcon-cover-warning'); if (!el) return;
+    const dupes = queue.filter(i => i.entityType === 'release' && i.cover && i.cover.existingCount);
+    if (!dupes.length) { el.style.display = 'none'; el.textContent = ''; return; }
+    el.style.display = 'block';
+    const names = dupes.map(i => `${entityLabel(i)} (${i.cover.existingCount})`).join(', ');
+    el.textContent = `⚠ ${dupes.length} release${dupes.length > 1 ? 's' : ''} already ${dupes.length > 1 ? 'have' : 'has'} cover art — ${names}`;
   }
 
   // #467 (majkinetor): "click the failed label, open its worker alone in a
@@ -2098,5 +2705,13 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs };
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+    // #494
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
+    // #495
+    entityUrlSegment, activateReleaseEditNoteTab,
+    // #497
+    getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); },
+    // #500
+    harmonyIsrcFallback, resolveIsrcFallback };
 })();

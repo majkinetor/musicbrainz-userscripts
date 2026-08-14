@@ -13,11 +13,79 @@
 
 The following fields are currently supported:
 
-- External links: artists, labels, recordings, release, rg
-- Cover art
+- External links: artists, labels, recordings, releases, release groups
 - ISRC
 - Disambiguation: recordings
-- Edit note
+- Cover art: releases
+
+## Field usage by entity type
+
+| field | artist | label | recording | release | release group |
+| --- | --- | --- | --- | --- | --- |
+| External links | yes | yes | yes | yes | yes |
+| ISRC | — | — | yes | — | — |
+| Disambiguation comment | — | — | yes | — | — |
+| Cover art | — | — | — | yes | — |
+| Image comment | — | — | — | yes | — |
+
+A release item can carry external links *and* cover art at once — two independent MusicBrainz edits on the same entity, run one after the other regardless of how the other one goes (a rejected link doesn't block the cover upload, and vice versa; the row ends up **partial** if only one of the two went through).
+
+## JSON model
+
+Falcon has no per-entity form — the file loaded by **Import**, written by **Export**, and used internally is the actual interface for batch loading; Harmony and `?falcon=` are just producers of this same shape. Root is either a bare array of items or `{"items": [...]}` (Export writes the latter, with `falcon`/`exported` metadata alongside):
+
+```json
+{
+  "falcon": "2026.8.14",
+  "exported": "2026-08-14T10:00:00.000Z",
+  "items": [
+    {
+      "entityType": "artist",
+      "mbid": "d31f76d2-1d8e-4271-8027-148f375979d7",
+      "name": "Der Zirkel",
+      "note": "via Falcon",
+      "urls": [{ "url": "https://myspace.com/x", "linkTypeId": null }],
+      "status": "done",
+      "error": "",
+      "urlResults": null
+    },
+    {
+      "entityType": "recording",
+      "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7",
+      "urls": [],
+      "comment": "live version",
+      "isrcs": ["NLTH62000001"],
+      "status": "queued"
+    },
+    {
+      "entityType": "release",
+      "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
+      "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
+      "comment": "front cover",
+      "cover": { "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "candidates": [] },
+      "status": "queued"
+    }
+  ]
+}
+```
+
+| field | type | meaning |
+| --- | --- | --- |
+| `entityType` | string | one of `artist`, `label`, `recording`, `release`, `release_group` |
+| `mbid` | string | the entity's MBID |
+| `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
+| `note` | string | edit note |
+| `comment` | string | recording-only: disambiguation comment. release-only: cover image comment. Not read for artist/label/release_group |
+| `isrcs[]` | array of string | recording-only |
+| `cover` | `{url, candidates}` | release-only: the cover art to upload (`url`), plus any not-yet-measured `candidates` Falcon is still picking a winner from |
+| `name` | string or null | display name — re-fetched if omitted, so it's optional |
+| `status` | string | `queued` (default if omitted/unrecognized) / `active` / `done` / `partial` / `failed` / `manual` / `skipped` — re-importing an Export lets you keep or retry each item |
+| `error` | string | last error message, if any |
+| `urlResults` | array or null | per-url ✓/✗ outcome from the last run, shown on hover in the expanded row |
+
+A minimal add-only item just needs `entityType`, `mbid`, and `urls[]` — or, for a recording, `comment`/`isrcs[]` in place of `urls[]` (see [Recording disambiguation and ISRC](#recording-disambiguation-and-isrc)) — every other field defaults sanely. This is also exactly what a re-imported Export round-trips through unchanged.
+
+The `?falcon=` URL parameter ([From another script](#from-another-script)) uses a lighter, flattened subset of this same model — one row per url instead of a grouped `urls[]` — meant for a single script call rather than a saved file.
 
 ## Why
 
@@ -34,10 +102,11 @@ Populate a queue via [Harmony](https://harmony.pulsewidth.org.uk) or by importin
 1. Click the small rocket button in the bottom-right corner of any MusicBrainz page (or press **Ctrl+Alt+F**) to open the panel, which opens centered on screen (drag its header to move it).
 2. Click **Import** to load a queue from a JSON file. A queue can also arrive from a `?falcon=` URL or the [Harmony button](#from-harmony), which is the usual route. **Export** writes the queue back out *with each item's status and per-url outcome*, so a partly-finished run can be kept as a record, or re-imported to retry only what failed — items that already show `done` are not re-run.
 3. The queue list is the main part of the panel — each row shows the entity's real name, a status dot (queued/in-progress/done/partial/failed/manual), and, on failure, MB's own real error message on hover (e.g. *"This URL is not allowed for artists."*, *"This relationship already exists."* — scraped from the page, not guessed). Click the **▸** to expand a row and see every url in that entity's group individually, each with its own ✓/✗ once processed — or use the **Expand all** / **Collapse all** toggle in the toolbar to do every row at once.
-4. Each row also has **⇗** (open this entity's edit page in a real tab, pre-filled the same way a worker would — but left for you to review and click "Enter edit" yourself; useful for retrying something the queue couldn't commit automatically) and **✕** (remove from the queue). Check the **all** box or several rows individually and use **Remove selected** to drop a whole group at once. Right-click a row's entity-type column (`art`/`lbl`/`rec`) to select every item of that same type at once.
-5. Click a red **FAILED**/**PARTIAL** status label to jump straight to that item's real worker in the **Workers** tab — the exact live page it left off on (not a fresh reload), zoomed large, with the error shown as a banner right on the card. Falls back to a plain text popup only for an item no worker ever picked up.
-6. Set how many workers to run at once at the bottom, then **▶ Start**. The default is 5, which measured fastest on a real batch (~1.8s per item, against ~2.3s at 3); the gain flattens above that, so the cap is 6. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). The panel itself has a **⛶** maximize toggle in the header too.
-7. A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url) retires that card in place — dimmed but still live and inspectable (nothing is discarded) — while a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card, building a fresh iframe for each new item rather than re-navigating a used one.
+4. Each row also has **⇗** (open this entity's edit page in a real tab, pre-filled the same way a worker would — but left for you to review and click "Enter edit" yourself; useful for retrying something the queue couldn't commit automatically) and **✕** (remove from the queue). Check the **all** box or several rows individually and use **Remove selected** to drop a whole group at once. Right-click a row's entity-type column (`art`/`lbl`/`rec`/`rel`/`rg`) to select every item of that same type at once.
+5. A chip per entity type sits above the queue (`ARTIST 5`, `RELEASE 7`, ...) once the queue has more than one type in it — all ON by default. Click one off to exclude every still-queued item of that type from the next run without removing them from the queue; they stay visible, dimmed, and marked **excluded**. Toggle it back on to include them again.
+6. Click a red **FAILED**/**PARTIAL** status label to jump straight to that item's real worker in the **Workers** tab — the exact live page it left off on (not a fresh reload), zoomed large, with the error shown as a banner right on the card. Falls back to a plain text popup only for an item no worker ever picked up.
+7. Set how many workers to run at once at the bottom, then **▶ Start**. The default is 5, which measured fastest on a real batch (~1.8s per item, against ~2.3s at 3); the gain flattens above that, so the cap is 6. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). The panel itself has a **⛶** maximize toggle in the header too.
+8. A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url) retires that card in place — dimmed but still live and inspectable (nothing is discarded) — while a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card, building a fresh iframe for each new item rather than re-navigating a used one.
 
 Entity names resolve through the same rate-limit-aware throttle MB API calls use elsewhere in these scripts (a handful concurrently, cooperatively backing off on an actual 429/503 via its Retry-After header) — fast for a normal batch, but still polite to MB's webservice under a big one. They also **yield to a run**: pressing Start drops any lookups still pending, because they are cosmetic while the workers' edit-page loads are not, and both draw on the same per-IP rate limit. Rows keep whatever label they have until the run finishes, then resolution resumes.
 
@@ -49,13 +118,23 @@ Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appe
 
 The whole batch travels via a short random token backed by the userscript's own storage rather than a `?falcon=` payload in the URL — that avoids the URL-length ceiling a large batch used to hit.
 
+If Harmony's own URL carries the release's mbid (`?...&release_mbid=<mbid>` — present right after adding a release from Harmony), the button opens the panel on that release's own page instead of MusicBrainz's homepage — not its relationship editor, since provider links Harmony doesn't cover, tagging, and adding to a collection all happen from the release page itself.
+
 ### Recording disambiguation and ISRC
 
 A recording queue item can also carry a **disambiguation comment** and one or more **ISRCs** — expand its row to fill them in directly (no computation, no lookup: whatever's typed there is seeded verbatim, same as a url). Both ride along with that recording's own edit — nothing else is submitted for them separately.
 
+### Release cover art
+
+When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes one extra queue item for the release itself, showing "cover" in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
+
+Unlike every other entity type, a cover-art item isn't submitted through MusicBrainz's edit-relationships form at all — there isn't one for cover art. Falcon drives MB's own upload API directly (sign → upload → register), the same one [Art Station](../art_station) uses.
+
+Harmony offers cover art whether or not the release already has some — adding one isn't idempotent the way links are. Falcon checks the Cover Art Archive as soon as a release item is queued and, if it already has cover art, marks the row with a ⚠ ("cover ⚠" in the collapsed summary, hover for the count; the full warning in the expanded row) rather than uploading blind.
+
 ### From another script
 
-Any other script can hand Falcon a queue directly via a URL parameter: append `?falcon=<base64(JSON)>` to any `musicbrainz.org` URL, where the JSON is an array of `{ "entityType": "artist" | "label" | "recording", "mbid": "...", "url": "...", "linkTypeId"?: "...", "note"?: "...", "isrc"?: "..." }` (`linkTypeId` is optional — when present it's used to set MB's relationship-type dropdown if one is shown; otherwise MB auto-classifies as usual; `isrc`, recording-only, is added alongside the url). Falcon detects the param on load, seeds the queue, and opens the panel automatically (does not auto-start — review, then click Start). (The GM-storage-token scheme Harmony uses above only works between Falcon's own two ends, since userscript storage isn't shared across different scripts — the base64 form is the contract for everyone else.)
+Any other script can hand Falcon a queue directly via a URL parameter: append `?falcon=<base64(JSON)>` to any `musicbrainz.org` URL, where the JSON is an array of `{ "entityType": "artist" | "label" | "recording" | "release" | "release_group", "mbid": "...", "url": "...", "linkTypeId"?: "...", "note"?: "...", "isrc"?: "..." }` (`linkTypeId` is optional — when present it's used to set MB's relationship-type dropdown if one is shown; otherwise MB auto-classifies as usual; `isrc`, recording-only, is added alongside the url). Note `entityType` is `release_group` (underscore) even though MusicBrainz's own URL for that entity uses a hyphen (`/release-group/<mbid>`) — Falcon maps between the two internally. Falcon detects the param on load, seeds the queue, and opens the panel automatically (does not auto-start — review, then click Start). (The GM-storage-token scheme Harmony uses above only works between Falcon's own two ends, since userscript storage isn't shared across different scripts — the base64 form is the contract for everyone else.)
 
 ### Reporting a problem
 

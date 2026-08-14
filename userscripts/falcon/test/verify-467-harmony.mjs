@@ -78,9 +78,10 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.waitForTimeout(1500);
   const info = await page.evaluate(() => {
     const items = window.__falconTest.scrapeHarmonyActions();
+    const cover = window.__falconTest.scrapeHarmonyCover();
     const btn = document.getElementById('falcon-harmony-btn');
     return {
-      count: items.length, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, btnTitle: btn?.title,
+      count: items.length, coverCount: cover ? 1 : 0, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, btnTitle: btn?.title,
       byType: items.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {}),
     };
   });
@@ -90,7 +91,9 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   // this release's real, live action mix can shift over time (edits happen on MB) —
   // just check it found SOME actions of some kind, not a specific type breakdown.
   ck(Object.values(info.byType).some(n => n > 0), `scrape found real actions of at least one type (${JSON.stringify(info.byType)})`);
-  ck(new RegExp(`Send ${info.count} to Falcon`).test(info.btnText || ''), `button label shows the FULL count, recordings included (label="${info.btnText}", count=${info.count})`);
+  // #494: the button's count also includes +1 when this release has cover art.
+  const total = info.count + info.coverCount;
+  ck(new RegExp(`Send ${total} to Falcon`).test(info.btnText || ''), `button label shows the FULL count, recordings + cover included (label="${info.btnText}", total=${total})`);
   ck(!/skipped/.test(info.btnTitle || ''), `tooltip no longer mentions skipping anything now that the token transport removed the URL-length ceiling (title="${info.btnTitle}")`);
 
   const clicked = await page.evaluate(() => new Promise(resolveClick => {
@@ -103,7 +106,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   ck(!!token && clicked.length < 200, `the button opens a URL carrying only a short token, not the whole payload (token="${token}", url length=${clicked.length})`);
   const storedArr = await page.evaluate(tok => JSON.parse(window.GM_getValue('falcon:pending:' + tok)), token);
   console.log('stored payload count:', storedArr.length, 'by type:', JSON.stringify(storedArr.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {})));
-  ck(storedArr.length === info.count, `GM storage holds the FULL batch (${storedArr.length} vs scraped ${info.count})`);
+  ck(storedArr.length === total, `GM storage holds the FULL batch, recordings + cover (${storedArr.length} vs ${total})`);
   ck(storedArr.some(t => t.entityType === 'recording'), 'recordings are present in the stored payload — no longer excluded');
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   await page.close();
