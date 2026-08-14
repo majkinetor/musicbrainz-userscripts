@@ -107,8 +107,8 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   // release entities classify unambiguously as "discogs". Both sidestep MB's
   // "that's just an example" placeholder-domain rejection (example.com).
   await page.evaluate(({ rel, rg, marker }) => window.__falconTest.setQueue([
-    { id: 'rel1', entityType: 'release', mbid: rel, urls: [{ url: `https://www.discogs.com/release/${marker}1`, linkTypeId: null }], note: 'falcon #495 test — safe to ignore/revert', comment: '', isrcs: [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' },
-    { id: 'rg1', entityType: 'release_group', mbid: rg, urls: [{ url: `https://www.wikidata.org/wiki/Q${marker}2`, linkTypeId: null }], note: 'falcon #495 test — safe to ignore/revert', comment: '', isrcs: [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' },
+    { id: 'rel1', entityType: 'release', mbid: rel, urls: [{ url: `https://www.discogs.com/release/${marker}1`, linkTypeId: null }], note: 'falcon #495 test — safe to ignore/revert', disambiguation: '', isrcs: [], cover: [], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' },
+    { id: 'rg1', entityType: 'release_group', mbid: rg, urls: [{ url: `https://www.wikidata.org/wiki/Q${marker}2`, linkTypeId: null }], note: 'falcon #495 test — safe to ignore/revert', disambiguation: '', isrcs: [], cover: [], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' },
   ]), { rel: TEST_RELEASE, rg: TEST_RG, marker: marker.replace(/\D/g, '') });
   await page.evaluate(() => window.__falconTest.start());
   await page.waitForFunction(() => {
@@ -155,7 +155,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   for (const c of cases) {
     registerShouldFail = c.coverFails;
     const outcome = await page.evaluate(async ({ priorStatus, priorError }) => {
-      const item = { mbid: 'dddddddd-2222-0000-0000-000000000000', comment: '', note: '', cover: { url: 'https://musicbrainz.org/fake-cover-merge.jpg', candidates: [] } };
+      const item = { mbid: 'dddddddd-2222-0000-0000-000000000000', note: '', cover: [{ url: 'https://musicbrainz.org/fake-cover-merge.jpg', comment: '', type: 'Front', candidates: [] }] };
       await window.__falconTest.runCoverItem(item, '[test]', { querySelector: () => null, dataset: {} }, { status: priorStatus, error: priorError });
       return { status: item.status, error: item.error };
     }, { priorStatus: c.priorStatus, priorError: c.priorError });

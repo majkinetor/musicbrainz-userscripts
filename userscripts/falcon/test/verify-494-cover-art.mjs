@@ -124,23 +124,23 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
 
   // (a) caption metadata present on both -> no network call needed at all.
   const zeroFetch = await page.evaluate(async () => {
-    const item = { mbid: 'aaaaaaaa-0000-0000-0000-000000000000', cover: { url: '', candidates: [
+    const item = { mbid: 'aaaaaaaa-0000-0000-0000-000000000000', cover: [{ url: '', comment: '', type: 'Front', candidates: [
       { provider: 'A', url: 'https://example.invalid/should-not-be-fetched-a.jpg', width: 500, height: 500, size: 900000 },
       { provider: 'B', url: 'https://example.invalid/should-not-be-fetched-b.jpg', width: 500, height: 500, size: 100000 },   // same area, smaller size -> wins
-    ] } };
+    ] }] };
     await window.__falconTest.pickBestCover(item);
-    return item.cover.url;
+    return item.cover[0].url;
   });
   ck(zeroFetch === 'https://example.invalid/should-not-be-fetched-b.jpg', `equal resolution -> lowest size wins, with zero fetches needed (got ${zeroFetch})`);
 
   // (b) no caption metadata -> measures via gmFetch against the routed fakes.
   const measured = await page.evaluate(async (origin) => {
-    const item = { mbid: 'bbbbbbbb-0000-0000-0000-000000000000', cover: { url: '', candidates: [
+    const item = { mbid: 'bbbbbbbb-0000-0000-0000-000000000000', cover: [{ url: '', comment: '', type: 'Front', candidates: [
       { provider: 'Small', url: origin + '/fake-small.jpg' },
       { provider: 'Big', url: origin + '/fake-big.jpg' },
-    ] } };
+    ] }] };
     await window.__falconTest.pickBestCover(item);
-    return item.cover.url;
+    return item.cover[0].url;
   }, 'https://musicbrainz.org');
   ck(measured.includes('fake-big'), `fetch+measure fallback correctly picks the actually-larger image (got ${measured})`);
 }
@@ -173,7 +173,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   const result = await page.evaluate(async () => {
-    const item = { mbid: 'cccccccc-0000-0000-0000-000000000000', comment: 'my comment', note: 'my edit note', cover: { url: 'https://musicbrainz.org/fake-cover-src.jpg', candidates: [] }, status: 'active' };
+    const item = { mbid: 'cccccccc-0000-0000-0000-000000000000', note: 'my edit note', cover: [{ url: 'https://musicbrainz.org/fake-cover-src.jpg', comment: 'my comment', type: 'Front', candidates: [] }], status: 'active' };
     await window.__falconTest.runCoverItem(item, '[test]', { querySelector: () => null, dataset: {} });
     return { status: item.status, error: item.error };
   });
@@ -188,7 +188,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   ck(body.get('add-cover-art.id') === '999', `image_id from the sign response is submitted (got ${body.get('add-cover-art.id')})`);
   ck(body.get('add-cover-art.nonce') === 'noncevalue', 'nonce from the sign response is submitted');
   ck(body.get('add-cover-art.type_id') === '2', `front type_id resolved from the scraped form's checkbox label (got ${body.get('add-cover-art.type_id')})`);
-  ck(body.get('add-cover-art.comment') === 'my comment', 'item.comment submitted as the image comment');
+  ck(body.get('add-cover-art.comment') === 'my comment', 'the cover entry\'s own comment submitted as the image comment');
   const editNote = body.get('add-cover-art.edit_note') || '';
   ck(editNote.startsWith('my edit note'), `item.note submitted as (the start of) the edit note (got "${editNote}")`);
   ck(/Falcon v.* by majkinetor/.test(editNote), `the usual Falcon signature is appended, same as every other Falcon edit (got "${editNote}")`);
@@ -209,8 +209,8 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 5000 });
   await page.evaluate(() => window.__falconTest.setQueue([
-    { id: 'r1', entityType: 'release', mbid: 'cccccccc-1111-0000-0000-000000000000', urls: [], note: '', comment: 'img comment', isrcs: [], cover: { url: 'https://example.invalid/best.jpg', candidates: [{ provider: 'Deezer', url: 'https://example.invalid/best.jpg' }] }, name: null, urlResults: null, status: 'queued', error: '' },
-    { id: 'a1', entityType: 'artist', mbid: 'dddddddd-1111-0000-0000-000000000000', urls: [{ url: 'https://example.invalid/a', linkTypeId: null }], note: '', comment: '', isrcs: [], cover: { url: '', candidates: [] }, name: null, urlResults: null, status: 'queued', error: '' },
+    { id: 'r1', entityType: 'release', mbid: 'cccccccc-1111-0000-0000-000000000000', urls: [], note: '', disambiguation: '', isrcs: [], cover: [{ url: 'https://example.invalid/best.jpg', comment: 'img comment', type: 'Front', candidates: [{ provider: 'Deezer', url: 'https://example.invalid/best.jpg' }] }], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' },
+    { id: 'a1', entityType: 'artist', mbid: 'dddddddd-1111-0000-0000-000000000000', urls: [{ url: 'https://example.invalid/a', linkTypeId: null }], note: '', disambiguation: '', isrcs: [], cover: [], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' },
   ]));
   const exported = await page.evaluate(() => new Promise(resolveExport => {
     const origCreate = URL.createObjectURL;
@@ -221,7 +221,8 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   const artRow = exported.items.find(i => i.entityType === 'artist');
   console.log('exported release row:', JSON.stringify(relRow));
   console.log('exported artist row:', JSON.stringify(artRow));
-  ck(relRow && relRow.cover && relRow.cover.url === 'https://example.invalid/best.jpg', `release row's cover is present in export (got ${JSON.stringify(relRow?.cover)})`);
+  ck(relRow && Array.isArray(relRow.cover) && relRow.cover[0] && relRow.cover[0].url === 'https://example.invalid/best.jpg', `release row's cover[] is present in export (got ${JSON.stringify(relRow?.cover)})`);
+  ck(relRow && relRow.cover[0].comment === 'img comment', `the cover entry's own comment is present (got "${relRow?.cover?.[0]?.comment}")`);
   ck(relRow && !('isrcs' in relRow), `release row has no stray isrcs field (keys: ${Object.keys(relRow || {})})`);
   ck(artRow && !('isrcs' in artRow), `artist row has no stray isrcs field either (keys: ${Object.keys(artRow || {})})`);
   ck(!('cover' in artRow), 'artist row has no cover field (release-only)');
@@ -277,12 +278,12 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page2.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   const result2 = await page2.evaluate(async () => {
     const item = {
-      mbid: 'eeeeeeee-0000-0000-0000-000000000000', comment: '', note: '',
-      cover: { url: 'https://musicbrainz.org/fake-badmime.jpg', candidates: [{ provider: 'Bad', url: 'https://musicbrainz.org/fake-badmime.jpg' }, { provider: 'Good', url: 'https://musicbrainz.org/fake-fallback-cover.jpg' }] },
+      mbid: 'eeeeeeee-0000-0000-0000-000000000000', note: '',
+      cover: [{ url: 'https://musicbrainz.org/fake-badmime.jpg', comment: '', type: 'Front', candidates: [{ provider: 'Bad', url: 'https://musicbrainz.org/fake-badmime.jpg' }, { provider: 'Good', url: 'https://musicbrainz.org/fake-fallback-cover.jpg' }] }],
       status: 'active',
     };
     await window.__falconTest.runCoverItem(item, '[test]', { querySelector: () => null, dataset: {} });
-    return { status: item.status, error: item.error, coverUrl: item.cover.url };
+    return { status: item.status, error: item.error, coverUrl: item.cover[0].url };
   });
   console.log('candidate-fallback result:', JSON.stringify(result2), 'sign mimes tried:', JSON.stringify(signCalls));
   ck(result2.status === 'done', `falls through to the working candidate and finishes done (got ${JSON.stringify(result2)})`);
