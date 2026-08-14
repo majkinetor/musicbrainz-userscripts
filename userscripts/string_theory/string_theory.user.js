@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.090355
+// @version      2026.8.14.115715
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -75,8 +75,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.14.090355 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.14\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.9\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
+  console.log('%c String Theory %c v2026.8.14.115715 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.9\n  · Art Station v2026.8.14.115259\n  · Credit Hoarder v2026.8.11.171021\n  · Group Therapy v2026.8.10\n  · ISRC Scout v2026.8.9\n  · Mammoth v2026.7.23\n  · Platform Check v2026.7.29");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8042,7 +8042,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14.115259","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.14.115259","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -10000,12 +10000,11 @@ try {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
-    pop.innerHTML = `<div class="as-pop-h">Source ${ENT.noun}</div>`
+    pop.innerHTML = `<div class="as-pop-h as-src-hd"><span class="as-src-htxt">Source ${ENT.noun}</span>`
+      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import by URL — paste a provider page or direct image URL">By URL</button>`
+      + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
-      + `<div class="as-src-or">or paste any URL</div>`
-      + `<input class="as-src-inp" placeholder="https://… provider page or image URL" spellcheck="false">`
-      + `<div class="as-pop-f"><button class="as-btn as-src-go">Fetch</button></div>`
       + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
     // #250 custom providers registered by other userscripts — one stacked "Import from …"
@@ -10020,13 +10019,21 @@ try {
         placePop(pop, btn.getBoundingClientRect());
       });
     }
-    const inp = pop.querySelector('.as-src-inp'); inp.focus();
-    const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
-    pop.querySelector('.as-src-go').onclick = go;
-    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
-    // paste a URL → fetch immediately (no need to click Fetch). Read after the paste
+    // #507: "By URL" is a title-bar toggle that unrolls into an input filling the title
+    // (apollo/isrc_scout-style unroll — see #180), replacing the old always-visible
+    // "or paste any URL" row + Fetch button. Pasting a URL fetches immediately; no
+    // button needed either way.
+    const srcHd = pop.querySelector('.as-src-hd');
+    const urlBtn = pop.querySelector('.as-src-url-btn');
+    const urlInp = pop.querySelector('.as-src-url-inp');
+    const openUrlAdd = () => { srcHd.classList.add('open'); setTimeout(() => urlInp.focus(), 0); };
+    const closeUrlAdd = () => { srcHd.classList.remove('open'); urlInp.value = ''; };
+    const go = () => { const v = urlInp.value; closeUrlAdd(); pop.remove(); sourceFromUrl(v); };
+    urlBtn.onclick = () => srcHd.classList.contains('open') ? closeUrlAdd() : openUrlAdd();
+    urlInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeUrlAdd(); } };
+    // paste a URL → fetch immediately (no need to press Enter). Read after the paste
     // lands; only auto-go when the whole field is a URL (typing-then-pasting won't fire).
-    inp.onpaste = () => setTimeout(() => { if (/^https?:\/\//i.test(inp.value.trim())) go(); }, 0);
+    urlInp.onpaste = () => setTimeout(() => { if (/^https?:\/\//i.test(urlInp.value.trim())) go(); }, 0);
     // populate "Import from <provider>" buttons from the release's linked platforms
     getProvLinks().then(provs => {
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
@@ -11421,8 +11428,15 @@ try {
   .as-src-all:hover:not(:disabled){background:#4e329f;border-color:#4e329f}
   .as-src-ic{width:16px;height:16px;object-fit:contain;flex:0 0 auto}
   .as-src-n{opacity:.85}
-  .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
-  .as-src-inp{width:100%;box-sizing:border-box;margin:4px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
+  .as-src-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .as-src-hd.open .as-src-htxt{display:none}   /* input fills the whole title when unrolled */
+  .as-src-urlwrap{display:inline-flex;align-items:center;flex:none;min-width:0}
+  .as-src-hd.open .as-src-urlwrap{flex:1 1 auto}
+  .as-src-url-btn{font:600 13px inherit;color:var(--as-acc);background:none;border:none;cursor:pointer;padding:0;white-space:nowrap}
+  .as-src-url-btn:hover{text-decoration:underline}
+  .as-src-hd.open .as-src-url-btn{display:none}
+  .as-src-url-inp{display:none}
+  .as-src-hd.open .as-src-url-inp{display:inline-block;width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid #cfc6e6;border-radius:5px;font:12px inherit}
   .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
   .as-src-pop > .as-pop-note.as-src-warn{white-space:normal;color:#a85a00;font-weight:600}
   .as-src-pop > .as-pop-note.as-src-warn a{color:#a85a00;text-decoration:underline}
