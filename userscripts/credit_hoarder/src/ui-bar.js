@@ -823,9 +823,22 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         return sel;
     }
 
+    // #501: settings persistence lives in GM storage (backed up/synced by the script
+    // manager) instead of localStorage (browser-profile-only — invisible to a script
+    // manager backup/restore or a move to another browser). One-time migration: if GM
+    // storage is empty but an old localStorage value exists, adopt it once and write
+    // through to GM storage from then on; the old localStorage key is left in place,
+    // unused, so nothing is destructively deleted.
+    const gmLoad = (key) => {
+        try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
+        try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
+        return undefined;
+    };
+    const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
+
     const OPTS_KEY = 'discogs-importer-opts';
     let savedOpts = {};
-    try { savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || '{}'); } catch(e) {}
+    try { savedOpts = JSON.parse(gmLoad(OPTS_KEY) || '{}'); } catch(e) {}
     // #421 one-time reset: work duplicates were being created by careless "create works"
     // use, so THIS version starts everyone at 'never' regardless of what was saved — the
     // duplicate-works warning popup is then guaranteed to be seen when re-enabling.
@@ -833,7 +846,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         savedOpts.createWorksMode = 'never';
         savedOpts.createWorksReset421 = true;
         delete savedOpts.createWorks;   // pre-#94 legacy key, superseded by the reset
-        try { localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts)); } catch(e) {}
+        try { gmSave(OPTS_KEY, JSON.stringify(savedOpts)); } catch(e) {}
     }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
 
@@ -933,7 +946,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     });
 
     const saveOpts = () => {
-        try { localStorage.setItem(OPTS_KEY, JSON.stringify({
+        try { gmSave(OPTS_KEY, JSON.stringify({
             tracklist: tracklistCb.checked, applyTracks: applyTracksCb.checked,
             useWorks: useWorksCb.checked,   // #424 master toggle
             createWorksMode: createWorksMode.value,
@@ -986,12 +999,12 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     outputDiv.append(reviewSlot, logPanel);
     outputDiv.dataset.logfilter = 'all';
 
-    const applyLogOpen = () => { const open = localStorage.getItem(LOG_OPEN_KEY) === '1'; outputDiv.classList.toggle('log-open', open); logSplit.classList.toggle('active', open); };
+    const applyLogOpen = () => { const open = gmLoad(LOG_OPEN_KEY) === '1'; outputDiv.classList.toggle('log-open', open); logSplit.classList.toggle('active', open); };
     try { applyLogOpen(); } catch (e) {}
     const setLogOpen = (open) => {
         outputDiv.classList.toggle('log-open', open);
         logSplit.classList.toggle('active', open);
-        try { localStorage.setItem(LOG_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
+        try { gmSave(LOG_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
     };
 
     // ── "Log ▾" dropdown menu (#118, #217) ──────────────────────────────────

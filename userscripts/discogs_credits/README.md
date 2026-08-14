@@ -38,7 +38,7 @@ Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Rela
 
 The UI strip at the top of the page with options, an Import button, log output, a documentation link, and Copy-log buttons.
 
-Options are saved in localStorage and persist across sessions.
+Options are saved via the userscript manager's own storage — covered by its backup/restore and cross-browser sync — and persist across sessions.
 
 1. **Per-track credits**<br>
 Import track-level artist credits in addition to release-level credits.

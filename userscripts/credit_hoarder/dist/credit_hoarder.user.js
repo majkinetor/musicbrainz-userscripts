@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.8.11.171021
+// @version      2026.8.14.143702
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -7051,10 +7051,32 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       _optsHost.appendChild(wrap);
       return sel;
     }
+    const gmLoad = (key) => {
+      try {
+        const v = GM_getValue(key, void 0);
+        if (v !== void 0) return v;
+      } catch (e) {
+      }
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw != null) {
+          GM_setValue(key, raw);
+          return raw;
+        }
+      } catch (e) {
+      }
+      return void 0;
+    };
+    const gmSave = (key, raw) => {
+      try {
+        GM_setValue(key, raw);
+      } catch (e) {
+      }
+    };
     const OPTS_KEY = "discogs-importer-opts";
     let savedOpts = {};
     try {
-      savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
+      savedOpts = JSON.parse(gmLoad(OPTS_KEY) || "{}");
     } catch (e) {
     }
     if (!savedOpts.createWorksReset421) {
@@ -7062,7 +7084,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       savedOpts.createWorksReset421 = true;
       delete savedOpts.createWorks;
       try {
-        localStorage.setItem(OPTS_KEY, JSON.stringify(savedOpts));
+        gmSave(OPTS_KEY, JSON.stringify(savedOpts));
       } catch (e) {
       }
     }
@@ -7166,7 +7188,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     });
     const saveOpts = () => {
       try {
-        localStorage.setItem(OPTS_KEY, JSON.stringify({
+        gmSave(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
           useWorks: useWorksCb.checked,
@@ -7213,7 +7235,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     outputDiv.append(reviewSlot, logPanel);
     outputDiv.dataset.logfilter = "all";
     const applyLogOpen = () => {
-      const open = localStorage.getItem(LOG_OPEN_KEY) === "1";
+      const open = gmLoad(LOG_OPEN_KEY) === "1";
       outputDiv.classList.toggle("log-open", open);
       logSplit.classList.toggle("active", open);
     };
@@ -7225,7 +7247,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       outputDiv.classList.toggle("log-open", open);
       logSplit.classList.toggle("active", open);
       try {
-        localStorage.setItem(LOG_OPEN_KEY, open ? "1" : "0");
+        gmSave(LOG_OPEN_KEY, open ? "1" : "0");
       } catch (e) {
       }
     };

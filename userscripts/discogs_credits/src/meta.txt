@@ -13,4 +13,6 @@
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==

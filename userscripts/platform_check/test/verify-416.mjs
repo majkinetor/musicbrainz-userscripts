@@ -62,22 +62,27 @@ const out = await page.evaluate((mbid) => {
     const RG = '00000000-dead-beef-0000-000000000001';
     // controlled state: Discogs ✓ match, barcode DIFFERS from MB's, master known,
     // release-group has no master yet; barcode confidence ON (default mode).
-    window.__gmStore.set(`pc:cache:v2:discogs:${mbid}`, JSON.stringify({
+    // #501 follow-up: cache/pending state now lives in real localStorage, not
+    // the mocked GM store — pc:respect-barcode/pc:barcode-mode are genuine
+    // settings and stay on the GM mock.
+    localStorage.setItem(`pc:cache:v2:discogs:${mbid}`, JSON.stringify({
         url: 'https://www.discogs.com/release/4570366', tracks: 13, source: 'search',
         barcode: '111111111111', format: 'Vinyl', masterUrl: 'https://www.discogs.com/master/556257',
     }));
-    window.__gmStore.set(`pc:mbdata:${mbid}`, JSON.stringify({ releaseGroupMbid: RG, existing: {} }));
+    localStorage.setItem(`pc:mbdata:${mbid}`, JSON.stringify({ releaseGroupMbid: RG, existing: {} }));
     window.__gmStore.set('pc:respect-barcode', true);
     window.__gmStore.set('pc:barcode-mode', 'exists');
     // wipe every other provider's cache so only discogs is considered
-    for (const p of ['spotify','bandcamp','deezer','apple','tidal','qobuz','beatport','volumo','hdtracks']) window.__gmStore.delete(`pc:cache:v2:${p}:${mbid}`);
+    for (const p of ['spotify','bandcamp','deezer','apple','tidal','qobuz','beatport','volumo','hdtracks']) localStorage.removeItem(`pc:cache:v2:${p}:${mbid}`);
+    localStorage.removeItem(`pc:pending:${mbid}`);
+    localStorage.removeItem(`pc:pending:rg:${RG}`);
     const ico = document.getElementById('ico-discogs');
     ico.textContent = '✓';
     window.__opened.length = 0;
     document.getElementById('mb-inject-btn').click();
     return {
-        pendingRelease: window.__gmStore.get(`pc:pending:${mbid}`) || null,
-        pendingRG:      window.__gmStore.get(`pc:pending:rg:${RG}`) || null,
+        pendingRelease: localStorage.getItem(`pc:pending:${mbid}`) || null,
+        pendingRG:      localStorage.getItem(`pc:pending:rg:${RG}`) || null,
         opened:         [...window.__opened],
         log:            (document.getElementById('mb-finder-log-panel')?.innerText || '').split('\n').filter(l => /Inject/.test(l)).join('\n'),
     };
