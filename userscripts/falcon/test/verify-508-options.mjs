@@ -98,6 +98,26 @@ const attemptResult = await page.evaluate(async () => {
 console.log('option-off result:', JSON.stringify(attemptResult));
 ck(attemptResult.status !== 'skipped', `with the option off, an existing-cover release is NOT auto-skipped (got "${attemptResult.status}")`);
 
+// 6. majkinetor follow-up: "Lets move workers to options." — the worker-count
+// stepper moves out of the always-visible queue footer into Options.
+const workerNotInFooter = await page.evaluate(() => !document.querySelector('#falcon-queue-bottom #falcon-worker-count'));
+ck(workerNotInFooter, 'the worker-count control is no longer in the queue footer');
+await page.click('#falcon-tab-options');
+await page.waitForTimeout(150);
+const workerInOptions = await page.evaluate(() => !!document.querySelector('#falcon-body-options #falcon-worker-count'));
+ck(workerInOptions, 'the worker-count control now lives in the Options tab');
+const workerVal = await page.evaluate(() => document.getElementById('falcon-worker-count').value);
+ck(String(+workerVal) === workerVal && +workerVal > 0, `worker-count still shows a real value after relocating (got "${workerVal}")`);
+await page.fill('#falcon-worker-count', '3');
+await page.dispatchEvent('#falcon-worker-count', 'change');
+await page.waitForTimeout(100);
+const workersPersisted = await page.evaluate(() => window.__falconTest.cfg.workers);
+ck(workersPersisted === '3' || workersPersisted === 3, `changing it in its new home still updates cfg.workers (got ${JSON.stringify(workersPersisted)})`);
+
+// 7. majkinetor follow-up: "make window resizable."
+const resizeCss = await page.evaluate(() => getComputedStyle(document.getElementById('falcon-panel')).resize);
+ck(resizeCss === 'both', `the panel has a native resize handle (got resize:${resizeCss})`);
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
