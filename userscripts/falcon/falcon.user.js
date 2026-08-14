@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.215031
+// @version      2026.8.14.220816
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.14.215031';
+  const VERSION = '2026.8.14.220816';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -484,11 +484,18 @@
         // for the same mbid shouldn't clobber a disambiguation/isrc it already has).
         if (p.disambiguation && !existing.disambiguation) existing.disambiguation = p.disambiguation;
         if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
+        // #509: a name Harmony already resolved beats a later async MB lookup.
+        if (p.name && !existing.name) existing.name = p.name;
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], cover: [], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
-      fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
+      // #509 (majkinetor): "Since Harmony already resolves names, we could
+      // just fetch and use them instead of bombing MB." scrapeHarmonyActions
+      // already scraped the name straight off Harmony's own page — only
+      // fall back to Falcon's own MB lookup when a tuple didn't carry one
+      // (paste, `?falcon=` URL, JSON import without a name field).
+      if (!p.name) fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
     });
     return { merged, added };
@@ -719,10 +726,29 @@
     if (!isrcs.some(Boolean)) return null;
     return { mbid: mbid.toLowerCase(), isrcs, note: u.searchParams.get('edit-note') || '' };
   }
+  // #509 (majkinetor): "Since Harmony already resolves names, we could just
+  // fetch and use them instead of bombing MB." Each action row already shows
+  // the resolved entity as one more icon+name pill alongside the provider
+  // icons — <a href="https://musicbrainz.org/<type>/<mbid>"><span
+  // class="musicbrainz">…</span>Dusk</a>, the plain entity page (no query
+  // string), distinct from the "Link external IDs" anchor's own seed-edit
+  // href. Scraping that name here means addToQueue can skip its own
+  // fetchEntityName() MB round-trip entirely for Harmony-sourced items.
+  function harmonyRowName(actionAnchor) {
+    const row = actionAnchor.closest('.action') || actionAnchor.parentElement;
+    if (!row) return null;
+    const mbLink = [...row.querySelectorAll('a[href]')].find(a => new RegExp(`^${MB_TARGET.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(artist|label|recording|release|release-group)/[0-9a-f-]{36}$`, 'i').test(a.getAttribute('href') || ''));
+    const name = mbLink && (mbLink.textContent || '').trim();
+    return name || null;
+  }
   function scrapeHarmonyActions() {
     const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
     const tuples = [];
-    anchors.forEach(a => { const href = a.getAttribute('href'); if (href) tuples.push(...parseHarmonySeedUrl(href)); });
+    anchors.forEach(a => {
+      const href = a.getAttribute('href'); if (!href) return;
+      const name = harmonyRowName(a);
+      parseHarmonySeedUrl(href).forEach(t => { if (name) t.name = name; tuples.push(t); });
+    });
     const isrcs = scrapeHarmonyIsrcs();
     if (isrcs.length) {
       const recOrder = [];
