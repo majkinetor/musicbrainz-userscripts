@@ -11,7 +11,7 @@
 | [![Queue](./screenshots/queue.jpg)](./screenshots/queue.jpg) | [![Workers](./screenshots/workers.jpg)](./screenshots/workers.jpg) |
 | A run in progress: 31 entities, 5 workers, mixed artists and recordings. Each row shows the resolved entity name, its status, and its link. | The **Workers** tab — the live iframes doing the work, sized by the slider. Each is a real MusicBrainz edit page being filled and submitted. |
 
-Bulk-linking has no good options today (the recurring case: an importer like Harmony hands you 20-50 artists/records that each need an exeternal link). MusicBrainz has no write API for some attributes so every tool has to drive the real edit page.
+Adding data in automated way has no good options today (the recurring case: an importer like Harmony hands you 20-50 artists/records that each need an exeternal link). MusicBrainz has no write API for some attributes so external tools can only open tabs that users are expected to individually hadle.
 
 Falcon provides unified interface to bulk edit supported entity attributes, regardless if it is done via API or form manipulation.  
 
