@@ -17,11 +17,10 @@ Falcon provides unified interface to bulk edit supported entity attributes, rega
 
 ## Usage
 
-Populate a queue via [Harmony](https://harmony.pulsewidth.org.uk) or by importing a JSON:
+Populate a queue via or by importing a JSON:
 
-1. Click the small rocket button in the bottom-right corner of any MusicBrainz page
-2. Populate queue from [Harmony button](#from-harmony) or import a [JSON file](#json-model)
-3. Review the queue (remove some entities or change attributes), then press Start button to process it.
+1. Populate queue from [Harmony button](#from-harmony) or import a [JSON file](#json-model) by accessing Falcon on any Musicbrinz page (CTRL+ALT+F).
+2. Review the queue (remove some entities or change attributes), then press Start button to process it.
    - Right-click a row's entity-type column to select every item of that same type at once so you can remove them
    - Or, click the chips in the header (`art`/`lbl`/`rec`/`rel`/`rg`) to exclude all instances of specific entity without removing them from queue 
 
@@ -38,7 +37,7 @@ Each row also has **⇗** (open this entity's edit page in a real tab, pre-fille
 
 ### From Harmony
 
-Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner, covering every entity type Harmony offers. Clicking the button opens MusicBrainz in a new tab with the batch queued and the panel open, ready to review and Start.
+Open a [Harmony] **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner, covering every entity type Harmony offers. Clicking the button opens MusicBrainz in a new tab with the batch queued and the panel open, ready to review and Start.
 
 Harmony integration fills Falcon queue with external links for all entities, recording isrcs and cover.
 
@@ -162,4 +161,5 @@ Entity names resolve through the same rate-limit-aware throttle MB API calls use
 
 A url that MB considers ambiguous (a Bandcamp track is the common case — could be "purchase for download", "streaming", etc.) needs an explicit relationship type MusicBrainz can't infer on its own; without one, Falcon reports that specific url as failed with a clear reason rather than letting it silently block the rest of its group's submission. Use **⇗** to open it in a tab and pick the type by hand.
 
+[Harmony]: https://harmony.pulsewidth.org.uk
 
