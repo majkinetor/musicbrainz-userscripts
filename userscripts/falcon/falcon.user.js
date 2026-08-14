@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.185430
+// @version      2026.8.14.221450
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.14.185430';
+  const VERSION = '2026.8.14.221450';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -78,6 +78,11 @@
     // height tracks width at 4:5.
     get workerSize() { const n = Number(GM_getValue('falcon:workerSize', 260)); return Math.max(200, Math.min(900, isFinite(n) ? n : 260)); },
     set workerSize(n) { GM_setValue('falcon:workerSize', Math.max(200, Math.min(900, Number(n) || 260))); },
+    // #508 (majkinetor): "Options" screen additions.
+    get hideLauncher() { return GM_getValue('falcon:hideLauncher', false) === true; },
+    set hideLauncher(v) { GM_setValue('falcon:hideLauncher', !!v); },
+    get coverOnlyIfNone() { return GM_getValue('falcon:coverOnlyIfNone', false) === true; },
+    set coverOnlyIfNone(v) { GM_setValue('falcon:coverOnlyIfNone', !!v); },
   };
 
   /* ── tiny logger — kept in-memory + console, surfaced in the panel's log tab ── */
@@ -479,11 +484,18 @@
         // for the same mbid shouldn't clobber a disambiguation/isrc it already has).
         if (p.disambiguation && !existing.disambiguation) existing.disambiguation = p.disambiguation;
         if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
+        // #509: a name Harmony already resolved beats a later async MB lookup.
+        if (p.name && !existing.name) existing.name = p.name;
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], cover: [], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
-      fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
+      // #509 (majkinetor): "Since Harmony already resolves names, we could
+      // just fetch and use them instead of bombing MB." scrapeHarmonyActions
+      // already scraped the name straight off Harmony's own page — only
+      // fall back to Falcon's own MB lookup when a tuple didn't carry one
+      // (paste, `?falcon=` URL, JSON import without a name field).
+      if (!p.name) fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
     });
     return { merged, added };
@@ -714,10 +726,29 @@
     if (!isrcs.some(Boolean)) return null;
     return { mbid: mbid.toLowerCase(), isrcs, note: u.searchParams.get('edit-note') || '' };
   }
+  // #509 (majkinetor): "Since Harmony already resolves names, we could just
+  // fetch and use them instead of bombing MB." Each action row already shows
+  // the resolved entity as one more icon+name pill alongside the provider
+  // icons — <a href="https://musicbrainz.org/<type>/<mbid>"><span
+  // class="musicbrainz">…</span>Dusk</a>, the plain entity page (no query
+  // string), distinct from the "Link external IDs" anchor's own seed-edit
+  // href. Scraping that name here means addToQueue can skip its own
+  // fetchEntityName() MB round-trip entirely for Harmony-sourced items.
+  function harmonyRowName(actionAnchor) {
+    const row = actionAnchor.closest('.action') || actionAnchor.parentElement;
+    if (!row) return null;
+    const mbLink = [...row.querySelectorAll('a[href]')].find(a => new RegExp(`^${MB_TARGET.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(artist|label|recording|release|release-group)/[0-9a-f-]{36}$`, 'i').test(a.getAttribute('href') || ''));
+    const name = mbLink && (mbLink.textContent || '').trim();
+    return name || null;
+  }
   function scrapeHarmonyActions() {
     const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
     const tuples = [];
-    anchors.forEach(a => { const href = a.getAttribute('href'); if (href) tuples.push(...parseHarmonySeedUrl(href)); });
+    anchors.forEach(a => {
+      const href = a.getAttribute('href'); if (!href) return;
+      const name = harmonyRowName(a);
+      parseHarmonySeedUrl(href).forEach(t => { if (name) t.name = name; tuples.push(t); });
+    });
     const isrcs = scrapeHarmonyIsrcs();
     if (isrcs.length) {
       const recOrder = [];
@@ -1717,10 +1748,18 @@
   async function runCoverItem(item, tag, card, priorLinks) {
     updateWorkerLabel(card, item);
     const tStart = Date.now();
+    // #508 (majkinetor): "Add covers only when there aren't any" — an opt-in
+    // safety toggle. checkExistingCoverArt() already resolves
+    // item.coverExistingCount fire-and-forget right after the item is
+    // queued (same assumption the duplicate-cover warning banner already
+    // relies on) — by the time a worker gets here it's normally settled.
+    // Skipped, not failed: the item still counts as handled, just untouched.
+    const skipCover = cfg.coverOnlyIfNone && !!item.coverExistingCount;
+    if (skipCover) log('info', `${tag} release ${item.mbid} — cover art skipped (already has ${item.coverExistingCount}, "add only when there aren't any" is on)`);
     // #496: cover[] can carry more than one entry — upload each independently;
     // one failing doesn't stop the rest. Overall coverOk only if ALL succeed.
     const errs = [];
-    for (let i = 0; i < item.cover.length; i++) {
+    if (!skipCover) for (let i = 0; i < item.cover.length; i++) {
       try { await uploadOneCover(item, item.cover[i], tag, i + 1); }
       catch (e) {
         const msg = e.message || String(e);
@@ -1737,6 +1776,9 @@
       else if (!linksOk && coverOk) { item.status = priorLinks.status === 'failed' ? 'partial' : priorLinks.status; item.error = priorLinks.error ? `links: ${priorLinks.error}` : ''; }
       else { item.status = 'failed'; item.error = [priorLinks.error && `links: ${priorLinks.error}`, `cover art: ${coverError}`].filter(Boolean).join(' | '); }
       dbg(tag, `release ${item.mbid} — combined outcome: links=${priorLinks.status} cover=${coverOk ? 'ok' : 'failed'} -> ${item.status}`);
+    } else if (skipCover) {
+      item.status = 'skipped';
+      item.error = '';
     } else {
       item.status = coverOk ? 'done' : 'failed';
       item.error = coverOk ? '' : coverError;
@@ -2105,7 +2147,12 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   let launcher = null;
+  // #508 (majkinetor): "Hide MB icon" — the floating corner launcher is
+  // optional; the panel is still reachable via Ctrl+Alt+F either way (that
+  // shortcut listener is independent of this button existing at all).
+  function removeLauncher() { if (launcher) { launcher.remove(); launcher = null; } }
   function ensureLauncher() {
+    if (cfg.hideLauncher) { removeLauncher(); return; }
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'falcon-launcher';
@@ -2183,15 +2230,19 @@
     // smaller viewport/queue. A real `height` alongside the existing
     // `max-height` cap fixes it (viewport-capped either way, just no longer
     // degenerate on the way there).
-    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:90vw;height:70vh;max-height:70vh;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
+    // #508 (majkinetor): "make window resizable" — native CSS resize (a drag
+    // grip in the bottom-right corner); needs overflow != visible, which the
+    // panel already has. min-width/min-height keep it from collapsing into
+    // the flex column laid out below.
+    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:90vw;height:70vh;max-height:70vh;min-width:340px;min-height:320px;resize:both;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
     panel.innerHTML = `
       <div id="falcon-hdr" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:#1b2a4a;color:#fff;cursor:move;user-select:none">
         <span style="display:flex;color:#ff9d5c">${ICON}</span>
-        <span style="flex:1;font-weight:700">${NAME} <span style="opacity:.7;font-weight:400">v${scriptVersion()}</span></span>
+        <span style="flex:1;font-weight:700">${NAME}</span>
         <button type="button" id="falcon-tab-queue" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Queue</button>
         <button type="button" id="falcon-tab-workers" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Workers</button>
         <button type="button" id="falcon-tab-log" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Log</button>
-        <a href="${HELP_URL}" target="_blank" rel="noopener" style="color:#fff;opacity:.7;text-decoration:none;font-weight:700">?</a>
+        <button type="button" id="falcon-tab-options" title="Options" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit;font-size:14px">⚙</button>
         <button type="button" id="falcon-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
@@ -2208,8 +2259,6 @@
         <div id="falcon-type-chips" style="display:none;gap:6px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid #eee"></div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
-          <span class="falcon-bt" style="color:#666;flex:0 0 auto">workers</span>
-          <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px;flex:0 0 auto" />
           <div id="falcon-progress-wrap" style="flex:1;display:flex;align-items:center;gap:6px;min-width:0">
             <div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;min-width:40px">
               <div id="falcon-progress-bar" style="height:100%;width:0%;background:#2e9e5b;transition:width .2s"></div>
@@ -2242,6 +2291,21 @@
           <span id="falcon-log-copied" style="color:#2e9e5b"></span>
         </div>
         <div id="falcon-log-text" style="overflow:auto;flex:1;padding:8px 10px;font:10px monospace;white-space:pre-wrap"></div>
+      </div>
+      <div id="falcon-body-options" style="display:none;overflow:auto;flex:1;padding:10px;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:baseline;gap:8px;padding-bottom:8px;border-bottom:1px solid #eee">
+          <span style="flex:1;font-weight:700;color:#1b2a4a">${NAME} <span style="opacity:.6;font-weight:400">v${scriptVersion()}</span></span>
+          <a href="${HELP_URL}" target="_blank" rel="noopener" style="color:#1b6ec2;text-decoration:none;font-weight:600">? Help</a>
+        </div>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="The floating corner icon is optional — the panel is always reachable via Ctrl+Alt+F either way">
+          <input type="checkbox" id="falcon-opt-hide-launcher" /> <span>Hide ${NAME} icon</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="If a release already has cover art, skip adding another instead of uploading blind — Harmony offers cover art whether or not the release already has some">
+          <input type="checkbox" id="falcon-opt-cover-only-if-none" /> <span>Add covers only when there aren't any</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
+          <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
+        </label>
       </div>`;
     document.body.appendChild(panel);
     // the panel is drag-resizable as well as maximizable, so the bars have to
@@ -2401,6 +2465,15 @@
     document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
     document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
     document.getElementById('falcon-tab-log').onclick = () => setTab('log');
+    document.getElementById('falcon-tab-options').onclick = () => setTab('options');
+    // #508: options — hiding the launcher takes effect immediately (no need
+    // to close/reopen the panel to see it disappear/reappear).
+    const hideLauncherCb = document.getElementById('falcon-opt-hide-launcher');
+    hideLauncherCb.checked = cfg.hideLauncher;
+    hideLauncherCb.onchange = () => { cfg.hideLauncher = hideLauncherCb.checked; if (cfg.hideLauncher) removeLauncher(); else ensureLauncher(); };
+    const coverOnlyCb = document.getElementById('falcon-opt-cover-only-if-none');
+    coverOnlyCb.checked = cfg.coverOnlyIfNone;
+    coverOnlyCb.onchange = () => { cfg.coverOnlyIfNone = coverOnlyCb.checked; };
     // #467: the intermittent failures only show up on majkinetor's real runs,
     // so the log has to be trivially shareable — one click to the clipboard,
     // already wrapped in the collapsed <details> + fenced block he otherwise
@@ -2477,6 +2550,7 @@
     if (t === 'workers') w.style.cssText = 'display:block;padding:8px 10px;overflow:auto;flex:1';
     else w.style.cssText = OFFSCREEN + 'display:block;padding:8px 10px;';
     document.getElementById('falcon-body-log').style.display = t === 'log' ? 'flex' : 'none';
+    document.getElementById('falcon-body-options').style.display = t === 'options' ? 'flex' : 'none';
     if (t === 'log') renderLog();
     if (t === 'workers') renderWorkerLayout();   // sizes were computed while off-screen; recompute for the real viewport
     fitBars();   // a bar that was hidden measured 0-wide; re-fit now it's laid out
