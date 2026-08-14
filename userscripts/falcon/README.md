@@ -17,7 +17,7 @@ Falcon provides unified interface to bulk edit supported entity [attributes](#at
 
 ## Usage
 
-1. Populate queue from [Harmony button](#from-harmony) or import a [JSON file](#json-model) by accessing Falcon on any Musicbrinz page (CTRL+ALT+F).
+1. Populate a queue from [Harmony](#from-harmony) or import a [JSON file](#json-model) by accessing Falcon on any Musicbrinz page (CTRL+ALT+F).
 2. Review the queue (remove some entities or change attributes), then press Start button to process it.
    - Right-click a row's entity-type column to select every item of that same type at once so you can remove them
    - Or, click the chips in the header (`art`/`lbl`/`rec`/`rel`/`rg`) to exclude all instances of specific entity without removing them from queue 
