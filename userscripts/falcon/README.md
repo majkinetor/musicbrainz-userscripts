@@ -1,6 +1,6 @@
 # Falcon <img src="./icon.svg" align="left" width="40" height="40">
 
-**Falcon** is a MusicBrainz batch editor that uses a pool of iframe workers to add entity fields. Workers drive web forms or use an API, dependig on whats available.
+**Falcon** is a MusicBrainz batch editor that uses a pool of iframe workers to add entity fields. Workers drive web forms or use an API, depending on what's available.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/falcon/falcon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/falcon/falcon.user.js)
 - [Changelog](./CHANGELOG.md)
@@ -43,11 +43,17 @@ Open a Harmony **Release Actions** page and a **"Send N to Falcon"** button appe
 
 The whole batch travels via a short random token backed by the userscript's own storage rather than a `?falcon=` payload in the URL — that avoids the URL-length ceiling a large batch used to hit.
 
+#### Recording disambiguation and ISRC
+
+A recording queue item can also carry a **disambiguation comment** and one or more **ISRCs** — expand its row to fill them in directly (no computation, no lookup: whatever's typed there is seeded verbatim, same as a url). Both ride along with that recording's own edit — nothing else is submitted for them separately.
+
 #### Cover art
 
-When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes queue item for the release itself, showing *cover* in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
+When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes a queue item for the release itself, showing *cover* in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, set its **type** (Front, Back, Booklet, …), add a **comment** for that specific image, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
 
-A cover-art item i added via API (sign → upload → register), the same one [Art Station](../art_station) uses.
+A release's cover art is a list (`cover[]` in the [JSON model](#json-model)) — Falcon only ever populates one entry from Harmony today, but the UI renders one row per entry, so an item carrying several (e.g. hand-written in an imported JSON) shows and uploads all of them, each with its own type/comment.
+
+A cover-art item is added via API (sign → upload → register), the same one [Art Station](../art_station) uses.
 
 Harmony offers cover art whether or not the release already has some — adding one isn't idempotent the way links are. Falcon checks the Cover Art Archive as soon as a release item is queued and, if it already has cover art, the warning is shown.
 
@@ -79,9 +85,8 @@ Field usage by entity type
 | --- | --- | --- | --- | --- | --- |
 | External links | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
-| Disambiguation comment | — | — | yes | — | — |
-| Cover art | — | — | — | yes | — |
-| Image comment | — | — | — | yes | — |
+| Disambiguation | — | — | yes | — | — |
+| Cover art | — | — | — | yes (array — see [below](#cover-art)) | — |
 
 ## JSON model
 
@@ -106,7 +111,7 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
       "entityType": "recording",
       "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7",
       "urls": [],
-      "comment": "live version",
+      "disambiguation": "live version",
       "isrcs": ["NLTH62000001"],
       "status": "queued"
     },
@@ -114,8 +119,7 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
       "entityType": "release",
       "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
       "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
-      "comment": "front cover",
-      "cover": { "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "candidates": [] },
+      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "comment": "page 1", "type": "Booklet", "candidates": [] }],
       "status": "queued"
     }
   ]
@@ -128,15 +132,15 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
 | `mbid` | string | the entity's MBID |
 | `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
 | `note` | string | edit note |
-| `comment` | string | recording-only: disambiguation comment. release-only: cover image comment. Not read for artist/label/release_group |
+| `disambiguation` | string | recording-only — MB's own disambiguation comment field |
 | `isrcs[]` | array of string | recording-only |
-| `cover` | `{url, candidates}` | release-only: the cover art to upload (`url`), plus any not-yet-measured `candidates` Falcon is still picking a winner from |
+| `cover[]` | array of `{url, comment, type, candidates}` | release-only — the cover art to upload. An **array**: a release can carry more than one cover image, though Falcon today only ever populates one entry from Harmony. Each entry's own `comment` is that image's upload comment (unrelated to `disambiguation`); `type` is MB's cover-art type (`Front`, `Back`, `Booklet`, `Medium`, …, default `Front`); `candidates` are not-yet-measured alternates Falcon is still picking a winner from |
 | `name` | string or null | display name — re-fetched if omitted, so it's optional |
 | `status` | string | `queued` (default if omitted/unrecognized) / `active` / `done` / `partial` / `failed` / `manual` / `skipped` — re-importing an Export lets you keep or retry each item |
 | `error` | string | last error message, if any |
 | `urlResults` | array or null | per-url ✓/✗ outcome from the last run, shown on hover in the expanded row |
 
-A minimal add-only item just needs `entityType`, `mbid`, and `urls[]` — or, for a recording, `comment`/`isrcs[]` in place of `urls[]` (see [Recording disambiguation and ISRC](#recording-disambiguation-and-isrc)) — every other field defaults sanely. This is also exactly what a re-imported Export round-trips through unchanged.
+A minimal add-only item just needs `entityType`, `mbid`, and `urls[]` — or, for a recording, `disambiguation`/`isrcs[]` in place of `urls[]` (see [Recording disambiguation and ISRC](#recording-disambiguation-and-isrc)) — every other field defaults sanely. This is also exactly what a re-imported Export round-trips through unchanged. (A pre-#496 export's `comment` field — on either a recording or a release — is still accepted on import and mapped onto `disambiguation`/`cover[0].comment` respectively, so older saved files keep working.)
 
 The `?falcon=` URL parameter ([From another script](#from-another-script)) uses a lighter, flattened subset of this same model — one row per url instead of a grouped `urls[]` — meant for a single script call rather than a saved file.
 

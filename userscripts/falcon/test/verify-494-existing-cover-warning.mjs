@@ -37,11 +37,11 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   const results = await page.evaluate(async () => {
-    const none = { mbid: 'aaaaaaaa-0000-0000-0000-000000000000', cover: { existingCount: null } };
-    const some = { mbid: 'bbbbbbbb-0000-0000-0000-000000000000', cover: { existingCount: null } };
-    const err = { mbid: 'cccccccc-0000-0000-0000-000000000000', cover: { existingCount: null } };
+    const none = { mbid: 'aaaaaaaa-0000-0000-0000-000000000000', coverExistingCount: null };
+    const some = { mbid: 'bbbbbbbb-0000-0000-0000-000000000000', coverExistingCount: null };
+    const err = { mbid: 'cccccccc-0000-0000-0000-000000000000', coverExistingCount: null };
     await Promise.all([window.__falconTest.checkExistingCoverArt(none), window.__falconTest.checkExistingCoverArt(some), window.__falconTest.checkExistingCoverArt(err)]);
-    return { none: none.cover.existingCount, some: some.cover.existingCount, err: err.cover.existingCount };
+    return { none: none.coverExistingCount, some: some.coverExistingCount, err: err.coverExistingCount };
   });
   console.log('checkExistingCoverArt results:', JSON.stringify(results));
   ck(results.none === 0, `cover-art-archive.count=0 -> existingCount 0 (got ${results.none})`);
@@ -61,8 +61,8 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 5000 });
   await page.evaluate(() => window.__falconTest.setQueue([
-    { id: 'dup', entityType: 'release', mbid: 'bbbbbbbb-1111-0000-0000-000000000000', urls: [], note: '', comment: '', isrcs: [], cover: { url: 'https://example.invalid/x.jpg', candidates: [{ provider: 'Deezer', url: 'https://example.invalid/x.jpg' }], existingCount: 3 }, name: null, urlResults: null, status: 'queued', error: '' },
-    { id: 'clean', entityType: 'release', mbid: 'cccccccc-1111-0000-0000-000000000000', urls: [], note: '', comment: '', isrcs: [], cover: { url: 'https://example.invalid/y.jpg', candidates: [{ provider: 'Deezer', url: 'https://example.invalid/y.jpg' }], existingCount: 0 }, name: null, urlResults: null, status: 'queued', error: '' },
+    { id: 'dup', entityType: 'release', mbid: 'bbbbbbbb-1111-0000-0000-000000000000', urls: [], note: '', disambiguation: '', isrcs: [], cover: [{ url: 'https://example.invalid/x.jpg', comment: '', type: 'Front', candidates: [{ provider: 'Deezer', url: 'https://example.invalid/x.jpg' }] }], coverExistingCount: 3, name: null, urlResults: null, status: 'queued', error: '' },
+    { id: 'clean', entityType: 'release', mbid: 'cccccccc-1111-0000-0000-000000000000', urls: [], note: '', disambiguation: '', isrcs: [], cover: [{ url: 'https://example.invalid/y.jpg', comment: '', type: 'Front', candidates: [{ provider: 'Deezer', url: 'https://example.invalid/y.jpg' }] }], coverExistingCount: 0, name: null, urlResults: null, status: 'queued', error: '' },
   ]));
   await page.click('.falcon-row-expand[data-id="dup"]');
   await page.click('.falcon-row-expand[data-id="clean"]');
@@ -132,7 +132,7 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
     const slow = Array.from({ length: 8 }, (_, i) =>
       window.__falconTest.mbThrottle.fetchJson(`/ws/2/artist/slow-${i}?fmt=json`).then(() => seen.push(`slow-${i}`)));
     await new Promise(r => setTimeout(r, 50));   // let the first 4 actually start (become in-flight)
-    const priorityDone = window.__falconTest.checkExistingCoverArt({ mbid: 'eeeeeeee-3333-0000-0000-000000000000', cover: { existingCount: null } }).then(() => seen.push('priority-cover'));
+    const priorityDone = window.__falconTest.checkExistingCoverArt({ mbid: 'eeeeeeee-3333-0000-0000-000000000000', coverExistingCount: null }).then(() => seen.push('priority-cover'));
     await Promise.all([...slow, priorityDone]);
     return seen;
   });
