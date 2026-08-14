@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.221450
+// @version      2026.8.14.224629
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.14.221450';
+  const VERSION = '2026.8.14.224629';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -429,6 +429,21 @@
     return name;
   }
   function entityLabel(item) { return item.name || `${item.entityType}/${item.mbid.slice(0, 8)}`; }
+  // #509 follow-up (majkinetor, live: several items stayed nameless
+  // permanently — "when name is null, it blocks from fetching it"). Root
+  // cause: suspendNameLookups()'s cancelPending() resolves every not-yet-
+  // STARTED cosmetic name lookup with null so it doesn't compete with the
+  // workers' rate-limit budget — correct while a run is active, but nothing
+  // ever gave a cancelled item a second try afterwards, so a lookup that
+  // lost that race stayed null forever even once the budget was free again.
+  // Sweep every still-nameless item once the suspension actually lifts
+  // (run finishes or is stopped) — same shape as importQueueJson's own
+  // post-import sweep, just re-triggerable instead of one-shot.
+  function resolveMissingNames() {
+    queue.filter(i => !i.name && i.status === 'queued').forEach(i => {
+      fetchEntityName(i.entityType, i.mbid).then(n => { if (n) { i.name = n; scheduleRender('queue'); } });
+    });
+  }
   // merges each parsed {entityType,mbid,url,linkTypeId,note?} into an existing
   // STILL-QUEUED item for the same entity (never merges into an active/done/failed
   // one — that item has already been claimed or finished), else creates a new item.
@@ -568,10 +583,9 @@
 
     renderQueue();
     // names for anything that arrived without one — unless a run is under way,
-    // in which case these would compete with the workers for MB's rate limit.
-    queue.filter(i => !i.name && i.status === 'queued').forEach(i => {
-      fetchEntityName(i.entityType, i.mbid).then(n => { if (n) { i.name = n; scheduleRender('queue'); } });
-    });
+    // in which case these would compete with the workers for MB's rate limit
+    // (fetchEntityName's own _namesSuspended check still applies here).
+    resolveMissingNames();
     log('info', `${sourceName || 'import'}: added ${added} item(s)`
       + (merged ? `, merged ${merged} url(s)` : '')
       + (skipped ? `, skipped ${skipped} unusable row(s)` : ''));
@@ -1974,6 +1988,7 @@
       if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) {
         running = false;
         resumeNameLookups();   // the rate-limit budget is ours again
+        resolveMissingNames();   // give any cancelled-mid-run lookups a second try
         updateRunBtn();
         log('info', '=== run finished — the tab and panel stay open; the log above is this session only ===');
         writeLogNow();
@@ -2143,7 +2158,7 @@
     for (let i = 0; i < need; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
     updateRunBtn();
   }
-  function stop() { running = false; stopHeartbeat(); resumeNameLookups(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
+  function stop() { running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
 
   /* ════════════════════════ UI ════════════════════════ */
   let launcher = null;
@@ -2856,5 +2871,7 @@
     // #497
     getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); },
     // #500
-    harmonyIsrcFallback, resolveIsrcFallback };
+    harmonyIsrcFallback, resolveIsrcFallback,
+    // #509 follow-up
+    resolveMissingNames };
 })();
