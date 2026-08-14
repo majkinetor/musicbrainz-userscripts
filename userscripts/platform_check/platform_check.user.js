@@ -65,6 +65,19 @@ try {
         if (k.startsWith('pc:cache:v2:') || k.startsWith('pc:mbdata:') || k.startsWith('pc:pending:')) GM_deleteValue(k);
     });
 } catch (e) {}
+// #501 follow-up (majkinetor: "tidy up config prefixes... prov_* belongs to
+// pc and have no prefix") — every other setting here already carries `pc:`;
+// the per-provider toggles were the one holdout. Non-destructive: adopt the
+// old bare-named value under the new pc:prov_<platform> name if it's still
+// unset, old key left in place.
+try {
+    ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'qobuz', 'beatport', 'volumo', 'hdtracks', 'soundcloud'].forEach(p => {
+        if (GM_getValue('pc:prov_' + p, undefined) === undefined) {
+            const old = GM_getValue('prov_' + p, undefined);
+            if (old !== undefined) GM_setValue('pc:prov_' + p, old);
+        }
+    });
+} catch (e) {}
 
 // ─── Release editor sub-pages (/edit, /edit-relationships) ────────────────
 // + click on /release stashes OK URLs in `pc:pending:<mbid>` (localStorage)
@@ -499,7 +512,7 @@ const PROVIDER_ORDER = getProviderOrder();
 // result may still be cached from an earlier enabled run. Anything that consumes the
 // cache (inject +, open-all ↗) must skip disabled providers or it queues/opens links
 // for a provider the user turned off. (#255)
-const providerEnabled = p => GM_getValue(`prov_${p}`, true);
+const providerEnabled = p => GM_getValue(`pc:prov_${p}`, true);
 const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple', tidal:'Tidal', qobuz:'Qobuz', beatport:'Beatport', volumo:'Volumo', hdtracks:'HDtracks', soundcloud:'SoundCloud' };
 const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  qobuz:'#0070ef', beatport:'#0a8754', volumo:'#7c4dff', hdtracks:'#e63329', soundcloud:'#ff5500' };
 // Shared platform icons (#404) — `stIcon(name, size)` / `stColor(name)`. Source of truth is
@@ -918,7 +931,7 @@ const logPanel = document.getElementById('mb-finder-log-panel');
 const providerRows = Object.fromEntries(PROVIDER_ORDER.map(p => [p, document.getElementById(`row-${p}`)]));
 
 PROVIDER_ORDER.forEach(p => {
-    const enabled = GM_getValue(`prov_${p}`, true);
+    const enabled = GM_getValue(`pc:prov_${p}`, true);
     if (providerRows[p]) providerRows[p].style.display = enabled ? '' : 'none';   // '' → CSS grid layout applies
 });
 // platform brand icons (default on) — class on the panel hides them all via CSS
@@ -1112,7 +1125,7 @@ document.getElementById('mb-qb-login').addEventListener('click', async () => {
 });
 document.getElementById('mb-qb-logout').addEventListener('click', () => { qbWrite(null); document.getElementById('mb-qb-user').value = ''; qbRefreshSetupUI('signed out'); });
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
-    PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
+    PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`pc:prov_${p}`, true); });
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     document.getElementById('mb-show-names').checked = GM_getValue('pc:show-names', false);
     document.getElementById('mb-respect-barcode').checked = GM_getValue('pc:respect-barcode', true);
@@ -1148,7 +1161,7 @@ providerModal.querySelectorAll('.pc-setup-back').forEach(b => b.addEventListener
 // (now backdrop-free) settings card.
 PROVIDER_ORDER.forEach(p => {
     document.getElementById(`mb-toggle-${p}`).addEventListener('change', e => {
-        GM_setValue(`prov_${p}`, e.target.checked);
+        GM_setValue(`pc:prov_${p}`, e.target.checked);
         if (providerRows[p]) providerRows[p].style.display = e.target.checked ? '' : 'none';
     });
 });
@@ -1691,7 +1704,7 @@ function refreshCompactStrip() {
         // found-but-mismatched (wrong barcode/format) all stay in the strip; only a
         // real match rises into a full row. A link that's already IN MB (pc-inmb) also
         // always stays a full row, even without a clean match — you added it, so show it.
-        const compact = !row.classList.contains('pc-st-match') && !row.classList.contains('pc-inmb') && GM_getValue(`prov_${p}`, true);
+        const compact = !row.classList.contains('pc-st-match') && !row.classList.contains('pc-inmb') && GM_getValue(`pc:prov_${p}`, true);
         const was = row.classList.contains('pc-compacted');
         row.classList.toggle('pc-compacted', compact);
         if (!compact) {

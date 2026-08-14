@@ -18,9 +18,10 @@ const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-p
 const page = ctx.pages()[0] || await ctx.newPage();
 
 // pre-seed GM storage with stale pre-fix entries under all three prefixes,
-// PLUS one genuine setting key — the sweep must only touch the cache/pending
-// prefixes, never a real setting.
-const deletedKeys = [];
+// PLUS a bare prov_* toggle (majkinetor: "prov_* belongs to pc and have no
+// prefix") and one already-prefixed genuine setting — the sweep must only
+// touch the cache/pending prefixes and migrate prov_*, never touch a real
+// already-prefixed setting.
 await page.addInitScript(() => {
   const store = new Map([
     ['pc:cache:v2:spotify:aaaaaaaa-0000-0000-0000-000000000000', '{"url":"x"}'],
@@ -28,12 +29,14 @@ await page.addInitScript(() => {
     ['pc:pending:aaaaaaaa-0000-0000-0000-000000000000', '{"spotify":"y"}'],
     ['pc:pending:rg:bbbbbbbb-0000-0000-0000-000000000000', '{"discogs-master":"z"}'],
     ['pc:layout', '2row'],   // genuine setting — must survive the sweep
+    ['prov_spotify', false], // bare pre-fix provider toggle — should migrate to pc:prov_spotify
   ]);
   window.__gmDeleted = [];
   window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
   window.GM_setValue = (k, v) => store.set(k, v);
   window.GM_deleteValue = k => { window.__gmDeleted.push(k); store.delete(k); };
   window.GM_listValues = () => [...store.keys()];
+  window.__gmStore = store;
   window.GM_info = { script: { name: 'Platform Check', version: 't' } };
 });
 const errs = []; page.on('pageerror', e => errs.push(e.message));
@@ -48,6 +51,15 @@ ck(swept.includes('pc:mbdata:aaaaaaaa-0000-0000-0000-000000000000'), 'stale pc:m
 ck(swept.includes('pc:pending:aaaaaaaa-0000-0000-0000-000000000000'), 'stale pc:pending:* entry deleted from GM storage');
 ck(swept.includes('pc:pending:rg:bbbbbbbb-0000-0000-0000-000000000000'), 'stale pc:pending:rg:* entry deleted from GM storage');
 ck(!swept.includes('pc:layout'), 'a genuine setting (pc:layout) is left untouched by the sweep');
+
+const provState = await page.evaluate(() => ({
+  prefixed: window.__gmStore.get('pc:prov_spotify'),
+  oldStillThere: window.__gmStore.get('prov_spotify'),
+}));
+console.log('prov_ migration state:', JSON.stringify(provState));
+ck(provState.prefixed === false, `bare prov_spotify migrated to pc:prov_spotify (got ${provState.prefixed})`);
+ck(provState.oldStillThere === false, 'the old bare-named key is left in place (non-destructive), just no longer read from');
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
