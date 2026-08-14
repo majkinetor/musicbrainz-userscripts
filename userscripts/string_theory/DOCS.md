@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-14 14:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-14 14:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -715,7 +715,7 @@ The script presents itself on the **Edit relationships** screen of a MusicBrainz
 
 #### Import bar
 
-The UI strip at the top of the page with the source picker, the option toggles, log output, a documentation link, and Copy-log buttons. Options are saved in localStorage and persist across sessions.
+The UI strip at the top of the page with the source picker, the option toggles, log output, a documentation link, and Copy-log buttons. Options are saved via the userscript manager's own storage — covered by its backup/restore and cross-browser sync — and persist across sessions.
 
 <img width="600" src="../credit_hoarder/screenshots/bar.png" />
 
