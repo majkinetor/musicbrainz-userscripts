@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.190440
+// @version      2026.8.15.191356
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.190440';
+  const VERSION = '2026.8.15.191356';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2328,45 +2328,17 @@
   // reads the SAME login link MB's header always shows when logged out —
   // confirmed absent once logged in.
   function isLoggedIn() { return !document.querySelector('a[href^="/login?"], a[href="/login"]'); }
-  // #517 (majkinetor, live: "THis actually might be some recently
-  // introduced bug since I get it almost constantly" — 10 of 15 items
-  // failed with "edit page never loaded", with "UI thread was blocked for
-  // ~3-4s" warnings right at the start of the run, and the workers that DID
-  // load took 14-15s — right at the timeout, not comfortably under it).
-  // Root cause: spawning N workers means N iframes all get `.src =` set in
-  // the SAME synchronous loop — N simultaneous navigations to MB, all
-  // competing for the main thread and for MB's own server capacity at
-  // once. Likely made newly visible by #508's auto-start: it fires the
-  // instant a Harmony seed lands, when the tab itself may still be
-  // settling from its OWN page load — competing with the burst instead of
-  // starting after the user's own natural pause to look at the page first.
-  // Staggering each spawn by a beat spreads that burst out instead of
-  // letting every worker slam the network/render pipeline at once.
-  // #517 follow-up (majkinetor, live: "Still happens" — a batch of 6 still
-  // failed nearly 100% even with the 350ms stagger above): staggering the
-  // START of each load matters less than it sounds when each real MB page
-  // load takes several seconds once under way — with only 350ms between
-  // starts, all 6 are still concurrently RENDERING for most of that window
-  // regardless. Widened to spread starts across ~5s instead of ~1.75s for
-  // a 6-worker run, meaningfully lowering how many are ever loading at once.
-  const WORKER_STAGGER_MS = 1000;
-  // A spawn scheduled via setTimeout hasn't touched workerCards yet — if
-  // topUpWorkers() runs again before that timer fires (queue growing twice
-  // in quick succession, e.g. addToQueue() called right after start()),
-  // workerCards.length alone under-counts what's already been committed to,
-  // and it schedules MORE spawns on top than cfg.workers actually allows.
-  // Track scheduled-but-not-yet-spawned separately so the "how many more do
-  // we need" math accounts for them too.
-  let _pendingSpawnCount = 0;
+  // #517 (majkinetor, live: "Revert stagger too, it worked before without
+  // it, I am not going to wait 1s between starts") — tried staggering
+  // worker starts (350ms, then widened to 1000ms) to reduce main-thread/
+  // network contention, but majkinetor confirmed with an actual recording
+  // — worker's edit page visibly loaded and was submittable in 2-3s, yet
+  // Falcon's own "is it loaded" check still sat waiting the full timeout —
+  // that this is a genuine detection bug, not a timing/contention issue
+  // staggering could ever fix. Reverted to spawning all N workers at once,
+  // same as before any of this.
   function spawnWorkersStaggered(count) {
-    _pendingSpawnCount += count;
-    for (let i = 0; i < count; i++) {
-      setTimeout(() => {
-        _pendingSpawnCount--;
-        if (!running) return;
-        const card = spawnWorkerCard(); if (card) workerLoop(card);
-      }, i * WORKER_STAGGER_MS);
-    }
+    for (let i = 0; i < count; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
   }
   // #508 follow-up (majkinetor, live: auto-started a Harmony import with 6
   // workers configured, only 1 ever ran): start()'s worker count is
@@ -2385,7 +2357,7 @@
     if (!running) return;
     const remaining = queue.filter(i => i.status === 'queued' && !_disabledTypes.has(i.entityType)).length;
     const target = Math.min(cfg.workers, remaining);
-    const toSpawn = target - workerCards.length - _pendingSpawnCount;
+    const toSpawn = target - workerCards.length;
     if (toSpawn <= 0) return;
     log('info', `queue grew — topping up from ${workerCards.length} to ${target} worker(s)`);
     spawnWorkersStaggered(toSpawn);

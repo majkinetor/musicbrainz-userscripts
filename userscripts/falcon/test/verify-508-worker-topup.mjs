@@ -45,26 +45,22 @@ const result = await page.evaluate(async () => {
   // right after addToQueue() queued only the synchronous part of the batch.
   t.addToQueue([{ entityType: 'release', mbid: 'aaaaaaaa-5130-0000-0000-000000000001', coverCandidates: [{ provider: 'x', url: 'https://x.com/cover.jpg' }] }]);
   t.start();
+  // #517: workers spawn synchronously (staggering was tried and reverted —
+  // majkinetor confirmed live it didn't fix the real bug and cost every
+  // batch real time waiting between starts) — the count right after
+  // start() reflects the reported bug immediately, no wait needed.
+  const workersAfterStart = t.getWorkerCardCount();
   // now the ISRC fallback's late addToQueue() call fires, adding 11 more
   // recordings — same as resolveIsrcFallback resolving after auto-start.
-  // Done in the SAME tick as start(), no wait in between: even a beat's
-  // delay risks the lone cover worker already finishing (this test
-  // environment has no real GM_xmlhttpRequest, so it fails near-instantly)
-  // and the run completing naturally before topUpWorkers() ever gets a
-  // chance to matter — the exact race this fix targets, just faster than
-  // real network timing would ever allow it to happen live.
   const recs = [];
   for (let i = 1; i <= 11; i++) recs.push({ entityType: 'recording', mbid: `aaaaaaaa-5130-0000-0000-00000000001${i}`, isrc: `NLTH${i}` });
   t.addToQueue(recs);
-  // #517: workers now spawn staggered (1000ms apart, even the first one via
-  // a 0ms setTimeout rather than synchronously) to avoid a thundering herd
-  // of simultaneous navigations — topping up to 6 needs up to ~5*1000ms.
-  await new Promise(r => setTimeout(r, 5600));
   const workersAfterTopUp = t.getWorkerCardCount();
-  return { workersAfterTopUp, running: t.isRunning() };
+  return { workersAfterStart, workersAfterTopUp, running: t.isRunning() };
 });
 console.log('result:', JSON.stringify(result));
-ck(result.workersAfterTopUp === 6, `matches the reported bug (start() saw just 1 queued item) but self-heals once 11 more arrive mid-run, topping up to cfg.workers=6 instead of staying stuck at 1 (got ${result.workersAfterTopUp})`);
+ck(result.workersAfterStart === 1, `matches the reported bug: only 1 worker spawned when start() saw just 1 queued item (got ${result.workersAfterStart})`);
+ck(result.workersAfterTopUp === 6, `once 11 more items arrive mid-run, the fleet tops up to cfg.workers=6 (got ${result.workersAfterTopUp})`);
 ck(result.running, 'the run is still active throughout — not falsely completed early');
 
 // sanity: topping up never OVER-spawns past cfg.workers even with a huge
@@ -87,7 +83,6 @@ const capResult = await page3.evaluate(async () => {
   const many = [];
   for (let i = 0; i < 50; i++) many.push({ entityType: 'recording', mbid: `aaaaaaaa-5130-0000-0000-00000000002${String(i).padStart(2, '0')}`, isrc: `X${i}` });
   t.addToQueue(many);
-  await new Promise(r => setTimeout(r, 2600));
   return t.getWorkerCardCount();
 });
 console.log('worker count with a 51-item queue, cfg.workers=3:', capResult);
