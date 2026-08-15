@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.155825
+// @version      2026.8.15.161707
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.155825';
+  const VERSION = '2026.8.15.161707';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -307,6 +307,11 @@
   // already-active/done/failed item is untouched by toggling since this only
   // gates what a worker picks up NEXT, not history.
   let _disabledTypes = new Set();
+  // #513 (majkinetor): "Its still not easily seeable that there were issues.
+  // Lets add some chip with results in appropriate color if there are
+  // issues... Make the chip clickable to filter in just those results." —
+  // null shows everything; a status string shows only rows in that status.
+  let _statusFilter = null;
   // #494: 'release' can carry BOTH a urls[] link (via the normal iframe/form
   // pipeline, like every other type — #495) AND a cover (via the upload API,
   // never the form; see runCoverItem) — a release item's worker turn runs
@@ -2318,11 +2323,16 @@
     // grip in the bottom-right corner); needs overflow != visible, which the
     // panel already has. min-width/min-height keep it from collapsing into
     // the flex column laid out below.
-    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:90vw;height:70vh;max-height:70vh;min-width:340px;min-height:320px;resize:both;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
+    // #513 (majkinetor): "Make window wider if needed to fit the chips" — the
+    // header can now carry up to 3 status chips (failed/partial/manual)
+    // alongside the name and tab buttons; even 520px still clipped the 3rd
+    // chip against the tab buttons (measured live).
+    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:600px;max-width:90vw;height:70vh;max-height:70vh;min-width:340px;min-height:320px;resize:both;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
     panel.innerHTML = `
       <div id="falcon-hdr" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:#1b2a4a;color:#fff;cursor:move;user-select:none">
         <span style="display:flex;color:#ff9d5c">${ICON}</span>
-        <span style="flex:1;font-weight:700">${NAME}</span>
+        <span style="flex:0 0 auto;font-weight:700">${NAME}</span>
+        <div id="falcon-status-chips" style="display:flex;gap:5px;flex:1;overflow-x:auto;overflow-y:hidden;min-width:0"></div>
         <button type="button" id="falcon-tab-queue" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Queue</button>
         <button type="button" id="falcon-tab-workers" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Workers</button>
         <button type="button" id="falcon-tab-log" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font:inherit">Log</button>
@@ -2494,11 +2504,23 @@
       _disabledTypes.has(t) ? _disabledTypes.delete(t) : _disabledTypes.add(t);
       renderQueue();
     });
+    // #513: same delegated-listener reasoning — rebuilt by renderStatusChips()
+    // on every renderQueue(). Clicking the already-active chip clears the
+    // filter; clicking a different one switches to it (only one at a time —
+    // "just those results" reads as one status, not a multi-select).
+    document.getElementById('falcon-status-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.falcon-status-chip'); if (!chip) return;
+      const s = chip.dataset.status;
+      _statusFilter = _statusFilter === s ? null : s;
+      setTab('queue');
+      renderQueue();
+    });
     // one delegated listener for every row action — rows are fully re-rendered on
     // every renderQueue(), so per-element handlers would just leak; look the
     // clicked/changed item up by its data-id instead.
     const list = document.getElementById('falcon-queue-list');
     list.addEventListener('click', e => {
+      if (e.target.closest('#falcon-status-filter-clear')) { _statusFilter = null; renderQueue(); return; }
       const expandBtn = e.target.closest('.falcon-row-expand');
       if (expandBtn) { const id = expandBtn.dataset.id; _expandedIds.has(id) ? _expandedIds.delete(id) : _expandedIds.add(id); renderQueue(); return; }
       const removeBtn = e.target.closest('.falcon-row-remove');
@@ -2759,10 +2781,32 @@
         style="border:1px solid ${on ? '#1b2a4a' : '#ddd'};background:${on ? '#1b2a4a' : '#f5f5f5'};color:${on ? '#fff' : '#999'};border-radius:12px;padding:2px 10px;font-size:10.5px;cursor:pointer;text-transform:uppercase">${esc(label)} ${counts[t]}</button>`;
     }).join('');
   }
+  // #513 (majkinetor): "Its still not easily seeable that there were issues.
+  // Lets add some chip with results in appropriate color if there are
+  // issues." One chip per PROBLEM status (failed/partial/manual — 'skipped'
+  // is a success, not a problem, same reasoning renderProgress already
+  // applies), colored from the same DOT palette the row dots already use.
+  // Clicking toggles _statusFilter, so it doubles as "show me just those."
+  const PROBLEM_STATUSES = ['failed', 'partial', 'manual'];
+  function renderStatusChips() {
+    const wrap = document.getElementById('falcon-status-chips'); if (!wrap) return;
+    const counts = {};
+    queue.forEach(i => { if (PROBLEM_STATUSES.includes(i.status)) counts[i.status] = (counts[i.status] || 0) + 1; });
+    const present = PROBLEM_STATUSES.filter(s => counts[s]);
+    if (_statusFilter && !counts[_statusFilter]) _statusFilter = null;   // the last item in that state was removed/re-run
+    wrap.innerHTML = present.map(s => {
+      const on = _statusFilter === s;
+      const color = DOT[s];
+      return `<button type="button" class="falcon-status-chip" data-status="${esc(s)}" title="${on ? 'Click to show every item again' : `Click to show only ${esc(s)} items`}"
+        style="border:1.5px solid ${color};background:${on ? color : 'transparent'};color:${on ? '#fff' : color};border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;white-space:nowrap;flex:0 0 auto">${esc(s)} ${counts[s]}</button>`;
+    }).join('');
+  }
   function renderQueue() {
     renderTypeChips();
+    renderStatusChips();
     const list = document.getElementById('falcon-queue-list'); if (!list) return;
-    list.innerHTML = queue.map(it => {
+    const visible = _statusFilter ? queue.filter(i => i.status === _statusFilter) : queue;
+    list.innerHTML = visible.map(it => {
       const expanded = _expandedIds.has(it.id);
       const checked = _selectedIds.has(it.id);
       const isActive = it.status === 'active';
@@ -2793,7 +2837,9 @@
         </div>
         ${expanded ? renderRowDetail(it) : ''}
       </div>`;
-    }).join('') || '<div style="color:#999;padding:8px 0">Queue is empty — click + above to paste some entities.</div>';
+    }).join('') || (_statusFilter
+      ? `<div style="color:#999;padding:8px 0">No ${esc(_statusFilter)} items right now — <button type="button" id="falcon-status-filter-clear" style="border:none;background:none;color:#1b6ec2;cursor:pointer;padding:0;font:inherit;text-decoration:underline">show everything</button>.</div>`
+      : '<div style="color:#999;padding:8px 0">Queue is empty — click + above to paste some entities.</div>');
     const selCount = document.getElementById('falcon-select-count');
     if (selCount) selCount.textContent = _selectedIds.size ? `${_selectedIds.size} selected` : '';
     const removeBtn = document.getElementById('falcon-remove-selected');
@@ -3000,5 +3046,7 @@
     listSessionKeys, pruneOldSessions, formatSessionLabel, loadSessionLines, currentLogLines, populateLogHistory,
     logRunSummary,
     setViewingSession: id => { _viewingSession = id; renderLog(); },
-    getViewingSession: () => _viewingSession };
+    getViewingSession: () => _viewingSession,
+    // #513
+    getStatusFilter: () => _statusFilter, setStatusFilter: s => { _statusFilter = s; renderQueue(); } };
 })();

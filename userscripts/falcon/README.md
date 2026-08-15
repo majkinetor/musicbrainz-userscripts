@@ -24,6 +24,8 @@ Falcon provides unified interface to bulk edit supported entity [attributes](#at
 
 Each queue row shows the entity's name, a [status](#statuses) dot, and, on failure, MB's own real error message on hover (e.g. *"This URL is not allowed for artists."*).
 
+If a run leaves problems behind, a colored **FAILED**/**PARTIAL**/**MANUAL** chip appears at the very top, next to the Falcon name — click it to show just those rows; click again (or a different chip) to change the filter.
+
 A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url etc.) retires that card in place — dimmed but still live and inspectable (nothing is discarded) — while a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card, building a fresh iframe for each new item rather than re-navigating a used one. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). 
 
 > [!NOTE] 
