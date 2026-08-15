@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.201405
+// @version      2026.8.15.201710
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2585,7 +2585,8 @@
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer" title="Detailed per-worker step tracing — leave on when reporting a problem">
             <input type="checkbox" id="falcon-log-debug" /> <span class="falcon-bt">debug</span>
           </label>
-          <select id="falcon-log-history" title="Load an earlier run's log — each run gets its own, kept for a while" style="margin-left:auto;max-width:180px;font:inherit">
+          <button type="button" id="falcon-log-clear-history" title="Delete every historic run log (the current session is untouched)" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Clear history</span></button>
+          <select id="falcon-log-history" title="Load an earlier run's log — each run gets its own, kept for a while" style="max-width:180px;font:inherit">
             <option value="">Current session</option>
           </select>
           <span id="falcon-log-copied" style="color:#2e9e5b"></span>
@@ -2821,6 +2822,16 @@
     // #512: pick an earlier run's log to review/copy instead of the live one.
     document.getElementById('falcon-log-history').onchange = (e) => {
       _viewingSession = e.target.value || null;
+      renderLog();
+    };
+    // #512 follow-up (majkinetor): "add an option in the log view to clear
+    // all historic logs (next to the combo)." Only the OTHER sessions —
+    // the live one has its own "Clear" button already.
+    document.getElementById('falcon-log-clear-history').onclick = () => {
+      if (!LS) return;
+      listSessionKeys().filter(id => id !== SESSION_ID).forEach(id => { try { LS.removeItem(LS_PREFIX + id); } catch (e) {} });
+      _viewingSession = null;
+      populateLogHistory();
       renderLog();
     };
     // #467: the intermittent failures only show up on majkinetor's real runs,
@@ -3231,6 +3242,8 @@
         return `<option value="${esc(id)}">${esc(label)}</option>`;
       }).join('');
     sel.value = ids.includes(prevValue) ? prevValue : '';
+    const clearBtn = document.getElementById('falcon-log-clear-history');
+    if (clearBtn) clearBtn.disabled = ids.length === 0;
   }
   function renderLog() {
     const el = document.getElementById('falcon-log-text'); if (!el || tab !== 'log') return;

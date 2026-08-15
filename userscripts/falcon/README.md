@@ -159,7 +159,7 @@ Click the ⚙ tab to open it.
 
 The **Log** tab traces every worker step — which entity it loaded, how each url was resolved (already present / seeded and classified / typed / rejected and why), whether the submit button was reachable, and how long each stage took. Lines are tagged per worker (`[w1]`, `[w2]`…) since workers run concurrently. Leave the **debug** checkbox on, reproduce the problem, then hit **Copy log** and paste it into the issue — that's usually enough to pinpoint a worker that stopped short of submitting without needing a live reproduction.
 
-Each run gets its own log, kept separately so one run's lines never get mixed into another's. The dropdown next to **debug** lists past runs by date/time — pick one to review or copy it instead of the current session.
+Each run gets its own log, kept separately so one run's lines never get mixed into another's. The dropdown next to **debug** lists past runs by date/time — pick one to review or copy it instead of the current session. **Clear history**, next to that dropdown, deletes every past run's log in one go (the current session's log is untouched — use the **Clear** button for that).
 
 ## Shortcuts
 
