@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.182539
+// @version      2026.8.15.190440
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.182539';
+  const VERSION = '2026.8.15.190440';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2032,10 +2032,21 @@
         let path = ''; try { path = w.location.pathname; } catch (e) { return null; }
         if (!path.includes(item.mbid)) return null;   // still about:blank / previous doc
         return (doc.querySelector('tr.external-link-item') || findAddLinkInput(doc)) ? true : null;
-      }, 15000);
+      // #517 follow-up (majkinetor, live: "Still happens... I clearly see
+      // worker finishing seeding in 2-3s and waiting 13s to incorrectly
+      // show 'edit page never loaded'"): the 350ms stagger (previous fix)
+      // spreads out when workers START loading, but each real MB page load
+      // still takes several seconds once it's actually under way — with 6
+      // staggered starts across <2s, most are still concurrently RENDERING
+      // for a good while regardless, and majkinetor's own log shows a solo
+      // replacement worker (no contention) still took 7.7s on an MB day
+      // that's genuinely slow. 15s wasn't enough margin for that combination
+      // even once staggering helped. Doubled to 30s — a real failure still
+      // gets caught, just with more room for "slow, not stuck."
+      }, 30000);
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
-        log('error', `${tag} ${item.mbid}: edit page never loaded (waited 15s)`);
+        log('error', `${tag} ${item.mbid}: edit page never loaded (waited 30s)`);
         // #495: the cover upload is a plain API call, independent of this
         // iframe — still worth attempting even though the link form never
         // loaded.
@@ -2331,7 +2342,14 @@
   // starting after the user's own natural pause to look at the page first.
   // Staggering each spawn by a beat spreads that burst out instead of
   // letting every worker slam the network/render pipeline at once.
-  const WORKER_STAGGER_MS = 350;
+  // #517 follow-up (majkinetor, live: "Still happens" — a batch of 6 still
+  // failed nearly 100% even with the 350ms stagger above): staggering the
+  // START of each load matters less than it sounds when each real MB page
+  // load takes several seconds once under way — with only 350ms between
+  // starts, all 6 are still concurrently RENDERING for most of that window
+  // regardless. Widened to spread starts across ~5s instead of ~1.75s for
+  // a 6-worker run, meaningfully lowering how many are ever loading at once.
+  const WORKER_STAGGER_MS = 1000;
   // A spawn scheduled via setTimeout hasn't touched workerCards yet — if
   // topUpWorkers() runs again before that timer fires (queue growing twice
   // in quick succession, e.g. addToQueue() called right after start()),

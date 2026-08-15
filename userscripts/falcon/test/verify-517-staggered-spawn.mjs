@@ -42,9 +42,9 @@ const timings = await page.evaluate(async () => {
   const t0 = performance.now();
   const seenAt = [];
   t.start();
-  // sample the iframe count every 50ms for 2s, recording WHEN each new one appears.
+  // sample the iframe count every 50ms for 6s, recording WHEN each new one appears.
   let lastCount = 0;
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 120; i++) {
     await new Promise(r => setTimeout(r, 50));
     const count = t.getWorkerCardCount();
     if (count > lastCount) { seenAt.push(Math.round(performance.now() - t0)); lastCount = count; }
@@ -57,9 +57,9 @@ ck(timings.length === 4, `all 4 workers eventually spawn (got ${timings.length})
 // staggered: NOT all within the same handful of ms — later ones should be
 // meaningfully delayed relative to the first, not a synchronous burst.
 const spread = timings[timings.length - 1] - timings[0];
-ck(spread > 500, `spawns are spread out over real time, not a single synchronous burst (spread=${spread}ms across ${timings.length} workers)`);
+ck(spread > 2000, `spawns are spread out over real time, not a single synchronous burst (spread=${spread}ms across ${timings.length} workers)`);
 // but bounded — this shouldn't take forever either.
-ck(spread < 3000, `staggering stays modest, doesn't needlessly slow the whole batch down (spread=${spread}ms)`);
+ck(spread < 6000, `staggering stays modest, doesn't needlessly slow the whole batch down (spread=${spread}ms)`);
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');

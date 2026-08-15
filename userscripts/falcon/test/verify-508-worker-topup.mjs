@@ -56,10 +56,10 @@ const result = await page.evaluate(async () => {
   const recs = [];
   for (let i = 1; i <= 11; i++) recs.push({ entityType: 'recording', mbid: `aaaaaaaa-5130-0000-0000-00000000001${i}`, isrc: `NLTH${i}` });
   t.addToQueue(recs);
-  // #517: workers now spawn staggered (350ms apart, even the first one via
+  // #517: workers now spawn staggered (1000ms apart, even the first one via
   // a 0ms setTimeout rather than synchronously) to avoid a thundering herd
-  // of simultaneous navigations — topping up to 6 needs up to ~5*350ms.
-  await new Promise(r => setTimeout(r, 2200));
+  // of simultaneous navigations — topping up to 6 needs up to ~5*1000ms.
+  await new Promise(r => setTimeout(r, 5600));
   const workersAfterTopUp = t.getWorkerCardCount();
   return { workersAfterTopUp, running: t.isRunning() };
 });
@@ -87,7 +87,7 @@ const capResult = await page3.evaluate(async () => {
   const many = [];
   for (let i = 0; i < 50; i++) many.push({ entityType: 'recording', mbid: `aaaaaaaa-5130-0000-0000-00000000002${String(i).padStart(2, '0')}`, isrc: `X${i}` });
   t.addToQueue(many);
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise(r => setTimeout(r, 2600));
   return t.getWorkerCardCount();
 });
 console.log('worker count with a 51-item queue, cfg.workers=3:', capResult);
