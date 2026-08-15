@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.201710
+// @version      2026.8.15.211214
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -166,12 +166,37 @@
     } catch (e) {}
     return out.sort();   // the id's own YYYYMMDDHHMMSS-N prefix sorts chronologically as a string
   }
+  // #512 follow-up (majkinetor, live): "Logs sometimes do not have a name
+  // although in log it is present... log must be started before any missing
+  // names are fetched, but log can be renamed in any case later" — the
+  // history label used to be mined from the log's own "[names] release:..."
+  // line, but that line is written once, near session start, and
+  // LOG_PERSIST_MAX (400) trims it off the FRONT the moment a big run's
+  // chatter pushes past that window — exactly what happened to his 31-item
+  // run. The release name is now also stashed in its own small, never-
+  // trimmed key the moment it's known, independent of log survival.
+  function sessionNameKey(id) { return LS_PREFIX + id + ':name'; }
+  function noteSessionReleaseName(name) {
+    if (!LS || !SESSION_ID || !name) return;
+    try { if (!LS.getItem(sessionNameKey(SESSION_ID))) LS.setItem(sessionNameKey(SESSION_ID), name); } catch (e) {}
+  }
+  function deleteSessionData(id) {
+    if (!LS) return;
+    try { LS.removeItem(LS_PREFIX + id); LS.removeItem(sessionNameKey(id)); } catch (e) {}
+  }
+  // prefers the dedicated key; falls back to mining the log text for a
+  // session persisted before this fix, so existing history isn't blanked.
+  function sessionReleaseName(id) {
+    if (!LS) return null;
+    try { const n = LS.getItem(sessionNameKey(id)); if (n) return n; } catch (e) {}
+    return extractReleaseName(loadSessionLines(id) || []);
+  }
   function pruneOldSessions() {
     if (!LS) return;
     const ids = listSessionKeys();
     const excess = ids.length - cfg.logHistoryCount;
     if (excess <= 0) return;
-    ids.slice(0, excess).forEach(id => { try { LS.removeItem(LS_PREFIX + id); } catch (e) {} });
+    ids.slice(0, excess).forEach(deleteSessionData);
   }
   // #512 follow-up (majkinetor, live: "I got bunch of historic logs without
   // any processing... We should have only processing logs.") — calling
@@ -198,7 +223,7 @@
       if (prevId) {
         const prevLines = prevId === SESSION_ID ? LOG : loadSessionLines(prevId);
         if (prevLines && !sessionHasRealWork(prevLines)) {
-          try { LS.removeItem(LS_PREFIX + prevId); } catch (e) {}
+          deleteSessionData(prevId);
         }
       }
     }
@@ -257,7 +282,14 @@
       // and the silence read as "the tab was fine". A blind spot sitting exactly
       // where the bug lives.
       const busy = typeof queue !== 'undefined' && queue.some(i => i.status === 'active' || i.status === 'queued');
-      LOG.push(`[${new Date().toISOString().slice(11, 19)}] ERROR *** THIS TAB IS BEING UNLOADED (${busy ? 'MID-RUN' : 'after the run finished'}) *** from ${location.href} via ${(ev && ev.type) || '?'} — the panel and its workers are being destroyed by the page going away, NOT by Falcon closing them. Report this line.`);
+      // #512 follow-up (majkinetor, live): "those 2 errors appear in all logs
+      // and are not actually any errors" — ERROR was right for the case this
+      // was built to catch (a navigation stealing the tab MID-run, an actual
+      // symptom worth flagging), but every tab close/reload also unloads
+      // AFTER a run already finished cleanly — expected, not a bug, so it's
+      // only ever noise there. Same message, level (and the "report this"
+      // ask) now follow `busy`, which already tells the two cases apart.
+      LOG.push(`[${new Date().toISOString().slice(11, 19)}] ${busy ? 'ERROR' : 'INFO '} *** THIS TAB IS BEING UNLOADED (${busy ? 'MID-RUN' : 'after the run finished'}) *** from ${location.href} via ${(ev && ev.type) || '?'} — the panel and its workers are being destroyed by the page going away, NOT by Falcon closing them.${busy ? ' Report this line.' : ''}`);
       // #512 follow-up: only a run that's genuinely still going should get
       // reattached to on the next load — see the reattach logic above. NOT
       // the same thing as `busy` above: a seeded-but-never-Started item
@@ -552,7 +584,7 @@
   // post-import sweep, just re-triggerable instead of one-shot.
   function resolveMissingNames() {
     queue.filter(i => !i.name && i.status === 'queued').forEach(i => {
-      fetchEntityName(i.entityType, i.mbid).then(n => { if (n) { i.name = n; scheduleRender('queue'); } });
+      fetchEntityName(i.entityType, i.mbid).then(n => { if (n) { i.name = n; scheduleRender('queue'); if (i.entityType === 'release') noteSessionReleaseName(n); } });
     });
   }
   // merges each parsed {entityType,mbid,url,linkTypeId,note?} into an existing
@@ -581,7 +613,7 @@
         }
         const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', disambiguation: '', isrcs: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
-        fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); } });
+        fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); noteSessionReleaseName(name); } });
         pickBestCover(relItem);
         relItem._coverCheckPromise = checkExistingCoverArt(relItem);
         added++;
@@ -611,7 +643,7 @@
         if (p.disambiguation && !existing.disambiguation) existing.disambiguation = p.disambiguation;
         if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
         // #509: a name Harmony already resolved beats a later async MB lookup.
-        if (p.name && !existing.name) existing.name = p.name;
+        if (p.name && !existing.name) { existing.name = p.name; if (existing.entityType === 'release') noteSessionReleaseName(p.name); }
         return;
       }
       const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
@@ -621,8 +653,8 @@
       // already scraped the name straight off Harmony's own page — only
       // fall back to Falcon's own MB lookup when a tuple didn't carry one
       // (paste, `?falcon=` URL, JSON import without a name field).
-      if (p.name) dbg('[names]', `${p.entityType}:${p.mbid} — passed from source: "${p.name}"`);
-      else fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
+      if (p.name) { dbg('[names]', `${p.entityType}:${p.mbid} — passed from source: "${p.name}"`); if (p.entityType === 'release') noteSessionReleaseName(p.name); }
+      else fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); if (p.entityType === 'release') noteSessionReleaseName(name); } });
       added++;
     });
     // #508 follow-up: anything newly queued while a run is already active
@@ -2829,7 +2861,7 @@
     // the live one has its own "Clear" button already.
     document.getElementById('falcon-log-clear-history').onclick = () => {
       if (!LS) return;
-      listSessionKeys().filter(id => id !== SESSION_ID).forEach(id => { try { LS.removeItem(LS_PREFIX + id); } catch (e) {} });
+      listSessionKeys().filter(id => id !== SESSION_ID).forEach(deleteSessionData);
       _viewingSession = null;
       populateLogHistory();
       renderLog();
@@ -3237,7 +3269,7 @@
     const prevValue = sel.value;
     sel.innerHTML = '<option value="">Current session</option>' +
       ids.map(id => {
-        const releaseName = extractReleaseName(loadSessionLines(id) || []);
+        const releaseName = sessionReleaseName(id);
         const label = (releaseName ? `${releaseName} — ` : '') + formatSessionLabel(id);
         return `<option value="${esc(id)}">${esc(label)}</option>`;
       }).join('');
@@ -3323,6 +3355,8 @@
     logRunSummary,
     setViewingSession: id => { _viewingSession = id; renderLog(); },
     getViewingSession: () => _viewingSession,
+    // #512 follow-up: release name persisted outside the trimmable log
+    sessionNameKey, noteSessionReleaseName, sessionReleaseName, deleteSessionData,
     // #513
     getStatusFilter: () => _statusFilter, setStatusFilter: s => { _statusFilter = s; renderQueue(); },
     // #508 follow-up
