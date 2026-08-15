@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.192332
+// @version      2026.8.15.195950
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -146,13 +146,22 @@
   // was deliberate), just with no way back to an older one. listSessionKeys
   // enumerates them oldest-to-newest by the id's own leading timestamp;
   // pruneOldSessions caps how many stick around.
+  // #512 follow-up (majkinetor, live): "falcon:session:midrun" (added
+  // alongside "falcon:session:current" for the reattach fix above) shares
+  // the SAME prefix as an actual session id key — excluding keys by name
+  // one at a time is fragile the moment another sibling key is added.
+  // Instead require the remainder to actually LOOK like a session id (its
+  // own YYYYMMDDHHMMSS-N shape), which every real one always has.
+  const SESSION_ID_RE = /^\d{14}-\d+$/;
   function listSessionKeys() {
     if (!LS) return [];
     const out = [];
     try {
       for (let i = 0; i < LS.length; i++) {
         const k = LS.key(i);
-        if (k && k.startsWith(LS_PREFIX) && k !== 'falcon:session:current') out.push(k.slice(LS_PREFIX.length));
+        if (!k || !k.startsWith(LS_PREFIX)) continue;
+        const id = k.slice(LS_PREFIX.length);
+        if (SESSION_ID_RE.test(id)) out.push(id);
       }
     } catch (e) {}
     return out.sort();   // the id's own YYYYMMDDHHMMSS-N prefix sorts chronologically as a string
@@ -178,9 +187,20 @@
   function newSession(reason) {
     // the OUTGOING session, about to be superseded — delete it outright if
     // it never did any real work, instead of leaving it to clutter history
-    // until pruneOldSessions() eventually ages it out.
-    if (SESSION_ID && LS && !sessionHasRealWork(LOG)) {
-      try { LS.removeItem(LS_PREFIX + SESSION_ID); } catch (e) {}
+    // until pruneOldSessions() eventually ages it out. Read the PERSISTED
+    // previous-current id from storage rather than trusting in-memory
+    // SESSION_ID/LOG: a seed that was never Started never reattaches (#512
+    // follow-up — reattach now requires a genuinely mid-run session), so
+    // this page's own SESSION_ID is still null even though a stale
+    // "current" pointer and its noise-only log are sitting in storage.
+    if (LS) {
+      const prevId = LS.getItem('falcon:session:current');
+      if (prevId) {
+        const prevLines = prevId === SESSION_ID ? LOG : loadSessionLines(prevId);
+        if (prevLines && !sessionHasRealWork(prevLines)) {
+          try { LS.removeItem(LS_PREFIX + prevId); } catch (e) {}
+        }
+      }
     }
     // second-resolution alone collides when two runs start in the same second
     // (which a test does, and an impatient re-Start does too), silently merging
@@ -191,10 +211,19 @@
     pruneOldSessions();
     log('info', `=== session ${SESSION_ID} started (${reason}) ===`);
   }
-  // reattach to an in-flight session after a navigation, so its log is continuous
+  // reattach to an in-flight session after a navigation, so its log is
+  // continuous — but ONLY if a run was actually still going when the tab
+  // last unloaded. #512 follow-up (majkinetor, live: "I reload the MB page
+  // and expect empty log, but I get this" — a FULL 358-line finished run's
+  // log, well after it had already completed): a plain reload/navigation
+  // with no `?falcon=` seed never calls newSession() at all, so it always
+  // fell through to this same reattach — correct for a run that's mid-
+  // flight (the whole point of this code), wrong once the run is long over
+  // and there's nothing left to keep continuous.
   try {
     const cur = LS && LS.getItem('falcon:session:current');
-    const prev = cur && LS.getItem(LS_PREFIX + cur);
+    const midrun = LS && LS.getItem('falcon:session:midrun') === '1';
+    const prev = cur && midrun && LS.getItem(LS_PREFIX + cur);
     if (cur && prev) { SESSION_ID = cur; LOG.push(...JSON.parse(prev)); }
   } catch (e) {}
   let _persistTimer = null, _lastPersisted = '';
@@ -229,6 +258,15 @@
       // where the bug lives.
       const busy = typeof queue !== 'undefined' && queue.some(i => i.status === 'active' || i.status === 'queued');
       LOG.push(`[${new Date().toISOString().slice(11, 19)}] ERROR *** THIS TAB IS BEING UNLOADED (${busy ? 'MID-RUN' : 'after the run finished'}) *** from ${location.href} via ${(ev && ev.type) || '?'} — the panel and its workers are being destroyed by the page going away, NOT by Falcon closing them. Report this line.`);
+      // #512 follow-up: only a run that's genuinely still going should get
+      // reattached to on the next load — see the reattach logic above. NOT
+      // the same thing as `busy` above: a seeded-but-never-Started item
+      // sits in 'queued' forever, which `busy` (deliberately) still counts
+      // as "there's unfinished work" for the log message's own wording —
+      // but nothing was ever actually IN PROGRESS, so it must NOT reattach.
+      // `running` is the narrower, correct signal: true only between an
+      // actual start() and its natural completion or stop().
+      try { if (LS) LS.setItem('falcon:session:midrun', running ? '1' : '0'); } catch (e) {}
       writeLogNow();
     } catch (e) {}
   }

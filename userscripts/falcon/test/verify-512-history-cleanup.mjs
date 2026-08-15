@@ -40,25 +40,28 @@ ck(noiseCheck === false, `pure unload/warn noise is correctly NOT real work (got
 ck(realCheck === true, `a session with a "starting N worker(s)" line is correctly real work (got ${realCheck})`);
 
 // 1b. end-to-end: a session that never Starts gets deleted once superseded.
-// The reattach-to-an-in-flight-session logic only runs once, at the
-// script's own module-init time — so the noise session has to already be
-// `falcon:session:current` in localStorage BEFORE the script (re-)loads,
-// for the running instance to actually pick it up as ITS OWN SESSION_ID.
+// This is the exact real-world shape: the noise session was left behind by
+// a tab that seeded but never Started (so it's NOT mid-run — `midrun` is
+// unset/'0' — and per the reattach fix above, a fresh page load correctly
+// does NOT reattach to it). newSession() must still find and delete it by
+// reading the stale "current" pointer straight from storage, not by
+// depending on having reattached its own in-memory SESSION_ID/LOG to it.
 await page.evaluate(() => { localStorage.clear(); });
 await page.evaluate(() => {
   localStorage.setItem('falcon:session:current', '20260101090000-1');
+  localStorage.setItem('falcon:session:midrun', '0');
   localStorage.setItem('falcon:session:20260101090000-1', JSON.stringify(['[09:00:00] INFO  === session 20260101090000-1 started (seeded 1 item(s)) ===', '[09:00:05] ERROR *** THIS TAB IS BEING UNLOADED *** via beforeunload']));
 });
 await page.reload({ waitUntil: 'domcontentloaded' });
 await page.addScriptTag({ content: code });
 await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 const reattached = await page.evaluate(() => window.__falconTest.getSessionId());
-console.log('reattached to session:', reattached);
-ck(reattached === '20260101090000-1', `sanity: the fresh script instance really did reattach to the pre-seeded noise session (got "${reattached}")`);
+console.log('session id after reload (should NOT reattach — the noise session was never mid-run):', reattached);
+ck(reattached !== '20260101090000-1', `sanity: a non-mid-run noise session does not reattach (got "${reattached}")`);
 
-// now trigger a REAL run — newSession() should see the noise session (still
-// the current SESSION_ID/LOG at that point) has no real work, and delete it
-// rather than just letting pruneOldSessions() eventually age it out.
+// now trigger a REAL run — newSession() should see the STALE "current"
+// pointer left over from the noise session, find it has no real work, and
+// delete it rather than just letting pruneOldSessions() eventually age it out.
 await page.evaluate(() => {
   window.__falconTest.setQueue([{ id: '1', entityType: 'artist', mbid: 'aaaaaaaa-5120-0000-0000-000000000001', urls: [{ url: 'https://x.com/1' }], isrcs: [], disambiguation: '', cover: [], status: 'queued', error: '' }]);
 });
