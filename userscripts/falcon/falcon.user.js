@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.14.224629
+// @version      2026.8.15.154536
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.14.224629';
+  const VERSION = '2026.8.15.154536';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -83,6 +83,9 @@
     set hideLauncher(v) { GM_setValue('falcon:hideLauncher', !!v); },
     get coverOnlyIfNone() { return GM_getValue('falcon:coverOnlyIfNone', false) === true; },
     set coverOnlyIfNone(v) { GM_setValue('falcon:coverOnlyIfNone', !!v); },
+    // #508 follow-up (majkinetor): "Auto start Harmony import (off by default)".
+    get autoStartHarmonyImport() { return GM_getValue('falcon:autoStartHarmonyImport', false) === true; },
+    set autoStartHarmonyImport(v) { GM_setValue('falcon:autoStartHarmonyImport', !!v); },
   };
 
   /* ── tiny logger — kept in-memory + console, surfaced in the panel's log tab ── */
@@ -613,15 +616,21 @@
     const raw = new URLSearchParams(location.search).get('falcon');
     if (!raw) return null;
     let json = tryDecodeBase64Json(raw);
+    // #508 (majkinetor): "Auto start Harmony import" needs to tell a Harmony-
+    // sourced seed (the GM-storage token scheme — see the comment above) apart
+    // from the general `?falcon=` contract any other script/user can construct
+    // (base64 JSON directly in the URL) — auto-starting on an arbitrary
+    // external payload isn't what was asked for.
+    let fromHarmony = false;
     if (json == null) {
       const stored = GM_getValue('falcon:pending:' + raw, null);
-      if (stored != null) { json = stored; try { GM_deleteValue('falcon:pending:' + raw); } catch (e) {} }
+      if (stored != null) { json = stored; fromHarmony = true; try { GM_deleteValue('falcon:pending:' + raw); } catch (e) {} }
     }
     if (json == null) { log('warn', 'falcon= param present but neither valid base64 JSON nor a known pending token'); return null; }
     try {
       const arr = JSON.parse(json);
       if (!Array.isArray(arr)) return null;
-      return arr.map(it => {
+      const out = arr.map(it => {
         // #494/#495: a cover-shaped tuple (coverCandidates, no url — only
         // ever 'release') is kept separate from a normal url tuple, which
         // works the same for 'release'/'release_group' as every other type.
@@ -647,6 +656,8 @@
       }).filter(it => it.coverCandidates ? (MBID_RE.test(it.mbid) && it.coverCandidates.length)
         : it.pendingIsrcs ? (MBID_RE.test(it.pendingIsrcs.mbid) && it.pendingIsrcs.isrcs.some(Boolean))
         : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
+      out.fromHarmony = fromHarmony;
+      return out;
     } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
   }
   // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
@@ -2318,6 +2329,9 @@
         <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="If a release already has cover art, skip adding another instead of uploading blind — Harmony offers cover art whether or not the release already has some">
           <input type="checkbox" id="falcon-opt-cover-only-if-none" /> <span>Add covers only when there aren't any</span>
         </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
+          <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start Harmony import</span>
+        </label>
         <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
           <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
         </label>
@@ -2489,6 +2503,9 @@
     const coverOnlyCb = document.getElementById('falcon-opt-cover-only-if-none');
     coverOnlyCb.checked = cfg.coverOnlyIfNone;
     coverOnlyCb.onchange = () => { cfg.coverOnlyIfNone = coverOnlyCb.checked; };
+    const autoStartCb = document.getElementById('falcon-opt-auto-start-harmony');
+    autoStartCb.checked = cfg.autoStartHarmonyImport;
+    autoStartCb.onchange = () => { cfg.autoStartHarmonyImport = autoStartCb.checked; };
     // #467: the intermittent failures only show up on majkinetor's real runs,
     // so the log has to be trivially shareable — one click to the clipboard,
     // already wrapped in the collapsed <details> + fenced block he otherwise
@@ -2848,6 +2865,11 @@
       addToQueue(seeded);
       log('info', `seeded ${seeded.length} item(s) from the falcon= URL param`);
       showPanel();
+      // #508 follow-up (majkinetor): "Auto start Harmony import (off by
+      // default)" — only for a genuine Harmony-sourced seed (the GM-storage
+      // token scheme), not an arbitrary `?falcon=` base64 payload some other
+      // script/user constructed by hand.
+      if (seeded.fromHarmony && cfg.autoStartHarmonyImport) start();
     }
     // (An interrupted run used to force the panel open here on the Log tab. It
     // was scaffolding for chasing the tab-closing bug, and it had a nasty edge:

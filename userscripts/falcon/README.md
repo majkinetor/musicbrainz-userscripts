@@ -143,7 +143,12 @@ Any other script can hand Falcon a queue directly via a URL parameter: append `?
 
 ### Options
 
-1. **Worker count** - set how many workers to run at once at the bottom (default is 5)
+Click the ⚙ tab to open it.
+
+1. **Hide Falcon icon** - the floating corner launcher becomes optional; **Ctrl+Alt+F** still opens the panel either way
+2. **Add covers only when there aren't any** - skip a release's cover upload instead of adding it blind when the release already has cover art
+3. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
+4. **Workers** - how many entities are processed at once (default is 5)
 
 ### Reporting a problem
 
