@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.171750
+// @version      2026.8.15.180800
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.171750';
+  const VERSION = '2026.8.15.180800';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2455,6 +2455,7 @@
           <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail"><span class="falcon-bi">▾</span><span class="falcon-bt">Expand all</span></button>
           <button type="button" id="falcon-import" title="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↓</span><span class="falcon-bt">Import</span></button>
           <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
+          <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↻</span><span class="falcon-bt">Retry failed</span></button>
           <input type="file" id="falcon-import-file" accept="application/json,.json" style="display:none" />
           <span id="falcon-select-count"></span>
           <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
@@ -2566,6 +2567,20 @@
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 10000);
       log('info', `exported ${queue.length} item(s) to ${name}`);
+    };
+    // #517 (majkinetor, live: "MB Is slowish today... is there anything to
+    // be done here (like providing an option to wait more, retry/continue
+    // from failed step etc.)" — proved by hand that the SAME items commit
+    // fine on a second try, so the failure was transient (MB being slow),
+    // not the item being broken. Re-queuing is the direct fix: reset a
+    // failed/partial item back to 'queued' — same starting state a fresh
+    // import would give it — so the next Start naturally picks it up again.
+    document.getElementById('falcon-retry-failed').onclick = () => {
+      const retryable = queue.filter(i => i.status === 'failed' || i.status === 'partial');
+      if (!retryable.length) return;
+      retryable.forEach(i => { i.status = 'queued'; i.error = ''; i.urlResults = null; i.timing = undefined; });
+      log('info', `re-queued ${retryable.length} failed/partial item(s) for another attempt`);
+      renderQueue();
     };
     document.getElementById('falcon-import').onclick = () => document.getElementById('falcon-import-file').click();
     document.getElementById('falcon-import-file').onchange = function () {
@@ -2958,6 +2973,8 @@
     if (selCount) selCount.textContent = _selectedIds.size ? `${_selectedIds.size} selected` : '';
     const removeBtn = document.getElementById('falcon-remove-selected');
     if (removeBtn) removeBtn.disabled = _selectedIds.size === 0;
+    const retryBtn = document.getElementById('falcon-retry-failed');
+    if (retryBtn) retryBtn.disabled = !queue.some(i => i.status === 'failed' || i.status === 'partial');
     const selectAll = document.getElementById('falcon-select-all');
     if (selectAll) { const selectable = queue.filter(i => i.status !== 'active'); selectAll.checked = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id)); }
     const expandAllBtn = document.getElementById('falcon-expand-all');

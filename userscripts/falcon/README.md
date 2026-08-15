@@ -35,6 +35,8 @@ Row button **⇗** opens that entity's edit page in a real tab, pre-filled the s
 
 **Export** writes the queue back out *with each item's status and per-url outcome*, so a partly-finished run can be kept as a record, or re-imported to retry only what failed — items that already show `done` are not re-run.
 
+**Retry failed** re-queues every `failed`/`partial` item for another attempt in place — no export/import round trip needed. Useful when the cause was transient (MusicBrainz being slow, a timeout) rather than the item genuinely being broken.
+
 ### From Harmony
 
 Open a [Harmony] **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner, covering every entity type Harmony offers. Clicking the button opens MusicBrainz in a new tab with the batch queued and the panel open, ready to review and Start.
