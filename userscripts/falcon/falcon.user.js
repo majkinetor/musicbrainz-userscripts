@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.162629
+// @version      2026.8.15.163721
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.162629';
+  const VERSION = '2026.8.15.163721';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -514,7 +514,7 @@
           const before = entry.candidates.length;
           p.coverCandidates.forEach(c => { if (!entry.candidates.some(x => x.url === c.url)) entry.candidates.push(c); });
           if (entry.candidates.length > before) pickBestCover(existingRel);
-          if (existingRel.coverExistingCount == null) checkExistingCoverArt(existingRel);
+          if (existingRel.coverExistingCount == null) existingRel._coverCheckPromise = checkExistingCoverArt(existingRel);
           merged++;
           return;
         }
@@ -522,7 +522,7 @@
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); } });
         pickBestCover(relItem);
-        checkExistingCoverArt(relItem);
+        relItem._coverCheckPromise = checkExistingCoverArt(relItem);
         added++;
         return;
       }
@@ -624,7 +624,7 @@
           error: r.error || '',
         };
         queue.push(reItem);
-        if (hasCover && reItem.status === 'queued') checkExistingCoverArt(reItem);
+        if (hasCover && reItem.status === 'queued') reItem._coverCheckPromise = checkExistingCoverArt(reItem);
         added++;
       } else if (r.url) {
         flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
@@ -1822,10 +1822,14 @@
     updateWorkerLabel(card, item);
     const tStart = Date.now();
     // #508 (majkinetor): "Add covers only when there aren't any" — an opt-in
-    // safety toggle. checkExistingCoverArt() already resolves
-    // item.coverExistingCount fire-and-forget right after the item is
-    // queued (same assumption the duplicate-cover warning banner already
-    // relies on) — by the time a worker gets here it's normally settled.
+    // safety toggle. checkExistingCoverArt() fires fire-and-forget right
+    // after the item is queued and USUALLY settles well before a worker
+    // reaches it — but live: majkinetor's queue reached this item before
+    // the check resolved (a single-item, auto-started run leaves it no head
+    // start at all), reading coverExistingCount as still null/falsy and
+    // uploading a duplicate anyway. Only when the option is actually on is
+    // it worth waiting on the in-flight promise the item was stamped with.
+    if (cfg.coverOnlyIfNone && item.coverExistingCount == null && item._coverCheckPromise) await item._coverCheckPromise;
     // Skipped, not failed: the item still counts as handled, just untouched.
     const skipCover = cfg.coverOnlyIfNone && !!item.coverExistingCount;
     if (skipCover) log('info', `${tag} release ${item.mbid} — cover art skipped (already has ${item.coverExistingCount}, "add only when there aren't any" is on)`);
@@ -2151,9 +2155,17 @@
   // but jumps out of a sorted table. Columns are the real stages: load = MB's
   // edit page arriving, settle = MB turning seed params into rows, fill = our
   // own DOM work, submit = click → redirect.
+  const SETTLED_STATUSES = ['done', 'failed', 'partial', 'manual', 'skipped'];
   let _summaryPending = false, _runStartedAt = 0;
   function logRunSummary() {
-    const rows = queue.filter(i => i.timing);
+    // #513 (majkinetor, live: "What about 'edit page was never loaded'"):
+    // that failure sets item.status = 'failed' straight away, WITHOUT ever
+    // setting item.timing (it never gets past the initial iframe-load wait)
+    // — restricting to queue.filter(i => i.timing) silently dropped it (and
+    // any status like it) from the table AND from the totals/byStatus
+    // count. Every settled item now gets a row; ones with no timing data
+    // just show dashes for the timed columns instead of vanishing.
+    const rows = queue.filter(i => SETTLED_STATUSES.includes(i.status));
     if (!rows.length || _summaryPending) return;
     _summaryPending = true;
     // let any last status writes land before snapshotting
@@ -2175,15 +2187,16 @@
         i.cover && i.cover.some(c => c.url) ? 'cover' : '',
       ].filter(Boolean).join(', ');
       rows.forEach(i => {
-        const t = i.timing;
+        const t = i.timing || {};
         const what = rowBreakdown(i);
         lines.push(`${pad(t.worker || '', 4)} ${pad(entityLabel(i).slice(0, nameW), nameW)} ${pad(i.status, 8)} ${pad(ms(t.loadMs), 7, 1)} ${pad(ms(t.settleMs), 7, 1)} ${pad(ms(t.fillMs), 7, 1)} ${pad(ms(t.submitMs), 8, 1)} ${pad(ms(t.totalMs), 8, 1)}` + (what ? `  ; ${what}` : ''));
       });
-      const sum = k => rows.reduce((a, i) => a + (i.timing[k] || 0), 0);
-      const avg = k => Math.round(sum(k) / rows.length);
-      const maxSubmit = Math.max(...rows.map(i => i.timing.submitMs || 0));
+      const timed = rows.filter(i => i.timing);
+      const sum = k => timed.reduce((a, i) => a + (i.timing[k] || 0), 0);
+      const avg = k => timed.length ? Math.round(sum(k) / timed.length) : null;
+      const maxSubmit = timed.length ? Math.max(...timed.map(i => i.timing.submitMs || 0)) : 0;
       lines.push('-'.repeat(head.length));
-      lines.push(`${pad('', 4)} ${pad(`${rows.length} item(s)`, nameW)} ${pad('avg', 8)} ${pad(avg('loadMs'), 7, 1)} ${pad(avg('settleMs'), 7, 1)} ${pad(avg('fillMs'), 7, 1)} ${pad(avg('submitMs'), 8, 1)} ${pad(avg('totalMs'), 8, 1)}`);
+      lines.push(`${pad('', 4)} ${pad(`${rows.length} item(s)`, nameW)} ${pad('avg', 8)} ${pad(ms(avg('loadMs')), 7, 1)} ${pad(ms(avg('settleMs')), 7, 1)} ${pad(ms(avg('fillMs')), 7, 1)} ${pad(ms(avg('submitMs')), 8, 1)} ${pad(ms(avg('totalMs')), 8, 1)}`);
       const byStatus = rows.reduce((m, i) => { m[i.status] = (m[i.status] || 0) + 1; return m; }, {});
       // wall clock is NOT the sum of the item totals — workers overlap — so show
       // both: the sum is how much work happened, the wall clock is how long you
@@ -2236,6 +2249,11 @@
     _runStartedAt = Date.now();
     // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
     newSession(`${queue.filter(i => i.status === 'queued').length} queued, ${cfg.workers} worker(s), ${location.href}`);
+    // #508 follow-up (majkinetor, live: "BTW, list options in the log, I had
+    // Add covers only when there aren't any enabled here") — a log dump
+    // alone doesn't say which toggles were active, which matters for
+    // reading a run's behavior back later (this exact bug report needed it).
+    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}`);
     suspendNameLookups();   // cosmetic lookups must not eat the workers' rate-limit budget
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
