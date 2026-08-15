@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.191711
+// @version      2026.8.15.192332
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.191711';
+  const VERSION = '2026.8.15.192332';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2488,10 +2488,10 @@
     // panel already has. min-width/min-height keep it from collapsing into
     // the flex column laid out below.
     // #513 (majkinetor): "Make window wider if needed to fit the chips" — the
-    // header can now carry up to 3 status chips (failed/partial/manual)
-    // alongside the name and tab buttons; even 520px still clipped the 3rd
-    // chip against the tab buttons (measured live).
-    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:600px;max-width:90vw;height:70vh;max-height:70vh;min-width:340px;min-height:320px;resize:both;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
+    // header can now carry up to 4 status chips (failed/partial/manual/
+    // skipped, once #513's own follow-up added skipped to the list) — even
+    // 600px clipped the 4th chip against the tab buttons (measured live).
+    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;max-width:90vw;height:70vh;max-height:70vh;min-width:340px;min-height:320px;resize:both;background:#fff;color:#222;border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid #ddd;overflow:hidden';
     panel.innerHTML = `
       <div id="falcon-hdr" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:#1b2a4a;color:#fff;cursor:move;user-select:none">
         <span style="display:flex;color:#ff9d5c">${ICON}</span>
@@ -2968,16 +2968,23 @@
   }
   // #513 (majkinetor): "Its still not easily seeable that there were issues.
   // Lets add some chip with results in appropriate color if there are
-  // issues." One chip per PROBLEM status (failed/partial/manual — 'skipped'
-  // is a success, not a problem, same reasoning renderProgress already
-  // applies), colored from the same DOT palette the row dots already use.
-  // Clicking toggles _statusFilter, so it doubles as "show me just those."
-  const PROBLEM_STATUSES = ['failed', 'partial', 'manual'];
+  // issues." One chip per non-trivial outcome status, colored from the
+  // same DOT palette the row dots already use. Clicking toggles
+  // _statusFilter, so it doubles as "show me just those."
+  // #513 follow-up (majkinetor): "Lets add other statuses that are not
+  // Done/Excluded here (Like skipped, partial etc.)" — every SETTLED
+  // outcome except the plain success ('done') gets a chip now, including
+  // 'skipped' (an intentional no-op, not a failure, but still worth being
+  // able to see/filter at a glance). 'queued'/'active' are work still in
+  // progress, not an outcome — the progress bar already covers those;
+  // 'excluded' isn't a real status at all, just a display label for a
+  // still-queued item whose type is toggled off.
+  const CHIP_STATUSES = ['failed', 'partial', 'manual', 'skipped'];
   function renderStatusChips() {
     const wrap = document.getElementById('falcon-status-chips'); if (!wrap) return;
     const counts = {};
-    queue.forEach(i => { if (PROBLEM_STATUSES.includes(i.status)) counts[i.status] = (counts[i.status] || 0) + 1; });
-    const present = PROBLEM_STATUSES.filter(s => counts[s]);
+    queue.forEach(i => { if (CHIP_STATUSES.includes(i.status)) counts[i.status] = (counts[i.status] || 0) + 1; });
+    const present = CHIP_STATUSES.filter(s => counts[s]);
     if (_statusFilter && !counts[_statusFilter]) _statusFilter = null;   // the last item in that state was removed/re-run
     // #513 follow-up (majkinetor, live: "I don't like version without
     // background color as its not greatly visible... Lets make it always

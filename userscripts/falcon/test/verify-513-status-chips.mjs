@@ -35,7 +35,12 @@ await page.waitForSelector('#falcon-panel', { timeout: 5000 });
 const noChips = await page.evaluate(() => document.querySelectorAll('.falcon-status-chip').length);
 ck(noChips === 0, `no status chips when everything's fine (got ${noChips})`);
 
-// 2. one chip per PROBLEM status present, with the right count; 'done'/'skipped'/'queued' never get one.
+// 2. one chip per non-trivial outcome status present, with the right count
+// — #513 follow-up (majkinetor): "Lets add other statuses that are not
+// Done/Excluded here (Like skipped, partial etc.)" — 'done'/'queued' never
+// get one (a plain success, or work still pending — the progress bar
+// already covers pending), but 'skipped' now does too, alongside
+// failed/partial/manual.
 await page.evaluate((mk) => window.__falconTest.setQueue([
   { id: '1', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000001', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'failed', error: 'x' },
   { id: '2', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000002', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'failed', error: 'x' },
@@ -47,10 +52,11 @@ await page.evaluate((mk) => window.__falconTest.setQueue([
 await page.waitForTimeout(150);
 const chips = await page.evaluate(() => [...document.querySelectorAll('.falcon-status-chip')].map(c => ({ status: c.dataset.status, text: c.textContent })));
 console.log('chips:', JSON.stringify(chips));
-ck(chips.length === 2, `only failed+partial get a chip — done/skipped/queued don't (got ${chips.length})`);
+ck(chips.length === 3, `failed+partial+skipped get a chip — done/queued don't (got ${chips.length})`);
 // text-transform:uppercase is CSS-only — textContent stays lowercase.
 ck(chips.some(c => c.status === 'failed' && c.text === 'failed 2'), `failed chip shows the right count (got ${JSON.stringify(chips.find(c => c.status === 'failed'))})`);
 ck(chips.some(c => c.status === 'partial' && c.text === 'partial 1'), `partial chip shows the right count (got ${JSON.stringify(chips.find(c => c.status === 'partial'))})`);
+ck(chips.some(c => c.status === 'skipped' && c.text === 'skipped 1'), `skipped chip shows the right count (got ${JSON.stringify(chips.find(c => c.status === 'skipped'))})`);
 
 // 3. clicking a chip filters the queue view to just that status; clicking again clears it.
 await page.click('.falcon-status-chip[data-status="failed"]');
@@ -74,11 +80,12 @@ visibleIds = await page.evaluate(() => [...document.querySelectorAll('.falcon-ro
 ck(visibleIds.length === 1 && visibleIds[0] === '3', `switching chips replaces the filter, doesn't stack (got ${JSON.stringify(visibleIds)})`);
 await page.evaluate(() => window.__falconTest.setStatusFilter(null));
 
-// 5. the header fits all 3 possible chips without clipping (measured, not just visual).
+// 5. the header fits all 4 possible chips without clipping (measured, not just visual).
 await page.evaluate(() => window.__falconTest.setQueue([
   { id: '1', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000001', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'failed', error: 'x' },
   { id: '2', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000002', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'partial', error: 'x' },
   { id: '3', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000003', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'manual', error: 'x' },
+  { id: '4', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000004', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'skipped', error: '' },
 ]));
 await page.waitForTimeout(150);
 const fit = await page.evaluate(() => {
@@ -87,7 +94,7 @@ const fit = await page.evaluate(() => {
   return { chipsRight: chipsWrap.getBoundingClientRect().right, tabLeft: tabQueue.getBoundingClientRect().left, chipCount: chipsWrap.children.length };
 });
 console.log('fit check:', JSON.stringify(fit));
-ck(fit.chipCount === 3, `all 3 problem-status chips render (got ${fit.chipCount})`);
+ck(fit.chipCount === 4, `all 4 possible chips render (got ${fit.chipCount})`);
 ck(fit.chipsRight <= fit.tabLeft + 1, `the chip strip doesn't overlap the Queue tab button (chips end at ${fit.chipsRight}, tab starts at ${fit.tabLeft})`);
 
 // 6. the empty-after-filter state offers a way back.
