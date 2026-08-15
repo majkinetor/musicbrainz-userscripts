@@ -26,10 +26,10 @@ Click the ⚙ button on the player bar to open its settings:
 
 - **Theme** — Light (default) or Dark
 - **Scale** — 70%–130% (default 100%)
-- **Playback** — **Preload track 1** (default on): loads and briefly (muted) plays the first
-  track on page load so it's instantly ready. Turn this off if you keep several Bandcamp album
-  tabs open — Bandcamp treats that brief playback as "this tab started playing" and can pause
-  a genuinely-playing tab elsewhere.
+- **Playback** — **Start from track 1** (default on): Bandcamp sometimes defaults a fresh page
+  load to a random/"featured" track instead of track 1. This positions the player to track 1
+  without loading or playing anything, so it doesn't affect other Bandcamp tabs or interfere
+  with fast track-switching.
 - **Hide on page** — which native page elements get hidden: the native Bandcamp player (hidden
   by default, since this bar replaces it), the track list, and the tags row (both visible by
   default).

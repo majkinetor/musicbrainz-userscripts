@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.08.14.143404
+// @version      2026.08.15.145238
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
@@ -25,7 +25,7 @@
     const MUTE_KEY      = 'bcp_muted';
     const BAR_H         = 72;
     const PREVIEW_SECS  = 30; // seconds to play per track in preview mode
-    const VERSION       = '2026.08.14.143404'; // keep in sync with @version (fallback when GM_info is unavailable)
+    const VERSION       = '2026.08.15.145238'; // keep in sync with @version (fallback when GM_info is unavailable)
     const HOMEPAGE_URL  = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md';
     // #501: unsafeWindow reaches the page's own real `window` — Bandcamp's inline
     // script attaches TralbumData directly to it, invisible through a sandboxed
@@ -142,10 +142,10 @@
 
     let scale = loadScale();
 
-    // ─── Preload-track-1 option persistence ────────────────────────────────────────
-    // Preloading clicks + briefly (muted) plays track 1 to warm the buffer — Bandcamp's own
-    // JS treats that as "this tab started playing," which can pause a DIFFERENT Bandcamp tab
-    // that's genuinely playing (multiple albums open at once). Opt-out for that case.
+    // ─── Start-from-track-1 option persistence ────────────────────────────────────
+    // Bandcamp can default a fresh page load to a random/"featured" track instead
+    // of track 1 — see preloadFirstTrack() below for how this is fixed without
+    // ever touching playback.
 
     const PRELOAD_KEY = 'bcp_preload';
 
@@ -205,6 +205,14 @@
             );
             if (idx !== -1) return idx;
         }
+        // #511: preloadFirstTrack() selects a track via gplaylist.set_initial_track()
+        // without ever setting audio.src (that's the whole point — no playback, no
+        // cross-tab pause) — so before anything has actually played, this is the
+        // only source that knows which track is "current."
+        if (typeof pageWindow.gplaylist?.get_track === 'function') {
+            const idx = pageWindow.gplaylist.get_track();
+            if (typeof idx === 'number' && idx >= 0) return idx;
+        }
         const rows = document.querySelectorAll('.track_row_view');
         let found = -1;
         rows.forEach((r, i) => { if (r.classList.contains('current_track') || r.classList.contains('playing')) found = i; });
@@ -230,78 +238,33 @@
         (function step() { if (steps-- <= 0) return; if (btn) btn.click(); if (steps > 0) setTimeout(step, 80); })();
     }
 
-    // ─── Preload first track without audible playback ────────────────────────────
-    // We click the FIRST TRACK ROW directly (not .playbutton which loads whatever
-    // Bandcamp had last selected). Then mute → wait for buffer → pause + unmute.
-
+    // ─── Position to first track without playing anything ────────────────────────
+    // #511 (majkinetor, live): the old approach clicked the first track row, which
+    // Bandcamp's own click handler treats as "this tab started playing" — even
+    // muted, that (a) paused a DIFFERENT Bandcamp tab that was genuinely playing
+    // (confirmed live: two tabs, same album, one real-playing gets paused the
+    // instant the other's audio element enters the playing state at all, mute
+    // doesn't exempt it) and (b) fought with fast track-switching.
+    //
+    // Bandcamp's own player object — window.gplaylist, a plain page global right
+    // alongside TralbumData — exposes set_initial_track(index), the exact method
+    // Bandcamp itself would use to seed which track a fresh page starts on. Live-
+    // verified: it updates gplaylist._track (so a later real Play press correctly
+    // starts there) without ever touching the <audio> element or calling play() —
+    // no cross-tab pause, no audible blip, no click at all.
     let preloadDone  = false;
     let preloadReady = false;
 
     function preloadFirstTrack() {
         if (preloadDone) return;
-        if (!preloadEnabled) { preloadDone = true; preloadReady = true; return; }
-        if (!pageWindow.TralbumData?.trackinfo?.length) return;
-
-        // Find the clickable element inside the first track row
-        const firstRow = document.querySelector('.track_row_view');
-        if (!firstRow) return;
-        const trigger =
-            firstRow.querySelector('.play_status') ||
-            firstRow.querySelector('.play_col') ||
-            firstRow.querySelector('.track_play_hilite') ||
-            firstRow.querySelector('a.play_row_for') ||
-            firstRow.querySelector('.title-col .linked-title a') ||
-            firstRow.querySelector('.title-col a') ||
-            firstRow;
-        if (!trigger) return;
-
         preloadDone = true;
-        const savedVol = loadVol();
-
-        function muteAndClick() {
-            // Pre-mute any existing audio element
-            const a = getAudio();
-            if (a) { a.volume = 0; a.muted = true; }
-
-            // Click the first track row to load it into Bandcamp's player
-            trigger.click();
-            waitForBuffer(80); // up to 4s
-        }
-
-        function waitForBuffer(attempts) {
-            if (attempts <= 0) {
-                const a = getAudio();
-                if (a) { a.pause(); a.muted = false; a.volume = loadMuted() ? 0 : savedVol; a.currentTime = 0; }
-                preloadReady = true;
-                syncVolSlider(savedVol);
-                return;
-            }
-            const a = getAudio();
-            if (!a) { setTimeout(() => waitForBuffer(attempts - 1), 50); return; }
-
-            // Keep muted every poll in case Bandcamp resets it
-            a.volume = 0;
-            a.muted  = true;
-
-            if (a.readyState >= 2 || (isFinite(a.duration) && a.duration > 0)) {
-                a.pause();
-                a.currentTime = 0;
-                a.muted  = false;
-                a.volume = loadMuted() ? 0 : savedVol;
-                a._bcpInited = true; // mark as already initialised so tick doesn't re-apply
-                preloadReady = true;
-                syncVolSlider(savedVol);
-                return;
-            }
-            setTimeout(() => waitForBuffer(attempts - 1), 50);
-        }
-
-        function syncVolSlider(v) {
-            const volEl = document.getElementById('bcp-vol');
-            if (volEl) volEl.value = String(v);
-        }
-
-        setTimeout(muteAndClick, 400);
+        preloadReady = true;
+        if (!preloadEnabled) return;
+        const gp = pageWindow.gplaylist;
+        if (!gp || typeof gp.set_initial_track !== 'function') return;
+        if (!pageWindow.TralbumData?.trackinfo?.length) return;
+        const firstPlayable = typeof gp.first_playable_track === 'number' ? gp.first_playable_track : 0;
+        try { gp.set_initial_track(firstPlayable); } catch (e) {}
     }
 
     // ─── Preview mode ─────────────────────────────────────────────────────────────
@@ -718,7 +681,7 @@
     </div>
 
     <div class="bcp-opt-label">Playback</div>
-    <label><input type="checkbox" id="bcp-opt-preload" ${preloadEnabled ? 'checked' : ''}> Preload track 1 <span class="bcp-opt-hint">(can pause other Bandcamp tabs)</span></label>
+    <label><input type="checkbox" id="bcp-opt-preload" ${preloadEnabled ? 'checked' : ''}> Start from track 1 <span class="bcp-opt-hint">(Bandcamp sometimes defaults to a random track)</span></label>
 
     <div class="bcp-opt-label">Hide on page</div>
     <label><input type="checkbox" id="bcp-opt-player"    ${hideOpts.player    ? 'checked' : ''}> Native player</label>
@@ -953,7 +916,6 @@
         if (!audio) { playBtn.innerHTML = SVG_PLAY; return; }
 
         // Restore volume every time a new <audio> element appears (track change).
-        // Skip while preload is in progress — it manages mute/volume itself.
         if (!audio._bcpInited && preloadReady) {
             audio._bcpInited = true;
             applyVol(loadVol(), loadMuted());
