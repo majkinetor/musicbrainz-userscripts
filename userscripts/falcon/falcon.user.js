@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.163721
+// @version      2026.8.15.165758
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.163721';
+  const VERSION = '2026.8.15.165758';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -700,7 +700,12 @@
             },
           };
         }
-        return { entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null };
+        // #509 (majkinetor, live): the token round-trip (harmonyBtn.onclick's
+        // GM_setValue -> this parse, on the NEW tab) was dropping `name`
+        // entirely — scrapeHarmonyActions() scraped it correctly, but it
+        // never survived to reach addToQueue(), so EVERY Harmony import fell
+        // back to an MB lookup regardless of whether the scrape succeeded.
+        return { entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null, name: it.name ? String(it.name) : null };
       }).filter(it => it.coverCandidates ? (MBID_RE.test(it.mbid) && it.coverCandidates.length)
         : it.pendingIsrcs ? (MBID_RE.test(it.pendingIsrcs.mbid) && it.pendingIsrcs.isrcs.some(Boolean))
         : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
@@ -736,7 +741,7 @@
     return Object.values(byIndex).filter(e => e.text).map(e => ({ entityType, mbid, url: e.text, linkTypeId: e.link_type_id || null, note }));
   }
   function encodeFalconPayload(tuples) {
-    const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined })));
+    const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined })));
     return btoa(unescape(encodeURIComponent(json)));
   }
 
@@ -972,13 +977,34 @@
       harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
       harmonyBtn.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;background:#1b2a4a;color:#fff;font:bold 13px Arial;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;transition:opacity .15s';
       harmonyBtn.innerHTML = `<span style="display:flex;color:#ff9d5c">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
-      harmonyBtn.onclick = () => {
-        const found = scrapeHarmonyActions();
+      // #509 follow-up (majkinetor, live: a saved copy of the exact page
+      // scraped 75/75 tuples WITH names when replayed offline — proving the
+      // scraper itself is correct — but his real click got 0/12 named).
+      // Harmony renders each row's icon+name pill via its OWN async
+      // per-entity MB-match lookup, separate from (and slower than) the
+      // action list itself — on a small batch it's usually done by the time
+      // anyone clicks; on a 76-item release it visibly wasn't. Rather than
+      // hope the user waits, give Harmony's own resolution a bounded second
+      // chance right at click time if the FIRST scrape came back with any
+      // gaps — cheap compared to the MB fallback lookups it avoids.
+      harmonyBtn.onclick = async () => {
+        let found = scrapeHarmonyActions();
+        if (found.some(t => !t.name)) {
+          const lbl = document.getElementById('falcon-harmony-lbl');
+          const prevLbl = lbl.textContent;
+          lbl.textContent = 'Resolving names…';
+          const deadline = Date.now() + 5000;
+          while (Date.now() < deadline && found.some(t => !t.name)) {
+            await wait(400);
+            found = scrapeHarmonyActions();
+          }
+          lbl.textContent = prevLbl;
+        }
         const foundCover = scrapeHarmonyCover();
         const foundIsrcFallback = found.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
         if (!found.length && !foundCover && !foundIsrcFallback) { alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`); return; }
         const token = makePendingToken();
-        const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined }));
+        const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined }));
         if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates });
         if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
         GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
