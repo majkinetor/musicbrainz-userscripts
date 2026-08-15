@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.161707
+// @version      2026.8.15.162629
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.161707';
+  const VERSION = '2026.8.15.162629';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2164,9 +2164,20 @@
       const nameW = Math.min(28, Math.max(6, ...rows.map(i => entityLabel(i).length)));
       const head = `${pad('w', 4)} ${pad('entity', nameW)} ${pad('status', 8)} ${pad('load', 7, 1)} ${pad('settle', 7, 1)} ${pad('fill', 7, 1)} ${pad('submit', 8, 1)} ${pad('total', 8, 1)}`;
       const lines = [head, '-'.repeat(head.length)];
+      // #512 follow-up (majkinetor, live: "add on each worker what was done
+      // in this log table like I shown on w1 and w2") — same categories the
+      // collapsed queue row and the aggregate "worked on" line already use,
+      // per item this time so a failed batch shows what each one actually had.
+      const rowBreakdown = i => [
+        i.urls && i.urls.length ? `${i.urls.length} link${i.urls.length === 1 ? '' : 's'}` : '',
+        i.disambiguation ? 'disambiguation' : '',
+        (i.isrcs || []).length ? 'isrc' : '',
+        i.cover && i.cover.some(c => c.url) ? 'cover' : '',
+      ].filter(Boolean).join(', ');
       rows.forEach(i => {
         const t = i.timing;
-        lines.push(`${pad(t.worker || '', 4)} ${pad(entityLabel(i).slice(0, nameW), nameW)} ${pad(i.status, 8)} ${pad(ms(t.loadMs), 7, 1)} ${pad(ms(t.settleMs), 7, 1)} ${pad(ms(t.fillMs), 7, 1)} ${pad(ms(t.submitMs), 8, 1)} ${pad(ms(t.totalMs), 8, 1)}`);
+        const what = rowBreakdown(i);
+        lines.push(`${pad(t.worker || '', 4)} ${pad(entityLabel(i).slice(0, nameW), nameW)} ${pad(i.status, 8)} ${pad(ms(t.loadMs), 7, 1)} ${pad(ms(t.settleMs), 7, 1)} ${pad(ms(t.fillMs), 7, 1)} ${pad(ms(t.submitMs), 8, 1)} ${pad(ms(t.totalMs), 8, 1)}` + (what ? `  ; ${what}` : ''));
       });
       const sum = k => rows.reduce((a, i) => a + (i.timing[k] || 0), 0);
       const avg = k => Math.round(sum(k) / rows.length);
@@ -3008,8 +3019,15 @@
     const seeded = parseUrlParam();
     ensureLauncher();
     if (seeded && seeded.length) {
+      // #512 (majkinetor, live: "See the log before starting queue - it
+      // still contains older logs from 13:54") — falcon:session:current
+      // lives in localStorage, which is shared across EVERY tab on
+      // musicbrainz.org, not scoped to this one. A brand new tab opened by
+      // "Send to Falcon" (or any fresh `?falcon=` seed) was reattaching to
+      // whatever session the LAST tab's LAST run left behind, instead of
+      // starting clean. A genuine new seed always means a new session.
+      newSession(`seeded ${seeded.length} item(s) from the falcon= URL param`);
       addToQueue(seeded);
-      log('info', `seeded ${seeded.length} item(s) from the falcon= URL param`);
       showPanel();
       // #508 follow-up (majkinetor): "Auto start Harmony import (off by
       // default)" — only for a genuine Harmony-sourced seed (the GM-storage
