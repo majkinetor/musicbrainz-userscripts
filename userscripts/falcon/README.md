@@ -81,7 +81,7 @@ Field usage by entity type
 | External links | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
 | Disambiguation |  |  | yes | |  |
-| Cover art | — | — | — | yes (array)| — |
+| Cover art | — | — | — | yes| — |
 
 ## JSON model
 
