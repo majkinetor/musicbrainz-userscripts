@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.181944
+// @version      2026.8.15.182539
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.181944';
+  const VERSION = '2026.8.15.182539';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -164,7 +164,24 @@
     if (excess <= 0) return;
     ids.slice(0, excess).forEach(id => { try { LS.removeItem(LS_PREFIX + id); } catch (e) {} });
   }
+  // #512 follow-up (majkinetor, live: "I got bunch of historic logs without
+  // any processing... We should have only processing logs.") — calling
+  // newSession() on every fresh `?falcon=` seed (the earlier #512 fix, so a
+  // NEW seed never inherits a stale session) means a seed the user never
+  // actually Starts — just looked at, or closed the tab on — still leaves
+  // behind a session containing nothing but tab-unload noise and a stale-
+  // token warning. Real work always logs "starting N worker(s)"; anything
+  // that never reaches that line isn't worth keeping in history at all.
+  function sessionHasRealWork(lines) {
+    return lines.some(l => /INFO\s+starting \d+ worker/.test(l));
+  }
   function newSession(reason) {
+    // the OUTGOING session, about to be superseded — delete it outright if
+    // it never did any real work, instead of leaving it to clutter history
+    // until pruneOldSessions() eventually ages it out.
+    if (SESSION_ID && LS && !sessionHasRealWork(LOG)) {
+      try { LS.removeItem(LS_PREFIX + SESSION_ID); } catch (e) {}
+    }
     // second-resolution alone collides when two runs start in the same second
     // (which a test does, and an impatient re-Start does too), silently merging
     // them back into one log — the exact thing this is meant to stop.
@@ -3138,6 +3155,17 @@
     if (!LS) return null;
     try { const raw = LS.getItem(LS_PREFIX + id); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
   }
+  // #512 follow-up (majkinetor): "add release name in the log name if
+  // present... rather than having to navigate dates exclusively." Reuses
+  // the [names] debug line #509 already logs — no new logging needed, just
+  // reading back whichever release name a session happened to resolve.
+  function extractReleaseName(lines) {
+    for (const l of lines) {
+      const m = l.match(/\[names\] release:[0-9a-f-]+ — (?:fetched|passed from source): "([^"]+)"/);
+      if (m) return m[1];
+    }
+    return null;
+  }
   // What's currently shown in the Log tab: the live session, or a historical
   // one picked from #falcon-log-history — Copy Log uses this too, so copying
   // always matches what's on screen.
@@ -3150,7 +3178,11 @@
     const ids = listSessionKeys().filter(id => id !== SESSION_ID).reverse();   // newest first
     const prevValue = sel.value;
     sel.innerHTML = '<option value="">Current session</option>' +
-      ids.map(id => `<option value="${esc(id)}">${esc(formatSessionLabel(id))}</option>`).join('');
+      ids.map(id => {
+        const releaseName = extractReleaseName(loadSessionLines(id) || []);
+        const label = (releaseName ? `${releaseName} — ` : '') + formatSessionLabel(id);
+        return `<option value="${esc(id)}">${esc(label)}</option>`;
+      }).join('');
     sel.value = ids.includes(prevValue) ? prevValue : '';
   }
   function renderLog() {
@@ -3234,5 +3266,7 @@
     // #513
     getStatusFilter: () => _statusFilter, setStatusFilter: s => { _statusFilter = s; renderQueue(); },
     // #508 follow-up
-    topUpWorkers, getWorkerCardCount: () => workerCards.length, isRunning: () => running };
+    topUpWorkers, getWorkerCardCount: () => workerCards.length, isRunning: () => running,
+    // #512 follow-up
+    sessionHasRealWork, extractReleaseName };
 })();
