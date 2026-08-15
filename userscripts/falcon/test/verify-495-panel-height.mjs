@@ -32,7 +32,7 @@ await page.waitForSelector('#falcon-panel', { timeout: 5000 });
 // a single, sparse item — the exact shape that reproduced the collapse live
 // (a small queue, nothing expanded).
 await page.evaluate(() => window.__falconTest.setQueue([
-  { id: 'x1', entityType: 'release', mbid: 'bafa58c1-e9b3-4ed3-b42d-70a387e411f4', urls: [{ url: 'https://example.com/x', linkTypeId: '268' }], note: '', comment: '', isrcs: [], cover: { url: '', candidates: [] }, name: 'Hazy Dreams', urlResults: null, status: 'failed', error: 'never redirected off /edit after submit' },
+  { id: 'x1', entityType: 'release', mbid: 'bafa58c1-e9b3-4ed3-b42d-70a387e411f4', urls: [{ url: 'https://example.com/x', linkTypeId: '268' }], note: '', comment: '', isrcs: [], cover: [], name: 'Hazy Dreams', urlResults: null, status: 'failed', error: 'never redirected off /edit after submit' },
 ]));
 const box = await page.evaluate(() => {
   const r = document.getElementById('falcon-panel').getBoundingClientRect();

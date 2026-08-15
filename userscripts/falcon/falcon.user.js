@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.195950
+// @version      2026.8.15.201405
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -3058,14 +3058,18 @@
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
           <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:#888;text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
           <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:#1b2a4a;text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
-          ${it.urls.length > 1
-            ? `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links</span>`
-            : it.urls.length === 1
-              ? `<a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(it.urls[0].url)}</a>`
-              // #494/#496: release rows never carry a urls[] entry — cover art
-              // is their whole payload — so they always land here; show it
-              // alongside disambiguation/ISRC, each only when actually non-empty.
-              : `<span style="color:#999;font-style:italic;flex:1" title="${it.coverExistingCount ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : ''}">no links — ${[it.disambiguation ? 'disambiguation' : '', (it.isrcs || []).length ? 'ISRC' : '', it.cover.some(c => c.url) ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : ''].filter(Boolean).join(' + ') || '—'}</span>`}
+          ${(() => {
+            // #518 (majkinetor): "When there is 1 link, its shown instead of
+            // `1 link, isrc`" — disambiguation/ISRC/cover only ever got
+            // folded into the summary in the zero-links branch below, so a
+            // single-link item silently hid whichever of those it also had.
+            const extras = [it.disambiguation ? 'disambiguation' : '', (it.isrcs || []).length ? 'ISRC' : '', (it.cover || []).some(c => c.url) ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : ''].filter(Boolean).join(' + ');
+            if (it.urls.length > 1) return `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links${extras ? ' + ' + esc(extras) : ''}</span>`;
+            if (it.urls.length === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:#666">+ ${esc(extras)}</span>` : ''}</span>`;
+            // #494/#496: release rows never carry a urls[] entry — cover art
+            // is their whole payload — so they always land here.
+            return `<span style="color:#999;font-style:italic;flex:1" title="${it.coverExistingCount ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : ''}">no links${extras ? ' — ' + esc(extras) : ' — —'}</span>`;
+          })()}
           <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${excluded ? 'excluded' : it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
           <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:#999;flex:0 0 auto">✕</button>
