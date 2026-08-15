@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.191356
+// @version      2026.8.15.191711
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.191356';
+  const VERSION = '2026.8.15.191711';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -2026,23 +2026,31 @@
       // worker start filling before there was anything to fill. Matching
       // findAddLinkInput's specific placeholder text instead of a bare
       // `input` fixes it for every type, not just release.
+      // #517 follow-up (majkinetor, live, with an animated gif as proof):
+      // "I clearly see worker finishing seeding in 2-3s and waiting 13s to
+      // incorrectly show 'edit page never loaded'" — a real detection bug,
+      // not a timing/contention issue (staggering was tried and reverted;
+      // it couldn't have fixed this). None of the reasoning further down
+      // (about contention needing a longer timeout) explains a page that's
+      // visibly ready and submittable within seconds. Logging the actual
+      // state of each sub-condition periodically while this polls, so the
+      // NEXT time this happens the log itself says which check kept
+      // failing instead of needing another live repro to find out.
+      let _loadedPollCount = 0;
       const loaded = await waitFor(() => {
+        _loadedPollCount++;
         const w = frameWin(iframe), doc = frameDoc(iframe);
-        if (!w || !doc || doc.readyState === 'loading') return null;
-        let path = ''; try { path = w.location.pathname; } catch (e) { return null; }
-        if (!path.includes(item.mbid)) return null;   // still about:blank / previous doc
-        return (doc.querySelector('tr.external-link-item') || findAddLinkInput(doc)) ? true : null;
-      // #517 follow-up (majkinetor, live: "Still happens... I clearly see
-      // worker finishing seeding in 2-3s and waiting 13s to incorrectly
-      // show 'edit page never loaded'"): the 350ms stagger (previous fix)
-      // spreads out when workers START loading, but each real MB page load
-      // still takes several seconds once it's actually under way — with 6
-      // staggered starts across <2s, most are still concurrently RENDERING
-      // for a good while regardless, and majkinetor's own log shows a solo
-      // replacement worker (no contention) still took 7.7s on an MB day
-      // that's genuinely slow. 15s wasn't enough margin for that combination
-      // even once staggering helped. Doubled to 30s — a real failure still
-      // gets caught, just with more room for "slow, not stuck."
+        const diag = () => {
+          if (_loadedPollCount % 20 !== 0) return;   // ~every 3s (150ms poll interval)
+          let path = '(unreadable)'; try { path = w ? w.location.pathname : '(no window)'; } catch (e) { path = '(threw: ' + e.message + ')'; }
+          dbg(tag, `still waiting for edit page — readyState=${doc ? doc.readyState : '(no doc)'}, path=${path}, hasExternalLinkRow=${doc ? !!doc.querySelector('tr.external-link-item') : '?'}, hasAddLinkInput=${doc ? !!findAddLinkInput(doc) : '?'}`);
+        };
+        if (!w || !doc || doc.readyState === 'loading') { diag(); return null; }
+        let path = ''; try { path = w.location.pathname; } catch (e) { diag(); return null; }
+        if (!path.includes(item.mbid)) { diag(); return null; }   // still about:blank / previous doc
+        const ready = doc.querySelector('tr.external-link-item') || findAddLinkInput(doc);
+        if (!ready) diag();
+        return ready ? true : null;
       }, 30000);
       if (!loaded) {
         item.status = 'failed'; item.error = 'edit page never loaded';
