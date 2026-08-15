@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.170748
+// @version      2026.8.15.171750
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.170748';
+  const VERSION = '2026.8.15.171750';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -1072,6 +1072,17 @@
     const texts = [...doc.querySelectorAll('.error, .field-error')].map(el => (el.textContent || '').trim()).filter(Boolean);
     return texts.length ? [...new Set(texts)].join(' / ') : null;
   }
+  // #514 (majkinetor): a field change (ISRC, disambiguation) Falcon can't
+  // always tell already matches what's stored — unlike a relationship row,
+  // there's no clean "pending" DOM state to diff against beforehand — so
+  // Falcon submits it, and MB's OWN server-side validation catches the
+  // redundant edit and re-renders /edit with this banner instead of
+  // committing. Lives in `.banner.warning-header`, not `.error`/
+  // `.field-error` — findFieldError() doesn't see it at all.
+  function findNoChangesWarning(doc) {
+    const texts = [...doc.querySelectorAll('.banner.warning-header, .banner')].map(el => (el.textContent || '').trim());
+    return texts.some(t => /does not make any changes/i.test(t));
+  }
   function setEditNote(doc, win, text) {
     const ta = doc.querySelector('textarea.edit-note, textarea[name="edit-note"], textarea[name="edit_note"], #id-edit-note, .edit-note textarea');
     if (!ta) return false;
@@ -1534,16 +1545,33 @@
       const w = frameWin(iframe); if (!w) return null;
       try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
     };
-    let left = null;
-    for (let attempt = 1; attempt <= MAX_CLICKS && !left; attempt++) {
+    // #514 (majkinetor): a field-change edit (ISRC/disambiguation) that
+    // exactly matches what's already stored gets rejected server-side with
+    // a "does not make any changes" banner — MB re-renders /edit itself
+    // rather than redirecting away, so plain pageLeft() polling would sit
+    // through the full 25s timeout waiting for a navigation that was never
+    // coming, then get classified as a hard failure. Poll for the banner
+    // too, so this resolves as fast as the redirect case does.
+    const noChangesShown = () => {
+      const d = frameDoc(iframe); if (!d) return null;
+      try { return findNoChangesWarning(d) ? true : null; } catch (e) { return null; }
+    };
+    let left = null, noChanges = false;
+    for (let attempt = 1; attempt <= MAX_CLICKS && !left && !noChanges; attempt++) {
       const doc = frameDoc(iframe);
       const fresh = findSubmitButton(doc);
       if (!fresh) { dbg(tag, `submit attempt ${attempt}: button vanished from the page`); break; }
       if (fresh.disabled) { dbg(tag, `submit attempt ${attempt}: button went disabled — ${findFieldError(doc) || '(no message)'}`); break; }
       dbg(tag, `submit attempt ${attempt}: clicking${fresh !== btn ? ' (button node was replaced since it was first found)' : ''}`);
       fresh.click();
-      left = await waitFor(pageLeft, 25000);
-      if (!left) dbg(tag, `submit attempt ${attempt}: page still on /edit after 25s`);
+      await waitFor(() => pageLeft() || noChangesShown(), 25000);
+      left = pageLeft();
+      noChanges = !left && !!noChangesShown();
+      if (!left && !noChanges) dbg(tag, `submit attempt ${attempt}: page still on /edit after 25s`);
+    }
+    if (noChanges) {
+      dbg(tag, `MB says this submit changes nothing — treating as already up to date, not a failure`);
+      return { committed: false, results, noop: true, fillMs, submitMs: Date.now() - tSubmit };
     }
     if (!left) {
       let where = '(unreadable)', pageErrs = '(unreadable)', btnState = '(unreadable)';
@@ -3124,7 +3152,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
