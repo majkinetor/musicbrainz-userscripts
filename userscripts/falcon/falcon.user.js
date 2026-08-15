@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.180800
+// @version      2026.8.15.181944
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.180800';
+  const VERSION = '2026.8.15.181944';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -90,6 +90,12 @@
     // storage so those can be selected and loaded by datetime".
     get logHistoryCount() { const n = Number(GM_getValue('falcon:logHistoryCount', 20)); return Math.max(1, Math.min(100, isFinite(n) ? n : 20)); },
     set logHistoryCount(n) { GM_setValue('falcon:logHistoryCount', Math.max(1, Math.min(100, Number(n) || 20))); },
+    // #508 follow-up (majkinetor): "Open from Harmony in new tab (on by
+    // default)... Implement 'Off' option that doesn't open new tab but
+    // opens MB in existing one" — the existing one being the Harmony tab
+    // itself, navigated away to MB instead of window.open()'d elsewhere.
+    get openHarmonyInNewTab() { return GM_getValue('falcon:openHarmonyInNewTab', true) === true; },
+    set openHarmonyInNewTab(v) { GM_setValue('falcon:openHarmonyInNewTab', !!v); },
   };
 
   /* ── tiny logger — kept in-memory + console, surfaced in the panel's log tab ── */
@@ -1014,7 +1020,8 @@
         GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
         const relMbid = harmonyReleaseMbid();
         const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}` : `${MB_TARGET}/?falcon=${token}`;
-        window.open(target, '_blank');
+        if (cfg.openHarmonyInNewTab) window.open(target, '_blank');
+        else location.href = target;
       };
       document.body.appendChild(harmonyBtn);
     }
@@ -2293,6 +2300,39 @@
   // reads the SAME login link MB's header always shows when logged out —
   // confirmed absent once logged in.
   function isLoggedIn() { return !document.querySelector('a[href^="/login?"], a[href="/login"]'); }
+  // #517 (majkinetor, live: "THis actually might be some recently
+  // introduced bug since I get it almost constantly" — 10 of 15 items
+  // failed with "edit page never loaded", with "UI thread was blocked for
+  // ~3-4s" warnings right at the start of the run, and the workers that DID
+  // load took 14-15s — right at the timeout, not comfortably under it).
+  // Root cause: spawning N workers means N iframes all get `.src =` set in
+  // the SAME synchronous loop — N simultaneous navigations to MB, all
+  // competing for the main thread and for MB's own server capacity at
+  // once. Likely made newly visible by #508's auto-start: it fires the
+  // instant a Harmony seed lands, when the tab itself may still be
+  // settling from its OWN page load — competing with the burst instead of
+  // starting after the user's own natural pause to look at the page first.
+  // Staggering each spawn by a beat spreads that burst out instead of
+  // letting every worker slam the network/render pipeline at once.
+  const WORKER_STAGGER_MS = 350;
+  // A spawn scheduled via setTimeout hasn't touched workerCards yet — if
+  // topUpWorkers() runs again before that timer fires (queue growing twice
+  // in quick succession, e.g. addToQueue() called right after start()),
+  // workerCards.length alone under-counts what's already been committed to,
+  // and it schedules MORE spawns on top than cfg.workers actually allows.
+  // Track scheduled-but-not-yet-spawned separately so the "how many more do
+  // we need" math accounts for them too.
+  let _pendingSpawnCount = 0;
+  function spawnWorkersStaggered(count) {
+    _pendingSpawnCount += count;
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        _pendingSpawnCount--;
+        if (!running) return;
+        const card = spawnWorkerCard(); if (card) workerLoop(card);
+      }, i * WORKER_STAGGER_MS);
+    }
+  }
   // #508 follow-up (majkinetor, live: auto-started a Harmony import with 6
   // workers configured, only 1 ever ran): start()'s worker count is
   // Math.min(cfg.workers, queued-at-that-instant) — correct for a queue
@@ -2310,10 +2350,10 @@
     if (!running) return;
     const remaining = queue.filter(i => i.status === 'queued' && !_disabledTypes.has(i.entityType)).length;
     const target = Math.min(cfg.workers, remaining);
-    const toSpawn = target - workerCards.length;
+    const toSpawn = target - workerCards.length - _pendingSpawnCount;
     if (toSpawn <= 0) return;
     log('info', `queue grew — topping up from ${workerCards.length} to ${target} worker(s)`);
-    for (let i = 0; i < toSpawn; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
+    spawnWorkersStaggered(toSpawn);
   }
   function start() {
     if (running) return;
@@ -2338,7 +2378,7 @@
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
-    for (let i = 0; i < need; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
+    spawnWorkersStaggered(need);
     updateRunBtn();
   }
   function stop() { running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
@@ -2512,6 +2552,9 @@
         </label>
         <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
           <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start Harmony import</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="On: 'Send to Falcon' opens MusicBrainz in a new tab (today's behavior). Off: navigates this same Harmony tab to MusicBrainz instead">
+          <input type="checkbox" id="falcon-opt-open-new-tab" /> <span>Open from Harmony in new tab</span>
         </label>
         <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
           <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
@@ -2716,6 +2759,9 @@
     const autoStartCb = document.getElementById('falcon-opt-auto-start-harmony');
     autoStartCb.checked = cfg.autoStartHarmonyImport;
     autoStartCb.onchange = () => { cfg.autoStartHarmonyImport = autoStartCb.checked; };
+    const openNewTabCb = document.getElementById('falcon-opt-open-new-tab');
+    openNewTabCb.checked = cfg.openHarmonyInNewTab;
+    openNewTabCb.onchange = () => { cfg.openHarmonyInNewTab = openNewTabCb.checked; };
     const logHistoryIn = document.getElementById('falcon-opt-log-history-count');
     logHistoryIn.value = cfg.logHistoryCount;
     logHistoryIn.onchange = () => { cfg.logHistoryCount = logHistoryIn.value; logHistoryIn.value = cfg.logHistoryCount; };

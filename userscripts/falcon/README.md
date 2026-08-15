@@ -152,8 +152,9 @@ Click the ⚙ tab to open it.
 1. **Hide Falcon icon** - the floating corner launcher becomes optional; **Ctrl+Alt+F** still opens the panel either way
 2. **Add covers only when there aren't any** - skip a release's cover upload instead of adding it blind when the release already has cover art
 3. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
-4. **Workers** - how many entities are processed at once (default is 5)
-5. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
+4. **Open from Harmony in new tab** (on by default) - off navigates the current Harmony tab to MusicBrainz instead of opening a new one
+5. **Workers** - how many entities are processed at once (default is 5)
+6. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
 
 ### Reporting a problem
 
