@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.165758
+// @version      2026.8.15.170748
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.165758';
+  const VERSION = '2026.8.15.170748';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -564,6 +564,10 @@
       else fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
     });
+    // #508 follow-up: anything newly queued while a run is already active
+    // (ISRC fallback resolving late, a mid-run import, ...) should get
+    // picked up by a full worker fleet, not whatever's left running.
+    if (added > 0) topUpWorkers();
     return { merged, added };
   }
   // #500: fetches the release's real tracklist (recording mbids in track
@@ -2261,6 +2265,28 @@
   // reads the SAME login link MB's header always shows when logged out —
   // confirmed absent once logged in.
   function isLoggedIn() { return !document.querySelector('a[href^="/login?"], a[href="/login"]'); }
+  // #508 follow-up (majkinetor, live: auto-started a Harmony import with 6
+  // workers configured, only 1 ever ran): start()'s worker count is
+  // Math.min(cfg.workers, queued-at-that-instant) — correct for a queue
+  // that's fully populated before Start is pressed, but a Harmony release
+  // with ISRC-only recordings (no plain external-link actions to zip them
+  // onto) queues its cover/release item SYNCHRONOUSLY and its recordings
+  // ASYNCHRONOUSLY (resolveIsrcFallback fetches the real tracklist first) —
+  // auto-start fired in between, seeing only 1 queued item, so only 1
+  // worker ever spawned for the other 11 that arrived a moment later.
+  // Called from addToQueue() whenever it adds anything while a run is
+  // already active, this brings the spawned count up to what the CURRENT
+  // queue actually calls for, regardless of what triggered the addition
+  // (ISRC fallback, a mid-run import, anything).
+  function topUpWorkers() {
+    if (!running) return;
+    const remaining = queue.filter(i => i.status === 'queued' && !_disabledTypes.has(i.entityType)).length;
+    const target = Math.min(cfg.workers, remaining);
+    const toSpawn = target - workerCards.length;
+    if (toSpawn <= 0) return;
+    log('info', `queue grew — topping up from ${workerCards.length} to ${target} worker(s)`);
+    for (let i = 0; i < toSpawn; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
+  }
   function start() {
     if (running) return;
     if (!isLoggedIn()) {
@@ -2849,11 +2875,16 @@
     queue.forEach(i => { if (PROBLEM_STATUSES.includes(i.status)) counts[i.status] = (counts[i.status] || 0) + 1; });
     const present = PROBLEM_STATUSES.filter(s => counts[s]);
     if (_statusFilter && !counts[_statusFilter]) _statusFilter = null;   // the last item in that state was removed/re-run
+    // #513 follow-up (majkinetor, live: "I don't like version without
+    // background color as its not greatly visible... Lets make it always
+    // have red background and find other method to show toggle state.") —
+    // always filled now; the active filter is shown with a white ring
+    // instead of losing the fill.
     wrap.innerHTML = present.map(s => {
       const on = _statusFilter === s;
       const color = DOT[s];
       return `<button type="button" class="falcon-status-chip" data-status="${esc(s)}" title="${on ? 'Click to show every item again' : `Click to show only ${esc(s)} items`}"
-        style="border:1.5px solid ${color};background:${on ? color : 'transparent'};color:${on ? '#fff' : color};border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;white-space:nowrap;flex:0 0 auto">${esc(s)} ${counts[s]}</button>`;
+        style="border:1.5px solid ${color};background:${color};color:#fff;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;white-space:nowrap;flex:0 0 auto;${on ? 'box-shadow:0 0 0 2px #fff' : ''}">${esc(s)} ${counts[s]}</button>`;
     }).join('');
   }
   function renderQueue() {
@@ -3110,5 +3141,7 @@
     setViewingSession: id => { _viewingSession = id; renderLog(); },
     getViewingSession: () => _viewingSession,
     // #513
-    getStatusFilter: () => _statusFilter, setStatusFilter: s => { _statusFilter = s; renderQueue(); } };
+    getStatusFilter: () => _statusFilter, setStatusFilter: s => { _statusFilter = s; renderQueue(); },
+    // #508 follow-up
+    topUpWorkers, getWorkerCardCount: () => workerCards.length, isRunning: () => running };
 })();
