@@ -149,10 +149,13 @@ Click the ⚙ tab to open it.
 2. **Add covers only when there aren't any** - skip a release's cover upload instead of adding it blind when the release already has cover art
 3. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
 4. **Workers** - how many entities are processed at once (default is 5)
+5. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
 
 ### Reporting a problem
 
 The **Log** tab traces every worker step — which entity it loaded, how each url was resolved (already present / seeded and classified / typed / rejected and why), whether the submit button was reachable, and how long each stage took. Lines are tagged per worker (`[w1]`, `[w2]`…) since workers run concurrently. Leave the **debug** checkbox on, reproduce the problem, then hit **Copy log** and paste it into the issue — that's usually enough to pinpoint a worker that stopped short of submitting without needing a live reproduction.
+
+Each run gets its own log, kept separately so one run's lines never get mixed into another's. The dropdown next to **debug** lists past runs by date/time — pick one to review or copy it instead of the current session.
 
 ## Shortcuts
 

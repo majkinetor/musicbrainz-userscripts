@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.154536
+// @version      2026.8.15.155825
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.154536';
+  const VERSION = '2026.8.15.155825';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
   const MB_ORIGIN = location.origin;
@@ -86,6 +86,10 @@
     // #508 follow-up (majkinetor): "Auto start Harmony import (off by default)".
     get autoStartHarmonyImport() { return GM_getValue('falcon:autoStartHarmonyImport', false) === true; },
     set autoStartHarmonyImport(v) { GM_setValue('falcon:autoStartHarmonyImport', !!v); },
+    // #512 (majkinetor): "keep configurable number of last runs in local
+    // storage so those can be selected and loaded by datetime".
+    get logHistoryCount() { const n = Number(GM_getValue('falcon:logHistoryCount', 20)); return Math.max(1, Math.min(100, isFinite(n) ? n : 20)); },
+    set logHistoryCount(n) { GM_setValue('falcon:logHistoryCount', Math.max(1, Math.min(100, Number(n) || 20))); },
   };
 
   /* ── tiny logger — kept in-memory + console, surfaced in the panel's log tab ── */
@@ -124,6 +128,36 @@
   let SESSION_ID = '';
   let _sessionSeq = 0;
   const LOG = [];
+  // #512: which session the Log tab is currently SHOWING — null means the
+  // live, still-appending one; any other value is a historical session id
+  // picked from #falcon-log-history, rendered read-only from its persisted
+  // snapshot instead of the in-memory LOG array.
+  let _viewingSession = null;
+  // #512 (majkinetor): "Fix Log that it doesn't show anything from previous
+  // runs anymore. ... it can keep configurable number of last runs in local
+  // storage so those can be selected and loaded by datetime." — every
+  // session WAS already persisted individually (the per-run isolation above
+  // was deliberate), just with no way back to an older one. listSessionKeys
+  // enumerates them oldest-to-newest by the id's own leading timestamp;
+  // pruneOldSessions caps how many stick around.
+  function listSessionKeys() {
+    if (!LS) return [];
+    const out = [];
+    try {
+      for (let i = 0; i < LS.length; i++) {
+        const k = LS.key(i);
+        if (k && k.startsWith(LS_PREFIX) && k !== 'falcon:session:current') out.push(k.slice(LS_PREFIX.length));
+      }
+    } catch (e) {}
+    return out.sort();   // the id's own YYYYMMDDHHMMSS-N prefix sorts chronologically as a string
+  }
+  function pruneOldSessions() {
+    if (!LS) return;
+    const ids = listSessionKeys();
+    const excess = ids.length - cfg.logHistoryCount;
+    if (excess <= 0) return;
+    ids.slice(0, excess).forEach(id => { try { LS.removeItem(LS_PREFIX + id); } catch (e) {} });
+  }
   function newSession(reason) {
     // second-resolution alone collides when two runs start in the same second
     // (which a test does, and an impatient re-Start does too), silently merging
@@ -131,6 +165,7 @@
     SESSION_ID = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++_sessionSeq);
     LOG.length = 0;
     try { if (LS) LS.setItem('falcon:session:current', SESSION_ID); } catch (e) {}
+    pruneOldSessions();
     log('info', `=== session ${SESSION_ID} started (${reason}) ===`);
   }
   // reattach to an in-flight session after a navigation, so its log is continuous
@@ -422,13 +457,20 @@
     if (dropped) dbg('[names]', `dropped ${dropped} pending name lookup(s) so they don't compete with the workers`);
   }
   function resumeNameLookups() { _namesSuspended = false; }
+  // #509 follow-up (majkinetor): "I don't think its working, although not
+  // sure. Lets add debug log for track fetching - list entity mbid and if
+  // name is fetched or passed." — every entity's name resolution logs which
+  // path it took (Harmony-scraped and passed straight through, vs. an MB API
+  // fetch) so it's actually verifiable from the Log tab instead of assumed.
   async function fetchEntityName(entityType, mbid) {
     const key = entityType + ':' + mbid;
-    if (_nameCache.has(key)) return _nameCache.get(key);
-    if (_namesSuspended) return null;
+    if (_nameCache.has(key)) { dbg('[names]', `${key} — cached: "${_nameCache.get(key)}"`); return _nameCache.get(key); }
+    if (_namesSuspended) { dbg('[names]', `${key} — fetch skipped, lookups suspended (a run is active)`); return null; }
+    dbg('[names]', `${key} — fetching from MB (no name passed from source)`);
     const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityUrlSegment(entityType)}/${mbid}?fmt=json`);
     const name = j ? (j.title || j.name || null) : null;   // recordings/releases/RGs: title; artist/label: name
     if (name) _nameCache.set(key, name);
+    dbg('[names]', `${key} — fetched: ${name ? `"${name}"` : 'null (MB lookup failed or returned no name)'}`);
     return name;
   }
   function entityLabel(item) { return item.name || `${item.entityType}/${item.mbid.slice(0, 8)}`; }
@@ -513,7 +555,8 @@
       // already scraped the name straight off Harmony's own page — only
       // fall back to Falcon's own MB lookup when a tuple didn't carry one
       // (paste, `?falcon=` URL, JSON import without a name field).
-      if (!p.name) fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
+      if (p.name) dbg('[names]', `${p.entityType}:${p.mbid} — passed from source: "${p.name}"`);
+      else fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); } });
       added++;
     });
     return { merged, added };
@@ -2131,10 +2174,25 @@
       // actually waited, and the gap between them is what concurrency bought.
       const wallMs = _runStartedAt ? Date.now() - _runStartedAt : 0;
       const fmt = m => (m >= 1000 ? (m / 1000).toFixed(1) + 's' : m + 'ms');
+      // #512 (majkinetor): "in work summary at the end of the log, add what
+      // was done the same as shown in collapsed queue (e.g. 2 link, isrc)" —
+      // same categories the row itself shows (links / ISRC / disambiguation
+      // / cover), aggregated across the whole run instead of per row.
+      const totalLinks = rows.reduce((n, i) => n + (i.urls ? i.urls.length : 0), 0);
+      const withIsrc = rows.filter(i => (i.isrcs || []).length).length;
+      const withDisambiguation = rows.filter(i => i.disambiguation).length;
+      const withCover = rows.filter(i => i.cover && i.cover.some(c => c.url)).length;
+      const worked = [
+        totalLinks ? `${totalLinks} link${totalLinks === 1 ? '' : 's'}` : '',
+        withIsrc ? `isrc on ${withIsrc}` : '',
+        withDisambiguation ? `disambiguation on ${withDisambiguation}` : '',
+        withCover ? `cover on ${withCover}` : '',
+      ].filter(Boolean).join(', ') || '—';
       log('info', `run summary (all times ms)\n${lines.join('\n')}\n` +
         `total run time: ${fmt(wallMs)} wall clock` +
         (rows.length > 1 ? ` · ${fmt(sum('totalMs'))} of item work · avg ${fmt(Math.round(wallMs / rows.length))} per item` : '') + '\n' +
-        `totals: ${Object.entries(byStatus).map(([k, v]) => `${v} ${k}`).join(', ')}; slowest submit ${maxSubmit}ms; ${cfg.workers} worker(s)` +
+        `totals: ${Object.entries(byStatus).map(([k, v]) => `${v} ${k}`).join(', ')}; slowest submit ${maxSubmit}ms; ${cfg.workers} worker(s)\n` +
+        `worked on: ${worked}` +
         (maxSubmit > 10000 ? `\nnote: submits this slow usually mean several workers submitted at once — MusicBrainz serialises edit submissions per user, so they queue behind each other. Fewer workers is often no slower overall.` : ''));
     }, 300);
   }
@@ -2314,6 +2372,9 @@
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer" title="Detailed per-worker step tracing — leave on when reporting a problem">
             <input type="checkbox" id="falcon-log-debug" /> <span class="falcon-bt">debug</span>
           </label>
+          <select id="falcon-log-history" title="Load an earlier run's log — each run gets its own, kept for a while" style="margin-left:auto;max-width:180px;font:inherit">
+            <option value="">Current session</option>
+          </select>
           <span id="falcon-log-copied" style="color:#2e9e5b"></span>
         </div>
         <div id="falcon-log-text" style="overflow:auto;flex:1;padding:8px 10px;font:10px monospace;white-space:pre-wrap"></div>
@@ -2334,6 +2395,9 @@
         </label>
         <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
           <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
+        </label>
+        <label style="display:flex;align-items:center;gap:7px" title="Each run keeps its own log, selectable later from the Log tab's history dropdown — older ones beyond this count are dropped">
+          <span>Keep last</span> <input type="number" id="falcon-opt-log-history-count" min="1" max="100" style="width:48px" /> <span>run logs</span>
         </label>
       </div>`;
     document.body.appendChild(panel);
@@ -2506,18 +2570,29 @@
     const autoStartCb = document.getElementById('falcon-opt-auto-start-harmony');
     autoStartCb.checked = cfg.autoStartHarmonyImport;
     autoStartCb.onchange = () => { cfg.autoStartHarmonyImport = autoStartCb.checked; };
+    const logHistoryIn = document.getElementById('falcon-opt-log-history-count');
+    logHistoryIn.value = cfg.logHistoryCount;
+    logHistoryIn.onchange = () => { cfg.logHistoryCount = logHistoryIn.value; logHistoryIn.value = cfg.logHistoryCount; };
+    // #512: pick an earlier run's log to review/copy instead of the live one.
+    document.getElementById('falcon-log-history').onchange = (e) => {
+      _viewingSession = e.target.value || null;
+      renderLog();
+    };
     // #467: the intermittent failures only show up on majkinetor's real runs,
     // so the log has to be trivially shareable — one click to the clipboard,
     // already wrapped in the collapsed <details> + fenced block he otherwise
     // has to add by hand every time before pasting it into an issue. The blank
     // lines around the fence are required for GitHub to render markdown inside
-    // an HTML block.
+    // an HTML block. #512: copies whichever session is currently being
+    // VIEWED (live or historical), labeled accordingly.
     document.getElementById('falcon-log-copy').onclick = async () => {
       const note = document.getElementById('falcon-log-copied');
-      const text = `<details><summary>Falcon log (v${scriptVersion()}, ${LOG.length} lines)</summary>\n\n\`\`\`\n${LOG.join('\n')}\n\`\`\`\n\n</details>`;
+      const lines = currentLogLines();
+      const label = _viewingSession ? `session ${formatSessionLabel(_viewingSession)}` : 'current session';
+      const text = `<details><summary>Falcon log (v${scriptVersion()}, ${label}, ${lines.length} lines)</summary>\n\n\`\`\`\n${lines.join('\n')}\n\`\`\`\n\n</details>`;
       try {
         await navigator.clipboard.writeText(text);
-        note.textContent = `copied ${LOG.length} line(s)`;
+        note.textContent = `copied ${lines.length} line(s)`;
       } catch (e) { note.textContent = 'copy failed — select the text manually'; }
       setTimeout(() => { note.textContent = ''; }, 4000);
     };
@@ -2583,7 +2658,7 @@
     else w.style.cssText = OFFSCREEN + 'display:block;padding:8px 10px;';
     document.getElementById('falcon-body-log').style.display = t === 'log' ? 'flex' : 'none';
     document.getElementById('falcon-body-options').style.display = t === 'options' ? 'flex' : 'none';
-    if (t === 'log') renderLog();
+    if (t === 'log') { populateLogHistory(); renderLog(); }
     if (t === 'workers') renderWorkerLayout();   // sizes were computed while off-screen; recompute for the real viewport
     fitBars();   // a bar that was hidden measured 0-wide; re-fit now it's laid out
   }
@@ -2830,9 +2905,34 @@
     document.getElementById('falcon-item-popup-body').innerHTML = renderRowDetail(item) || '<div style="color:#999">No url detail available — this item was never picked up by a worker.</div>';
     el.style.display = 'flex';
   }
+  // #512: "YYYYMMDDHHMMSS-N" -> "YYYY-MM-DD HH:MM:SS" for the history dropdown.
+  function formatSessionLabel(id) {
+    const m = id.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
+    if (!m) return id;
+    return `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]}`;
+  }
+  function loadSessionLines(id) {
+    if (!LS) return null;
+    try { const raw = LS.getItem(LS_PREFIX + id); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  // What's currently shown in the Log tab: the live session, or a historical
+  // one picked from #falcon-log-history — Copy Log uses this too, so copying
+  // always matches what's on screen.
+  function currentLogLines() {
+    if (_viewingSession) return loadSessionLines(_viewingSession) || [`(session ${_viewingSession} not found — it may have aged out)`];
+    return LOG;
+  }
+  function populateLogHistory() {
+    const sel = document.getElementById('falcon-log-history'); if (!sel) return;
+    const ids = listSessionKeys().filter(id => id !== SESSION_ID).reverse();   // newest first
+    const prevValue = sel.value;
+    sel.innerHTML = '<option value="">Current session</option>' +
+      ids.map(id => `<option value="${esc(id)}">${esc(formatSessionLabel(id))}</option>`).join('');
+    sel.value = ids.includes(prevValue) ? prevValue : '';
+  }
   function renderLog() {
     const el = document.getElementById('falcon-log-text'); if (!el || tab !== 'log') return;
-    el.textContent = LOG.join('\n');
+    el.textContent = currentLogLines().join('\n');
     el.scrollTop = el.scrollHeight;
   }
   function updateRunBtn() {
@@ -2895,5 +2995,10 @@
     // #500
     harmonyIsrcFallback, resolveIsrcFallback,
     // #509 follow-up
-    resolveMissingNames };
+    resolveMissingNames,
+    // #512
+    listSessionKeys, pruneOldSessions, formatSessionLabel, loadSessionLines, currentLogLines, populateLogHistory,
+    logRunSummary,
+    setViewingSession: id => { _viewingSession = id; renderLog(); },
+    getViewingSession: () => _viewingSession };
 })();
