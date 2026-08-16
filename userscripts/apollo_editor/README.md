@@ -191,7 +191,7 @@ Set column sizes to predefined variants (Fit, Centered, Default).
 
 Fill a medium's tracklist from pasted text using a **pattern**. Type a pattern, paste the list, review the live preview, apply. Like the native parser it **opens seeded with the current tracklist** (using pattern `#. T - A (L)`), so you can also use it to bulk-edit what's already there.
 
-<img width="800" src="./screenshots/pattern_parser.png" />
+<img src="./screenshots/pattern_parser.png" />
 
 #### Tokens
 
