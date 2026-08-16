@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-16 21:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-16 21:49 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -984,15 +984,22 @@ Available options:
 
 #### Text parser
 
-The **✎ Text parser…** button ([#522](https://github.com/majkinetor/musicbrainz-userscripts/issues/522)) turns unstructured credit text — liner notes, a Bandcamp/Discogs credits block, or a release's own annotation — into release-level artist relationships. Same idea as [Apollo](../apollo_editor/README.md)'s pattern-based track parser, adapted for credits.
+The **✎ Text parser…** button ([#522](https://github.com/majkinetor/musicbrainz-userscripts/issues/522)) turns unstructured credit text — liner notes, a Bandcamp/Discogs credits block, or a release's own annotation — into release-level relationships. Same idea as [Apollo](../apollo_editor/README.md)'s pattern-based track parser, adapted for credits.
 
-Paste text (or click **Load annotation** to pull the release's latest annotation and edit it before parsing) and type a **pattern**:
+Two modes, switched at the top of the window:
+
+**Credits** — paste text (or click **Load annotation** to pull the release's latest annotation straight into the box) and type a **pattern**:
 
 - `R: A` — `Mastering: Nick Robbins`
 - `A - R` — `Nick Robbins - Mastering`
 - `A - R[,]` — `Cameron Allen - Flute, Tenor Saxophone` splits the role text on commas (and `A - R[, and]` also splits on the word "and"), turning one line into several rows — one per role, same artist.
+- A line can also hold **several credits at once**, separated by `;` — `Guitar: Alice; Bass: Bob` becomes two rows.
 
-Every pasted line gets its own preview row: parsed role/artist text, an auto-resolved MusicBrainz role and artist where unambiguous, and a **pick role…** / **search / create…** button where it isn't. **Resolve all** runs auto-resolution in one batch; a line's pattern can be **overridden individually** for the odd line that doesn't fit the main pattern (a section header, a differently-formatted credit). **Apply** stages the resolved rows as real relationships in the editor — nothing is submitted; you review and save yourself.
+Every pasted line gets its own preview row: parsed role/artist text, an auto-resolved MusicBrainz role and artist where unambiguous (including a fuzzy fallback — "mastered by" finds "mastering", "compiled" finds "compiler"), and a clickable **pick role…** / **search / create…** button where it isn't (still clickable once resolved, to change the pick). **Resolve all** runs auto-resolution in one batch; a line's pattern can be **overridden individually** for the odd line that doesn't fit the main pattern (a section header, a differently-formatted credit).
+
+**Copyright** — detects ©/(C)/copyright and ℗/(P)/phonographic copyright lines (`© 2020 Some Label`, `℗ & © 2020 Some Label`) and resolves the holder as a label or the release artist, applying the matching *copyright*/*phonographic copyright* relationship with the year as its date.
+
+**Apply** stages the resolved rows as real relationships in the editor — nothing is submitted; you review and save yourself. The pasted text and pattern are remembered per release, so closing and reopening the tool picks up where you left off.
 
 Deliberately single-line-only: multi-line/grouped-block credit formats and per-track scoping aren't parsed (they show as unmatched, not an error) — pick them off manually, or fix the odd line with a per-line pattern override.
 

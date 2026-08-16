@@ -136,6 +136,107 @@ if (anArtistGid) {
   console.log('SKIP: no existing artist relationship on this test release to reuse an MBID from');
 }
 
+// ── follow-up feedback fixes (majkinetor, live, after trying the first pass) ──
+
+// 8. one raw line can have multiple role+artist pairs, semicolon-separated.
+// (This also regression-guards a real bug caught live: since this runs
+// AFTER the apply test manually resolved a DIFFERENT artist at the same row
+// POSITION, a position-keyed manual pick used to leak that stale resolution
+// onto "Alice" here. Resolutions are now keyed by row TEXT, not position.)
+await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-ta', 'Guitar: Alice; Bass: Bob');
+await page.waitForTimeout(150);
+let pairRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
+console.log('semicolon-pair rows:', JSON.stringify(pairRows));
+ck(pairRows.length === 2, `"Guitar: Alice; Bass: Bob" expands to 2 rows (got ${pairRows.length})`);
+ck(pairRows[0][0] === 'Guitar' && pairRows[0][1] === 'Alice', `first pair parsed correctly (got ${JSON.stringify(pairRows[0])})`);
+ck(pairRows[1][0] === 'Bass' && pairRows[1][1] === 'Bob', `second pair parsed correctly (got ${JSON.stringify(pairRows[1])})`);
+ck(pairRows[0][3] === 'search / create…', `"Alice" does NOT inherit a stale manual pick from an earlier, unrelated row at the same position (got "${pairRows[0][3]}")`);
+
+// 9. per-row pattern override keeps focus + value while typing (used to lose
+// focus on every keystroke because render() rebuilt the whole table).
+await page.fill('.gt-tp-ta', 'Line one\nLine two');
+await page.waitForTimeout(150);
+const ov = page.locator('.gt-tp-ov').first();
+await ov.click();
+await ov.type('R: A', { delay: 25 });
+await page.waitForTimeout(150);
+const focusInfo = await page.evaluate(() => ({ cls: document.activeElement.className || '', val: document.activeElement.value || '' }));
+console.log('focus after typing an override:', JSON.stringify(focusInfo));
+ck(focusInfo.cls.includes('gt-tp-ov') && focusInfo.val === 'R: A', `focus and value survive re-renders while typing (got ${JSON.stringify(focusInfo)})`);
+
+// 10. fuzzy role auto-resolution ("compiled" -> "compiler", "mastered by" ->
+// "mastering") without colliding with lookalike roles ("chorus master",
+// "remixes and compilations").
+await page.fill('.gt-tp-ta', 'mastered by: Someone For 522\ncompiled: Someone Else For 522');
+await page.waitForTimeout(150);
+await page.click('.gt-tp-resolve');
+await page.waitForTimeout(1000);
+const fuzzyRoles = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-pick.gt-tp-resolved')].map(b => b.textContent.toLowerCase()));
+console.log('fuzzy-resolved roles:', JSON.stringify(fuzzyRoles));
+ck(fuzzyRoles.includes('mastering'), `"mastered by" fuzzy-resolves to "mastering" (got ${JSON.stringify(fuzzyRoles)})`);
+ck(fuzzyRoles.includes('compiler'), `"compiled" fuzzy-resolves to "compiler", not colliding with "remixes and compilations" (got ${JSON.stringify(fuzzyRoles)})`);
+
+// 11. a resolved role/artist stays clickable to change the pick (used to
+// freeze once set).
+const roleBtnClass = await page.evaluate(() => document.querySelector('.gt-tp-pick.gt-tp-resolved')?.className);
+ck(roleBtnClass && roleBtnClass.includes('gt-tp-resolved'), 'a resolved role renders as a (still-clickable) button, not static text');
+await page.click('.gt-tp-pick.gt-tp-resolved');
+await page.waitForTimeout(150);
+ck(await page.isVisible('.gt-role-pick'), 'clicking an already-resolved role reopens the picker to change it');
+
+// 12. Escape inside the nested role picker closes only the picker, not the
+// whole Text Parser modal.
+await page.keyboard.press('Escape');
+await page.waitForTimeout(150);
+const afterEsc = await page.evaluate(() => ({ rolePickOpen: !!document.querySelector('.gt-role-pick'), mainOpen: !!document.querySelector('.gt-cons.gt-tp') }));
+console.log('after Escape inside the role picker:', JSON.stringify(afterEsc));
+ck(!afterEsc.rolePickOpen, 'Escape closes the nested role picker');
+ck(afterEsc.mainOpen, 'Escape does NOT also close the main Text Parser modal');
+
+// 13. Load annotation goes straight into the textarea — no confirm/preview step.
+await page.fill('.gt-tp-ta', '');
+await page.click('.gt-tp-anno');
+await page.waitForTimeout(1500);
+const hasConfirmBox = await page.evaluate(() => !!document.querySelector('.gt-tp-anno-use'));
+ck(!hasConfirmBox, 'no confirmation/preview box exists for annotation loading anymore');
+
+// 14. state (pasted text) survives closing and reopening the tool on the same release.
+const marker = 'Persisted Sample 522: Persist Test Artist ' + Date.now();
+await page.fill('.gt-tp-ta', marker);
+await page.waitForTimeout(250);
+await page.click('.gt-cons.gt-tp .gt-cons-x');
+await page.waitForTimeout(150);
+ck(!(await page.isVisible('.gt-cons.gt-tp')), 'modal closes');
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+const restoredText = await page.inputValue('.gt-tp-ta');
+console.log('restored text after reopen:', JSON.stringify(restoredText));
+ck(restoredText === marker, `pasted text survives a close+reopen on the same release (got ${JSON.stringify(restoredText)})`);
+
+// 15. Copyright notice parsing mode.
+await page.click('.gt-tp-mode:has-text("Copyright")');
+await page.waitForTimeout(150);
+ck(!(await page.isVisible('.gt-tp-ctrl')), 'the credits-only pattern control bar is hidden in Copyright mode');
+await page.fill('.gt-tp-ta', '℗ & © 2020 Some Copyright Test Label 522');
+await page.waitForTimeout(150);
+const crRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
+console.log('copyright rows:', JSON.stringify(crRows));
+ck(crRows.length === 2, `a combined "℗ & ©" line produces 2 rows, one per notice type (got ${crRows.length})`);
+ck(crRows.every(r => r[1] === 'Some Copyright Test Label 522'), `both rows share the same holder text (got ${JSON.stringify(crRows.map(r => r[1]))})`);
+ck(crRows.some(r => r[0].includes('phonographic')) && crRows.some(r => r[0] === '© copyright'), `both notice kinds detected (got ${JSON.stringify(crRows.map(r => r[0]))})`);
+
+// direct function-level checks for the copyright parser + label resolution,
+// independent of real test-server holder data.
+const crParse = await page.evaluate(() => window.__groupTherapy.txpParseCopyrightLine('© 2020 Some Label'));
+ck(crParse && crParse.types.join(',') === 'copyright' && crParse.year === '2020' && crParse.holder === 'Some Label', `txpParseCopyrightLine parses a plain © line (got ${JSON.stringify(crParse)})`);
+const labelCheck = await page.evaluate(async () => {
+  try { return await window.__groupTherapy.txpResolveLabelByExactAlias('Zzqxv Nonexistent Label 522' + Date.now()); }
+  catch (e) { return '__ERROR__: ' + e.message; }
+});
+ck(labelCheck === null, `txpResolveLabelByExactAlias correctly returns null for a name that can't exist (got ${JSON.stringify(labelCheck)})`);
+await page.click('.gt-tp-mode:has-text("Credits")');
+
 ck(posts === 0, `nothing submitted during the test (${posts})`);
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
