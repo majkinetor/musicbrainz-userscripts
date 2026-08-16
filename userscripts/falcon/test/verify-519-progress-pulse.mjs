@@ -2,8 +2,12 @@
 // bar flashing while operation is in process as a visual marker that
 // operation is in progress." A plain static bar looks the same whether a
 // run is actively grinding through the queue or just idle at its last
-// finished percentage — #falcon-progress-bar now gets a pulsing
-// `.falcon-running` class for as long as `running` is true.
+// finished percentage.
+// #519 follow-up (majkinetor, live: "It doesn't work") — the first attempt
+// pulsed #falcon-progress-bar, the FILL — which sits at 0% width (an
+// actually-invisible 0px box) for as long as nothing has finished yet,
+// exactly when the pulse matters most. Moved to #falcon-progress-track,
+// the always-full-width backdrop behind it.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
@@ -32,33 +36,42 @@ await page.click('#falcon-launcher');
 await page.waitForSelector('#falcon-panel', { timeout: 5000 });
 
 // 1. idle — no pulse class, nothing queued/running yet.
-const idle = await page.evaluate(() => document.getElementById('falcon-progress-bar').classList.contains('falcon-running'));
+const idle = await page.evaluate(() => document.getElementById('falcon-progress-track').classList.contains('falcon-running'));
 ck(idle === false, `no pulse class before anything starts (got ${idle})`);
 
-// 2. running — the class is present the moment start() fires.
+// 2. running — the class is present the moment start() fires, and critically
+// while the FILL is still at 0% (nothing has finished yet) — the exact
+// scenario the first attempt got wrong.
 await page.evaluate(() => {
   const t = window.__falconTest;
   t.setQueue([{ id: '1', entityType: 'artist', mbid: 'aaaaaaaa-5190-0000-0000-000000000001', urls: [{ url: 'https://x.com/1' }], isrcs: [], disambiguation: '', cover: [], status: 'queued', error: '' }]);
   t.start();
 });
 const running = await page.evaluate(() => ({
-  pulsing: document.getElementById('falcon-progress-bar').classList.contains('falcon-running'),
+  pulsing: document.getElementById('falcon-progress-track').classList.contains('falcon-running'),
   isRunning: window.__falconTest.isRunning(),
+  fillWidth: document.getElementById('falcon-progress-bar').getBoundingClientRect().width,
+  trackWidth: document.getElementById('falcon-progress-track').getBoundingClientRect().width,
 }));
 console.log('while running:', JSON.stringify(running));
 ck(running.isRunning === true, 'sanity: the run is actually active');
-ck(running.pulsing === true, `the pulse class is present while a run is in progress (got ${running.pulsing})`);
+ck(running.fillWidth === 0, 'sanity: the fill really is 0px wide at this point — nothing has finished yet');
+ck(running.trackWidth > 0, `the TRACK stays visible even while the fill is invisible (got ${running.trackWidth}px)`);
+ck(running.pulsing === true, `the pulse class is present on the track while a run is in progress (got ${running.pulsing})`);
 
-// the keyframes/rule this class relies on actually exist in the injected stylesheet.
-const hasKeyframes = await page.evaluate(() => [...document.styleSheets].some(s => {
-  try { return [...s.cssRules].some(r => r.name === 'falcon-progress-pulse' || (r.selectorText && r.selectorText.includes('falcon-running'))); }
-  catch (e) { return false; }
-}));
-ck(hasKeyframes, 'the pulse animation rule is actually injected, not just the class name');
+// the keyframes/rule this class relies on actually exist AND are actually
+// applied (not just present in a stylesheet somewhere unused).
+const anim = await page.evaluate(() => {
+  const track = document.getElementById('falcon-progress-track');
+  const cs = getComputedStyle(track);
+  return { name: cs.animationName, duration: cs.animationDuration };
+});
+console.log('computed animation on the track:', JSON.stringify(anim));
+ck(anim.name === 'falcon-progress-pulse', `the pulse animation is actually applied to the track (got "${anim.name}")`);
 
 // 3. stop() — the class comes back off, even with the item still parked mid-flight.
 await page.evaluate(() => window.__falconTest.stop());
-const afterStop = await page.evaluate(() => document.getElementById('falcon-progress-bar').classList.contains('falcon-running'));
+const afterStop = await page.evaluate(() => document.getElementById('falcon-progress-track').classList.contains('falcon-running'));
 ck(afterStop === false, `stop() clears the pulse immediately (got ${afterStop})`);
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

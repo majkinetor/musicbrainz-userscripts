@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.16.145020
+// @version      2026.8.16.161440
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2544,9 +2544,14 @@
       // #519 (majkinetor): "Just like with CH and Apollo (#412) lets have
       // progress bar flashing while operation is in process as a visual
       // marker that operation is in progress." Same pulsing-background idea
-      // as #412's toolbars, applied to the bar Falcon already has.
-      '@keyframes falcon-progress-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}',
-      '#falcon-progress-bar.falcon-running{animation:falcon-progress-pulse 1.1s ease-in-out infinite}',
+      // as #412's toolbars.
+      // #519 follow-up (majkinetor, live: "It doesn't work") — the pulse was
+      // on #falcon-progress-bar, the FILL, which sits at 0% width (0px, no
+      // visible box at all) for as long as nothing has finished yet — a
+      // filter on an invisible box is itself invisible. Moved to the TRACK
+      // behind it, which is always full width regardless of progress %.
+      '@keyframes falcon-progress-pulse{0%,100%{background:#eee}50%{background:#b9ddc8}}',
+      '#falcon-progress-track.falcon-running{animation:falcon-progress-pulse 1.1s ease-in-out infinite}',
     ].join('\n');
     document.head.appendChild(style);
     panel = document.createElement('div'); panel.id = 'falcon-panel';
@@ -2597,7 +2602,7 @@
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #eee;flex:0 0 auto">
           <div id="falcon-progress-wrap" style="flex:1;display:flex;align-items:center;gap:6px;min-width:0">
-            <div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;min-width:40px">
+            <div id="falcon-progress-track" style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;min-width:40px">
               <div id="falcon-progress-bar" style="height:100%;width:0%;background:#2e9e5b;transition:width .2s"></div>
             </div>
             <span id="falcon-progress-text" style="color:#666;font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
@@ -3160,6 +3165,7 @@
   // but left casualties doesn't read as a clean green sweep.
   function renderProgress() {
     const bar = document.getElementById('falcon-progress-bar');
+    const track = document.getElementById('falcon-progress-track');
     const txt = document.getElementById('falcon-progress-text');
     if (!bar || !txt) return;
     // #497 (majkinetor, live: "progress bar max items remains old"): a
@@ -3172,8 +3178,10 @@
     // #519: a plain static bar looks the same whether a run is grinding
     // through the queue or just sitting at its last finished percentage —
     // pulse it for as long as `running` actually is, the same signal
-    // updateRunBtn() already uses for its own Start/Stop label.
-    bar.classList.toggle('falcon-running', running);
+    // updateRunBtn() already uses for its own Start/Stop label. On the
+    // TRACK, not the fill: the fill sits at 0% width (invisible) for as
+    // long as nothing has finished yet, exactly when the pulse matters most.
+    if (track) track.classList.toggle('falcon-running', running);
     if (!total) { bar.style.width = '0%'; txt.textContent = ''; return; }
     const settled = queue.filter(i => i.status !== 'queued' && i.status !== 'active').length;
     const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial').length;   // 'skipped' is a success (already up to date), not a problem
