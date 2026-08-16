@@ -107,7 +107,8 @@ function tpCompile(pattern, opts = {}) {
   const textSegs = fieldSegs.filter(s => s.field === 'title' || s.field === 'artist');
   const greedyText = opts.splitLast ? textSegs[0] : textSegs[textSegs.length - 1];
   let re = '^\\s*';
-  for (const seg of segs) {
+  for (let idx = 0; idx < segs.length; idx++) {
+    const seg = segs[idx];
     if (seg.kind === 'ws') re += '\\s+';
     else if (seg.kind === 'lit') re += tpEsc(seg.text).replace(/\\?\s/g, '\\s+');
     else if (seg.kind === 'sep') re += '\\s*' + sepClass + '\\s*';
@@ -121,7 +122,16 @@ function tpCompile(pattern, opts = {}) {
       else if (f === 'pos') re += '([A-Za-z]?\\d+(?:[-.]\\d+)?)';
       else if (f === 'medium') re += '(\\d+)';
       else if (f === 'length') re += '(' + TP_DUR + ')';
-      else re += seg === greedyText ? '(.+)' : '(.+?)';   // title/artist
+      else {
+        // #522 follow-up: a literal immediately following a field marks
+        // where the user wants it to stop — always lazy there (first
+        // occurrence), even for the field the "last text field" heuristic
+        // would otherwise mark greedy. See apollo_editor.user.js for the
+        // full writeup (Ndzirombi/Conflict Monger case).
+        let j = idx + 1; while (j < segs.length && segs[j].kind === 'ws') j++;
+        const followedByLiteral = j < segs.length && segs[j].kind === 'lit';
+        re += (seg === greedyText && !followedByLiteral) ? '(.+)' : '(.+?)';   // title/artist
+      }
     }
   }
   re += '\\s*$';
@@ -216,6 +226,26 @@ eq(P('#. A ', '1. Star Band'), { pos: '1', artist: 'Star Band' }, 'trailing spac
 eq(P('#. A - ', '1. Star Band'), { pos: '1', artist: 'Star Band' }, 'trailing " - " (sep+ws) after the last field (#522)');
 eq(P(' #. A', '1. Star Band'), { pos: '1', artist: 'Star Band' }, 'leading space before the pattern (symmetric case)');
 eq(P('#. A - T      (L)', '1. Star Band - Misterioso      (4:34)'), { pos: '1', artist: 'Star Band', title: 'Misterioso', length: '4:34' }, 'many spaces BETWEEN two real fields still works — never was the bug');
+
+// #522 follow-up (majkinetor, live): "#. T (_" on "1. Ndzirombi (Conflict
+// Monger) - Zig Zag Band (5:21)" gave "Ndzirombi (Conflict Monger) - Zig Zag
+// Band" as the title — expected just "Ndzirombi". T was the only text
+// field, so it compiled greedy; greedy backtracks from the END, and with an
+// unconstrained "(_" skip after it (matches ANY "("), it found the LAST "("
+// in the source (the length's own paren) rather than the title's own first
+// one. A literal directly after a field now always makes that field lazy
+// (stop at the FIRST occurrence), regardless of the greedy/last-field
+// heuristic that governs plain field-to-field splits.
+eq(P('#. T (_', '1. Ndzirombi (Conflict Monger) - Zig Zag Band (5:21)'), { pos: '1', title: 'Ndzirombi' }, 'title stops at the FIRST "(" when followed by an unconstrained skip (#522)');
+// sanity: the T (L) case (a REAL field, not a skip, after the literal)
+// still works whether the source title has its own embedded paren or not —
+// L's own specific shape (a duration) already disambiguates correctly,
+// lazy-vs-greedy doesn't change that.
+eq(P('# T (L)', '1 Song (Live) (1:02:33)'), { pos: '1', title: 'Song (Live)', length: '1:02:33' }, 'T (L) still finds the REAL length paren, not the title\'s own');
+// sanity: nothing after the last field at all still takes the rest greedily
+// (the "split on first separator, title takes the rest" case) — this new
+// rule only kicks in when a literal actually follows.
+eq(P('# A - T', '1 Miles Davis - So What - Take 1'), { pos: '1', artist: 'Miles Davis', title: 'So What - Take 1' }, 'no trailing literal → still greedy to end of line (unaffected)');
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 process.exit(fail ? 1 : 0);
