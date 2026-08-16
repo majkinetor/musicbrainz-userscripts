@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.15.211214
+// @version      2026.8.16.145020
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2224,6 +2224,7 @@
         resumeNameLookups();   // the rate-limit budget is ours again
         resolveMissingNames();   // give any cancelled-mid-run lookups a second try
         updateRunBtn();
+        renderProgress();
         log('info', '=== run finished — the tab and panel stay open; the log above is this session only ===');
         writeLogNow();
       }
@@ -2465,8 +2466,9 @@
     log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
     spawnWorkersStaggered(need);
     updateRunBtn();
+    renderProgress();
   }
-  function stop() { running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); }
+  function stop() { running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); renderProgress(); }
 
   /* ════════════════════════ UI ════════════════════════ */
   let launcher = null;
@@ -2539,6 +2541,12 @@
       // with the label gone the button would shrink to a sliver of glyph, so
       // give the icon-only state a real hit area (no tiny targets — #419).
       '.falcon-bar.falcon-compact button{min-width:26px;justify-content:center}',
+      // #519 (majkinetor): "Just like with CH and Apollo (#412) lets have
+      // progress bar flashing while operation is in process as a visual
+      // marker that operation is in progress." Same pulsing-background idea
+      // as #412's toolbars, applied to the bar Falcon already has.
+      '@keyframes falcon-progress-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}',
+      '#falcon-progress-bar.falcon-running{animation:falcon-progress-pulse 1.1s ease-in-out infinite}',
     ].join('\n');
     document.head.appendChild(style);
     panel = document.createElement('div'); panel.id = 'falcon-panel';
@@ -3161,6 +3169,11 @@
     // reached a terminal state BEFORE being excluded still counts — this
     // only drops the ones currently sitting out.
     const total = queue.filter(i => !(i.status === 'queued' && _disabledTypes.has(i.entityType))).length;
+    // #519: a plain static bar looks the same whether a run is grinding
+    // through the queue or just sitting at its last finished percentage —
+    // pulse it for as long as `running` actually is, the same signal
+    // updateRunBtn() already uses for its own Start/Stop label.
+    bar.classList.toggle('falcon-running', running);
     if (!total) { bar.style.width = '0%'; txt.textContent = ''; return; }
     const settled = queue.filter(i => i.status !== 'queued' && i.status !== 'active').length;
     const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial').length;   // 'skipped' is a success (already up to date), not a problem
