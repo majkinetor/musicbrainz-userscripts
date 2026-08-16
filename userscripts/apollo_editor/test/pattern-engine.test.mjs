@@ -65,6 +65,14 @@ function tpTokenize(pattern, seps) {
 function tpCompile(pattern, opts = {}) {
   const seps = opts.separators || TP_DEFAULT_SEPS;
   const segs = tpTokenize(pattern, seps);
+  // #522: a dangling ws/sep token at either edge compiles to a HARD
+  // requirement right at the string boundary, but exec() trims the input
+  // first — a trimmed line never has trailing whitespace to offer, and a
+  // real line never ends on a bare separator. The regex's own `^\s*`/`\s*$`
+  // anchors already cover "maybe some space here" at the edges safely, so
+  // drop any run of edge ws/sep tokens before compiling.
+  while (segs.length && (segs[0].kind === 'ws' || segs[0].kind === 'sep')) segs.shift();
+  while (segs.length && (segs[segs.length - 1].kind === 'ws' || segs[segs.length - 1].kind === 'sep')) segs.pop();
   const fieldSegs = segs.filter(s => s.kind === 'field');
   const fields = new Set(fieldSegs.map(s => s.field));
   const sliced = fieldSegs.filter(s => s.slice);
@@ -198,6 +206,16 @@ eq(P('# T (L)', '1 Long One (1:02:33)'), { pos: '1', title: 'Long One', length: 
 
 // non-matching line → null
 eq(P('# A - T (L)', 'no numbers or dashes here'), null, 'unmatched line → null');
+
+// #522 (majkinetor, live): "In pattern tracker, `#. A ` doesn't work (space
+// at the end)" / "also `#. A - `" — a dangling ws/sep token at the pattern's
+// edge used to compile to a hard boundary requirement that a trimmed input
+// line can never satisfy. Middle whitespace ("many spaces" between two real
+// fields) already worked — majkinetor: "that is inconsistant behavior".
+eq(P('#. A ', '1. Star Band'), { pos: '1', artist: 'Star Band' }, 'trailing space after the last field (#522)');
+eq(P('#. A - ', '1. Star Band'), { pos: '1', artist: 'Star Band' }, 'trailing " - " (sep+ws) after the last field (#522)');
+eq(P(' #. A', '1. Star Band'), { pos: '1', artist: 'Star Band' }, 'leading space before the pattern (symmetric case)');
+eq(P('#. A - T      (L)', '1. Star Band - Misterioso      (4:34)'), { pos: '1', artist: 'Star Band', title: 'Misterioso', length: '4:34' }, 'many spaces BETWEEN two real fields still works — never was the bug');
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 process.exit(fail ? 1 : 0);

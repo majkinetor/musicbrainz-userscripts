@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.16.155516
+// @version      2026.8.16.163214
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3208,6 +3208,18 @@
   function tpCompile(pattern, opts = {}) {
     const seps = opts.separators || TP_SEPS;
     const segs = tpTokenize(pattern, seps);
+    // #522 (majkinetor, live): "In pattern tracker, `#. A ` doesn't work
+    // (space at the end)" — also `#. A - `. A dangling ws/sep token at
+    // either edge, with no field or literal past it, compiles to a HARD
+    // requirement ("\s+" or a real separator char) right at the string
+    // boundary — but exec() trims the input first, so a trimmed line can
+    // never have trailing whitespace to offer, and a real line never ends
+    // on a bare separator either. The regex already anchors both ends with
+    // its own elastic `\s*` (below), so a leading/trailing ws or sep token
+    // adds nothing but an impossible-to-satisfy demand — drop any run of
+    // them from either edge before compiling.
+    while (segs.length && (segs[0].kind === 'ws' || segs[0].kind === 'sep')) segs.shift();
+    while (segs.length && (segs[segs.length - 1].kind === 'ws' || segs[segs.length - 1].kind === 'sep')) segs.pop();
     const fieldSegs = segs.filter(s => s.kind === 'field');
     const fields = new Set(fieldSegs.map(s => s.field));
     const sliced = fieldSegs.filter(s => s.slice);
