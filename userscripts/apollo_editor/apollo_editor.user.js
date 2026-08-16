@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.16.170311
+// @version      2026.8.17.010829
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -31,6 +31,13 @@
  */
 (function () {
   'use strict';
+
+  // #522 follow-up (majkinetor, live): "why is LastPass recognizing edits as
+  // passwords? I noticed that in apollo credited as too" — password managers
+  // heuristically flag plain text inputs with no autocomplete/ignore hint.
+  // None of this tool's inputs are credentials, so opt them out.
+  const noPw = e => { e.autocomplete = 'off'; e.setAttribute('data-lpignore', 'true'); e.setAttribute('data-1p-ignore', 'true'); e.setAttribute('data-bwignore', 'true'); e.setAttribute('data-form-type', 'other'); return e; };
+  const NOPW_ATTRS = 'autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"';
 
   // #283 every Log.* call is captured into an in-page buffer and surfaced in a
   // dedicated log viewer — opened from a Log button next to "? Help" —
@@ -2709,7 +2716,7 @@
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
   function joinControl(entry, slot, refreshBadges) {
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
-    const inp = document.createElement('input'); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
+    const inp = noPw(document.createElement('input')); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
     const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
     // #208: flag a join phrase missing a space on either side (␣) or missing
     // entirely (␣?␣). Every rendered join control sits BETWEEN two artists
@@ -2871,7 +2878,7 @@
     if (splitArtistText(s.creditedAs || s.name || s.query || '').length > 1) line.classList.add('tc-can-split');
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
-    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
+    const cred = noPw(document.createElement('input')); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
     // #228: a hover × on the left of the field clears the credited-as override
     const credClr = document.createElement('button'); credClr.type = 'button'; credClr.className = 'tc-cred-clr'; credClr.textContent = '×'; credClr.title = 'clear the credited-as override';
     const updCredClr = () => line.classList.toggle('tc-has-cred', !!cred.value.trim());
@@ -2915,7 +2922,7 @@
     }
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
-    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
+    const inp = noPw(document.createElement('input')); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
     search.appendChild(inp);
     // #228: hover × right after the name clears the field (and unsets a matched
     // artist — the input handler un-links on an empty value)
@@ -3023,10 +3030,10 @@
       const lenLocked = trackLenLocked(t); // disc-ID medium: audio-track length fixed by the TOC (#329)
       const canDrag = !locked && kind === 'audio';   // #330: pregap is pinned at 0, data tracks aren't reordered here
       tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}</td>
-        <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
-        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}<input class="t-title" value="${esc(t.title)}" placeholder="title…"></div></td>
+        <td class="c-num"><input class="t-num" ${NOPW_ATTRS} value="${esc(t.number)}" title="track number"></td>
+        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
         <td class="c-art"></td>
-        <td class="c-len"><input class="t-len" value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
+        <td class="c-len"><input class="t-len" ${NOPW_ATTRS} value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
         <td class="c-badge"></td>`;
       const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
       const art = tr.querySelector('.c-art'); const pgids = ps && ps.artGids;   // #376 gold ONLY the slot(s) whose SELECTED artist has pending edits — not free-text neighbours, and not a field edited to free text
@@ -3315,7 +3322,7 @@
       <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" title="Maximize / restore">⛶</button><button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
-        <span class="tc-tpp-piwrap"><input type="text" class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice · X[a:.] up to a char · X[~a:.] from the LAST occurrence"><button type="button" class="tc-tpp-piclr" title="Clear pattern" tabindex="-1">✕</button></span>
+        <span class="tc-tpp-piwrap"><input type="text" ${NOPW_ATTRS} class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice · X[a:.] up to a char · X[~a:.] from the LAST occurrence"><button type="button" class="tc-tpp-piclr" title="Clear pattern" tabindex="-1">✕</button></span>
         <button type="button" class="tc-tpp-freeze" title="Lock this pattern onto every still-«default» row that already matches it, so a later pattern change won't affect them — then try a new pattern on what's left">🔒 Freeze matched</button>
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
         <button type="button" class="tc-tpp-split" title="Which separator a text field splits on when it repeats (A - T on 'a - b - c')">split: <b>first</b></button>
@@ -3353,7 +3360,7 @@
         const tr = document.createElement('tr'); tr.className = 'tc-tpp-tr' + (i >= nT ? ' notrk' : '');
         const cell = v => `<td class="tc-tpp-c" title="${esc(v || '')}">${esc(v || '')}</td>`;
         tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" title="${state === 'none' ? 'no match — adjust the pattern' : state === 'over' ? 'matched via a per-row pattern' : 'matched'}"></span></td>`
-          + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" title="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
+          + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" ${NOPW_ATTRS} spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" title="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
           + `<td class="tc-tpp-raw" title="${esc(r.raw)}">${esc(r.raw) || '<span class="tc-tpp-empty">(empty)</span>'}</td>`
           + cell(parsed && parsed.pos) + cell(parsed && parsed.artist) + cell(parsed && parsed.title) + cell(parsed && parsed.length);
         const ov = tr.querySelector('.tc-tpp-ov'), ovwrap = tr.querySelector('.tc-tpp-ovwrap');
@@ -3651,7 +3658,7 @@
       items.forEach((it, i) => {
         const row = document.createElement('div'); row.className = 'tc-lp-row';
         row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? (trackTitle(i) || '') : 'no track — ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
-        const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tc-lp-val' + (lpValid(it.value) ? '' : ' bad'); inp.value = it.value; inp.title = it.raw ? ('detected: ' + it.raw) : '';
+        const inp = noPw(document.createElement('input')); inp.type = 'text'; inp.className = 'tc-lp-val' + (lpValid(it.value) ? '' : ' bad'); inp.value = it.value; inp.title = it.raw ? ('detected: ' + it.raw) : '';
         inp.oninput = () => { it.value = inp.value; inp.classList.toggle('bad', !lpValid(inp.value)); refreshFoot(); };   // clears the red the moment it's valid
         const add = document.createElement('button'); add.type = 'button'; add.className = 'tc-lp-add'; add.textContent = '+'; add.title = 'insert a length below (rows shift down)';
         add.onclick = () => { items.splice(i + 1, 0, { value: '', raw: '' }); render(); listEl.querySelectorAll('.tc-lp-val')[i + 1]?.focus(); };
@@ -3972,8 +3979,8 @@
     } else if (act === 'sr') {
       srActivate(); const box = document.createElement('span'); box.className = 'tc-sro';
       // #375 open Saved & History via ↓ in either field, or a ★ button after RE (the in-field caret was hard to hit)
-      const find = document.createElement('input'); find.type = 'text'; find.className = 'tc-sr-find'; find.placeholder = srRegexOn() ? 'search (regex)' : 'search';
-      const rep = document.createElement('input'); rep.type = 'text'; rep.className = 'tc-sr-rep'; rep.placeholder = 'replace';
+      const find = noPw(document.createElement('input')); find.type = 'text'; find.className = 'tc-sr-find'; find.placeholder = srRegexOn() ? 'search (regex)' : 'search';
+      const rep = noPw(document.createElement('input')); rep.type = 'text'; rep.className = 'tc-sr-rep'; rep.placeholder = 'replace';
       const run = () => srLive(find.value, rep.value, true);
       find.oninput = rep.oninput = run;
       const openOnDown = e => { if (e.key === 'ArrowDown' && !_srPop) { e.preventDefault(); openSrTemplates(find, find, rep, re); } };   // popup anchors to the search field (left-aligned)
@@ -4398,7 +4405,7 @@
     const startRename = (row, curName, cb) => {
       const nmCell = row.querySelector('.tc-srtpl-nm'); if (!nmCell) return;
       const prev = nmCell.textContent;
-      const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tc-srtpl-renameinp'; inp.value = curName || '';
+      const inp = noPw(document.createElement('input')); inp.type = 'text'; inp.className = 'tc-srtpl-renameinp'; inp.value = curName || '';
       nmCell.textContent = ''; nmCell.appendChild(inp); inp.focus(); inp.select();
       let done = false;
       const finish = (commit) => {
@@ -4431,12 +4438,12 @@
       // #409 redesign: no "Patterns" label; action buttons on the LEFT, Import/Export on the RIGHT.
       const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'tc-srtpl-savebtn'; saveBtn.textContent = '＋ Save current';
       const wrap = document.createElement('span'); wrap.className = 'tc-srtpl-savewrap'; wrap.style.display = 'none';
-      const nm = document.createElement('input'); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
+      const nm = noPw(document.createElement('input')); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
       const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.title = 'Save';
       // #409: "Add chain" button next to "Save current", each unrolling its own name field
       const chainBtn = document.createElement('button'); chainBtn.type = 'button'; chainBtn.className = 'tc-srtpl-savebtn tc-srtpl-chainbtn'; chainBtn.textContent = '＋ Add chain'; chainBtn.title = 'Create a chain that runs several saved patterns in one click';
       const cwrap = document.createElement('span'); cwrap.className = 'tc-srtpl-savewrap'; cwrap.style.display = 'none';
-      const cnm = document.createElement('input'); cnm.type = 'text'; cnm.className = 'tc-srtpl-name'; cnm.placeholder = 'name this chain';
+      const cnm = noPw(document.createElement('input')); cnm.type = 'text'; cnm.className = 'tc-srtpl-name'; cnm.placeholder = 'name this chain';
       const cok = document.createElement('button'); cok.type = 'button'; cok.className = 'tc-srtpl-saveok'; cok.textContent = '✓'; cok.title = 'Create chain';
       const resetHd = () => { saveBtn.style.display = ''; chainBtn.style.display = ''; wrap.style.display = 'none'; cwrap.style.display = 'none'; };
       const doSave = () => { if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); };
@@ -6330,7 +6337,7 @@
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
-      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
+      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" ' + NOPW_ATTRS + ' placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
       '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);

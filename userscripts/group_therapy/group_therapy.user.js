@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.16.232553
+// @version      2026.8.17.010829
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -19,7 +19,18 @@
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
-  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  // #522 follow-up (majkinetor, live): "why is LastPass recognizing edits as
+  // passwords?" — password managers heuristically flag plain text inputs
+  // that carry no autocomplete/ignore hint. Every <input> this tool creates
+  // is a search/filter/edit box, never a credential, so opt every one of
+  // them out up front rather than chasing individual false positives.
+  const el = (tag, cls, txt) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    if (tag === 'input') { e.autocomplete = 'off'; e.setAttribute('data-lpignore', 'true'); e.setAttribute('data-1p-ignore', 'true'); e.setAttribute('data-bwignore', 'true'); e.setAttribute('data-form-type', 'other'); }
+    return e;
+  };
   const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
   // MB renders each rel as <tr class="<role-kebab>"> … <div class="relationship-item"> <button class="icon remove-item">×</button> <a href="/artist|work|…/<mbid>">name</a> …
   const REMOVE_SEL = 'button.icon.remove-item';
@@ -2491,10 +2502,15 @@
       + '.gt-tp-tbl th{white-space:nowrap;position:relative;overflow:hidden;text-overflow:ellipsis}'
       + '.gt-tp-tbl td{vertical-align:top;padding:3px 8px;font-size:12px;border-bottom:1px solid #f1f2f5;overflow:hidden;text-overflow:ellipsis}'
       // #522 follow-up (majkinetor, live): "Column bars are not visible (so
-      // it hard to resize)" — a permanent thin bar now, not just a hover
-      // reveal; right:0 (not a negative offset) so a th's own
-      // overflow:hidden (for its text-overflow ellipsis) doesn't clip it.
-      + '.gt-tp-colresize{position:absolute;top:0;right:0;width:5px;height:100%;cursor:col-resize;z-index:2;background:#e3e6ea}.gt-tp-colresize:hover{background:#4a90d9}'
+      // it hard to resize)" then "column separators are very fat now, make
+      // them line" — a permanent but THIN (1px) line, drawn via a
+      // pseudo-element inset inside a wider (7px) invisible drag target;
+      // both stay within right:0's own box (not a negative offset) so a
+      // th's own overflow:hidden (for its text-overflow ellipsis) doesn't
+      // clip either of them.
+      + '.gt-tp-colresize{position:absolute;top:0;right:0;width:7px;height:100%;cursor:col-resize;z-index:2}'
+      + '.gt-tp-colresize::after{content:"";position:absolute;top:0;bottom:0;right:3px;width:1px;background:#d8dbe0}'
+      + '.gt-tp-colresize:hover::after{background:#4a90d9}'
       + '.gt-tp-row.gt-tp-nomatch{opacity:.55}'
       + '.gt-tp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-top:3px}'
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
@@ -2511,19 +2527,20 @@
       // click IS the open — no separate icon).
       + '.gt-tp-search{background:none;border:none;padding:0;cursor:pointer;color:#2e6da4;text-decoration:underline;font:11px inherit}.gt-tp-search:hover{color:#1b4d75}'
       + '.gt-tp-resolved{color:#333}'
-      + 'a.gt-tp-resolved{color:#2e6da4;text-decoration:none}a.gt-tp-resolved:hover{text-decoration:underline}'
+      + 'a.gt-tp-resolved,button.gt-tp-resolved{color:#2e6da4;text-decoration:none}a.gt-tp-resolved:hover,button.gt-tp-resolved:hover{text-decoration:underline;color:#1b4d75}'
       + '.gt-tp-status{color:#8892a0;font-size:11px;white-space:nowrap}'
       + '.gt-tp-applied{color:#2e9e5b;font-weight:600}'
       + '.gt-cons-foot .gt-tp-cnt{flex:1;font-size:12px;color:#556}'
       + '.gt-cons-foot .gt-tp-resolve{padding:5px 12px;border:1px solid #cfd4da;border-radius:5px;background:#fff;cursor:pointer;font:13px inherit}.gt-cons-foot .gt-tp-resolve:hover{background:#f2f4f7}'
       + '.gt-cons-foot .gt-tp-resolve:disabled{opacity:.5;cursor:default}'
       + '.gt-tp-apop{width:340px}'
-      + '.gt-tp-apop .gt-tp-q{width:100%;box-sizing:border-box;padding:5px 7px;border:1px solid #cfd4da;border-radius:5px;font:13px inherit;outline:none;margin-bottom:6px}'
+      + '.gt-tp-apop .gt-tp-qwrap{display:flex;gap:5px;margin-bottom:6px}'
+      + '.gt-tp-apop .gt-tp-q{flex:1;min-width:0;box-sizing:border-box;padding:5px 7px;border:1px solid #cfd4da;border-radius:5px;font:13px inherit;outline:none}'
+      + '.gt-tp-apop .gt-tp-plus{flex:0 0 auto;width:28px;box-sizing:border-box;border:1px solid #cfd4da;border-radius:5px;background:#f6f7f9;cursor:pointer;font:15px monospace;color:#2e6da4;line-height:1}.gt-tp-apop .gt-tp-plus:hover{background:#eef4fb;border-color:#cfe0f0}'
+      + '.gt-tp-apop .gt-tp-hint{color:#8892a0;font-size:10px;margin-bottom:4px}'
       + '.gt-tp-apop .gt-tp-results{max-height:260px;overflow:auto}'
       + '.gt-tp-apop .gt-tp-res{padding:5px 7px;border-radius:5px;cursor:pointer}.gt-tp-apop .gt-tp-res:hover{background:#eef1f6}'
-      + '.gt-tp-apop .gt-tp-restype{color:#8892a0;font-size:10px;text-transform:uppercase;margin-right:5px}'
-      + '.gt-tp-apop .gt-tp-create{border-top:1px solid #ecebf3;margin-top:4px;padding-top:6px;display:flex;gap:10px}'
-      + '.gt-tp-apop .gt-tp-createlink{color:#2e6da4;text-decoration:none;font-size:12px}.gt-tp-apop .gt-tp-createlink:hover{text-decoration:underline}';
+      + '.gt-tp-apop .gt-tp-restype{color:#8892a0;font-size:10px;text-transform:uppercase;margin-right:5px}';
     document.head.appendChild(s);
   }
 
@@ -2544,20 +2561,18 @@
 
   // #522 follow-up: "it would be good to keep window state after closing it
   // on particular release" — remembers the pasted text / pattern per release
-  // gid (a single GM key holding a small map, capped so a long session
-  // doesn't grow it unbounded).
-  const TXP_STATE_KEY = 'gt-tp-state';
-  function txpLoadState(gid) {
-    try { const all = JSON.parse(GM_getValue(TXP_STATE_KEY, '{}')) || {}; return all[gid] || null; } catch (e) { return null; }
-  }
+  // gid. Deliberately an in-memory object, NOT a GM value: majkinetor
+  // (live, follow-up): "restarting popup should keep the state only within
+  // current session. If I reload the page, it should not." A plain
+  // module-level object already does exactly that — it survives the popup's
+  // own DOM being torn down and rebuilt (same page, same JS context) but
+  // resets for free on a real reload (fresh script injection).
+  const _txpStateMemory = {};
+  function txpLoadState(gid) { return _txpStateMemory[gid] || null; }
   function txpSaveState(gid, state) {
-    try {
-      const all = JSON.parse(GM_getValue(TXP_STATE_KEY, '{}')) || {};
-      all[gid] = state;
-      const keys = Object.keys(all);
-      if (keys.length > 30) delete all[keys[0]];
-      GM_setValue(TXP_STATE_KEY, JSON.stringify(all));
-    } catch (e) {}
+    _txpStateMemory[gid] = state;
+    const keys = Object.keys(_txpStateMemory);
+    if (keys.length > 30) delete _txpStateMemory[keys[0]];
   }
   // #522 follow-up (majkinetor): "auto resolve could find similar roles
   // (compiled -> compiler; mastered by -> mastering)". A crude but effective
@@ -2579,6 +2594,11 @@
 
     let pattern = (saved && saved.pattern) || _txpPattern;
     let lines = [];                  // [{ raw, override }]
+    // #522 follow-up (majkinetor): drives whether "Apply & clear annotation"
+    // is even offered — only true right after "Load annotation" succeeds,
+    // reset by any real typing into the textarea (see the dedicated 'input'
+    // listener below; a *programmatic* ta.value set does NOT fire it).
+    let loadedFromAnnotation = false;
     // both auto-resolved (resolveAll) AND manual (a picker choice) resolutions
     // live in these same two caches, keyed by the row's own TEXT — not row
     // POSITION. Position-keying was tried first and had a real bug: pasting
@@ -2590,6 +2610,17 @@
     // 'Alice'" sticks to 'Alice' wherever she appears, not to a row slot.
     const roleCache = new Map();     // lowercased role text -> {id,name} | null (tried, no match)
     const artistCache = new Map();   // lowercased holder/artist text -> entity | null
+    // #522 follow-up (majkinetor, live): "if one artist has multiple
+    // instruments, selecting one selects all. Lets redo that thing so that
+    // right clicking a choice in search sets all, and normal clicking only
+    // that 1." A text-keyed cache is right for ROLE (a role name like
+    // "Guitar" always means the same MB link type, so one pick should
+    // apply everywhere it appears) but wrong for ARTIST by default (the
+    // same name string is a common real collision) — so a normal click now
+    // writes here, POSITION-keyed, scoped to just the one row clicked;
+    // right-click still writes into the shared artistCache above,
+    // propagating to every row with that exact text like before.
+    const artistOverride = new Map();   // row.key (li:pi:si) -> entity
     const appliedKeys = new Set();   // row position keys (li:pi:si) — "applied" IS about a specific dispatch, stays position-based
     const compiledCache = new Map();
     const compiledFor = pat => {
@@ -2635,7 +2666,7 @@
     function attachResolution(row) {
       row.key = row.li + ':' + row.pi + ':' + row.si;
       if (!row.matched) { row.roleMatch = null; row.artistMatch = null; return row; }
-      row.artistMatch = artistCache.get((row.artist || '').toLowerCase().trim()) || null;
+      row.artistMatch = artistOverride.has(row.key) ? artistOverride.get(row.key) : (artistCache.get((row.artist || '').toLowerCase().trim()) || null);
       if (row.crKind) {
         // label→release only for now (majkinetor: "do only label->release
         // for now, and we can eventually improve it in the future" —
@@ -2729,26 +2760,29 @@
     const foot = el('div', 'gt-cons-foot');
     const cnt = el('span', 'gt-tp-cnt');
     const resolveBtn = el('button', 'gt-tp-resolve', '🔍 Resolve all'); resolveBtn.type = 'button';
+    const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation ↗'); applyClearBtn.type = 'button';
+    applyClearBtn.title = 'Apply the resolved rows, then open the annotation editor pre-cleared for you to review and submit';
+    applyClearBtn.style.display = 'none';
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
-    foot.append(cnt, resolveBtn, applyBtn);
+    foot.append(cnt, resolveBtn, applyClearBtn, applyBtn);
 
     const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
     // #522 follow-up (majkinetor, live): "Lets have an option to remove a
     // row. It is also removed from the input text." Removing a LINE shifts
-    // every later line's index down by one — appliedKeys is keyed by
-    // position (li:pi:si), so it's renumbered here rather than left stale
-    // (a stale entry couldn't cause a wrong dispatch, since role/artist
-    // resolution is text-keyed, but it could mislabel an unrelated row as
-    // already-applied).
+    // every later line's index down by one — appliedKeys AND artistOverride
+    // are keyed by position (li:pi:si), so both are renumbered here rather
+    // than left stale (an appliedKeys entry could mislabel an unrelated row
+    // as already-applied; a leftover override could silently reassign a
+    // pick that was meant for a different, now-shifted row).
+    const renumberKey = (k, delLi) => { const [li, pi, si] = k.split(':').map(Number); return (li > delLi ? li - 1 : li) + ':' + pi + ':' + si; };
     function deleteLine(delLi) {
       lines.splice(delLi, 1);
       const renumbered = new Set();
-      appliedKeys.forEach(k => {
-        const [li, pi, si] = k.split(':').map(Number);
-        if (li === delLi) return;
-        renumbered.add((li > delLi ? li - 1 : li) + ':' + pi + ':' + si);
-      });
+      appliedKeys.forEach(k => { const li = +k.split(':')[0]; if (li !== delLi) renumbered.add(renumberKey(k, delLi)); });
       appliedKeys.clear(); renumbered.forEach(k => appliedKeys.add(k));
+      const ovRenumbered = new Map();
+      artistOverride.forEach((v, k) => { const li = +k.split(':')[0]; if (li !== delLi) ovRenumbered.set(renumberKey(k, delLi), v); });
+      artistOverride.clear(); ovRenumbered.forEach((v, k) => artistOverride.set(k, v));
       syncTextareaFromLines(); render(); saveState();
     }
 
@@ -2787,7 +2821,11 @@
           const rawWrap = el('span', 'gt-tp-rawwrap');
           const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = r.raw; rawIn.title = r.raw;
           rawIn.dataset.fkey = 'raw:' + r.li;
-          rawIn.addEventListener('input', () => { lines[r.li].raw = rawIn.value; syncTextareaFromLines(); render(); saveState(); });
+          rawIn.addEventListener('input', () => {
+            lines[r.li].raw = rawIn.value;
+            [...artistOverride.keys()].filter(k => +k.split(':')[0] === r.li).forEach(k => artistOverride.delete(k));
+            syncTextareaFromLines(); render(); saveState();
+          });
           const delBtn = el('button', 'gt-tp-rowdel', '✕'); delBtn.type = 'button'; delBtn.title = 'Remove this line';
           delBtn.onclick = () => deleteLine(r.li);
           rawWrap.append(rawIn, delBtn);
@@ -2797,14 +2835,19 @@
         tr.appendChild(el('td', 'gt-tp-c', r.role || ''));
         tr.appendChild(el('td', 'gt-tp-c', r.artist || ''));
         // #522 follow-up (majkinetor, live): "Tidy up artist / role column —
-        // remove circles, short helper text so it doesn't reflow (use just
-        // search word in both), plain text after selection. Remove [↗]
-        // icon, let left click open artist." Unresolved shows the plain
-        // word "search"; resolved shows plain text — the artist link is a
-        // real <a>, so opening it in a new tab IS the click.
+        // remove circles, short helper text..." then, after trying a plain
+        // non-clickable resolved cell: "After a role is selected, I am not
+        // able to change it as its not a link any more... Clicking an
+        // element should always bring back search and for artist right
+        // click should open it." Unresolved still shows the plain word
+        // "search"; resolved is clickable again to reopen the picker — for
+        // artist, a real <a> so right-click still offers "open in new tab"
+        // natively too, but a plain left-click is intercepted to reopen the
+        // picker instead of navigating, and OUR contextmenu handler opens
+        // it directly (skipping the browser's own context menu).
         const roleTd = el('td', 'gt-tp-c');
         if (r.matched && !r.crKind) {
-          if (r.roleMatch) roleTd.appendChild(el('span', 'gt-tp-resolved', r.roleMatch.name));
+          if (r.roleMatch) { const rs = el('button', 'gt-tp-search gt-tp-resolved', r.roleMatch.name); rs.type = 'button'; rs.title = 'Click to change'; rs.onclick = () => txpPickRole(r); roleTd.appendChild(rs); }
           else { const rb = el('button', 'gt-tp-search', 'search'); rb.type = 'button'; rb.onclick = () => txpPickRole(r); roleTd.appendChild(rb); }
         } else if (r.matched) {
           roleTd.appendChild(el('span', r.roleMatch ? 'gt-tp-resolved' : 'gt-tp-status', r.roleMatch ? r.roleMatch.name : '(resolves once holder is picked)'));
@@ -2814,7 +2857,9 @@
         if (r.matched) {
           if (r.artistMatch) {
             const a = el('a', 'gt-tp-resolved', (r.artistMatch.name || '') + (r.artistMatch.disambiguation ? ` (${r.artistMatch.disambiguation})` : ''));
-            a.href = '/' + r.artistMatch.entityType + '/' + r.artistMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Open in a new tab';
+            a.href = '/' + r.artistMatch.entityType + '/' + r.artistMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Click to change · right-click to open';
+            a.addEventListener('click', e => { e.preventDefault(); txpPickArtist(r); });
+            a.addEventListener('contextmenu', e => { e.preventDefault(); window.open(a.href, '_blank', 'noopener'); });
             artTd.appendChild(a);
           } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickArtist(r); artTd.appendChild(ab); }
         }
@@ -2833,6 +2878,8 @@
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
       cnt.textContent = rows.length ? `${matched}/${rows.length} matched` + (ready ? ` · ${ready} ready` : '') + (applied ? ` · ${applied} applied` : '') : '';
       applyBtn.disabled = !ready;
+      applyClearBtn.disabled = !ready;
+      applyClearBtn.style.display = loadedFromAnnotation ? '' : 'none';
 
       if (activeFkey) {
         const restored = tbody.querySelector(`[data-fkey="${activeFkey}"]`);
@@ -2925,43 +2972,64 @@
       // so onPick can tell them apart and build the right {id, attributeId}
       // shape — see resolveAll's own auto-resolution for the same split).
       const instrumentOpts = instrumentLt ? txpInstrumentCandidates().map(c => ({ id: c.id, name: c.name, desc: 'instrument', _instrument: true })) : [];
+      // #522 follow-up (majkinetor, live): "when clicking search on a role,
+      // it is not already filled in in search box in popup like Artist" —
+      // pre-fill/pre-filter with the parsed role text, same as the artist
+      // popover already does with r.artist.
       openRolePicker([...roles, ...instrumentOpts], `Pick a role for “${trunc(r.artist || r.raw, 40)}”`, picked => {
         const resolved = picked._instrument ? { id: instrumentLt.id, name: picked.name, attributeId: picked.id } : picked;
         roleCache.set((r.role || '').toLowerCase().trim(), resolved); render(); saveState();
-      });
+      }, r.role || '');
     }
     function txpPickArtist(r) {
       closePopover();
       const isCr = !!r.crKind;   // copyright rows resolve a LABEL only, for now
       popEl = el('div', 'gt-pop gt-tp-apop');
       popEl.appendChild(el('div', 'gt-pop-hdr', `Pick ${isCr ? 'a label' : 'an artist'} for “${trunc(r.role || r.raw, 40)}”`));
+      // #522 follow-up (majkinetor, live): "Remove 'Create artist' from the
+      // bottom of artist search, add it as a + in the search, as we do in
+      // all other scripts" (mock: a "[+]" button inside the search box
+      // itself) — replaces the separate link row below the results.
+      const qWrap = el('div', 'gt-tp-qwrap');
       const q = el('input', 'gt-tp-q'); q.type = 'text'; q.placeholder = `search ${isCr ? 'labels' : 'artists'}, or paste an MBID / URL…`; q.value = r.artist || '';
-      popEl.appendChild(q);
+      const createBtn = el('button', 'gt-tp-plus', '+'); createBtn.type = 'button';
+      createBtn.title = `Create ${isCr ? 'label' : 'artist'} “${trunc(r.artist || '', 40)}” ↗`;
+      createBtn.onclick = () => {
+        const url = (isCr ? '/label/create?edit-label.name=' : '/artist/create?edit-artist.name=') + encodeURIComponent(r.artist || '');
+        window.open(url, '_blank', 'noopener');
+      };
+      qWrap.append(q, createBtn);
+      popEl.appendChild(qWrap);
       const list = el('div', 'gt-tp-results'); popEl.appendChild(list);
-      const createRow = el('div', 'gt-tp-create');
-      if (isCr) {
-        const createLabel = el('a', 'gt-tp-createlink', `+ Create label “${trunc(r.artist || '', 30)}” ↗`);
-        createLabel.href = '/label/create?edit-label.name=' + encodeURIComponent(r.artist || ''); createLabel.target = '_blank'; createLabel.rel = 'noopener';
-        createRow.appendChild(createLabel);
-      } else {
-        const createArtist = el('a', 'gt-tp-createlink', `+ Create artist “${trunc(r.artist || '', 30)}” ↗`);
-        createArtist.href = '/artist/create?edit-artist.name=' + encodeURIComponent(r.artist || ''); createArtist.target = '_blank'; createArtist.rel = 'noopener';
-        createRow.appendChild(createArtist);
-      }
-      popEl.appendChild(createRow);
-      const pick = entity => { artistCache.set((r.artist || '').toLowerCase().trim(), entity); closePopover(); render(); saveState(); };
+      // #522 follow-up (majkinetor, live): "if one artist has multiple
+      // instruments, selecting one selects all... right clicking a choice
+      // in search sets all, and normal clicking only that 1." A left click
+      // resolves ONLY this row (artistOverride, position-keyed); a right
+      // click resolves every row sharing this exact artist text (the
+      // shared artistCache, same as auto-resolve uses) — same propagation
+      // as before, now opt-in instead of automatic.
+      popEl.appendChild(el('div', 'gt-tp-hint', 'Click: this row only · Right-click: every row with this same text'));
+      const pick = (entity, bulk) => {
+        if (bulk) artistCache.set((r.artist || '').toLowerCase().trim(), entity);
+        else artistOverride.set(r.key, entity);
+        closePopover(); render(); saveState();
+      };
       const resRow = (label, typ) => {
         const row = el('div', 'gt-tp-res');
         row.appendChild(el('span', 'gt-tp-restype', typ));
         row.appendChild(document.createTextNode(label));
         return row;
       };
+      const wirePick = (row, entity) => {
+        row.addEventListener('click', () => pick(entity, false));
+        row.addEventListener('contextmenu', e => { e.preventDefault(); pick(entity, true); });
+      };
       const run = async () => {
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;
         const gid = (term.match(GID_RE) || [])[0];
         if (gid) {
           const ent = await txpFetchEntity(gid, isCr ? 'label' : 'artist');
-          if (ent) { const row = resRow((ent.name || '') + (ent.disambiguation ? ` (${ent.disambiguation})` : ''), ent.entityType || ''); row.onclick = () => pick(ent); list.appendChild(row); }
+          if (ent) { const row = resRow((ent.name || '') + (ent.disambiguation ? ` (${ent.disambiguation})` : ''), ent.entityType || ''); wirePick(row, ent); list.appendChild(row); }
           else list.appendChild(el('div', 'gt-pop-note', 'Nothing found with that MBID.'));
           return;
         }
@@ -2970,7 +3038,8 @@
         if (!cands.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
         cands.forEach(c => {
           const row = resRow((c.name || '') + (c.comment ? ` (${c.comment})` : ''), c._kind);
-          row.onclick = async () => { const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full); };
+          row.addEventListener('click', async () => { const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, false); });
+          row.addEventListener('contextmenu', async e => { e.preventDefault(); const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, true); });
           list.appendChild(row);
         });
       };
@@ -2984,10 +3053,12 @@
       setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); q.focus(); run(); }, 0);
     }
 
-    async function txpApply() {
-      const re = RE(); if (!re) { toast('Editor not ready'); return; }
+    // core of Apply, factored out so "Apply & clear annotation" can run the
+    // exact same dispatch logic before opening the annotation editor.
+    async function applyResolvedRows() {
+      const re = RE(); if (!re) { toast('Editor not ready'); return null; }
       const rows = parsedRows().map(attachResolution).filter(r => r.matched && r.roleMatch && r.artistMatch && !appliedKeys.has(r.key));
-      if (!rows.length) { toast('Nothing resolved to apply'); return; }
+      if (!rows.length) { toast('Nothing resolved to apply'); return null; }
       let ok = 0, fail = 0;
       for (const r of rows) {
         try {
@@ -3002,7 +3073,29 @@
       }
       if (ok) markUsed(`Parsed ${ok} credit${ok > 1 ? 's' : ''} from text`);
       toast(fail ? `Applied ${ok}, ${fail} failed — see console` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''} — review & save`);
-      render(); saveState();
+      saveState();
+      return { ok, fail };
+    }
+    // #522 follow-up (majkinetor, live): "Apply should close the window."
+    async function txpApply() {
+      const res = await applyResolvedRows();
+      if (res) closeTextParser();
+    }
+    // #522 follow-up (majkinetor): "after loading annotation, add another
+    // button - Apply and remove annotation" — applies exactly like Apply,
+    // then opens the release's own annotation editor pre-cleared (a real
+    // page, a real edit type separate from the batched relationship edits
+    // this tool otherwise only stages) so the redundant text can be
+    // reviewed and submitted in one more click rather than typed by hand.
+    // Only offered once text has actually come FROM the annotation this
+    // session — clearing an unrelated annotation because you happened to
+    // paste your own credit text would be a real, silent mistake.
+    async function txpApplyAndClearAnnotation() {
+      const res = await applyResolvedRows();
+      if (!res) return;
+      closeTextParser();
+      const url = `/release/${release.gid}/edit_annotation?edit-annotation.text=&returnto=${encodeURIComponent(location.href)}`;
+      window.open(url, '_blank', 'noopener');
     }
 
     // #522 follow-up (majkinetor, live): "When you exit and return to text
@@ -3015,19 +3108,41 @@
       text: ta.value, pattern,
       roleCache: [...roleCache.entries()],
       artistCache: [...artistCache.entries()],
+      artistOverride: [...artistOverride.entries()],
       appliedKeys: [...appliedKeys],
     });
     const onTextChange = () => {
-      lines = ta.value.split('\n').map((raw, i) => ({ raw, override: (lines[i] && lines[i].override) || '' }));
+      const newLines = ta.value.split('\n').map((raw, i) => ({ raw, override: (lines[i] && lines[i].override) || '' }));
+      // ANY line whose raw text actually changed — not just a line being
+      // added/removed — can point its li:pi:si position at completely
+      // different content (caught live: replacing a whole single-line
+      // paste with a DIFFERENT single-line paste keeps the same li:0:0
+      // position). Two position-keyed things go stale this way: the
+      // per-row artist override (a wrong pick could silently reattach to
+      // unrelated new text) AND appliedKeys (a brand-new, never-applied
+      // line could show "✓ applied" and get silently skipped by Apply,
+      // caught live: a fresh paste inherited "applied" from an EARLIER,
+      // unrelated line that happened to land at the same li:0:0). Drop
+      // both for every touched line; untouched lines elsewhere keep theirs.
+      const max = Math.max(newLines.length, lines.length);
+      for (let li = 0; li < max; li++) {
+        if (!lines[li] || !newLines[li] || lines[li].raw !== newLines[li].raw) {
+          [...artistOverride.keys()].filter(k => +k.split(':')[0] === li).forEach(k => artistOverride.delete(k));
+          [...appliedKeys].filter(k => +k.split(':')[0] === li).forEach(k => appliedKeys.delete(k));
+        }
+      }
+      lines = newLines;
       render(); saveState();
     };
     const onPatternChange = () => { pattern = patIn.value; _txpPattern = pattern; render(); saveState(); };
     patIn.addEventListener('input', onPatternChange);
     patClr.onclick = () => { patIn.value = ''; onPatternChange(); };
     ta.addEventListener('input', onTextChange);
+    ta.addEventListener('input', () => { loadedFromAnnotation = false; });
     srcTgl.onclick = () => { const hidden = ta.style.display === 'none'; ta.style.display = hidden ? '' : 'none'; srcTgl.textContent = (hidden ? '▾' : '▸') + ' Paste credit text'; };
     resolveBtn.onclick = resolveAll;
     applyBtn.onclick = txpApply;
+    applyClearBtn.onclick = txpApplyAndClearAnnotation;
     // #522 follow-up (majkinetor, live): "Load annotation should load it into
     // text field without any confirmation, there is no need for additional
     // interface" — straight into the paste box, no preview/confirm step.
@@ -3036,7 +3151,7 @@
       try {
         const text = await txpFetchAnnotation(release.gid);
         if (!text) toast('No annotation found for this release');
-        else { ta.value = text; onTextChange(); }
+        else { ta.value = text; onTextChange(); loadedFromAnnotation = true; render(); }
       } catch (e) { toast('Failed to load annotation: ' + (e && e.message || e)); }
       annoBtn.disabled = false; annoBtn.textContent = 'Load annotation';
     };
@@ -3049,6 +3164,7 @@
       if (saved.text) { ta.value = saved.text; lines = ta.value.split('\n').map(raw => ({ raw, override: '' })); }
       (saved.roleCache || []).forEach(([k, v]) => roleCache.set(k, v));
       (saved.artistCache || []).forEach(([k, v]) => artistCache.set(k, v));
+      (saved.artistOverride || []).forEach(([k, v]) => artistOverride.set(k, v));
       (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
     }
     render();
@@ -3183,7 +3299,7 @@
   // same replacement over and over. Takes the role LIST directly (not a `rel`)
   // so #522's text parser can feed it `linkTypesForPair(...)` roles for a pair
   // that has no existing relationship yet.
-  function openRolePicker(roles, title, onPick) {
+  function openRolePicker(roles, title, onPick, initialQuery) {
     if (!roles.length) { toast('No relationship types are valid for this pair'); return; }
     const ov = el('div', 'gt-cons-ov'), panel = el('div', 'gt-cons gt-role-pick');
     const hdr = el('div', 'gt-cons-hdr');
@@ -3192,6 +3308,7 @@
     panel.appendChild(hdr);
     const search = el('input', 'gt-role-search');
     search.type = 'text'; search.placeholder = 'Type to filter roles…';
+    if (initialQuery) search.value = initialQuery;
     panel.appendChild(search);
     const list = el('div', 'gt-role-list');
     panel.appendChild(list);
