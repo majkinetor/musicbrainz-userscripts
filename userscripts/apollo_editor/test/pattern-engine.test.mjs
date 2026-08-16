@@ -7,7 +7,7 @@
 // ───────────────────────── engine (copy into Apollo) ─────────────────────────
 const TP_FIELDS = { '#': 'pos', 'T': 'title', 'A': 'artist', 'L': 'length', 'M': 'medium' };
 const TP_DUR = '\\d{1,2}:\\d{2}(?::\\d{2})?';
-const TP_DEFAULT_SEPS = ['-', '–', '—', '/', ':'];   // - – — / :
+const TP_DEFAULT_SEPS = ['-', '‐', '–', '—', '/', ':'];   // - ‐ – — / : (#520: U+2010 HYPHEN alongside ASCII -)
 const tpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Parse a pattern string into segments.
@@ -153,6 +153,12 @@ eq(P('# A - T', '1 Miles Davis - So What - Take 1', { splitLast: true }), { pos:
 eq(P('# A - T', '1 Miles Davis – So What'), { pos: '1', artist: 'Miles Davis', title: 'So What' }, 'sep: en-dash matches the literal -');
 eq(P('# A - T', '1 Miles Davis / So What'), { pos: '1', artist: 'Miles Davis', title: 'So What' }, 'sep: slash matches');
 eq(P('# A - T', '1 Miles Davis : So What'), { pos: '1', artist: 'Miles Davis', title: 'So What' }, 'sep: colon matches');
+// #520 (majkinetor, live): his source used U+2010 HYPHEN (‐) as the artist/
+// title separator, distinct from plain ASCII `-` (U+002D). Typing the exact
+// ‐ character in the pattern happened to match by literal coincidence, but
+// the natural, easiest-to-type `-` didn't — U+2010 wasn't in the separator
+// class it expands to.
+eq(P('#. A - T - _ (L)', '2. Caleb Sweetback ‐ Zion Here I Come - Various Artists (4:18)'), { pos: '2', artist: 'Caleb Sweetback', title: 'Zion Here I Come', length: '4:18' }, 'sep: U+2010 HYPHEN matches a plain - in the pattern (#520)');
 
 // elastic whitespace + zero-padded pos
 eq(P('#. T', '01.   So What'), { pos: '01', title: 'So What' }, 'elastic ws + padded #');

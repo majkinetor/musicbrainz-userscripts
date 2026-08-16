@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.14
+// @version      2026.8.16
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3147,7 +3147,15 @@
    * in test/pattern-engine.test.mjs — keep the two in sync. */
   const TP_FIELDS = { '#': 'pos', 'T': 'title', 'A': 'artist', 'L': 'length', 'M': 'medium' };
   const TP_DUR = '\\d{1,2}:\\d{2}(?::\\d{2})?';
-  const TP_SEPS = ['-', '–', '—', '/', ':'];
+  // #520 (majkinetor, live): "The pattern that worked is `#. A ‐ T - _ (L)`,
+  // however, using `-` as separator doesn't work." His source used U+2010
+  // HYPHEN (‐) between artist and title — visually a hyphen, but a different
+  // codepoint from plain ASCII `-` (U+002D). Typing the literal ‐ in the
+  // pattern happened to match by coincidence; the natural, easiest-to-type
+  // `-` didn't, because U+2010 wasn't in the separator class it expands to.
+  // Adding it here means any of these separator KINDS in the pattern now
+  // matches any of them in the source, same as en/em dash already do.
+  const TP_SEPS = ['-', '‐', '–', '—', '/', ':'];
   const TP_PRESETS = ['#. T', '#. T - A (L)', '# T L', '# A - T', '# A - T (L)', 'T L'];   // #. T - A (L) = the native parser's format
   let _tpPattern = '#. T';   // remembered across opens this session
   const tpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
