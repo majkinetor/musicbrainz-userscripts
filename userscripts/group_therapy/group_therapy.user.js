@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.16.223057
+// @version      2026.8.16.230738
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2338,6 +2338,19 @@
   // accepted ONLY when exactly one artist across name+alias space has it. Returns
   // {entity, via} ('name'|'alias'), or null when ambiguous/no match.
   const _txpAliasCache = new Map();
+  // #522 follow-up (majkinetor, live): "Why is this label not auto resolved
+  // as it seems like a single name match?" (© 2004 Geffen Records / ℗ 2015
+  // Geffen Records) — live-verified against production: MB genuinely has
+  // TWO labels named exactly "Geffen Records" (the real one, plus a
+  // "bootleg version of the real Geffen Records label" duplicate), so
+  // refusing as ambiguous was technically correct. But MB's own search
+  // relevance score already separates them clearly (100 vs 45) — a decisive
+  // gap is tried as a last narrowing step before giving up as ambiguous.
+  function txpNarrowByScore(exact) {
+    const scored = exact.filter(a => typeof a.score === 'number').sort((a, b) => b.score - a.score);
+    if (scored.length < 2) return exact;
+    return (scored[0].score - scored[1].score >= 20) ? [scored[0]] : exact;
+  }
   async function txpResolveByExactAlias(name) {
     const key = txpFold(name); if (!key) return null;
     if (_txpAliasCache.has(key)) return _txpAliasCache.get(key);
@@ -2349,7 +2362,7 @@
     let exact = arts.filter(a => txpSameName(a.name, name) || (a.aliases || []).some(al => txpSameName(al.name || al, name)));
     if (exact.length > 1) {
       const caseExact = exact.filter(a => txpSameNameCase(a.name, name) || (a.aliases || []).some(al => txpSameNameCase(al.name || al, name)));
-      if (caseExact.length === 1) exact = caseExact;
+      exact = caseExact.length === 1 ? caseExact : txpNarrowByScore(exact);
     }
     let out = null;
     if (exact.length === 1) {
@@ -2387,7 +2400,7 @@
     let exact = labs.filter(a => txpSameName(a.name, name) || (a.aliases || []).some(al => txpSameName(al.name || al, name)));
     if (exact.length > 1) {
       const caseExact = exact.filter(a => txpSameNameCase(a.name, name) || (a.aliases || []).some(al => txpSameNameCase(al.name || al, name)));
-      if (caseExact.length === 1) exact = caseExact;
+      exact = caseExact.length === 1 ? caseExact : txpNarrowByScore(exact);
     }
     let out = null;
     if (exact.length === 1) {
@@ -2453,7 +2466,8 @@
     if (document.getElementById('gt-tp-style')) return;
     const s = el('style'); s.id = 'gt-tp-style';
     s.textContent =
-      '.gt-cons.gt-tp{width:min(1040px,96vw)}'
+      '.gt-cons.gt-tp{width:min(1040px,96vw);resize:both;overflow:hidden;max-width:98vw;max-height:94vh;min-width:640px;min-height:340px}'
+      + '.gt-cons.gt-tp.gt-tp-max{width:98vw;height:94vh}'
       + '.gt-tp-ctrl{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid #ecebf3;flex-wrap:wrap}'
       + '.gt-tp-pat{width:180px;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:13px monospace;outline:none}'
       + '.gt-tp-pat:focus{border-color:#4a90d9}'
@@ -2465,20 +2479,31 @@
       + '.gt-tp-src{padding:0 14px}'
       + '.gt-tp-srctgl{display:block;background:none;border:none;color:#2e6da4;cursor:pointer;font:12px inherit;padding:6px 0}'
       + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid #cfd4da;border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:#4a90d9}'
-      + '.gt-tp-body{padding-top:8px}'
-      + '.gt-tp-tbl th{white-space:nowrap}'
-      + '.gt-tp-tbl td{vertical-align:top;padding:3px 8px;font-size:12px;border-bottom:1px solid #f1f2f5}'
+      + '.gt-tp-body{padding-top:8px;overflow:auto}'
+      + '.gt-tp-tbl{table-layout:fixed}'
+      + '.gt-tp-tbl th{white-space:nowrap;position:relative;overflow:hidden;text-overflow:ellipsis}'
+      + '.gt-tp-tbl td{vertical-align:top;padding:3px 8px;font-size:12px;border-bottom:1px solid #f1f2f5;overflow:hidden;text-overflow:ellipsis}'
+      // right:0 (not a negative offset) — a th with overflow:hidden (for its
+      // own text-overflow ellipsis) would otherwise clip anything hanging
+      // outside its own box, silently making the handle unclickable.
+      + '.gt-tp-colresize{position:absolute;top:0;right:0;width:6px;height:100%;cursor:col-resize;z-index:2}.gt-tp-colresize:hover{background:#cfe0f0}'
       + '.gt-tp-row.gt-tp-nomatch{opacity:.55}'
       + '.gt-tp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-top:3px}'
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
       + '.gt-tp-ov{width:110px;padding:3px 6px;border:1px solid #dde1e7;border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:#4a90d9}'
-      + '.gt-tp-raw{color:#556;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+      + '.gt-tp-rawwrap{display:flex;align-items:center;gap:4px;width:100%}'
+      + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:#556;font:11px inherit;outline:none}.gt-tp-raw:hover{border-color:#dde1e7}.gt-tp-raw:focus{border-color:#4a90d9;background:#fff}'
+      + '.gt-tp-rowdel{flex:none;background:none;border:none;color:#c2c8d0;cursor:pointer;padding:2px 4px;font-size:12px}.gt-tp-rowdel:hover{color:#c0392b}'
       + '.gt-tp-txt{color:#333}'
-      + '.gt-tp-ok{color:#2e6da4;text-decoration:none}a.gt-tp-ok:hover{text-decoration:underline}'
-      + '.gt-tp-pick{padding:2px 8px;border:1px dashed #cfd4da;border-radius:11px;background:#fff;cursor:pointer;font:11px inherit;color:#8892a0}.gt-tp-pick:hover{border-color:#4a90d9;color:#2e6da4}'
-      + '.gt-tp-pick.gt-tp-resolved{border-style:solid;border-color:#cfe0f0;background:#eef4fb;color:#2e6da4}.gt-tp-pick.gt-tp-resolved:hover{border-color:#4a90d9}'
-      + '.gt-tp-artwrap{display:inline-flex;align-items:center;gap:4px}'
-      + '.gt-tp-openlink{color:#8892a0;text-decoration:none;font-size:11px}.gt-tp-openlink:hover{color:#2e6da4}'
+      // #522 follow-up (majkinetor, live): "Tidy up artist / role column -
+      // remove circles, short helper text so it doesn't reflow (use just
+      // search word in both), plain text after selection. Remove [↗] icon,
+      // let left click open artist." Unresolved = a plain text-link reading
+      // "search"; resolved = plain text (a real <a> for artist, so the
+      // click IS the open — no separate icon).
+      + '.gt-tp-search{background:none;border:none;padding:0;cursor:pointer;color:#2e6da4;text-decoration:underline;font:11px inherit}.gt-tp-search:hover{color:#1b4d75}'
+      + '.gt-tp-resolved{color:#333}'
+      + 'a.gt-tp-resolved{color:#2e6da4;text-decoration:none}a.gt-tp-resolved:hover{text-decoration:underline}'
       + '.gt-tp-status{color:#8892a0;font-size:11px;white-space:nowrap}'
       + '.gt-tp-applied{color:#2e9e5b;font-weight:600}'
       + '.gt-cons-foot .gt-tp-cnt{flex:1;font-size:12px;color:#556}'
@@ -2632,6 +2657,14 @@
     hdr.appendChild(el('span', 'gt-cons-title', 'Text parser'));
     const annoBtn = el('button', 'gt-tp-anno', 'Load annotation'); annoBtn.type = 'button';
     hdr.appendChild(annoBtn);
+    // #522 follow-up (majkinetor): "Add resizable columns and maximize
+    // button" — same maximize/restore toggle Match Works already has.
+    const maxBtn = el('button', 'gt-cons-x', '⛶'); maxBtn.type = 'button'; maxBtn.title = 'Maximize / restore';
+    maxBtn.onclick = () => {
+      if (panel.classList.toggle('gt-tp-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; maxBtn.textContent = '❐'; maxBtn.title = 'Restore'; }
+      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; maxBtn.textContent = '⛶'; maxBtn.title = 'Maximize'; }
+    };
+    hdr.appendChild(maxBtn);
     const xb = el('button', 'gt-cons-x', '✕'); xb.type = 'button'; xb.onclick = closeTextParser; hdr.appendChild(xb);
 
     const ctrl = el('div', 'gt-tp-ctrl');
@@ -2649,10 +2682,30 @@
 
     const body = el('div', 'gt-cons-body gt-tp-body');
     const tbl = el('table', 'gt-cons-tbl gt-tp-tbl');
+    // #522 follow-up: "Add resizable columns" — table-layout:fixed + a
+    // <colgroup> so each column's width is just one <col>'s inline style,
+    // adjustable by dragging a handle on its header without touching every
+    // cell in the column.
+    const colgroup = el('colgroup');
+    ['24px', '120px', '230px', '110px', '170px', '110px', '170px', '80px'].forEach(w => {
+      const c = document.createElement('col'); c.style.width = w; colgroup.appendChild(c);
+    });
     const thead = el('thead');
     thead.innerHTML = '<tr><th></th><th>pattern</th><th>raw line</th><th>role</th><th>artist</th><th>→ role</th><th>→ artist</th><th></th></tr>';
+    [...thead.querySelectorAll('th')].forEach((th, i) => {
+      if (i === 0) return;   // the status-dot column stays fixed
+      const handle = el('span', 'gt-tp-colresize');
+      th.appendChild(handle);
+      let startX = 0, startW = 0;
+      const onMove = e => { colgroup.children[i].style.width = Math.max(40, startW + (e.clientX - startX)) + 'px'; };
+      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      handle.addEventListener('mousedown', e => {
+        e.preventDefault(); startX = e.clientX; startW = colgroup.children[i].getBoundingClientRect().width;
+        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+      });
+    });
     const tbody = el('tbody');
-    tbl.append(thead, tbody);
+    tbl.append(colgroup, thead, tbody);
     body.appendChild(tbl);
 
     const foot = el('div', 'gt-cons-foot');
@@ -2661,15 +2714,37 @@
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     foot.append(cnt, resolveBtn, applyBtn);
 
+    const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
+    // #522 follow-up (majkinetor, live): "Lets have an option to remove a
+    // row. It is also removed from the input text." Removing a LINE shifts
+    // every later line's index down by one — appliedKeys is keyed by
+    // position (li:pi:si), so it's renumbered here rather than left stale
+    // (a stale entry couldn't cause a wrong dispatch, since role/artist
+    // resolution is text-keyed, but it could mislabel an unrelated row as
+    // already-applied).
+    function deleteLine(delLi) {
+      lines.splice(delLi, 1);
+      const renumbered = new Set();
+      appliedKeys.forEach(k => {
+        const [li, pi, si] = k.split(':').map(Number);
+        if (li === delLi) return;
+        renumbered.add((li > delLi ? li - 1 : li) + ':' + pi + ':' + si);
+      });
+      appliedKeys.clear(); renumbered.forEach(k => appliedKeys.add(k));
+      syncTextareaFromLines(); render(); saveState();
+    }
+
     function render() {
       // #522 follow-up (majkinetor, live): "after editing pattern in a row,
       // focus is lost immediately" — render() rebuilds the whole tbody, which
-      // destroys and recreates the focused override input on every keystroke.
-      // Remember which line's override was focused (+ the caret position)
-      // and restore it after rebuilding.
+      // destroys and recreates whichever input was focused on every
+      // keystroke. Both the pattern-override AND the (new) inline raw-text
+      // edit inputs carry a shared data-fkey; remember it (+ caret position)
+      // and restore focus to whichever element gets the same fkey again
+      // after rebuilding.
       const active = document.activeElement;
-      const activeKey = (active && active.classList && active.classList.contains('gt-tp-ov')) ? active.dataset.key : null;
-      const activeSel = activeKey ? [active.selectionStart, active.selectionEnd] : null;
+      const activeFkey = (active && active.dataset && active.dataset.fkey) || null;
+      const activeSel = activeFkey && typeof active.selectionStart === 'number' ? [active.selectionStart, active.selectionEnd] : null;
 
       const rows = parsedRows().map(attachResolution);
       const spanByLine = new Map();
@@ -2683,39 +2758,47 @@
           const span = spanByLine.get(r.li);
           const ovTd = el('td'); if (span > 1) ovTd.rowSpan = span;
           const ov = el('input', 'gt-tp-ov'); ov.type = 'text'; ov.placeholder = pattern; ov.value = lines[r.li].override || '';
-          ov.title = 'Override the pattern for just this line'; ov.dataset.key = String(r.li);
-          ov.addEventListener('input', () => { lines[r.li].override = ov.value; render(); });
+          ov.title = 'Override the pattern for just this line'; ov.dataset.fkey = 'ov:' + r.li;
+          ov.addEventListener('input', () => { lines[r.li].override = ov.value; render(); saveState(); });
           ovTd.appendChild(ov); tr.appendChild(ovTd);
-          const rawTd = el('td', 'gt-tp-raw', r.raw); rawTd.title = r.raw; if (span > 1) rawTd.rowSpan = span;
+
+          // #522 follow-up: "add option to edit raw column in the table, and
+          // it should also change original row in the text" — an editable
+          // input synced back into the textarea, plus a remove button.
+          const rawTd = el('td'); if (span > 1) rawTd.rowSpan = span;
+          const rawWrap = el('span', 'gt-tp-rawwrap');
+          const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = r.raw; rawIn.title = r.raw;
+          rawIn.dataset.fkey = 'raw:' + r.li;
+          rawIn.addEventListener('input', () => { lines[r.li].raw = rawIn.value; syncTextareaFromLines(); render(); saveState(); });
+          const delBtn = el('button', 'gt-tp-rowdel', '✕'); delBtn.type = 'button'; delBtn.title = 'Remove this line';
+          delBtn.onclick = () => deleteLine(r.li);
+          rawWrap.append(rawIn, delBtn);
+          rawTd.appendChild(rawWrap);
           tr.appendChild(rawTd);
         }
         tr.appendChild(el('td', 'gt-tp-c', r.role || ''));
         tr.appendChild(el('td', 'gt-tp-c', r.artist || ''));
-        // #522 follow-up (majkinetor, live): "resolved entities can not be
-        // changed (e.g. pick role is lost once role is set)" — the role/
-        // artist cells stay CLICKABLE once resolved (styled as confirmed,
-        // not dashed), reopening the same picker to change the pick.
+        // #522 follow-up (majkinetor, live): "Tidy up artist / role column —
+        // remove circles, short helper text so it doesn't reflow (use just
+        // search word in both), plain text after selection. Remove [↗]
+        // icon, let left click open artist." Unresolved shows the plain
+        // word "search"; resolved shows plain text — the artist link is a
+        // real <a>, so opening it in a new tab IS the click.
         const roleTd = el('td', 'gt-tp-c');
         if (r.matched && !r.crKind) {
-          const rb = el('button', 'gt-tp-pick' + (r.roleMatch ? ' gt-tp-resolved' : ''), r.roleMatch ? r.roleMatch.name : 'pick role…');
-          rb.type = 'button'; rb.onclick = () => txpPickRole(r);
-          roleTd.appendChild(rb);
+          if (r.roleMatch) roleTd.appendChild(el('span', 'gt-tp-resolved', r.roleMatch.name));
+          else { const rb = el('button', 'gt-tp-search', 'search'); rb.type = 'button'; rb.onclick = () => txpPickRole(r); roleTd.appendChild(rb); }
         } else if (r.matched) {
-          roleTd.appendChild(el('span', r.roleMatch ? 'gt-tp-ok' : 'gt-tp-status', r.roleMatch ? r.roleMatch.name : '(resolves once holder is picked)'));
+          roleTd.appendChild(el('span', r.roleMatch ? 'gt-tp-resolved' : 'gt-tp-status', r.roleMatch ? r.roleMatch.name : '(resolves once holder is picked)'));
         }
         tr.appendChild(roleTd);
         const artTd = el('td', 'gt-tp-c');
         if (r.matched) {
-          const wrap = el('span', 'gt-tp-artwrap');
-          const label = r.artistMatch ? ((r.artistMatch.name || '') + (r.artistMatch.disambiguation ? ` (${r.artistMatch.disambiguation})` : '')) : 'search / create…';
-          const ab = el('button', 'gt-tp-pick' + (r.artistMatch ? ' gt-tp-resolved' : ''), label);
-          ab.type = 'button'; ab.onclick = () => txpPickArtist(r);
-          wrap.appendChild(ab);
           if (r.artistMatch) {
-            const open = el('a', 'gt-tp-openlink', '↗'); open.href = '/' + r.artistMatch.entityType + '/' + r.artistMatch.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'Open in a new tab';
-            wrap.appendChild(open);
-          }
-          artTd.appendChild(wrap);
+            const a = el('a', 'gt-tp-resolved', (r.artistMatch.name || '') + (r.artistMatch.disambiguation ? ` (${r.artistMatch.disambiguation})` : ''));
+            a.href = '/' + r.artistMatch.entityType + '/' + r.artistMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Open in a new tab';
+            artTd.appendChild(a);
+          } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickArtist(r); artTd.appendChild(ab); }
         }
         tr.appendChild(artTd);
         const stTd = el('td', 'gt-tp-status' + (appliedKeys.has(r.key) ? ' gt-tp-applied' : ''), statusText(r));
@@ -2729,9 +2812,9 @@
       cnt.textContent = rows.length ? `${matched}/${rows.length} matched` + (ready ? ` · ${ready} ready` : '') + (applied ? ` · ${applied} applied` : '') : '';
       applyBtn.disabled = !ready;
 
-      if (activeKey) {
-        const restored = tbody.querySelector(`.gt-tp-ov[data-key="${activeKey}"]`);
-        if (restored) { restored.focus(); try { restored.setSelectionRange(activeSel[0], activeSel[1]); } catch (e) {} }
+      if (activeFkey) {
+        const restored = tbody.querySelector(`[data-fkey="${activeFkey}"]`);
+        if (restored) { restored.focus(); if (activeSel) { try { restored.setSelectionRange(activeSel[0], activeSel[1]); } catch (e) {} } }
       }
     }
 
@@ -2760,6 +2843,8 @@
 
         // ordinary credits — role text + artist text, resolved independently.
         const roleCands = linkTypesForPair('artist', 'release');
+        const instrumentLt = roleCands.find(c => c.name === 'instrument');
+        const instrumentCands = instrumentLt ? txpInstrumentCandidates() : [];
         const roleTexts = [...new Set(creditRows.map(r => (r.role || '').toLowerCase().trim()).filter(Boolean))];
         roleTexts.forEach(rt => {
           if (roleCache.has(rt)) return;
@@ -2777,7 +2862,20 @@
           // majkinetor's examples without that collision.
           const stem = txpRoleStem(rt);
           const fuzzy = roleCands.filter(c => txpRoleStem(c.name) === stem);
-          roleCache.set(rt, fuzzy.length === 1 ? fuzzy[0] : null);
+          if (fuzzy.length === 1) { roleCache.set(rt, fuzzy[0]); return; }
+          // #522 follow-up: "Instrument roles (flute, saxophone etc.) are not
+          // resolved automatically" — try the same exact/loose chain against
+          // the instrument attribute vocabulary; a hit becomes the
+          // "instrument" link type PLUS that attribute.
+          if (instrumentLt) {
+            const iExact = instrumentCands.filter(c => c.name.toLowerCase() === rt);
+            const iHit = iExact.length === 1 ? iExact[0] : (() => {
+              const iLoose = instrumentCands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || rt.includes(cn); });
+              return iLoose.length === 1 ? iLoose[0] : null;
+            })();
+            if (iHit) { roleCache.set(rt, { id: instrumentLt.id, name: iHit.name, attributeId: iHit.id }); return; }
+          }
+          roleCache.set(rt, null);
         });
         const artistTexts = [...new Set(creditRows.map(r => r.artist).filter(Boolean))];
         for (const at of artistTexts) {
@@ -2794,13 +2892,21 @@
           } catch (e) { artistCache.set(key, null); }
         }
       } finally {
-        resolveBtn.disabled = false; resolveBtn.textContent = '🔍 Resolve all'; render();
+        resolveBtn.disabled = false; resolveBtn.textContent = '🔍 Resolve all'; render(); saveState();
       }
     }
 
     function txpPickRole(r) {
       const roles = linkTypesForPair('artist', 'release');
-      openRolePicker(roles, `Pick a role for “${trunc(r.artist || r.raw, 40)}”`, picked => { roleCache.set((r.role || '').toLowerCase().trim(), picked); render(); });
+      const instrumentLt = roles.find(c => c.name === 'instrument');
+      // offer specific instruments alongside the direct link types (tagged
+      // so onPick can tell them apart and build the right {id, attributeId}
+      // shape — see resolveAll's own auto-resolution for the same split).
+      const instrumentOpts = instrumentLt ? txpInstrumentCandidates().map(c => ({ id: c.id, name: c.name, desc: 'instrument', _instrument: true })) : [];
+      openRolePicker([...roles, ...instrumentOpts], `Pick a role for “${trunc(r.artist || r.raw, 40)}”`, picked => {
+        const resolved = picked._instrument ? { id: instrumentLt.id, name: picked.name, attributeId: picked.id } : picked;
+        roleCache.set((r.role || '').toLowerCase().trim(), resolved); render(); saveState();
+      });
     }
     function txpPickArtist(r) {
       closePopover();
@@ -2821,7 +2927,7 @@
         createRow.appendChild(createArtist);
       }
       popEl.appendChild(createRow);
-      const pick = entity => { artistCache.set((r.artist || '').toLowerCase().trim(), entity); closePopover(); render(); };
+      const pick = entity => { artistCache.set((r.artist || '').toLowerCase().trim(), entity); closePopover(); render(); saveState(); };
       const resRow = (label, typ) => {
         const row = el('div', 'gt-tp-res');
         row.appendChild(el('span', 'gt-tp-restype', typ));
@@ -2865,16 +2971,30 @@
         try {
           const credit = r.artist && r.artist !== (r.artistMatch.name || '') ? r.artist : '';
           const dates = r.year ? { begin_date: { year: parseInt(r.year, 10), month: null, day: null }, end_date: null, ended: false } : null;
-          dispatchRelationship(re, release, r.artistMatch, r.roleMatch.id, credit, null, dates);
+          // an instrument-role match carries an attributeId (the "instrument"
+          // link type doesn't say WHICH instrument on its own).
+          const attrs = r.roleMatch.attributeId ? buildAttrTree([{ typeID: r.roleMatch.attributeId, text_value: '', credited_as: '' }]) : null;
+          dispatchRelationship(re, release, r.artistMatch, r.roleMatch.id, credit, attrs, dates);
           appliedKeys.add(r.key); ok++;
         } catch (e) { fail++; try { console.warn('[Group Therapy] text-parser apply failed:', e); } catch (_) {} }
       }
       if (ok) markUsed(`Parsed ${ok} credit${ok > 1 ? 's' : ''} from text`);
       toast(fail ? `Applied ${ok}, ${fail} failed — see console` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''} — review & save`);
-      render();
+      render(); saveState();
     }
 
-    const saveState = () => txpSaveState(release.gid, { text: ta.value, pattern });
+    // #522 follow-up (majkinetor, live): "When you exit and return to text
+    // parser window, if you resolved anything its gone. Keep the complete
+    // state." — role/artist resolutions and which rows were already applied
+    // are now persisted too, not just the pasted text and pattern. Maps/Sets
+    // aren't JSON-native, so they're flattened to plain arrays here and
+    // rebuilt on load (see the `saved` restore below).
+    const saveState = () => txpSaveState(release.gid, {
+      text: ta.value, pattern,
+      roleCache: [...roleCache.entries()],
+      artistCache: [...artistCache.entries()],
+      appliedKeys: [...appliedKeys],
+    });
     const onTextChange = () => {
       lines = ta.value.split('\n').map((raw, i) => ({ raw, override: (lines[i] && lines[i].override) || '' }));
       render(); saveState();
@@ -2903,7 +3023,12 @@
     txpEl.appendChild(panel); document.body.appendChild(txpEl);
     txpEl.addEventListener('mousedown', e => { if (e.target === txpEl) closeTextParser(); });
     document.addEventListener('keydown', onTxpKey, true);
-    if (saved && saved.text) { ta.value = saved.text; lines = ta.value.split('\n').map(raw => ({ raw, override: '' })); }
+    if (saved) {
+      if (saved.text) { ta.value = saved.text; lines = ta.value.split('\n').map(raw => ({ raw, override: '' })); }
+      (saved.roleCache || []).forEach(([k, v]) => roleCache.set(k, v));
+      (saved.artistCache || []).forEach(([k, v]) => artistCache.set(k, v));
+      (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
+    }
     render();
     setTimeout(() => { try { patIn.focus(); patIn.select(); } catch (e) {} }, 30);
   }
@@ -3001,6 +3126,23 @@
       .filter(t => t && !t.deprecated && t.type0 === t0 && t.type1 === t1)
       .filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true; })
       .map(t => ({ id: t.id, name: t.name, desc: (t.description || '').replace(/<[^>]*>/g, '').trim() }))
+      .sort((p, q) => p.name.localeCompare(q.name));
+  }
+  // #522 follow-up (majkinetor, live): "Instrument roles (flute, saxophone
+  // etc.) are not resolved automatically" — MB has no standalone "Guitar" /
+  // "Flute" link type; a specific instrument is an ATTRIBUTE (id 14's own
+  // subtree, root_id === 14, live-verified) on the generic "instrument"
+  // performer relationship. Role text that doesn't match any direct link
+  // type is also tried against this vocabulary — a hit becomes the
+  // "instrument" link type PLUS that attribute, not a link type on its own.
+  const INSTRUMENT_ATTR_ROOT = 14;
+  function txpInstrumentCandidates() {
+    const lat = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type) || {};
+    const seen = new Set();
+    return Object.values(lat)
+      .filter(a => a && a.root_id === INSTRUMENT_ATTR_ROOT && a.id !== INSTRUMENT_ATTR_ROOT)
+      .filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true; })
+      .map(a => ({ id: a.id, name: a.name }))
       .sort((p, q) => p.name.localeCompare(q.name));
   }
 
@@ -3188,7 +3330,7 @@
       // #522 text parser
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
-      txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine,
+      txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNarrowByScore, txpInstrumentCandidates,
     }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }

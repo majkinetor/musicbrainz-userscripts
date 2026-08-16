@@ -114,7 +114,7 @@ const anArtistGid = await page.evaluate(() => {
 });
 console.log('artist gid to paste into the picker:', anArtistGid);
 if (anArtistGid) {
-  await page.click('.gt-tp-pick:has-text("search / create")');
+  await page.click('.gt-tp-search');
   await page.waitForTimeout(150);
   await page.fill('.gt-tp-q', anArtistGid);
   await page.waitForTimeout(600);
@@ -151,7 +151,7 @@ console.log('semicolon-pair rows:', JSON.stringify(pairRows));
 ck(pairRows.length === 2, `"Guitar: Alice; Bass: Bob" expands to 2 rows (got ${pairRows.length})`);
 ck(pairRows[0][0] === 'Guitar' && pairRows[0][1] === 'Alice', `first pair parsed correctly (got ${JSON.stringify(pairRows[0])})`);
 ck(pairRows[1][0] === 'Bass' && pairRows[1][1] === 'Bob', `second pair parsed correctly (got ${JSON.stringify(pairRows[1])})`);
-ck(pairRows[0][3] === 'search / create…', `"Alice" does NOT inherit a stale manual pick from an earlier, unrelated row at the same position (got "${pairRows[0][3]}")`);
+ck(pairRows[0][3] === 'search', `"Alice" does NOT inherit a stale manual pick from an earlier, unrelated row at the same position (got "${pairRows[0][3]}")`);
 
 // 9. per-row pattern override keeps focus + value while typing (used to lose
 // focus on every keystroke because render() rebuilt the whole table).
@@ -172,21 +172,37 @@ await page.fill('.gt-tp-ta', 'mastered by: Someone For 522\ncompiled: Someone El
 await page.waitForTimeout(150);
 await page.click('.gt-tp-resolve');
 await page.waitForTimeout(1000);
-const fuzzyRoles = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-pick.gt-tp-resolved')].map(b => b.textContent.toLowerCase()));
+// role cells (resolved) render as a <span>; artist cells (resolved) render
+// as an <a> — target span specifically so an artist name can't false-match.
+const fuzzyRoles = await page.evaluate(() => [...document.querySelectorAll('span.gt-tp-resolved')].map(b => b.textContent.toLowerCase()));
 console.log('fuzzy-resolved roles:', JSON.stringify(fuzzyRoles));
 ck(fuzzyRoles.includes('mastering'), `"mastered by" fuzzy-resolves to "mastering" (got ${JSON.stringify(fuzzyRoles)})`);
 ck(fuzzyRoles.includes('compiler'), `"compiled" fuzzy-resolves to "compiler", not colliding with "remixes and compilations" (got ${JSON.stringify(fuzzyRoles)})`);
 
-// 11. a resolved role/artist stays clickable to change the pick (used to
-// freeze once set).
-const roleBtnClass = await page.evaluate(() => document.querySelector('.gt-tp-pick.gt-tp-resolved')?.className);
-ck(roleBtnClass && roleBtnClass.includes('gt-tp-resolved'), 'a resolved role renders as a (still-clickable) button, not static text');
-await page.click('.gt-tp-pick.gt-tp-resolved');
+// 11. #522 second round (majkinetor, live): "Tidy up artist / role column —
+// ... plain text after selection." A resolved role is now plain (a <span>,
+// no click/button styling); a resolved artist is a real <a> (left click
+// opens the entity, no separate re-pick affordance).
+const roleTagName = await page.evaluate(() => document.querySelector('span.gt-tp-resolved')?.tagName);
+ck(roleTagName === 'SPAN', `a resolved role renders as plain text, not a button (got tag "${roleTagName}")`);
+// reuse the exact text manually resolved (and applied) back in check 7 —
+// artistCache is text-keyed and persists across textarea content changes
+// within the same session, so this is guaranteed to already be resolved.
+await page.fill('.gt-tp-ta', 'Mastering: Test Artist For 522');
 await page.waitForTimeout(150);
-ck(await page.isVisible('.gt-role-pick'), 'clicking an already-resolved role reopens the picker to change it');
+const artistLink = await page.evaluate(() => { const a = document.querySelector('a.gt-tp-resolved'); return a ? { tag: a.tagName, href: a.getAttribute('href'), target: a.target } : null; });
+console.log('resolved artist link:', JSON.stringify(artistLink));
+ck(artistLink && artistLink.tag === 'A' && /^\/(artist|label)\//.test(artistLink.href) && artistLink.target === '_blank', `a resolved artist is a real link that opens in a new tab (got ${JSON.stringify(artistLink)})`);
+ck(await page.evaluate(() => !document.querySelector('.gt-tp-openlink')), 'the separate ↗ open-icon is gone — the artist name itself is the link now');
 
 // 12. Escape inside the nested role picker closes only the picker, not the
-// whole Text Parser modal.
+// whole Text Parser modal. Open it via an UNRESOLVED row's "search" link —
+// resolved cells no longer reopen the picker (see #11 above).
+await page.fill('.gt-tp-ta', 'Some Unmapped Role Xyz522: Some Artist For Esc Test');
+await page.waitForTimeout(150);
+await page.click('.gt-tp-search');
+await page.waitForTimeout(150);
+ck(await page.isVisible('.gt-role-pick'), 'clicking "search" on an unresolved role opens the picker');
 await page.keyboard.press('Escape');
 await page.waitForTimeout(150);
 const afterEsc = await page.evaluate(() => ({ rolePickOpen: !!document.querySelector('.gt-role-pick'), mainOpen: !!document.querySelector('.gt-cons.gt-tp') }));
@@ -205,7 +221,10 @@ ck(!hasConfirmBox, 'no confirmation/preview box exists for annotation loading an
 const marker = 'Persisted Sample 522: Persist Test Artist ' + Date.now();
 await page.fill('.gt-tp-ta', marker);
 await page.waitForTimeout(250);
-await page.click('.gt-cons.gt-tp .gt-cons-x');
+// the new maximize button shares .gt-cons-x with the close button (same
+// convention Match Works already uses for its own header icons) — only the
+// close button has no title, so :not([title]) picks it out unambiguously.
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
 await page.waitForTimeout(150);
 ck(!(await page.isVisible('.gt-cons.gt-tp')), 'modal closes');
 await page.evaluate(() => window.__groupTherapy.openTextParser());
@@ -230,7 +249,7 @@ ck(crPortion.some(r => r[0].includes('phonographic')) && crPortion.some(r => r[0
 
 // the picker for a copyright row only offers/searches LABELS (per
 // majkinetor: "do only label->release for now").
-await page.click('.gt-tp-row:nth-child(2) .gt-tp-pick:has-text("search / create")');
+await page.click('.gt-tp-row:nth-child(2) .gt-tp-search');
 await page.waitForTimeout(150);
 const pickerInfo = await page.evaluate(() => ({
   header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
@@ -251,6 +270,138 @@ const labelCheck = await page.evaluate(async () => {
   catch (e) { return '__ERROR__: ' + e.message; }
 });
 ck(labelCheck === null, `txpResolveLabelByExactAlias correctly returns null for a name that can't exist (got ${JSON.stringify(labelCheck)})`);
+
+// #522 follow-up (majkinetor, live): "Why is this label not auto resolved
+// as it seems like a single name match?" (© 2004 Geffen Records / ℗ 2015
+// Geffen Records) — live-verified against PRODUCTION musicbrainz.org that
+// MB genuinely has two labels named exactly "Geffen Records" (a real one,
+// score 100, and a "bootleg version" duplicate, score 45), so refusing as
+// ambiguous was technically correct — but a decisive score gap should
+// still resolve it. Tested with synthetic data here (deterministic,
+// doesn't depend on test.musicbrainz.org happening to have the same
+// real-world duplicate).
+const scoreNarrow = await page.evaluate(() => {
+  const GT = window.__groupTherapy;
+  const decisive = GT.txpNarrowByScore([{ id: 'a', score: 100 }, { id: 'b', score: 45 }]);
+  const tooClose = GT.txpNarrowByScore([{ id: 'a', score: 80 }, { id: 'b', score: 75 }]);
+  return { decisive: decisive.map(x => x.id), tooClose: tooClose.map(x => x.id) };
+});
+console.log('score-narrowing:', JSON.stringify(scoreNarrow));
+ck(scoreNarrow.decisive.length === 1 && scoreNarrow.decisive[0] === 'a', `a decisive score gap (100 vs 45) narrows to the top match (got ${JSON.stringify(scoreNarrow.decisive)})`);
+ck(scoreNarrow.tooClose.length === 2, `a marginal gap (80 vs 75) stays genuinely ambiguous, no guessing (got ${JSON.stringify(scoreNarrow.tooClose)})`);
+
+// ── third round of live feedback ──────────────────────────────────────────
+
+// 16. instrument roles ("Guitar", "Flute", "Saxophone", "Piano", "Hammond",
+// "Percussion") auto-resolve — MB has no standalone link type for these,
+// they're ATTRIBUTES on the generic "instrument" relationship. "Drums"
+// resolves via the loose-substring stage to "drums (drum set)"; "Keys" is a
+// genuine synonym gap (real name is "keyboard") and is deliberately NOT
+// asserted to auto-resolve here.
+await page.fill('.gt-tp-pat', 'A - R[,]');
+await page.fill('.gt-tp-ta', 'Kwame Yeboah - Keys, Guitar, Piano, Hammond\nBen Abarbanel-Wolff - Saxophone, Flute\nEric Owusu - Percussion');
+await page.waitForTimeout(150);
+await page.click('.gt-tp-resolve');
+await page.waitForTimeout(1500);
+// the override/raw columns only render on a line's FIRST sub-row, so a
+// plain nth-child count isn't stable across rows — read the parsed role
+// text from the FIRST of the row's .gt-tp-c cells instead (array order is
+// always [role, artist, →role, →artist] regardless of which line-level
+// cells are present).
+const instrumentRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
+  const cs = [...tr.querySelectorAll('.gt-tp-c')];
+  return { role: cs[0]?.textContent, resolved: tr.querySelector('span.gt-tp-resolved')?.textContent || null };
+}));
+console.log('instrument rows:', JSON.stringify(instrumentRows));
+const byRole = role => instrumentRows.find(r => r.role === role);
+ck(byRole('Guitar')?.resolved?.toLowerCase() === 'guitar', `"Guitar" auto-resolves (got ${JSON.stringify(byRole('Guitar'))})`);
+ck(byRole('Piano')?.resolved?.toLowerCase() === 'piano', `"Piano" auto-resolves (got ${JSON.stringify(byRole('Piano'))})`);
+ck(byRole('Hammond')?.resolved?.toLowerCase().includes('hammond'), `"Hammond" loose-matches "Hammond organ" (got ${JSON.stringify(byRole('Hammond'))})`);
+ck(byRole('Saxophone')?.resolved?.toLowerCase() === 'saxophone', `"Saxophone" auto-resolves (got ${JSON.stringify(byRole('Saxophone'))})`);
+ck(byRole('Flute')?.resolved?.toLowerCase() === 'flute', `"Flute" auto-resolves (got ${JSON.stringify(byRole('Flute'))})`);
+ck(byRole('Percussion')?.resolved?.toLowerCase() === 'percussion', `"Percussion" auto-resolves (got ${JSON.stringify(byRole('Percussion'))})`);
+// an instrument match must dispatch as the "instrument" link type PLUS the
+// specific-instrument attribute — not a link type of its own.
+const guitarApplied = await page.evaluate(async () => {
+  const GT = window.__groupTherapy;
+  const roles = GT.linkTypesForPair('artist', 'release');
+  const instrumentLt = roles.find(r => r.name === 'instrument');
+  return { hasInstrumentLt: !!instrumentLt, instrumentLtId: instrumentLt && instrumentLt.id };
+});
+console.log('instrument link type:', JSON.stringify(guitarApplied));
+ck(guitarApplied.hasInstrumentLt, 'the "instrument" link type exists for artist-release (schema, not data — stable)');
+
+// 17. remove a row — deletes it from the results AND the underlying textarea.
+await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-ta', 'Mastering: Row To Keep 522\nProducer: Row To Delete 522');
+await page.waitForTimeout(150);
+let rowCountBefore = await page.evaluate(() => document.querySelectorAll('.gt-tp-row').length);
+await page.click('.gt-tp-row:nth-child(2) .gt-tp-rowdel');
+await page.waitForTimeout(150);
+const afterDelete = await page.evaluate(() => ({
+  rowCount: document.querySelectorAll('.gt-tp-row').length,
+  taValue: document.querySelector('.gt-tp-ta').value,
+}));
+console.log('after row delete:', JSON.stringify(afterDelete), 'before count:', rowCountBefore);
+ck(afterDelete.rowCount === rowCountBefore - 1, `deleting a row removes it from the table (before ${rowCountBefore}, after ${afterDelete.rowCount})`);
+ck(!afterDelete.taValue.includes('Row To Delete') && afterDelete.taValue.includes('Row To Keep'), `the deleted line is also gone from the source textarea (got ${JSON.stringify(afterDelete.taValue)})`);
+
+// 18. editing the raw-line cell in the table updates the source textarea.
+await page.fill('.gt-tp-ta', 'Mastering: Typo Artist 522');
+await page.waitForTimeout(150);
+const rawInput = page.locator('.gt-tp-raw').first();
+await rawInput.click();
+await rawInput.fill('Mastering: Fixed Artist 522');
+await rawInput.dispatchEvent('input');
+await page.waitForTimeout(150);
+const afterRawEdit = await page.evaluate(() => ({
+  taValue: document.querySelector('.gt-tp-ta').value,
+  artistCell: [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')][1]?.textContent,
+}));
+console.log('after inline raw edit:', JSON.stringify(afterRawEdit));
+ck(afterRawEdit.taValue.includes('Fixed Artist'), `editing the raw cell updates the source textarea (got ${JSON.stringify(afterRawEdit.taValue)})`);
+ck(afterRawEdit.artistCell === 'Fixed Artist 522', `the row re-parses from the edited text (got "${afterRawEdit.artistCell}")`);
+
+// 19. maximize button toggles a near-fullscreen class and back.
+const maxBefore = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
+await page.click('.gt-cons.gt-tp .gt-cons-x[title="Maximize / restore"]');
+await page.waitForTimeout(150);
+const maxAfter = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
+console.log('maximize toggle:', { maxBefore, maxAfter });
+ck(!maxBefore && maxAfter, `the maximize button adds the near-fullscreen class (before ${maxBefore}, after ${maxAfter})`);
+await page.click('.gt-cons.gt-tp .gt-cons-x[title="Restore"]');
+await page.waitForTimeout(150);
+ck(!(await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'))), 'clicking it again restores');
+
+// 20. resizable columns — dragging a header's resize handle changes its
+// <col> width.
+const colWidthBefore = await page.evaluate(() => document.querySelector('.gt-tp-tbl colgroup col:nth-child(2)').style.width);
+const handle = await page.$('.gt-tp-tbl thead th:nth-child(2) .gt-tp-colresize');
+const box = await handle.boundingBox();
+await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+await page.mouse.down();
+await page.mouse.move(box.x + 80, box.y + box.height / 2);
+await page.mouse.up();
+await page.waitForTimeout(100);
+const colWidthAfter = await page.evaluate(() => document.querySelector('.gt-tp-tbl colgroup col:nth-child(2)').style.width);
+console.log('column width drag:', { colWidthBefore, colWidthAfter });
+ck(parseInt(colWidthAfter) > parseInt(colWidthBefore), `dragging a column's resize handle widens it (before ${colWidthBefore}, after ${colWidthAfter})`);
+
+// 21. full resolution state (not just text) survives a close+reopen.
+await page.fill('.gt-tp-ta', 'Mastering: Persisted Resolution Artist 522');
+await page.waitForTimeout(150);
+await page.click('.gt-tp-resolve');
+await page.waitForTimeout(800);
+const beforeClose = await page.evaluate(() => document.querySelector('span.gt-tp-resolved')?.textContent);
+console.log('role resolved before close:', beforeClose);
+ck(beforeClose && beforeClose.toLowerCase() === 'mastering', 'sanity: the role is resolved before closing');
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+const afterReopen = await page.evaluate(() => document.querySelector('span.gt-tp-resolved')?.textContent);
+console.log('role resolved after reopen:', afterReopen);
+ck(afterReopen && afterReopen.toLowerCase() === 'mastering', `the resolution survives close+reopen, not just the pasted text (got ${JSON.stringify(afterReopen)})`);
 
 ck(posts === 0, `nothing submitted during the test (${posts})`);
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-16 22:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-16 23:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -995,9 +995,11 @@ Paste text (or click **Load annotation** to pull the release's latest annotation
 
 A **©/(C)/copyright or ℗/(P)/phonographic copyright line** (`© 2020 Some Label`, `℗ & © 2020 Some Label`) is recognized automatically by that marker — no pattern needed, no separate mode — and produces one row per notice found, resolved against **labels** (release-artist copyright holders aren't supported yet). Ordinary credits and copyright lines can be pasted together in the same block.
 
-Every parsed line gets its own preview row: parsed role/artist text, an auto-resolved MusicBrainz role and artist where unambiguous (including a fuzzy fallback — "mastered by" finds "mastering", "compiled" finds "compiler"), and a clickable **pick role…** / **search / create…** button where it isn't (still clickable once resolved, to change the pick). **Resolve all** runs auto-resolution in one batch; a line's pattern can be **overridden individually** for the odd line that doesn't fit the main pattern (a section header, a differently-formatted credit).
+Every parsed line gets its own preview row: parsed role/artist text, and an auto-resolved MusicBrainz role and artist where unambiguous — including a fuzzy fallback ("mastered by" finds "mastering", "compiled" finds "compiler"), a specific-instrument fallback (MB has no standalone "Guitar"/"Flute" link type — these resolve as the *instrument* relationship plus the matching attribute), and a score-based tie-break when MB returns more than one exact name match but one is a clearly better result (e.g. a distinctly higher search-relevance score than a same-named duplicate/bootleg entry). Where a role/artist isn't auto-resolved, a plain **search** link opens a picker (search, paste an MBID/URL, or create new); once resolved it shows as plain text — an artist becomes a real link (opens in a new tab). **Resolve all** runs auto-resolution in one batch.
 
-**Apply** stages the resolved rows as real relationships in the editor — nothing is submitted; you review and save yourself. The pasted text and pattern are remembered per release, so closing and reopening the tool picks up where you left off.
+Each line can be fixed up without leaving the table: a **pattern override** applies just to that line, its **raw text is directly editable** (writes back into the pasted text above), and **✕** removes the line entirely (from both the table and the source text). The window has a **maximize** button and **drag-resizable columns**.
+
+**Apply** stages the resolved rows as real relationships in the editor — nothing is submitted; you review and save yourself. The pasted text, pattern, and every resolution made so far are remembered per release, so closing and reopening the tool picks up exactly where you left off.
 
 Deliberately single-line-only: multi-line/grouped-block credit formats and per-track scoping aren't parsed (they show as unmatched, not an error) — pick them off manually, or fix the odd line with a per-line pattern override.
 
