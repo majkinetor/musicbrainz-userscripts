@@ -214,17 +214,33 @@ const restoredText = await page.inputValue('.gt-tp-ta');
 console.log('restored text after reopen:', JSON.stringify(restoredText));
 ck(restoredText === marker, `pasted text survives a close+reopen on the same release (got ${JSON.stringify(restoredText)})`);
 
-// 15. Copyright notice parsing mode.
-await page.click('.gt-tp-mode:has-text("Copyright")');
+// 15. Copyright notices are detected AUTOMATICALLY by their ©/℗ markers —
+// no separate mode. A paste can freely mix ordinary credits with a
+// copyright line, all resolved in the same pass.
+await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-ta', 'Mastering: Someone For 522\n℗ & © 2020 Some Copyright Test Label 522');
 await page.waitForTimeout(150);
-ck(!(await page.isVisible('.gt-tp-ctrl')), 'the credits-only pattern control bar is hidden in Copyright mode');
-await page.fill('.gt-tp-ta', '℗ & © 2020 Some Copyright Test Label 522');
+const mixedRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
+console.log('mixed credit + copyright rows:', JSON.stringify(mixedRows));
+ck(mixedRows.length === 3, `1 ordinary credit + 1 combined "℗ & ©" line (2 notices) = 3 rows total (got ${mixedRows.length})`);
+ck(mixedRows[0][0] === 'Mastering' && mixedRows[0][1] === 'Someone For 522', `the ordinary credit line still parses via the R: A pattern (got ${JSON.stringify(mixedRows[0])})`);
+const crPortion = mixedRows.slice(1);
+ck(crPortion.every(r => r[1] === 'Some Copyright Test Label 522'), `both copyright rows share the same holder text (got ${JSON.stringify(crPortion.map(r => r[1]))})`);
+ck(crPortion.some(r => r[0].includes('phonographic')) && crPortion.some(r => r[0] === '© copyright'), `both notice kinds detected (got ${JSON.stringify(crPortion.map(r => r[0]))})`);
+
+// the picker for a copyright row only offers/searches LABELS (per
+// majkinetor: "do only label->release for now").
+await page.click('.gt-tp-row:nth-child(2) .gt-tp-pick:has-text("search / create")');
 await page.waitForTimeout(150);
-const crRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
-console.log('copyright rows:', JSON.stringify(crRows));
-ck(crRows.length === 2, `a combined "℗ & ©" line produces 2 rows, one per notice type (got ${crRows.length})`);
-ck(crRows.every(r => r[1] === 'Some Copyright Test Label 522'), `both rows share the same holder text (got ${JSON.stringify(crRows.map(r => r[1]))})`);
-ck(crRows.some(r => r[0].includes('phonographic')) && crRows.some(r => r[0] === '© copyright'), `both notice kinds detected (got ${JSON.stringify(crRows.map(r => r[0]))})`);
+const pickerInfo = await page.evaluate(() => ({
+  header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
+  createLinks: [...document.querySelectorAll('.gt-tp-apop .gt-tp-createlink')].map(a => a.textContent),
+}));
+console.log('copyright-row picker:', JSON.stringify(pickerInfo));
+ck(/label/i.test(pickerInfo.header) && !/artist/i.test(pickerInfo.header), `the picker header asks for a label, not "label or artist" (got "${pickerInfo.header}")`);
+ck(pickerInfo.createLinks.length === 1 && /create label/i.test(pickerInfo.createLinks[0]), `only a "Create label" link is offered, no artist option (got ${JSON.stringify(pickerInfo.createLinks)})`);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(100);
 
 // direct function-level checks for the copyright parser + label resolution,
 // independent of real test-server holder data.
@@ -235,7 +251,6 @@ const labelCheck = await page.evaluate(async () => {
   catch (e) { return '__ERROR__: ' + e.message; }
 });
 ck(labelCheck === null, `txpResolveLabelByExactAlias correctly returns null for a name that can't exist (got ${JSON.stringify(labelCheck)})`);
-await page.click('.gt-tp-mode:has-text("Credits")');
 
 ck(posts === 0, `nothing submitted during the test (${posts})`);
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

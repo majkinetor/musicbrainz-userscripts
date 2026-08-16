@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.16.214950
+// @version      2026.8.16.223137
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.16.214950 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.16.170311\n  · Art Station v2026.8.14.142647\n  · Credit Hoarder v2026.8.14.143702\n  · Group Therapy v2026.8.16.214912\n  · ISRC Scout v2026.8.14.195613\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
+  console.log('%c String Theory %c v2026.8.16.223137 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.16.170311\n  · Art Station v2026.8.14.142647\n  · Credit Hoarder v2026.8.14.143702\n  · Group Therapy v2026.8.16.223057\n  · ISRC Scout v2026.8.14.195613\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -19997,7 +19997,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.214912","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.214912","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.223057","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.223057","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -22478,10 +22478,7 @@ ${lines}
       + '.gt-tp-apop .gt-tp-restype{color:#8892a0;font-size:10px;text-transform:uppercase;margin-right:5px}'
       + '.gt-tp-apop .gt-tp-create{border-top:1px solid #ecebf3;margin-top:4px;padding-top:6px;display:flex;gap:10px}'
       + '.gt-tp-apop .gt-tp-createlink{color:#2e6da4;text-decoration:none;font-size:12px}.gt-tp-apop .gt-tp-createlink:hover{text-decoration:underline}'
-      + '.gt-cons-hdr .gt-tp-modes{display:flex;border:1px solid #cfd4da;border-radius:6px;overflow:hidden}'
-      + '.gt-cons-hdr .gt-tp-mode{padding:4px 10px;border:none;background:#fff;cursor:pointer;font:12px inherit;color:#556}.gt-cons-hdr .gt-tp-mode+.gt-tp-mode{border-left:1px solid #cfd4da}'
-      + '.gt-cons-hdr .gt-tp-mode.gt-tp-mode-on{background:#2e6da4;color:#fff}'
-      + '.gt-tp-crnote{padding:6px 14px;font-size:11px;color:#8892a0}';
+      + '.gt-tp-crnote{padding:6px 14px;font-size:11px;color:#8892a0;border-top:1px solid #ecebf3}';
     document.head.appendChild(s);
   }
 
@@ -22501,9 +22498,9 @@ ${lines}
   function closeTextParser() { if (txpEl) { txpEl.remove(); txpEl = null; document.removeEventListener('keydown', onTxpKey, true); } }
 
   // #522 follow-up: "it would be good to keep window state after closing it
-  // on particular release" — remembers the pasted text / pattern / mode per
-  // release gid (a single GM key holding a small map, capped so a long
-  // session doesn't grow it unbounded).
+  // on particular release" — remembers the pasted text / pattern per release
+  // gid (a single GM key holding a small map, capped so a long session
+  // doesn't grow it unbounded).
   const TXP_STATE_KEY = 'gt-tp-state';
   function txpLoadState(gid) {
     try { const all = JSON.parse(GM_getValue(TXP_STATE_KEY, '{}')) || {}; return all[gid] || null; } catch (e) { return null; }
@@ -22535,7 +22532,6 @@ ${lines}
     if (!release) { toast('Editor not ready'); return; }
     const saved = txpLoadState(release.gid);
 
-    let mode = (saved && saved.mode) || 'credits';   // 'credits' | 'copyright'
     let pattern = (saved && saved.pattern) || _txpPattern;
     let lines = [];                  // [{ raw, override }]
     // both auto-resolved (resolveAll) AND manual (a picker choice) resolutions
@@ -22562,14 +22558,19 @@ ${lines}
     // piece of that same line uniformly.
     const splitPairs = raw => raw.includes(';') ? raw.split(/\s*;\s*/).filter(s => s.trim()) : [raw];
 
+    // #522 follow-up (majkinetor): "Copyright is always bundled together
+    // with other credits. The line can be recognized by mentioned symbols
+    // so that should be marker to switch mode." No separate Copyright mode
+    // anymore — a ©/(C)/℗/(P) marker on a line/piece is itself the trigger,
+    // checked before the normal R/A pattern, so a paste can freely mix
+    // ordinary credits and copyright lines together.
     function parsedRows() {
       const out = [];
       lines.forEach((ln, li) => {
         if (!ln.raw.trim()) return;   // blank lines are silently skipped, not even shown unmatched
         splitPairs(ln.raw).forEach((piece, pi) => {
-          if (mode === 'copyright') {
-            const cr = txpParseCopyrightLine(piece);
-            if (!cr) { out.push({ li, pi, si: 0, raw: ln.raw, role: null, artist: null, matched: false }); return; }
+          const cr = txpParseCopyrightLine(piece);
+          if (cr) {
             cr.types.forEach((kind, si) => out.push({
               li, pi, si, raw: ln.raw,
               role: kind === 'phonographic' ? '℗ phonographic copyright' : '© copyright',
@@ -22590,18 +22591,18 @@ ${lines}
       row.key = row.li + ':' + row.pi + ':' + row.si;
       if (!row.matched) { row.roleMatch = null; row.artistMatch = null; return row; }
       row.artistMatch = artistCache.get((row.artist || '').toLowerCase().trim()) || null;
-      if (mode === 'copyright') {
-        // the role is DERIVED from the holder's resolved entity type (label
-        // vs artist) + which notice kind(s) this row is — not independently
-        // pickable the way a credit's role is.
-        row.roleMatch = row.artistMatch ? txpCopyrightLinkType(row.artistMatch.entityType, row.crKind) : null;
+      if (row.crKind) {
+        // label→release only for now (majkinetor: "do only label->release
+        // for now, and we can eventually improve it in the future" —
+        // self-released artist-copyright is a deliberately deferred case).
+        row.roleMatch = row.artistMatch ? txpCopyrightLinkType(row.crKind) : null;
         return row;
       }
       row.roleMatch = roleCache.get((row.role || '').toLowerCase().trim()) || null;
       return row;
     }
-    function txpCopyrightLinkType(holderType, kind) {
-      const roles = linkTypesForPair(holderType, 'release');
+    function txpCopyrightLinkType(kind) {
+      const roles = linkTypesForPair('label', 'release');
       const want = kind === 'phonographic' ? 'phonographic copyright' : 'copyright';
       return roles.find(r => r.name.toLowerCase() === want) || null;
     }
@@ -22616,10 +22617,6 @@ ${lines}
     txpEl = el('div', 'gt-cons-ov');
     const panel = el('div', 'gt-cons gt-tp'), hdr = el('div', 'gt-cons-hdr');
     hdr.appendChild(el('span', 'gt-cons-title', 'Text parser'));
-    const modeCredits = el('button', 'gt-tp-mode', 'Credits'); modeCredits.type = 'button';
-    const modeCopyright = el('button', 'gt-tp-mode', 'Copyright'); modeCopyright.type = 'button';
-    const modeWrap = el('span', 'gt-tp-modes'); modeWrap.append(modeCredits, modeCopyright);
-    hdr.appendChild(modeWrap);
     const annoBtn = el('button', 'gt-tp-anno', 'Load annotation'); annoBtn.type = 'button';
     hdr.appendChild(annoBtn);
     const xb = el('button', 'gt-cons-x', '✕'); xb.type = 'button'; xb.onclick = closeTextParser; hdr.appendChild(xb);
@@ -22630,7 +22627,7 @@ ${lines}
     const presets = el('span', 'gt-tp-presets');
     TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
     ctrl.append(patIn, patClr, presets, el('span', 'gt-tp-scope', 'Scope: Release'));
-    const crNote = el('div', 'gt-tp-crnote', 'Detects ©/(C)/copyright and ℗/(P)/phonographic copyright lines — "© 2020 Some Label", "℗ & © 2020 Some Label" — and resolves the holder as a label or the release artist.');
+    const crNote = el('div', 'gt-tp-crnote', 'A ©/(C)/copyright or ℗/(P)/phonographic copyright line ("© 2020 Some Label", "℗ & © 2020 Some Label") is recognized automatically alongside your pattern and resolved against labels (release artist not yet supported).');
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -22686,7 +22683,7 @@ ${lines}
         // artist cells stay CLICKABLE once resolved (styled as confirmed,
         // not dashed), reopening the same picker to change the pick.
         const roleTd = el('td', 'gt-tp-c');
-        if (r.matched && mode !== 'copyright') {
+        if (r.matched && !r.crKind) {
           const rb = el('button', 'gt-tp-pick' + (r.roleMatch ? ' gt-tp-resolved' : ''), r.roleMatch ? r.roleMatch.name : 'pick role…');
           rb.type = 'button'; rb.onclick = () => txpPickRole(r);
           roleTd.appendChild(rb);
@@ -22729,62 +22726,59 @@ ${lines}
       resolveBtn.disabled = true; resolveBtn.textContent = 'Resolving…';
       try {
         const rows = parsedRows().filter(r => r.matched);
-        if (mode === 'copyright') {
-          const holders = [...new Set(rows.map(r => r.artist).filter(Boolean))];
-          for (const h of holders) {
-            const key = h.toLowerCase().trim();
-            if (artistCache.has(key)) continue;
-            try {
-              let hit = await txpResolveLabelByExactAlias(h);
-              if (!hit) hit = await txpResolveByExactAlias(h);
-              if (!hit) {
-                const labelCands = await txpSearchLabel(h, 5);
-                const exactL = labelCands.filter(c => (c.name || '').toLowerCase().trim() === key);
-                if (exactL.length === 1) { const full = await txpFetchEntity(exactL[0].gid || exactL[0].id, 'label'); if (full) hit = { entity: full }; }
-              }
-              if (!hit) {
-                const artCands = await txpSearchArtist(h, 5);
-                const exactA = artCands.filter(c => (c.name || '').toLowerCase().trim() === key);
-                if (exactA.length === 1) { const full = await txpFetchEntity(exactA[0].gid || exactA[0].id, 'artist'); if (full) hit = { entity: full }; }
-              }
-              artistCache.set(key, hit ? hit.entity : null);
-            } catch (e) { artistCache.set(key, null); }
-          }
-        } else {
-          const roleCands = linkTypesForPair('artist', 'release');
-          const roleTexts = [...new Set(rows.map(r => (r.role || '').toLowerCase().trim()).filter(Boolean))];
-          roleTexts.forEach(rt => {
-            if (roleCache.has(rt)) return;
-            const exact = roleCands.filter(c => c.name.toLowerCase() === rt);
-            if (exact.length === 1) { roleCache.set(rt, exact[0]); return; }
-            const loose = roleCands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || rt.includes(cn); });
-            if (loose.length === 1) { roleCache.set(rt, loose[0]); return; }
-            // #522 follow-up: fuzzy stem fallback ("compiled" -> "compiler",
-            // "mastered by" -> "mastering") — STRICT stem equality only, not
-            // substring containment: live-verified that "compiled" (stem
-            // "compil") loose-substring-matches BOTH "compiler" and "remixes
-            // and compilations" (whose own multi-word stem contains "compil"
-            // too), which would have made it ambiguous and refused to
-            // auto-bind at all. Equality alone still catches both of
-            // majkinetor's examples without that collision.
-            const stem = txpRoleStem(rt);
-            const fuzzy = roleCands.filter(c => txpRoleStem(c.name) === stem);
-            roleCache.set(rt, fuzzy.length === 1 ? fuzzy[0] : null);
-          });
-          const artistTexts = [...new Set(rows.map(r => r.artist).filter(Boolean))];
-          for (const at of artistTexts) {
-            const key = at.toLowerCase().trim();
-            if (artistCache.has(key)) continue;
-            try {
-              let hit = await txpResolveByExactAlias(at);
-              if (!hit) {
-                const cands = await txpSearchArtist(at, 5);
-                const exact = cands.filter(c => (c.name || '').toLowerCase().trim() === key);
-                if (exact.length === 1) { const full = await txpFetchEntity(exact[0].gid || exact[0].id, 'artist'); if (full) hit = { entity: full }; }
-              }
-              artistCache.set(key, hit ? hit.entity : null);
-            } catch (e) { artistCache.set(key, null); }
-          }
+        const crRows = rows.filter(r => r.crKind);
+        const creditRows = rows.filter(r => !r.crKind);
+
+        // copyright holders — label→release only for now.
+        const holders = [...new Set(crRows.map(r => r.artist).filter(Boolean))];
+        for (const h of holders) {
+          const key = h.toLowerCase().trim();
+          if (artistCache.has(key)) continue;
+          try {
+            let hit = await txpResolveLabelByExactAlias(h);
+            if (!hit) {
+              const labelCands = await txpSearchLabel(h, 5);
+              const exactL = labelCands.filter(c => (c.name || '').toLowerCase().trim() === key);
+              if (exactL.length === 1) { const full = await txpFetchEntity(exactL[0].gid || exactL[0].id, 'label'); if (full) hit = { entity: full }; }
+            }
+            artistCache.set(key, hit ? hit.entity : null);
+          } catch (e) { artistCache.set(key, null); }
+        }
+
+        // ordinary credits — role text + artist text, resolved independently.
+        const roleCands = linkTypesForPair('artist', 'release');
+        const roleTexts = [...new Set(creditRows.map(r => (r.role || '').toLowerCase().trim()).filter(Boolean))];
+        roleTexts.forEach(rt => {
+          if (roleCache.has(rt)) return;
+          const exact = roleCands.filter(c => c.name.toLowerCase() === rt);
+          if (exact.length === 1) { roleCache.set(rt, exact[0]); return; }
+          const loose = roleCands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || rt.includes(cn); });
+          if (loose.length === 1) { roleCache.set(rt, loose[0]); return; }
+          // #522 follow-up: fuzzy stem fallback ("compiled" -> "compiler",
+          // "mastered by" -> "mastering") — STRICT stem equality only, not
+          // substring containment: live-verified that "compiled" (stem
+          // "compil") loose-substring-matches BOTH "compiler" and "remixes
+          // and compilations" (whose own multi-word stem contains "compil"
+          // too), which would have made it ambiguous and refused to
+          // auto-bind at all. Equality alone still catches both of
+          // majkinetor's examples without that collision.
+          const stem = txpRoleStem(rt);
+          const fuzzy = roleCands.filter(c => txpRoleStem(c.name) === stem);
+          roleCache.set(rt, fuzzy.length === 1 ? fuzzy[0] : null);
+        });
+        const artistTexts = [...new Set(creditRows.map(r => r.artist).filter(Boolean))];
+        for (const at of artistTexts) {
+          const key = at.toLowerCase().trim();
+          if (artistCache.has(key)) continue;
+          try {
+            let hit = await txpResolveByExactAlias(at);
+            if (!hit) {
+              const cands = await txpSearchArtist(at, 5);
+              const exact = cands.filter(c => (c.name || '').toLowerCase().trim() === key);
+              if (exact.length === 1) { const full = await txpFetchEntity(exact[0].gid || exact[0].id, 'artist'); if (full) hit = { entity: full }; }
+            }
+            artistCache.set(key, hit ? hit.entity : null);
+          } catch (e) { artistCache.set(key, null); }
         }
       } finally {
         resolveBtn.disabled = false; resolveBtn.textContent = '🔍 Resolve all'; render();
@@ -22797,21 +22791,22 @@ ${lines}
     }
     function txpPickArtist(r) {
       closePopover();
-      const wantLabelToo = mode === 'copyright';
+      const isCr = !!r.crKind;   // copyright rows resolve a LABEL only, for now
       popEl = el('div', 'gt-pop gt-tp-apop');
-      popEl.appendChild(el('div', 'gt-pop-hdr', `Pick ${wantLabelToo ? 'a label or artist' : 'an artist'} for “${trunc(r.role || r.raw, 40)}”`));
-      const q = el('input', 'gt-tp-q'); q.type = 'text'; q.placeholder = `search${wantLabelToo ? ' labels/artists' : ' artists'}, or paste an MBID / URL…`; q.value = r.artist || '';
+      popEl.appendChild(el('div', 'gt-pop-hdr', `Pick ${isCr ? 'a label' : 'an artist'} for “${trunc(r.role || r.raw, 40)}”`));
+      const q = el('input', 'gt-tp-q'); q.type = 'text'; q.placeholder = `search ${isCr ? 'labels' : 'artists'}, or paste an MBID / URL…`; q.value = r.artist || '';
       popEl.appendChild(q);
       const list = el('div', 'gt-tp-results'); popEl.appendChild(list);
       const createRow = el('div', 'gt-tp-create');
-      if (wantLabelToo) {
+      if (isCr) {
         const createLabel = el('a', 'gt-tp-createlink', `+ Create label “${trunc(r.artist || '', 30)}” ↗`);
         createLabel.href = '/label/create?edit-label.name=' + encodeURIComponent(r.artist || ''); createLabel.target = '_blank'; createLabel.rel = 'noopener';
         createRow.appendChild(createLabel);
+      } else {
+        const createArtist = el('a', 'gt-tp-createlink', `+ Create artist “${trunc(r.artist || '', 30)}” ↗`);
+        createArtist.href = '/artist/create?edit-artist.name=' + encodeURIComponent(r.artist || ''); createArtist.target = '_blank'; createArtist.rel = 'noopener';
+        createRow.appendChild(createArtist);
       }
-      const createArtist = el('a', 'gt-tp-createlink', `+ Create artist “${trunc(r.artist || '', 30)}” ↗`);
-      createArtist.href = '/artist/create?edit-artist.name=' + encodeURIComponent(r.artist || ''); createArtist.target = '_blank'; createArtist.rel = 'noopener';
-      createRow.appendChild(createArtist);
       popEl.appendChild(createRow);
       const pick = entity => { artistCache.set((r.artist || '').toLowerCase().trim(), entity); closePopover(); render(); };
       const resRow = (label, typ) => {
@@ -22824,12 +22819,12 @@ ${lines}
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;
         const gid = (term.match(GID_RE) || [])[0];
         if (gid) {
-          const ent = await txpFetchEntity(gid);
+          const ent = await txpFetchEntity(gid, isCr ? 'label' : 'artist');
           if (ent) { const row = resRow((ent.name || '') + (ent.disambiguation ? ` (${ent.disambiguation})` : ''), ent.entityType || ''); row.onclick = () => pick(ent); list.appendChild(row); }
           else list.appendChild(el('div', 'gt-pop-note', 'Nothing found with that MBID.'));
           return;
         }
-        const searches = wantLabelToo ? [txpSearchLabel(term, 5).then(l => l.map(c => ({ ...c, _kind: 'label' }))), txpSearchArtist(term, 5).then(l => l.map(c => ({ ...c, _kind: 'artist' })))] : [txpSearchArtist(term, 8).then(l => l.map(c => ({ ...c, _kind: 'artist' })))];
+        const searches = isCr ? [txpSearchLabel(term, 8).then(l => l.map(c => ({ ...c, _kind: 'label' })))] : [txpSearchArtist(term, 8).then(l => l.map(c => ({ ...c, _kind: 'artist' })))];
         const cands = (await Promise.all(searches)).flat();
         if (!cands.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
         cands.forEach(c => {
@@ -22866,28 +22861,18 @@ ${lines}
       render();
     }
 
-    const saveState = () => txpSaveState(release.gid, { text: ta.value, pattern, mode });
+    const saveState = () => txpSaveState(release.gid, { text: ta.value, pattern });
     const onTextChange = () => {
       lines = ta.value.split('\n').map((raw, i) => ({ raw, override: (lines[i] && lines[i].override) || '' }));
       render(); saveState();
     };
     const onPatternChange = () => { pattern = patIn.value; _txpPattern = pattern; render(); saveState(); };
-    const setMode = m => {
-      mode = m;
-      modeCredits.classList.toggle('gt-tp-mode-on', m === 'credits');
-      modeCopyright.classList.toggle('gt-tp-mode-on', m === 'copyright');
-      ctrl.style.display = m === 'credits' ? '' : 'none';
-      crNote.style.display = m === 'copyright' ? '' : 'none';
-      render(); saveState();
-    };
     patIn.addEventListener('input', onPatternChange);
     patClr.onclick = () => { patIn.value = ''; onPatternChange(); };
     ta.addEventListener('input', onTextChange);
     srcTgl.onclick = () => { const hidden = ta.style.display === 'none'; ta.style.display = hidden ? '' : 'none'; srcTgl.textContent = (hidden ? '▾' : '▸') + ' Paste credit text'; };
     resolveBtn.onclick = resolveAll;
     applyBtn.onclick = txpApply;
-    modeCredits.onclick = () => setMode('credits');
-    modeCopyright.onclick = () => setMode('copyright');
     // #522 follow-up (majkinetor, live): "Load annotation should load it into
     // text field without any confirmation, there is no need for additional
     // interface" — straight into the paste box, no preview/confirm step.
@@ -22905,7 +22890,6 @@ ${lines}
     txpEl.appendChild(panel); document.body.appendChild(txpEl);
     txpEl.addEventListener('mousedown', e => { if (e.target === txpEl) closeTextParser(); });
     document.addEventListener('keydown', onTxpKey, true);
-    setMode(mode);
     if (saved && saved.text) { ta.value = saved.text; lines = ta.value.split('\n').map(raw => ({ raw, override: '' })); }
     render();
     setTimeout(() => { try { patIn.focus(); patIn.select(); } catch (e) {} }, 30);
