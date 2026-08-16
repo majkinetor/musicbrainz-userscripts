@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-16 17:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-16 21:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -207,7 +207,7 @@ Set column sizes to predefined variants (Fit, Centered, Default).
 
 Fill a medium's tracklist from pasted text using a **pattern**. Type a pattern, paste the list, review the live preview, apply. Like the native parser it **opens seeded with the current tracklist** (using pattern `#. T - A (L)`), so you can also use it to bulk-edit what's already there.
 
-<img width="800" src="../apollo_editor/screenshots/pattern_parser.png" />
+<img src="../apollo_editor/screenshots/pattern_parser.png" />
 
 ##### Tokens
 
@@ -859,6 +859,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - Copy/move credits from recording to recordings, work to works, release to release, release from/to recordings 
 - Consolidate release-level credits across an entire release group (matrix + one-click apply)
 - Match recordings to existing works (ISRC + ranked title search) and stage the *performance* relationships
+- Parse unstructured credit text ("Mastering: Nick Robbins") into release relationships, with a small pattern DSL
 - Set a date across a release's credits — a picker to choose the date + exactly which credits get it
 - Highlight role or entity everywhere and show tooltip with overall counts
 - Works on existing and newly-added relationships
@@ -980,6 +981,20 @@ Available options:
 - **Clear all** — removes all work associations in the review table (in the ▾ menu next to Match)
 
 **Apply** dispatches all associated works into the relationship editor, where they show up in MB's **pending edits** — the script never submits; you review and **save** yourself.
+
+#### Text parser
+
+The **✎ Text parser…** button ([#522](https://github.com/majkinetor/musicbrainz-userscripts/issues/522)) turns unstructured credit text — liner notes, a Bandcamp/Discogs credits block, or a release's own annotation — into release-level artist relationships. Same idea as [Apollo](../apollo_editor/README.md)'s pattern-based track parser, adapted for credits.
+
+Paste text (or click **Load annotation** to pull the release's latest annotation and edit it before parsing) and type a **pattern**:
+
+- `R: A` — `Mastering: Nick Robbins`
+- `A - R` — `Nick Robbins - Mastering`
+- `A - R[,]` — `Cameron Allen - Flute, Tenor Saxophone` splits the role text on commas (and `A - R[, and]` also splits on the word "and"), turning one line into several rows — one per role, same artist.
+
+Every pasted line gets its own preview row: parsed role/artist text, an auto-resolved MusicBrainz role and artist where unambiguous, and a **pick role…** / **search / create…** button where it isn't. **Resolve all** runs auto-resolution in one batch; a line's pattern can be **overridden individually** for the odd line that doesn't fit the main pattern (a section header, a differently-formatted credit). **Apply** stages the resolved rows as real relationships in the editor — nothing is submitted; you review and save yourself.
+
+Deliberately single-line-only: multi-line/grouped-block credit formats and per-track scoping aren't parsed (they show as unmatched, not an error) — pick them off manually, or fix the odd line with a per-line pattern override.
 
 #### Replace role
 
