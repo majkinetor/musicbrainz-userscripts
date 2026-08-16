@@ -635,6 +635,53 @@ ck(textAfterReload === '', `pasted text does NOT survive a real page reload (got
 await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
 await page.waitForTimeout(150);
 
+// ── sixth round of live feedback ────────────────────────────────────────
+
+// 27. row background is tinted by status, not just the small dot
+// (majkinetor, live: "We still don't have non-intrusive raw background
+// color (like in CH)" — Credit Hoarder tints its whole review row).
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-ta', 'Some Unresolvable Weird Role 522: Some Unresolvable Artist 522\nNo pattern match here at all 522');
+await page.waitForTimeout(150);
+const rowBgs = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => ({
+  cls: tr.className, bg: getComputedStyle(tr).backgroundColor,
+})));
+console.log('row backgrounds:', JSON.stringify(rowBgs));
+ck(rowBgs[0].cls.includes('gt-tp-st-amber') && rowBgs[0].bg !== 'rgba(0, 0, 0, 0)', `an unresolved-but-matched row gets a tinted background (got ${JSON.stringify(rowBgs[0])})`);
+ck(rowBgs[1].cls.includes('gt-tp-st-red') && rowBgs[1].bg !== 'rgba(0, 0, 0, 0)', `a completely unmatched row gets a (different) tinted background (got ${JSON.stringify(rowBgs[1])})`);
+ck(rowBgs[0].bg !== rowBgs[1].bg, `the two tints are visually distinct (got "${rowBgs[0].bg}" vs "${rowBgs[1].bg}")`);
+
+// 28. the artist popover anchors to the CLICKED element, not the table's
+// own top-left corner (majkinetor, live, screenshot: "Artist popup is
+// displaced").
+const searchBtnBox = await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('.gt-tp-search').boundingBox();
+await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
+await page.waitForTimeout(200);
+const popBox = await page.locator('.gt-tp-apop').boundingBox();
+console.log('search button box:', JSON.stringify(searchBtnBox), 'popover box:', JSON.stringify(popBox));
+ck(Math.abs(popBox.x - searchBtnBox.x) < 40, `the popover opens near the clicked button horizontally (button x=${searchBtnBox.x}, popover x=${popBox.x})`);
+ck(popBox.y >= searchBtnBox.y, `the popover opens below the clicked button, not above/displaced (button y=${searchBtnBox.y}, popover y=${popBox.y})`);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(150);
+
+// 29. the role picker's pre-filled search text is SELECTED, so typing
+// immediately overwrites it (majkinetor, live: "Make role text in the
+// search box selected").
+await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(2).locator('.gt-tp-search').click();
+await page.waitForTimeout(200);
+const roleSelInfo = await page.evaluate(() => {
+  const el = document.querySelector('.gt-role-search');
+  return el ? { start: el.selectionStart, end: el.selectionEnd, len: el.value.length } : null;
+});
+console.log('role search selection:', JSON.stringify(roleSelInfo));
+ck(roleSelInfo && roleSelInfo.len > 0 && roleSelInfo.start === 0 && roleSelInfo.end === roleSelInfo.len, `the role picker's pre-filled text is fully selected (got ${JSON.stringify(roleSelInfo)})`);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(150);
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+
 ck(posts === 0, `nothing submitted during the test (${posts})`);
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');

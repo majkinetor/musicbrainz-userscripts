@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-17 01:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-17 01:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -986,6 +986,8 @@ Available options:
 
 The **✎ Text parser…** button ([#522](https://github.com/majkinetor/musicbrainz-userscripts/issues/522)) turns unstructured credit text — liner notes, a Bandcamp/Discogs credits block, or a release's own annotation — into release-level relationships. Same idea as [Apollo](../apollo_editor/README.md)'s pattern-based track parser, adapted for credits.
 
+![Text parser example — a wiki-style credits block, mostly auto-resolved, with one line given a per-line pattern override](https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf)
+
 Paste text (or click **Load annotation** to pull the release's latest annotation straight into the box) and type a **pattern**:
 
 - `R: A` — `Mastering: Nick Robbins`
@@ -995,11 +997,13 @@ Paste text (or click **Load annotation** to pull the release's latest annotation
 
 A **©/(C)/copyright or ℗/(P)/phonographic copyright line** (`© 2020 Some Label`, `℗ & © 2020 Some Label`) is recognized automatically by that marker — no pattern needed, no separate mode — and produces one row per notice found, resolved against **labels** (release-artist copyright holders aren't supported yet). Ordinary credits and copyright lines can be pasted together in the same block.
 
-Every parsed line gets its own preview row: parsed role/artist text, and an auto-resolved MusicBrainz role and artist where unambiguous — including a fuzzy fallback ("mastered by" finds "mastering", "compiled" finds "compiler"), a specific-instrument fallback (MB has no standalone "Guitar"/"Flute" link type — these resolve as the *instrument* relationship plus the matching attribute), and a score-based tie-break when MB returns more than one exact name match but one is a clearly better result (e.g. a distinctly higher search-relevance score than a same-named duplicate/bootleg entry). Where a role/artist isn't auto-resolved, a plain **search** link opens a picker (search, paste an MBID/URL, or create new); once resolved it shows as plain text — an artist becomes a real link (opens in a new tab). **Resolve all** runs auto-resolution in one batch.
+Every parsed line gets its own preview row, tinted by status (amber = matched but not fully resolved, red = the pattern didn't match at all, plain = ready) so you can scan the table at a glance instead of hunting for the small status dot. Role/artist auto-resolve where unambiguous — including a fuzzy fallback ("mastered by" finds "mastering", "compiled" finds "compiler"), a specific-instrument fallback (MB has no standalone "Guitar"/"Flute" link type — these resolve as the *instrument* relationship plus the matching attribute), and a score-based tie-break when MB returns more than one exact name match but one is a clearly better result (e.g. a distinctly higher search-relevance score than a same-named duplicate/bootleg entry). **Resolve all** runs auto-resolution in one batch.
+
+Where a role/artist isn't resolved, a **search** link opens a picker (search, paste an MBID/URL, or "+" to create a new artist/label right from the search box). Once resolved, the cell stays clickable — click it again to reopen the picker and change it. For an already-resolved **artist** specifically, a left click reopens the picker while a **right click opens the entity itself** in a new tab. When the same artist name appears on several rows (e.g. one person credited with four different instruments), a normal click on a search result resolves only the row you clicked — right-click a result to apply it to every row sharing that same artist text at once.
 
 Each line can be fixed up without leaving the table: a **pattern override** applies just to that line, its **raw text is directly editable** (writes back into the pasted text above), and **✕** removes the line entirely (from both the table and the source text). The window has a **maximize** button and **drag-resizable columns**.
 
-**Apply** stages the resolved rows as real relationships in the editor — nothing is submitted; you review and save yourself. The pasted text, pattern, and every resolution made so far are remembered per release, so closing and reopening the tool picks up exactly where you left off.
+**Apply** stages the resolved rows as real relationships in the editor and closes the tool — nothing is submitted; you review and save yourself. If the text came from **Load annotation**, an **Apply & clear annotation** button also appears: it applies, then opens the release's own annotation editor pre-cleared so you can review and submit removing the now-redundant free text in one more click (there's no way to stage that as part of the same batched edit, so it isn't automatic). The pasted text and every resolution made so far are remembered for as long as the page stays open — closing and reopening the tool picks up where you left off, but a real page reload starts fresh.
 
 Deliberately single-line-only: multi-line/grouped-block credit formats and per-track scoping aren't parsed (they show as unmatched, not an error) — pick them off manually, or fix the odd line with a per-line pattern override.
 

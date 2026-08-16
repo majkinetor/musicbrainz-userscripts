@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.011008
+// @version      2026.8.17.015808
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.17.011008 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17.010829\n  · Art Station v2026.8.14.142647\n  · Credit Hoarder v2026.8.14.143702\n  · Group Therapy v2026.8.17.010829\n  · ISRC Scout v2026.8.14.195613\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
+  console.log('%c String Theory %c v2026.8.17.015808 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17.010829\n  · Art Station v2026.8.14.142647\n  · Credit Hoarder v2026.8.14.143702\n  · Group Therapy v2026.8.17.015650\n  · ISRC Scout v2026.8.14.195613\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -20004,7 +20004,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.010829","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.010829","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.015650","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.015650","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -22506,6 +22506,14 @@ ${lines}
       + '.gt-tp-colresize::after{content:"";position:absolute;top:0;bottom:0;right:3px;width:1px;background:#d8dbe0}'
       + '.gt-tp-colresize:hover::after{background:#4a90d9}'
       + '.gt-tp-row.gt-tp-nomatch{opacity:.55}'
+      // #522 sixth round (majkinetor, live): "We still don't have
+      // non-intrusive raw background color (like in CH)" — Credit
+      // Hoarder tints its whole review-table ROW by status (a soft
+      // yellow for "needs a look", soft red for "needs attention", white
+      // once clean), not just a small dot; same idea here, keyed off the
+      // same status the dot already uses.
+      + '.gt-tp-row.gt-tp-st-amber{background:#fff8e1}'
+      + '.gt-tp-row.gt-tp-st-red{background:#ffe0e0}'
       + '.gt-tp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-top:3px}'
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
       + '.gt-tp-ov{width:110px;padding:3px 6px;border:1px solid #dde1e7;border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:#4a90d9}'
@@ -22797,7 +22805,8 @@ ${lines}
       rows.forEach(r => spanByLine.set(r.li, (spanByLine.get(r.li) || 0) + 1));
       tbody.textContent = '';
       rows.forEach(r => {
-        const tr = el('tr', 'gt-tp-row' + (r.matched ? '' : ' gt-tp-nomatch'));
+        const stCls = dotClass(r).replace('gt-tp-dot-', 'gt-tp-st-');   // amber/red row tint, green stays plain
+        const tr = el('tr', 'gt-tp-row' + (r.matched ? '' : ' gt-tp-nomatch') + (stCls === 'gt-tp-st-green' ? '' : ' ' + stCls));
         const dotTd = el('td'); dotTd.appendChild(el('span', 'gt-tp-dot ' + dotClass(r)));
         tr.appendChild(dotTd);
         if (r.pi === 0 && r.si === 0) {
@@ -22852,10 +22861,10 @@ ${lines}
           if (r.artistMatch) {
             const a = el('a', 'gt-tp-resolved', (r.artistMatch.name || '') + (r.artistMatch.disambiguation ? ` (${r.artistMatch.disambiguation})` : ''));
             a.href = '/' + r.artistMatch.entityType + '/' + r.artistMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Click to change · right-click to open';
-            a.addEventListener('click', e => { e.preventDefault(); txpPickArtist(r); });
+            a.addEventListener('click', e => { e.preventDefault(); txpPickArtist(r, a); });
             a.addEventListener('contextmenu', e => { e.preventDefault(); window.open(a.href, '_blank', 'noopener'); });
             artTd.appendChild(a);
-          } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickArtist(r); artTd.appendChild(ab); }
+          } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickArtist(r, ab); artTd.appendChild(ab); }
         }
         tr.appendChild(artTd);
         const stTd = el('td', 'gt-tp-status' + (appliedKeys.has(r.key) ? ' gt-tp-applied' : ''), statusText(r));
@@ -22975,7 +22984,7 @@ ${lines}
         roleCache.set((r.role || '').toLowerCase().trim(), resolved); render(); saveState();
       }, r.role || '');
     }
-    function txpPickArtist(r) {
+    function txpPickArtist(r, anchor) {
       closePopover();
       const isCr = !!r.crKind;   // copyright rows resolve a LABEL only, for now
       popEl = el('div', 'gt-pop gt-tp-apop');
@@ -23041,9 +23050,14 @@ ${lines}
       q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
       q.addEventListener('paste', () => setTimeout(run, 0));
       document.body.appendChild(popEl);
-      const a = txpEl.querySelector('.gt-tp-tbl').getBoundingClientRect(), rr = popEl.getBoundingClientRect();
-      popEl.style.left = Math.max(8, Math.min(a.left + 40, window.innerWidth - rr.width - 8)) + 'px';
-      popEl.style.top = Math.max(8, Math.min(a.top + 40, window.innerHeight - rr.height - 8)) + 'px';
+      // #522 sixth round (majkinetor, live, screenshot): "Artist popup is
+      // displaced" — it always anchored to the TABLE's own top-left corner
+      // plus a fixed 40px offset, regardless of which row/column was
+      // actually clicked. Anchor to the clicked element itself instead,
+      // same convention every other popover in this file already uses.
+      const anchorRect = (anchor || txpEl.querySelector('.gt-tp-tbl')).getBoundingClientRect(), rr = popEl.getBoundingClientRect();
+      popEl.style.left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - rr.width - 8)) + 'px';
+      popEl.style.top = Math.max(8, Math.min(anchorRect.bottom + 4, window.innerHeight - rr.height - 8)) + 'px';
       setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); q.focus(); run(); }, 0);
     }
 
@@ -23338,7 +23352,10 @@ ${lines}
     render();
     ov.appendChild(panel);
     document.body.appendChild(ov);
-    setTimeout(() => { try { search.focus(); } catch (e) {} }, 30);
+    // #522 sixth round (majkinetor, live): "Make role text in the search
+    // box selected" — pre-filled text is selected so typing immediately
+    // overwrites it instead of appending.
+    setTimeout(() => { try { search.focus(); search.select(); } catch (e) {} }, 30);
   }
 
   // remove + re-add each matching rel under `newLt`. Re-add FIRST, then remove:
