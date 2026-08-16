@@ -42,6 +42,26 @@ await page.evaluate(() => window.__groupTherapy.openTextParser());
 await page.waitForTimeout(150);
 ck(await page.isVisible('.gt-cons.gt-tp'), 'the modal opens');
 
+// 1b. #522 fourth round (majkinetor, live, screenshot): fix the empty-state
+// UI before pasting anything.
+const emptyState = await page.evaluate(() => {
+  const td = document.querySelector('.gt-tp-tbl tbody td.gt-pop-note');
+  return {
+    colSpan: td ? td.colSpan : null,
+    tdWidth: td ? td.getBoundingClientRect().width : 0,
+    tblWidth: document.querySelector('.gt-tp-tbl').getBoundingClientRect().width,
+    hasCrNote: !!document.querySelector('.gt-tp-crnote'),
+    placeholder: document.querySelector('.gt-tp-ta').placeholder,
+    resizeHandleBg: getComputedStyle(document.querySelector('.gt-tp-colresize')).backgroundColor,
+  };
+});
+console.log('empty state:', JSON.stringify(emptyState));
+ck(emptyState.colSpan >= 8, `the empty-state message spans every column, not just the first one (colSpan=${emptyState.colSpan})`);
+ck(emptyState.tdWidth > emptyState.tblWidth * 0.9, `it visually spans (near) the full table width (got ${emptyState.tdWidth}px of ${emptyState.tblWidth}px)`);
+ck(!emptyState.hasCrNote, 'the separate permanent copyright-help line is gone');
+ck(/copyright/i.test(emptyState.placeholder) && /phonographic/i.test(emptyState.placeholder), `the copyright help text moved into the textarea placeholder (got ${JSON.stringify(emptyState.placeholder)})`);
+ck(emptyState.resizeHandleBg !== 'rgba(0, 0, 0, 0)' && emptyState.resizeHandleBg !== 'transparent', `a column resize handle has a visible background at rest, not just on hover (got "${emptyState.resizeHandleBg}")`);
+
 // 2. paste majkinetor's own R: A sample and confirm it parses correctly.
 const RA_SAMPLE = [
   'Graphic Design: Ricardo "Magrão" Fernandes',
@@ -386,6 +406,16 @@ await page.waitForTimeout(100);
 const colWidthAfter = await page.evaluate(() => document.querySelector('.gt-tp-tbl colgroup col:nth-child(2)').style.width);
 console.log('column width drag:', { colWidthBefore, colWidthAfter });
 ck(parseInt(colWidthAfter) > parseInt(colWidthBefore), `dragging a column's resize handle widens it (before ${colWidthBefore}, after ${colWidthAfter})`);
+
+// #522 fourth round (majkinetor, live): "memorize as you do it constantly"
+// — a resized column width survives closing and reopening the tool.
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+const colWidthAfterReopen = await page.evaluate(() => document.querySelector('.gt-tp-tbl colgroup col:nth-child(2)').style.width);
+console.log('column width after reopen:', colWidthAfterReopen);
+ck(colWidthAfterReopen === colWidthAfter, `the resized column width is remembered across close+reopen (got "${colWidthAfterReopen}", expected "${colWidthAfter}")`);
 
 // 21. full resolution state (not just text) survives a close+reopen.
 await page.fill('.gt-tp-ta', 'Mastering: Persisted Resolution Artist 522');

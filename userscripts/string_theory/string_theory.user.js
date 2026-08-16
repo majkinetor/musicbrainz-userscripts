@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.16.230817
+// @version      2026.8.16.232618
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.16.230817 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.16.170311\n  · Art Station v2026.8.14.142647\n  · Credit Hoarder v2026.8.14.143702\n  · Group Therapy v2026.8.16.230738\n  · ISRC Scout v2026.8.14.195613\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
+  console.log('%c String Theory %c v2026.8.16.232618 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.16.170311\n  · Art Station v2026.8.14.142647\n  · Credit Hoarder v2026.8.14.143702\n  · Group Therapy v2026.8.16.232553\n  · ISRC Scout v2026.8.14.195613\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.14");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -19997,7 +19997,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.230738","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.230738","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.232553","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.16.232553","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -22467,13 +22467,21 @@ ${lines}
       + '.gt-tp-srctgl{display:block;background:none;border:none;color:#2e6da4;cursor:pointer;font:12px inherit;padding:6px 0}'
       + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid #cfd4da;border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:#4a90d9}'
       + '.gt-tp-body{padding-top:8px;overflow:auto}'
+      // #522 follow-up (majkinetor, live): the column widths' own sum was
+      // meant to roughly fit the panel, but td/th padding defaults to
+      // content-box (added ON TOP of each <col>'s specified width, not
+      // absorbed into it) — border-box makes the specified width the
+      // actual rendered width, padding included, which is what a resize
+      // handle dragged to an exact pixel amount should mean anyway.
       + '.gt-tp-tbl{table-layout:fixed}'
+      + '.gt-tp-tbl th,.gt-tp-tbl td{box-sizing:border-box}'
       + '.gt-tp-tbl th{white-space:nowrap;position:relative;overflow:hidden;text-overflow:ellipsis}'
       + '.gt-tp-tbl td{vertical-align:top;padding:3px 8px;font-size:12px;border-bottom:1px solid #f1f2f5;overflow:hidden;text-overflow:ellipsis}'
-      // right:0 (not a negative offset) — a th with overflow:hidden (for its
-      // own text-overflow ellipsis) would otherwise clip anything hanging
-      // outside its own box, silently making the handle unclickable.
-      + '.gt-tp-colresize{position:absolute;top:0;right:0;width:6px;height:100%;cursor:col-resize;z-index:2}.gt-tp-colresize:hover{background:#cfe0f0}'
+      // #522 follow-up (majkinetor, live): "Column bars are not visible (so
+      // it hard to resize)" — a permanent thin bar now, not just a hover
+      // reveal; right:0 (not a negative offset) so a th's own
+      // overflow:hidden (for its text-overflow ellipsis) doesn't clip it.
+      + '.gt-tp-colresize{position:absolute;top:0;right:0;width:5px;height:100%;cursor:col-resize;z-index:2;background:#e3e6ea}.gt-tp-colresize:hover{background:#4a90d9}'
       + '.gt-tp-row.gt-tp-nomatch{opacity:.55}'
       + '.gt-tp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-top:3px}'
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
@@ -22502,8 +22510,7 @@ ${lines}
       + '.gt-tp-apop .gt-tp-res{padding:5px 7px;border-radius:5px;cursor:pointer}.gt-tp-apop .gt-tp-res:hover{background:#eef1f6}'
       + '.gt-tp-apop .gt-tp-restype{color:#8892a0;font-size:10px;text-transform:uppercase;margin-right:5px}'
       + '.gt-tp-apop .gt-tp-create{border-top:1px solid #ecebf3;margin-top:4px;padding-top:6px;display:flex;gap:10px}'
-      + '.gt-tp-apop .gt-tp-createlink{color:#2e6da4;text-decoration:none;font-size:12px}.gt-tp-apop .gt-tp-createlink:hover{text-decoration:underline}'
-      + '.gt-tp-crnote{padding:6px 14px;font-size:11px;color:#8892a0;border-top:1px solid #ecebf3}';
+      + '.gt-tp-apop .gt-tp-createlink{color:#2e6da4;text-decoration:none;font-size:12px}.gt-tp-apop .gt-tp-createlink:hover{text-decoration:underline}';
     document.head.appendChild(s);
   }
 
@@ -22660,11 +22667,14 @@ ${lines}
     const presets = el('span', 'gt-tp-presets');
     TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
     ctrl.append(patIn, patClr, presets, el('span', 'gt-tp-scope', 'Scope: Release'));
-    const crNote = el('div', 'gt-tp-crnote', 'A ©/(C)/copyright or ℗/(P)/phonographic copyright line ("© 2020 Some Label", "℗ & © 2020 Some Label") is recognized automatically alongside your pattern and resolved against labels (release artist not yet supported).');
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
-    const ta = el('textarea', 'gt-tp-ta'); ta.placeholder = 'Paste credit text here, one credit per line…';
+    const ta = el('textarea', 'gt-tp-ta');
+    // #522 follow-up (majkinetor, live): "move copyright help text into the
+    // textbox hint when its empty" — folded into the placeholder instead of
+    // a permanent line taking up space even once you're pasting real text.
+    ta.placeholder = 'Paste credit text here, one credit per line…\n\nA ©/(C)/copyright or ℗/(P)/phonographic copyright line ("© 2020 Some Label", "℗ & © 2020 Some Label") is recognized automatically alongside your pattern and resolved against labels (release artist not yet supported).';
     src.append(srcTgl, ta);
 
     const body = el('div', 'gt-cons-body gt-tp-body');
@@ -22673,10 +22683,18 @@ ${lines}
     // <colgroup> so each column's width is just one <col>'s inline style,
     // adjustable by dragging a handle on its header without touching every
     // cell in the column.
+    // #522 follow-up (majkinetor, live): "memorize as you do it constantly"
+    // — resized column widths are remembered (a global GM value, not a
+    // per-release one — this is a layout preference, not release data).
+    const TXP_COLS_KEY = 'gt-tp-colwidths';
+    const defaultColWidths = ['24px', '120px', '230px', '110px', '170px', '110px', '170px', '80px'];
+    let savedColWidths = null;
+    try { savedColWidths = JSON.parse(GM_getValue(TXP_COLS_KEY, '')) || null; } catch (e) {}
     const colgroup = el('colgroup');
-    ['24px', '120px', '230px', '110px', '170px', '110px', '170px', '80px'].forEach(w => {
+    (savedColWidths && savedColWidths.length === defaultColWidths.length ? savedColWidths : defaultColWidths).forEach(w => {
       const c = document.createElement('col'); c.style.width = w; colgroup.appendChild(c);
     });
+    const saveColWidths = () => { try { GM_setValue(TXP_COLS_KEY, JSON.stringify([...colgroup.children].map(c => c.style.width))); } catch (e) {} };
     const thead = el('thead');
     thead.innerHTML = '<tr><th></th><th>pattern</th><th>raw line</th><th>role</th><th>artist</th><th>→ role</th><th>→ artist</th><th></th></tr>';
     [...thead.querySelectorAll('th')].forEach((th, i) => {
@@ -22685,7 +22703,7 @@ ${lines}
       th.appendChild(handle);
       let startX = 0, startW = 0;
       const onMove = e => { colgroup.children[i].style.width = Math.max(40, startW + (e.clientX - startX)) + 'px'; };
-      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); saveColWidths(); };
       handle.addEventListener('mousedown', e => {
         e.preventDefault(); startX = e.clientX; startW = colgroup.children[i].getBoundingClientRect().width;
         document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
@@ -22792,7 +22810,11 @@ ${lines}
         tr.appendChild(stTd);
         tbody.appendChild(tr);
       });
-      if (!rows.length) tbody.appendChild(el('tr', null, '')).appendChild(el('td', 'gt-pop-note', 'Paste credit text above, or load the annotation.'));
+      // #522 follow-up (majkinetor, live): "There is a tight column on the
+      // left with text when there is no text input" — the empty-state <td>
+      // had no colspan, so table-layout:fixed confined it to the FIRST
+      // (narrowest) column, wrapping the message into a tall sliver.
+      if (!rows.length) { const td = el('td', 'gt-pop-note', 'Paste credit text above, or load the annotation.'); td.colSpan = 8; tbody.appendChild(el('tr')).appendChild(td); }
       const matched = rows.filter(r => r.matched).length;
       const ready = rows.filter(r => r.matched && r.roleMatch && r.artistMatch && !appliedKeys.has(r.key)).length;
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
@@ -23006,7 +23028,7 @@ ${lines}
       annoBtn.disabled = false; annoBtn.textContent = 'Load annotation';
     };
 
-    panel.append(hdr, ctrl, crNote, src, body, foot);
+    panel.append(hdr, ctrl, src, body, foot);
     txpEl.appendChild(panel); document.body.appendChild(txpEl);
     txpEl.addEventListener('mousedown', e => { if (e.target === txpEl) closeTextParser(); });
     document.addEventListener('keydown', onTxpKey, true);
