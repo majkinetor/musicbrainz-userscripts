@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.16
+// @version      2026.8.16.155516
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -7621,10 +7621,12 @@
     $('tc-anno-max').onclick = () => setMax(!wrap.classList.contains('tc-anno-max'));
     wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('tc-anno-max')) { setMax(false); activeEl().focus(); } });
 
-    // hover-help popover
-    const help = $('tc-anno-help'); let helpHideT;
+    // click-to-show help popover (#521, majkinetor: "it pops out when you
+    // casually move mouse" — hover was too eager). Toggles on click, closes
+    // on a click anywhere else or Escape.
+    const help = $('tc-anno-help');
     const showHelp = () => {
-      clearTimeout(helpHideT); helpPop.classList.add('on');
+      helpPop.classList.add('on');
       const r = help.getBoundingClientRect(), ph = helpPop.offsetHeight, pw = helpPop.offsetWidth;
       const left = Math.max(8, Math.min(r.left, window.innerWidth - pw - 8));
       let top = r.bottom + 6;
@@ -7632,10 +7634,12 @@
       if (top < 8) top = 8;
       helpPop.style.left = Math.round(left) + 'px'; helpPop.style.top = Math.round(top) + 'px';
     };
-    const hideHelp = () => { helpHideT = setTimeout(() => helpPop.classList.remove('on'), 180); };
-    help.addEventListener('mouseenter', showHelp); help.addEventListener('focus', showHelp);
-    help.addEventListener('mouseleave', hideHelp); help.addEventListener('blur', hideHelp);
-    helpPop.addEventListener('mouseenter', () => clearTimeout(helpHideT)); helpPop.addEventListener('mouseleave', hideHelp);
+    const hideHelp = () => helpPop.classList.remove('on');
+    help.addEventListener('click', e => { e.stopPropagation(); if (helpPop.classList.contains('on')) hideHelp(); else showHelp(); });
+    const outsideHideHelp = e => { if (helpPop.classList.contains('on') && !helpPop.contains(e.target) && e.target !== help) hideHelp(); };
+    document.addEventListener('mousedown', outsideHideHelp, true);   // removed in unmountAnnotation()
+    wrap._tcOutsideHideHelp = outsideHideHelp;
+    wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && helpPop.classList.contains('on')) { e.stopPropagation(); hideHelp(); } });
 
     // History — version list as user cards on the RIGHT, the selected version rendered on the LEFT
     const renderHistory = async () => {
@@ -7696,6 +7700,7 @@
     const ta = taArg || document.getElementById('annotation');
     const wrap = ta && ta._tcAnnoMounted;
     if (!wrap || !wrap.isConnected) { if (ta) ta._tcAnnoMounted = null; return; }
+    if (wrap._tcOutsideHideHelp) document.removeEventListener('mousedown', wrap._tcOutsideHideHelp, true);   // #521 — a document-level listener, not cleaned up by wrap.remove()
     ta.style.display = ''; wrap.parentNode.insertBefore(ta, wrap); wrap.remove();
     ta._tcAnnoMounted = null; document.getElementById('tc-anno-status')?.remove();
   }

@@ -66,6 +66,24 @@ check('maximized editor fills the whole viewport', await page.evaluate(() => { c
 await page.click('#tc-anno-max'); await page.waitForTimeout(150);
 check('restore returns to fill-height (not maximized)', await page.evaluate(() => !document.getElementById('tc-anno-wrap').classList.contains('tc-anno-max')));
 
+// #521 (majkinetor): "Show markdown help button on click rather then hover"
+// — hovering used to pop the syntax-help box out on a casual mouse move.
+const helpPopOn = () => page.evaluate(() => document.getElementById('tc-anno-help-pop').classList.contains('on'));
+await page.hover('#tc-anno-help'); await page.waitForTimeout(250);
+check('hovering the ? button no longer shows the help popover', !(await helpPopOn()));
+await page.click('#tc-anno-help'); await page.waitForTimeout(50);
+check('clicking the ? button shows it', await helpPopOn());
+await page.click('#tc-anno-help'); await page.waitForTimeout(50);
+check('clicking it again toggles it back off', !(await helpPopOn()));
+await page.click('#tc-anno-help'); await page.waitForTimeout(50);
+// dispatch directly rather than a real click — the popover itself can cover
+// nearby elements, which is layout incidental, not what this is testing.
+await page.evaluate(() => document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })));
+check('clicking elsewhere dismisses it', !(await helpPopOn()));
+await page.click('#tc-anno-help'); await page.waitForTimeout(50);
+await page.keyboard.press('Escape');
+check('Escape dismisses it', !(await helpPopOn()));
+
 await page.evaluate(() => window.scrollTo(0, 0));
 await page.screenshot({ path: resolve(HERE, 'logs', 'shot-editannotation.png') }).catch(() => {});
 
