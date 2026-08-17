@@ -1,5 +1,12 @@
 # Credit Hoarder Changelog
 
+## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
+
+### Fixes
+
+1. Multiple media digital album credits collision ([#523](https://github.com/majkinetor/musicbrainz-userscripts/issues/523))
+1. Mastering not added from Qobuz ([#492](https://github.com/majkinetor/musicbrainz-userscripts/issues/492))
+
 ## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
 
 ### Features

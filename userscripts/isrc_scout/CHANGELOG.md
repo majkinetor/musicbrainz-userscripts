@@ -1,5 +1,9 @@
 # ISRC Scout Changelog
 
+## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
+
+- Small improvements
+
 ## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
 
 ### Features

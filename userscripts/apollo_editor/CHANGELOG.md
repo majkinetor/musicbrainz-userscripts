@@ -1,5 +1,15 @@
 # Apollo Editor Changelog
 
+## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
+
+### Features
+
+1. Show markdown help on button click rather then hover ([#521](https://github.com/majkinetor/musicbrainz-userscripts/issues/521))
+
+### Fixes
+
+1. '-' is not accepted as separator in pattern parser ([#520](https://github.com/majkinetor/musicbrainz-userscripts/issues/520))
+
 ## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
 
 ### Features

@@ -1,5 +1,37 @@
 # String Theory Changelog
 
+## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Show markdown help on button click rather then hover ([#521](https://github.com/majkinetor/musicbrainz-userscripts/issues/521))
+1. '-' is not accepted as separator in pattern parser ([#520](https://github.com/majkinetor/musicbrainz-userscripts/issues/520))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Improve import from URL design ([#507](https://github.com/majkinetor/musicbrainz-userscripts/issues/507))
+1. Right click "Enter edit" to commit immediately ([#493](https://github.com/majkinetor/musicbrainz-userscripts/issues/493))
+1. Left click starts commit immediately ([#503](https://github.com/majkinetor/musicbrainz-userscripts/issues/503))
+1. Button text becomes hard to read on hover ([#502](https://github.com/majkinetor/musicbrainz-userscripts/issues/502))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Multiple media digital album credits collision ([#523](https://github.com/majkinetor/musicbrainz-userscripts/issues/523))
+1. Mastering not added from Qobuz ([#492](https://github.com/majkinetor/musicbrainz-userscripts/issues/492))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Text parser tool ([#522](https://github.com/majkinetor/musicbrainz-userscripts/issues/522))
+1. "Recorded at Event" relationship exclusion when copying dates ([#491](https://github.com/majkinetor/musicbrainz-userscripts/issues/491))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Small improvements
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Small improvements
+
 ## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

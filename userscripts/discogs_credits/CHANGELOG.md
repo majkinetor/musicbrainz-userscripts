@@ -1,5 +1,9 @@
 # Import Discogs Credits Changelog
 
+## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
+
+- Small improvements
+
 ## [2026.7.19](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.19)
 
 ### Features

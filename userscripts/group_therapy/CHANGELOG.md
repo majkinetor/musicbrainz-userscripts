@@ -1,5 +1,15 @@
 # Group Therapy
 
+## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
+
+### Features
+
+1. Text parser tool ([#522](https://github.com/majkinetor/musicbrainz-userscripts/issues/522))
+
+### Fixes
+
+1. "Recorded at Event" relationship exclusion when copying dates ([#491](https://github.com/majkinetor/musicbrainz-userscripts/issues/491))
+
 ## [2026.7.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.29)
 
 ### Features

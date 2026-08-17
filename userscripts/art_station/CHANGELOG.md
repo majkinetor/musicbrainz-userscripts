@@ -1,5 +1,17 @@
 # Art Station Changelog
 
+## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
+
+### Features
+
+1. Improve import from URL design ([#507](https://github.com/majkinetor/musicbrainz-userscripts/issues/507))
+1. Right click "Enter edit" to commit immediately ([#493](https://github.com/majkinetor/musicbrainz-userscripts/issues/493))
+
+### Fixes
+
+1. Left click starts commit immediately ([#503](https://github.com/majkinetor/musicbrainz-userscripts/issues/503))
+1. Button text becomes hard to read on hover ([#502](https://github.com/majkinetor/musicbrainz-userscripts/issues/502))
+
 ## [2026.8.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.9)
 
 ### Features
