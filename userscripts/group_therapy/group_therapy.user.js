@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.182357
+// @version      2026.8.17.184322
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2706,14 +2706,13 @@
     const roleCache = new Map();     // lowercased role text -> {id,name} | null (tried, no match)
     const artistCache = new Map();   // lowercased holder/artist text -> entity | null
     // #522 follow-up (majkinetor): "while it is resolving, lets show a
-    // message in the footer (resolving 4/N)" — resolveAll() sets these
-    // before/while it runs; render() (called after every individual
-    // resolution) reads them to show live progress instead of the usual
-    // match count. Scoped to just the two real-network-lookup loops
-    // (copyright/legal holders + ordinary credit artists) — role
-    // resolution is synchronous/instant, counting it wouldn't make the
-    // "how much is left" number any more useful.
-    let resolving = false, resolveDone = 0, resolveTotal = 0;
+    // message ... resolving 4/N" then "make it show in the button itself" —
+    // resolveAll() updates the Resolve button's own text as it goes.
+    // Scoped to just the two real-network-lookup loops (copyright/legal
+    // holders + ordinary credit artists) — role resolution is synchronous/
+    // instant, counting it wouldn't make the "how much is left" number any
+    // more useful.
+    let resolveDone = 0, resolveTotal = 0;
     // #522 follow-up (majkinetor, live): "if one artist has multiple
     // instruments, selecting one selects all. Lets redo that thing so that
     // right clicking a choice in search sets all, and normal clicking only
@@ -2996,9 +2995,7 @@
       const matched = rows.filter(r => r.matched).length;
       const ready = rows.filter(r => r.matched && r.roleMatch && r.artistMatch && !appliedKeys.has(r.key)).length;
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
-      cnt.textContent = resolving
-        ? `Resolving ${resolveDone}/${resolveTotal}…`
-        : (rows.length ? `${matched}/${rows.length} matched` + (ready ? ` · ${ready} ready` : '') + (applied ? ` · ${applied} applied` : '') : '');
+      cnt.textContent = rows.length ? `${matched}/${rows.length} matched` + (ready ? ` · ${ready} ready` : '') + (applied ? ` · ${applied} applied` : '') : '';
       applyBtn.disabled = !ready;
       applyClearBtn.disabled = !ready;
       applyClearBtn.style.display = loadedFromAnnotation ? '' : 'none';
@@ -3024,14 +3021,15 @@
         const crHolders = [...new Map(crRows.map(r => [r.artist, txpCrEntityType(r.crKind, r.artist)])).entries()];
         const artistTexts = [...new Set(creditRows.map(r => r.artist).filter(Boolean))];
         // #522 follow-up (majkinetor): "while it is resolving, lets show a
-        // message in the footer (resolving 4/N)" — total counts only the
-        // names that actually need a real lookup (already-cached ones are
-        // instant skips, not "work" the footer should promise is coming).
+        // message ... resolving 4/N" then "make it show in the button
+        // itself" — total counts only the names that actually need a real
+        // lookup (already-cached ones are instant skips, not "work" the
+        // button should promise is coming).
         resolveTotal = crHolders.filter(([h]) => h && !artistCache.has(h.toLowerCase().trim())).length
           + artistTexts.filter(at => !artistCache.has(at.toLowerCase().trim())).length;
         resolveDone = 0;
-        resolving = true;
-        render();
+        const bumpProgress = () => { resolveDone++; resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`; };
+        resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`;
         for (const [h, entityType] of crHolders) {
           if (!h) continue;
           const key = h.toLowerCase().trim();
@@ -3050,7 +3048,7 @@
           // each holder is a real network round-trip, so re-render after
           // every one instead of batching the whole thing behind one
           // render() at the very end.
-          resolveDone++; render(); saveState();
+          bumpProgress(); render(); saveState();
         }
 
         // ordinary credits — role text + artist text, resolved independently.
@@ -3106,10 +3104,9 @@
             }
             artistCache.set(key, hit ? hit.entity : null);
           } catch (e) { artistCache.set(key, null); }
-          resolveDone++; render(); saveState();
+          bumpProgress(); render(); saveState();
         }
       } finally {
-        resolving = false;
         resolveBtn.disabled = false; resolveBtn.textContent = '🔍 Resolve all'; render(); saveState();
       }
     }
