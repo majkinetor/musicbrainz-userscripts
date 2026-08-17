@@ -771,10 +771,10 @@ ck(newTypeRows[0].role === 'distributed by' && newTypeRows[0].artist === 'Sony M
 ck(newTypeRows[1].role === 'licensed to' && newTypeRows[1].artist === 'Republic Records 522', `"licensed to" row parses correctly (got ${JSON.stringify(newTypeRows[1])})`);
 ck(newTypeRows[2].artist === 'Shady Records 522' && newTypeRows[3].artist === 'Aftermath Records 522', `the multi-holder line becomes 2 separate rows (got ${JSON.stringify([newTypeRows[2], newTypeRows[3]])})`);
 
-// 30b. the Resolve button's own text shows live "Resolving N/M" progress
+// 30b. the Match button's own text shows live "Resolving N/M" progress
 // while resolveAll runs (majkinetor: "while it is resolving, lets show a
 // message ... resolving 4/N", then "make it show in the button itself:
-// [ Resolving 3/5 ]"), then reverts to "🔍 Resolve all" once done.
+// [ Resolving 3/5 ]"), then reverts to "⚡ Match" once done.
 await page.fill('.gt-tp-ta', ['Mastering: David Storrs', 'Producer: Gabriel Aldama', 'Recorded by: Eric Lauzon', 'Mixed by: Steven Cooper'].join('\n'));
 await page.waitForTimeout(200);
 const progressSnapshots = await page.evaluate(() => new Promise(resolve => {
@@ -784,13 +784,13 @@ const progressSnapshots = await page.evaluate(() => new Promise(resolve => {
   mo.observe(btn, { childList: true, characterData: true, subtree: true });
   btn.click();
   const check = setInterval(() => {
-    if (!btn.disabled && btn.textContent.includes('Resolve all')) { clearInterval(check); mo.disconnect(); resolve(snaps); }
+    if (!btn.disabled && btn.textContent.includes('Match')) { clearInterval(check); mo.disconnect(); resolve(snaps); }
   }, 50);
 }));
-console.log('resolve button progress snapshots:', JSON.stringify(progressSnapshots));
-ck(progressSnapshots.some(s => /^Resolving \d+\/4$/.test(s)), `the Resolve button shows "Resolving N/4" while resolving (got ${JSON.stringify(progressSnapshots)})`);
+console.log('match button progress snapshots:', JSON.stringify(progressSnapshots));
+ck(progressSnapshots.some(s => /^Resolving \d+\/4$/.test(s)), `the Match button shows "Resolving N/4" while resolving (got ${JSON.stringify(progressSnapshots)})`);
 ck(/^Resolving 0\/4$/.test(progressSnapshots[0] || ''), `progress starts at 0 (got "${progressSnapshots[0]}")`);
-ck(/Resolve all/.test(progressSnapshots[progressSnapshots.length - 1] || ''), `the button reverts to "Resolve all" once resolving finishes (got "${progressSnapshots[progressSnapshots.length - 1]}")`);
+ck(/Match/.test(progressSnapshots[progressSnapshots.length - 1] || ''), `the button reverts to "⚡ Match" once resolving finishes (got "${progressSnapshots[progressSnapshots.length - 1]}")`);
 ck(!/Resolving/.test((await page.evaluate(() => document.querySelector('.gt-tp-cnt')?.textContent)) || ''), 'the footer match-count line is unaffected (no leftover "Resolving" text there)');
 
 // 31. resolveAll + real MB label names for the new types (distributed →
@@ -802,7 +802,7 @@ await page.click('.gt-tp-resolve');
 // wait for the button's own disabled/text state instead of a fixed delay —
 // a fixed 2.5s guess is exactly the kind of thing that goes flaky under
 // load deep into a long test run (a real search round-trip can take longer).
-await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Resolve all'); }, { timeout: 20000 });
+await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
 await page.waitForTimeout(200);
 const resolvedNewTypes = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
   const cs = [...tr.querySelectorAll('.gt-tp-c')];
@@ -880,7 +880,7 @@ await page.waitForTimeout(150);
 // opening the picker on a never-resolved role can only fall back to the
 // auto-detect guess, not the real forced classification this test proves.
 await page.click('.gt-tp-resolve');
-await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Resolve all'); }, { timeout: 20000 });
+await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
 await page.waitForTimeout(200);
 const publishedByResolved = await page.evaluate(() => {
   const cs = [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')];
@@ -910,6 +910,85 @@ await page.keyboard.press('Escape');
 await page.waitForTimeout(150);
 await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
 await page.waitForTimeout(150);
+
+// 34. #525 (majkinetor): "since column Entity is used as 'credited as',
+// lets add right click to it, which will set it to choosen entity (if
+// there is one). This will subsequently change the raw text. This is used
+// to fast clear any suffixes that came from raw text." A Discogs-style
+// footnote marker ("Felix Vincent*") resolves fine to the real artist, but
+// the stray "*" stays in the raw text — and since applyResolvedRows treats
+// a raw entity text that differs from the resolved entity's own name as a
+// "credited as" override, that suffix would otherwise get carried onto the
+// dispatched relationship. Right-clicking the raw ENTITY cell swaps it for
+// the resolved entity's canonical name, in both the table AND the source
+// textarea, without losing the resolution itself.
+if (anArtistGid) {
+  await page.evaluate(() => window.__groupTherapy.openTextParser());
+  await page.waitForTimeout(300);
+  const canonicalName = await page.evaluate(async gid => {
+    const ent = await window.__groupTherapy.txpFetchEntity(gid, 'artist');
+    return ent && ent.name;
+  }, anArtistGid);
+  console.log('canonical name for the suffix-cleanup test:', canonicalName);
+  ck(!!canonicalName, `sanity: the reused artist gid resolves to a real name (got ${JSON.stringify(canonicalName)})`);
+  const suffixedLine = `${canonicalName}* Suffix Cleanup 525`;
+  // "R: E" (entity is the LAST/greedy field, capturing to end-of-line) —
+  // NOT "E: R", which would lazily stop the entity capture at the first
+  // separator-class character, including a hyphen that could legitimately
+  // be part of the real artist's own name (e.g. "Ben Abarbanel-Wolff").
+  await page.fill('.gt-tp-pat', 'R: E');
+  // "Mastering" (not "Design") — a real, stable MB role name that auto-
+  // resolves via ⚡ Match, so the row's overall status can reach "ready"
+  // without a second, unrelated manual role pick cluttering this test.
+  await page.fill('.gt-tp-ta', `Mastering: ${suffixedLine}`);
+  await page.waitForTimeout(150);
+  await page.click('.gt-tp-resolve');   // auto-resolves the role ("mastering")
+  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
+  await page.waitForTimeout(200);
+  // resolve the entity via the picker's paste-MBID path, right-click to
+  // bulk-resolve via the shared text-keyed cache (same idiom as test 7).
+  await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
+  await page.waitForTimeout(150);
+  await page.fill('.gt-tp-q', anArtistGid);
+  await page.waitForTimeout(600);
+  await page.click('.gt-tp-res', { button: 'right' });
+  await page.waitForTimeout(150);
+  // the raw-entity cell is always .gt-tp-c index 1 ([role, entity, →role,
+  // →entity] is the parsed-cell order) — read through the row's own DOM
+  // rather than a bare first-match selector, which would ambiguously hit
+  // the role column instead.
+  const rawEntityCell = () => page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(1);
+  const readRow = () => page.evaluate(() => {
+    const cs = [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')];
+    return { rawEntity: cs[1]?.textContent, status: document.querySelector('.gt-tp-status')?.textContent, ta: document.querySelector('.gt-tp-ta').value };
+  });
+  const beforeCleanup = await readRow();
+  console.log('before right-click cleanup:', JSON.stringify(beforeCleanup));
+  ck(beforeCleanup.rawEntity === suffixedLine, `sanity: the raw entity text still carries the suffix before cleanup (got "${beforeCleanup.rawEntity}")`);
+  ck(beforeCleanup.status === 'ready', `sanity: the row is fully resolved (role + entity) before cleanup (got "${beforeCleanup.status}")`);
+  // a LEFT click on the raw entity cell must NOT trigger the cleanup —
+  // only right-click does.
+  await rawEntityCell().click();
+  await page.waitForTimeout(150);
+  const afterLeftClick = await readRow();
+  ck(afterLeftClick.rawEntity === suffixedLine, `a plain left click on the raw entity cell does nothing (got "${afterLeftClick.rawEntity}")`);
+  await rawEntityCell().click({ button: 'right' });
+  await page.waitForTimeout(150);
+  const afterCleanup = await readRow();
+  console.log('after right-click cleanup:', JSON.stringify(afterCleanup));
+  ck(afterCleanup.rawEntity === canonicalName, `right-click replaces the raw entity text with the resolved canonical name (got "${afterCleanup.rawEntity}", expected "${canonicalName}")`);
+  ck(afterCleanup.ta.includes(canonicalName) && !afterCleanup.ta.includes(suffixedLine), `the underlying raw textarea is updated too (got ${JSON.stringify(afterCleanup.ta)})`);
+  ck(afterCleanup.status === 'ready', `the row stays resolved after cleanup, doesn't regress to unresolved (got "${afterCleanup.status}")`);
+  // right-clicking again (already clean, no suffix left) is a graceful no-op.
+  await rawEntityCell().click({ button: 'right' });
+  await page.waitForTimeout(150);
+  const afterSecondClick = await readRow();
+  ck(afterSecondClick.rawEntity === canonicalName, `right-clicking an already-clean entity cell is a no-op, not an error (got "${afterSecondClick.rawEntity}")`);
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.waitForTimeout(150);
+} else {
+  console.log('SKIP: no real artist gid available for the raw-entity-cleanup test');
+}
 
 ck(posts === 0, `nothing submitted during the test (${posts})`);
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.233719
+// @version      2026.8.17.234903
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.17.233719 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.17.233703\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.17");
+  console.log('%c String Theory %c v2026.8.17.234903 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.17.234740\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.17");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -20020,7 +20020,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.233703","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.233703","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.234740","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.234740","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -22643,8 +22643,13 @@ ${lines}
       + '.gt-tp-status{color:#8892a0;font-size:11px;white-space:nowrap}'
       + '.gt-tp-applied{color:#2e9e5b;font-weight:600}'
       + '.gt-cons-foot .gt-tp-cnt{flex:1;font-size:12px;color:#556}'
-      + '.gt-cons-foot .gt-tp-resolve{padding:5px 12px;border:1px solid #cfd4da;border-radius:5px;background:#fff;cursor:pointer;font:13px inherit}.gt-cons-foot .gt-tp-resolve:hover{background:#f2f4f7}'
-      + '.gt-cons-foot .gt-tp-resolve:disabled{opacity:.5;cursor:default}'
+      // #525: moved up into .gt-tp-ctrl (top bar, right-aligned after the
+      // Scope pill via its margin-left:auto) to match Match Works' own
+      // toolbar convention — same bold-purple "primary" treatment as its
+      // ⚡ Match button (.gt-wm-btn.primary).
+      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:8px;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font:13px inherit;color:#5f3ec0;font-weight:bold}'
+      + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
+      + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
       + '.gt-tp-apop{width:340px}'
       // #524/#525 follow-up (majkinetor): "2 tabs in search, one for artist
       // and other for labels" — shown for any row whose entity type isn't
@@ -22923,7 +22928,14 @@ ${lines}
     const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.title = 'Clear pattern';
     const presets = el('span', 'gt-tp-presets');
     TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
-    ctrl.append(patIn, patClr, presets, el('span', 'gt-tp-scope', 'Scope: Release'));
+    // #525 (majkinetor): "lets move the Resolve all to the top, to match the
+    // standard, here is the example in GT's work matcher" then "Name it also
+    // Match with the icon" — mirrors Match Works' own toolbar exactly: its
+    // "⚡ Match" button lives at the right of the TOP bar, not the footer
+    // (renderWorkMatch's `tb`), styled the same bold-purple "primary" way.
+    const resolveBtn = el('button', 'gt-tp-resolve', '⚡ Match'); resolveBtn.type = 'button';
+    resolveBtn.title = 'Resolve every role and entity that can auto-resolve';
+    ctrl.append(patIn, patClr, presets, el('span', 'gt-tp-scope', 'Scope: Release'), resolveBtn);
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -22972,12 +22984,11 @@ ${lines}
 
     const foot = el('div', 'gt-cons-foot');
     const cnt = el('span', 'gt-tp-cnt');
-    const resolveBtn = el('button', 'gt-tp-resolve', '🔍 Resolve all'); resolveBtn.type = 'button';
     const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation ↗'); applyClearBtn.type = 'button';
     applyClearBtn.title = 'Apply the resolved rows, then open the annotation editor pre-cleared for you to review and submit';
     applyClearBtn.style.display = 'none';
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
-    foot.append(cnt, resolveBtn, applyClearBtn, applyBtn);
+    foot.append(cnt, applyClearBtn, applyBtn);
 
     const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
     // #522 follow-up (majkinetor, live): "Lets have an option to remove a
@@ -23047,7 +23058,40 @@ ${lines}
           tr.appendChild(rawTd);
         }
         tr.appendChild(el('td', 'gt-tp-c', r.role || ''));
-        tr.appendChild(el('td', 'gt-tp-c', r.entity || ''));
+        // #525 (majkinetor): "since column Entity is used as 'credited as',
+        // lets add right click to it, which will set it to choosen entity
+        // (if there is one)... used to fast clear any suffixes that came
+        // from raw text" — a raw credit like "Felix Vincent*" (Discogs-style
+        // footnote marker) resolves fine to the real artist, but the raw
+        // text is still what gets sent as the credited-as override on Apply
+        // (applyResolvedRows: r.entity !== r.entityMatch.name → credit).
+        // Right-click swaps the raw entity substring for the resolved
+        // entity's own canonical name, clearing that stray override.
+        const entRawTd = el('td', 'gt-tp-c', r.entity || '');
+        if (r.matched && r.entity) {
+          entRawTd.title = r.entityMatch
+            ? `Right-click: replace with the resolved name "${r.entityMatch.name}" (clears suffixes/typos in the raw text)`
+            : 'Resolve the entity first, then right-click here to clean up the raw text';
+          entRawTd.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            if (!r.entityMatch) { toast('Resolve this row’s entity first'); return; }
+            const canonical = r.entityMatch.name || '';
+            if (!canonical || canonical === r.entity) { toast('Already matches the resolved name'); return; }
+            const rawBefore = lines[r.li].raw;
+            if (!rawBefore.includes(r.entity)) { toast('Could not find that exact text in the raw line'); return; }
+            lines[r.li].raw = rawBefore.replace(r.entity, canonical);
+            // seed both caches with the cleaned-up text so the row (and any
+            // other row sharing it) reads as already-resolved on the very
+            // next render, instead of regressing to "search" just because
+            // the raw text — and therefore the parsed entity text the
+            // caches are keyed by — changed underneath it.
+            entityOverride.set(r.key, r.entityMatch);
+            entityCache.set(canonical.toLowerCase().trim(), r.entityMatch);
+            syncTextareaFromLines(); render(); saveState();
+            toast(`Set to “${canonical}”`);
+          });
+        }
+        tr.appendChild(entRawTd);
         // #522 follow-up (majkinetor, live): "Tidy up artist / role column —
         // remove circles, short helper text..." then, after trying a plain
         // non-clickable resolved cell: "After a role is selected, I am not
@@ -23164,7 +23208,7 @@ ${lines}
           bumpProgress(); render(); saveState();
         }
       } finally {
-        resolveBtn.disabled = false; resolveBtn.textContent = '🔍 Resolve all'; render(); saveState();
+        resolveBtn.disabled = false; resolveBtn.textContent = '⚡ Match'; render(); saveState();
       }
     }
 
