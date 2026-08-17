@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17
+// @version      2026.8.17.143100
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2436,11 +2436,30 @@
     const sansPhono = s.replace(/℗|\(p\)|\bphonographic\s+copyright\b/gi, ' ');
     if (/©|\(c\)|\bcopyright\b/i.test(sansPhono)) types.push('copyright');
     if (!types.length) return null;
-    const ym = s.match(/\d{4}/);
-    if (!ym) return null;
-    const holder = s.slice(ym.index + ym[0].length).replace(/^[\s,.:;&+/-]+/i, '').replace(/^and\s+/i, '').trim();
+    // #524 follow-up (majkinetor, live): "℗ & © «R&S Records»" and
+    // "© «R&S Records»" have no year at all and were silently rejected — a
+    // year used to be required just to anchor where the holder text starts.
+    // Strip the LEADING marker cluster instead and anchor on THAT; the year
+    // (if any) is now optional, pulled out from wherever it sits in what's
+    // left. Only the leading cluster — never markers ANYWHERE in the line —
+    // a first cut that stripped "copyright" globally also ate it out of a
+    // holder name that legitimately contained the word ("Some Copyright
+    // Test Label"). One marker (+ its own leading glue) at a time, repeated,
+    // since "℗ & ©" is two markers joined by "&".
+    const LEAD_MARKER_RE = /^(?:[\s,.:;&+/-]|and\b)*(?:℗|\(p\)|phonographic\s+copyright|©|\(c\)|copyright)/i;
+    let rest = s;
+    while (LEAD_MARKER_RE.test(rest)) rest = rest.replace(LEAD_MARKER_RE, '');
+    const ym = rest.match(/\b(\d{4})\b/);
+    const year = ym ? ym[0] : null;
+    if (ym) rest = rest.slice(0, ym.index) + ' ' + rest.slice(ym.index + ym[0].length);
+    // strip leading connective glue ("&", "and", punctuation) then any
+    // wrapping quote marks — plain quotes AND guillemets («»), since
+    // "R&S Records" arrived quoted that way and used to leak a stray "»".
+    let holder = rest.replace(/^[\s,.:;&+/-]+/i, '').replace(/^and\s+/i, '');
+    holder = holder.replace(/^[«"“”'’‘]+/, '').replace(/[»"“”'’‘]+$/, '');
+    holder = holder.replace(/\s+/g, ' ').trim();
     if (!holder) return null;
-    return { types, year: ym[0], holder };
+    return { types, year, holder };
   }
 
   // ── annotation loading (#522): "make sure that tool can also load annotation as a source
@@ -3066,6 +3085,10 @@
       // every search (initial load AND subsequent typing), against the
       // popover's actual current size.
       const reposition = () => {
+        // a debounced search can still resolve after the popover itself was
+        // already closed (closePopover nulls the shared popEl) — nothing to
+        // reposition at that point.
+        if (!popEl) return;
         const rr = popEl.getBoundingClientRect();
         popEl.style.left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - rr.width - 8)) + 'px';
         popEl.style.top = Math.max(8, Math.min(anchorRect.bottom + 4, window.innerHeight - rr.height - 8)) + 'px';

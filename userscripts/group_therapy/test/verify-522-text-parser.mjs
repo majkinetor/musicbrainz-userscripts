@@ -359,6 +359,20 @@ await page.waitForTimeout(100);
 // independent of real test-server holder data.
 const crParse = await page.evaluate(() => window.__groupTherapy.txpParseCopyrightLine('© 2020 Some Label'));
 ck(crParse && crParse.types.join(',') === 'copyright' && crParse.year === '2020' && crParse.holder === 'Some Label', `txpParseCopyrightLine parses a plain © line (got ${JSON.stringify(crParse)})`);
+
+// #524 (majkinetor, live): a year is NOT required — "℗ & © «R&S Records»"
+// and "© «R&S Records»" have no year at all and were previously silently
+// rejected; also regression-guards the guillemet-quoted holder, which used
+// to leak a stray trailing "»" even in the one case that DID parse before.
+const crCases = await page.evaluate(() => ({
+  both: window.__groupTherapy.txpParseCopyrightLine('℗ & © «R&S Records»'),
+  phonoWithYear: window.__groupTherapy.txpParseCopyrightLine('℗ «1995 R&S Records»'),
+  copyrightOnly: window.__groupTherapy.txpParseCopyrightLine('© «R&S Records»'),
+}));
+console.log('#524 copyright cases:', JSON.stringify(crCases));
+ck(crCases.both && crCases.both.types.join(',') === 'phonographic,copyright' && crCases.both.year === null && crCases.both.holder === 'R&S Records', `"℗ & © «R&S Records»" parses with no year (got ${JSON.stringify(crCases.both)})`);
+ck(crCases.phonoWithYear && crCases.phonoWithYear.holder === 'R&S Records', `the guillemet-quoted holder no longer leaks a trailing "»" (got ${JSON.stringify(crCases.phonoWithYear)})`);
+ck(crCases.copyrightOnly && crCases.copyrightOnly.types.join(',') === 'copyright' && crCases.copyrightOnly.year === null && crCases.copyrightOnly.holder === 'R&S Records', `"© «R&S Records»" parses with no year (got ${JSON.stringify(crCases.copyrightOnly)})`);
 const labelCheck = await page.evaluate(async () => {
   try { return await window.__groupTherapy.txpResolveLabelByExactAlias('Zzqxv Nonexistent Label 522' + Date.now()); }
   catch (e) { return '__ERROR__: ' + e.message; }
