@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.184322
+// @version      2026.8.17.201008
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3605,29 +3605,48 @@
     const srcRels = workCreditRels(srcWork).filter(r => !r.removed);
     const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : ''), checked: preselect ? !!preselect(s) : true }));   // #373 pencil/+ pre-tick a subset
     const chosen = () => entries.filter(e => e.cb ? e.cb.checked : e.checked !== false).map(e => e.rel);
-    // Destinations come from MB's own selection state, not the DOM: a newly-created work's checkbox
-    // has no readable React entity (its fiber differs), so a DOM scan misses it — but selectedWorks
-    // holds every ticked work. New works carry a NEGATIVE id and may have no gid yet, so identify by
-    // gid-or-id (not gid alone, which would drop them).
-    const destWorks = [], seenD = new Set(), idOf = w => w.gid || ('#' + w.id);
-    try {
-      for (const e of W.MB.tree.iterate(RE().state.selectedWorks)) {
-        const w = Array.isArray(e) ? e[1] : e; if (!w) continue;
-        if (srcWork.gid && w.gid === srcWork.gid) continue;               // skip the source work
-        if (srcWork.id != null && w.id === srcWork.id) continue;
-        const k = idOf(w); if (seenD.has(k)) continue; seenD.add(k);
-        destWorks.push(w);
-      }
-    } catch (e) {}
-    const nR = srcRels.length, nD = destWorks.length, nounN = `${nR} credit${nR > 1 ? 's' : ''}`;
+    // Destinations: ticked works come from MB's own selection state, not the DOM — a newly-created
+    // work's checkbox has no readable React entity (its fiber differs), so a DOM scan misses it, but
+    // selectedWorks holds every ticked work. New works carry a NEGATIVE id and may have no gid yet, so
+    // identify by gid-or-id (not gid alone, which would drop them). If NOTHING is ticked, fall back to
+    // every OTHER work on the page — mirrors openCopyMenu's recording behavior (#522 follow-up: work
+    // credit copy required a pre-tick while recording credit copy already copied-to-all by default).
+    const idOf = w => w.gid || ('#' + w.id);
+    const tickedWorks = () => {
+      const out = [], seen = new Set();
+      try {
+        for (const e of W.MB.tree.iterate(RE().state.selectedWorks)) {
+          const w = Array.isArray(e) ? e[1] : e; if (!w) continue;
+          if (srcWork.gid && w.gid === srcWork.gid) continue;               // skip the source work
+          if (srcWork.id != null && w.id === srcWork.id) continue;
+          const k = idOf(w); if (seen.has(k)) continue; seen.add(k);
+          out.push(w);
+        }
+      } catch (e) {}
+      return out;
+    };
+    const allOtherWorks = () => {
+      const out = [], seen = new Set();
+      document.querySelectorAll('input.work').forEach(cb => {
+        const w = workEntity(cb); if (!w) return;
+        if (srcWork.gid && w.gid === srcWork.gid) return;
+        if (srcWork.id != null && w.id === srcWork.id) return;
+        const k = idOf(w); if (seen.has(k)) return; seen.add(k);
+        out.push(w);
+      });
+      return out;
+    };
+    const ticked0 = tickedWorks();
+    const destWorks = ticked0.length ? ticked0 : allOtherWorks();
+    const nR = srcRels.length, nD = destWorks.length;
     const destNames = destWorks.map(w => val(w.name));
     const items = [];
     if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no credits` });
-    else if (!nD) items.push({ header: 'Tick destination works first' });
+    else if (!nD) items.push({ header: 'No other works to copy to' });
     else {
       const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
       const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); removeWorkRels(srcWork, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
-      items.push({ header: `Copy to ${nD} work${nD > 1 ? 's' : ''}` },
+      items.push({ header: `Copy to ${ticked0.length ? '' : 'all '}${nD} work${nD > 1 ? 's' : ''}` },
         { note: destNames.slice(0, 6).join(' · ') + (destNames.length > 6 ? ` +${destNames.length - 6} more` : '') },
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
         copyItem, moveItem);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.184347
+// @version      2026.8.17.201223
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.17.184347 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.17.184322\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.17");
+  console.log('%c String Theory %c v2026.8.17.201223 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.17.201008\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.17");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -20020,7 +20020,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.184322","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.184322","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.201008","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.17.201008","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -23615,29 +23615,48 @@ ${lines}
     const srcRels = workCreditRels(srcWork).filter(r => !r.removed);
     const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : ''), checked: preselect ? !!preselect(s) : true }));   // #373 pencil/+ pre-tick a subset
     const chosen = () => entries.filter(e => e.cb ? e.cb.checked : e.checked !== false).map(e => e.rel);
-    // Destinations come from MB's own selection state, not the DOM: a newly-created work's checkbox
-    // has no readable React entity (its fiber differs), so a DOM scan misses it — but selectedWorks
-    // holds every ticked work. New works carry a NEGATIVE id and may have no gid yet, so identify by
-    // gid-or-id (not gid alone, which would drop them).
-    const destWorks = [], seenD = new Set(), idOf = w => w.gid || ('#' + w.id);
-    try {
-      for (const e of W.MB.tree.iterate(RE().state.selectedWorks)) {
-        const w = Array.isArray(e) ? e[1] : e; if (!w) continue;
-        if (srcWork.gid && w.gid === srcWork.gid) continue;               // skip the source work
-        if (srcWork.id != null && w.id === srcWork.id) continue;
-        const k = idOf(w); if (seenD.has(k)) continue; seenD.add(k);
-        destWorks.push(w);
-      }
-    } catch (e) {}
-    const nR = srcRels.length, nD = destWorks.length, nounN = `${nR} credit${nR > 1 ? 's' : ''}`;
+    // Destinations: ticked works come from MB's own selection state, not the DOM — a newly-created
+    // work's checkbox has no readable React entity (its fiber differs), so a DOM scan misses it, but
+    // selectedWorks holds every ticked work. New works carry a NEGATIVE id and may have no gid yet, so
+    // identify by gid-or-id (not gid alone, which would drop them). If NOTHING is ticked, fall back to
+    // every OTHER work on the page — mirrors openCopyMenu's recording behavior (#522 follow-up: work
+    // credit copy required a pre-tick while recording credit copy already copied-to-all by default).
+    const idOf = w => w.gid || ('#' + w.id);
+    const tickedWorks = () => {
+      const out = [], seen = new Set();
+      try {
+        for (const e of W.MB.tree.iterate(RE().state.selectedWorks)) {
+          const w = Array.isArray(e) ? e[1] : e; if (!w) continue;
+          if (srcWork.gid && w.gid === srcWork.gid) continue;               // skip the source work
+          if (srcWork.id != null && w.id === srcWork.id) continue;
+          const k = idOf(w); if (seen.has(k)) continue; seen.add(k);
+          out.push(w);
+        }
+      } catch (e) {}
+      return out;
+    };
+    const allOtherWorks = () => {
+      const out = [], seen = new Set();
+      document.querySelectorAll('input.work').forEach(cb => {
+        const w = workEntity(cb); if (!w) return;
+        if (srcWork.gid && w.gid === srcWork.gid) return;
+        if (srcWork.id != null && w.id === srcWork.id) return;
+        const k = idOf(w); if (seen.has(k)) return; seen.add(k);
+        out.push(w);
+      });
+      return out;
+    };
+    const ticked0 = tickedWorks();
+    const destWorks = ticked0.length ? ticked0 : allOtherWorks();
+    const nR = srcRels.length, nD = destWorks.length;
     const destNames = destWorks.map(w => val(w.name));
     const items = [];
     if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no credits` });
-    else if (!nD) items.push({ header: 'Tick destination works first' });
+    else if (!nD) items.push({ header: 'No other works to copy to' });
     else {
       const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
       const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); removeWorkRels(srcWork, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
-      items.push({ header: `Copy to ${nD} work${nD > 1 ? 's' : ''}` },
+      items.push({ header: `Copy to ${ticked0.length ? '' : 'all '}${nD} work${nD > 1 ? 's' : ''}` },
         { note: destNames.slice(0, 6).join(' · ') + (destNames.length > 6 ? ` +${destNames.length - 6} more` : '') },
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
         copyItem, moveItem);
