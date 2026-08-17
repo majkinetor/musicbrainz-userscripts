@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.015650
+// @version      2026.8.17.021402
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3033,7 +3033,7 @@
         row.addEventListener('click', () => pick(entity, false));
         row.addEventListener('contextmenu', e => { e.preventDefault(); pick(entity, true); });
       };
-      const run = async () => {
+      const runSearch = async () => {
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;
         const gid = (term.match(GID_RE) || [])[0];
         if (gid) {
@@ -3052,18 +3052,29 @@
           list.appendChild(row);
         });
       };
-      let t = null;
-      q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
-      q.addEventListener('paste', () => setTimeout(run, 0));
       document.body.appendChild(popEl);
       // #522 sixth round (majkinetor, live, screenshot): "Artist popup is
       // displaced" — it always anchored to the TABLE's own top-left corner
       // plus a fixed 40px offset, regardless of which row/column was
       // actually clicked. Anchor to the clicked element itself instead,
       // same convention every other popover in this file already uses.
-      const anchorRect = (anchor || txpEl.querySelector('.gt-tp-tbl')).getBoundingClientRect(), rr = popEl.getBoundingClientRect();
-      popEl.style.left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - rr.width - 8)) + 'px';
-      popEl.style.top = Math.max(8, Math.min(anchorRect.bottom + 4, window.innerHeight - rr.height - 8)) + 'px';
+      const anchorRect = (anchor || txpEl.querySelector('.gt-tp-tbl')).getBoundingClientRect();
+      // #522 follow-up (majkinetor, live, screenshot): "search popup can be
+      // offscreen" — the FIRST clamp ran before any results existed, so it
+      // sized against an almost-empty popover; once results/notes filled
+      // it back in the popover grew well past that clamp. Re-run it after
+      // every search (initial load AND subsequent typing), against the
+      // popover's actual current size.
+      const reposition = () => {
+        const rr = popEl.getBoundingClientRect();
+        popEl.style.left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - rr.width - 8)) + 'px';
+        popEl.style.top = Math.max(8, Math.min(anchorRect.bottom + 4, window.innerHeight - rr.height - 8)) + 'px';
+      };
+      const run = async () => { try { await runSearch(); } finally { reposition(); } };
+      reposition();
+      let t = null;
+      q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
+      q.addEventListener('paste', () => setTimeout(run, 0));
       setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); q.focus(); run(); }, 0);
     }
 

@@ -663,6 +663,20 @@ const popBox = await page.locator('.gt-tp-apop').boundingBox();
 console.log('search button box:', JSON.stringify(searchBtnBox), 'popover box:', JSON.stringify(popBox));
 ck(Math.abs(popBox.x - searchBtnBox.x) < 40, `the popover opens near the clicked button horizontally (button x=${searchBtnBox.x}, popover x=${popBox.x})`);
 ck(popBox.y >= searchBtnBox.y, `the popover opens below the clicked button, not above/displaced (button y=${searchBtnBox.y}, popover y=${popBox.y})`);
+// #522 follow-up (majkinetor, live, screenshot): "search popup can be
+// offscreen" — the FIRST position clamp ran before any results existed,
+// so a popover that grows once real results load (a common name returns
+// several candidates) could extend past the clamped bound. Type a query
+// with real results and confirm the popover re-clamps to fit.
+await page.fill('.gt-tp-q', 'John');
+await page.waitForTimeout(900);
+const popBoxAfterResults = await page.evaluate(() => {
+  const r = document.querySelector('.gt-tp-apop').getBoundingClientRect();
+  return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, resultCount: document.querySelectorAll('.gt-tp-apop .gt-tp-res').length };
+});
+console.log('popover after results load:', JSON.stringify(popBoxAfterResults));
+ck(popBoxAfterResults.resultCount > 0, `sanity: the query returned real results (got ${popBoxAfterResults.resultCount})`);
+ck(popBoxAfterResults.right <= 1600 + 1 && popBoxAfterResults.bottom <= 1100 + 1 && popBoxAfterResults.left >= 0 && popBoxAfterResults.top >= 0, `the popover re-clamps to stay fully on-screen once it grows with real results (got ${JSON.stringify(popBoxAfterResults)}, viewport 1600x1100)`);
 await page.keyboard.press('Escape');
 await page.waitForTimeout(150);
 
