@@ -763,6 +763,28 @@ ck(newTypeRows[0].role === 'distributed by' && newTypeRows[0].artist === 'Sony M
 ck(newTypeRows[1].role === 'licensed to' && newTypeRows[1].artist === 'Republic Records 522', `"licensed to" row parses correctly (got ${JSON.stringify(newTypeRows[1])})`);
 ck(newTypeRows[2].artist === 'Shady Records 522' && newTypeRows[3].artist === 'Aftermath Records 522', `the multi-holder line becomes 2 separate rows (got ${JSON.stringify([newTypeRows[2], newTypeRows[3]])})`);
 
+// 30b. the footer shows live "Resolving N/M…" progress while resolveAll
+// runs (majkinetor: "while it is resolving, lets show a message in the
+// footer (resolving 4/N) so progress is visible too and how much of it
+// is left"), then reverts to the normal match count once done.
+await page.fill('.gt-tp-ta', ['Mastering: David Storrs', 'Producer: Gabriel Aldama', 'Recorded by: Eric Lauzon', 'Mixed by: Steven Cooper'].join('\n'));
+await page.waitForTimeout(200);
+const progressSnapshots = await page.evaluate(() => new Promise(resolve => {
+  const snaps = [];
+  const cnt = document.querySelector('.gt-tp-cnt');
+  const mo = new MutationObserver(() => snaps.push(cnt.textContent));
+  mo.observe(cnt, { childList: true, characterData: true, subtree: true });
+  document.querySelector('.gt-tp-resolve').click();
+  const check = setInterval(() => {
+    const btn = document.querySelector('.gt-tp-resolve');
+    if (btn && !btn.disabled && btn.textContent.includes('Resolve all')) { clearInterval(check); mo.disconnect(); resolve(snaps); }
+  }, 50);
+}));
+console.log('progress snapshots:', JSON.stringify(progressSnapshots));
+ck(progressSnapshots.some(s => /^Resolving \d+\/4…$/.test(s)), `the footer shows "Resolving N/4…" while resolving (got ${JSON.stringify(progressSnapshots)})`);
+ck(/^Resolving 0\/4…$/.test(progressSnapshots[0] || ''), `progress starts at 0 (got "${progressSnapshots[0]}")`);
+ck(!/Resolving/.test(progressSnapshots[progressSnapshots.length - 1] || ''), `the footer reverts to the normal match count once resolving finishes (got "${progressSnapshots[progressSnapshots.length - 1]}")`);
+
 // 31. resolveAll + real MB label names for the new types (distributed →
 // "distributed", licensed to → "licensee" — live-verified MB relationship
 // type names, not the plain-English phrase).
