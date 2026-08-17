@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.143100
+// @version      2026.8.17.162435
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2429,12 +2429,50 @@
   // R/A credit DSL. "phonographic copyright" contains the word "copyright" too, so
   // its markers are stripped before checking for a bare © — otherwise every ℗ line
   // would also register as a (wrong) plain © hit.
+  // #524 follow-up (majkinetor): "distributed by and friends, that would be
+  // some improvement" — kellnerd's musicbrainz-scripts wiki (Parse-Copyright-
+  // Notices) treats these as the same class of notice as ©/℗: a marker
+  // phrase, an optional holder, all label→release (or artist→release, see
+  // TXP_CR_LABEL_ONLY below) relationship types. "licensed to X" → X is the
+  // MB "licensee"; "licensed from X" → X is the MB "licensor" (live-verified
+  // against linkTypesForPair — "licensor"/"licensee" are MB's actual names,
+  // not "licensed from/to"). "marketed and distributed by X" fires BOTH
+  // "marketed" and "distributed" against the same X.
+  const TXP_CR_TYPE_NAME = {
+    phonographic: 'phonographic copyright', copyright: 'copyright',
+    licensee: 'licensee', licensor: 'licensor', distributed: 'distributed', marketed: 'marketed',
+  };
+  const TXP_CR_LABELS = {
+    phonographic: '℗ phonographic copyright', copyright: '© copyright',
+    licensee: 'licensed to', licensor: 'licensed from', distributed: 'distributed by', marketed: 'marketed by',
+  };
+  // distributor/marketer/licensee are company-only concepts — MB has no
+  // artist-release relationship type for any of them at all (live-verified);
+  // copyright/phonographic/licensor exist for both, see txpCrEntityType.
+  const TXP_CR_LABEL_ONLY = new Set(['distributed', 'marketed', 'licensee']);
+  // leading-marker phrase alternatives — the compound "marketed and
+  // distributed by" is listed first so it isn't partially eaten by the
+  // plainer "distributed by" / "marketed by" alternatives first.
+  const TXP_CR_MARKER_ALT =
+    '(?:marketed\\s+and\\s+distributed\\s+by' +
+    '|under\\s+(?:exclusive\\s+)?licen[sc]e\\s+to|licen[sc]ed\\s+to' +
+    '|under\\s+(?:exclusive\\s+)?licen[sc]e\\s+from|licen[sc]ed\\s+from' +
+    '|distributed\\s+by|marketed\\s+by' +
+    '|℗|\\(p\\)|phonographic\\s+copyright' +
+    '|©|\\(c\\)|copyright)';
   function txpParseCopyrightLine(line) {
     const s = String(line).trim();
     const types = [];
     if (/℗|\(p\)|\bphonographic\s+copyright\b/i.test(s)) types.push('phonographic');
     const sansPhono = s.replace(/℗|\(p\)|\bphonographic\s+copyright\b/gi, ' ');
     if (/©|\(c\)|\bcopyright\b/i.test(sansPhono)) types.push('copyright');
+    if (/\bunder\s+(?:exclusive\s+)?licen[sc]e\s+to\b|\blicen[sc]ed\s+to\b/i.test(s)) types.push('licensee');
+    if (/\bunder\s+(?:exclusive\s+)?licen[sc]e\s+from\b|\blicen[sc]ed\s+from\b/i.test(s)) types.push('licensor');
+    if (/\bmarketed\s+and\s+distributed\s+by\b/i.test(s)) { types.push('marketed'); types.push('distributed'); }
+    else {
+      if (/\bdistributed\s+by\b/i.test(s)) types.push('distributed');
+      if (/\bmarketed\s+by\b/i.test(s)) types.push('marketed');
+    }
     if (!types.length) return null;
     // #524 follow-up (majkinetor, live): "℗ & © «R&S Records»" and
     // "© «R&S Records»" have no year at all and were silently rejected — a
@@ -2446,20 +2484,43 @@
     // holder name that legitimately contained the word ("Some Copyright
     // Test Label"). One marker (+ its own leading glue) at a time, repeated,
     // since "℗ & ©" is two markers joined by "&".
-    const LEAD_MARKER_RE = /^(?:[\s,.:;&+/-]|and\b)*(?:℗|\(p\)|phonographic\s+copyright|©|\(c\)|copyright)/i;
+    const LEAD_MARKER_RE = new RegExp(`^(?:[\\s,.:;&+/-]|and\\b)*${TXP_CR_MARKER_ALT}`, 'i');
     let rest = s;
     while (LEAD_MARKER_RE.test(rest)) rest = rest.replace(LEAD_MARKER_RE, '');
-    const ym = rest.match(/\b(\d{4})\b/);
-    const year = ym ? ym[0] : null;
-    if (ym) rest = rest.slice(0, ym.index) + ' ' + rest.slice(ym.index + ym[0].length);
+    // strip leading glue AND a leading wrapper quote/guillemet before
+    // hunting for the year — otherwise "℗ «1995 R&S Records»" keeps the "«"
+    // in the way and the year never reads as adjacent to the marker.
+    rest = rest.replace(/^[\s,.:;&+/-]+/i, '').replace(/^[«"“”'’‘]+/, '').replace(/^[\s,.:;&+/-]+/i, '');
+    // #524 follow-up: the year (or year LIST, "1994, 1996" / "1994 & 1996")
+    // is only ever expected immediately after the marker, before the holder
+    // name starts — NOT scanned for throughout the rest of the line, which
+    // would also strip a year that's genuinely part of a holder's own name
+    // ("Pink Floyd (1987) Ltd."). Multiple years are ambiguous (which one
+    // is THE year?) so, same call kellnerd's musicbrainz-scripts makes,
+    // none is kept — but they're still consumed so they don't leak into
+    // the holder text.
+    const yearListRe = /^(\d{4})(?:\s*[,&/+]\s*(\d{4}))*\s*/;
+    const ym = rest.match(yearListRe);
+    let year = null;
+    if (ym) { const allYears = ym[0].match(/\d{4}/g); year = allYears.length === 1 ? allYears[0] : null; rest = rest.slice(ym[0].length); }
     // strip leading connective glue ("&", "and", punctuation) then any
     // wrapping quote marks — plain quotes AND guillemets («»), since
     // "R&S Records" arrived quoted that way and used to leak a stray "»".
-    let holder = rest.replace(/^[\s,.:;&+/-]+/i, '').replace(/^and\s+/i, '');
-    holder = holder.replace(/^[«"“”'’‘]+/, '').replace(/[»"“”'’‘]+$/, '');
-    holder = holder.replace(/\s+/g, ' ').trim();
-    if (!holder) return null;
-    return { types, year, holder };
+    let holderText = rest.replace(/^[\s,.:;&+/-]+/i, '').replace(/^and\s+/i, '');
+    holderText = holderText.replace(/^[«"“”'’‘]+/, '').replace(/[»"“”'’‘]+$/, '');
+    holderText = holderText.replace(/\s+/g, ' ').trim();
+    if (!holderText) return null;
+    // #524 follow-up: "distributed by and friends" also raised multi-holder
+    // splits ("Shady Records/Aftermath Records/Interscope Records") — split
+    // on / and | (not "-": far more often part of a real single name than a
+    // separator), but only when EVERY resulting piece has enough substance
+    // (kellnerd's own guard, refined to >=3 word characters after finding
+    // 2 too permissive for "EMI Belgium SA/NV") — otherwise a real name
+    // like "SA/NV" gets wrongly chopped into two fake holders.
+    const splitParts = holderText.split(/\s*[/|]\s*/).map(p => p.trim()).filter(Boolean);
+    const holders = (splitParts.length > 1 && splitParts.every(p => (p.match(/\w/g) || []).length >= 3))
+      ? splitParts : [holderText];
+    return { types, year, holders };
   }
 
   // ── annotation loading (#522): "make sure that tool can also load annotation as a source
@@ -2561,6 +2622,13 @@
       + '.gt-cons-foot .gt-tp-resolve{padding:5px 12px;border:1px solid #cfd4da;border-radius:5px;background:#fff;cursor:pointer;font:13px inherit}.gt-cons-foot .gt-tp-resolve:hover{background:#f2f4f7}'
       + '.gt-cons-foot .gt-tp-resolve:disabled{opacity:.5;cursor:default}'
       + '.gt-tp-apop{width:340px}'
+      // #524 follow-up (majkinetor): "2 tabs in search, one for artist and
+      // other for labels" — shown only for copyright/phonographic/licensor
+      // rows (the ones MB actually allows both entity types for).
+      + '.gt-tp-apop .gt-tp-tabs{display:flex;gap:4px;margin-bottom:6px}'
+      + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid #cfd4da;border-radius:5px;background:#f6f7f9;cursor:pointer;font:12px inherit;color:#666}'
+      + '.gt-tp-apop .gt-tp-tab:hover{background:#eef4fb}'
+      + '.gt-tp-apop .gt-tp-tab-on{background:#2e6da4;border-color:#2e6da4;color:#fff}'
       + '.gt-tp-apop .gt-tp-qwrap{display:flex;gap:5px;margin-bottom:6px}'
       + '.gt-tp-apop .gt-tp-q{flex:1;min-width:0;box-sizing:border-box;padding:5px 7px;border:1px solid #cfd4da;border-radius:5px;font:13px inherit;outline:none}'
       + '.gt-tp-apop .gt-tp-plus{flex:0 0 auto;width:28px;box-sizing:border-box;border:1px solid #cfd4da;border-radius:5px;background:#f6f7f9;cursor:pointer;font:15px monospace;color:#2e6da4;line-height:1}.gt-tp-apop .gt-tp-plus:hover{background:#eef4fb;border-color:#cfe0f0}'
@@ -2674,11 +2742,15 @@
         splitPairs(ln.raw).forEach((piece, pi) => {
           const cr = txpParseCopyrightLine(piece);
           if (cr) {
-            cr.types.forEach((kind, si) => out.push({
-              li, pi, si, raw: ln.raw,
-              role: kind === 'phonographic' ? '℗ phonographic copyright' : '© copyright',
-              crKind: kind, artist: cr.holder, year: cr.year, matched: true,
-            }));
+            // #524: one row per (type × holder) combination — "marketed
+            // and distributed by Sony" is 2 types, 1 holder = 2 rows;
+            // "℗ 2012 Shady Records/Aftermath Records/..." is 1 type, 3
+            // holders = 3 rows, all sharing the same underlying notice.
+            let si = 0;
+            cr.types.forEach(kind => cr.holders.forEach(holder => out.push({
+              li, pi, si: si++, raw: ln.raw,
+              role: TXP_CR_LABELS[kind], crKind: kind, artist: holder, year: cr.year, matched: true,
+            })));
             return;
           }
           const pat = (ln.override || pattern || '').trim();
@@ -2690,24 +2762,35 @@
       });
       return out;
     }
+    // #524 follow-up (majkinetor): "regarding artist vs label, maybe we can
+    // have 2 tabs in search" — kellnerd's musicbrainz-scripts takes a
+    // simpler tack that covers the common case for free: default to label,
+    // but if the holder name matches one of the RELEASE's own credited
+    // artists, it's almost certainly that artist crediting themselves (the
+    // whole reason the ambiguity exists) — auto-detect that, and offer the
+    // 2-tab toggle in the picker (txpPickArtist) as the manual override for
+    // when auto-detect guesses wrong.
+    function txpCrEntityType(kind, holder) {
+      if (TXP_CR_LABEL_ONLY.has(kind)) return 'label';   // MB has no artist-release type for these at all
+      const names = (release.artistCredit && release.artistCredit.names) || [];
+      const isReleaseArtist = names.some(n => n.artist && (txpSameName(n.artist.name, holder) || txpSameName(n.artist.sort_name, holder)));
+      return isReleaseArtist ? 'artist' : 'label';
+    }
     function attachResolution(row) {
       row.key = row.li + ':' + row.pi + ':' + row.si;
       if (!row.matched) { row.roleMatch = null; row.artistMatch = null; return row; }
       row.artistMatch = artistOverride.has(row.key) ? artistOverride.get(row.key) : (artistCache.get((row.artist || '').toLowerCase().trim()) || null);
       if (row.crKind) {
-        // label→release only for now (majkinetor: "do only label->release
-        // for now, and we can eventually improve it in the future" —
-        // self-released artist-copyright is a deliberately deferred case).
-        row.roleMatch = row.artistMatch ? txpCopyrightLinkType(row.crKind) : null;
+        row.crEntityType = txpCrEntityType(row.crKind, row.artist);
+        row.roleMatch = row.artistMatch ? txpCopyrightLinkType(row.crKind, row.crEntityType) : null;
         return row;
       }
       row.roleMatch = roleCache.get((row.role || '').toLowerCase().trim()) || null;
       return row;
     }
-    function txpCopyrightLinkType(kind) {
-      const roles = linkTypesForPair('label', 'release');
-      const want = kind === 'phonographic' ? 'phonographic copyright' : 'copyright';
-      return roles.find(r => r.name.toLowerCase() === want) || null;
+    function txpCopyrightLinkType(kind, entityType) {
+      const roles = linkTypesForPair(entityType, 'release');
+      return roles.find(r => r.name.toLowerCase() === TXP_CR_TYPE_NAME[kind]) || null;
     }
     const dotClass = r => !r.matched ? 'gt-tp-dot-red' : (r.roleMatch && r.artistMatch) ? 'gt-tp-dot-green' : 'gt-tp-dot-amber';
     const statusText = r => {
@@ -2922,17 +3005,22 @@
         const crRows = rows.filter(r => r.crKind);
         const creditRows = rows.filter(r => !r.crKind);
 
-        // copyright holders — label→release only for now.
-        const holders = [...new Set(crRows.map(r => r.artist).filter(Boolean))];
-        for (const h of holders) {
+        // #524: copyright/legal-notice holders — entity type (artist vs
+        // label) auto-detected per holder text (txpCrEntityType); dedup by
+        // holder text (the common case — the same holder rarely needs both
+        // a forced-label type like "distributed" AND an auto-detected one
+        // in the same block; see txpCrEntityType's own doc for that edge).
+        const crHolders = [...new Map(crRows.map(r => [r.artist, txpCrEntityType(r.crKind, r.artist)])).entries()];
+        for (const [h, entityType] of crHolders) {
+          if (!h) continue;
           const key = h.toLowerCase().trim();
           if (artistCache.has(key)) continue;
           try {
-            let hit = await txpResolveLabelByExactAlias(h);
+            let hit = entityType === 'artist' ? await txpResolveByExactAlias(h) : await txpResolveLabelByExactAlias(h);
             if (!hit) {
-              const labelCands = await txpSearchLabel(h, 5);
-              const exactL = labelCands.filter(c => (c.name || '').toLowerCase().trim() === key);
-              if (exactL.length === 1) { const full = await txpFetchEntity(exactL[0].gid || exactL[0].id, 'label'); if (full) hit = { entity: full }; }
+              const cands = entityType === 'artist' ? await txpSearchArtist(h, 5) : await txpSearchLabel(h, 5);
+              const exact = cands.filter(c => (c.name || '').toLowerCase().trim() === key);
+              if (exact.length === 1) { const full = await txpFetchEntity(exact[0].gid || exact[0].id, entityType); if (full) hit = { entity: full }; }
             }
             artistCache.set(key, hit ? hit.entity : null);
           } catch (e) { artistCache.set(key, null); }
@@ -3011,19 +3099,31 @@
     }
     function txpPickArtist(r, anchor) {
       closePopover();
-      const isCr = !!r.crKind;   // copyright rows resolve a LABEL only, for now
+      // #524 follow-up (majkinetor): "regarding artist vs label, maybe we
+      // can have 2 tabs in search" — auto-detect (txpCrEntityType, already
+      // computed onto r.crEntityType by attachResolution) picks the
+      // starting tab; distributed/marketed/licensee can't toggle at all
+      // (MB has no artist-release type for them, so searching artists
+      // would just produce an unresolvable pick).
+      const canToggle = !!r.crKind && !TXP_CR_LABEL_ONLY.has(r.crKind);
+      let searchKind = r.crKind ? (r.crEntityType || 'label') : 'artist';
       popEl = el('div', 'gt-pop gt-tp-apop');
-      popEl.appendChild(el('div', 'gt-pop-hdr', `Pick ${isCr ? 'a label' : 'an artist'} for “${trunc(r.role || r.raw, 40)}”`));
+      const hdr = el('div', 'gt-pop-hdr'); popEl.appendChild(hdr);
+      if (canToggle) {
+        const tabs = el('div', 'gt-tp-tabs');
+        const mkTab = kind => { const b = el('button', 'gt-tp-tab', kind === 'label' ? 'Label' : 'Artist'); b.type = 'button'; b.onclick = () => { searchKind = kind; renderChrome(); runSearch(); }; return b; };
+        tabs.append(mkTab('label'), mkTab('artist'));
+        popEl.appendChild(tabs);
+      }
       // #522 follow-up (majkinetor, live): "Remove 'Create artist' from the
       // bottom of artist search, add it as a + in the search, as we do in
       // all other scripts" (mock: a "[+]" button inside the search box
       // itself) — replaces the separate link row below the results.
       const qWrap = el('div', 'gt-tp-qwrap');
-      const q = el('input', 'gt-tp-q'); q.type = 'text'; q.placeholder = `search ${isCr ? 'labels' : 'artists'}, or paste an MBID / URL…`; q.value = r.artist || '';
+      const q = el('input', 'gt-tp-q'); q.type = 'text'; q.value = r.artist || '';
       const createBtn = el('button', 'gt-tp-plus', '+'); createBtn.type = 'button';
-      createBtn.title = `Create ${isCr ? 'label' : 'artist'} “${trunc(r.artist || '', 40)}” ↗`;
       createBtn.onclick = () => {
-        const url = (isCr ? '/label/create?edit-label.name=' : '/artist/create?edit-artist.name=') + encodeURIComponent(r.artist || '');
+        const url = (searchKind === 'label' ? '/label/create?edit-label.name=' : '/artist/create?edit-artist.name=') + encodeURIComponent(r.artist || '');
         window.open(url, '_blank', 'noopener');
       };
       qWrap.append(q, createBtn);
@@ -3037,6 +3137,17 @@
       // shared artistCache, same as auto-resolve uses) — same propagation
       // as before, now opt-in instead of automatic.
       popEl.appendChild(el('div', 'gt-tp-hint', 'Click: this row only · Right-click: every row with this same text'));
+      // header/placeholder/create-title/tab-highlight all depend on
+      // searchKind, which the tabs above can change after the popover is
+      // already open — kept in one place so toggling stays in sync.
+      const renderChrome = () => {
+        const label = searchKind === 'label' ? 'a label' : 'an artist';
+        hdr.textContent = `Pick ${label} for “${trunc(r.role || r.raw, 40)}”`;
+        q.placeholder = `search ${searchKind === 'label' ? 'labels' : 'artists'}, or paste an MBID / URL…`;
+        createBtn.title = `Create ${searchKind === 'label' ? 'label' : 'artist'} “${trunc(r.artist || '', 40)}” ↗`;
+        if (canToggle) [...popEl.querySelectorAll('.gt-tp-tab')].forEach(b => b.classList.toggle('gt-tp-tab-on', (b.textContent === 'Label') === (searchKind === 'label')));
+      };
+      renderChrome();
       const pick = (entity, bulk) => {
         if (bulk) artistCache.set((r.artist || '').toLowerCase().trim(), entity);
         else artistOverride.set(r.key, entity);
@@ -3056,12 +3167,12 @@
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;
         const gid = (term.match(GID_RE) || [])[0];
         if (gid) {
-          const ent = await txpFetchEntity(gid, isCr ? 'label' : 'artist');
+          const ent = await txpFetchEntity(gid, searchKind);
           if (ent) { const row = resRow((ent.name || '') + (ent.disambiguation ? ` (${ent.disambiguation})` : ''), ent.entityType || ''); wirePick(row, ent); list.appendChild(row); }
           else list.appendChild(el('div', 'gt-pop-note', 'Nothing found with that MBID.'));
           return;
         }
-        const searches = isCr ? [txpSearchLabel(term, 8).then(l => l.map(c => ({ ...c, _kind: 'label' })))] : [txpSearchArtist(term, 8).then(l => l.map(c => ({ ...c, _kind: 'artist' })))];
+        const searches = searchKind === 'label' ? [txpSearchLabel(term, 8).then(l => l.map(c => ({ ...c, _kind: 'label' })))] : [txpSearchArtist(term, 8).then(l => l.map(c => ({ ...c, _kind: 'artist' })))];
         const cands = (await Promise.all(searches)).flat();
         if (!cands.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
         cands.forEach(c => {

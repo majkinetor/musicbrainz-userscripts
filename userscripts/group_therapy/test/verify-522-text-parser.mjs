@@ -358,7 +358,7 @@ await page.waitForTimeout(100);
 // direct function-level checks for the copyright parser + label resolution,
 // independent of real test-server holder data.
 const crParse = await page.evaluate(() => window.__groupTherapy.txpParseCopyrightLine('© 2020 Some Label'));
-ck(crParse && crParse.types.join(',') === 'copyright' && crParse.year === '2020' && crParse.holder === 'Some Label', `txpParseCopyrightLine parses a plain © line (got ${JSON.stringify(crParse)})`);
+ck(crParse && crParse.types.join(',') === 'copyright' && crParse.year === '2020' && crParse.holders.join(',') === 'Some Label', `txpParseCopyrightLine parses a plain © line (got ${JSON.stringify(crParse)})`);
 
 // #524 (majkinetor, live): a year is NOT required — "℗ & © «R&S Records»"
 // and "© «R&S Records»" have no year at all and were previously silently
@@ -370,9 +370,38 @@ const crCases = await page.evaluate(() => ({
   copyrightOnly: window.__groupTherapy.txpParseCopyrightLine('© «R&S Records»'),
 }));
 console.log('#524 copyright cases:', JSON.stringify(crCases));
-ck(crCases.both && crCases.both.types.join(',') === 'phonographic,copyright' && crCases.both.year === null && crCases.both.holder === 'R&S Records', `"℗ & © «R&S Records»" parses with no year (got ${JSON.stringify(crCases.both)})`);
-ck(crCases.phonoWithYear && crCases.phonoWithYear.holder === 'R&S Records', `the guillemet-quoted holder no longer leaks a trailing "»" (got ${JSON.stringify(crCases.phonoWithYear)})`);
-ck(crCases.copyrightOnly && crCases.copyrightOnly.types.join(',') === 'copyright' && crCases.copyrightOnly.year === null && crCases.copyrightOnly.holder === 'R&S Records', `"© «R&S Records»" parses with no year (got ${JSON.stringify(crCases.copyrightOnly)})`);
+ck(crCases.both && crCases.both.types.join(',') === 'phonographic,copyright' && crCases.both.year === null && crCases.both.holders.join(',') === 'R&S Records', `"℗ & © «R&S Records»" parses with no year (got ${JSON.stringify(crCases.both)})`);
+ck(crCases.phonoWithYear && crCases.phonoWithYear.holders.join(',') === 'R&S Records', `the guillemet-quoted holder no longer leaks a trailing "»" (got ${JSON.stringify(crCases.phonoWithYear)})`);
+ck(crCases.copyrightOnly && crCases.copyrightOnly.types.join(',') === 'copyright' && crCases.copyrightOnly.year === null && crCases.copyrightOnly.holders.join(',') === 'R&S Records', `"© «R&S Records»" parses with no year (got ${JSON.stringify(crCases.copyrightOnly)})`);
+
+// #524 follow-up (majkinetor): "distributed by and friends, that would be
+// some improvement" — kellnerd's musicbrainz-scripts wiki catalog of
+// additional notice types, plus multi-holder splitting and ambiguous
+// multi-year handling from the same source.
+const crCases2 = await page.evaluate(() => {
+  const GT = window.__groupTherapy;
+  return {
+    distributedBy: GT.txpParseCopyrightLine('distributed by Sony Music Entertainment'),
+    marketedBy: GT.txpParseCopyrightLine('marketed by Universal Music'),
+    marketedAndDistributed: GT.txpParseCopyrightLine('marketed and distributed by Sony Music Entertainment'),
+    licensedTo: GT.txpParseCopyrightLine('licensed to Republic Records'),
+    licensedFrom: GT.txpParseCopyrightLine('under exclusive licence from Interscope Records'),
+    multiHolder: GT.txpParseCopyrightLine('℗ 2012 Shady Records/Aftermath Records/Interscope Records'),
+    saNv: GT.txpParseCopyrightLine('© EMI Belgium SA/NV'),
+    pinkFloyd: GT.txpParseCopyrightLine('© 2016 Pink Floyd Music Ltd. / Pink Floyd (1987) Ltd.'),
+    multiYear: GT.txpParseCopyrightLine('© 1994, 1996 Some Label'),
+  };
+});
+console.log('#524 follow-up cases:', JSON.stringify(crCases2));
+ck(crCases2.distributedBy && crCases2.distributedBy.types.join(',') === 'distributed' && crCases2.distributedBy.holders.join(',') === 'Sony Music Entertainment', `"distributed by X" parses (got ${JSON.stringify(crCases2.distributedBy)})`);
+ck(crCases2.marketedBy && crCases2.marketedBy.types.join(',') === 'marketed' && crCases2.marketedBy.holders.join(',') === 'Universal Music', `"marketed by X" parses (got ${JSON.stringify(crCases2.marketedBy)})`);
+ck(crCases2.marketedAndDistributed && crCases2.marketedAndDistributed.types.join(',') === 'marketed,distributed', `"marketed and distributed by X" fires BOTH types (got ${JSON.stringify(crCases2.marketedAndDistributed.types)})`);
+ck(crCases2.licensedTo && crCases2.licensedTo.types.join(',') === 'licensee' && crCases2.licensedTo.holders.join(',') === 'Republic Records', `"licensed to X" -> licensee (got ${JSON.stringify(crCases2.licensedTo)})`);
+ck(crCases2.licensedFrom && crCases2.licensedFrom.types.join(',') === 'licensor' && crCases2.licensedFrom.holders.join(',') === 'Interscope Records', `"under exclusive licence from X" -> licensor (got ${JSON.stringify(crCases2.licensedFrom)})`);
+ck(crCases2.multiHolder && crCases2.multiHolder.holders.length === 3 && crCases2.multiHolder.holders.join('|') === 'Shady Records|Aftermath Records|Interscope Records', `multi-holder "/" split into 3 holders (got ${JSON.stringify(crCases2.multiHolder.holders)})`);
+ck(crCases2.saNv && crCases2.saNv.holders.join(',') === 'EMI Belgium SA/NV', `"SA/NV" is NOT wrongly split (got ${JSON.stringify(crCases2.saNv.holders)})`);
+ck(crCases2.pinkFloyd && crCases2.pinkFloyd.year === '2016' && crCases2.pinkFloyd.holders.join('|') === 'Pink Floyd Music Ltd.|Pink Floyd (1987) Ltd.', `a year embedded INSIDE a later holder's own name ("(1987)") is not mistaken for the notice year (got ${JSON.stringify(crCases2.pinkFloyd)})`);
+ck(crCases2.multiYear && crCases2.multiYear.year === null && crCases2.multiYear.holders.join(',') === 'Some Label', `ambiguous multiple years ("1994, 1996") are dropped, not guessed (got ${JSON.stringify(crCases2.multiYear)})`);
 const labelCheck = await page.evaluate(async () => {
   try { return await window.__groupTherapy.txpResolveLabelByExactAlias('Zzqxv Nonexistent Label 522' + Date.now()); }
   catch (e) { return '__ERROR__: ' + e.message; }
@@ -705,6 +734,83 @@ const roleSelInfo = await page.evaluate(() => {
 });
 console.log('role search selection:', JSON.stringify(roleSelInfo));
 ck(roleSelInfo && roleSelInfo.len > 0 && roleSelInfo.start === 0 && roleSelInfo.end === roleSelInfo.len, `the role picker's pre-filled text is fully selected (got ${JSON.stringify(roleSelInfo)})`);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(150);
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+
+// ── seventh round: "distributed by and friends" + artist-vs-label (#524) ──
+
+// 30. new notice types render as their own rows, and a multi-holder line
+// expands into one row per holder (majkinetor: "distributed by and
+// friends, that would be some improvement").
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-ta', [
+  'distributed by Sony Music Entertainment 522',
+  'licensed to Republic Records 522',
+  '℗ 2012 Shady Records 522/Aftermath Records 522',
+].join('\n'));
+await page.waitForTimeout(200);
+const newTypeRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
+  const cs = [...tr.querySelectorAll('.gt-tp-c')];
+  return { role: cs[0]?.textContent, artist: cs[1]?.textContent };
+}));
+console.log('new notice type rows:', JSON.stringify(newTypeRows));
+ck(newTypeRows.length === 4, `3 lines (1 multi-holder) produce 4 rows (got ${newTypeRows.length})`);
+ck(newTypeRows[0].role === 'distributed by' && newTypeRows[0].artist === 'Sony Music Entertainment 522', `"distributed by" row parses correctly (got ${JSON.stringify(newTypeRows[0])})`);
+ck(newTypeRows[1].role === 'licensed to' && newTypeRows[1].artist === 'Republic Records 522', `"licensed to" row parses correctly (got ${JSON.stringify(newTypeRows[1])})`);
+ck(newTypeRows[2].artist === 'Shady Records 522' && newTypeRows[3].artist === 'Aftermath Records 522', `the multi-holder line becomes 2 separate rows (got ${JSON.stringify([newTypeRows[2], newTypeRows[3]])})`);
+
+// 31. resolveAll + real MB label names for the new types (distributed →
+// "distributed", licensed to → "licensee" — live-verified MB relationship
+// type names, not the plain-English phrase).
+await page.fill('.gt-tp-ta', 'distributed by Sony Music Entertainment\nlicensed to Universal Music Group');
+await page.waitForTimeout(150);
+await page.click('.gt-tp-resolve');
+await page.waitForTimeout(2500);
+const resolvedNewTypes = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
+  const cs = [...tr.querySelectorAll('.gt-tp-c')];
+  return { role: cs[0]?.textContent, resolvedRole: cs[2]?.textContent, resolvedArtist: cs[3]?.textContent };
+}));
+console.log('resolved new-type rows:', JSON.stringify(resolvedNewTypes));
+ck(resolvedNewTypes[0].resolvedRole === 'distributed' && resolvedNewTypes[0].resolvedArtist !== 'search', `"distributed by Sony Music Entertainment" auto-resolves to the "distributed" MB relationship type (got ${JSON.stringify(resolvedNewTypes[0])})`);
+ck(resolvedNewTypes[1].resolvedRole === 'licensee' && resolvedNewTypes[1].resolvedArtist !== 'search', `"licensed to Universal Music Group" auto-resolves to the "licensee" MB relationship type (got ${JSON.stringify(resolvedNewTypes[1])})`);
+
+// 32. artist-vs-label auto-detection (majkinetor: "regarding artist vs
+// label, maybe we can have 2 tabs in search") — a copyright holder whose
+// name matches the RELEASE's own credited artist auto-detects as an
+// artist; a "distributed by" row (label-only concept, MB has no
+// artist-release type for it) never offers the toggle at all.
+await page.fill('.gt-tp-ta', '© 2020 もちこまめ\ndistributed by Sony Music Entertainment 522');
+await page.waitForTimeout(200);
+await page.locator('.gt-tp-row').nth(0).locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
+await page.waitForTimeout(200);
+const artistDetect = await page.evaluate(() => ({
+  header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
+  activeTab: document.querySelector('.gt-tp-apop .gt-tp-tab-on')?.textContent,
+}));
+console.log('artist auto-detect:', JSON.stringify(artistDetect));
+ck(/an artist/.test(artistDetect.header || ''), `a copyright holder matching the release's own artist auto-detects as "artist" (got "${artistDetect.header}")`);
+ck(artistDetect.activeTab === 'Artist', `the Artist tab starts active (got "${artistDetect.activeTab}")`);
+// toggle to Label and back — the picker updates live without reopening.
+await page.click('.gt-tp-apop .gt-tp-tab:has-text("Label")');
+await page.waitForTimeout(150);
+const afterLabelToggle = await page.evaluate(() => ({
+  header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
+  placeholder: document.querySelector('.gt-tp-q')?.placeholder,
+}));
+console.log('after Label toggle:', JSON.stringify(afterLabelToggle));
+ck(/a label/.test(afterLabelToggle.header || ''), `clicking the Label tab updates the picker header live (got "${afterLabelToggle.header}")`);
+ck(/labels/.test(afterLabelToggle.placeholder || ''), `clicking the Label tab updates the search placeholder live (got "${afterLabelToggle.placeholder}")`);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(150);
+
+await page.locator('.gt-tp-row').nth(1).locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
+await page.waitForTimeout(200);
+const noToggle = await page.evaluate(() => !document.querySelector('.gt-tp-apop .gt-tp-tabs'));
+ck(noToggle, '"distributed by" (label-only concept) never offers the artist/label toggle');
 await page.keyboard.press('Escape');
 await page.waitForTimeout(150);
 await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
