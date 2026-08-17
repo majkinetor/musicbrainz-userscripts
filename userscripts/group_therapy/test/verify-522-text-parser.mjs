@@ -390,6 +390,12 @@ const crCases2 = await page.evaluate(() => {
     saNv: GT.txpParseCopyrightLine('© EMI Belgium SA/NV'),
     pinkFloyd: GT.txpParseCopyrightLine('© 2016 Pink Floyd Music Ltd. / Pink Floyd (1987) Ltd.'),
     multiYear: GT.txpParseCopyrightLine('© 1994, 1996 Some Label'),
+    // #525 (majkinetor, live, screenshot): "Distributed By – Rush Hour
+    // Music" left a stray leading "–" in the holder — the glue-stripping
+    // char classes only covered the plain ASCII hyphen, not the en-dash
+    // majkinetor's own credit format uses as its separator.
+    enDashSep: GT.txpParseCopyrightLine('Distributed By – Rush Hour Music'),
+    enDashSepNoYear: GT.txpParseCopyrightLine('Copyright © – Club Coco'),
   };
 });
 console.log('#524 follow-up cases:', JSON.stringify(crCases2));
@@ -402,6 +408,8 @@ ck(crCases2.multiHolder && crCases2.multiHolder.holders.length === 3 && crCases2
 ck(crCases2.saNv && crCases2.saNv.holders.join(',') === 'EMI Belgium SA/NV', `"SA/NV" is NOT wrongly split (got ${JSON.stringify(crCases2.saNv.holders)})`);
 ck(crCases2.pinkFloyd && crCases2.pinkFloyd.year === '2016' && crCases2.pinkFloyd.holders.join('|') === 'Pink Floyd Music Ltd.|Pink Floyd (1987) Ltd.', `a year embedded INSIDE a later holder's own name ("(1987)") is not mistaken for the notice year (got ${JSON.stringify(crCases2.pinkFloyd)})`);
 ck(crCases2.multiYear && crCases2.multiYear.year === null && crCases2.multiYear.holders.join(',') === 'Some Label', `ambiguous multiple years ("1994, 1996") are dropped, not guessed (got ${JSON.stringify(crCases2.multiYear)})`);
+ck(crCases2.enDashSep && crCases2.enDashSep.holders.join(',') === 'Rush Hour Music', `"Distributed By – X" (en-dash separator) doesn't leak a leading "–" into the holder (got ${JSON.stringify(crCases2.enDashSep)})`);
+ck(crCases2.enDashSepNoYear && crCases2.enDashSepNoYear.holders.join(',') === 'Club Coco', `"Copyright © – X" (en-dash, no year) doesn't leak a leading "–" into the holder (got ${JSON.stringify(crCases2.enDashSepNoYear)})`);
 const labelCheck = await page.evaluate(async () => {
   try { return await window.__groupTherapy.txpResolveLabelByExactAlias('Zzqxv Nonexistent Label 522' + Date.now()); }
   catch (e) { return '__ERROR__: ' + e.message; }

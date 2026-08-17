@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.204127
+// @version      2026.8.17.233703
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2489,13 +2489,22 @@
     // holder name that legitimately contained the word ("Some Copyright
     // Test Label"). One marker (+ its own leading glue) at a time, repeated,
     // since "℗ & ©" is two markers joined by "&".
-    const LEAD_MARKER_RE = new RegExp(`^(?:[\\s,.:;&+/-]|and\\b)*${TXP_CR_MARKER_ALT}`, 'i');
+    // #525 follow-up (majkinetor, live, screenshot): "Distributed By –
+    // Rush Hour Music" left a stray leading "–" in the holder text — the
+    // glue-stripping char classes below only covered the plain ASCII
+    // hyphen, not the en/em-dash (and U+2010 hyphen) variants majkinetor's
+    // own credit format actually uses as a separator after the marker
+    // phrase. TXP_CR_GLUE matches the same dash set TXP_SEPS already
+    // treats as equivalent separators elsewhere in this file.
+    const TXP_CR_GLUE = '\\s,.:;&+/‐–—-';
+    const LEAD_MARKER_RE = new RegExp(`^(?:[${TXP_CR_GLUE}]|and\\b)*${TXP_CR_MARKER_ALT}`, 'i');
     let rest = s;
     while (LEAD_MARKER_RE.test(rest)) rest = rest.replace(LEAD_MARKER_RE, '');
     // strip leading glue AND a leading wrapper quote/guillemet before
     // hunting for the year — otherwise "℗ «1995 R&S Records»" keeps the "«"
     // in the way and the year never reads as adjacent to the marker.
-    rest = rest.replace(/^[\s,.:;&+/-]+/i, '').replace(/^[«"“”'’‘]+/, '').replace(/^[\s,.:;&+/-]+/i, '');
+    const LEAD_GLUE_RE = new RegExp(`^[${TXP_CR_GLUE}]+`, 'i');
+    rest = rest.replace(LEAD_GLUE_RE, '').replace(/^[«"“”'’‘]+/, '').replace(LEAD_GLUE_RE, '');
     // #524 follow-up: the year (or year LIST, "1994, 1996" / "1994 & 1996")
     // is only ever expected immediately after the marker, before the holder
     // name starts — NOT scanned for throughout the rest of the line, which
@@ -2511,7 +2520,7 @@
     // strip leading connective glue ("&", "and", punctuation) then any
     // wrapping quote marks — plain quotes AND guillemets («»), since
     // "R&S Records" arrived quoted that way and used to leak a stray "»".
-    let holderText = rest.replace(/^[\s,.:;&+/-]+/i, '').replace(/^and\s+/i, '');
+    let holderText = rest.replace(LEAD_GLUE_RE, '').replace(/^and\s+/i, '');
     holderText = holderText.replace(/^[«"“”'’‘]+/, '').replace(/[»"“”'’‘]+$/, '');
     holderText = holderText.replace(/\s+/g, ' ').trim();
     if (!holderText) return null;
