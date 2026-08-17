@@ -96,7 +96,7 @@ ck(/copyright/i.test(emptyState.placeholder) && /phonographic/i.test(emptyState.
 ck(emptyState.lineBg !== 'rgba(0, 0, 0, 0)' && emptyState.lineBg !== 'transparent', `a column resize handle has a visible line at rest, not just on hover (got "${emptyState.lineBg}")`);
 ck(parseFloat(emptyState.lineWidth) <= 2, `the resize line itself is thin, not a fat bar (got ${emptyState.lineWidth})`);
 
-// 2. paste majkinetor's own R: A sample and confirm it parses correctly.
+// 2. paste majkinetor's own R: E sample and confirm it parses correctly.
 const RA_SAMPLE = [
   'Graphic Design: Ricardo "Magrão" Fernandes',
   'Mastering: Michael Graves (Osiris Studio)',
@@ -107,19 +107,19 @@ const RA_SAMPLE = [
 await page.fill('.gt-tp-ta', RA_SAMPLE);
 await page.waitForTimeout(150);
 let rowTexts = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
-console.log('R: A rows:', JSON.stringify(rowTexts));
+console.log('R: E rows:', JSON.stringify(rowTexts));
 ck(rowTexts.length === 5, `all 5 lines produce a row (got ${rowTexts.length})`);
 ck(rowTexts[1][0] === 'Mastering' && rowTexts[1][1].includes('Michael Graves'), `role/artist split correctly for one row (got ${JSON.stringify(rowTexts[1])})`);
 
-// 3. switch to the A - R[,] preset and confirm the comma-split expansion.
-await page.click('.gt-tp-chip:has-text("A - R[,]")');
+// 3. switch to the E - R[,] preset and confirm the comma-split expansion.
+await page.click('.gt-tp-chip:has-text("E - R[,]")');
 await page.fill('.gt-tp-ta', 'Cameron Allen - Flute, Tenor Saxophone');
 await page.waitForTimeout(150);
 rowTexts = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
-console.log('A - R[,] rows:', JSON.stringify(rowTexts));
+console.log('E - R[,] rows:', JSON.stringify(rowTexts));
 ck(rowTexts.length === 2, `one line with 2 comma-split roles expands to 2 rows (got ${rowTexts.length})`);
-// table columns are always [role, artist] regardless of the pattern's own field order.
-ck(rowTexts.every(r => r[1] === 'Cameron Allen'), 'both expanded rows share the same artist');
+// table columns are always [role, entity] regardless of the pattern's own field order.
+ck(rowTexts.every(r => r[1] === 'Cameron Allen'), 'both expanded rows share the same entity');
 ck(rowTexts.map(r => r[0]).join('|') === 'Flute|Tenor Saxophone', `roles split correctly (got ${JSON.stringify(rowTexts.map(r => r[0]))})`);
 
 // 4. annotation loading — a real fetch against a real release (loose assertion,
@@ -154,7 +154,7 @@ ck(artistCheck === null, `txpResolveByExactAlias correctly returns null for a na
 // 7. apply — resolve a single row manually via the picker paste-MBID path (a
 // stable, data-drift-proof way to get a resolved artist), then Apply, and
 // confirm a real relationship-item / rel-add appears in the DOM.
-await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-pat', 'R: E');
 await page.fill('.gt-tp-ta', 'Mastering: Test Artist For 522');
 await page.waitForTimeout(150);
 // resolve the role automatically (exact name match, no picker needed)
@@ -208,7 +208,7 @@ if (anArtistGid) {
 // AFTER the apply test manually resolved a DIFFERENT artist at the same row
 // POSITION, a position-keyed manual pick used to leak that stale resolution
 // onto "Alice" here. Resolutions are now keyed by row TEXT, not position.)
-await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-pat', 'R: E');
 await page.fill('.gt-tp-ta', 'Guitar: Alice; Bass: Bob');
 await page.waitForTimeout(150);
 let pairRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
@@ -224,11 +224,11 @@ await page.fill('.gt-tp-ta', 'Line one\nLine two');
 await page.waitForTimeout(150);
 const ov = page.locator('.gt-tp-ov').first();
 await ov.click();
-await ov.type('R: A', { delay: 25 });
+await ov.type('R: E', { delay: 25 });
 await page.waitForTimeout(150);
 const focusInfo = await page.evaluate(() => ({ cls: document.activeElement.className || '', val: document.activeElement.value || '' }));
 console.log('focus after typing an override:', JSON.stringify(focusInfo));
-ck(focusInfo.cls.includes('gt-tp-ov') && focusInfo.val === 'R: A', `focus and value survive re-renders while typing (got ${JSON.stringify(focusInfo)})`);
+ck(focusInfo.cls.includes('gt-tp-ov') && focusInfo.val === 'R: E', `focus and value survive re-renders while typing (got ${JSON.stringify(focusInfo)})`);
 
 // 10. fuzzy role auto-resolution ("compiled" -> "compiler", "mastered by" ->
 // "mastering") without colliding with lookalike roles ("chorus master",
@@ -321,13 +321,13 @@ ck(restoredText === marker, `pasted text survives a close+reopen on the same rel
 // 15. Copyright notices are detected AUTOMATICALLY by their ©/℗ markers —
 // no separate mode. A paste can freely mix ordinary credits with a
 // copyright line, all resolved in the same pass.
-await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-pat', 'R: E');
 await page.fill('.gt-tp-ta', 'Mastering: Someone For 522\n℗ & © 2020 Some Copyright Test Label 522');
 await page.waitForTimeout(150);
 const mixedRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
 console.log('mixed credit + copyright rows:', JSON.stringify(mixedRows));
 ck(mixedRows.length === 3, `1 ordinary credit + 1 combined "℗ & ©" line (2 notices) = 3 rows total (got ${mixedRows.length})`);
-ck(mixedRows[0][0] === 'Mastering' && mixedRows[0][1] === 'Someone For 522', `the ordinary credit line still parses via the R: A pattern (got ${JSON.stringify(mixedRows[0])})`);
+ck(mixedRows[0][0] === 'Mastering' && mixedRows[0][1] === 'Someone For 522', `the ordinary credit line still parses via the R: E pattern (got ${JSON.stringify(mixedRows[0])})`);
 const crPortion = mixedRows.slice(1);
 ck(crPortion.every(r => r[1] === 'Some Copyright Test Label 522'), `both copyright rows share the same holder text (got ${JSON.stringify(crPortion.map(r => r[1]))})`);
 ck(crPortion.some(r => r[0].includes('phonographic')) && crPortion.some(r => r[0] === '© copyright'), `both notice kinds detected (got ${JSON.stringify(crPortion.map(r => r[0]))})`);
@@ -435,7 +435,7 @@ ck(scoreNarrow.tooClose.length === 2, `a marginal gap (80 vs 75) stays genuinely
 // resolves via the loose-substring stage to "drums (drum set)"; "Keys" is a
 // genuine synonym gap (real name is "keyboard") and is deliberately NOT
 // asserted to auto-resolve here.
-await page.fill('.gt-tp-pat', 'A - R[,]');
+await page.fill('.gt-tp-pat', 'E - R[,]');
 await page.fill('.gt-tp-ta', 'Kwame Yeboah - Keys, Guitar, Piano, Hammond\nBen Abarbanel-Wolff - Saxophone, Flute\nEric Owusu - Percussion');
 await page.waitForTimeout(150);
 await page.click('.gt-tp-resolve');
@@ -469,7 +469,7 @@ console.log('instrument link type:', JSON.stringify(guitarApplied));
 ck(guitarApplied.hasInstrumentLt, 'the "instrument" link type exists for artist-release (schema, not data — stable)');
 
 // 17. remove a row — deletes it from the results AND the underlying textarea.
-await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-pat', 'R: E');
 await page.fill('.gt-tp-ta', 'Mastering: Row To Keep 522\nProducer: Row To Delete 522');
 await page.waitForTimeout(150);
 let rowCountBefore = await page.evaluate(() => document.querySelectorAll('.gt-tp-row').length);
@@ -557,7 +557,7 @@ ck(afterReopen && afterReopen.toLowerCase() === 'mastering', `the resolution sur
 // live: "if one artist has multiple instruments, selecting one selects
 // all... right clicking a choice in search sets all, and normal clicking
 // only that 1").
-await page.fill('.gt-tp-pat', 'A - R[,]');
+await page.fill('.gt-tp-pat', 'E - R[,]');
 await page.fill('.gt-tp-ta', 'Propagation Test Artist 522 - Guitar, Piano');
 await page.waitForTimeout(150);
 const propArtistGid = anArtistGid;   // reuse the same real gid resolved earlier
@@ -603,7 +603,7 @@ console.log('LastPass-ignore check:', JSON.stringify(lpCheck));
 ck(lpCheck.count > 0 && lpCheck.allIgnored, `every text input opts out of password-manager heuristics (got ${JSON.stringify(lpCheck)})`);
 
 // 24. Apply closes the window (majkinetor, live: "Apply should close the window").
-await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-pat', 'R: E');
 await page.fill('.gt-tp-ta', 'Mastering: Apply Close Test Artist 522');
 await page.waitForTimeout(150);
 await page.click('.gt-tp-resolve');   // "mastering" auto-resolves via exact name match
@@ -685,7 +685,7 @@ await page.waitForTimeout(150);
 // color (like in CH)" — Credit Hoarder tints its whole review row).
 await page.evaluate(() => window.__groupTherapy.openTextParser());
 await page.waitForTimeout(300);
-await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-pat', 'R: E');
 await page.fill('.gt-tp-ta', 'Some Unresolvable Weird Role 522: Some Unresolvable Artist 522\nNo pattern match here at all 522');
 await page.waitForTimeout(150);
 const rowBgs = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => ({
@@ -746,7 +746,7 @@ await page.waitForTimeout(150);
 // friends, that would be some improvement").
 await page.evaluate(() => window.__groupTherapy.openTextParser());
 await page.waitForTimeout(300);
-await page.fill('.gt-tp-pat', 'R: A');
+await page.fill('.gt-tp-pat', 'R: E');
 await page.fill('.gt-tp-ta', [
   'distributed by Sony Music Entertainment 522',
   'licensed to Republic Records 522',
@@ -846,6 +846,58 @@ await page.locator('.gt-tp-row').nth(1).locator('.gt-tp-c').nth(3).locator('.gt-
 await page.waitForTimeout(200);
 const noToggle = await page.evaluate(() => !document.querySelector('.gt-tp-apop .gt-tp-tabs'));
 ck(noToggle, '"distributed by" (label-only concept) never offers the artist/label toggle');
+await page.keyboard.press('Escape');
+await page.waitForTimeout(150);
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+
+// ── eighth round: #525, "Published by is also label, but artist is offered" ──
+
+// 33. "Published by X" is an ORDINARY credit line — "published by" is NOT
+// one of the recognized ©/℗/distributed/marketed/licensed markers, so it
+// parses via the plain R: E pattern, not the crKind copyright-notice path.
+// Before this fix, ordinary rows were hardcoded artist-only on BOTH the
+// role AND the entity search — but MB has no artist-release "published"
+// type at all (live-verified), so this could never actually resolve,
+// toggle or not. Now the role is classified against BOTH artist-release
+// and label-release types; "published" only exists on the label side, so
+// it FORCES label (no toggle) and resolveAll actually finds it.
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+await page.fill('.gt-tp-pat', 'R: E');
+await page.fill('.gt-tp-ta', 'Published by: Sony Music Entertainment');
+await page.waitForTimeout(150);
+// role classification (which forces label for "published") only happens
+// inside resolveAll, so Resolve must run BEFORE the picker check below —
+// opening the picker on a never-resolved role can only fall back to the
+// auto-detect guess, not the real forced classification this test proves.
+await page.click('.gt-tp-resolve');
+await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Resolve all'); }, { timeout: 20000 });
+await page.waitForTimeout(200);
+const publishedByResolved = await page.evaluate(() => {
+  const cs = [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')];
+  return { resolvedRole: cs[2]?.textContent, resolvedEntity: cs[3]?.textContent };
+});
+console.log('"Published by" resolveAll result:', JSON.stringify(publishedByResolved));
+ck(publishedByResolved.resolvedRole === 'published', `"Published by" auto-resolves to MB's real "published" relationship type (got ${JSON.stringify(publishedByResolved)})`);
+if (publishedByResolved.resolvedEntity === 'search') {
+  console.log('SKIP: label search did not return an exact hit for "Sony Music Entertainment" this run (live test-server data, not a code issue)');
+} else {
+  ck(!!publishedByResolved.resolvedEntity, `"Published by" entity resolves via the label search path, not left stuck on "search" (got "${publishedByResolved.resolvedEntity}")`);
+}
+
+// whether or not the entity itself resolved, the picker for this row must
+// now be forced to LABEL with no toggle (the role classification from
+// resolveAll above sticks — roleCache is keyed by role text).
+await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('a.gt-tp-resolved, button.gt-tp-search').click();
+await page.waitForTimeout(200);
+const publishedByPicker = await page.evaluate(() => ({
+  header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
+  hasToggle: !!document.querySelector('.gt-tp-apop .gt-tp-tabs'),
+}));
+console.log('"Published by" picker:', JSON.stringify(publishedByPicker));
+ck(/a label/i.test(publishedByPicker.header || ''), `"Published by" forces the LABEL search, not artist (got "${publishedByPicker.header}")`);
+ck(!publishedByPicker.hasToggle, '"Published by" (label-only MB type) never offers the artist/label toggle');
 await page.keyboard.press('Escape');
 await page.waitForTimeout(150);
 await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');

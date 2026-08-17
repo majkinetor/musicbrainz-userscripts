@@ -1,19 +1,23 @@
 // #522 — Text parser engine, unit tests (no browser).
 // The engine here is authored to be pasted verbatim into group_therapy.user.js.
-// Grammar (v1): tokens R A (+ _ skip), $X explicit, X[slice] positional,
+// Grammar (v1): tokens R E (+ _ skip), $X explicit, X[slice] positional,
 // X[,] / X[, and ...] split-into-multiple-rows, separators match any-of a
 // configurable list, literals are literal, ws is elastic, text fields lazy
 // (split-on-first) except the last which is greedy — UNLESS immediately
 // followed by a literal, which is always lazy (stops at the first
 // occurrence) regardless of that heuristic. Single-line only — a line that
 // doesn't match anything is simply unmatched, no multi-line grammar.
+// #525 (majkinetor): "change A to E (as entity, and everywhere where Artist
+// appears)" — the field can resolve to either an artist OR a label (see
+// group_therapy.user.js's entity-type generalization), so the DSL letter and
+// field name are the generic "entity", not "artist".
 // This is a deliberately duplicated copy of apollo_editor.user.js's
 // tpTokenize/tpCompile (its own test mirror: test/pattern-engine.test.mjs),
-// re-keyed to credit fields (role/artist) with a new split modifier —
+// re-keyed to credit fields (role/entity) with a new split modifier —
 // keep the two engines in sync when either gets a grammar-level fix.
 
 // ───────────────────────── engine (copy into Group Therapy) ─────────────────────────
-const TXP_FIELDS = { 'R': 'role', 'A': 'artist' };
+const TXP_FIELDS = { 'R': 'role', 'E': 'entity' };
 const TXP_DEFAULT_SEPS = ['-', '‐', '–', '—', '/', ':'];
 const txpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const txpUsable = out => !!out && Object.values(out).some(v => v && String(v).trim());
@@ -21,7 +25,7 @@ const txpUsable = out => !!out && Object.values(out).some(v => v && String(v).tr
 function txpTokenize(pattern, seps) {
   const segs = [];
   const sepSet = new Set(seps);
-  const isFieldLetter = c => c === 'R' || c === 'A';
+  const isFieldLetter = c => c === 'R' || c === 'E';
   const readSlice = (str, i) => {
     if (str[i] !== '[') return null;
     const close = str.indexOf(']', i); if (close < 0) return null;
@@ -90,7 +94,7 @@ function txpCompile(pattern, opts = {}) {
       return txpUsable(out) ? out : null;
     } };
   }
-  const textSegs = fieldSegs.filter(s => s.field === 'role' || s.field === 'artist');
+  const textSegs = fieldSegs.filter(s => s.field === 'role' || s.field === 'entity');
   const greedyText = textSegs[textSegs.length - 1];
   let re = '^\\s*';
   for (let idx = 0; idx < segs.length; idx++) {
@@ -147,69 +151,77 @@ const P = (pat, line, opts) => txpCompile(pat, opts).exec(line);
 const X = (pat, line, opts) => txpExpand(txpCompile(pat, opts), line);
 
 // majkinetor's own examples (issue #522)
-eq(P('R: A', 'Graphic Design: Ricardo "Magrão" Fernandes'), { role: 'Graphic Design', artist: 'Ricardo "Magrão" Fernandes' }, 'R: A — basic role:artist with an embedded quote in the name');
-eq(P('R: A', 'Mastering: Michael Graves (Osiris Studio)'), { role: 'Mastering', artist: 'Michael Graves (Osiris Studio)' }, 'R: A — parenthetical stays part of the artist text');
-eq(P('R: A', 'Liner Notes: Banning Eyre'), { role: 'Liner Notes', artist: 'Banning Eyre' }, 'R: A — two-word role');
-eq(P('R: A', 'Text Editing: Jesse Simon'), { role: 'Text Editing', artist: 'Jesse Simon' }, 'R: A — another two-word role');
+eq(P('R: E', 'Graphic Design: Ricardo "Magrão" Fernandes'), { role: 'Graphic Design', entity: 'Ricardo "Magrão" Fernandes' }, 'R: E — basic role:entity with an embedded quote in the name');
+eq(P('R: E', 'Mastering: Michael Graves (Osiris Studio)'), { role: 'Mastering', entity: 'Michael Graves (Osiris Studio)' }, 'R: E — parenthetical stays part of the entity text');
+eq(P('R: E', 'Liner Notes: Banning Eyre'), { role: 'Liner Notes', entity: 'Banning Eyre' }, 'R: E — two-word role');
+eq(P('R: E', 'Text Editing: Jesse Simon'), { role: 'Text Editing', entity: 'Jesse Simon' }, 'R: E — another two-word role');
 // a line with TWO colons (title containing one) must still stop the role at
 // the FIRST colon, not the last — the #522 field-followed-by-literal fix.
-eq(P('R: A', 'Special Thanks to: Gilbert Zvamaida'), { role: 'Special Thanks to', artist: 'Gilbert Zvamaida' }, 'R: A — role text itself can contain other words freely, stops at first colon');
+eq(P('R: E', 'Special Thanks to: Gilbert Zvamaida'), { role: 'Special Thanks to', entity: 'Gilbert Zvamaida' }, 'R: E — role text itself can contain other words freely, stops at first colon');
 
-eq(P('A - R', 'Cameron Allen - Flute'), { artist: 'Cameron Allen', role: 'Flute' }, 'A - R — basic artist-dash-role');
+eq(P('E - R', 'Cameron Allen - Flute'), { entity: 'Cameron Allen', role: 'Flute' }, 'E - R — basic entity-dash-role');
 
-// #522: A - R[,] splits one line's role text into multiple rows, one artist.
-eq(X('A - R[,]', 'Cameron Allen - Flute, Tenor Saxophone'), [
-  { artist: 'Cameron Allen', role: 'Flute' },
-  { artist: 'Cameron Allen', role: 'Tenor Saxophone' },
-], 'A - R[,] — comma-split role expands to 2 rows, both with the same artist');
+// #522: E - R[,] splits one line's role text into multiple rows, one entity.
+eq(X('E - R[,]', 'Cameron Allen - Flute, Tenor Saxophone'), [
+  { entity: 'Cameron Allen', role: 'Flute' },
+  { entity: 'Cameron Allen', role: 'Tenor Saxophone' },
+], 'E - R[,] — comma-split role expands to 2 rows, both with the same entity');
 
-eq(X('A - R[,]', 'Ben Abarbanel-Wolff - Saxophone, Flute'), [
-  { artist: 'Ben Abarbanel-Wolff', role: 'Saxophone' },
-  { artist: 'Ben Abarbanel-Wolff', role: 'Flute' },
-], 'A - R[,] — artist name containing a hyphen doesn\'t confuse the artist/role split');
+eq(X('E - R[,]', 'Ben Abarbanel-Wolff - Saxophone, Flute'), [
+  { entity: 'Ben Abarbanel-Wolff', role: 'Saxophone' },
+  { entity: 'Ben Abarbanel-Wolff', role: 'Flute' },
+], 'E - R[,] — entity name containing a hyphen doesn\'t confuse the entity/role split');
 
 // [, and] also splits on the literal word "and" — the wiki's
 // "Role, Role and Role" shape.
-eq(X('A - R[, and]', 'Kenny Sterling - Additional Percussion, Synthesizer, Choir Direction and Lyrics'), [
-  { artist: 'Kenny Sterling', role: 'Additional Percussion' },
-  { artist: 'Kenny Sterling', role: 'Synthesizer' },
-  { artist: 'Kenny Sterling', role: 'Choir Direction' },
-  { artist: 'Kenny Sterling', role: 'Lyrics' },
-], 'A - R[, and] — comma AND the word "and" both split');
+eq(X('E - R[, and]', 'Kenny Sterling - Additional Percussion, Synthesizer, Choir Direction and Lyrics'), [
+  { entity: 'Kenny Sterling', role: 'Additional Percussion' },
+  { entity: 'Kenny Sterling', role: 'Synthesizer' },
+  { entity: 'Kenny Sterling', role: 'Choir Direction' },
+  { entity: 'Kenny Sterling', role: 'Lyrics' },
+], 'E - R[, and] — comma AND the word "and" both split');
 
-eq(X('A - R[, and]', "Jong-Yun (J.Y.) Lee - Flute Alto, Tenor, Baritone and Soprano Saxophones"), [
-  { artist: 'Jong-Yun (J.Y.) Lee', role: 'Flute Alto' },
-  { artist: 'Jong-Yun (J.Y.) Lee', role: 'Tenor' },
-  { artist: 'Jong-Yun (J.Y.) Lee', role: 'Baritone' },
-  { artist: 'Jong-Yun (J.Y.) Lee', role: 'Soprano Saxophones' },
-], 'A - R[, and] — messy real-world multi-role line, best-effort split (4 pieces)');
+eq(X('E - R[, and]', "Jong-Yun (J.Y.) Lee - Flute Alto, Tenor, Baritone and Soprano Saxophones"), [
+  { entity: 'Jong-Yun (J.Y.) Lee', role: 'Flute Alto' },
+  { entity: 'Jong-Yun (J.Y.) Lee', role: 'Tenor' },
+  { entity: 'Jong-Yun (J.Y.) Lee', role: 'Baritone' },
+  { entity: 'Jong-Yun (J.Y.) Lee', role: 'Soprano Saxophones' },
+], 'E - R[, and] — messy real-world multi-role line, best-effort split (4 pieces)');
 
 // no split modifier at all → the field is captured whole, exactly one row.
-eq(X('A - R', 'Cameron Allen - Flute, Tenor Saxophone'), [
-  { artist: 'Cameron Allen', role: 'Flute, Tenor Saxophone' },
-], 'A - R (no [,]) — role captured whole as one row, no expansion');
+eq(X('E - R', 'Cameron Allen - Flute, Tenor Saxophone'), [
+  { entity: 'Cameron Allen', role: 'Flute, Tenor Saxophone' },
+], 'E - R (no [,]) — role captured whole as one row, no expansion');
+
+// #525: R: E[,] — the same split modifier, but on the OTHER side of the
+// colon form (a role: name, name, name shape — e.g. "Published by: Warner
+// Chappell, Sony Music Publishing").
+eq(X('R: E[,]', 'Published by: Warner Chappell, Sony Music Publishing'), [
+  { role: 'Published by', entity: 'Warner Chappell' },
+  { role: 'Published by', entity: 'Sony Music Publishing' },
+], 'R: E[,] — comma-split entity expands to 2 rows, both with the same role');
 
 // dangling edge ws/sep tokens (re-ported #522 fix) — a trailing space or
 // separator with nothing real past it must not make the pattern unmatchable.
-eq(P('R: A ', 'Mastering: Nick Robbins'), { role: 'Mastering', artist: 'Nick Robbins' }, 'trailing space after the last field still matches');
-eq(P('R - A - ', 'Mastering - Nick Robbins'), { role: 'Mastering', artist: 'Nick Robbins' }, 'trailing " - " (sep+ws) after the last field still matches');
+eq(P('R: E ', 'Mastering: Nick Robbins'), { role: 'Mastering', entity: 'Nick Robbins' }, 'trailing space after the last field still matches');
+eq(P('R - E - ', 'Mastering - Nick Robbins'), { role: 'Mastering', entity: 'Nick Robbins' }, 'trailing " - " (sep+ws) after the last field still matches');
 
 // unmatched lines (section headers, blank-ish lines) → null, not a throw —
 // this is how "single line only" degrades gracefully for out-of-grammar text.
-eq(P('R: A', 'SPECIAL GUESTS'), null, 'a section header with no colon/dash → unmatched, null');
-eq(X('R: A', 'SPECIAL GUESTS'), null, 'txpExpand also returns null for an unmatched line, not []');
-eq(P('R: A', ''), null, 'a blank line → unmatched, null');
+eq(P('R: E', 'SPECIAL GUESTS'), null, 'a section header with no colon/dash → unmatched, null');
+eq(X('R: E', 'SPECIAL GUESTS'), null, 'txpExpand also returns null for an unmatched line, not []');
+eq(P('R: E', ''), null, 'a blank line → unmatched, null');
 
 // slice syntax still works, re-keyed through TXP_FIELDS.
-eq(P('R[1-9] A', 'Mastering  Nick Robbins'), { role: 'Mastering', artist: 'Nick Robbins' }, 'slice: R[1-9] positional role');
+eq(P('R[1-9] E', 'Mastering  Nick Robbins'), { role: 'Mastering', entity: 'Nick Robbins' }, 'slice: R[1-9] positional role');
 
 // both fields split (cartesian) — not a documented v1 shape, but the code
 // gets it for free; confirm it doesn't crash and the product count is right.
-eq(X('A[,] - R[,]', 'Alice, Bob - Guitar, Bass'), [
-  { artist: 'Alice', role: 'Guitar' },
-  { artist: 'Alice', role: 'Bass' },
-  { artist: 'Bob', role: 'Guitar' },
-  { artist: 'Bob', role: 'Bass' },
+eq(X('E[,] - R[,]', 'Alice, Bob - Guitar, Bass'), [
+  { entity: 'Alice', role: 'Guitar' },
+  { entity: 'Alice', role: 'Bass' },
+  { entity: 'Bob', role: 'Guitar' },
+  { entity: 'Bob', role: 'Bass' },
 ], 'both fields split → cartesian product (4 rows from 2x2), free correctness check');
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');

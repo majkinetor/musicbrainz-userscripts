@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.201008
+// @version      2026.8.17.204127
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2161,28 +2161,33 @@
     openMenu(x, y, items);
   }
 
-  /* ── #522 Text parser: pattern-match unstructured credit text into (role, artist) rows ────
+  /* ── #522 Text parser: pattern-match unstructured credit text into (role, entity) rows ────
    * majkinetor: "In a new branch, create a Text parser tool. It should work sorta like Pattern
    * parser of Apollo but for credits." Same DSL shape as Apollo's tpTokenize/tpCompile
    * (apollo_editor.user.js) — a one-line PATTERN compiles to a regex, run over every pasted
-   * line — but with credit fields (R role, A artist) instead of track fields, plus a new [,]
-   * split modifier so one matched line can expand into several (role, artist) rows (e.g.
-   * "Cameron Allen - Flute, Tenor Saxophone" → two rows, one artist, two roles). Deliberately
+   * line — but with credit fields (R role, E entity — artist OR label, see #525 below) instead
+   * of track fields, plus a new [,] split modifier so one matched line can expand into several
+   * (role, entity) rows (e.g. "Cameron Allen - Flute, Tenor Saxophone" → two rows, one entity,
+   * two roles). Deliberately
    * duplicated rather than shared — same one-file, dependency-free philosophy this script
    * already states in its own README, and the same "keep in sync" convention Apollo uses
    * between its own live copy and test/pattern-engine.test.mjs; this file gets its own mirror
    * at test/pattern-engine.test.mjs. Per majkinetor's own scoping: "let's parse comments on
    * single line only" — there is no multi-line grammar; a line that doesn't match anything
    * (a section header, a blank line) is simply unmatched, not a special case. */
-  const TXP_FIELDS = { 'R': 'role', 'A': 'artist' };
+  // #525 follow-up (majkinetor): "change A to E (as entity, and everywhere
+  // where Artist appears)" — the field can resolve to either an artist OR a
+  // label (see the entity-type generalization below), so the DSL letter and
+  // the field's own name are now the generic "entity", not "artist".
+  const TXP_FIELDS = { 'R': 'role', 'E': 'entity' };
   const TXP_SEPS = ['-', '‐', '–', '—', '/', ':'];
-  const TXP_PRESETS = ['R: A', 'A - R[,]', 'R - A', 'A: R'];
-  let _txpPattern = 'R: A';   // remembered across opens this session
+  const TXP_PRESETS = ['R: E', 'R: E[,]', 'E - R[,]', 'R - E', 'E: R'];
+  let _txpPattern = 'R: E';   // remembered across opens this session
   const txpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const txpUsable = out => !!out && Object.values(out).some(v => v && String(v).trim());
   function txpTokenize(pattern, seps) {
     const segs = [], sepSet = new Set(seps);
-    const isFieldLetter = c => c === 'R' || c === 'A';
+    const isFieldLetter = c => c === 'R' || c === 'E';
     const readSlice = (str, i) => {
       if (str[i] !== '[') return null;
       const close = str.indexOf(']', i); if (close < 0) return null;
@@ -2267,7 +2272,7 @@
     // other stays lazy. A field immediately followed by a literal is ALWAYS lazy (stops at
     // the FIRST occurrence) regardless of that heuristic — same fix as Apollo's #522
     // follow-up, re-ported here.
-    const textSegs = fieldSegs.filter(s => s.field === 'role' || s.field === 'artist');
+    const textSegs = fieldSegs.filter(s => s.field === 'role' || s.field === 'entity');
     const greedyText = textSegs[textSegs.length - 1];
     let re = '^\\s*';
     for (let idx = 0; idx < segs.length; idx++) {
@@ -2622,9 +2627,10 @@
       + '.gt-cons-foot .gt-tp-resolve{padding:5px 12px;border:1px solid #cfd4da;border-radius:5px;background:#fff;cursor:pointer;font:13px inherit}.gt-cons-foot .gt-tp-resolve:hover{background:#f2f4f7}'
       + '.gt-cons-foot .gt-tp-resolve:disabled{opacity:.5;cursor:default}'
       + '.gt-tp-apop{width:340px}'
-      // #524 follow-up (majkinetor): "2 tabs in search, one for artist and
-      // other for labels" — shown only for copyright/phonographic/licensor
-      // rows (the ones MB actually allows both entity types for).
+      // #524/#525 follow-up (majkinetor): "2 tabs in search, one for artist
+      // and other for labels" — shown for any row whose entity type isn't
+      // FORCED (see canToggle in txpPickEntity): copyright/phonographic/
+      // licensor holders, and ordinary roles MB allows on both sides.
       + '.gt-tp-apop .gt-tp-tabs{display:flex;gap:4px;margin-bottom:6px}'
       + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid #cfd4da;border-radius:5px;background:#f6f7f9;cursor:pointer;font:12px inherit;color:#666}'
       + '.gt-tp-apop .gt-tp-tab:hover{background:#eef4fb}'
@@ -2703,8 +2709,8 @@
     // pick left over from an earlier, different paste). Text-keying matches
     // how the auto-resolve cache already behaved, and means "I picked X for
     // 'Alice'" sticks to 'Alice' wherever she appears, not to a row slot.
-    const roleCache = new Map();     // lowercased role text -> {id,name} | null (tried, no match)
-    const artistCache = new Map();   // lowercased holder/artist text -> entity | null
+    const roleCache = new Map();     // lowercased role text -> classifyRoleText() result (ordinary rows only — crKind rows never touch this)
+    const entityCache = new Map();   // lowercased holder/entity text -> entity | null
     // #522 follow-up (majkinetor): "while it is resolving, lets show a
     // message ... resolving 4/N" then "make it show in the button itself" —
     // resolveAll() updates the Resolve button's own text as it goes.
@@ -2721,9 +2727,9 @@
     // apply everywhere it appears) but wrong for ARTIST by default (the
     // same name string is a common real collision) — so a normal click now
     // writes here, POSITION-keyed, scoped to just the one row clicked;
-    // right-click still writes into the shared artistCache above,
+    // right-click still writes into the shared entityCache above,
     // propagating to every row with that exact text like before.
-    const artistOverride = new Map();   // row.key (li:pi:si) -> entity
+    const entityOverride = new Map();   // row.key (li:pi:si) -> entity
     const appliedKeys = new Set();   // row position keys (li:pi:si) — "applied" IS about a specific dispatch, stays position-based
     const compiledCache = new Map();
     const compiledFor = pat => {
@@ -2757,15 +2763,15 @@
             let si = 0;
             cr.types.forEach(kind => cr.holders.forEach(holder => out.push({
               li, pi, si: si++, raw: ln.raw,
-              role: TXP_CR_LABELS[kind], crKind: kind, artist: holder, year: cr.year, matched: true,
+              role: TXP_CR_LABELS[kind], crKind: kind, entity: holder, year: cr.year, matched: true,
             })));
             return;
           }
           const pat = (ln.override || pattern || '').trim();
           const compiled = pat ? compiledFor(pat) : null;
           const expanded = compiled ? txpExpand(compiled, piece) : null;
-          if (!expanded) { out.push({ li, pi, si: 0, raw: ln.raw, role: null, artist: null, matched: false }); return; }
-          expanded.forEach((row, si) => out.push({ li, pi, si, raw: ln.raw, role: row.role || '', artist: row.artist || '', matched: true }));
+          if (!expanded) { out.push({ li, pi, si: 0, raw: ln.raw, role: null, entity: null, matched: false }); return; }
+          expanded.forEach((row, si) => out.push({ li, pi, si, raw: ln.raw, role: row.role || '', entity: row.entity || '', matched: true }));
         });
       });
       return out;
@@ -2776,36 +2782,106 @@
     // but if the holder name matches one of the RELEASE's own credited
     // artists, it's almost certainly that artist crediting themselves (the
     // whole reason the ambiguity exists) — auto-detect that, and offer the
-    // 2-tab toggle in the picker (txpPickArtist) as the manual override for
-    // when auto-detect guesses wrong.
+    // 2-tab toggle in the picker (txpPickEntity) as the manual override for
+    // when auto-detect guesses wrong. Shared by BOTH copyright/legal-notice
+    // holders (via txpCrEntityType below) and ordinary credit rows (via
+    // rowEntityType, #525) — the same ambiguity, the same fallback.
+    function txpAutoEntityType(text) {
+      const names = (release.artistCredit && release.artistCredit.names) || [];
+      const isReleaseArtist = names.some(n => n.artist && (txpSameName(n.artist.name, text) || txpSameName(n.artist.sort_name, text)));
+      return isReleaseArtist ? 'artist' : 'label';
+    }
     function txpCrEntityType(kind, holder) {
       if (TXP_CR_LABEL_ONLY.has(kind)) return 'label';   // MB has no artist-release type for these at all
-      const names = (release.artistCredit && release.artistCredit.names) || [];
-      const isReleaseArtist = names.some(n => n.artist && (txpSameName(n.artist.name, holder) || txpSameName(n.artist.sort_name, holder)));
-      return isReleaseArtist ? 'artist' : 'label';
+      return txpAutoEntityType(holder);
+    }
+    // #525 (majkinetor, from a screenshot): "'Published by' is also label,
+    // but artist is offered... We either map roles to entities or always
+    // show label/artist tab." Ordinary credit rows used to be hardcoded
+    // artist-only on BOTH ends (role AND entity) — "published" has no
+    // artist-release relationship type at all (live-verified), so it could
+    // never actually resolve, toggle or not. Now every role text is
+    // classified against BOTH linkTypesForPair('artist','release') and
+    // ('label','release'): a role that only exists on one side FORCES that
+    // entity type (no toggle needed, e.g. "published" → label); a role that
+    // exists on both (e.g. "licensor") or matches neither falls back to the
+    // same auto-detect + manual-toggle escape hatch #524 already built for
+    // copyright holders. See classifyRoleText (used by resolveAll to build
+    // roleCache) and rowEntityType below.
+    // returns {hit, tier} — tier 0 (exact) beats 1 (loose substring) beats 2
+    // (stem fallback), or null if nothing matches unambiguously at any tier.
+    function txpMatchRoleText(cands, rt) {
+      if (!rt) return null;
+      const exact = cands.filter(c => c.name.toLowerCase() === rt);
+      if (exact.length === 1) return { hit: exact[0], tier: 0 };
+      const loose = cands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || rt.includes(cn); });
+      if (loose.length === 1) return { hit: loose[0], tier: 1 };
+      const stem = txpRoleStem(rt);
+      const fuzzy = cands.filter(c => txpRoleStem(c.name) === stem);
+      return fuzzy.length === 1 ? { hit: fuzzy[0], tier: 2 } : null;
+    }
+    function classifyRoleText(rt, artistCands, labelCands, instrumentLt, instrumentCands) {
+      const a = txpMatchRoleText(artistCands, rt);
+      const l = txpMatchRoleText(labelCands, rt);
+      const artistMatch = a ? a.hit : null;
+      const labelMatch = l ? l.hit : null;
+      let instrumentMatch = null;
+      if (!a && !l && instrumentLt) {
+        const iHit = txpMatchRoleText(instrumentCands, rt);
+        if (iHit) instrumentMatch = { id: instrumentLt.id, name: iHit.hit.name, attributeId: iHit.hit.id };
+      }
+      // instrument roles are inherently artist-only. A role matching only ONE
+      // side forces that side outright. A role matching BOTH sides is only
+      // genuinely ambiguous when both matched at the SAME confidence tier —
+      // when one side matched more confidently (e.g. "published by" LOOSELY
+      // matches the label type "published", id 362, but only STEM-matches
+      // the unrelated artist type "publishing", id 32 — "the artist
+      // publishes this release", a real but different concept, live-caught
+      // by this exact case), the stronger tier wins outright rather than
+      // falling back to "ambiguous, ask the user."
+      let forced = null;
+      if (instrumentMatch) forced = 'artist';
+      else if (a && l) forced = a.tier < l.tier ? 'artist' : (l.tier < a.tier ? 'label' : null);
+      else if (a) forced = 'artist';
+      else if (l) forced = 'label';
+      return { artistMatch, labelMatch, instrumentMatch, forced };
+    }
+    // the entity type for an ORDINARY credit row: forced by its role's own
+    // classification when unambiguous, otherwise the same release-artist-
+    // credit auto-detect crKind rows already use.
+    function rowEntityType(row) {
+      const rt = (row.role || '').toLowerCase().trim();
+      const cls = roleCache.get(rt);
+      return (cls && cls.forced) || txpAutoEntityType(row.entity);
     }
     function attachResolution(row) {
       row.key = row.li + ':' + row.pi + ':' + row.si;
-      if (!row.matched) { row.roleMatch = null; row.artistMatch = null; return row; }
-      row.artistMatch = artistOverride.has(row.key) ? artistOverride.get(row.key) : (artistCache.get((row.artist || '').toLowerCase().trim()) || null);
+      if (!row.matched) { row.roleMatch = null; row.entityMatch = null; row.entityType = null; row.entityForced = null; return row; }
+      row.entityMatch = entityOverride.has(row.key) ? entityOverride.get(row.key) : (entityCache.get((row.entity || '').toLowerCase().trim()) || null);
       if (row.crKind) {
-        row.crEntityType = txpCrEntityType(row.crKind, row.artist);
-        row.roleMatch = row.artistMatch ? txpCopyrightLinkType(row.crKind, row.crEntityType) : null;
+        row.entityForced = TXP_CR_LABEL_ONLY.has(row.crKind) ? 'label' : null;
+        row.entityType = txpCrEntityType(row.crKind, row.entity);
+        row.roleMatch = row.entityMatch ? txpCopyrightLinkType(row.crKind, row.entityType) : null;
         return row;
       }
-      row.roleMatch = roleCache.get((row.role || '').toLowerCase().trim()) || null;
+      const rt = (row.role || '').toLowerCase().trim();
+      const cls = roleCache.get(rt) || null;
+      row.roleClass = cls;
+      row.entityForced = (cls && cls.forced) || null;
+      row.entityType = rowEntityType(row);
+      row.roleMatch = cls ? (row.entityType === 'label' ? cls.labelMatch : (cls.instrumentMatch || cls.artistMatch)) : null;
       return row;
     }
     function txpCopyrightLinkType(kind, entityType) {
       const roles = linkTypesForPair(entityType, 'release');
       return roles.find(r => r.name.toLowerCase() === TXP_CR_TYPE_NAME[kind]) || null;
     }
-    const dotClass = r => !r.matched ? 'gt-tp-dot-red' : (r.roleMatch && r.artistMatch) ? 'gt-tp-dot-green' : 'gt-tp-dot-amber';
+    const dotClass = r => !r.matched ? 'gt-tp-dot-red' : (r.roleMatch && r.entityMatch) ? 'gt-tp-dot-green' : 'gt-tp-dot-amber';
     const statusText = r => {
       if (!r.matched) return 'no match';
       if (appliedKeys.has(r.key)) return '✓ applied';
-      if (r.roleMatch && r.artistMatch) return 'ready';
-      return [!r.roleMatch && 'role?', !r.artistMatch && 'artist?'].filter(Boolean).join(' ');
+      if (r.roleMatch && r.entityMatch) return 'ready';
+      return [!r.roleMatch && 'role?', !r.entityMatch && 'entity?'].filter(Boolean).join(' ');
     };
 
     txpEl = el('div', 'gt-cons-ov');
@@ -2836,7 +2912,7 @@
     // #522 follow-up (majkinetor, live): "move copyright help text into the
     // textbox hint when its empty" — folded into the placeholder instead of
     // a permanent line taking up space even once you're pasting real text.
-    ta.placeholder = 'Paste credit text here, one credit per line…\n\nA ©/(C)/copyright or ℗/(P)/phonographic copyright line ("© 2020 Some Label", "℗ & © 2020 Some Label") is recognized automatically alongside your pattern and resolved against labels (release artist not yet supported).';
+    ta.placeholder = 'Paste credit text here, one credit per line…\n\nA ©/(C)/copyright or ℗/(P)/phonographic copyright line ("© 2020 Some Label", "℗ & © 2020 Some Label") is recognized automatically alongside your pattern. Each entity resolves against artists or labels depending on its role — a label-only role like "distributed by" is searched as a label; an ambiguous one auto-detects against this release\'s own credited artists, with a toggle to override.';
     src.append(srcTgl, ta);
 
     const body = el('div', 'gt-cons-body gt-tp-body');
@@ -2858,7 +2934,7 @@
     });
     const saveColWidths = () => { try { GM_setValue(TXP_COLS_KEY, JSON.stringify([...colgroup.children].map(c => c.style.width))); } catch (e) {} };
     const thead = el('thead');
-    thead.innerHTML = '<tr><th></th><th>pattern</th><th>raw line</th><th>role</th><th>artist</th><th>→ role</th><th>→ artist</th><th></th></tr>';
+    thead.innerHTML = '<tr><th></th><th>pattern</th><th>raw line</th><th>role</th><th>entity</th><th>→ role</th><th>→ entity</th><th></th></tr>';
     [...thead.querySelectorAll('th')].forEach((th, i) => {
       if (i === 0) return;   // the status-dot column stays fixed
       const handle = el('span', 'gt-tp-colresize');
@@ -2887,7 +2963,7 @@
     const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
     // #522 follow-up (majkinetor, live): "Lets have an option to remove a
     // row. It is also removed from the input text." Removing a LINE shifts
-    // every later line's index down by one — appliedKeys AND artistOverride
+    // every later line's index down by one — appliedKeys AND entityOverride
     // are keyed by position (li:pi:si), so both are renumbered here rather
     // than left stale (an appliedKeys entry could mislabel an unrelated row
     // as already-applied; a leftover override could silently reassign a
@@ -2899,8 +2975,8 @@
       appliedKeys.forEach(k => { const li = +k.split(':')[0]; if (li !== delLi) renumbered.add(renumberKey(k, delLi)); });
       appliedKeys.clear(); renumbered.forEach(k => appliedKeys.add(k));
       const ovRenumbered = new Map();
-      artistOverride.forEach((v, k) => { const li = +k.split(':')[0]; if (li !== delLi) ovRenumbered.set(renumberKey(k, delLi), v); });
-      artistOverride.clear(); ovRenumbered.forEach((v, k) => artistOverride.set(k, v));
+      entityOverride.forEach((v, k) => { const li = +k.split(':')[0]; if (li !== delLi) ovRenumbered.set(renumberKey(k, delLi), v); });
+      entityOverride.clear(); ovRenumbered.forEach((v, k) => entityOverride.set(k, v));
       syncTextareaFromLines(); render(); saveState();
     }
 
@@ -2942,7 +3018,7 @@
           rawIn.dataset.fkey = 'raw:' + r.li;
           rawIn.addEventListener('input', () => {
             lines[r.li].raw = rawIn.value;
-            [...artistOverride.keys()].filter(k => +k.split(':')[0] === r.li).forEach(k => artistOverride.delete(k));
+            [...entityOverride.keys()].filter(k => +k.split(':')[0] === r.li).forEach(k => entityOverride.delete(k));
             syncTextareaFromLines(); render(); saveState();
           });
           const delBtn = el('button', 'gt-tp-rowdel', '✕'); delBtn.type = 'button'; delBtn.title = 'Remove this line';
@@ -2952,7 +3028,7 @@
           tr.appendChild(rawTd);
         }
         tr.appendChild(el('td', 'gt-tp-c', r.role || ''));
-        tr.appendChild(el('td', 'gt-tp-c', r.artist || ''));
+        tr.appendChild(el('td', 'gt-tp-c', r.entity || ''));
         // #522 follow-up (majkinetor, live): "Tidy up artist / role column —
         // remove circles, short helper text..." then, after trying a plain
         // non-clickable resolved cell: "After a role is selected, I am not
@@ -2960,10 +3036,10 @@
         // element should always bring back search and for artist right
         // click should open it." Unresolved still shows the plain word
         // "search"; resolved is clickable again to reopen the picker — for
-        // artist, a real <a> so right-click still offers "open in new tab"
-        // natively too, but a plain left-click is intercepted to reopen the
-        // picker instead of navigating, and OUR contextmenu handler opens
-        // it directly (skipping the browser's own context menu).
+        // the entity, a real <a> so right-click still offers "open in new
+        // tab" natively too, but a plain left-click is intercepted to reopen
+        // the picker instead of navigating, and OUR contextmenu handler
+        // opens it directly (skipping the browser's own context menu).
         const roleTd = el('td', 'gt-tp-c');
         if (r.matched && !r.crKind) {
           if (r.roleMatch) { const rs = el('button', 'gt-tp-search gt-tp-resolved', r.roleMatch.name); rs.type = 'button'; rs.title = 'Click to change'; rs.onclick = () => txpPickRole(r); roleTd.appendChild(rs); }
@@ -2972,17 +3048,17 @@
           roleTd.appendChild(el('span', r.roleMatch ? 'gt-tp-resolved' : 'gt-tp-status', r.roleMatch ? r.roleMatch.name : '(resolves once holder is picked)'));
         }
         tr.appendChild(roleTd);
-        const artTd = el('td', 'gt-tp-c');
+        const entTd = el('td', 'gt-tp-c');
         if (r.matched) {
-          if (r.artistMatch) {
-            const a = el('a', 'gt-tp-resolved', (r.artistMatch.name || '') + (r.artistMatch.disambiguation ? ` (${r.artistMatch.disambiguation})` : ''));
-            a.href = '/' + r.artistMatch.entityType + '/' + r.artistMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Click to change · right-click to open';
-            a.addEventListener('click', e => { e.preventDefault(); txpPickArtist(r, a); });
+          if (r.entityMatch) {
+            const a = el('a', 'gt-tp-resolved', (r.entityMatch.name || '') + (r.entityMatch.disambiguation ? ` (${r.entityMatch.disambiguation})` : ''));
+            a.href = '/' + r.entityMatch.entityType + '/' + r.entityMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Click to change · right-click to open';
+            a.addEventListener('click', e => { e.preventDefault(); txpPickEntity(r, a); });
             a.addEventListener('contextmenu', e => { e.preventDefault(); window.open(a.href, '_blank', 'noopener'); });
-            artTd.appendChild(a);
-          } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickArtist(r, ab); artTd.appendChild(ab); }
+            entTd.appendChild(a);
+          } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickEntity(r, ab); entTd.appendChild(ab); }
         }
-        tr.appendChild(artTd);
+        tr.appendChild(entTd);
         const stTd = el('td', 'gt-tp-status' + (appliedKeys.has(r.key) ? ' gt-tp-applied' : ''), statusText(r));
         tr.appendChild(stTd);
         tbody.appendChild(tr);
@@ -2993,7 +3069,7 @@
       // (narrowest) column, wrapping the message into a tall sliver.
       if (!rows.length) { const td = el('td', 'gt-pop-note', 'Paste credit text above, or load the annotation.'); td.colSpan = 8; tbody.appendChild(el('tr')).appendChild(td); }
       const matched = rows.filter(r => r.matched).length;
-      const ready = rows.filter(r => r.matched && r.roleMatch && r.artistMatch && !appliedKeys.has(r.key)).length;
+      const ready = rows.filter(r => r.matched && r.roleMatch && r.entityMatch && !appliedKeys.has(r.key)).length;
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
       cnt.textContent = rows.length ? `${matched}/${rows.length} matched` + (ready ? ` · ${ready} ready` : '') + (applied ? ` · ${applied} applied` : '') : '';
       applyBtn.disabled = !ready;
@@ -3013,97 +3089,59 @@
         const crRows = rows.filter(r => r.crKind);
         const creditRows = rows.filter(r => !r.crKind);
 
-        // #524: copyright/legal-notice holders — entity type (artist vs
-        // label) auto-detected per holder text (txpCrEntityType); dedup by
-        // holder text (the common case — the same holder rarely needs both
-        // a forced-label type like "distributed" AND an auto-detected one
-        // in the same block; see txpCrEntityType's own doc for that edge).
-        const crHolders = [...new Map(crRows.map(r => [r.artist, txpCrEntityType(r.crKind, r.artist)])).entries()];
-        const artistTexts = [...new Set(creditRows.map(r => r.artist).filter(Boolean))];
+        // #525 (majkinetor): "Published by is also label... map roles to
+        // entities" — role classification is entirely synchronous (no
+        // network) and must happen BEFORE the unified entity-resolution
+        // list below, since an ordinary row's entity type (rowEntityType)
+        // depends on its role's classification.
+        const artistCands = linkTypesForPair('artist', 'release');
+        const labelCands = linkTypesForPair('label', 'release');
+        const instrumentLt = artistCands.find(c => c.name === 'instrument');
+        const instrumentCands = instrumentLt ? txpInstrumentCandidates() : [];
+        const roleTexts = [...new Set(creditRows.map(r => (r.role || '').toLowerCase().trim()).filter(Boolean))];
+        roleTexts.forEach(rt => { if (!roleCache.has(rt)) roleCache.set(rt, classifyRoleText(rt, artistCands, labelCands, instrumentLt, instrumentCands)); });
+        // role matches are synchronous — show them immediately, before the
+        // network-bound entity loop below even starts.
+        render(); saveState();
+
+        // #524/#525: ONE unified (text, entityType) resolution list —
+        // copyright/legal-notice holders and ordinary credit entities share
+        // the exact same artist-or-label lookup, entityType decided per
+        // text (forced where MB only allows one, otherwise auto-detected
+        // against the release's own credited artists). Dedup by entity text
+        // (the common case — the same text rarely needs both an artist AND
+        // a label resolution in the same block; see txpCrEntityType/
+        // rowEntityType's own docs for that edge).
+        const entityTexts = new Map();   // text -> entityType ('artist'|'label')
+        crRows.forEach(r => { if (r.entity) entityTexts.set(r.entity, txpCrEntityType(r.crKind, r.entity)); });
+        creditRows.forEach(r => { if (r.entity) entityTexts.set(r.entity, rowEntityType(r)); });
+        const entities = [...entityTexts.entries()];
         // #522 follow-up (majkinetor): "while it is resolving, lets show a
         // message ... resolving 4/N" then "make it show in the button
         // itself" — total counts only the names that actually need a real
         // lookup (already-cached ones are instant skips, not "work" the
         // button should promise is coming).
-        resolveTotal = crHolders.filter(([h]) => h && !artistCache.has(h.toLowerCase().trim())).length
-          + artistTexts.filter(at => !artistCache.has(at.toLowerCase().trim())).length;
+        resolveTotal = entities.filter(([t]) => !entityCache.has(t.toLowerCase().trim())).length;
         resolveDone = 0;
         const bumpProgress = () => { resolveDone++; resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`; };
         resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`;
-        for (const [h, entityType] of crHolders) {
-          if (!h) continue;
-          const key = h.toLowerCase().trim();
-          if (artistCache.has(key)) continue;
+        for (const [text, entityType] of entities) {
+          const key = text.toLowerCase().trim();
+          if (entityCache.has(key)) continue;
           try {
-            let hit = entityType === 'artist' ? await txpResolveByExactAlias(h) : await txpResolveLabelByExactAlias(h);
+            let hit = entityType === 'artist' ? await txpResolveByExactAlias(text) : await txpResolveLabelByExactAlias(text);
             if (!hit) {
-              const cands = entityType === 'artist' ? await txpSearchArtist(h, 5) : await txpSearchLabel(h, 5);
+              const cands = entityType === 'artist' ? await txpSearchArtist(text, 5) : await txpSearchLabel(text, 5);
               const exact = cands.filter(c => (c.name || '').toLowerCase().trim() === key);
               if (exact.length === 1) { const full = await txpFetchEntity(exact[0].gid || exact[0].id, entityType); if (full) hit = { entity: full }; }
             }
-            artistCache.set(key, hit ? hit.entity : null);
-          } catch (e) { artistCache.set(key, null); }
+            entityCache.set(key, hit ? hit.entity : null);
+          } catch (e) { entityCache.set(key, null); }
           // #524 follow-up (majkinetor): "'Resolve all' should update the
           // table as it goes... to avoid the looks of 'nothing happens'" —
-          // each holder is a real network round-trip, so re-render after
+          // each entity is a real network round-trip, so re-render after
           // every one instead of batching the whole thing behind one
           // render() at the very end.
-          bumpProgress(); render(); saveState();
-        }
-
-        // ordinary credits — role text + artist text, resolved independently.
-        const roleCands = linkTypesForPair('artist', 'release');
-        const instrumentLt = roleCands.find(c => c.name === 'instrument');
-        const instrumentCands = instrumentLt ? txpInstrumentCandidates() : [];
-        const roleTexts = [...new Set(creditRows.map(r => (r.role || '').toLowerCase().trim()).filter(Boolean))];
-        roleTexts.forEach(rt => {
-          if (roleCache.has(rt)) return;
-          const exact = roleCands.filter(c => c.name.toLowerCase() === rt);
-          if (exact.length === 1) { roleCache.set(rt, exact[0]); return; }
-          const loose = roleCands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || rt.includes(cn); });
-          if (loose.length === 1) { roleCache.set(rt, loose[0]); return; }
-          // #522 follow-up: fuzzy stem fallback ("compiled" -> "compiler",
-          // "mastered by" -> "mastering") — STRICT stem equality only, not
-          // substring containment: live-verified that "compiled" (stem
-          // "compil") loose-substring-matches BOTH "compiler" and "remixes
-          // and compilations" (whose own multi-word stem contains "compil"
-          // too), which would have made it ambiguous and refused to
-          // auto-bind at all. Equality alone still catches both of
-          // majkinetor's examples without that collision.
-          const stem = txpRoleStem(rt);
-          const fuzzy = roleCands.filter(c => txpRoleStem(c.name) === stem);
-          if (fuzzy.length === 1) { roleCache.set(rt, fuzzy[0]); return; }
-          // #522 follow-up: "Instrument roles (flute, saxophone etc.) are not
-          // resolved automatically" — try the same exact/loose chain against
-          // the instrument attribute vocabulary; a hit becomes the
-          // "instrument" link type PLUS that attribute.
-          if (instrumentLt) {
-            const iExact = instrumentCands.filter(c => c.name.toLowerCase() === rt);
-            const iHit = iExact.length === 1 ? iExact[0] : (() => {
-              const iLoose = instrumentCands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || rt.includes(cn); });
-              return iLoose.length === 1 ? iLoose[0] : null;
-            })();
-            if (iHit) { roleCache.set(rt, { id: instrumentLt.id, name: iHit.name, attributeId: iHit.id }); return; }
-          }
-          roleCache.set(rt, null);
-        });
-        // role resolution above is entirely synchronous (roleCands/
-        // instrumentCands are already fetched) — one render is enough,
-        // but fire it now rather than waiting on the artist loop below so
-        // role matches show up immediately instead of all at once at the end.
-        render(); saveState();
-        for (const at of artistTexts) {
-          const key = at.toLowerCase().trim();
-          if (artistCache.has(key)) continue;
-          try {
-            let hit = await txpResolveByExactAlias(at);
-            if (!hit) {
-              const cands = await txpSearchArtist(at, 5);
-              const exact = cands.filter(c => (c.name || '').toLowerCase().trim() === key);
-              if (exact.length === 1) { const full = await txpFetchEntity(exact[0].gid || exact[0].id, 'artist'); if (full) hit = { entity: full }; }
-            }
-            artistCache.set(key, hit ? hit.entity : null);
-          } catch (e) { artistCache.set(key, null); }
           bumpProgress(); render(); saveState();
         }
       } finally {
@@ -3112,31 +3150,48 @@
     }
 
     function txpPickRole(r) {
-      const roles = linkTypesForPair('artist', 'release');
-      const instrumentLt = roles.find(c => c.name === 'instrument');
+      const artistCands = linkTypesForPair('artist', 'release');
+      const labelCands = linkTypesForPair('label', 'release');
+      const instrumentLt = artistCands.find(c => c.name === 'instrument');
       // offer specific instruments alongside the direct link types (tagged
       // so onPick can tell them apart and build the right {id, attributeId}
-      // shape — see resolveAll's own auto-resolution for the same split).
-      const instrumentOpts = instrumentLt ? txpInstrumentCandidates().map(c => ({ id: c.id, name: c.name, desc: 'instrument', _instrument: true })) : [];
+      // shape — see classifyRoleText's own auto-resolution for the same
+      // split). #525: label-pair roles are offered too (tagged "(label)"
+      // in their description) — a manual pick from either list is the
+      // ultimate override for a role classifyRoleText couldn't force.
+      const instrumentOpts = instrumentLt ? txpInstrumentCandidates().map(c => ({ id: c.id, name: c.name, desc: 'instrument', _instrument: true, _entityType: 'artist' })) : [];
+      const roles = [
+        ...artistCands.map(c => ({ ...c, _entityType: 'artist' })),
+        ...labelCands.map(c => ({ ...c, _entityType: 'label', desc: (c.desc ? c.desc + ' ' : '') + '(label)' })),
+        ...instrumentOpts,
+      ];
       // #522 follow-up (majkinetor, live): "when clicking search on a role,
       // it is not already filled in in search box in popup like Artist" —
-      // pre-fill/pre-filter with the parsed role text, same as the artist
-      // popover already does with r.artist.
-      openRolePicker([...roles, ...instrumentOpts], `Pick a role for “${trunc(r.artist || r.raw, 40)}”`, picked => {
-        const resolved = picked._instrument ? { id: instrumentLt.id, name: picked.name, attributeId: picked.id } : picked;
-        roleCache.set((r.role || '').toLowerCase().trim(), resolved); render(); saveState();
+      // pre-fill/pre-filter with the parsed role text, same as the entity
+      // popover already does with r.entity.
+      openRolePicker(roles, `Pick a role for “${trunc(r.entity || r.raw, 40)}”`, picked => {
+        const resolved = picked._instrument ? { id: instrumentLt.id, name: picked.name, attributeId: picked.id } : { id: picked.id, name: picked.name };
+        roleCache.set((r.role || '').toLowerCase().trim(), {
+          artistMatch: picked._entityType === 'artist' && !picked._instrument ? resolved : null,
+          labelMatch: picked._entityType === 'label' ? resolved : null,
+          instrumentMatch: picked._instrument ? resolved : null,
+          forced: picked._entityType,
+        });
+        render(); saveState();
       }, r.role || '');
     }
-    function txpPickArtist(r, anchor) {
+    function txpPickEntity(r, anchor) {
       closePopover();
-      // #524 follow-up (majkinetor): "regarding artist vs label, maybe we
-      // can have 2 tabs in search" — auto-detect (txpCrEntityType, already
-      // computed onto r.crEntityType by attachResolution) picks the
-      // starting tab; distributed/marketed/licensee can't toggle at all
-      // (MB has no artist-release type for them, so searching artists
-      // would just produce an unresolvable pick).
-      const canToggle = !!r.crKind && !TXP_CR_LABEL_ONLY.has(r.crKind);
-      let searchKind = r.crKind ? (r.crEntityType || 'label') : 'artist';
+      // #524/#525 follow-up (majkinetor): "regarding artist vs label, maybe
+      // we can have 2 tabs in search" — auto-detect (r.entityType, already
+      // computed by attachResolution for BOTH copyright holders and
+      // ordinary credit rows) picks the starting tab; a row whose entity
+      // type is FORCED (r.entityForced — e.g. crKind distributed/marketed/
+      // licensee, or an ordinary role that only exists on one side like
+      // "published") can't toggle at all, since the other search would just
+      // produce an unresolvable pick.
+      const canToggle = !r.entityForced;
+      let searchKind = r.entityType || 'artist';
       popEl = el('div', 'gt-pop gt-tp-apop');
       const hdr = el('div', 'gt-pop-hdr'); popEl.appendChild(hdr);
       if (canToggle) {
@@ -3150,10 +3205,10 @@
       // all other scripts" (mock: a "[+]" button inside the search box
       // itself) — replaces the separate link row below the results.
       const qWrap = el('div', 'gt-tp-qwrap');
-      const q = el('input', 'gt-tp-q'); q.type = 'text'; q.value = r.artist || '';
+      const q = el('input', 'gt-tp-q'); q.type = 'text'; q.value = r.entity || '';
       const createBtn = el('button', 'gt-tp-plus', '+'); createBtn.type = 'button';
       createBtn.onclick = () => {
-        const url = (searchKind === 'label' ? '/label/create?edit-label.name=' : '/artist/create?edit-artist.name=') + encodeURIComponent(r.artist || '');
+        const url = (searchKind === 'label' ? '/label/create?edit-label.name=' : '/artist/create?edit-artist.name=') + encodeURIComponent(r.entity || '');
         window.open(url, '_blank', 'noopener');
       };
       qWrap.append(q, createBtn);
@@ -3162,9 +3217,9 @@
       // #522 follow-up (majkinetor, live): "if one artist has multiple
       // instruments, selecting one selects all... right clicking a choice
       // in search sets all, and normal clicking only that 1." A left click
-      // resolves ONLY this row (artistOverride, position-keyed); a right
-      // click resolves every row sharing this exact artist text (the
-      // shared artistCache, same as auto-resolve uses) — same propagation
+      // resolves ONLY this row (entityOverride, position-keyed); a right
+      // click resolves every row sharing this exact entity text (the
+      // shared entityCache, same as auto-resolve uses) — same propagation
       // as before, now opt-in instead of automatic.
       popEl.appendChild(el('div', 'gt-tp-hint', 'Click: this row only · Right-click: every row with this same text'));
       // header/placeholder/create-title/tab-highlight all depend on
@@ -3174,13 +3229,13 @@
         const label = searchKind === 'label' ? 'a label' : 'an artist';
         hdr.textContent = `Pick ${label} for “${trunc(r.role || r.raw, 40)}”`;
         q.placeholder = `search ${searchKind === 'label' ? 'labels' : 'artists'}, or paste an MBID / URL…`;
-        createBtn.title = `Create ${searchKind === 'label' ? 'label' : 'artist'} “${trunc(r.artist || '', 40)}” ↗`;
+        createBtn.title = `Create ${searchKind === 'label' ? 'label' : 'artist'} “${trunc(r.entity || '', 40)}” ↗`;
         if (canToggle) [...popEl.querySelectorAll('.gt-tp-tab')].forEach(b => b.classList.toggle('gt-tp-tab-on', (b.textContent === 'Label') === (searchKind === 'label')));
       };
       renderChrome();
       const pick = (entity, bulk) => {
-        if (bulk) artistCache.set((r.artist || '').toLowerCase().trim(), entity);
-        else artistOverride.set(r.key, entity);
+        if (bulk) entityCache.set((r.entity || '').toLowerCase().trim(), entity);
+        else entityOverride.set(r.key, entity);
         closePopover(); render(); saveState();
       };
       const resRow = (label, typ) => {
@@ -3246,17 +3301,17 @@
     // exact same dispatch logic before opening the annotation editor.
     async function applyResolvedRows() {
       const re = RE(); if (!re) { toast('Editor not ready'); return null; }
-      const rows = parsedRows().map(attachResolution).filter(r => r.matched && r.roleMatch && r.artistMatch && !appliedKeys.has(r.key));
+      const rows = parsedRows().map(attachResolution).filter(r => r.matched && r.roleMatch && r.entityMatch && !appliedKeys.has(r.key));
       if (!rows.length) { toast('Nothing resolved to apply'); return null; }
       let ok = 0, fail = 0;
       for (const r of rows) {
         try {
-          const credit = r.artist && r.artist !== (r.artistMatch.name || '') ? r.artist : '';
+          const credit = r.entity && r.entity !== (r.entityMatch.name || '') ? r.entity : '';
           const dates = r.year ? { begin_date: { year: parseInt(r.year, 10), month: null, day: null }, end_date: null, ended: false } : null;
           // an instrument-role match carries an attributeId (the "instrument"
           // link type doesn't say WHICH instrument on its own).
           const attrs = r.roleMatch.attributeId ? buildAttrTree([{ typeID: r.roleMatch.attributeId, text_value: '', credited_as: '' }]) : null;
-          dispatchRelationship(re, release, r.artistMatch, r.roleMatch.id, credit, attrs, dates);
+          dispatchRelationship(re, release, r.entityMatch, r.roleMatch.id, credit, attrs, dates);
           appliedKeys.add(r.key); ok++;
         } catch (e) { fail++; try { console.warn('[Group Therapy] text-parser apply failed:', e); } catch (_) {} }
       }
@@ -3296,8 +3351,8 @@
     const saveState = () => txpSaveState(release.gid, {
       text: ta.value, pattern,
       roleCache: [...roleCache.entries()],
-      artistCache: [...artistCache.entries()],
-      artistOverride: [...artistOverride.entries()],
+      entityCache: [...entityCache.entries()],
+      entityOverride: [...entityOverride.entries()],
       appliedKeys: [...appliedKeys],
     });
     const onTextChange = () => {
@@ -3307,7 +3362,7 @@
       // different content (caught live: replacing a whole single-line
       // paste with a DIFFERENT single-line paste keeps the same li:0:0
       // position). Two position-keyed things go stale this way: the
-      // per-row artist override (a wrong pick could silently reattach to
+      // per-row entity override (a wrong pick could silently reattach to
       // unrelated new text) AND appliedKeys (a brand-new, never-applied
       // line could show "✓ applied" and get silently skipped by Apply,
       // caught live: a fresh paste inherited "applied" from an EARLIER,
@@ -3316,7 +3371,7 @@
       const max = Math.max(newLines.length, lines.length);
       for (let li = 0; li < max; li++) {
         if (!lines[li] || !newLines[li] || lines[li].raw !== newLines[li].raw) {
-          [...artistOverride.keys()].filter(k => +k.split(':')[0] === li).forEach(k => artistOverride.delete(k));
+          [...entityOverride.keys()].filter(k => +k.split(':')[0] === li).forEach(k => entityOverride.delete(k));
           [...appliedKeys].filter(k => +k.split(':')[0] === li).forEach(k => appliedKeys.delete(k));
         }
       }
@@ -3352,8 +3407,8 @@
     if (saved) {
       if (saved.text) { ta.value = saved.text; lines = ta.value.split('\n').map(raw => ({ raw, override: '' })); }
       (saved.roleCache || []).forEach(([k, v]) => roleCache.set(k, v));
-      (saved.artistCache || []).forEach(([k, v]) => artistCache.set(k, v));
-      (saved.artistOverride || []).forEach(([k, v]) => artistOverride.set(k, v));
+      (saved.entityCache || []).forEach(([k, v]) => entityCache.set(k, v));
+      (saved.entityOverride || []).forEach(([k, v]) => entityOverride.set(k, v));
       (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
     }
     render();
