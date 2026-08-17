@@ -15,6 +15,7 @@
 // task attributes resolve the same way they do for Discogs/Tidal.
 
 import { getArtistRoles } from '../mappers.js';
+import { assignVolumePositions } from '../util.js';   // #523 shared multi-volume position detection
 
 export const APPLE_AMP = 'https://amp-api.music.apple.com/v1/catalog';
 
@@ -67,21 +68,26 @@ export function appleToEngine(parsedTracks) {
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
-    for (const t of (parsedTracks || [])) {
-        const track = { position: String(t.index), title: t.title || '', type_: 'track' };
+    const tracks = parsedTracks || [];
+    // #523: a multi-medium digital album repeats track numbers per medium —
+    // see assignVolumePositions' own doc for why (a bare repeated number
+    // silently collapsed every credit onto medium 1's same-numbered track).
+    const { positions, multiVolume } = assignVolumePositions(tracks, t => t.index);
+    tracks.forEach((t, i) => {
+        const track = { position: positions[i], title: t.title || '', type_: 'track' };
         tracklist.push(track);
         for (const c of (t.credits || [])) {
             const role = String(c.role || '').trim();
             const name = String(c.name || '').trim();
             if (!role || !name) continue;
-            if (APPLE_SKIP.has(role)) { skipped.push(`track ${t.index}: ${role} — ${name}`); continue; }
+            if (APPLE_SKIP.has(role)) { skipped.push(`track ${track.position}: ${role} — ${name}`); continue; }
             const discogsRole = APPLE_ROLE_BRIDGE[role] || role;
             const rels = getArtistRoles({ name, anv: '', role: discogsRole, resource_url: '' });
-            if (!rels || !rels.length) { skipped.push(`track ${t.index}: ${role} — ${name} (unmapped)`); continue; }
+            if (!rels || !rels.length) { skipped.push(`track ${track.position}: ${role} — ${name} (unmapped)`); continue; }
             for (const rel of rels) tracklistRels.push({ ...rel, artist: rel.artist || { name, anv: '', resource_url: '' }, track });
         }
-    }
-    return { tracklistRels, tracklist, skipped };
+    });
+    return { tracklistRels, tracklist, skipped, multiVolume };
 }
 
 // ── network (GM_xmlhttpRequest; @connect music.apple.com, amp-api.music.apple.com) ──

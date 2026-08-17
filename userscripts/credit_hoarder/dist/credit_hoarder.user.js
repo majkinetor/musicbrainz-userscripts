@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.8.14.143702
+// @version      2026.8.17.131409
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2084,6 +2084,23 @@
     return parts;
   }
 
+  // src/util.js
+  function assignVolumePositions(items, getNum) {
+    const nums = items.map((it) => String(getNum(it) || "").trim());
+    const multiVolume = nums.some((n, i) => n && nums.indexOf(n) < i);
+    let vol = 1;
+    const seenInVol = /* @__PURE__ */ new Set();
+    const positions = nums.map((num) => {
+      if (multiVolume && num && seenInVol.has(num)) {
+        vol++;
+        seenInVol.clear();
+      }
+      if (num) seenInVol.add(num);
+      return multiVolume ? `${vol}-${num}` : num;
+    });
+    return { positions, multiVolume };
+  }
+
   // src/sources/tidal.js
   var TIDAL_PERTRACK_BRIDGE = {
     "Vocal": "Vocals",
@@ -2255,19 +2272,9 @@
     const tracklist = [];
     const skipped = [];
     const filtered = filterTidalCredits(tracks);
-    const nums = filtered.map((t) => String(t.num || "").trim());
-    const multiVolume = nums.some((n, i) => n && nums.indexOf(n) < i);
-    let vol = 1;
-    const seenInVol = /* @__PURE__ */ new Set();
-    for (const t of filtered) {
-      const num = String(t.num || "").trim();
-      if (multiVolume && num && seenInVol.has(num)) {
-        vol++;
-        seenInVol.clear();
-      }
-      if (num) seenInVol.add(num);
-      const position = multiVolume ? `${vol}-${num}` : num;
-      const track = { position, title: t.title || "", type_: "track" };
+    const { positions, multiVolume } = assignVolumePositions(filtered, (t) => t.num);
+    filtered.forEach((t, i) => {
+      const track = { position: positions[i], title: t.title || "", type_: "track" };
       tracklist.push(track);
       for (const c of t.credits) {
         const base = tidalRoleBase(c.role);
@@ -2302,7 +2309,7 @@
           continue;
         }
         if (TIDAL_PERTRACK_SKIP.has(base)) {
-          for (const n of names) skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
+          for (const n of names) skipped.push(`track ${track.position} "${t.title}": ${c.role} \u2014 ${n.name}`);
           continue;
         }
         const discogsRole = TIDAL_PERTRACK_BRIDGE[base] || base;
@@ -2316,7 +2323,7 @@
           };
           const rels = getArtistRoles(artist);
           if (!rels.length) {
-            skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
+            skipped.push(`track ${track.position} "${t.title}": ${c.role} \u2014 ${n.name}`);
             continue;
           }
           for (const r of rels) {
@@ -2330,7 +2337,7 @@
           }
         }
       }
-    }
+    });
     return { tracklistRels, tracklist, skipped, multiVolume };
   }
   function tidalReleaseArtists(releaseCredits) {
@@ -2558,19 +2565,21 @@
     return out;
   }
   function extractQobuzCredits(html) {
-    const byTrack = /* @__PURE__ */ new Map();
+    const out = [];
     const re = /id="popinAddToCartBtnPlayerTrack(\d+)"|<p[^>]*class="[^"]*\btrack__info\b[^"]*"[^>]*>([\s\S]*?)<\/p>/gi;
-    let m, current = 0;
+    let m, current = 0, capturedFor = null;
     while ((m = re.exec(html)) !== null) {
       if (m[1] !== void 0) {
         current = parseInt(m[1], 10);
+        capturedFor = null;
         continue;
       }
       const text = decodeEntities((m[2] || "").replace(/<[^>]+>/g, "").trim());
-      if (!text || !current) continue;
-      if (!byTrack.has(current)) byTrack.set(current, parseQobuzCreditLine(text));
+      if (!text || !current || capturedFor === current) continue;
+      out.push({ index: current, credits: parseQobuzCreditLine(text) });
+      capturedFor = current;
     }
-    return [...byTrack.entries()].sort((a, b) => a[0] - b[0]).map(([index, credits]) => ({ index, credits }));
+    return out;
   }
   function extractQobuzAlbumInfo(html) {
     const og = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] || "";
@@ -2581,8 +2590,9 @@
     const artistRoles = [];
     const tracklist = [];
     const skipped = [];
-    for (const t of parsedTracks) {
-      const track = { position: String(t.index), title: "", type_: "track" };
+    const { positions, multiVolume } = assignVolumePositions(parsedTracks, (t) => t.index);
+    parsedTracks.forEach((t, i) => {
+      const track = { position: positions[i], title: "", type_: "track" };
       tracklist.push(track);
       for (const credit of t.credits) {
         if (!credit.roles.length) {
@@ -2628,8 +2638,8 @@
           }
         }
       }
-    }
-    return { tracklistRels, artistRoles, tracklist, skipped };
+    });
+    return { tracklistRels, artistRoles, tracklist, skipped, multiVolume };
   }
   function fetchQobuzAlbumPage(pageUrl) {
     return new Promise((resolve, reject) => {
@@ -2679,7 +2689,7 @@
         if (id) c.resource_url = qobuzArtistUrl(id);
       }
       return { index: t.track_number || i + 1, credits };
-    }).filter((t) => t.credits.length).sort((a, b) => a.index - b.index);
+    }).filter((t) => t.credits.length);
   }
   function qobuzApiAlbumInfo(json) {
     if (!json) return "";
@@ -5945,27 +5955,29 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
-    for (const t of parsedTracks || []) {
-      const track = { position: String(t.index), title: t.title || "", type_: "track" };
+    const tracks = parsedTracks || [];
+    const { positions, multiVolume } = assignVolumePositions(tracks, (t) => t.index);
+    tracks.forEach((t, i) => {
+      const track = { position: positions[i], title: t.title || "", type_: "track" };
       tracklist.push(track);
       for (const c of t.credits || []) {
         const role = String(c.role || "").trim();
         const name = String(c.name || "").trim();
         if (!role || !name) continue;
         if (APPLE_SKIP.has(role)) {
-          skipped.push(`track ${t.index}: ${role} \u2014 ${name}`);
+          skipped.push(`track ${track.position}: ${role} \u2014 ${name}`);
           continue;
         }
         const discogsRole = APPLE_ROLE_BRIDGE[role] || role;
         const rels = getArtistRoles({ name, anv: "", role: discogsRole, resource_url: "" });
         if (!rels || !rels.length) {
-          skipped.push(`track ${t.index}: ${role} \u2014 ${name} (unmapped)`);
+          skipped.push(`track ${track.position}: ${role} \u2014 ${name} (unmapped)`);
           continue;
         }
         for (const rel of rels) tracklistRels.push({ ...rel, artist: rel.artist || { name, anv: "", resource_url: "" }, track });
       }
-    }
-    return { tracklistRels, tracklist, skipped };
+    });
+    return { tracklistRels, tracklist, skipped, multiVolume };
   }
   function appleGet(url, headers) {
     return new Promise((resolve, reject) => {
@@ -6134,7 +6146,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const credits = parseDeezerCreditLine(cm[2]);
       if (credits.length) out.push({ index: pos, credits });
     }
-    return out.sort((a, b) => a.index - b.index);
+    return out;
   }
   function extractDeezerAlbumInfo(html) {
     const og = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] || "";
@@ -6144,8 +6156,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
-    for (const t of parsedTracks) {
-      const track = { position: String(t.index), title: "", type_: "track" };
+    const { positions, multiVolume } = assignVolumePositions(parsedTracks, (t) => t.index);
+    parsedTracks.forEach((t, i) => {
+      const track = { position: positions[i], title: "", type_: "track" };
       tracklist.push(track);
       for (const credit of t.credits) {
         for (const rel of credit.roles) {
@@ -6158,8 +6171,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           });
         }
       }
-    }
-    return { tracklistRels, tracklist, skipped };
+    });
+    return { tracklistRels, tracklist, skipped, multiVolume };
   }
   function fetchDeezerAlbumPage(pageUrl) {
     return new Promise((resolve, reject) => {
@@ -7758,9 +7771,10 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      const { tracklistRels, artistRoles, tracklist, skipped } = qobuzToEngine(tracks);
+      const { tracklistRels, artistRoles, tracklist, skipped, multiVolume } = qobuzToEngine(tracks);
       log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s)${artistRoles.length ? ` + ${artistRoles.length} release-level relationship(s)` : ""} across ${tracklist.length} track(s)`);
       skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (multiVolume) log.warn(`Multi-medium Qobuz album \u2014 track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
       if (!tracklistRels.length && !artistRoles.length) {
         log.warn("No importable Qobuz credits found.");
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
@@ -7808,9 +7822,10 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      const { tracklistRels, tracklist, skipped } = deezerToEngine(tracks);
+      const { tracklistRels, tracklist, skipped, multiVolume } = deezerToEngine(tracks);
       log.info(`Deezer credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
       skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (multiVolume) log.warn(`Multi-medium Deezer album \u2014 track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
       if (!tracklistRels.length) {
         log.warn("No importable Deezer credits found.");
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
@@ -7843,9 +7858,10 @@ ${lines}
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
-      const { tracklistRels, tracklist, skipped } = appleToEngine(tracks);
+      const { tracklistRels, tracklist, skipped, multiVolume } = appleToEngine(tracks);
       log.info(`Apple credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
       skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (multiVolume) log.warn(`Multi-medium Apple album \u2014 track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
       if (!tracklistRels.length) {
         log.warn("No importable Apple credits found.");
         document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");

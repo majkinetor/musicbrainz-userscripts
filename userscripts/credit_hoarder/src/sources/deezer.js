@@ -17,6 +17,8 @@
 // credit resolves name-based (MB search + the review table), the Qobuz shape.
 // Verified on album 12166410 (Soul Jazz *Calypso*): 19/19 track lines parsed.
 
+import { assignVolumePositions } from '../util.js';   // #523 shared multi-volume position detection
+
 /** Minimal HTML-entity decode for the entities Deezer pages emit (numeric refs,
  *  `&amp;`, `&#039;`, …). Kept local so this source has no engine imports. */
 export function decodeEntities(s) {
@@ -121,7 +123,14 @@ export function extractDeezerCredits(html) {
         const credits = parseDeezerCreditLine(cm[2]);
         if (credits.length) out.push({ index: pos, credits });
     }
-    return out.sort((a, b) => a.index - b.index);
+    // #523: NOT sorted by index — a multi-medium album repeats 1..n per disc,
+    // and sorting numerically would interleave same-numbered tracks from
+    // DIFFERENT mediums (1,1,2,2,3,3,…) instead of keeping each medium's
+    // block together, breaking deezerToEngine's multi-volume detection
+    // below (which needs the source's own natural per-medium order). The
+    // page's own contributors-row order already matches its tracklist
+    // order, which is medium-sequential.
+    return out;
 }
 
 /** Album title from the store page, for the diagnostic log (og:title is the bare
@@ -140,8 +149,12 @@ export function deezerToEngine(parsedTracks) {
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
-    for (const t of parsedTracks) {
-        const track = { position: String(t.index), title: '', type_: 'track' };
+    // #523: a multi-medium digital album repeats track numbers per medium —
+    // see assignVolumePositions' own doc for why (a bare repeated number
+    // silently collapsed every credit onto medium 1's same-numbered track).
+    const { positions, multiVolume } = assignVolumePositions(parsedTracks, t => t.index);
+    parsedTracks.forEach((t, i) => {
+        const track = { position: positions[i], title: '', type_: 'track' };
         tracklist.push(track);
         for (const credit of t.credits) {
             for (const rel of credit.roles) {
@@ -154,8 +167,8 @@ export function deezerToEngine(parsedTracks) {
                 });
             }
         }
-    }
-    return { tracklistRels, tracklist, skipped };
+    });
+    return { tracklistRels, tracklist, skipped, multiVolume };
 }
 
 /** Fetch the album page HTML cross-origin via GM_xmlhttpRequest

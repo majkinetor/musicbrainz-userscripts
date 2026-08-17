@@ -2,6 +2,39 @@
 // Pure: no module state, no MB/Discogs assumptions.
 
 /**
+ * #523: a multi-medium digital release repeats per-track numbers per
+ * medium/volume (1..n, 1..n, …) on Tidal, Deezer, Qobuz and Apple alike —
+ * MB's own position map keys multi-medium releases as "<medium>-<track>",
+ * so a bare repeated number is ambiguous and, left unresolved, collapses
+ * onto medium 1 wherever it's looked up (dispatch.js's `getRecordingEntity`
+ * sweeps mediums 1..10 and returns the FIRST match). Detect the reset (a
+ * number seen earlier in the list) and, when found, emit compound
+ * "volume-track" positions instead so each credit lands on the right
+ * medium.
+ *
+ * `items` MUST be in the source's own natural per-medium-sequential order
+ * (all of medium 1, then all of medium 2, …) — sorting by number first
+ * destroys the very signal this detects (ties would interleave mediums
+ * instead of grouping them), so callers must not pre-sort by number.
+ *
+ * Returns one position string per item, `"<vol>-<num>"` when a reset was
+ * detected, otherwise the bare `num` — plus whether a reset was detected
+ * at all, so the caller can surface an advisory (this is a heuristic, not
+ * a guarantee — same caveat Tidal's own version of this already carried).
+ */
+export function assignVolumePositions(items, getNum) {
+    const nums = items.map(it => String(getNum(it) || '').trim());
+    const multiVolume = nums.some((n, i) => n && nums.indexOf(n) < i);
+    let vol = 1; const seenInVol = new Set();
+    const positions = nums.map(num => {
+        if (multiVolume && num && seenInVol.has(num)) { vol++; seenInVol.clear(); }
+        if (num) seenInVol.add(num);
+        return multiVolume ? `${vol}-${num}` : num;
+    });
+    return { positions, multiVolume };
+}
+
+/**
  * `setTimeout` wrapped in a Promise. The function `fn` runs after `ms`; its
  * return value (or thrown error) flows through the returned Promise.
  * If `fn` returns a thenable, the Promise waits for it to settle.

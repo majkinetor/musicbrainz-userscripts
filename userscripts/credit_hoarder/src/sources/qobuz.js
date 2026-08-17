@@ -25,6 +25,7 @@
 import { getArtistRoles }    from '../mappers.js';
 import { INSTRUMENTS }       from '../data/instruments.js';
 import { splitCombinedNames } from './split-names.js';   // #411 shared multi-artist splitter
+import { assignVolumePositions } from '../util.js';   // #523 shared multi-volume position detection
 
 /** Role vocabulary seen in Qobuz `performers` strings → MB relationship plan.
  *  Qobuz's vocabulary varies by album — some use camelCase tokens
@@ -175,16 +176,31 @@ export function extractQobuzCredits(html) {
     // credits onto the WRONG tracks in the first live test. Each track row
     // carries `id="popinAddToCartBtnPlayerTrack<N>"` with the REAL track
     // number — anchor every credits line to the nearest preceding marker.
-    const byTrack = new Map();   // real track number → credits
+    //
+    // #523: track number alone is NOT a unique key — a multi-medium album
+    // repeats 1..n per disc, and the original Map-keyed-by-number dedup
+    // silently DROPPED every credit whose number had already been seen on
+    // an earlier medium (not just misattributed it — lost entirely, before
+    // multi-volume detection ever got a chance to run on it). `capturedFor`
+    // resets on every fresh marker occurrence, so a genuinely repeated
+    // number still gets its own entry, while the empty responsive
+    // duplicates within THAT SAME occurrence are still skipped.
+    const out = [];
     const re = /id="popinAddToCartBtnPlayerTrack(\d+)"|<p[^>]*class="[^"]*\btrack__info\b[^"]*"[^>]*>([\s\S]*?)<\/p>/gi;
-    let m, current = 0;
+    let m, current = 0, capturedFor = null;
     while ((m = re.exec(html)) !== null) {
-        if (m[1] !== undefined) { current = parseInt(m[1], 10); continue; }
+        if (m[1] !== undefined) { current = parseInt(m[1], 10); capturedFor = null; continue; }
         const text = decodeEntities((m[2] || '').replace(/<[^>]+>/g, '').trim());
-        if (!text || !current) continue;               // empty duplicate / preamble
-        if (!byTrack.has(current)) byTrack.set(current, parseQobuzCreditLine(text));
+        if (!text || !current || capturedFor === current) continue;   // empty duplicate / preamble / already captured this marker occurrence
+        out.push({ index: current, credits: parseQobuzCreditLine(text) });
+        capturedFor = current;
     }
-    return [...byTrack.entries()].sort((a, b) => a[0] - b[0]).map(([index, credits]) => ({ index, credits }));
+    // NOT sorted by index — see above: sorting numerically would interleave
+    // same-numbered tracks from different mediums instead of keeping each
+    // medium's block together, breaking qobuzToEngine's multi-volume
+    // detection below (which needs the source's own natural per-medium
+    // order — already matched by this loop's document-order emission).
+    return out;
 }
 
 /** Album title + artist from the store page, for the diagnostic log.
@@ -212,8 +228,12 @@ export function qobuzToEngine(parsedTracks) {
     const artistRoles = [];
     const tracklist = [];
     const skipped = [];
-    for (const t of parsedTracks) {
-        const track = { position: String(t.index), title: '', type_: 'track' };
+    // #523: a multi-medium digital album repeats track numbers per medium —
+    // see assignVolumePositions' own doc for why (a bare repeated number
+    // silently collapsed every credit onto medium 1's same-numbered track).
+    const { positions, multiVolume } = assignVolumePositions(parsedTracks, t => t.index);
+    parsedTracks.forEach((t, i) => {
+        const track = { position: positions[i], title: '', type_: 'track' };
         tracklist.push(track);
         for (const credit of t.credits) {
             if (!credit.roles.length) {   // #311: person Qobuz left unlabelled — can't import without a role
@@ -259,8 +279,8 @@ export function qobuzToEngine(parsedTracks) {
                 }
             }
         }
-    }
-    return { tracklistRels, artistRoles, tracklist, skipped };
+    });
+    return { tracklistRels, artistRoles, tracklist, skipped, multiVolume };
 }
 
 /** Fetch the store page HTML cross-origin via GM_xmlhttpRequest
@@ -326,8 +346,11 @@ export function parseQobuzApiTracks(json) {
             for (const c of credits) { const id = idByName[c.name]; if (id) c.resource_url = qobuzArtistUrl(id); }
             return { index: t.track_number || (i + 1), credits };
         })
-        .filter(t => t.credits.length)
-        .sort((a, b) => a.index - b.index);
+        // #523: NOT sorted by index — `items` already arrives in the
+        // album's own natural (medium-sequential) order; see the matching
+        // note in extractQobuzCredits above for why sorting numerically
+        // would break multi-volume detection on a multi-medium release.
+        .filter(t => t.credits.length);
 }
 
 /** Album title + artist from album/get JSON, for the diagnostic log. */

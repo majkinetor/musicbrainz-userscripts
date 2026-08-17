@@ -1622,9 +1622,12 @@ function runQobuzImport(qobuzUrl, getOpts, cancelled, collect) {
         li.querySelector('details').appendChild(pre);
         _logs.appendChild(li);
         if (!tracks.length) { log.warn('No Qobuz credits found — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-        const { tracklistRels, artistRoles, tracklist, skipped } = qobuzToEngine(tracks);
+        const { tracklistRels, artistRoles, tracklist, skipped, multiVolume } = qobuzToEngine(tracks);
         log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s)${artistRoles.length ? ` + ${artistRoles.length} release-level relationship(s)` : ''} across ${tracklist.length} track(s)`);
         skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+        // #523: same multi-volume caveat Tidal already carries (#325) — repeated
+        // per-medium numbering is a heuristic reset-detection, not a guarantee.
+        if (multiVolume) log.warn(`Multi-medium Qobuz album — track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
         if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable Qobuz credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
         const parts = { companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
         return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
@@ -1669,9 +1672,12 @@ function runDeezerImport(deezerUrl, getOpts, cancelled, collect) {
             li.querySelector('details').appendChild(pre);
             _logs.appendChild(li);
             if (!tracks.length) { log.warn('No Deezer credits found — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            const { tracklistRels, tracklist, skipped } = deezerToEngine(tracks);
+            const { tracklistRels, tracklist, skipped, multiVolume } = deezerToEngine(tracks);
             log.info(`Deezer credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
             skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            // #523: same multi-volume caveat Tidal already carries (#325) — repeated
+            // per-medium numbering is a heuristic reset-detection, not a guarantee.
+            if (multiVolume) log.warn(`Multi-medium Deezer album — track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
             if (!tracklistRels.length) { log.warn('No importable Deezer credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
             const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
@@ -1697,9 +1703,12 @@ function runAppleImport(appleUrl, getOpts, cancelled, collect) {
             li.querySelector('details').appendChild(pre);
             _logs.appendChild(li);
             if (!tracks.length) { log.warn('No Apple credits found (Apple has no credit data for this album, or none of its tracks list credits) — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            const { tracklistRels, tracklist, skipped } = appleToEngine(tracks);
+            const { tracklistRels, tracklist, skipped, multiVolume } = appleToEngine(tracks);
             log.info(`Apple credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
             skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            // #523: same multi-volume caveat Tidal already carries (#325) — repeated
+            // per-medium numbering is a heuristic reset-detection, not a guarantee.
+            if (multiVolume) log.warn(`Multi-medium Apple album — track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
             if (!tracklistRels.length) { log.warn('No importable Apple credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
             const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: appleUrl, processTracklist: true };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });

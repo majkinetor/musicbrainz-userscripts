@@ -24,6 +24,7 @@
 
 import { getArtistRoles } from '../mappers.js';
 import { splitCombinedNames } from './split-names.js';   // #411 shared multi-artist splitter
+import { assignVolumePositions } from '../util.js';   // #325/#523 shared multi-volume position detection
 
 // #310: per-track roles NOT in TIDAL_ROLE_MAP fall back to the shared resolver
 // (getArtistRoles → ENTITY_TYPE_MAP / INSTRUMENTS) — the same path the
@@ -314,15 +315,9 @@ export function tidalToEngine(tracks) {
     // Detect it (a number seen earlier) and emit compound "volume-track" positions so
     // each maps onto the right medium — the dispatch position map keys multi-medium
     // releases as "<medium>-<track>", and bare numbers would all collapse onto medium 1.
-    const nums = filtered.map(t => String(t.num || '').trim());
-    const multiVolume = nums.some((n, i) => n && nums.indexOf(n) < i);
-    let vol = 1; const seenInVol = new Set();
-    for (const t of filtered) {
-        const num = String(t.num || '').trim();
-        if (multiVolume && num && seenInVol.has(num)) { vol++; seenInVol.clear(); }
-        if (num) seenInVol.add(num);
-        const position = multiVolume ? `${vol}-${num}` : num;
-        const track = { position, title: t.title || '', type_: 'track' };
+    const { positions, multiVolume } = assignVolumePositions(filtered, t => t.num);
+    filtered.forEach((t, i) => {
+        const track = { position: positions[i], title: t.title || '', type_: 'track' };
         tracklist.push(track);
         for (const c of t.credits) {
             const base      = tidalRoleBase(c.role);
@@ -367,7 +362,7 @@ export function tidalToEngine(tracks) {
             // editor, …). A few names are bridged to the Discogs vocabulary; genuinely
             // unmappable / release-level roles are reported, not imported.
             if (TIDAL_PERTRACK_SKIP.has(base)) {
-                for (const n of names) skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
+                for (const n of names) skipped.push(`track ${track.position} "${t.title}": ${c.role} — ${n.name}`);
                 continue;
             }
             const discogsRole = TIDAL_PERTRACK_BRIDGE[base] || base;
@@ -380,7 +375,7 @@ export function tidalToEngine(tracks) {
                     resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : '',
                 };
                 const rels = getArtistRoles(artist);
-                if (!rels.length) { skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`); continue; }
+                if (!rels.length) { skipped.push(`track ${track.position} "${t.title}": ${c.role} — ${n.name}`); continue; }
                 for (const r of rels) {
                     tracklistRels.push({
                         linkType: r.linkType,
@@ -392,7 +387,7 @@ export function tidalToEngine(tracks) {
                 }
             }
         }
-    }
+    });
     return { tracklistRels, tracklist, skipped, multiVolume };
 }
 
