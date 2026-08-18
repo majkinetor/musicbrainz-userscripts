@@ -111,12 +111,15 @@ console.log('R: E rows:', JSON.stringify(rowTexts));
 ck(rowTexts.length === 5, `all 5 lines produce a row (got ${rowTexts.length})`);
 ck(rowTexts[1][0] === 'Mastering' && rowTexts[1][1].includes('Michael Graves'), `role/artist split correctly for one row (got ${JSON.stringify(rowTexts[1])})`);
 
-// 3. switch to the E - R[,] preset and confirm the comma-split expansion.
-await page.click('.gt-tp-chip:has-text("E - R[,]")');
+// 3. switch to the E[,] - R[,] preset (#525: "more general" than a
+// single-side split — both fields are split-flagged, so a comma on
+// EITHER side works, degrading to a plain single-side split when only
+// one side actually has commas) and confirm the comma-split expansion.
+await page.click('.gt-tp-chip:has-text("E[,] - R[,]")');
 await page.fill('.gt-tp-ta', 'Cameron Allen - Flute, Tenor Saxophone');
 await page.waitForTimeout(150);
 rowTexts = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
-console.log('E - R[,] rows:', JSON.stringify(rowTexts));
+console.log('E[,] - R[,] rows:', JSON.stringify(rowTexts));
 ck(rowTexts.length === 2, `one line with 2 comma-split roles expands to 2 rows (got ${rowTexts.length})`);
 // table columns are always [role, entity] regardless of the pattern's own field order.
 ck(rowTexts.every(r => r[1] === 'Cameron Allen'), 'both expanded rows share the same entity');

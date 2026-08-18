@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.18.161620
+// @version      2026.8.18.171439
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2181,7 +2181,12 @@
   // the field's own name are now the generic "entity", not "artist".
   const TXP_FIELDS = { 'R': 'role', 'E': 'entity' };
   const TXP_SEPS = ['-', '‐', '–', '—', '/', ':'];
-  const TXP_PRESETS = ['R: E', 'R: E[,]', 'E - R[,]', 'R - E', 'E: R'];
+  // #525 follow-up (majkinetor): "Add R[,] - E[,] and E[,] - R[,] instead
+  // variants on single side. It is more general." — splitting BOTH sides
+  // strictly subsumes a single-side split (a field with no comma in it is
+  // just a no-op split), so these replace the old entity-only-split dash
+  // preset ("E - R[,]") rather than sitting alongside it.
+  const TXP_PRESETS = ['R: E', 'R: E[,]', 'R[,] - E[,]', 'E[,] - R[,]', 'R - E', 'E: R'];
   let _txpPattern = 'R: E';   // remembered across opens this session
   const txpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const txpUsable = out => !!out && Object.values(out).some(v => v && String(v).trim());

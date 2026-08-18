@@ -148,7 +148,7 @@ Paste text (or click **Load annotation** to pull the release's latest annotation
 
 - `R: E` — `Mastering: Nick Robbins`
 - `E - R` — `Nick Robbins - Mastering`
-- `E - R[,]` — `Cameron Allen - Flute, Tenor Saxophone` splits the role text on commas (and `E - R[, and]` also splits on the word "and"), turning one line into several rows — one per role, same entity. `R: E[,]` does the same split on the *other* side — `Published by: Warner Chappell, Sony Music Publishing` becomes two rows, same role. `[&]` splits on `&` instead of a comma — `R: E[&]` for `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` (needs surrounding whitespace, so a real name like "AT&T" isn't split mid-word).
+- `E[,] - R[,]` / `R[,] - E[,]` — `Cameron Allen - Flute, Tenor Saxophone` splits the role text on commas (and `[, and]` also splits on the word "and"), turning one line into several rows — one per role, same entity. Splitting *both* sides is more general than picking just one: a side with no comma is simply a no-op split, and a comma on both sides produces every (role, entity) combination — `Producer, Mixer - Alice, Bob` becomes 4 rows. `R: E[,]` does the same split on a colon-separated line — `Published by: Warner Chappell, Sony Music Publishing` becomes two rows, same role. `[&]` splits on `&` instead of a comma — `R: E[&]` for `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` (needs surrounding whitespace, so a real name like "AT&T" isn't split mid-word).
 - A line can also hold **several credits at once**, separated by `;` — `Guitar: Alice; Bass: Bob` becomes two rows.
 
 `E` stands for **entity** — the credited name can resolve to either an artist or a label, decided per row (see below), not fixed by the pattern.

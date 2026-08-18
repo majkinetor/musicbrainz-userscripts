@@ -228,14 +228,25 @@ eq(P('R: E', ''), null, 'a blank line → unmatched, null');
 // slice syntax still works, re-keyed through TXP_FIELDS.
 eq(P('R[1-9] E', 'Mastering  Nick Robbins'), { role: 'Mastering', entity: 'Nick Robbins' }, 'slice: R[1-9] positional role');
 
-// both fields split (cartesian) — not a documented v1 shape, but the code
-// gets it for free; confirm it doesn't crash and the product count is right.
+// #525 (majkinetor): "Add R[,] - E[,] and E[,] - R[,] instead variants on
+// single side. It is more general." — both fields split-flagged, so a
+// comma on EITHER side works: two commas on both sides is a cartesian
+// product, and one side with no comma degrades to a plain single-side
+// split for free — no separate "which side has the comma" preset needed.
 eq(X('E[,] - R[,]', 'Alice, Bob - Guitar, Bass'), [
   { entity: 'Alice', role: 'Guitar' },
   { entity: 'Alice', role: 'Bass' },
   { entity: 'Bob', role: 'Guitar' },
   { entity: 'Bob', role: 'Bass' },
-], 'both fields split → cartesian product (4 rows from 2x2), free correctness check');
+], 'E[,] - R[,] — both fields split → cartesian product (4 rows from 2x2)');
+eq(X('R[,] - E[,]', 'Guitar, Bass - Alice'), [
+  { role: 'Guitar', entity: 'Alice' },
+  { role: 'Bass', entity: 'Alice' },
+], 'R[,] - E[,] — only the role side has a comma, degrades to a plain single-side split');
+eq(X('E[,] - R[,]', 'Cameron Allen - Flute, Tenor Saxophone'), [
+  { entity: 'Cameron Allen', role: 'Flute' },
+  { entity: 'Cameron Allen', role: 'Tenor Saxophone' },
+], 'E[,] - R[,] — only the role side has a comma (entity side is a no-op split)');
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 process.exit(fail ? 1 : 0);
