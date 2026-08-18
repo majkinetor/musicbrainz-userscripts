@@ -963,6 +963,61 @@ ck(biographyRow[2] === 'search', `"Biography and Pictures" no longer false-posit
 await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
 await page.waitForTimeout(150);
 
+// 37. #525 follow-up (majkinetor): "Can we just replace role with the
+// other one once the entity is selected? That way it should never
+// happen." A pre-resolution guess is only ever a best effort for a
+// genuinely ambiguous holder — once an entity is actually resolved
+// (manually, via the Artist/Label toggle here), its own real entityType
+// is what decides the relationship type from then on, not the stale
+// guess. "copyright" has the SAME display name but a DIFFERENT id on the
+// artist-release vs label-release side, so the only way to really catch a
+// silent wrong-id dispatch (this bug's exact shape) is to read the
+// STAGED relationship's actual linkTypeID after Apply.
+const copyrightIds = await page.evaluate(() => {
+  const GT = window.__groupTherapy;
+  const a = GT.linkTypesForPair('artist', 'release').find(c => c.name === 'copyright');
+  const l = GT.linkTypesForPair('label', 'release').find(c => c.name === 'copyright');
+  return { artistId: a && a.id, labelId: l && l.id };
+});
+console.log('"copyright" ids:', JSON.stringify(copyrightIds));
+ck(copyrightIds.artistId && copyrightIds.labelId && copyrightIds.artistId !== copyrightIds.labelId, `"copyright" has distinct ids for artist-release vs label-release (${JSON.stringify(copyrightIds)})`);
+if (anArtistGid && copyrightIds.artistId) {
+  await page.evaluate(() => window.__groupTherapy.openTextParser());
+  await page.waitForTimeout(300);
+  // a holder that auto-detects as LABEL by default (doesn't match this release's own credited artists).
+  await page.fill('.gt-tp-ta', '© 2020 Toggle Test Label 525');
+  await page.waitForTimeout(150);
+  await page.click('.gt-tp-resolve');
+  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
+  await page.waitForTimeout(200);
+  // toggle to Artist and pick a REAL artist (reusing the same gid from test 7).
+  await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('a.gt-tp-resolved, button.gt-tp-search').click();
+  await page.waitForTimeout(200);
+  await page.click('.gt-tp-apop .gt-tp-tab:has-text("Artist")');
+  await page.waitForTimeout(150);
+  await page.fill('.gt-tp-q', anArtistGid);
+  await page.waitForTimeout(600);
+  await page.click('.gt-tp-res');
+  await page.waitForTimeout(200);
+  const relCountBefore = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
+  await page.click('.gt-cons-apply');
+  await page.waitForTimeout(600);
+  const staged = await page.evaluate(artistId => {
+    const find = node => { for (const k in node) if (k.startsWith('__reactFiber$')) { let f = node[k]; let d = 0; while (f && d++ < 40) { const s = f.memoizedProps && f.memoizedProps.relationship; if (s && 'linkTypeID' in s) return s; f = f.return; } } return null; };
+    for (const item of document.querySelectorAll('.relationship-item')) {
+      const rel = find(item);
+      if (rel && rel.linkTypeID === artistId) return true;
+    }
+    return false;
+  }, copyrightIds.artistId);
+  const relCountAfter = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
+  console.log('role-follows-entity check:', JSON.stringify({ staged, relCountBefore, relCountAfter }));
+  ck(relCountAfter > relCountBefore, `Apply staged a new relationship (before ${relCountBefore}, after ${relCountAfter})`);
+  ck(staged, `the staged relationship uses the ARTIST-side "copyright" id (${copyrightIds.artistId}), not the stale label-side guess (${copyrightIds.labelId}) — the role followed the manually-picked entity`);
+} else {
+  console.log('SKIP: no real artist gid available for the role-follows-entity test');
+}
+
 // 34. #525 (majkinetor): "since column Entity is used as 'credited as',
 // lets add right click to it, which will set it to choosen entity (if
 // there is one). This will subsequently change the raw text. This is used

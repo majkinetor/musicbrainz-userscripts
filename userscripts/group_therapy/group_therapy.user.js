@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.18
+// @version      2026.8.18.161620
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2903,9 +2903,19 @@
       row.key = row.li + ':' + row.pi + ':' + row.si;
       if (!row.matched) { row.roleMatch = null; row.entityMatch = null; row.entityType = null; row.entityForced = null; return row; }
       row.entityMatch = entityOverride.has(row.key) ? entityOverride.get(row.key) : (entityCache.get((row.entity || '').toLowerCase().trim()) || null);
+      // #525 follow-up (majkinetor): "Can we just replace role with the
+      // other one once the entity is selected? That way it should never
+      // happen." A pre-resolution guess (forced-or-auto-detected) can only
+      // ever be a best effort for a genuinely ambiguous role — once an
+      // entity is ACTUALLY resolved (auto or manually, including via the
+      // Artist/Label toggle), its own real entityType is ground truth and
+      // decides which relationship type applies, no more guessing. A
+      // FORCED type (role only exists on one side) still wins outright —
+      // there's no valid alternate relationship type to fall back to even
+      // if a pasted MBID happened to be the other kind.
       if (row.crKind) {
         row.entityForced = TXP_CR_LABEL_ONLY.has(row.crKind) ? 'label' : null;
-        row.entityType = txpCrEntityType(row.crKind, row.entity);
+        row.entityType = row.entityForced || (row.entityMatch ? row.entityMatch.entityType : txpCrEntityType(row.crKind, row.entity));
         row.roleMatch = row.entityMatch ? txpCopyrightLinkType(row.crKind, row.entityType) : null;
         return row;
       }
@@ -2913,7 +2923,7 @@
       const cls = roleCache.get(rt) || null;
       row.roleClass = cls;
       row.entityForced = (cls && cls.forced) || null;
-      row.entityType = rowEntityType(row);
+      row.entityType = row.entityForced || (row.entityMatch ? row.entityMatch.entityType : rowEntityType(row));
       row.roleMatch = cls ? (row.entityType === 'label' ? cls.labelMatch : (cls.instrumentMatch || cls.artistMatch)) : null;
       return row;
     }
