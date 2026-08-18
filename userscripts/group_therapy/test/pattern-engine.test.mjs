@@ -30,9 +30,10 @@ function txpTokenize(pattern, seps) {
     if (str[i] !== '[') return null;
     const close = str.indexOf(']', i); if (close < 0) return null;
     const inner = str.slice(i + 1, close); let m;
-    if (inner[0] === ',') {
+    if (inner[0] === ',' || inner[0] === '&') {
+      const primary = inner[0];
       const rest = inner.slice(1).trim();
-      return { slice: { split: [',', ...(rest ? rest.split(/\s+/) : [])] }, next: close + 1 };
+      return { slice: { split: [primary, ...(rest ? rest.split(/\s+/) : [])] }, next: close + 1 };
     }
     const colon = inner.indexOf(':');
     if (colon >= 0) {
@@ -200,6 +201,18 @@ eq(X('R: E[,]', 'Published by: Warner Chappell, Sony Music Publishing'), [
   { role: 'Published by', entity: 'Warner Chappell' },
   { role: 'Published by', entity: 'Sony Music Publishing' },
 ], 'R: E[,] — comma-split entity expands to 2 rows, both with the same role');
+
+// #525 (majkinetor): "R: E[&]" didn't work for "Graphic Design: Ricardo H
+// Fernandes & Yacine Blaeich" — [&] splits the same way [,] does, but on
+// " & " (with required surrounding whitespace, so "AT&T"-style names
+// aren't split mid-word).
+eq(X('R: E[&]', 'Graphic Design: Ricardo H Fernandes & Yacine Blaeich'), [
+  { role: 'Graphic Design', entity: 'Ricardo H Fernandes' },
+  { role: 'Graphic Design', entity: 'Yacine Blaeich' },
+], 'R: E[&] — ampersand-split entity expands to 2 rows, both with the same role');
+eq(X('R: E[&]', 'Label: AT&T Records'), [
+  { role: 'Label', entity: 'AT&T Records' },
+], 'R: E[&] — an un-spaced "&" inside a real name is not split (needs surrounding whitespace)');
 
 // dangling edge ws/sep tokens (re-ported #522 fix) — a trailing space or
 // separator with nothing real past it must not make the pattern unmatchable.

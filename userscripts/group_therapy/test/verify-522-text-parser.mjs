@@ -911,6 +911,58 @@ await page.waitForTimeout(150);
 await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
 await page.waitForTimeout(150);
 
+// 35. #525 (majkinetor, live, screenshot): "one for the company was
+// selected" — "mastering" and "graphic design" turn out to ALSO exist as
+// label-release relationship types in MB (live-verified on production:
+// ids 1293 and 1172), alongside their much more common artist-release
+// ones (42 and 27). Defaulting an ambiguous ORDINARY credit row to label
+// (a "company") was wrong far more often than right — these two must
+// default back to ARTIST, matching the pre-#525 behavior and the actual
+// intent of a liner-note credit.
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+await page.fill('.gt-tp-pat', 'R: E');
+await page.fill('.gt-tp-ta', 'Mastering: Michael Graves 525\nGraphic Design: Ricardo H Fernandes 525');
+await page.waitForTimeout(150);
+await page.click('.gt-tp-resolve');
+await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
+await page.waitForTimeout(200);
+const readPickerFor = async i => {
+  await page.locator('.gt-tp-row').nth(i).locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
+  await page.waitForTimeout(150);
+  const info = await page.evaluate(() => document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(150);
+  return info;
+};
+const masteringHeader = await readPickerFor(0);
+const graphicDesignHeader = await readPickerFor(1);
+console.log('mastering/graphic-design picker headers:', JSON.stringify({ masteringHeader, graphicDesignHeader }));
+ck(/an artist/i.test(masteringHeader || ''), `"Mastering" defaults to ARTIST search, not label (got "${masteringHeader}")`);
+ck(/an artist/i.test(graphicDesignHeader || ''), `"Graphic Design" defaults to ARTIST search, not label (got "${graphicDesignHeader}")`);
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+
+// 36. #525 (majkinetor, live, screenshot): "Biography and Pictures" role
+// wrongly auto-resolved to "pi" — a real MB instrument name that just
+// happens to be a 2-character substring of "pictures". The loose-match
+// tier now requires the candidate be at least 4 characters when checking
+// whether the (often much longer) role text merely CONTAINS it — the
+// direction responsible for this false positive.
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+await page.fill('.gt-tp-pat', 'R: E[,]');
+await page.fill('.gt-tp-ta', 'Biography and Pictures: Chico Unicornio 525');
+await page.waitForTimeout(150);
+await page.click('.gt-tp-resolve');
+await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
+await page.waitForTimeout(200);
+const biographyRow = await page.evaluate(() => [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')].map(c => c.textContent));
+console.log('"Biography and Pictures" row:', JSON.stringify(biographyRow));
+ck(biographyRow[2] === 'search', `"Biography and Pictures" no longer false-positive-matches the short instrument "pi" (got role cell "${biographyRow[2]}")`);
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+
 // 34. #525 (majkinetor): "since column Entity is used as 'credited as',
 // lets add right click to it, which will set it to choosen entity (if
 // there is one). This will subsequently change the raw text. This is used

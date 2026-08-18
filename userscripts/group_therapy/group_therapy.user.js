@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17.234740
+// @version      2026.8.18
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2196,9 +2196,14 @@
       // one matched line into several output rows (see txpExpand). [, and] also splits on
       // the literal word "and" (space-separated extra alternatives after the leading comma)
       // — covers wiki shapes like "Flute Alto, Tenor, Baritone and Soprano Saxophones".
-      if (inner[0] === ',') {
+      // #525 (majkinetor): "R: E[&]" didn't work for "Ricardo H Fernandes &
+      // Yacine Blaeich" — [&] splits the SAME way, on " & " (with required
+      // surrounding whitespace, so it doesn't fire mid-word for things like
+      // "AT&T"), for lines joined by "&" instead of a comma.
+      if (inner[0] === ',' || inner[0] === '&') {
+        const primary = inner[0];
         const rest = inner.slice(1).trim();
-        return { slice: { split: [',', ...(rest ? rest.split(/\s+/) : [])] }, next: close + 1 };
+        return { slice: { split: [primary, ...(rest ? rest.split(/\s+/) : [])] }, next: close + 1 };
       }
       // colon form [FROM:TO] — FROM is a numeric position (~ = from end) OR a literal char to
       // start AFTER; TO is a literal char to stop BEFORE (empty = to end), same as Apollo's.
@@ -2800,14 +2805,27 @@
     // when auto-detect guesses wrong. Shared by BOTH copyright/legal-notice
     // holders (via txpCrEntityType below) and ordinary credit rows (via
     // rowEntityType, #525) — the same ambiguity, the same fallback.
-    function txpAutoEntityType(text) {
+    // #525 follow-up (majkinetor, live): "one for the company was selected"
+    // — "mastering" and "graphic design" (among others) turn out to ALSO
+    // exist as label-release relationship types in MB (id 1293 and 1172,
+    // live-verified), so classifyRoleText correctly sees them matching BOTH
+    // sides at an equal (exact) tier and calls it genuinely ambiguous — but
+    // defaulting an ambiguous ORDINARY credit row to label (a "company")
+    // is wrong far more often than right: liner-note credits are
+    // overwhelmingly people, not companies, and the release-own-artist
+    // auto-detect below almost never fires true for them (it's really
+    // about a self-releasing artist crediting themselves in a COPYRIGHT
+    // line, #524's original case). Copyright/legal-notice holders keep the
+    // opposite default (label) — that bias is correct there; a ©/℗ line
+    // really is usually attributed to a company.
+    function txpAutoEntityType(text, defaultType) {
       const names = (release.artistCredit && release.artistCredit.names) || [];
       const isReleaseArtist = names.some(n => n.artist && (txpSameName(n.artist.name, text) || txpSameName(n.artist.sort_name, text)));
-      return isReleaseArtist ? 'artist' : 'label';
+      return isReleaseArtist ? 'artist' : (defaultType || 'label');
     }
     function txpCrEntityType(kind, holder) {
       if (TXP_CR_LABEL_ONLY.has(kind)) return 'label';   // MB has no artist-release type for these at all
-      return txpAutoEntityType(holder);
+      return txpAutoEntityType(holder, 'label');
     }
     // #525 (majkinetor, from a screenshot): "'Published by' is also label,
     // but artist is offered... We either map roles to entities or always
@@ -2824,11 +2842,24 @@
     // roleCache) and rowEntityType below.
     // returns {hit, tier} — tier 0 (exact) beats 1 (loose substring) beats 2
     // (stem fallback), or null if nothing matches unambiguously at any tier.
+    // #525 (majkinetor, live, screenshot): "Biography and Pictures" role
+    // wrongly auto-resolved to "pi" — a real MB instrument name that just
+    // happens to be a 2-character substring of "pictures". The loose tier
+    // checks containment in BOTH directions; cn.includes(rt) (the real
+    // candidate name contains what the user typed, e.g. "Hammond" inside
+    // "Hammond organ") is safe regardless of length — the user's own text
+    // is the deliberate, specific side. rt.includes(cn) (an unrelated,
+    // often much longer role text happens to contain a SHORT candidate
+    // name) is the risky direction: almost any sufficiently long string
+    // will coincidentally contain some short vocabulary entry. Requiring
+    // the candidate be at least 4 characters for THAT direction keeps
+    // genuine short-name matches (e.g. "bass" inside "Bass Guitar") while
+    // rejecting 2-3 character coincidences like "pi".
     function txpMatchRoleText(cands, rt) {
       if (!rt) return null;
       const exact = cands.filter(c => c.name.toLowerCase() === rt);
       if (exact.length === 1) return { hit: exact[0], tier: 0 };
-      const loose = cands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || rt.includes(cn); });
+      const loose = cands.filter(c => { const cn = c.name.toLowerCase(); return cn.includes(rt) || (cn.length >= 4 && rt.includes(cn)); });
       if (loose.length === 1) return { hit: loose[0], tier: 1 };
       const stem = txpRoleStem(rt);
       const fuzzy = cands.filter(c => txpRoleStem(c.name) === stem);
@@ -2866,7 +2897,7 @@
     function rowEntityType(row) {
       const rt = (row.role || '').toLowerCase().trim();
       const cls = roleCache.get(rt);
-      return (cls && cls.forced) || txpAutoEntityType(row.entity);
+      return (cls && cls.forced) || txpAutoEntityType(row.entity, 'artist');
     }
     function attachResolution(row) {
       row.key = row.li + ':' + row.pi + ':' + row.si;
