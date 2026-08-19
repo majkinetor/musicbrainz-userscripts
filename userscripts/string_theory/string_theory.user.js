@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.19.185444
+// @version      2026.8.19.194214
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.19.185444 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.18.171439\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19");
+  console.log('%c String Theory %c v2026.8.19.194214 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.18.171439\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19.194150");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -30591,7 +30591,7 @@ ${lines}
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19.194150","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19.194150","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -33524,11 +33524,18 @@ async function fetchSoundcloudSet(setUrl) {
         format:  'Digital Media',
     };
 }
+// #527 follow-up (majkinetor, live): "Soundcloud logs seem insufficient...
+// Not matched via what route? So make logs telling without us having to
+// deep dive userscript docs." — brought up to the same verbosity every
+// other provider already uses (see scanDeezer just below for the
+// reference shape): log the client_id fetch, the search request + status,
+// the candidate count, and EVERY candidate considered with why it did or
+// didn't match — not just the final pick or a bare "no match".
 async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
     const label = 'SoundCloud';
     const cached = cacheGet(mbid, 'soundcloud');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('soundcloud', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('soundcloud', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('soundcloud', label, cached, mbTracks); return; }
 
     // #527 (majkinetor, live): a track-level SoundCloud relationship (one of
     // the release's own recordings linking to its own track page) got swept
@@ -33545,12 +33552,15 @@ async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVa
     // "confirmed in MB".
     let setUrl = null, source = null, meta = null;
     if (existingUrl) {
+        appendLog(label, `Checking existing MB URL: ${existingUrl}`);
         const existingMeta = await fetchSoundcloudSet(existingUrl).catch(e => { appendLog(label, `Existing URL fetch failed: ${e && e.message}`, 'error'); return null; });
         if (existingMeta && !(mbTracks > 1 && existingMeta.tracks === 1)) {
             setUrl = existingUrl; source = 'MB rels'; meta = existingMeta;
-            appendLog(label, `Using existing MB URL: ${setUrl}`, 'ok');
+            appendLog(label, `Using existing MB URL: ${setUrl} (tracks=${existingMeta.tracks})`, 'ok');
         } else if (existingMeta) {
             appendLog(label, `Existing MB URL is a single track (tracks=1) on a ${mbTracks}-track release — likely a track-level relationship, not the release's; searching instead`, 'warn');
+        } else {
+            appendLog(label, `Existing MB URL didn't resolve to a real track/set — searching instead`, 'warn');
         }
     }
     if (!setUrl) {
@@ -33558,21 +33568,32 @@ async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVa
         // track-centric, so verify by title + track count before trusting a
         // set's barcode).
         const q = isVariousArtists ? album : `${artist} ${album}`;
-        const cid = await soundcloudClientId().catch(() => null);
+        const cid = await soundcloudClientId().catch(e => { appendLog(label, `Couldn't get a SoundCloud client_id (web-player JS parse failed: ${e && e.message}) — search unavailable`, 'error'); return null; });
         if (cid) {
-            const r = await gmGet(`${SC_API_V2}/search/playlists?q=${encodeURIComponent(q)}&limit=5&client_id=${cid}`, { headers: { Accept: 'application/json' } });
-            let hits = []; try { hits = (JSON.parse(r.responseText || 'null')?.collection) || []; } catch {}
+            const searchUrl = `${SC_API_V2}/search/playlists?q=${encodeURIComponent(q)}&limit=5&client_id=${cid}`;
+            appendLog(label, `Search: q="${q}"`);
+            const r = await gmGet(searchUrl, { headers: { Accept: 'application/json' } });
+            appendLog(label, `Search: status=${r.status} ${(r.responseText || '').length}b in ${r.ms}ms`);
+            let hits = []; try { hits = (JSON.parse(r.responseText || 'null')?.collection) || []; } catch (e) { appendLog(label, `Search: JSON parse error: ${e.message}`, 'error'); }
+            appendLog(label, `Search: ${hits.length} candidate(s)`);
             const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
             const want = norm(album);
+            hits.forEach(h => {
+                const titleMatch = h.kind === 'playlist' && norm(h.title).includes(want);
+                const trackMatch = mbTracks && h.track_count === mbTracks;
+                appendLog(label, `  cand kind=${h.kind}  tracks=${h.track_count ?? '?'}  title="${h.title || ''}"  titleMatch=${titleMatch}  trackCountMatch=${trackMatch}  url=${h.permalink_url || '?'}`);
+            });
             const pick = hits.find(h => h.kind === 'playlist' && norm(h.title).includes(want) && mbTracks && h.track_count === mbTracks)
                       || hits.find(h => h.kind === 'playlist' && norm(h.title).includes(want));
             if (pick && pick.permalink_url) { setUrl = pick.permalink_url; source = 'search'; appendLog(label, `Search picked: ${setUrl} (tracks=${pick.track_count})`, 'ok'); }
+            else appendLog(label, hits.length ? `Search: none of the ${hits.length} candidate(s) matched the album title` : `Search: no playlist results for this query`, 'warn');
         }
         if (!setUrl) { appendLog(label, `No matching set found`, 'warn'); cacheSet(mbid, 'soundcloud', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('soundcloud', { url: null, mbTracks, remoteTracks: null }); return; }
     }
 
     if (!meta) meta = await fetchSoundcloudSet(setUrl).catch(e => { appendLog(label, `Set fetch failed: ${e && e.message}`, 'error'); return null; });
     if (meta) appendLog(label, `Set parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} barcode=${meta.barcode || '-'}`, meta.tracks ? 'ok' : 'warn');
+    else appendLog(label, `Set parse returned nothing — resolve() likely failed for ${setUrl}`, 'error');
     const entry = { url: setUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, source, barcode: meta?.barcode ?? null };
     cacheSet(mbid, 'soundcloud', entry);
     updateRow('soundcloud', { url: setUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, source, barcode: meta?.barcode ?? null });
