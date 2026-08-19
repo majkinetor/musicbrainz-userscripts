@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.8.19.203509
+// @version      2026.8.19.204230
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1523,7 +1523,7 @@ let MB_FORMAT = null;
 // only storefront that never exposes a physical edition, so an absent format
 // means "Digital" for the check (otherwise strict mode would withhold every
 // streaming link). Those two are excluded and judged on their actual format.
-const DIGITAL_ONLY_PROVIDERS = new Set(['spotify', 'apple', 'deezer', 'tidal', 'qobuz', 'beatport', 'volumo', 'hdtracks']);
+const DIGITAL_ONLY_PROVIDERS = new Set(['spotify', 'apple', 'deezer', 'tidal', 'qobuz', 'beatport', 'volumo', 'hdtracks', 'soundcloud']);
 // Bucket a format string into {physical, digital} categories. A multi-format
 // string ("Digital, CD") yields both; an unknown/empty string yields neither.
 function formatCategories(s) {
@@ -2949,7 +2949,7 @@ async function fetchSoundcloudSet(setUrl) {
     if (pl && pl.kind === 'track') {
         const pm = pl.publisher_metadata || {};
         const pl1 = (pm.p_line || '').replace(/^\s*©?℗?\s*\d{4}\s*/, '').trim();
-        return { title: pl.title || '', tracks: 1, barcode: String(pm.upc_or_ean || '').trim() || null, year: (pl.release_date || pl.display_date || pl.created_at || '').slice(0, 4) || null, label: pl1 || null, format: 'Digital Media' };
+        return { title: pl.title || '', tracks: 1, barcode: String(pm.upc_or_ean || '').trim() || null, year: (pl.release_date || pl.display_date || pl.created_at || '').slice(0, 4) || null, label: pl1 || null };
     }
     if (!pl || pl.kind !== 'playlist') return null;
     const stubs = (pl.tracks || []).filter(t => t && t.id);
@@ -2969,7 +2969,16 @@ async function fetchSoundcloudSet(setUrl) {
         barcode: upcs.length === 1 ? upcs[0] : null,
         year:    (pl.release_date || pl.display_date || pl.created_at || '').slice(0, 4) || null,
         label:   pLine || pl.label_name || null,
-        format:  'Digital Media',
+        // #527 follow-up (majkinetor, live): "SC shows as digital, although it
+        // is assumed" — SoundCloud never actually tells us the RELEASE's
+        // format (a set page says nothing about whether the release also
+        // exists on CD/vinyl), so hardcoding 'Digital Media' here rendered
+        // the format-confidence circle as if it were a CONFIRMED value, same
+        // visual weight as Bandcamp/Discogs' real parsed format. SoundCloud
+        // is a digital-only storefront exactly like Spotify/Apple/Tidal/etc —
+        // it now relies on the same DIGITAL_ONLY_PROVIDERS fallback they use
+        // (still correctly treated as "digital" for the mismatch check, just
+        // not displayed as if it were confirmed).
     };
 }
 // #527 follow-up (majkinetor, live): "Soundcloud logs seem insufficient...
