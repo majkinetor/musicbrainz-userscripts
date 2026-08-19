@@ -417,23 +417,6 @@ export function hoistFullSpanArtworkRels(artistRoles, tracklistRels, tracklist) 
     return { artistRoles: artistRoles.concat(hoisted), tracklistRels: tracklistRels.filter(r => !drop.has(r)), hoisted };
 }
 
-// #526: which of a release's own top-level `extraartists` entries become
-// plain RELEASE-level credits. An entry with a non-empty `tracks` field
-// (e.g. "Guitar, Keyboards" scoped to "1 to 9, 11") is still top-level
-// `release.extraartists` data, not a per-track `tracklist[].extraartists`
-// entry — but when per-track mode is ON, it gets a proper per-track
-// expansion elsewhere (runImport's `releaseLevelTracklistRels`), so it's
-// excluded here to avoid a duplicate, unscoped copy. When per-track mode
-// is OFF, that expansion never runs, so it must be included here instead
-// — as a flat release-level credit (track scoping lost) — or it silently
-// vanishes entirely, which is the bug reported live: only the ONE
-// extraartist with an empty `tracks` field ("Producer") came through,
-// while "Guitar, Keyboards" and "Saxophone" (both track-scoped) were
-// dropped.
-export function discogsReleaseLevelExtraartists(extraartists, processTracklist) {
-    return processTracklist ? extraartists?.filter(artist => !artist.tracks) : extraartists;
-}
-
 /** Run `getArtistRoles` over every artist, flattening the results. */
 export function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {

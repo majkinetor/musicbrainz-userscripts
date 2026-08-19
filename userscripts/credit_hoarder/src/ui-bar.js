@@ -28,7 +28,6 @@ import { getDiscogsReleaseData }          from './api-discogs.js';
 import {
     convertPotentialDJMixers,
     rolesFromDiscogsArtists,
-    discogsReleaseLevelExtraartists,
     hoistFullSpanArtworkRels,
     getAllArtistTracks,
     flattenTracklist,
@@ -1441,7 +1440,7 @@ function runImport(discogsUrl, getOpts, cancelled, collect) {
     return getDiscogsReleaseData(discogsUrl)
         .then(json => {
             _discogsJson = json;   // #118: stash for the Log ▾ "Copy Discogs" item
-            let artistRoles = rolesFromDiscogsArtists(discogsReleaseLevelExtraartists(json.extraartists, processTracklist));
+            let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter(artist => !artist.tracks));
             // ── Raw Discogs JSON (collapsible, once per log session) ─────────────────
             if (!_logs._releaseInfoAdded) {
                 _logs._releaseInfoAdded = true;
