@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.8.17
+// @version      2026.8.19.121700
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2011,6 +2011,9 @@
     }
     if (!hoisted.length) return { artistRoles, tracklistRels, hoisted };
     return { artistRoles: artistRoles.concat(hoisted), tracklistRels: tracklistRels.filter((r) => !drop.has(r)), hoisted };
+  }
+  function discogsReleaseLevelExtraartists(extraartists, processTracklist) {
+    return processTracklist ? extraartists?.filter((artist) => !artist.tracks) : extraartists;
   }
   function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {
@@ -5280,7 +5283,7 @@ ${lines}
     const { processTracklist } = initial;
     return getDiscogsReleaseData(discogsUrl).then((json) => {
       _discogsJson = json;
-      let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter((artist) => !artist.tracks));
+      let artistRoles = rolesFromDiscogsArtists(discogsReleaseLevelExtraartists(json.extraartists, processTracklist));
       if (!_logs2._releaseInfoAdded) {
         _logs2._releaseInfoAdded = true;
         const trackCount = flattenTracklist(json.tracklist).filter((t) => t.type_ === "track").length;
