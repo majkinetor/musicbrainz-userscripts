@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.19.194214
+// @version      2026.8.19.203539
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.19.194214 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.18.171439\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19.194150");
+  console.log('%c String Theory %c v2026.8.19.203539 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.18.171439\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19.203509");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -30591,7 +30591,7 @@ ${lines}
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19.194150","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19.194150","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19.203509","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.19.203509","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -32028,8 +32028,9 @@ async function qobuzLogin(email, password) {
 async function beatportApi(path) {
     const tok = await beatportToken(); if (!tok) return null;
     const r = await gmGet(`${BEATPORT.api}${path}`, { headers: { Authorization: `Bearer ${tok}` } });
-    if (!r.ok) { appendLog('Beatport', `API ${r.status} ${path}`, 'warn'); return null; }
-    try { return JSON.parse(r.responseText); } catch { return null; }
+    appendLog('Beatport', `API ${path}: status=${r.status} ${(r.responseText || '').length}b in ${r.ms}ms`, r.ok ? undefined : 'warn');
+    if (!r.ok) return null;
+    try { return JSON.parse(r.responseText); } catch (e) { appendLog('Beatport', `API ${path}: JSON parse error: ${e.message}`, 'error'); return null; }
 }
 
 // ─── UI updater ────────────────────────────────────────────────────────────
@@ -32984,7 +32985,7 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
     const label = 'Qobuz';
     const cached = cacheGet(mbid, 'qobuz');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('qobuz', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
 
     // Barcode-first: the API matches an exact UPC with no text-search ambiguity.
     // Qobuz indexes the UPC in its stored form, usually the 13-digit EAN with a
@@ -33887,7 +33888,7 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
     const cached = cacheGet(mbid, 'tidal');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('tidal', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !wikidataTidalId) {
-        appendLog(label, `No match (cached — use ↻ to force a re-search)`, 'warn');
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('tidal', label, cached, mbTracks); return;
     }
 
@@ -33978,7 +33979,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
     const cachedUnverified = !!(cached?.url && cached.tracks == null && bpLoggedIn());
     if (cached?.url && (!existingUrl || existingUrl === cached.url) && !cachedUnverified) { applyCachedRow('beatport', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !wikidataBeatportId && !bpLoggedIn()) {
-        appendLog(label, `No match (cached — use ↻ to force a re-search)`, 'warn');
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('beatport', label, cached, mbTracks); return;
     }
     if (cachedUnverified) appendLog(label, `Cached match is unverified — re-checking via API now that you're logged in`);
@@ -34004,10 +34005,12 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
                 let best = null;
                 for (const it of cands) {
                     const sc = scoreCandidate({ tracks: it.track_count, title: it.name, artist: (it.artists || []).map(a => a.name).join(' ') }, mbTracks, album, artist, isVariousArtists);
+                    appendLog(label, `  cand score=${sc}  tracks=${it.track_count ?? '?'}  artist="${(it.artists || []).map(a => a.name).join(' ') || '?'}"  title="${it.name || ''}"  id=${it.id}`);
                     if (!best || sc > best.score) best = { score: sc, it };
                     if (sc >= 150) break;
                 }
                 if (best && best.score >= 120) { rel = best.it; source = 'API search'; appendLog(label, `Picked best (score=${best.score}): release ${rel.id}`, best.score >= 150 ? 'ok' : 'warn'); }
+                else if (cands.length) appendLog(label, `No verifiable match via authed API (best score=${best?.score ?? 'n/a'}) — falling back to unauthed resolvers`, 'warn');
             }
         }
         // Verify via detail — covers an MB-rel / Wikidata id, and fills the count for a search hit.
@@ -34101,7 +34104,7 @@ async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariou
     const label = 'Volumo';
     const cached = cacheGet(mbid, 'volumo');
     if (cached?.url && (!existingUrl || volumoClean(existingUrl) === volumoClean(cached.url))) { applyCachedRow('volumo', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
 
     let a = null, source = null;
     if (existingUrl) {
@@ -34114,18 +34117,23 @@ async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariou
     }
     if (!a && !existingUrl) {
         const q = isVariousArtists ? album : `${artist} ${album}`;
-        const j = await gmGet(`https://volumo.com/api/v1/search?query=${encodeURIComponent(q)}&limit=10`);
+        const searchUrl = `https://volumo.com/api/v1/search?query=${encodeURIComponent(q)}&limit=10`;
+        appendLog(label, `API search: ${searchUrl}`);
+        const j = await gmGet(searchUrl);
+        appendLog(label, `API search: status=${j.status} ${(j.responseText || '').length}b in ${j.ms}ms`);
         let albums = [];
         // Volumo returns each bucket as an array when populated, but an empty {} when there are no hits — coerce.
-        try { const ab = JSON.parse(j.responseText).albums; albums = Array.isArray(ab) ? ab : []; } catch {}
+        try { const ab = JSON.parse(j.responseText).albums; albums = Array.isArray(ab) ? ab : []; } catch (e) { appendLog(label, `API search: JSON parse error: ${e.message}`, 'error'); }
         appendLog(label, `API search: ${albums.length} candidate(s)`);
         let best = null;
         for (const it of albums) {
             const sc = scoreCandidate({ tracks: (it.tracks || []).length || null, title: it.title, artist: (it.artists || []).map(x => x.name).join(' ') }, mbTracks, album, artist, isVariousArtists);
+            appendLog(label, `  cand score=${sc}  tracks=${(it.tracks || []).length || '?'}  artist="${(it.artists || []).map(x => x.name).join(' ') || '?'}"  title="${it.title || ''}"  id=${it.id}`);
             if (!best || sc > best.score) best = { score: sc, a: it };
             if (sc >= 150) break;
         }
         if (best && best.score >= 120) { a = best.a; source = 'API search'; appendLog(label, `Picked best (score=${best.score}): album ${a.id}`, best.score >= 150 ? 'ok' : 'warn'); }
+        else appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
     }
     if (!a) { cacheSet(mbid, 'volumo', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('volumo', { url: null, mbTracks, remoteTracks: null }); return; }
     // search hits may omit the full tracklist — refetch by ICPN for an accurate count
@@ -34153,12 +34161,19 @@ async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariou
 const HD_API = 'https://hdtracks.azurewebsites.net/api/v1';
 const hdtracksUrl = id => id ? `https://www.hdtracks.com/#/album/${id}` : null;
 async function hdtracksAlbum(id) { const r = await gmGet(`${HD_API}/album/${id}`); if (!r.ok) return null; try { const j = JSON.parse(r.responseText); return j && j.id ? j : null; } catch { return null; } }
-async function hdtracksSearch(q) { const r = await gmGet(`${HD_API}/albums/search?q=${encodeURIComponent(q)}`); if (!r.ok) return []; try { const j = JSON.parse(r.responseText); return Array.isArray(j.albums) ? j.albums : []; } catch { return []; } }
+async function hdtracksSearch(q) {
+    const url = `${HD_API}/albums/search?q=${encodeURIComponent(q)}`;
+    appendLog('HDtracks', `API search: ${url}`);
+    const r = await gmGet(url);
+    appendLog('HDtracks', `API search: status=${r.status} ${(r.responseText || '').length}b in ${r.ms}ms`);
+    if (!r.ok) return [];
+    try { const j = JSON.parse(r.responseText); return Array.isArray(j.albums) ? j.albums : []; } catch (e) { appendLog('HDtracks', `API search: JSON parse error: ${e.message}`, 'error'); return []; }
+}
 async function scanHDtracks({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'HDtracks';
     const cached = cacheGet(mbid, 'hdtracks');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('hdtracks', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('hdtracks', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('hdtracks', label, cached, mbTracks); return; }
 
     let a = null, source = null;
     if (existingUrl) {
@@ -34182,10 +34197,12 @@ async function scanHDtracks({ artist, album, mbTracks, existingUrl, mbid, isVari
         let best = null;
         for (const it of albums) {
             const sc = scoreCandidate({ tracks: it.tracksCount || null, title: it.name, artist: (it.artists || []).join(' ') || it.mainArtist }, mbTracks, album, artist, isVariousArtists);
+            appendLog(label, `  cand score=${sc}  tracks=${it.tracksCount ?? '?'}  artist="${(it.artists || []).join(' ') || it.mainArtist || '?'}"  title="${it.name || ''}"  id=${it.id}`);
             if (!best || sc > best.score) best = { score: sc, a: it };
             if (sc >= 150) break;
         }
         if (best && best.score >= 120) { a = (await hdtracksAlbum(best.a.id)) || best.a; source = 'API search'; appendLog(label, `Picked best (score=${best.score}): album ${best.a.id}`, best.score >= 150 ? 'ok' : 'warn'); }
+        else appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
     }
     if (!a) { cacheSet(mbid, 'hdtracks', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('hdtracks', { url: null, mbTracks, remoteTracks: null }); return; }
     const tracks = (a.tracks && a.tracks.length) || a.tracksCount || null;
