@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.18.171439
+// @version      2026.8.19
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2547,6 +2547,48 @@
     return { types, year, holders };
   }
 
+  // #528 (majkinetor): "Copyright: X under exclusive license to Y" packs TWO
+  // holders (X the copyright holder, Y the licensee) into one line —
+  // txpParseCopyrightLine above strips only the LEADING marker, so both
+  // derived rows (copyright + licensee) get the SAME undifferentiated
+  // remainder as their holder text, and the right-click "clean up to
+  // canonical name" fix (#525) then destructively rewrites BOTH rows since
+  // they share identical raw text. Rather than teach the parser an "ordered
+  // marker positions" model, PRE-SPLIT the raw line into two lines — each
+  // with its own single marker — so the unmodified pipeline above just
+  // handles each one normally. Deliberately mechanical, not semantic:
+  // majkinetor, live: "you don't know where the X ends... this is enough
+  // and right click will clean the suffixes" — this doesn't try to
+  // understand where holder1 "ends" grammatically, it just cuts at the
+  // NEXT recognized marker's own start (so both halves stay independently
+  // parseable without any regex changes), accepting that leftover glue is
+  // right-click's job, not this function's. Called ONCE on paste /
+  // annotation-load only (see the 'paste' listener and annoBtn.onclick
+  // below) — never on ordinary typing, so it doesn't fight a mid-edit user
+  // (majkinetor: "Once on load").
+  function txpSplitCompoundCopyrightLines(text) {
+    const markerRe = new RegExp(TXP_CR_MARKER_ALT, 'gi');
+    return text.split('\n').map(line => {
+      const positions = [...line.matchAll(markerRe)].map(m => ({ start: m.index, end: m.index + m[0].length }));
+      if (positions.length < 2) return line;   // 0 or 1 marker (incl. one compound phrase) — nothing to split
+      const cuts = [];
+      for (let i = 1; i < positions.length; i++) {
+        // real substance between the PREVIOUS marker's end and this one's
+        // start — otherwise it's glue/punctuation, not a genuine second
+        // holder (e.g. two adjacent symbols like "℗©" sit right next to
+        // each other with nothing real between them).
+        const gap = line.slice(positions[i - 1].end, positions[i].start);
+        if ((gap.match(/\w/g) || []).length >= 3) cuts.push(positions[i].start);
+      }
+      if (!cuts.length) return line;
+      const out = [];
+      let last = 0;
+      for (const idx of cuts) { out.push(line.slice(last, idx).trim()); last = idx; }
+      out.push(line.slice(last).trim());
+      return out.join('\n');
+    }).join('\n');
+  }
+
   // ── annotation loading (#522): "make sure that tool can also load annotation as a source
   // as that is where credits may end up after import." MB's public /ws/2/ API doesn't expose
   // raw annotation text — ported (collapsed to just the LATEST version) from Apollo's own
@@ -3482,6 +3524,14 @@
     patClr.onclick = () => { patIn.value = ''; onPatternChange(); };
     ta.addEventListener('input', onTextChange);
     ta.addEventListener('input', () => { loadedFromAnnotation = false; });
+    // #528 (majkinetor): "Once on load" — the compound-copyright-line split
+    // runs once right after a paste lands (not on every keystroke, so it
+    // doesn't fight a mid-edit user), same setTimeout(0)-after-paste idiom
+    // already used elsewhere in this file.
+    ta.addEventListener('paste', () => setTimeout(() => {
+      const split = txpSplitCompoundCopyrightLines(ta.value);
+      if (split !== ta.value) { ta.value = split; onTextChange(); }
+    }, 0));
     srcTgl.onclick = () => { const hidden = ta.style.display === 'none'; ta.style.display = hidden ? '' : 'none'; srcTgl.textContent = (hidden ? '▾' : '▸') + ' Paste credit text'; };
     resolveBtn.onclick = resolveAll;
     applyBtn.onclick = txpApply;
@@ -3494,7 +3544,7 @@
       try {
         const text = await txpFetchAnnotation(release.gid);
         if (!text) toast('No annotation found for this release');
-        else { ta.value = text; onTextChange(); loadedFromAnnotation = true; render(); }
+        else { ta.value = txpSplitCompoundCopyrightLines(text); onTextChange(); loadedFromAnnotation = true; render(); }
       } catch (e) { toast('Failed to load annotation: ' + (e && e.message || e)); }
       annoBtn.disabled = false; annoBtn.textContent = 'Load annotation';
     };
@@ -3835,6 +3885,7 @@
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
       txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNarrowByScore, txpInstrumentCandidates,
+      txpSplitCompoundCopyrightLines,
     }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }

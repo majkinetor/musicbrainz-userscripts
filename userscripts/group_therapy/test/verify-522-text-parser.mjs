@@ -1100,6 +1100,48 @@ if (anArtistGid) {
   console.log('SKIP: no real artist gid available for the raw-entity-cleanup test');
 }
 
+// 38. #528 (majkinetor): "Copyright: X under exclusive license to Y" packs
+// TWO holders into one line — the parser used to strip only the leading
+// marker, so both derived rows (copyright + licensee) got the SAME
+// undifferentiated remainder as their holder text ("Albarika Stores BV
+// under exclusive license to Acid Jazz AcquisitionsSS" on BOTH rows),
+// which also made the #525 right-click cleanup destructive (both rows
+// shared identical raw text). Fixed by pre-splitting a compound line into
+// two lines — one marker each — on paste, before the normal per-line
+// pipeline ever sees it. Direct function check first, then a REAL paste
+// (fill() doesn't fire a 'paste' event) to prove the textarea itself
+// visibly reformats and the two rows get distinct entity text.
+const directSplit = await page.evaluate(() => window.__groupTherapy.txpSplitCompoundCopyrightLines('Copyright: Albarika Stores BV under exclusive license to Acid Jazz Acquisitions'));
+console.log('direct compound-line split:', JSON.stringify(directSplit));
+ck(directSplit === 'Copyright: Albarika Stores BV\nunder exclusive license to Acid Jazz Acquisitions', `txpSplitCompoundCopyrightLines splits at the second marker (got ${JSON.stringify(directSplit)})`);
+// a single compound phrase ("marketed and distributed by") must NOT split — it's ONE marker firing two types over the SAME holder, by design.
+const noSplitCompound = await page.evaluate(() => window.__groupTherapy.txpSplitCompoundCopyrightLines('marketed and distributed by Sony Music Entertainment'));
+ck(noSplitCompound === 'marketed and distributed by Sony Music Entertainment', `a genuine compound marker phrase is left untouched (got ${JSON.stringify(noSplitCompound)})`);
+
+await page.evaluate(() => window.__groupTherapy.openTextParser());
+await page.waitForTimeout(300);
+await page.fill('.gt-tp-pat', 'R: E');
+await page.evaluate(() => {
+  const el = document.querySelector('.gt-tp-ta');
+  const text = 'Copyright: Albarika Stores BV under exclusive license to Acid Jazz Acquisitions';
+  el.value = text;
+  el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: new DataTransfer(), bubbles: true, cancelable: true }));
+});
+await page.waitForTimeout(300);
+const splitTaValue = await page.inputValue('.gt-tp-ta');
+console.log('textarea after a real paste event:', JSON.stringify(splitTaValue));
+ck(splitTaValue === 'Copyright: Albarika Stores BV\nunder exclusive license to Acid Jazz Acquisitions', `the textarea visibly splits into 2 lines right after paste (got ${JSON.stringify(splitTaValue)})`);
+const splitRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
+  const cs = [...tr.querySelectorAll('.gt-tp-c')];
+  return { role: cs[0]?.textContent, entity: cs[1]?.textContent };
+}));
+console.log('split rows:', JSON.stringify(splitRows));
+ck(splitRows.length === 2, `2 rows produced from the one pasted line (got ${splitRows.length})`);
+ck(splitRows[0]?.role === '© copyright' && splitRows[0]?.entity === 'Albarika Stores BV', `row 1 is the copyright holder alone, no suffix (got ${JSON.stringify(splitRows[0])})`);
+ck(splitRows[1]?.role === 'licensed to' && splitRows[1]?.entity === 'Acid Jazz Acquisitions', `row 2 is the licensee alone, DISTINCT entity text from row 1 (got ${JSON.stringify(splitRows[1])})`);
+await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+await page.waitForTimeout(150);
+
 ck(posts === 0, `nothing submitted during the test (${posts})`);
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');

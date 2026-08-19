@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-19 20:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-19 21:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -998,6 +998,8 @@ Paste text (or click **Load annotation** to pull the release's latest annotation
 `E` stands for **entity** — the credited name can resolve to either an artist or a label, decided per row (see below), not fixed by the pattern.
 
 A **legal/copyright notice line** is recognized automatically by its marker — no pattern needed, no separate mode — and produces one row per notice found. Recognized markers: **©/(C)/copyright**, **℗/(P)/phonographic copyright**, **licensed to / licensed from / under exclusive licen[cs]e to/from**, **distributed by**, **marketed by** (and **marketed and distributed by**, which fires both). A year right after the marker is optional and, if there are several ("1994, 1996"), it's dropped rather than guessed at which one applies. Multiple holders on one line — `℗ 2012 Shady Records/Aftermath Records/Interscope Records` — split into one row per holder (on `/` or `|`; a piece has to look substantial enough on its own to count, so real names like "SA/NV" aren't chopped in two). Ordinary credits and notice lines can be pasted together in the same block.
+
+A line that packs **two different holders under two different markers** — `Copyright: Albarika Stores BV under exclusive license to Acid Jazz Acquisitions` — is auto-split into two separate lines (one marker each) the moment you paste it or load an annotation, so each holder ends up correctly separated instead of both rows sharing the same undifferentiated text. This only runs once, right after the paste/load — it won't fight you while you're editing by hand afterward.
 
 Every entity resolves as an **artist** or a **label**, decided per row: a role that only exists on one side in MusicBrainz (e.g. **published**/**distributed**/**marketed**/**licensee** are label-only — there's no artist-release equivalent at all) forces that side automatically, with no toggle offered — searching the other side would only ever come up empty. A role that exists on both sides (e.g. copyright/phonographic-copyright/licensor holders), or doesn't resolve at all yet, defaults to a **label** but auto-detects as an **artist** when the name matches one of the release's own credited artists (the usual reason the ambiguity comes up — a self-released artist crediting themselves); the picker shows an **Artist / Label toggle** to override the guess.
 
