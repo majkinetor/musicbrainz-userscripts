@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.8.17
+// @version      2026.8.19
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2977,11 +2977,33 @@ async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVa
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('soundcloud', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('soundcloud', label, cached, mbTracks); return; }
 
-    let setUrl = existingUrl, source = null;
-    if (setUrl) { appendLog(label, `Using existing MB URL: ${setUrl}`, 'ok'); source = 'MB rels'; }
-    else {
-        // No MB link → conservative native SET search (SoundCloud is track-centric,
-        // so verify by title + track count before trusting a set's barcode).
+    // #527 (majkinetor, live): a track-level SoundCloud relationship (one of
+    // the release's own recordings linking to its own track page) got swept
+    // up and used as if it were the RELEASE's SoundCloud URL on an 11-track
+    // release. "existingUrl" is whatever the DOM/API scrape considered a
+    // release-level rel, but that scrape can't always tell a genuine
+    // release-level link from a per-track one that merely rendered
+    // somewhere in scope — so verify it before trusting it: fetch it and
+    // check its own track count. A bare-track result (tracks=1) is only
+    // plausibly the release's own URL when the release ITSELF is
+    // single-track (#439's documented case); on a multi-track release it's
+    // almost certainly a mismatched/track-level link, not the release's —
+    // fall through to a native search instead of caching a wrong URL as
+    // "confirmed in MB".
+    let setUrl = null, source = null, meta = null;
+    if (existingUrl) {
+        const existingMeta = await fetchSoundcloudSet(existingUrl).catch(e => { appendLog(label, `Existing URL fetch failed: ${e && e.message}`, 'error'); return null; });
+        if (existingMeta && !(mbTracks > 1 && existingMeta.tracks === 1)) {
+            setUrl = existingUrl; source = 'MB rels'; meta = existingMeta;
+            appendLog(label, `Using existing MB URL: ${setUrl}`, 'ok');
+        } else if (existingMeta) {
+            appendLog(label, `Existing MB URL is a single track (tracks=1) on a ${mbTracks}-track release — likely a track-level relationship, not the release's; searching instead`, 'warn');
+        }
+    }
+    if (!setUrl) {
+        // No usable MB link → conservative native SET search (SoundCloud is
+        // track-centric, so verify by title + track count before trusting a
+        // set's barcode).
         const q = isVariousArtists ? album : `${artist} ${album}`;
         const cid = await soundcloudClientId().catch(() => null);
         if (cid) {
@@ -2996,7 +3018,7 @@ async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVa
         if (!setUrl) { appendLog(label, `No matching set found`, 'warn'); cacheSet(mbid, 'soundcloud', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('soundcloud', { url: null, mbTracks, remoteTracks: null }); return; }
     }
 
-    const meta = await fetchSoundcloudSet(setUrl).catch(e => { appendLog(label, `Set fetch failed: ${e && e.message}`, 'error'); return null; });
+    if (!meta) meta = await fetchSoundcloudSet(setUrl).catch(e => { appendLog(label, `Set fetch failed: ${e && e.message}`, 'error'); return null; });
     if (meta) appendLog(label, `Set parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} barcode=${meta.barcode || '-'}`, meta.tracks ? 'ok' : 'warn');
     const entry = { url: setUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, source, barcode: meta?.barcode ?? null };
     cacheSet(mbid, 'soundcloud', entry);
