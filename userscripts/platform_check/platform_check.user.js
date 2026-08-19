@@ -4043,7 +4043,13 @@ async function runScansInner() {
     if (nameEl) nameEl.href = `${MB_ORIGIN}/release/${mbid}`;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Header meta — year=${year || '?'}  format=${format || '?'}  label=${releaseLabel || '?'}  source=${dataSource}`);
-    appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}  apple=${existing.apple ? 'YES' : 'no'}`);
+    // #527 follow-up (majkinetor, live): this line used to hardcode only 5 of
+    // the 11 providers (spotify/discogs/bandcamp/deezer/apple) — soundcloud
+    // (among others) was silently left out of the summary even though
+    // `existing.soundcloud` was populated and used later in the very same
+    // run, which read as "MB has no existing rel" when it actually did.
+    // Drive it off ALL_PROVIDERS so nothing gets silently omitted again.
+    appendLog('MusicBrainz', `Existing rels — ${ALL_PROVIDERS.map(p => `${p}=${existing[p] ? 'YES' : 'no'}`).join('  ')}`);
 
     // Cache upgrade: if MB has acquired a URL rel matching a cached URL (the
     // user just added the URL via + and came back), promote the cached row's

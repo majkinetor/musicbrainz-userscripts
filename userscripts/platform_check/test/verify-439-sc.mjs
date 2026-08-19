@@ -43,6 +43,17 @@ await page.addInitScript(() => {
 await page.goto(`https://musicbrainz.org/release/${MBID}`, { waitUntil: 'domcontentloaded' });
 if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
 await page.waitForTimeout(1200);
+// #527 follow-up: this MBID is also used by verify-527-sc-track-on-multitrack.mjs
+// (same "Reincarnate" fixture). The persistent .pw-profile means localStorage
+// survives across separate test-file runs — clear this MBID's own cache first
+// so a prior run's entry (possibly source="search" from the other test)
+// can't short-circuit this one via the cache-hit path.
+await page.evaluate((mbid) => {
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.includes(mbid)) localStorage.removeItem(k);
+  }
+}, MBID);
 // inject a SoundCloud set link into the page so PC's DOM parse treats it as the existing link
 await page.evaluate((href) => {
   // strip the release's own SoundCloud anchors (this release links a UPC-less set) so our injected set is the only one
