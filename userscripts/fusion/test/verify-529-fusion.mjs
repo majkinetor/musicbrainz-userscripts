@@ -321,6 +321,15 @@ const post = await page.evaluate(async (gids) => {
 console.log('post-merge WS2 status check:', JSON.stringify(post));
 ck(post[RECORDING_A] === 200 && post[RECORDING_C] === 200, 'both survivor recordings still resolve via WS2 after mergeAll()');
 
+// #529 follow-up (majkinetor): "In logging I want to see merge all event and
+// what is going on" + "we can see the data of the recordings" — the log
+// should carry enough detail to diagnose a merge without a screenshot.
+const logLines = await page.evaluate(() => window.__fusion.getLogLines());
+const logText = logLines.join('\n');
+ck(/Merge All: 2 group\(s\) queued/.test(logText), 'log shows Merge All starting with the queued group count');
+ck(/isrc=/.test(logText) && /length=/.test(logText), 'log shows recording data (isrc/length/etc) for merged members, not just ids');
+ck(/Merge All finished: 2 merged, 0 failed/.test(logText), 'log shows a final Merge All summary line');
+
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);

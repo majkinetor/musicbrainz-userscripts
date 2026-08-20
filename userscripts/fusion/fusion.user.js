@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.20.225912
+// @version      2026.8.21
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.20.225912';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -556,34 +556,57 @@ async function ensureInternalIds(gids) {
     }
     return ids;
 }
+// #529 follow-up (majkinetor): "In logging I want to see merge all event and
+// what is going on" + "we can see the data of the recordings" — dump every
+// member's actual data (title/isrc/acoustid/length/video/releases) into the
+// log at the moment a merge is attempted, not just ids, so a merge can be
+// diagnosed from the Log panel alone without a screenshot round-trip.
+function describeRecordingForLog(rec) {
+    if (!rec) return '(missing from STATE.recordings)';
+    return rec.title
+        + ' [isrc=' + ((rec.isrcs && rec.isrcs.join(',')) || 'none')
+        + ' acoustid=' + ((rec.acoustids && rec.acoustids.join(',')) || (rec.acoustids == null ? 'not checked' : 'none'))
+        + ' length=' + dur(rec.length)
+        + ' video=' + (rec.video == null ? 'unknown' : rec.video)
+        + ' releases=' + (rec.releases || []).map(r => r.title).join('; ') + ']';
+}
 async function mergeGroup(group) {
-    if (!group || group.state === 'busy' || group.state === 'done') return;
-    if (group.memberGids.length < 2) { Log.warn('merge skipped: group ' + group.id + ' has fewer than 2 members'); return; }
+    if (!group) { Log.warn('mergeGroup called with no group'); return; }
+    if (group.state === 'busy') { Log.warn('merge skipped: group ' + group.id + ' is already merging'); return; }
+    if (group.state === 'done') { Log.warn('merge skipped: group ' + group.id + ' is already merged'); return; }
+    if (group.memberGids.length < 2) { Log.warn('merge skipped: group ' + group.id + ' has fewer than 2 members (' + group.memberGids.length + ')'); return; }
+    Log.info('▶ Merge group ' + group.id + ' — confidence=' + group.confidence + ' signals=[' + group.signals.join(',') + ']');
+    group.memberGids.forEach(gid => Log.info('  member ' + gid + (gid === group.target ? ' (TARGET/kept)' : '') + ': ' + describeRecordingForLog(STATE.recordings.get(gid))));
     group.state = 'busy'; group.error = null; renderGroups();
     try {
         const ids = await ensureInternalIds(group.memberGids);
+        Log.info('  resolved internal ids: ' + group.memberGids.map((gid, i) => gid.slice(0, 8) + '…→' + ids[i]).join(', '));
         const targetIdx = group.memberGids.indexOf(group.target);
         const targetId = ids[targetIdx === -1 ? 0 : targetIdx];
-        Log.info('Merging recordings [' + ids.join(', ') + '] → target ' + targetId);
+        Log.info('  merging [' + ids.join(', ') + '] → keeping target ' + targetId);
         const addQs = ids.map(id => 'add-to-merge=' + id).join('&');
         const gr = await gmGet(location.origin + '/recording/merge_queue?' + addQs, { Accept: 'text/html' });
         if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
         const mergeUrl = gr.finalUrl || (location.origin + '/recording/merge');
+        Log.info('  merge_queue redirected to ' + mergeUrl);
         const body = new URLSearchParams();
         ids.forEach((id, i) => body.append('merge.merging.' + i, String(id)));
         body.append('merge.target', String(targetId));
-        body.append('merge.edit_note', buildEditNote(group));
+        const note = buildEditNote(group);
+        body.append('merge.edit_note', note);
         if (SETTINGS.makeVotable) body.append('merge.make_votable', '1');
+        Log.info('  edit note: ' + note.replace(/\n/g, ' ¶ '));
         const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
         if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
         const finalUrl = pr.finalUrl || '';
         const reRendered = /\/recording\/merge(\?|$)/.test(finalUrl) || /name="merge\.target"/.test(pr.responseText || '');
+        Log.info('  POST landed at ' + finalUrl + (reRendered ? ' (still the merge form — treating as failure)' : ' (redirected away — success)'));
         if (reRendered) throw new Error('merge form returned an error (nothing submitted) — check you are logged in with merge privileges');
         group.state = 'done';
-        Log.ok('Merged group ' + group.id + ' → ' + finalUrl);
+        Log.ok('✓ Merged group ' + group.id + ' → ' + finalUrl);
     } catch (e) {
         group.state = 'error'; group.error = e.message;
-        Log.error('Merge failed for group ' + group.id + ': ' + e.message);
+        Log.error('✗ Merge failed for group ' + group.id + ': ' + e.message);
     }
     renderGroups(); renderFooter();
 }
@@ -594,10 +617,20 @@ async function mergeGroup(group) {
 async function mergeAll(concurrency) {
     concurrency = concurrency || 3;
     const pending = STATE.groups.filter(g => g.state === 'pending' || g.state === 'error');
-    Log.info('Merge All: ' + pending.length + ' group(s), up to ' + Math.min(concurrency, pending.length) + ' in parallel');
+    Log.info('══ Merge All: ' + pending.length + ' group(s) queued, up to ' + Math.min(concurrency, pending.length) + ' in parallel ══');
+    if (!pending.length) { Log.warn('Merge All: nothing to do — no group is in pending/error state (already merged, or none formed yet)'); return; }
+    let doneCount = 0, failCount = 0;
     let i = 0;
-    async function worker() { while (i < pending.length) { await mergeGroup(pending[i++]); } }
+    async function worker() {
+        while (i < pending.length) {
+            const g = pending[i++];
+            await mergeGroup(g);
+            if (g.state === 'done') doneCount++; else failCount++;
+            Log.info('── Merge All progress: ' + (doneCount + failCount) + '/' + pending.length + ' (' + doneCount + ' ok, ' + failCount + ' failed) ──');
+        }
+    }
     await Promise.all(Array.from({ length: Math.min(concurrency, pending.length) }, worker));
+    Log.info('══ Merge All finished: ' + doneCount + ' merged, ' + failCount + ' failed (of ' + pending.length + ') ══');
 }
 
 /* ════════════════════════════════ UI ════════════════════════════════ */
@@ -863,6 +896,7 @@ async function onAutoMatch() {
     try {
         const poolRecs = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
         Log.info('Auto-match starting on ' + poolRecs.length + ' pool recording(s), cutoff=' + SETTINGS.matchCutoff);
+        poolRecs.forEach(r => Log.info('  pool: ' + describeRecordingForLog(r)));
         if (SETTINGS.acoustidEnrich) {
             if (poolRecs.length <= SETTINGS.acoustidPoolCap) {
                 Log.info('Enriching ' + poolRecs.length + ' pool recording(s) with AcoustID rels…');
@@ -872,6 +906,10 @@ async function onAutoMatch() {
         btn.textContent = 'Matching… (comparing)';
         const groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
         Log.info('Auto-match formed ' + groupings.length + ' group(s) from ' + poolRecs.length + ' pool recording(s)');
+        groupings.forEach(g => {
+            Log.info('  formed group ' + g.id + ' — confidence=' + g.confidence + ' signals=[' + g.signals.join(',') + ']');
+            g.memberGids.forEach(gid => Log.info('    ' + gid + (gid === g.target ? ' (target)' : '') + ': ' + describeRecordingForLog(STATE.recordings.get(gid))));
+        });
         for (const g of groupings) {
             g.memberGids.forEach(gid => { const i = STATE.poolOrder.indexOf(gid); if (i !== -1) STATE.poolOrder.splice(i, 1); });
             STATE.groups.push(g);
@@ -1261,9 +1299,10 @@ try {
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds,
         pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
-        buildEditNote, ensureInternalIds, mergeGroup, mergeAll,
+        buildEditNote, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, renderAll, scrapeArtistRecordingsTable,
         gmGet, gmPost, wsGet,
+        getLogLines: () => _logBuf.map(r => r.line),
     };
 } catch (e) {}
 
