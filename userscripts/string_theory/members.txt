@@ -14,6 +14,7 @@
 apollo_editor
 art_station
 credit_hoarder
+fusion
 group_therapy
 isrc_scout
 mammoth
