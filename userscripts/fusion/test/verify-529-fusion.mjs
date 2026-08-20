@@ -31,12 +31,14 @@ const page = ctx.pages()[0] || await ctx.newPage();
 
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 
-// ── two recordings on a test-server release, one pair still unmerged from
-// earlier live verification of this same release (2bea9225 = survivor of an
-// earlier probe merge; bc1af47a = never touched) ──
-const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
-const RECORDING_A = '2bea9225-3cee-4a23-b8f3-cd705bed3d06';
-const RECORDING_B = 'bc1af47a-056f-43fc-93fa-1370b2814448';
+// Fresh, never-merged recordings on a test-server release ("Demos 5") — a
+// prior run of this file already consumed the release used earlier
+// (3a37a35f…) via real merges, so this uses an untouched one instead.
+const RELEASE = '4394bacf-e985-4084-809d-fcc227a4782b';
+const RECORDING_A = 'ac2c28b3-c278-47f9-88de-80d2a663ed39';
+const RECORDING_B = '2da3ee28-67d0-4125-b91a-149555634b5d';
+const RECORDING_C = 'd02c00a6-1e9f-4f5e-b671-aa4a22b02a47';
+const RECORDING_D = 'b97bc761-ff3c-476a-a00c-038a43603621';
 
 await page.goto(`https://test.musicbrainz.org/recording/${RECORDING_A}`, { waitUntil: 'domcontentloaded' });
 if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
@@ -78,6 +80,44 @@ const engineChecks = await page.evaluate(() => {
     out.medHasR3R4 = out.medGroup && out.medGroup.memberGids.includes('r3') && out.medGroup.memberGids.includes('r4');
     out.r5Excluded = !groups.some(g => g.memberGids.includes('r5'));
 
+    // #529 follow-up: single-word-title typo tolerance (majkinetor's own
+    // example: "Oburumankoma" vs "Oburumakoma" — a one-letter deletion that
+    // token-overlap alone can never catch since it's a single token).
+    out.typoTolerated = F.titleSimilar('Oburumankoma', 'Oburumakoma');
+    out.typoRejectsUnrelated = !F.titleSimilar('Oburumankoma', 'Completely Different');
+
+    // #529 follow-up: match cutoff levels change what Auto-match will union.
+    const rTitleLenOnly = F.mkRecording('t1', { title: 'Some Track', length: 180000, isrcs: [], artistCredit: 'Artist One', releases: [] });
+    const rTitleLenOnly2 = F.mkRecording('t2', { title: 'Some Track', length: 180500, isrcs: [], artistCredit: 'Completely Different Artist', releases: [] });
+    out.strictRejectsTitleLenOnly = F.autoMatch([rTitleLenOnly, rTitleLenOnly2], 5000, 'strict').length === 0;
+    out.looseAcceptsTitleLenOnly = F.autoMatch([rTitleLenOnly, rTitleLenOnly2], 5000, 'loose').length === 1;
+    out.normalRejectsTitleLenOnly = F.autoMatch([rTitleLenOnly, rTitleLenOnly2], 5000, 'normal').length === 0;
+
+    // #529 follow-up: "I should be able to add release URL and release group
+    // URL to get all recordings from them" — the Add box now detects entity
+    // type from the pasted URL's path.
+    out.addRelease = F.parseAddInput ? F.parseAddInput('https://musicbrainz.org/release/259b3df7-0c94-49e6-b941-923b8d59ea28') : null;
+    out.addReleaseGroup = F.parseAddInput ? F.parseAddInput('https://musicbrainz.org/release-group/7581d544-a648-4503-ad29-53688a114d74') : null;
+    out.addRecordingBare = F.parseAddInput ? F.parseAddInput('2bea9225-3cee-4a23-b8f3-cd705bed3d06') : null;
+
+    // #529 follow-up (real bug, majkinetor live): "'Return to pool' returns
+    // the entire group back instead single recording." Root cause: a group
+    // left with <2 members used to auto-dissolve, evicting its last member
+    // too. Build a real 2-member group via the STATE mutators and confirm
+    // returning ONE member leaves the group alive with the other still in it.
+    const p1 = F.mkRecording('p1', { title: 'X', length: 1000, isrcs: [], artistCredit: '', releases: [] });
+    const p2 = F.mkRecording('p2', { title: 'Y', length: 1000, isrcs: [], artistCredit: '', releases: [] });
+    F.addToPool(p1); F.addToPool(p2);
+    const grp = F.createGroupWithMember('p1');
+    F.addToGroup('p2', grp.id);
+    F.returnToPool('p1', grp.id);
+    const survivingGroup = F.findGroup(grp.id);
+    out.groupSurvivesPartialReturn = !!survivingGroup && survivingGroup.memberGids.length === 1 && survivingGroup.memberGids[0] === 'p2';
+    out.returnedMemberBackInPool = F.STATE.poolOrder.includes('p1');
+    // cleanup so this synthetic state doesn't leak into the live-seed section below
+    F.STATE.recordings.delete('p1'); F.STATE.recordings.delete('p2');
+    F.STATE.poolOrder.length = 0; F.STATE.groups.length = 0;
+
     return out;
 });
 ck(engineChecks.tokenMatchExact, 'tokenMatch: case-insensitive exact match');
@@ -95,6 +135,16 @@ ck(!!engineChecks.medGroup, 'autoMatch: one MEDIUM-confidence group (title+artis
 ck(engineChecks.highHasR1R2, 'HIGH group contains r1+r2');
 ck(engineChecks.medHasR3R4, 'MEDIUM group contains r3+r4');
 ck(engineChecks.r5Excluded, 'unrelated r5 stays out of every group (singleton)');
+ck(engineChecks.typoTolerated, 'titleSimilar tolerates a single-letter typo ("Oburumankoma" ~ "Oburumakoma")');
+ck(engineChecks.typoRejectsUnrelated, 'titleSimilar still rejects genuinely different titles');
+ck(engineChecks.strictRejectsTitleLenOnly, 'strict cutoff rejects a title+length-only match (no ISRC/AcoustID)');
+ck(engineChecks.normalRejectsTitleLenOnly, 'normal cutoff rejects title+length without an artist match');
+ck(engineChecks.looseAcceptsTitleLenOnly, 'loose cutoff accepts title+length alone, artist not required');
+ck(engineChecks.addRelease && engineChecks.addRelease.type === 'release', 'parseAddInput detects a /release/ URL');
+ck(engineChecks.addReleaseGroup && engineChecks.addReleaseGroup.type === 'release-group', 'parseAddInput detects a /release-group/ URL');
+ck(engineChecks.addRecordingBare && engineChecks.addRecordingBare.type === 'recording', 'parseAddInput defaults a bare MBID to recording');
+ck(engineChecks.groupSurvivesPartialReturn, 'returnToPool: returning ONE member leaves the group alive with the other still in it (regression for the "returns the whole group" bug)');
+ck(engineChecks.returnedMemberBackInPool, 'returnToPool: the returned member is back in the pool');
 
 // ── live: seed from the recording page, add a second recording, group + merge ──
 const seedInfo = await page.evaluate(async () => {
@@ -119,27 +169,50 @@ ck(grouped.ok, 'manually grouped two recordings via createGroupWithMember + addT
 ck(grouped.memberCount === 2, 'manual group has exactly 2 members');
 ck(grouped.poolSize === 0, 'pool is empty after both recordings moved into the group');
 
-console.log('Submitting a REAL merge on test.musicbrainz.org (sandbox — safe)…');
-const mergeResult = await page.evaluate(async (groupId) => {
+// #529 follow-up: "we also need merge all" — build a SECOND group (C+D) so
+// mergeAll() actually has more than one group to loop over, then drive it
+// (not mergeGroup directly) for the real submit, matching the footer button.
+const grouped2 = await page.evaluate(async ([gidC, gidD]) => {
     const F = window.__fusion;
-    const group = F.findGroup(groupId);
-    await F.mergeGroup(group);
-    return { state: group.state, error: group.error };
-}, grouped.groupId);
-console.log('merge result:', JSON.stringify(mergeResult));
-ck(mergeResult.state === 'done', 'mergeGroup() reports state=done after a real submit (' + JSON.stringify(mergeResult) + ')');
+    const recC = await F.fetchRecordingByGid(gidC);
+    const recD = await F.fetchRecordingByGid(gidD);
+    if (!recC || !recD) return { ok: false };
+    F.addToPool(recC); F.addToPool(recD);
+    const group = F.createGroupWithMember(gidC);
+    F.addToGroup(gidD, group.id);
+    return { ok: true, groupId: group.id };
+}, [RECORDING_C, RECORDING_D]);
+ck(grouped2.ok, 'built a second manual group (C+D) for the mergeAll() test');
 
-// verify against WS2: the merged-away recording's own lookup should now redirect
-// to the survivor via MB's merge-alias mechanism (or at least no longer be a
-// standalone entity the merge form itself would accept again).
+console.log('Submitting REAL merges via mergeAll() on test.musicbrainz.org (sandbox — safe)…');
+const mergeAllResult = await page.evaluate(async () => {
+    const F = window.__fusion;
+    await F.mergeAll();
+    return F.STATE.groups.map(g => ({ id: g.id, memberGids: g.memberGids, state: g.state, error: g.error }));
+});
+console.log('mergeAll result:', JSON.stringify(mergeAllResult));
+ck(mergeAllResult.length === 2, 'mergeAll() left exactly the 2 groups that were built (' + mergeAllResult.length + ')');
+ck(mergeAllResult.every(g => g.state === 'done'), 'mergeAll() drove EVERY ready group to state=done, not just the first (' + JSON.stringify(mergeAllResult.map(g => g.state)) + ')');
+
+// verify against WS2: both survivors still resolve. MB's WS2 throttles under
+// load (transient 503s, same as Fusion's own wsGet() handles with retries),
+// so retry here too rather than treating a rate-limit blip as a real failure.
 await page.waitForTimeout(1000);
-const post = await page.evaluate(async ([gidA, gidB]) => {
-    const rA = await fetch(`/ws/2/recording/${gidA}?fmt=json`).then(r => r.json()).catch(() => null);
-    const rB = await fetch(`/ws/2/recording/${gidB}?fmt=json`).then(r => r.json()).catch(() => null);
-    return { survivorId: rA && rA.id, mergedAwayId: rB && rB.id };
-}, [RECORDING_A, RECORDING_B]);
-console.log('post-merge WS2 check:', JSON.stringify(post));
-ck(post.survivorId === RECORDING_A, 'survivor recording still resolves via WS2');
+const post = await page.evaluate(async (gids) => {
+    const out = {};
+    for (const gid of gids) {
+        let status = 0;
+        for (let attempt = 0; attempt <= 3; attempt++) {
+            status = await fetch(`/ws/2/recording/${gid}?fmt=json`).then(r => r.status).catch(() => 0);
+            if (status !== 503 && status !== 429) break;
+            await new Promise(res => setTimeout(res, 800 * Math.pow(2, attempt)));
+        }
+        out[gid] = status;
+    }
+    return out;
+}, [RECORDING_A, RECORDING_C]);
+console.log('post-merge WS2 status check:', JSON.stringify(post));
+ck(post[RECORDING_A] === 200 && post[RECORDING_C] === 200, 'both survivor recordings still resolve via WS2 after mergeAll()');
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
