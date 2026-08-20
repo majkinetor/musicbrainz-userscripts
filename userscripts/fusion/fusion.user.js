@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.20.214150
+// @version      2026.8.20.220434
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.20.214150';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.20.220434';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -437,6 +437,23 @@ function createGroupWithMember(gid) {
     Log.info('Created new group with ' + gid);
     return g;
 }
+// #529 follow-up (majkinetor): "Make me able to kill entire group and also
+// clear entire board (all items are returned to pool)." A killed/cleared
+// group's members go back to the pool — nothing here permanently drops a
+// recording, that's still only the pool's own ✕/group-row ✕.
+function deleteGroup(groupId) {
+    const g = findGroup(groupId); if (!g) return;
+    if (g.state === 'busy') { Log.warn('Cannot delete group ' + groupId + ' while it is merging'); return; }
+    g.memberGids.forEach(gid => { if (!STATE.poolOrder.includes(gid)) STATE.poolOrder.push(gid); });
+    STATE.groups = STATE.groups.filter(x => x.id !== groupId);
+    if (STATE.activeGroupId === groupId) STATE.activeGroupId = null;
+    Log.info('Deleted group ' + groupId + ' — ' + g.memberGids.length + ' member(s) returned to pool');
+}
+function clearBoard() {
+    const n = STATE.groups.length;
+    STATE.groups.slice().forEach(g => deleteGroup(g.id));
+    Log.info('Cleared board — ' + n + ' group(s) dissolved, every member returned to the pool');
+}
 
 function pairSignals(a, b, tolMs) {
     const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false };
@@ -539,9 +556,17 @@ async function mergeGroup(group) {
     }
     renderGroups(); renderFooter();
 }
-async function mergeAll() {
+// #529 follow-up (majkinetor): "Merge all should be parallel if possible" —
+// each merge is its own GET+POST pair, independent of every other group's, so
+// a small worker pool runs several at once instead of one strictly after
+// another. Capped (not unbounded) to stay reasonable towards MB's server.
+async function mergeAll(concurrency) {
+    concurrency = concurrency || 3;
     const pending = STATE.groups.filter(g => g.state === 'pending' || g.state === 'error');
-    for (const g of pending) { await mergeGroup(g); await new Promise(res => setTimeout(res, 900)); }
+    Log.info('Merge All: ' + pending.length + ' group(s), up to ' + Math.min(concurrency, pending.length) + ' in parallel');
+    let i = 0;
+    async function worker() { while (i < pending.length) { await mergeGroup(pending[i++]); } }
+    await Promise.all(Array.from({ length: Math.min(concurrency, pending.length) }, worker));
 }
 
 /* ════════════════════════════════ UI ════════════════════════════════ */
@@ -614,6 +639,9 @@ function fsStyle() {
         + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(138,92,246,.15);color:#c9b3ff;cursor:pointer;font-weight:600}'
         + '.fs-mbtn.fs-done{background:rgba(62,207,142,.15);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
         + '.fs-mbtn.fs-err{background:rgba(224,84,106,.15);border-color:var(--fs-red);color:#ffb3bd}'
+        + '.fs-kill{cursor:pointer;font-size:13px;padding:2px 4px;opacity:.6}'
+        + '.fs-kill:hover{opacity:1}'
+        + '.fs-clearboard-btn{padding:2px 8px;font-size:11px;text-transform:none;font-weight:400;letter-spacing:0}'
         + '.fs-grows{padding:4px 6px}'
         + '.fs-grow{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px}'
         + '.fs-grow:hover{background:rgba(255,255,255,.03)}'
@@ -733,7 +761,8 @@ function groupCardHtml(group) {
         + '<div class="fs-ghdr"><span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
         + '<span class="fs-conf fs-conf-' + confClass + '">' + confLabel + '</span>'
         + '<div class="fs-sig">' + sigChips + '</div><div class="fs-sp"></div>'
-        + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button></div>'
+        + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
+        + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span></div>'
         + '<div class="fs-grows">' + rows + '</div>' + errMsg + dropZone + '</div>';
 }
 
@@ -938,6 +967,7 @@ function wireDelegatedEvents() {
         if (act === 'return' && row) { returnToPool(row.dataset.gid, card.dataset.gid); renderAll(); return; }
         if (act === 'remove-both' && row) { removeFromGroupAndPool(row.dataset.gid, card.dataset.gid); renderAll(); return; }
         if (act === 'merge-group') { mergeGroup(findGroup(card.dataset.gid)); return; }
+        if (act === 'delete-group') { deleteGroup(card.dataset.gid); renderAll(); return; }
         if (act === 'drop-zone' && STATE.selected && STATE.poolOrder.includes(STATE.selected)) { addToGroup(STATE.selected, card.dataset.gid); STATE.activeGroupId = card.dataset.gid; STATE.selected = null; renderAll(); return; }
     });
     // "entire zone" drag&drop (#529 follow-up): dropping anywhere over a group
@@ -1036,7 +1066,7 @@ function buildShell() {
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
         + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">drag or double-click to add to a group</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="delete every group — all recordings return to the pool">↩ Clear board</button></div>'
         + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
@@ -1050,6 +1080,7 @@ function buildShell() {
     document.getElementById('fs-add-input').addEventListener('keydown', e => { if (e.key === 'Enter') onAddByMbid(); });
     document.getElementById('fs-automatch').onclick = onAutoMatch;
     document.getElementById('fs-mergeall').onclick = mergeAll;
+    document.getElementById('fs-clearboard').onclick = () => { clearBoard(); renderAll(); };
     document.getElementById('fs-rg-editions').addEventListener('change', onLoadRgEdition);
     document.getElementById('fs-cutoff').addEventListener('change', e => { SETTINGS.matchCutoff = e.target.value; saveSettings(); Log.info('Match cutoff set to ' + SETTINGS.matchCutoff); });
     wireWindowChrome(document.getElementById('fs-cons'), document.getElementById('fs-hdr'), document.getElementById('fs-max'));
@@ -1148,7 +1179,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds,
         pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup,
+        addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard,
         buildEditNote, ensureInternalIds, mergeGroup, mergeAll,
         openFusion, closeFusion, seedFromScope, renderAll, scrapeArtistRecordingsTable,
         gmGet, gmPost, wsGet,

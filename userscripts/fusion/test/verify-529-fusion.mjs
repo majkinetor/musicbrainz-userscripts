@@ -118,6 +118,25 @@ const engineChecks = await page.evaluate(() => {
     F.STATE.recordings.delete('p1'); F.STATE.recordings.delete('p2');
     F.STATE.poolOrder.length = 0; F.STATE.groups.length = 0;
 
+    // #529 follow-up: "kill entire group" and "clear entire board" — both
+    // return every member to the pool rather than dropping them.
+    const k1 = F.mkRecording('k1', { title: 'K1', length: 1000, isrcs: [], artistCredit: '', releases: [] });
+    const k2 = F.mkRecording('k2', { title: 'K2', length: 1000, isrcs: [], artistCredit: '', releases: [] });
+    const k3 = F.mkRecording('k3', { title: 'K3', length: 1000, isrcs: [], artistCredit: '', releases: [] });
+    const k4 = F.mkRecording('k4', { title: 'K4', length: 1000, isrcs: [], artistCredit: '', releases: [] });
+    [k1, k2, k3, k4].forEach(r => F.addToPool(r));
+    const kg1 = F.createGroupWithMember('k1'); F.addToGroup('k2', kg1.id);
+    const kg2 = F.createGroupWithMember('k3'); F.addToGroup('k4', kg2.id);
+    F.deleteGroup(kg1.id);
+    out.deleteGroupRemovesGroup = !F.findGroup(kg1.id);
+    out.deleteGroupReturnsMembers = F.STATE.poolOrder.includes('k1') && F.STATE.poolOrder.includes('k2');
+    out.otherGroupUntouchedByDelete = !!F.findGroup(kg2.id) && F.findGroup(kg2.id).memberGids.length === 2;
+    F.clearBoard();
+    out.clearBoardRemovesAllGroups = F.STATE.groups.length === 0;
+    out.clearBoardReturnsEveryMember = ['k1', 'k2', 'k3', 'k4'].every(g => F.STATE.poolOrder.includes(g));
+    F.STATE.recordings.delete('k1'); F.STATE.recordings.delete('k2'); F.STATE.recordings.delete('k3'); F.STATE.recordings.delete('k4');
+    F.STATE.poolOrder.length = 0; F.STATE.groups.length = 0;
+
     return out;
 });
 ck(engineChecks.tokenMatchExact, 'tokenMatch: case-insensitive exact match');
@@ -145,6 +164,11 @@ ck(engineChecks.addReleaseGroup && engineChecks.addReleaseGroup.type === 'releas
 ck(engineChecks.addRecordingBare && engineChecks.addRecordingBare.type === 'recording', 'parseAddInput defaults a bare MBID to recording');
 ck(engineChecks.groupSurvivesPartialReturn, 'returnToPool: returning ONE member leaves the group alive with the other still in it (regression for the "returns the whole group" bug)');
 ck(engineChecks.returnedMemberBackInPool, 'returnToPool: the returned member is back in the pool');
+ck(engineChecks.deleteGroupRemovesGroup, 'deleteGroup: the group itself is gone');
+ck(engineChecks.deleteGroupReturnsMembers, 'deleteGroup: both its members return to the pool');
+ck(engineChecks.otherGroupUntouchedByDelete, 'deleteGroup: a different group is untouched');
+ck(engineChecks.clearBoardRemovesAllGroups, 'clearBoard: every group is gone');
+ck(engineChecks.clearBoardReturnsEveryMember, 'clearBoard: every member from every group is back in the pool');
 
 // ── live: seed from the recording page, add a second recording, group + merge ──
 const seedInfo = await page.evaluate(async () => {
