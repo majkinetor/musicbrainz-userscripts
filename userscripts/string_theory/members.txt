@@ -10,11 +10,11 @@
 #   as_picker       — Art Station's picker helper (separate companion)
 #   scribe          — separate workflow
 #   discogs_credits — parallel twin of credit_hoarder; would double-run
+#   fusion          — too early / still under active review (#529)
 
 apollo_editor
 art_station
 credit_hoarder
-fusion
 group_therapy
 isrc_scout
 mammoth
