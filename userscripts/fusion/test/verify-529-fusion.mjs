@@ -137,6 +137,30 @@ const engineChecks = await page.evaluate(() => {
     F.STATE.recordings.delete('k1'); F.STATE.recordings.delete('k2'); F.STATE.recordings.delete('k3'); F.STATE.recordings.delete('k4');
     F.STATE.poolOrder.length = 0; F.STATE.groups.length = 0;
 
+    // #529 follow-up: "Video recordings should never be added to groups with
+    // audio recordings" — a hard block, not just a lower score, at every entry
+    // point (auto-match AND manual add).
+    const va1 = F.mkRecording('va1', { title: 'Same Title', length: 100000, isrcs: ['XXAB11111111'], artistCredit: 'Band', releases: [], video: false });
+    const va2 = F.mkRecording('va2', { title: 'Same Title', length: 100000, isrcs: ['XXAB11111111'], artistCredit: 'Band', releases: [], video: true });
+    const sigVA = F.pairSignals(va1, va2, 5000);
+    out.videoMismatchDetected = sigVA.videoMismatch === true;
+    out.videoMismatchBlocksEvenWithIsrc = F.shouldUnion(sigVA, 'normal') === false;
+    const autoMatchGroups = F.autoMatch([va1, va2], 5000, 'normal');
+    out.autoMatchNeverGroupsVideoWithAudio = autoMatchGroups.length === 0;
+    // manual add must refuse it too, not just Auto-match
+    F.addToPool(va1); F.addToPool(va2);
+    const vaGroup = F.createGroupWithMember('va1');
+    const addResult = F.addToGroup('va2', vaGroup.id);
+    out.manualAddRefusesVideoAudioMix = addResult === false;
+    out.videoStaysInPoolAfterRefusal = F.STATE.poolOrder.includes('va2');
+    F.STATE.recordings.delete('va1'); F.STATE.recordings.delete('va2');
+    F.STATE.poolOrder.length = 0; F.STATE.groups.length = 0;
+    // unknown (null) video status must never block — e.g. artist-scrape seeds
+    // before their background video backfill lands.
+    const vu1 = F.mkRecording('vu1', { title: 'Z', length: 100000, isrcs: ['XXAB22222222'], artistCredit: 'Band', releases: [], video: null });
+    const vu2 = F.mkRecording('vu2', { title: 'Z', length: 100000, isrcs: ['XXAB22222222'], artistCredit: 'Band', releases: [], video: true });
+    out.unknownVideoNeverBlocks = F.pairSignals(vu1, vu2, 5000).videoMismatch === false;
+
     return out;
 });
 ck(engineChecks.tokenMatchExact, 'tokenMatch: case-insensitive exact match');
@@ -169,29 +193,88 @@ ck(engineChecks.deleteGroupReturnsMembers, 'deleteGroup: both its members return
 ck(engineChecks.otherGroupUntouchedByDelete, 'deleteGroup: a different group is untouched');
 ck(engineChecks.clearBoardRemovesAllGroups, 'clearBoard: every group is gone');
 ck(engineChecks.clearBoardReturnsEveryMember, 'clearBoard: every member from every group is back in the pool');
+ck(engineChecks.videoMismatchDetected, 'pairSignals detects a video/audio mismatch even with identical title+ISRC');
+ck(engineChecks.videoMismatchBlocksEvenWithIsrc, 'shouldUnion refuses a video/audio pair even with a shared ISRC — the hardest signal there is');
+ck(engineChecks.autoMatchNeverGroupsVideoWithAudio, 'autoMatch never groups a video recording with an audio one, despite otherwise-perfect signals');
+ck(engineChecks.manualAddRefusesVideoAudioMix, 'addToGroup refuses to manually mix video into an audio group (and vice versa)');
+ck(engineChecks.videoStaysInPoolAfterRefusal, 'a refused video/audio add leaves the recording in the pool, not silently dropped');
+ck(engineChecks.unknownVideoNeverBlocks, 'unknown (null) video status never blocks a match — only a KNOWN mismatch does');
 
-// ── live: seed from the recording page, add a second recording, group + merge ──
+// ── live: open the real UI (not just STATE), seed, add a second recording,
+// group via REAL double-clicks (regression guard for the bug below), merge ──
 const seedInfo = await page.evaluate(async () => {
-    await window.__fusion.seedFromScope();
+    await window.__fusion.openFusion();
     return { poolSize: window.__fusion.STATE.poolOrder.length, scopeType: window.__fusion.SCOPE.type };
 });
 ck(seedInfo.scopeType === 'recording', 'Fusion detects recording-page scope on /recording/' + RECORDING_A.slice(0, 8) + '…');
 ck(seedInfo.poolSize === 1, 'recording-page seed puts exactly the one recording in the pool (' + seedInfo.poolSize + ')');
 
-const grouped = await page.evaluate(async (gidB) => {
+const added = await page.evaluate(async (gidB) => {
     const F = window.__fusion;
     const recB = await F.fetchRecordingByGid(gidB);
-    if (!recB) return { ok: false, reason: 'fetchRecordingByGid failed' };
+    if (!recB) return false;
     F.addToPool(recB);
-    const gidA = [...F.STATE.recordings.keys()].find(g => g !== gidB);
-    const group = F.createGroupWithMember(gidA);
-    if (!group) return { ok: false, reason: 'createGroupWithMember failed' };
-    F.addToGroup(gidB, group.id);
-    return { ok: true, groupId: group.id, memberCount: group.memberGids.length, poolSize: F.STATE.poolOrder.length };
+    F.renderAll();
+    return true;
 }, RECORDING_B);
-ck(grouped.ok, 'manually grouped two recordings via createGroupWithMember + addToGroup' + (grouped.ok ? '' : ' — ' + grouped.reason));
-ck(grouped.memberCount === 2, 'manual group has exactly 2 members');
+ck(added, 'added a second recording to the pool via fetchRecordingByGid');
+
+// #529 real bug (majkinetor, live): double-clicking a pool card silently
+// created NO group at all — the single-click handler's full renderPool() on
+// every click replaced the card's DOM node mid-gesture, and a native dblclick
+// only fires when both clicks land on the SAME element. Since no group was
+// ever formed this way, Merge All stayed permanently disabled ("unclickable").
+// Fixed by only toggling a CSS class on selection clicks instead of re-rendering.
+// This drives the exact same real DOM gesture a user performs, not the STATE API.
+const cardsBefore = await page.$$('.fs-pcard');
+ck(cardsBefore.length === 2, 'pool has exactly 2 cards before double-clicking (' + cardsBefore.length + ')');
+await cardsBefore[0].dblclick();
+await page.waitForTimeout(150);
+const afterFirstDblclick = await page.evaluate(() => window.__fusion.STATE.groups.map(g => g.memberGids.length));
+ck(afterFirstDblclick.length === 1 && afterFirstDblclick[0] === 1, 'first double-click creates a 1-member group (' + JSON.stringify(afterFirstDblclick) + ')');
+const cardsAfter = await page.$$('.fs-pcard');
+ck(cardsAfter.length === 1, 'the grouped card left the pool (' + cardsAfter.length + ' remain)');
+await cardsAfter[0].dblclick();
+await page.waitForTimeout(150);
+const grouped = await page.evaluate(() => {
+    const g = window.__fusion.STATE.groups[0];
+    return { memberCount: g ? g.memberGids.length : 0, poolSize: window.__fusion.STATE.poolOrder.length, mergeAllDisabled: document.getElementById('fs-mergeall').disabled };
+});
+ck(grouped.memberCount === 2, 'second double-click joins the same (only) group — now has 2 members (' + grouped.memberCount + ')');
 ck(grouped.poolSize === 0, 'pool is empty after both recordings moved into the group');
+ck(grouped.mergeAllDisabled === false, 'Merge All is enabled (clickable) once a real 2-member group exists — this is the reported "unclickable" symptom, now fixed');
+
+// #529 real bug (majkinetor, screenshot): "I can't see individual recordings
+// here (have to zoom out)". Root cause: .fs-gcard has overflow:hidden with no
+// flex-shrink:0, and overflow:hidden makes a flex item's automatic min-height
+// resolve to 0 (not content-based) — so with many groups competing for a
+// fixed-height modal, flexbox squeezed every card to fit instead of letting
+// .fs-colbody's own overflow-y:auto scroll, clipping the rows inside each
+// squeezed card. Reproduce with many single-member groups (cheap, synthetic).
+const layoutCheck = await page.evaluate(() => {
+    const F = window.__fusion;
+    for (let i = 0; i < 10; i++) {
+        const gid = 'layout-' + i;
+        F.addToPool(F.mkRecording(gid, { title: 'Layout Test ' + i, length: 1000, isrcs: [], artistCredit: '', releases: [] }));
+        F.createGroupWithMember(gid);
+    }
+    F.renderAll();
+    const body = document.getElementById('fs-groups-body');
+    const firstCard = document.querySelector('.fs-gcard');
+    const firstRow = document.querySelector('.fs-grow');
+    const result = {
+        scrollableInternally: body.scrollHeight > body.clientHeight,
+        firstCardHeight: firstCard ? firstCard.getBoundingClientRect().height : 0,
+        firstRowHeight: firstRow ? firstRow.getBoundingClientRect().height : 0,
+    };
+    // cleanup — don't leak into the mergeAll section below
+    for (let i = 0; i < 10; i++) { const gid = 'layout-' + i; const g = F.STATE.groups.find(x => x.memberGids.includes(gid)); if (g) F.deleteGroup(g.id); F.STATE.recordings.delete(gid); const pi = F.STATE.poolOrder.indexOf(gid); if (pi !== -1) F.STATE.poolOrder.splice(pi, 1); }
+    F.renderAll();
+    return result;
+});
+ck(layoutCheck.scrollableInternally, 'groups column scrolls internally instead of squeezing cards when there are more groups than fit (scrollHeight > clientHeight)');
+ck(layoutCheck.firstRowHeight >= 20, 'a group row keeps its real height instead of being clipped to ~0 (' + layoutCheck.firstRowHeight.toFixed(1) + 'px)');
+ck(layoutCheck.firstCardHeight >= 60, 'a full group card (header+row+dropzone) keeps its real height (' + layoutCheck.firstCardHeight.toFixed(1) + 'px)');
 
 // #529 follow-up: "we also need merge all" — build a SECOND group (C+D) so
 // mergeAll() actually has more than one group to loop over, then drive it

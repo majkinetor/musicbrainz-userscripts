@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.20.220434
+// @version      2026.8.20.222552
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.20.220434';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.20.222552';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -216,6 +216,10 @@ function lengthClose(a, b, tolMs) { if (a == null || b == null) return false; re
 // (artist not required — useful for various-artist / remixer-credit noise).
 const MATCH_CUTOFFS = ['strict', 'normal', 'loose'];
 function shouldUnion(sig, cutoff) {
+    // #529 follow-up (majkinetor): "Video recordings should never be added to
+    // groups with audio recordings." A hard gate — no cutoff level, no signal
+    // strength (not even a shared ISRC) overrides it.
+    if (sig.videoMismatch) return false;
     if (sig.isrc || sig.acoustid) return true;
     if (cutoff === 'strict') return false;
     if (cutoff === 'loose') return (sig.title && sig.length) || (sig.title && sig.artist);
@@ -240,7 +244,11 @@ function parseMbidFromInput(s) {
 
 // ── recording model + fetchers ───────────────────────────────────────────
 function mkRecording(gid, opts) {
-    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null }, opts || {});
+    // video: null = unknown yet (e.g. artist-page scrape, backfilled lazily by
+    // enrichAllReleases); true/false once known. #529: "Video recordings should
+    // never be added to groups with audio recordings" — null is deliberately
+    // treated as "don't block" everywhere, only a known true/false mismatch does.
+    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null }, opts || {});
 }
 
 async function fetchReleaseRecordings(releaseMbid) {
@@ -255,7 +263,7 @@ async function fetchReleaseRecordings(releaseMbid) {
                 title: r.title || t.title,
                 length: r.length != null ? r.length : t.length,
                 isrcs: r.isrcs || [],
-                artistCredit: acName(ac), artistGid: acPrimaryGid(ac),
+                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video,
                 releases: [{ gid: j.id, title: j.title, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
             }));
         }
@@ -284,7 +292,7 @@ async function fetchRGRecordings(rgMbid) {
             // on, across every release group — not just the one queried — so it
             // doubles as the deduped "all releases" list majkinetor asked for,
             // no extra per-recording fetch needed for this scope.
-            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), releases, allReleases: releases }));
+            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, releases, allReleases: releases }));
         }
         offset += limit; guard++;
     }
@@ -297,7 +305,7 @@ async function fetchRecordingByGid(gid) {
     if (!j) return null;
     const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null }));
     const ac = j['artist-credit'];
-    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), releases, allReleases: releases });
+    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!j.video, releases, allReleases: releases });
 }
 // #529 follow-up (majkinetor, with a screenshot of jesus2099's reference
 // script): "We should have a list of recording releases too (deduped)" — the
@@ -306,22 +314,28 @@ async function fetchRecordingByGid(gid) {
 // recording at fetch time, so this backfills the rest lazily.
 async function fetchAllReleases(gid) {
     const j = await wsGet('/ws/2/recording/' + gid + '?inc=releases&fmt=json');
-    if (!j) return [];
+    if (!j) return { releases: [], video: null };
     const seen = new Set(); const out = [];
     for (const rel of j.releases || []) {
         if (seen.has(rel.id)) continue;
         seen.add(rel.id);
         out.push({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null });
     }
-    return out;
+    return { releases: out, video: !!j.video };
 }
+// also backfills `video` for recordings whose seed source didn't carry it
+// (the artist-recordings DOM scrape has no video indicator in the table).
 async function enrichAllReleases(recs, concurrency, onProgress) {
     concurrency = concurrency || 3;
     let i = 0, done = 0;
     async function worker() {
         while (i < recs.length) {
             const rec = recs[i++];
-            if (rec.allReleases == null) rec.allReleases = await fetchAllReleases(rec.gid);
+            if (rec.allReleases == null) {
+                const r = await fetchAllReleases(rec.gid);
+                rec.allReleases = r.releases;
+                if (rec.video == null) rec.video = r.video;
+            }
             done++; if (onProgress) onProgress(done, recs.length);
         }
     }
@@ -421,9 +435,24 @@ function removeFromGroupAndPool(gid, groupId) {
     dissolveOrRefresh(g);
     Log.info('Removed ' + gid + ' from group and pool (group ' + groupId + ' now has ' + g.memberGids.length + ' member(s))');
 }
+// #529 follow-up: the video/audio separation has to hold for MANUAL grouping
+// too (drag, double-click, select+click), not just Auto-match's shouldUnion.
+function videoConflict(group, rec) {
+    if (!rec || rec.video == null) return false;
+    for (const memberGid of group.memberGids) {
+        const m = STATE.recordings.get(memberGid);
+        if (m && m.video != null && m.video !== rec.video) return true;
+    }
+    return false;
+}
 function addToGroup(gid, groupId) {
-    const g = findGroup(groupId); if (!g) return;
-    const i = STATE.poolOrder.indexOf(gid); if (i === -1) return;
+    const g = findGroup(groupId); if (!g) return false;
+    const i = STATE.poolOrder.indexOf(gid); if (i === -1) return false;
+    const rec = STATE.recordings.get(gid);
+    if (videoConflict(g, rec)) {
+        Log.warn('Refused to add ' + gid + ' to group ' + groupId + ' — ' + (rec.video ? 'video' : 'audio') + ' recording, group already has the opposite (video and audio are never merged together)');
+        return false;
+    }
     STATE.poolOrder.splice(i, 1);
     g.memberGids.push(gid);
     refreshGroupMeta(g);
@@ -456,7 +485,9 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false };
+    // null (unknown) video status never blocks — only a KNOWN true vs. false mismatch does.
+    if (a.video != null && b.video != null && a.video !== b.video) sig.videoMismatch = true;
     if (a.isrcs.length && b.isrcs.length && a.isrcs.some(x => b.isrcs.includes(x))) sig.isrc = true;
     if (a.acoustids && b.acoustids && a.acoustids.length && b.acoustids.length && a.acoustids.some(x => b.acoustids.includes(x))) sig.acoustid = true;
     if (lengthClose(a.length, b.length, tolMs)) sig.length = true;
@@ -597,15 +628,21 @@ function fsStyle() {
         + '.fs-legend{display:flex;gap:10px;color:var(--fs-muted);font-size:11px;align-items:center}'
         + '.fs-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px}'
         + '.fs-body{display:flex;flex:1;min-height:0}'
-        + '.fs-col{display:flex;flex-direction:column;min-width:0}'
+        + '.fs-col{display:flex;flex-direction:column;min-width:0;min-height:0}'
         + '.fs-pool{width:360px;border-right:1px solid var(--fs-border);background:var(--fs-bg)}'
         + '.fs-groups{flex:1;background:var(--fs-panel)}'
         + '.fs-colhdr{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--fs-border);font-weight:700;font-size:12px;letter-spacing:.3px;color:var(--fs-muted);text-transform:uppercase;background:var(--fs-panel2)}'
         + '.fs-cnt{background:var(--fs-panel);border:1px solid var(--fs-border);border-radius:10px;padding:1px 7px;color:var(--fs-text);font-weight:600}'
         + '.fs-hint{text-transform:none;font-weight:400;color:#65667a}'
-        + '.fs-colbody{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px}'
+        // #529 follow-up (majkinetor, screenshot): "I can't see individual
+        // recordings here (have to zoom out)" — classic flexbox trap: a flex
+        // item's default min-height:auto refuses to shrink below its natural
+        // content height, so with many groups this box grew past .fs-cons's
+        // own fixed height instead of scrolling — the overflow got clipped by
+        // .fs-cons's overflow:hidden rather than showing a scrollbar in here.
+        + '.fs-colbody{flex:1;min-height:0;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px}'
         + '.fs-empty{color:#65667a;font-size:12px;padding:14px;text-align:center}'
-        + '.fs-pcard{background:var(--fs-panel2);border:1px solid var(--fs-border);border-radius:7px;padding:7px 9px;display:flex;align-items:center;gap:8px;cursor:grab}'
+        + '.fs-pcard{background:var(--fs-panel2);border:1px solid var(--fs-border);border-radius:7px;padding:7px 9px;display:flex;align-items:center;gap:8px;cursor:grab;flex-shrink:0}'
         + '.fs-pcard.fs-selected{border-color:var(--fs-purple)}'
         + '.fs-grip{color:#565768;font-size:12px;letter-spacing:-1px}'
         + '.fs-info{flex:1;min-width:0}'
@@ -621,7 +658,13 @@ function fsStyle() {
         + '.fs-b-on{background:var(--fs-green)} .fs-b-off{background:#454657}'
         + '.fs-rm{color:var(--fs-muted);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0}'
         + '.fs-rm:hover{color:var(--fs-red)}'
-        + '.fs-gcard{background:var(--fs-panel2);border:1px solid var(--fs-border);border-left:3px solid var(--fs-green);border-radius:7px;overflow:hidden}'
+        // flex-shrink:0 is the actual fix for the missing-rows bug: .fs-gcard
+        // has overflow:hidden, and per spec that makes its automatic min-height
+        // resolve to 0 instead of content-based — so without flex-shrink:0,
+        // flexbox happily squashed every card to fit .fs-colbody's available
+        // space (clipping the rows inside via that same overflow:hidden)
+        // instead of letting .fs-colbody's own overflow-y:auto scroll.
+        + '.fs-gcard{background:var(--fs-panel2);border:1px solid var(--fs-border);border-left:3px solid var(--fs-green);border-radius:7px;overflow:hidden;flex-shrink:0}'
         + '.fs-gcard-med{border-left-color:var(--fs-amber)}'
         + '.fs-gcard-manual{border-left-color:var(--fs-blue);border-left-style:dashed}'
         + '.fs-gcard.fs-active{outline:2px solid var(--fs-purple);outline-offset:-1px}'
@@ -711,13 +754,16 @@ function releasesSummary(rec) {
     if (lines.length <= 1) return { text: primaryText, tooltip: lines[0] || primaryText };
     return { text: primaryText + ' +' + (lines.length - 1) + ' more', tooltip: lines.join('\n') };
 }
+// #529 follow-up: "Show video marker" — a visible badge, not just a
+// behind-the-scenes exclusion rule, so it's obvious before you even try to group one.
+function videoBadge(rec) { return rec.video === true ? '<span class="fs-vid" title="video recording">🎬</span> ' : ''; }
 function poolCardHtml(rec) {
     const rs = releasesSummary(rec);
     const isrcOn = rec.isrcs && rec.isrcs.length ? 'on' : 'off';
     const acOn = rec.acoustids && rec.acoustids.length ? 'on' : 'off';
     return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
-        + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
+        + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + videoBadge(rec) + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
         + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div></div>'
         + '<div class="fs-badges"><span class="fs-b fs-b-' + isrcOn + '" title="ISRC"></span><span class="fs-b fs-b-' + acOn + '" title="AcoustID"></span></div>'
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
@@ -746,7 +792,7 @@ function groupCardHtml(group) {
             : '<span class="fs-star' + (canPick ? '' : ' fs-star-disabled') + '" data-act="' + (canPick ? 'set-target' : '') + '" title="' + (canPick ? 'make this the merge target' : '') + '">☆</span>';
         return '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
             + star
-            + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + recLink(m.gid, m.title) + '</span>'
+            + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + videoBadge(m) + recLink(m.gid, m.title) + '</span>'
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + '<span class="fs-len">' + dur(m.length) + '</span>'
@@ -877,15 +923,23 @@ async function onLoadRgEdition(e) {
 // handlers can move it out of there before placing it wherever it landed.
 function moveDraggedTo(targetGroupId) {
     const src = STATE._dragSrc; if (!src) return;
-    if (src.groupId === targetGroupId) return;
-    if (src.groupId == null) { addToGroup(src.gid, targetGroupId); }
+    if (src.groupId === targetGroupId) { STATE._dragSrc = null; return; }
+    let ok = true;
+    if (src.groupId == null) { ok = addToGroup(src.gid, targetGroupId); }
     else {
-        const g = findGroup(src.groupId);
-        if (g) { const i = g.memberGids.indexOf(src.gid); if (i !== -1) g.memberGids.splice(i, 1); dissolveOrRefresh(g); }
+        const rec = STATE.recordings.get(src.gid);
         const ng = findGroup(targetGroupId);
-        if (ng) { ng.memberGids.push(src.gid); refreshGroupMeta(ng); Log.info('Moved ' + src.gid + ' into group ' + targetGroupId); }
+        if (ng && videoConflict(ng, rec)) {
+            Log.warn('Refused to move ' + src.gid + ' into group ' + targetGroupId + ' — video/audio mismatch');
+            ok = false;
+        } else {
+            const g = findGroup(src.groupId);
+            if (g) { const i = g.memberGids.indexOf(src.gid); if (i !== -1) g.memberGids.splice(i, 1); dissolveOrRefresh(g); }
+            if (ng) { ng.memberGids.push(src.gid); refreshGroupMeta(ng); Log.info('Moved ' + src.gid + ' into group ' + targetGroupId); }
+        }
     }
-    STATE.selected = null; STATE._dragSrc = null; STATE.activeGroupId = targetGroupId;
+    STATE.selected = null; STATE._dragSrc = null;
+    if (ok) STATE.activeGroupId = targetGroupId;
 }
 function moveDraggedToPool() {
     const src = STATE._dragSrc; if (!src || src.groupId == null) return;
@@ -919,7 +973,14 @@ function wireDelegatedEvents() {
         const gid = card.dataset.gid;
         if (e.target.dataset.act === 'pool-remove') { removeFromPoolPermanently(gid); renderAll(); return; }
         STATE.selected = STATE.selected === gid ? null : gid;
-        renderPool();
+        // Real bug (majkinetor: "Merge all is unclickable"): a full renderPool()
+        // here replaces every card's DOM node, including the one just clicked —
+        // and a native dblclick event only fires when BOTH clicks land on the
+        // SAME element. Replacing it after the first click silently killed every
+        // double-click, so no group was ever created and Merge All stayed
+        // permanently disabled. A plain class toggle keeps the node identity.
+        poolBody.querySelectorAll('.fs-pcard.fs-selected').forEach(el => el.classList.remove('fs-selected'));
+        if (STATE.selected) card.classList.add('fs-selected');
     });
     // #529 follow-up: "Let double click on recording in a pool make it added
     // to the current group. Group is selectable. If none is selected last
@@ -928,7 +989,7 @@ function wireDelegatedEvents() {
         const card = e.target.closest('.fs-pcard'); if (!card) return;
         const gid = card.dataset.gid;
         const targetId = targetGroupForQuickAdd();
-        if (targetId) { addToGroup(gid, targetId); STATE.activeGroupId = targetId; }
+        if (targetId) { if (addToGroup(gid, targetId)) STATE.activeGroupId = targetId; }
         else { const g = createGroupWithMember(gid); if (g) STATE.activeGroupId = g.id; }
         renderAll();
     });
@@ -968,7 +1029,7 @@ function wireDelegatedEvents() {
         if (act === 'remove-both' && row) { removeFromGroupAndPool(row.dataset.gid, card.dataset.gid); renderAll(); return; }
         if (act === 'merge-group') { mergeGroup(findGroup(card.dataset.gid)); return; }
         if (act === 'delete-group') { deleteGroup(card.dataset.gid); renderAll(); return; }
-        if (act === 'drop-zone' && STATE.selected && STATE.poolOrder.includes(STATE.selected)) { addToGroup(STATE.selected, card.dataset.gid); STATE.activeGroupId = card.dataset.gid; STATE.selected = null; renderAll(); return; }
+        if (act === 'drop-zone' && STATE.selected && STATE.poolOrder.includes(STATE.selected)) { if (addToGroup(STATE.selected, card.dataset.gid)) STATE.activeGroupId = card.dataset.gid; STATE.selected = null; renderAll(); return; }
     });
     // "entire zone" drag&drop (#529 follow-up): dropping anywhere over a group
     // card adds to THAT group; dropping on #fs-newgroup OR on empty background
@@ -1179,7 +1240,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds,
         pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard,
+        addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, ensureInternalIds, mergeGroup, mergeAll,
         openFusion, closeFusion, seedFromScope, renderAll, scrapeArtistRecordingsTable,
         gmGet, gmPost, wsGet,

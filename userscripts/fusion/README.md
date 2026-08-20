@@ -21,6 +21,7 @@ A review-and-merge assistant for MusicBrainz recordings: gather a pool of candid
     - **Artist → Recordings tab** — every recording on the current page of that table (MB paginates it; reopen Fusion after paging for more).
     - Any page: paste a recording, release, or release-group MBID/URL into **Add** — a release or release-group URL pulls in every recording it contains.
 - **Recording names and artists are links** — click through to the real MB page from any card, and every row shows the recording's full list of releases, deduped, with a "+N more" hint and the complete list in the tooltip.
+- **Video recordings are never mixed with audio** — a video recording gets a 🎬 marker everywhere it appears, and merging one with an audio recording is refused, hard, at every entry point (Auto-match, drag, double-click, select+click) — no signal, not even a shared ISRC, overrides this.
 - **Direct background merges** — a group's **Merge ↗** button (or the footer's **Merge All**, which drives every ready group, several at once) submits the merge itself, the same two real MusicBrainz endpoints MB's own merge page uses (`/recording/merge_queue` → `/recording/merge`), with an edit note auto-composed from whichever signals matched. No tab opens, no MB UI is shown.
 - **Standard options / log** — the ⚙ menu holds settings (length tolerance, AcoustID enrichment on/off, always-request-a-vote) plus a **Log** button opening the full session activity log (with retry/backoff detail for MB's own rate-limiting), copyable as a Markdown block for bug reports.
 
