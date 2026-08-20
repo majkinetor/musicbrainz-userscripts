@@ -330,6 +330,44 @@ ck(/Merge All: 2 group\(s\) queued/.test(logText), 'log shows Merge All starting
 ck(/isrc=/.test(logText) && /length=/.test(logText), 'log shows recording data (isrc/length/etc) for merged members, not just ids');
 ck(/Merge All finished: 2 merged, 0 failed/.test(logText), 'log shows a final Merge All summary line');
 
+// #529 real bug (majkinetor: "log button does nothing … it just closes the
+// help popup"). openLog() set only the element's ID, but its CSS is a CLASS
+// rule (.fs-logpop{position:fixed;…}) — so the panel was created completely
+// unstyled: position:static, transparent, no z-index, rendered at the bottom
+// of the page BEHIND the modal. It "existed", so an existence-only assertion
+// (getElementById → truthy) passed happily while the user saw nothing. These
+// assertions therefore check real VISIBILITY — computed style, viewport
+// geometry, and a hit test — never mere existence.
+await page.evaluate(() => { document.getElementById('fs-settings')?.remove(); document.getElementById('fs-logpop')?.remove(); });
+await page.click('#fs-cfg');
+await page.waitForTimeout(250);
+ck(await page.evaluate(() => !!document.getElementById('fs-settings')), 'the ⚙ settings popup opens');
+await page.click('.fs-logbtn');
+await page.waitForTimeout(350);
+const logVis = await page.evaluate(() => {
+    const pop = document.getElementById('fs-logpop');
+    if (!pop) return { exists: false };
+    const cs = getComputedStyle(pop);
+    const r = pop.getBoundingClientRect();
+    const probeX = Math.min(window.innerWidth - 5, Math.max(5, r.left + r.width / 2));
+    const probeY = Math.min(window.innerHeight - 5, Math.max(5, r.top + 20));
+    const hit = document.elementFromPoint(probeX, probeY);
+    return {
+        exists: true,
+        position: cs.position,
+        visible: cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) !== 0,
+        inViewport: r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.bottom > 0,
+        onTop: !!hit && pop.contains(hit),
+        lineCount: pop.querySelectorAll('.fs-logln').length,
+    };
+});
+console.log('log panel visibility:', JSON.stringify(logVis));
+ck(logVis.exists, 'clicking Log creates the log panel');
+ck(logVis.position === 'fixed', 'log panel is positioned (fixed) — i.e. its CSS class actually applied (' + logVis.position + ')');
+ck(logVis.visible && logVis.inViewport, 'log panel is actually visible and within the viewport');
+ck(logVis.onTop, 'log panel is on top at its own position, not hidden behind the modal — the exact "log button does nothing" symptom');
+ck(logVis.lineCount > 0, 'log panel is populated with entries (' + logVis.lineCount + ')');
+
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);

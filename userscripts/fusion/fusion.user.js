@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21
+// @version      2026.8.21.004056
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.004056';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -72,7 +72,13 @@ async function copyLog(btn) {
 function openLog() {
     document.getElementById('fs-logpop')?.remove();
     fsStyle();
-    const pop = el('div'); pop.id = 'fs-logpop';
+    // The CSS for this panel is a CLASS rule (.fs-logpop{position:fixed;…}), so
+    // setting only the id left it completely unstyled: position:static, no
+    // background, no z-index — it rendered as a transparent block at the bottom
+    // of the page, behind the modal. It "existed" (getElementById found it),
+    // which is exactly why an existence-only test kept passing while the user
+    // saw nothing happen. #529 (majkinetor: "log button does nothing").
+    const pop = el('div', 'fs-logpop'); pop.id = 'fs-logpop';
     pop.innerHTML = '<div class="fs-logpop-h"><b>Fusion — activity log</b><span class="fs-sp"></span><button class="fs-logpop-copy" type="button">Copy</button><button class="fs-logpop-x" type="button">✕</button></div><div class="fs-logpop-body"></div>';
     document.body.appendChild(pop);
     const body = pop.querySelector('.fs-logpop-body');
