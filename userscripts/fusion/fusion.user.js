@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.20.222552
+// @version      2026.8.20.225912
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.20.222552';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.20.225912';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -647,12 +647,19 @@ function fsStyle() {
         + '.fs-grip{color:#565768;font-size:12px;letter-spacing:-1px}'
         + '.fs-info{flex:1;min-width:0}'
         + '.fs-t{font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.fs-t a{color:inherit;text-decoration:none}'
-        + '.fs-t a:hover{text-decoration:underline;color:var(--fs-purple)}'
+        // #529 follow-up (majkinetor, screenshot): "you can see merged item no
+        // link" — the <a> was always there and functional (verified: real href,
+        // pointer-events:auto even after a merge), but color:inherit +
+        // text-decoration:none until hover made every link visually identical
+        // to plain text at rest, so it genuinely read as "no link" on sight.
+        + '.fs-t a{color:#c9b3ff;text-decoration:underline;text-decoration-color:rgba(201,179,255,.35)}'
+        + '.fs-t a:hover{color:var(--fs-purple);text-decoration-color:var(--fs-purple)}'
         + '.fs-artist{font-weight:400;color:var(--fs-muted);font-size:11.5px}'
-        + '.fs-artist a{color:var(--fs-muted);text-decoration:none}'
-        + '.fs-artist a:hover{text-decoration:underline;color:var(--fs-text)}'
+        + '.fs-artist a{color:var(--fs-muted);text-decoration:underline;text-decoration-color:rgba(154,155,176,.35)}'
+        + '.fs-artist a:hover{text-decoration-color:var(--fs-text);color:var(--fs-text)}'
         + '.fs-m{color:var(--fs-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}'
+        + '.fs-ids{display:flex;gap:5px;margin-top:2px}'
+        + '.fs-idtag{font-size:9.5px;color:#9a9bb0;font-family:ui-monospace,Consolas,monospace;background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px}'
         + '.fs-badges{display:flex;gap:3px;flex-shrink:0}'
         + '.fs-b{width:6px;height:6px;border-radius:50%}'
         + '.fs-b-on{background:var(--fs-green)} .fs-b-off{background:#454657}'
@@ -670,8 +677,8 @@ function fsStyle() {
         + '.fs-gcard.fs-active{outline:2px solid var(--fs-purple);outline-offset:-1px}'
         + '.fs-ghdr{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--fs-border);cursor:pointer}'
         + '.fs-gt{font-weight:700;font-size:12.5px}'
-        + '.fs-gt a{color:inherit;text-decoration:none}'
-        + '.fs-gt a:hover{text-decoration:underline;color:var(--fs-purple)}'
+        + '.fs-gt a{color:#c9b3ff;text-decoration:underline;text-decoration-color:rgba(201,179,255,.35)}'
+        + '.fs-gt a:hover{color:var(--fs-purple);text-decoration-color:var(--fs-purple)}'
         + '.fs-conf{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;letter-spacing:.2px}'
         + '.fs-conf-high{background:rgba(62,207,142,.15);color:var(--fs-green)}'
         + '.fs-conf-med{background:rgba(224,166,62,.15);color:var(--fs-amber)}'
@@ -696,8 +703,8 @@ function fsStyle() {
         + '.fs-star-disabled{cursor:default}'
         + '.fs-grow .fs-t{flex:1;min-width:0}'
         + '.fs-artistcol{color:var(--fs-muted);font-size:11px;width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.fs-artistcol a{color:var(--fs-muted);text-decoration:none}'
-        + '.fs-artistcol a:hover{text-decoration:underline;color:var(--fs-text)}'
+        + '.fs-artistcol a{color:var(--fs-muted);text-decoration:underline;text-decoration-color:rgba(154,155,176,.35)}'
+        + '.fs-artistcol a:hover{text-decoration-color:var(--fs-text);color:var(--fs-text)}'
         + '.fs-grow .fs-rel{color:var(--fs-muted);font-size:11px;width:190px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-grow .fs-len{color:var(--fs-muted);font-size:11px;width:44px;flex-shrink:0}'
         + '.fs-grow .fs-isrc{color:#7d7e94;font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace}'
@@ -757,6 +764,18 @@ function releasesSummary(rec) {
 // #529 follow-up: "Show video marker" — a visible badge, not just a
 // behind-the-scenes exclusion rule, so it's obvious before you even try to group one.
 function videoBadge(rec) { return rec.video === true ? '<span class="fs-vid" title="video recording">🎬</span> ' : ''; }
+// #529 follow-up: "we should see isrc and accousticid in the card too" — the
+// pool card only showed presence dots; show the actual values (AcoustID
+// truncated, it's a 36-char UUID — full value is in the tooltip).
+function idsLine(rec) {
+    const isrc = (rec.isrcs && rec.isrcs[0]) || null;
+    const acid = (rec.acoustids && rec.acoustids[0]) || null;
+    if (!isrc && !acid) return '';
+    let out = '<div class="fs-ids">';
+    if (isrc) out += '<span class="fs-idtag" title="' + escapeHtml((rec.isrcs || []).join(', ')) + '">' + escapeHtml(isrc) + '</span>';
+    if (acid) out += '<span class="fs-idtag" title="AcoustID ' + escapeHtml(acid) + '">' + escapeHtml(acid.slice(0, 8)) + '…</span>';
+    return out + '</div>';
+}
 function poolCardHtml(rec) {
     const rs = releasesSummary(rec);
     const isrcOn = rec.isrcs && rec.isrcs.length ? 'on' : 'off';
@@ -764,7 +783,7 @@ function poolCardHtml(rec) {
     return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
         + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + videoBadge(rec) + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
-        + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div></div>'
+        + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
         + '<div class="fs-badges"><span class="fs-b fs-b-' + isrcOn + '" title="ISRC"></span><span class="fs-b fs-b-' + acOn + '" title="AcoustID"></span></div>'
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
 }
@@ -797,6 +816,7 @@ function groupCardHtml(group) {
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + '<span class="fs-len">' + dur(m.length) + '</span>'
             + '<span class="fs-isrc">' + ((m.isrcs && m.isrcs[0]) || '—') + '</span>'
+            + '<span class="fs-isrc" title="' + (m.acoustids && m.acoustids[0] ? 'AcoustID ' + escapeHtml(m.acoustids[0]) : '') + '">' + (m.acoustids && m.acoustids[0] ? escapeHtml(m.acoustids[0].slice(0, 8)) + '…' : '—') + '</span>'
             + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>';
     }).join('');
     const errMsg = group.state === 'error' ? '<div class="fs-gerr">' + escapeHtml(group.error || 'merge failed') + '</div>' : '';
