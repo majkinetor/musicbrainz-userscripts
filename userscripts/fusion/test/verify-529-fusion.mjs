@@ -392,6 +392,41 @@ ck(logVis.visible && logVis.inViewport, 'log panel is actually visible and withi
 ck(logVis.onTop, 'log panel is on top at its own position, not hidden behind the modal — the exact "log button does nothing" symptom');
 ck(logVis.lineCount > 0, 'log panel is populated with entries (' + logVis.lineCount + ')');
 
+// #529 (majkinetor): "Getting no recordings on artist". The scraper used
+// td:nth-child(N) indexes derived from an ANONYMOUS artist-recordings page.
+// A logged-in user's page has an extra leading checkbox column
+// (input[name=add-to-merge]) that shifts every index by one, so the scrape
+// matched 0 rows. Must run logged in (the shared .pw-profile is) — that is
+// precisely the condition the original probe missed.
+await page.goto('https://test.musicbrainz.org/artist/c321a13a-1c52-43c0-b60a-3a454cb7f9a2/recordings', { waitUntil: 'domcontentloaded' });
+await page.addScriptTag({ content: code });
+await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
+await page.waitForTimeout(800);
+const artistScrape = await page.evaluate(() => {
+    const F = window.__fusion;
+    const table = document.querySelector('table.tbl');
+    const s = F.scrapeArtistRecordingsTable();
+    const first = s.recordings[0];
+    return {
+        scope: F.SCOPE.type,
+        domRows: table ? table.querySelectorAll('tbody > tr').length : 0,
+        hasCheckboxCol: !!(table && table.querySelector('tbody > tr td:nth-child(1) input[name="add-to-merge"]')),
+        scraped: s.recordings.length,
+        firstTitle: first ? first.title : null,
+        firstHasArtist: !!(first && first.artistCredit),
+        anyWithLength: s.recordings.some(r => r.length != null),
+        anyWithRelease: s.recordings.some(r => r.releases.length > 0),
+    };
+});
+console.log('artist scrape:', JSON.stringify(artistScrape));
+ck(artistScrape.scope === 'artist-recordings', 'Fusion detects artist-recordings scope');
+ck(artistScrape.hasCheckboxCol, 'this logged-in page really does have the extra leading checkbox column (the condition that broke it)');
+ck(artistScrape.scraped === artistScrape.domRows && artistScrape.scraped > 0,
+   'scraper matches EVERY row despite the shifted columns (' + artistScrape.scraped + '/' + artistScrape.domRows + ')');
+ck(!!artistScrape.firstTitle && artistScrape.firstHasArtist, 'scraped rows carry title + artist');
+ck(artistScrape.anyWithLength, 'scraped rows carry length (header-resolved column, not a fixed index)');
+ck(artistScrape.anyWithRelease, 'scraped rows carry release groups');
+
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);

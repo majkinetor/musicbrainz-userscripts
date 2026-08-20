@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.004930
+// @version      2026.8.21.010149
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.004930';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.010149';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -1283,24 +1283,46 @@ function closeFusion() {
 // recording by this artist" the way rgid: is for a release group.
 function scrapeArtistRecordingsTable() {
     const table = document.querySelector('table.tbl');
-    if (!table) return { recordings: [], hasPager: false };
+    if (!table) { Log.warn('Artist-recordings scrape: no table.tbl on this page'); return { recordings: [], hasPager: false }; }
+    // Column-INDEX-independent by design (#529): the original version used
+    // td:nth-child(N), derived from an anonymous page. A logged-in user's page
+    // has an extra leading checkbox column (name="add-to-merge"), which shifts
+    // every index by one and made the scrape return 0 recordings. Other scripts
+    // can add columns too, so resolve columns by their HEADER TEXT and find the
+    // entity links anywhere in the row instead of at fixed positions.
+    const headers = [...table.querySelectorAll('thead th')].map(th => (th.textContent || '').trim().toLowerCase());
+    const colOf = name => headers.findIndex(h => h === name);
+    const lengthCol = colOf('length');
+    const rgCol = colOf('release groups');
     const recs = [];
     for (const tr of table.querySelectorAll('tbody > tr')) {
-        const recA = tr.querySelector('td:nth-child(1) a[href^="/recording/"]');
+        const recA = tr.querySelector('a[href^="/recording/"]');
         if (!recA) continue;
         const gid = (recA.getAttribute('href').match(/[0-9a-fA-F-]{36}/) || [])[0];
         if (!gid) continue;
         const title = (recA.textContent || '').trim();
-        const artistA = tr.querySelector('td:nth-child(2) a[href^="/artist/"]');
+        const artistA = tr.querySelector('a[href^="/artist/"]');
         const artistCredit = artistA ? (artistA.textContent || '').trim() : '';
         const artistGid = artistA ? (artistA.getAttribute('href').match(/[0-9a-fA-F-]{36}/) || [])[0] || null : null;
-        const isrcs = [...tr.querySelectorAll('.isrc-list-container code')].map(c => (c.textContent || '').trim());
-        const lenText = (tr.children[4] && tr.children[4].textContent || '').trim();
-        const lm = lenText.match(/(\d+):(\d\d)/);
+        const isrcs = [...tr.querySelectorAll('.isrc-list-container code')].map(c => (c.textContent || '').trim()).filter(Boolean);
+        // length: prefer the header-resolved column, else any cell that is exactly m:ss
+        let lenText = lengthCol >= 0 && tr.children[lengthCol] ? (tr.children[lengthCol].textContent || '').trim() : '';
+        if (!/^\d{1,3}:\d{2}$/.test(lenText)) {
+            const cell = [...tr.children].find(td => /^\d{1,3}:\d{2}$/.test((td.textContent || '').trim()));
+            lenText = cell ? cell.textContent.trim() : '';
+        }
+        const lm = lenText.match(/^(\d{1,3}):(\d{2})$/);
         const length = lm ? (parseInt(lm[1], 10) * 60 + parseInt(lm[2], 10)) * 1000 : null;
-        const rgLinks = [...tr.querySelectorAll('td:nth-child(6) a[href^="/release-group/"]')].map(a => ({ gid: null, title: (a.textContent || '').trim(), trackNumber: null, trackCount: null }));
+        const rgScope = rgCol >= 0 && tr.children[rgCol] ? tr.children[rgCol] : tr;
+        const rgLinks = [...rgScope.querySelectorAll('a[href^="/release-group/"]')].map(a => ({ gid: (a.getAttribute('href').match(/[0-9a-fA-F-]{36}/) || [])[0] || null, title: (a.textContent || '').trim(), trackNumber: null, trackCount: null }));
+        // MB's own merge checkbox carries the internal numeric id — harvest it so
+        // merging from this page doesn't need a /ws/js/entity lookup per recording.
+        const cb = tr.querySelector('input[name="add-to-merge"]');
+        const internalId = cb && /^\d+$/.test(cb.value) ? Number(cb.value) : null;
+        if (internalId) _idCache.set(gid, internalId);
         recs.push(mkRecording(gid, { title, length, isrcs, artistCredit, artistGid, releases: rgLinks }));
     }
+    if (!recs.length) Log.warn('Artist-recordings scrape: found table.tbl with ' + table.querySelectorAll('tbody > tr').length + ' row(s) but matched 0 recordings — table layout may have changed');
     return { recordings: recs, hasPager: !!document.querySelector('.pagination, ul.pager') };
 }
 async function seedFromScope() {
