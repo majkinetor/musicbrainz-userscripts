@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.004056
+// @version      2026.8.21.004930
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.004056';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.004930';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -69,6 +69,10 @@ async function copyLog(btn) {
     try { await navigator.clipboard.writeText(md); ok = true; } catch (e) {}
     if (btn) { btn.textContent = ok ? 'Copied!' : 'Copy failed'; setTimeout(() => { btn.textContent = 'Copy'; }, 1500); }
 }
+// remembered position of the draggable log window (#529)
+const LOGWIN_KEY = 'fusion.logwin';
+function loadLogWinState() { try { return JSON.parse(GM_getValue(LOGWIN_KEY, '{}')); } catch (e) { return {}; } }
+function saveLogWinState(patch) { try { GM_setValue(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWinState(), patch))); } catch (e) {} }
 function openLog() {
     document.getElementById('fs-logpop')?.remove();
     fsStyle();
@@ -88,6 +92,28 @@ function openLog() {
     const close = () => { _logListeners.delete(render); pop.remove(); };
     pop.querySelector('.fs-logpop-x').onclick = close;
     pop.querySelector('.fs-logpop-copy').onclick = () => copyLog(pop.querySelector('.fs-logpop-copy'));
+    // #529 follow-up (majkinetor): "make log window movable" — drag by its
+    // header, position remembered across opens (same idiom as the main window).
+    const hdr = pop.querySelector('.fs-logpop-h');
+    const st = loadLogWinState();
+    if (st.left != null && st.top != null) { pop.style.left = st.left + 'px'; pop.style.top = st.top + 'px'; pop.style.right = 'auto'; }
+    hdr.addEventListener('mousedown', e => {
+        if (e.target.closest('button')) return;
+        const r = pop.getBoundingClientRect();
+        pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto';
+        const ox = e.clientX - r.left, oy = e.clientY - r.top;
+        const mv = ev => {
+            pop.style.left = Math.max(0, Math.min(innerWidth - 80, ev.clientX - ox)) + 'px';
+            pop.style.top = Math.max(0, Math.min(innerHeight - 30, ev.clientY - oy)) + 'px';
+        };
+        const up = () => {
+            document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+            const r2 = pop.getBoundingClientRect();
+            saveLogWinState({ left: r2.left, top: r2.top });
+        };
+        document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        e.preventDefault();
+    });
 }
 
 /* ── GM_xmlhttpRequest promisified (ported from isrc_scout's http/gmGet/gmPost) —
@@ -125,7 +151,11 @@ async function wsGet(path, retries) {
         const t0 = Date.now();
         try {
             Log.info('GET ' + path + (attempt ? ' (retry ' + attempt + '/' + retries + ')' : ''));
-            const r = await fetch(path, { headers: { Accept: 'application/json' } });
+            // no-store: MB's WS2 sends NO cache headers, so browsers cache these
+            // heuristically and can serve a stale response — which silently fed
+            // Fusion out-of-date ISRC data (a recording whose ISRC exists in the
+            // index showed isrc=none, seed request returning in 5ms = cache hit). #529
+            const r = await fetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' });
             const ms = Date.now() - t0;
             if (r.status === 503 || r.status === 429) {
                 Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms) — MB busy/rate-limited');
@@ -364,16 +394,24 @@ async function resolveInternalId(gid) {
 // already creates on submit) rather than calling the AcoustID API directly — no API
 // key, no rate limit, same-origin only. Trades "misses recordings never Picard-tagged"
 // for "zero external dependency"; ISRC/title/artist/length still catch those.
-async function fetchAcoustIds(gid) {
-    const j = await wsGet('/ws/2/recording/' + gid + '?inc=url-rels&fmt=json');
-    if (!j) return [];
-    const out = [];
+// Also pulls isrcs: this is an authoritative per-recording lookup, unlike the
+// rgid: SEARCH used for RG seeding, whose index can lag or omit fields. #529 —
+// a recording that demonstrably had an ISRC showed isrc=none after RG seeding,
+// so anything derived from search results gets reconciled against this.
+async function fetchRecordingDetail(gid) {
+    const j = await wsGet('/ws/2/recording/' + gid + '?inc=url-rels+isrcs&fmt=json');
+    if (!j) return null;
+    const acoustids = [];
     for (const rel of j.relations || []) {
         const url = rel.url && rel.url.resource;
         const m = url && url.match(/acoustid\.org\/track\/([0-9a-fA-F-]{36})/);
-        if (m) out.push(m[1].toLowerCase());
+        if (m) acoustids.push(m[1].toLowerCase());
     }
-    return out;
+    return { acoustids, isrcs: j.isrcs || [], video: !!j.video };
+}
+async function fetchAcoustIds(gid) {
+    const d = await fetchRecordingDetail(gid);
+    return d ? d.acoustids : [];
 }
 
 // ── pool / groups state ──────────────────────────────────────────────────
@@ -535,7 +573,19 @@ async function enrichAcoustIds(recs, concurrency, onProgress) {
     async function worker() {
         while (i < recs.length) {
             const rec = recs[i++];
-            if (rec.acoustids == null) rec.acoustids = await fetchAcoustIds(rec.gid);
+            if (rec.acoustids == null) {
+                const d = await fetchRecordingDetail(rec.gid);
+                if (d) {
+                    rec.acoustids = d.acoustids;
+                    // Reconcile ISRCs against the authoritative lookup — the rgid:
+                    // search index can lag and report none where MB actually has them. #529
+                    if (d.isrcs.length && d.isrcs.join(',') !== (rec.isrcs || []).join(',')) {
+                        Log.info('  ISRC backfill for ' + rec.title + ': search said [' + ((rec.isrcs || []).join(',') || 'none') + '], MB has [' + d.isrcs.join(',') + ']');
+                        rec.isrcs = d.isrcs;
+                    }
+                    if (rec.video == null) rec.video = d.video;
+                } else rec.acoustids = [];
+            }
             done++; if (onProgress) onProgress(done, recs.length);
         }
     }
@@ -621,9 +671,15 @@ async function mergeGroup(group) {
 // a small worker pool runs several at once instead of one strictly after
 // another. Capped (not unbounded) to stay reasonable towards MB's server.
 async function mergeAll(concurrency) {
-    concurrency = concurrency || 3;
+    // Coerce defensively: a stray click Event (or anything non-numeric) landing
+    // here used to poison Math.min into NaN, which made Array.from({length:NaN})
+    // spawn ZERO workers — Merge All logged "queued" then instantly "finished:
+    // 0 merged, 0 failed" without touching a single group. Never trust this arg.
+    const n = Number(concurrency);
+    concurrency = Number.isFinite(n) && n >= 1 ? Math.floor(n) : 3;
     const pending = STATE.groups.filter(g => g.state === 'pending' || g.state === 'error');
-    Log.info('══ Merge All: ' + pending.length + ' group(s) queued, up to ' + Math.min(concurrency, pending.length) + ' in parallel ══');
+    const workers = Math.max(1, Math.min(concurrency, pending.length));
+    Log.info('══ Merge All: ' + pending.length + ' group(s) queued, up to ' + workers + ' in parallel ══');
     if (!pending.length) { Log.warn('Merge All: nothing to do — no group is in pending/error state (already merged, or none formed yet)'); return; }
     let doneCount = 0, failCount = 0;
     let i = 0;
@@ -635,7 +691,7 @@ async function mergeAll(concurrency) {
             Log.info('── Merge All progress: ' + (doneCount + failCount) + '/' + pending.length + ' (' + doneCount + ' ok, ' + failCount + ' failed) ──');
         }
     }
-    await Promise.all(Array.from({ length: Math.min(concurrency, pending.length) }, worker));
+    await Promise.all(Array.from({ length: workers }, worker));
     Log.info('══ Merge All finished: ' + doneCount + ' merged, ' + failCount + ' failed (of ' + pending.length + ') ══');
 }
 
@@ -767,7 +823,7 @@ function fsStyle() {
         + '.fs-opt{display:block;margin:8px 0;font-size:12px}'
         + '.fs-opt textarea{width:100%;box-sizing:border-box;margin-top:4px;font:12px inherit}'
         + '.fs-logpop{position:fixed;top:60px;right:14px;width:420px;max-height:60vh;background:#1b2430;color:#eef2f7;border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,.4);z-index:2147483002;display:flex;flex-direction:column;overflow:hidden;font:12px -apple-system,Segoe UI,Arial,sans-serif}'
-        + '.fs-logpop-h{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#12181f}'
+        + '.fs-logpop-h{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#12181f;cursor:move;user-select:none}'
         + '.fs-logpop-h button{background:#2a3542;border:1px solid #3a4757;color:#eef2f7;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer}'
         + '.fs-logpop-body{flex:1;overflow-y:auto;padding:6px 10px}'
         + '.fs-logln{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05)}'
@@ -1204,7 +1260,11 @@ function buildShell() {
     document.getElementById('fs-add-btn').onclick = onAddByMbid;
     document.getElementById('fs-add-input').addEventListener('keydown', e => { if (e.key === 'Enter') onAddByMbid(); });
     document.getElementById('fs-automatch').onclick = onAutoMatch;
-    document.getElementById('fs-mergeall').onclick = mergeAll;
+    // NOT `onclick = mergeAll` — the click Event would land in mergeAll's first
+    // parameter (concurrency), and being truthy it survives `|| 3`, making
+    // Math.min(Event, n) → NaN → Array.from({length:NaN}) → zero workers → the
+    // whole Merge All silently no-ops. Bit us live; see the guard in mergeAll too.
+    document.getElementById('fs-mergeall').onclick = () => mergeAll();
     document.getElementById('fs-clearboard').onclick = () => { clearBoard(); renderAll(); };
     document.getElementById('fs-rg-editions').addEventListener('change', onLoadRgEdition);
     document.getElementById('fs-cutoff').addEventListener('change', e => { SETTINGS.matchCutoff = e.target.value; saveSettings(); Log.info('Match cutoff set to ' + SETTINGS.matchCutoff); });
@@ -1302,7 +1362,7 @@ try {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
-        mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds,
+        mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchRecordingDetail,
         pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,

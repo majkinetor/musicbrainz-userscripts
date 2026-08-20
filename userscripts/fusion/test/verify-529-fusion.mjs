@@ -200,6 +200,23 @@ ck(engineChecks.manualAddRefusesVideoAudioMix, 'addToGroup refuses to manually m
 ck(engineChecks.videoStaysInPoolAfterRefusal, 'a refused video/audio add leaves the recording in the pool, not silently dropped');
 ck(engineChecks.unknownVideoNeverBlocks, 'unknown (null) video status never blocks a match — only a KNOWN mismatch does');
 
+// #529 (majkinetor): a recording that demonstrably has an ISRC on MB was
+// showing isrc=none in the log after release-group seeding. The rgid: SEARCH
+// index can lag/omit fields, and MB's WS2 sends no cache headers so the
+// browser can also serve a stale copy. enrichAcoustIds now reconciles ISRCs
+// against the authoritative per-recording lookup, which never goes via search.
+const isrcBackfill = await page.evaluate(async () => {
+    const F = window.__fusion;
+    const detail = await F.fetchRecordingDetail('ac2c28b3-c278-47f9-88de-80d2a663ed39');
+    // simulate a stale search result: recording known to have data, seeded with none
+    const stale = F.mkRecording('ac2c28b3-c278-47f9-88de-80d2a663ed39', { title: 'Stale Seed', length: 1000, isrcs: [], artistCredit: 'X', releases: [] });
+    await F.enrichAcoustIds([stale], 1);
+    return { detailHasIsrcField: !!detail && Array.isArray(detail.isrcs), backfilled: stale.isrcs, detailIsrcs: detail && detail.isrcs };
+});
+ck(isrcBackfill.detailHasIsrcField, 'fetchRecordingDetail returns an isrcs array from the authoritative per-recording lookup');
+ck(JSON.stringify(isrcBackfill.backfilled) === JSON.stringify(isrcBackfill.detailIsrcs),
+   'enrichAcoustIds reconciles a stale/empty seeded ISRC list against MB\'s real data (' + JSON.stringify(isrcBackfill.backfilled) + ')');
+
 // ── live: open the real UI (not just STATE), seed, add a second recording,
 // group via REAL double-clicks (regression guard for the bug below), merge ──
 const seedInfo = await page.evaluate(async () => {
@@ -291,15 +308,22 @@ const grouped2 = await page.evaluate(async ([gidC, gidD]) => {
 }, [RECORDING_C, RECORDING_D]);
 ck(grouped2.ok, 'built a second manual group (C+D) for the mergeAll() test');
 
-console.log('Submitting REAL merges via mergeAll() on test.musicbrainz.org (sandbox — safe)…');
-const mergeAllResult = await page.evaluate(async () => {
-    const F = window.__fusion;
-    await F.mergeAll();
-    return F.STATE.groups.map(g => ({ id: g.id, memberGids: g.memberGids, state: g.state, error: g.error }));
-});
+// Drive the REAL footer button, not F.mergeAll() directly. Calling the
+// function with no args hid a live bug for a whole round: the button was wired
+// as `onclick = mergeAll`, so the click Event landed in mergeAll's `concurrency`
+// parameter — truthy, so `|| 3` kept it — and Math.min(Event, n) → NaN made
+// Array.from({length:NaN}) spawn ZERO workers. Merge All logged "queued" then
+// instantly "finished: 0 merged, 0 failed" while a direct mergeAll() call in
+// the test passed happily. Always exercise the real user gesture.
+console.log('Submitting REAL merges by clicking Merge All on test.musicbrainz.org (sandbox — safe)…');
+await page.click('#fs-mergeall');
+await page.waitForFunction(() => window.__fusion.STATE.groups.every(g => g.state === 'done' || g.state === 'error'), { timeout: 60000 });
+const mergeAllResult = await page.evaluate(() => window.__fusion.STATE.groups.map(g => ({ id: g.id, memberGids: g.memberGids, state: g.state, error: g.error })));
 console.log('mergeAll result:', JSON.stringify(mergeAllResult));
-ck(mergeAllResult.length === 2, 'mergeAll() left exactly the 2 groups that were built (' + mergeAllResult.length + ')');
-ck(mergeAllResult.every(g => g.state === 'done'), 'mergeAll() drove EVERY ready group to state=done, not just the first (' + JSON.stringify(mergeAllResult.map(g => g.state)) + ')');
+ck(mergeAllResult.length === 2, 'clicking Merge All left exactly the 2 groups that were built (' + mergeAllResult.length + ')');
+ck(mergeAllResult.every(g => g.state === 'done'), 'clicking Merge All drove EVERY ready group to state=done, not just the first (' + JSON.stringify(mergeAllResult.map(g => g.state)) + ')');
+const workerLine = await page.evaluate(() => window.__fusion.getLogLines().find(l => /Merge All: \d+ group\(s\) queued/.test(l)) || '');
+ck(/up to [1-9]\d* in parallel/.test(workerLine), 'Merge All reports a real worker count, not NaN — the exact "registered but immediately finished" bug (' + workerLine + ')');
 
 // verify against WS2: both survivors still resolve. MB's WS2 throttles under
 // load (transient 503s, same as Fusion's own wsGet() handles with retries),
