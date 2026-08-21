@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.182853
+// @version      2026.8.21.183722
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -448,6 +448,78 @@ async function fetchReleaseRecordings(releaseMbid) {
     return { release: { gid: j.id, title: j.title, artistCredit: acName(j['artist-credit']) }, recordings: recs };
 }
 
+// Enumerating an artist's recordings via the INDEXED SEARCH is unsound: paging
+// it with offsets returns the same recording on several pages while never
+// returning others at all. Measured on Mocky (310 recordings), same minute:
+//
+//     browse  ?artist=      310 returned, 310 distinct,  0 duplicates
+//     search  query=arid:   310 returned, 224 distinct, 86 duplicates
+//                           …and 86 recordings browse found that search never
+//                           returned once.
+//
+// That is why majkinetor's pool size wandered between runs (210, 185, 224) and
+// why AcoustIDs "disappeared": the RECORDINGS were absent, not their data. The
+// browse endpoint reads the database directly and pages deterministically, so
+// membership comes from there now. Its ISRCs are DB-backed too, hence
+// isrcSource 'entity' rather than the search index's 'index'. (#529)
+async function fetchRecordingsByBrowse(browseQuery, label, onPage) {
+    const recordings = [];
+    let offset = 0, total = Infinity, pages = 0, truncatedBy = null;
+    while (offset < total && pages < SEARCH_MAX_PAGES) {
+        if (onPage) onPage(pages + 1, Number.isFinite(total) ? Math.ceil(total / SEARCH_PAGE_LIMIT) : null, recordings.length, Number.isFinite(total) ? total : null);
+        const j = await wsGet('/ws/2/recording?' + browseQuery + '&inc=isrcs+artist-credits&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
+        if (!j) { truncatedBy = 'a failed request'; break; }
+        total = j['recording-count'] != null ? j['recording-count'] : 0;
+        for (const r of j.recordings || []) {
+            const ac = r['artist-credit'];
+            // No releases here: browse does not accept inc=releases ("releases is
+            // not a valid inc parameter"). They are filled in afterwards, best
+            // effort, and stay unknown rather than empty when they cannot be.
+            recordings.push(mkRecording(r.id, {
+                title: r.title, length: r.length, isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
+                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video,
+                releases: [], allReleases: null,
+            }));
+        }
+        offset += SEARCH_PAGE_LIMIT; pages++;
+        if (pages >= SEARCH_MAX_PAGES && offset < total) truncatedBy = 'the ' + SEARCH_MAX_PAGES + '-page cap';
+    }
+    const known = Number.isFinite(total);
+    if (known && total > recordings.length) Log.warn(label + ': loaded ' + recordings.length + ' of ' + total + ' — stopped by ' + (truncatedBy || 'an incomplete response'));
+    if (!known) Log.error(label + ': could not load anything — MusicBrainz did not answer');
+    else Log.info(label + ': ' + recordings.length + ' recording(s) of ' + total + ' total');
+    return { recordings, total };
+}
+// The search index is still the cheapest source of "every release this recording
+// appears on", including compilations by other artists — it is only its PAGING
+// that cannot be trusted. So it runs as a best-effort enricher over a membership
+// list that came from browse: whatever it returns gets used, whatever it misses
+// keeps allReleases null and is fetched on demand later.
+async function enrichReleasesFromSearch(luceneQuery, recordings) {
+    const byGid = new Map(recordings.map(r => [r.gid, r]));
+    let offset = 0, total = Infinity, pages = 0, matched = 0;
+    while (offset < total && pages < SEARCH_MAX_PAGES) {
+        const j = await wsGet('/ws/2/recording?query=' + encodeURIComponent(luceneQuery) + '&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
+        if (!j) break;
+        total = j.count || 0;
+        for (const r of j.recordings || []) {
+            const rec = byGid.get(r.id);
+            if (!rec || rec.allReleases != null) continue;
+            const releases = (r.releases || []).map(rel => {
+                let trackNumber = null;
+                for (const med of rel.media || []) { if (med.track && med.track[0]) { trackNumber = med.track[0].number || null; break; } }
+                return { gid: rel.id, title: rel.title, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
+            });
+            rec.releases = releases; rec.allReleases = releases;
+            matched++;
+        }
+        offset += SEARCH_PAGE_LIMIT; pages++;
+    }
+    const without = recordings.filter(r => r.allReleases == null).length;
+    Log.info('Release lists: ' + matched + ' of ' + recordings.length + ' recording(s) covered by the search index'
+        + (without ? ' — ' + without + ' left to load on demand (the index did not return them)' : ''));
+}
+
 // Shared paginated recording search. The indexed search returns each
 // recording's releases, artist credit, ISRCs and video flag inline, so one
 // query per 100 recordings covers everything the pool needs — no per-recording
@@ -505,7 +577,8 @@ async function fetchRGRecordings(rgMbid, onPage) {
 async function fetchArtistRecordings(artistMbid, onPage) {
     const meta = await wsGet('/ws/2/artist/' + artistMbid + '?fmt=json');
     const artist = meta ? { gid: meta.id, name: meta.name } : null;
-    const { recordings, total } = await fetchRecordingsBySearch('arid:' + artistMbid, 'Artist seed', onPage);
+    const { recordings, total } = await fetchRecordingsByBrowse('artist=' + artistMbid, 'Artist seed', onPage);
+    await enrichReleasesFromSearch('arid:' + artistMbid, recordings);
     return { artist, recordings, total };
 }
 // MB's own merge checkboxes on an artist-recordings page carry the internal
@@ -2509,7 +2582,7 @@ try {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
-        mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
+        mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress, lengthSpread,
