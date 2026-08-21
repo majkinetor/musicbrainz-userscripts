@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.225751
+// @version      2026.8.22.001517
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -296,7 +296,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: true, releasePrefetchCap: 200, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, settingsVersion: 0, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
 // Stored settings win over defaults, so simply RAISING a default is invisible to
 // anyone who ever opened the config window (that saves every key, including the
 // ones they never touched). The old 60 cap dated from one-request-per-recording;
@@ -305,8 +305,19 @@ const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acous
 // it's still exactly the retired default, so a cap someone deliberately chose
 // stays theirs.
 const RETIRED_ACOUSTID_CAP = 60;
+// Bumped when a migration below needs to run once and then never again. Without
+// the stamp, "turn the prefetch off" could not tell a value the user chose from
+// one that was merely the old default, and would keep undoing their choice.
+const SETTINGS_VERSION = 2;
 function migrateSettings(s) {
     if (s.acoustidPoolCap === RETIRED_ACOUSTID_CAP) s.acoustidPoolCap = SETTINGS_DEFAULTS.acoustidPoolCap;
+    // v2: the group release prefetch shipped defaulting ON, and every install
+    // that opened the config window has that `true` persisted — so flipping the
+    // default alone would change nothing. Nobody could have deliberately enabled
+    // it while it was already on, so a stored `true` from before this version is
+    // the old default rather than a preference, and is turned off once.
+    if ((s.settingsVersion || 0) < 2 && s.prefetchGroupReleases === true) s.prefetchGroupReleases = false;
+    s.settingsVersion = SETTINGS_VERSION;
     return s;
 }
 function loadSettings() {
@@ -2733,7 +2744,7 @@ function openSettings(anchor) {
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
         + '<label class="fs-opt" title="Run Auto-match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Auto-match on open</label>'
-        + '<label class="fs-opt" title="As soon as a group is formed, quietly fetch the full release list for every recording in it, so expanding a row is instant. Runs in the background and never blocks the UI."><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
+        + '<label class="fs-opt" title="As soon as a group is formed, fetch the full release list for every recording in it, so expanding a row is instant. Costs one request per grouped recording; off by default because seeding already makes a lot of them. Runs in the background, never blocks the UI, and the header stop button halts it."><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>'
         + '<label class="fs-opt" title="Auto-match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Never auto-group if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
     document.body.appendChild(s);
@@ -2984,7 +2995,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
+        migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,
