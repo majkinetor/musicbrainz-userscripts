@@ -6,7 +6,9 @@ A merge assistant for MusicBrainz recordings: gather a pool of candidates, let a
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Fusion)
 
-<img width="3590" height="1783" alt="image" src="https://github.com/user-attachments/assets/662a1db3-e588-460b-91e7-aa4c585ab8b7" />
+<img width="3522" height="1722" alt="image" src="https://github.com/user-attachments/assets/03fc1889-ac9a-4c15-9181-aa1c97112019" />
+
+<img width="2510" height="1700" alt="image" src="https://github.com/user-attachments/assets/b97b4503-f646-45fb-8a41-666cf69eed4c" />
 
 ## Features
 
