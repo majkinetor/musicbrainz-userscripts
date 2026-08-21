@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.172813
+// @version      2026.8.21.174052
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -445,10 +445,14 @@ async function fetchReleaseRecordings(releaseMbid) {
 // follow-ups. Used for both release-group (rgid:) and artist (arid:) seeding.
 const SEARCH_PAGE_LIMIT = 100;
 const SEARCH_MAX_PAGES = 20;   // 2000 recordings; guards a huge artist
-async function fetchRecordingsBySearch(luceneQuery, label) {
+async function fetchRecordingsBySearch(luceneQuery, label, onPage) {
     const recordings = [];
     let offset = 0, total = Infinity, pages = 0, truncatedBy = null;
     while (offset < total && pages < SEARCH_MAX_PAGES) {
+        // #529: "it would be cool to have some progress in 'Loading ..' (page 1,
+        // 2...)" — a big artist is several sequential requests with nothing on
+        // screen changing, so report before each one rather than after.
+        if (onPage) onPage(pages + 1, Number.isFinite(total) ? Math.ceil(total / SEARCH_PAGE_LIMIT) : null, recordings.length, Number.isFinite(total) ? total : null);
         const j = await wsGet('/ws/2/recording?query=' + encodeURIComponent(luceneQuery) + '&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
         if (!j) { truncatedBy = 'a failed request'; break; }
         total = j.count || 0;
@@ -479,20 +483,20 @@ async function fetchRecordingsBySearch(luceneQuery, label) {
     else Log.info(label + ': ' + recordings.length + ' recording(s) of ' + total + ' total (' + luceneQuery + ')');
     return { recordings, total: known ? total : recordings.length };
 }
-async function fetchRGRecordings(rgMbid) {
+async function fetchRGRecordings(rgMbid, onPage) {
     const rgMeta = await wsGet('/ws/2/release-group/' + rgMbid + '?inc=artist-credits&fmt=json');
     const rg = rgMeta ? { gid: rgMeta.id, title: rgMeta.title, artistCredit: acName(rgMeta['artist-credit']) } : null;
-    const { recordings } = await fetchRecordingsBySearch('rgid:' + rgMbid, 'RG seed');
+    const { recordings } = await fetchRecordingsBySearch('rgid:' + rgMbid, 'RG seed', onPage);
     return { rg, recordings };
 }
 // #529 (majkinetor): "scraping the page is not going to cut it, we need to use
 // an API here" — the artist page is paginated at 100 rows and its DOM layout
 // shifts with login state, so the whole artist catalogue now comes from the
 // indexed search instead (297 vs 100 for the artist that surfaced this).
-async function fetchArtistRecordings(artistMbid) {
+async function fetchArtistRecordings(artistMbid, onPage) {
     const meta = await wsGet('/ws/2/artist/' + artistMbid + '?fmt=json');
     const artist = meta ? { gid: meta.id, name: meta.name } : null;
-    const { recordings, total } = await fetchRecordingsBySearch('arid:' + artistMbid, 'Artist seed');
+    const { recordings, total } = await fetchRecordingsBySearch('arid:' + artistMbid, 'Artist seed', onPage);
     return { artist, recordings, total };
 }
 // MB's own merge checkboxes on an artist-recordings page carry the internal
@@ -1205,8 +1209,11 @@ function fsStyle() {
         + '.fs-gcard-manual{border-left-color:var(--fs-blue);border-left-style:dashed}'
         + '.fs-gcard.fs-active{outline:2px solid var(--fs-purple);outline-offset:-1px}'
         + '.fs-ghdr{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,0,0,.025);border-bottom:1px solid var(--fs-border);cursor:pointer}'
-        // Collapse/expand toggles. Generous hit area, never a bare glyph (#419).
-        + '.fs-ctog,.fs-exp{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:2px 3px;border-radius:3px;cursor:pointer;color:var(--fs-muted);font-size:11px;flex-shrink:0}'
+        // Collapse/expand toggles. Full-size glyph AND a generous hit area (#419,
+        // #467, #529 — third recurrence of the same rule). ▶/▼ are the full-size
+        // triangles; ▸/▾ are Unicode's *small* ones and read as shrunken however
+        // much padding is wrapped around them.
+        + '.fs-ctog,.fs-exp{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:2px 5px;border-radius:3px;cursor:pointer;color:var(--fs-muted);font-size:14px;line-height:1;flex-shrink:0}'
         + '.fs-ctog:hover,.fs-exp:hover{background:rgba(0,0,0,.07);color:var(--fs-text)}'
         + '.fs-gcard-collapsed .fs-ghdr{border-bottom:none}'
         + '.fs-cnt{font-size:10.5px;color:var(--fs-muted);white-space:nowrap}'
@@ -1294,6 +1301,8 @@ function fsStyle() {
         + '.fs-gdrop{margin:6px 8px 8px;border:1px dashed var(--fs-border);border-radius:6px;padding:6px;text-align:center;color:var(--fs-muted);font-size:10.5px}'
         + '.fs-newgroup{border:1px dashed var(--fs-border);border-radius:7px;padding:9px;text-align:center;color:var(--fs-muted);font-size:12px;cursor:pointer}'
         + '.fs-ftr{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--fs-panel2);border-top:1px solid var(--fs-border)}'
+        + '.fs-idstat{white-space:nowrap;cursor:help}'
+        + '.fs-idstat-none{color:var(--fs-muted)}'
         + '.fs-sum{color:var(--fs-muted);font-size:12px}'
         + '.fs-sum b{color:var(--fs-text)}'
         + '.fs-note{color:var(--fs-muted);font-size:11px}'
@@ -1506,7 +1515,7 @@ function groupCardHtml(group) {
         const expanded = STATE.expandedReleases.has(m.gid);
         return '<div class="fs-growwrap">'
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
-            + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" title="' + (expanded ? 'hide' : 'show') + ' every release this recording appears on">' + (expanded ? '▾' : '▸') + '</span>'
+            + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" title="' + (expanded ? 'hide' : 'show') + ' every release this recording appears on">' + (expanded ? '▼' : '▶') + '</span>'
             + star
             + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + '</span>'
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
@@ -1545,7 +1554,7 @@ function groupCardHtml(group) {
     const collapsed = STATE.collapsedGroups.has(group.id);
     return '<div class="fs-gcard fs-gcard-' + confClass + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '">'
         + '<div class="fs-ghdr">'
-        + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▸' : '▾') + '</span>'
+        + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>'
         + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
         + (collapsed ? '<span class="fs-cnt">' + members.length + ' recording' + (members.length === 1 ? '' : 's') + '</span>' : '')
         + noteBtn
@@ -1587,7 +1596,25 @@ function renderFooter() {
     const ready = STATE.groups.filter(g => g.state === 'pending' || g.state === 'error').length;
     const done = STATE.groups.filter(g => g.state === 'done').length;
     const sum = document.getElementById('fs-summary');
-    if (sum) sum.innerHTML = '<b>' + STATE.groups.length + '</b> group' + (STATE.groups.length === 1 ? '' : 's') + ' · <b>' + ready + '</b> ready' + (done ? ' · <b>' + done + '</b> merged' : '') + ' · <b>' + STATE.poolOrder.length + '</b> in pool';
+    // #529: "Add AcoustID/ISRC counts in the statusbar (footer) that are shown in
+    // log". Counted over everything on the board — pool AND grouped — so the
+    // number doesn't drop as recordings move into groups. Recordings never
+    // looked up are excluded from the denominator rather than counted as zero,
+    // matching the pool dots' unknown/absent distinction.
+    const all = [...STATE.recordings.values()];
+    const isrcKnown = all.filter(r => r.isrcsKnown);
+    const withIsrc = isrcKnown.filter(r => r.isrcs && r.isrcs.length).length;
+    const acidKnown = all.filter(r => r.acoustids != null);
+    const withAcid = acidKnown.filter(r => r.acoustids.length).length;
+    const idPart = (label, n, known, total) => {
+        if (!known) return '<span class="fs-idstat fs-idstat-none" title="' + label + 's have not been looked up yet">' + label + ' —</span>';
+        const pending = total - known;
+        return '<span class="fs-idstat" title="' + n + ' of ' + known + ' checked recording(s) have an ' + label
+            + (pending ? '; ' + pending + ' not looked up yet' : '') + '"><b>' + n + '</b>/' + known + ' ' + label + (pending ? '*' : '') + '</span>';
+    };
+    if (sum) sum.innerHTML = '<b>' + STATE.groups.length + '</b> group' + (STATE.groups.length === 1 ? '' : 's') + ' · <b>' + ready + '</b> ready' + (done ? ' · <b>' + done + '</b> merged' : '') + ' · <b>' + STATE.poolOrder.length + '</b> in pool'
+        + ' · ' + idPart('ISRC', withIsrc, isrcKnown.length, all.length)
+        + ' · ' + idPart('AcoustID', withAcid, acidKnown.length, all.length);
     const btn = document.getElementById('fs-mergeall');
     if (btn) { btn.disabled = ready === 0; btn.textContent = '⚡ Merge All (' + ready + ') →'; }
 }
@@ -1652,6 +1679,14 @@ let _scopeBaseLabel = '';
 function setScopeLabel(text) { _scopeBaseLabel = text; const e = document.getElementById('fs-scope'); if (e) e.textContent = text; }
 // append to the REMEMBERED base, never to whatever is currently rendered —
 // otherwise re-running this would keep tacking the suffix on again and again.
+// #529: "it would be cool to have some progress in 'Loading ..' (page 1, 2...)"
+// The total is unknown until the first page comes back, so page 1 reports bare
+// and every later page can say how many there are in total.
+function seedPageProgress(page, totalPages, loaded, total) {
+    const of = totalPages ? ' of ' + totalPages : '';
+    const got = total ? ' — ' + loaded + ' of ' + total + ' recordings so far' : '';
+    setScopeLabel('Loading… page ' + page + of + got);
+}
 function setScopeSuffix(suffix) { const e = document.getElementById('fs-scope'); if (e) e.textContent = _scopeBaseLabel + suffix; }
 
 async function onAutoMatch() {
@@ -2120,7 +2155,7 @@ async function seedFromScope() {
         enrichAllReleases(recordings, 3, scheduleBackgroundRender).catch(() => {});
         enrichPoolInBackground(recordings);
     } else if (SCOPE.type === 'release-group') {
-        const { rg, recordings } = await fetchRGRecordings(SCOPE.mbid);
+        const { rg, recordings } = await fetchRGRecordings(SCOPE.mbid, seedPageProgress);
         STATE.rgInfo = rg;
         recordings.forEach(r => addToPool(r));
         setScopeLabel(rg ? ('Release group: "' + rg.title + '" · ' + rg.artistCredit) : 'Release group');
@@ -2132,7 +2167,7 @@ async function seedFromScope() {
         if (rec) enrichPoolInBackground([rec]);
     } else if (SCOPE.type === 'artist-recordings') {
         harvestInternalIdsFromPage();   // free ids from the visible page, independent of seeding
-        const { artist, recordings, total } = await fetchArtistRecordings(SCOPE.mbid);
+        const { artist, recordings, total } = await fetchArtistRecordings(SCOPE.mbid, seedPageProgress);
         recordings.forEach(r => addToPool(r));
         setScopeLabel('Artist: ' + (artist ? '"' + artist.name + '"' : SCOPE.mbid)
             + ' — ' + recordings.length + (Number.isFinite(total) && total > recordings.length ? ' of ' + total : '') + ' recording(s)'
@@ -2188,7 +2223,7 @@ try {
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
-        fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails,
+        fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
