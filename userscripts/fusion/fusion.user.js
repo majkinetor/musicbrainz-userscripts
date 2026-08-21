@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.185416
+// @version      2026.8.21.192437
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -2030,7 +2030,8 @@ function renderFooter() {
         + ' · ' + idPart('ISRC', withIsrc, isrcKnown.length, all.length)
         + ' · ' + idPart('AcoustID', withAcid, acidKnown.length, all.length);
     const btn = document.getElementById('fs-mergeall');
-    if (btn) { btn.disabled = ready === 0; btn.textContent = '⚡ Merge All (' + ready + ') →'; }
+    // #529: the lightning bolt belongs to Auto-match alone; this is a merge.
+    if (btn) { btn.disabled = ready === 0; btn.innerHTML = MERGE_MARK + ' Merge All (' + ready + ') →'; }
 }
 function renderAll() { renderPool(); renderGroups(); renderFooter(); }
 
@@ -2537,7 +2538,7 @@ function buildShell() {
         + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
-        + '<button type="button" id="fs-mergeall" class="fs-btn fs-primary">⚡ Merge All →</button></div></div>';
+        + '<button type="button" id="fs-mergeall" class="fs-btn fs-primary">Merge All →</button></div></div>';
     document.body.appendChild(overlay);
     overlay.addEventListener('mousedown', e => { if (e.target === overlay) closeFusion(); });
     document.addEventListener('keydown', _fsEscHandler);
