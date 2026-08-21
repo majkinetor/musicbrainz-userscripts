@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.181042
+// @version      2026.8.21.181327
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -192,20 +192,29 @@ const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers
 // server was asking everybody to stop - which is what turned one 503 into
 // dozens. One 503 now parks every MB request until the deadline passes.
 let _mbGateUntil = 0;
-let _netTrouble = null;   // { kind, detail, at } — surfaced as a banner, not just logged
+let _netTrouble = null;   // { kind, detail, at } — surfaced in the title bar, not just logged
 function setNetTrouble(kind, detail) {
     _netTrouble = { kind, detail, at: Date.now() };
     renderNetBanner();
 }
 function clearNetTrouble() { if (_netTrouble) { _netTrouble = null; renderNetBanner(); } }
+// #529 (majkinetor): "that yellowish network error appears and disappears now as
+// needed which is intrusive as it moves entire window up down. Let it just show
+// in the title instead where loading message is". It used to be a block in the
+// flow, so every throttle blip reflowed the pool and groups beneath it — on a
+// run with repeated 503s the whole window jittered. It now lives in the header
+// alongside the loading text, where appearing and vanishing costs no layout.
 function renderNetBanner() {
     const el = document.getElementById('fs-netbanner'); if (!el) return;
-    if (!_netTrouble) { el.style.display = 'none'; el.textContent = ''; return; }
+    if (!_netTrouble) { el.style.display = 'none'; el.textContent = ''; el.title = ''; return; }
     el.style.display = '';
-    el.textContent = (_netTrouble.kind === 'offline'
-        ? '⚠ No connection to MusicBrainz — ' + _netTrouble.detail
-        : '⚠ MusicBrainz is throttling requests — ' + _netTrouble.detail)
-        + '  (see Log for detail)';
+    const long = _netTrouble.kind === 'offline'
+        ? 'No connection to MusicBrainz — ' + _netTrouble.detail
+        : 'MusicBrainz is throttling requests — ' + _netTrouble.detail;
+    // short in the bar, the detail in the tooltip: the header is a single line
+    // and a long message would push the scope label out of it.
+    el.textContent = '⚠ ' + (_netTrouble.kind === 'offline' ? 'no connection' : 'throttled');
+    el.title = long + ' (see Log for detail)';
     el.className = 'fs-netbanner' + (_netTrouble.kind === 'offline' ? ' fs-netbanner-err' : '');
 }
 const MB_MAX_WAIT_MS = 60000;   // never park longer than this on one hint
@@ -1202,8 +1211,8 @@ function fsStyle() {
         + '.fs-btn{border:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}'
         + '.fs-btn.fs-primary{background:linear-gradient(180deg,var(--fs-purple),var(--fs-purple-d));border-color:var(--fs-purple-d);color:#fff;font-weight:600}'
         + '.fs-btn:disabled{opacity:.5;cursor:default}'
-        + '.fs-netbanner{padding:7px 14px;font-size:12px;font-weight:600;background:rgba(168,112,42,.14);color:#8a5a1f;border-bottom:1px solid rgba(168,112,42,.4)}'
-        + '.fs-netbanner.fs-netbanner-err{background:rgba(200,56,79,.12);color:var(--fs-red);border-bottom-color:rgba(200,56,79,.45)}'
+        + '.fs-netbanner{display:inline-flex;align-items:center;box-sizing:border-box;height:18px;padding:0 8px;border-radius:4px;font-size:11px;line-height:1;font-weight:600;white-space:nowrap;cursor:help;background:rgba(168,112,42,.14);color:#8a5a1f;border:1px solid rgba(168,112,42,.4)}'
+        + '.fs-netbanner.fs-netbanner-err{background:rgba(200,56,79,.12);color:var(--fs-red);border-color:rgba(200,56,79,.45)}'
         + '.fs-legend{display:flex;gap:10px;color:var(--fs-muted);font-size:11px;align-items:center}'
         + '.fs-body{display:flex;flex:1;min-height:0}'
         + '.fs-col{display:flex;flex-direction:column;min-width:0;min-height:0}'
@@ -2298,14 +2307,14 @@ function buildShell() {
     };
     const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '') + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none"></span><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
         + '<span>Cutoff <select id="fs-cutoff" title="How strict Auto-match is. Hover an option for what it means.">' + cutoffOpts + '</select></span></div>'
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
-        + '<div class="fs-netbanner" id="fs-netbanner" style="display:none"></div>'
+
         + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
