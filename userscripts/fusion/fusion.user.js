@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.214204
+// @version      2026.8.21.214852
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1199,7 +1199,7 @@ function evidenceLines(group, members) {
         // reader to subtract the range themselves.
         lines.push(lo === hi
             ? 'Same length ' + dur(lo)
-            : 'Max length difference ' + Math.round((hi - lo) / 1000) + 's (' + dur(lo) + ' – ' + dur(hi) + ')');
+            : lengthDiffLabel(members) + ' ' + Math.round((hi - lo) / 1000) + 's (' + dur(lo) + ' – ' + dur(hi) + ')');
     }
     if (all.includes('isrc')) {
         const shared = uniq(members[0].isrcs.filter(i => members.every(m => (m.isrcs || []).includes(i))));
@@ -1213,6 +1213,13 @@ function evidenceLines(group, members) {
 }
 // Widest gap between any two known lengths in the group — the number that
 // actually matters when lengths only "sort of" agree.
+// #529 (majkinetor): "When there is only 1 to merge edit message should omit
+// 'Max' from 'Max length difference'." With two recordings there is exactly one
+// pairwise difference, so "Max" claims a comparison that was never made.
+function lengthDiffLabel(members) {
+    const known = members.filter(m => typeof m.length === 'number' && m.length > 0).length;
+    return known > 2 ? 'Max length difference' : 'Length difference';
+}
 function lengthSpread(members) {
     const lens = members.map(m => m.length).filter(l => typeof l === 'number' && l > 0);
     if (lens.length < 2) return null;
@@ -1227,9 +1234,13 @@ function autoEditNote(group) {
     // single most important fact in the note, so it leads instead of trailing
     // after the evidence.
     const keptUrl = target && target.gid ? location.origin + '/recording/' + target.gid : '';
-    const out = ['Merge ' + members.length + ' recordings into ' + (target ? '"' + target.title + '"' : 'one') + (keptUrl ? ': ' + keptUrl : '.')];
-    if (lines.length) { out.push(''); lines.forEach(l => out.push('- ' + l)); }
-    else out.push('', '- Grouped manually; no automatic signal matched across every recording.');
+    const out = ['Merge ' + members.length + ' recordings into ' + (target ? '"' + target.title + '"' : 'one') + (keptUrl ? ': ' + keptUrl : '.'), ''];
+    // #529 (majkinetor): "len is sometimes reported outside bullet list along
+    // some other lines, make this consistent." Everything below the first line
+    // is a bullet now — the length and partial-signal notes used to sit as loose
+    // paragraphs between the bullets, which read like separate sections.
+    const bullets = lines.slice();
+    if (!bullets.length) bullets.push('Grouped manually; no automatic signal matched across every recording.');
     // Partial signals are stated as partial rather than silently omitted — and
     // length gets a concrete number instead of a bare "matching only some of
     // them: length", which said nothing about how far apart they actually were.
@@ -1237,10 +1248,17 @@ function autoEditNote(group) {
     const rest = partial.filter(x => x !== 'length');
     if (partial.includes('length')) {
         const spread = lengthSpread(members);
-        if (spread != null) out.push('', 'Max length difference: ' + Math.round(spread / 1000) + 's');
+        if (spread != null) bullets.push(lengthDiffLabel(members) + ' ' + Math.round(spread / 1000) + 's');
         else rest.push('length');
     }
-    if (rest.length) out.push('', 'Matching only some of them: ' + rest.join(', ') + '.');
+    if (rest.length) bullets.push('Matching only some of them: ' + rest.join(', ') + '.');
+    // #529 (majkinetor): "Add confidence level in the edit note" — the tier the
+    // card is tinted by, so a reviewer sees the same judgement the UI showed.
+    const tier = group.tier || 'manual';
+    bullets.push(tier === 'manual'
+        ? 'Confidence: manual — grouped by hand, no cutoff level forms this automatically'
+        : 'Confidence: ' + tier + ' — holds together at the "' + tier + '" auto-match cutoff');
+    bullets.forEach(b => out.push('- ' + b));
     return out.join('\n');
 }
 // #529 (majkinetor): a per-group edit note, editable from the card. A custom
@@ -1334,6 +1352,19 @@ async function mergeGroup(group) {
 // text that is collapsed". A run's outcome otherwise only existed in the log,
 // which meant opening a separate window to find out whether anything failed.
 // Collapsed to one line by default; <details> gives the toggle for free.
+// #529 (majkinetor): "When auto match finds nothing, its not obvious that it
+// fired at all. We should have a message shown. The only thing is visible in
+// the Logs." A run that changes nothing looked identical to a button that did
+// nothing, so the outcome now lands in the window, not only the log.
+let _notice = null;
+function showNotice(kind, text) { _notice = text ? { kind, text } : null; renderNotice(); }
+function renderNotice() {
+    const host = document.getElementById('fs-notice'); if (!host) return;
+    if (!_notice) { host.innerHTML = ''; host.style.display = 'none'; return; }
+    host.style.display = '';
+    host.className = 'fs-notice fs-notice-' + _notice.kind;
+    host.innerHTML = '<span>' + escapeHtml(_notice.text) + '</span><span class="fs-noticeclose" title="dismiss">✕</span>';
+}
 let _lastRun = null;
 function renderRunSummary(run) {
     if (run !== undefined) _lastRun = run;
@@ -1624,6 +1655,11 @@ function fsStyle() {
         + '.fs-runerr{color:var(--fs-red);font-size:10.5px}'
         + '.fs-runclose{position:absolute;top:5px;right:7px;cursor:pointer;color:var(--fs-muted);font-size:12px;padding:2px 4px}'
         + '.fs-runclose:hover{color:var(--fs-text)}'
+        + '.fs-notice{position:relative;display:flex;align-items:center;gap:8px;margin:8px 10px 0;padding:7px 26px 7px 10px;border-radius:6px;font-size:11.5px;font-weight:600}'
+        + '.fs-notice-none{background:rgba(168,112,42,.1);border:1px solid rgba(168,112,42,.4);color:#8a5a1f}'
+        + '.fs-notice-ok{background:rgba(28,155,99,.08);border:1px solid rgba(28,155,99,.35);color:#0f6b45}'
+        + '.fs-noticeclose{position:absolute;top:5px;right:7px;cursor:pointer;opacity:.6;font-weight:400}'
+        + '.fs-noticeclose:hover{opacity:1}'
         + '.fs-tierlegend{display:inline-flex;align-items:center;gap:9px;font-size:10px;color:var(--fs-muted)}'
         + '.fs-tierkey{display:inline-flex;align-items:center;gap:4px;cursor:help}'
         + '.fs-tierkey i{width:9px;height:9px;border-radius:2px;display:inline-block}'
@@ -1782,6 +1818,44 @@ function toggleCollapseAll() {
     if (allGroupsCollapsed()) STATE.collapsedGroups.clear();
     else STATE.groups.forEach(g => STATE.collapsedGroups.add(g.id));
     renderGroups();
+}
+// #529 (majkinetor): "In the header add recursive expand (both cards and
+// recordings)". Collapse all only ever touched the cards; opening every release
+// table underneath still meant clicking each card's own control. This does
+// both, and fetches whatever those rows still need.
+function everythingExpanded() {
+    return STATE.groups.length > 0
+        && STATE.groups.every(g => !STATE.collapsedGroups.has(g.id) && g.memberGids.every(m => STATE.expandedReleases.has(m)));
+}
+async function toggleExpandAllDeep() {
+    if (everythingExpanded()) {
+        STATE.groups.forEach(g => g.memberGids.forEach(m => STATE.expandedReleases.delete(m)));
+        STATE.groups.forEach(g => STATE.collapsedGroups.add(g.id));
+        renderGroups(); return;
+    }
+    STATE.collapsedGroups.clear();
+    STATE.groups.forEach(g => g.memberGids.forEach(m => STATE.expandedReleases.add(m)));
+    renderGroups();
+    const missing = [];
+    for (const g of STATE.groups) for (const m of g.memberGids) if (!STATE.releaseDetails.has(m) && !missing.includes(m)) missing.push(m);
+    if (!missing.length) return;
+    Log.info('Expand all details: loading release tables for ' + missing.length + ' recording(s)');
+    let done = 0;
+    for (const gid of missing) {
+        setBgTask('Loading recording releases ' + (done + 1) + '/' + missing.length + '…');
+        try { storeReleaseDetails(gid, await fetchReleaseDetails(gid)); }
+        catch (e) { STATE.releaseDetails.set(gid, null); Log.warn('Release lookup failed for ' + gid + ': ' + e.message); }
+        done++;
+        renderGroups();
+    }
+    setBgTask('');
+}
+function renderDeepBtn() {
+    const b = document.getElementById('fs-expandall-deep'); if (!b) return;
+    const on = everythingExpanded();
+    b.textContent = (on ? '⇱' : '⇲') + ' All details';
+    b.title = on ? 'collapse every group and every release table' : "expand every group AND every recording's release table";
+    b.disabled = STATE.groups.length === 0;
 }
 function renderCollapseAllBtn() {
     const b = document.getElementById('fs-collapseall'); if (!b) return;
@@ -2138,6 +2212,7 @@ function renderGroups() {
     }
     body.innerHTML = STATE.groups.map(groupCardHtml).join('') + '<div class="fs-newgroup" id="fs-newgroup">+ New group — drag a pool recording here, or select one and click here</div>';
     renderCollapseAllBtn();
+    renderDeepBtn();
     // Groups just changed, so there may be new members to warm the cache for.
     // Fire-and-forget: it must never make rendering wait on the network.
     prefetchGroupReleases();
@@ -2301,6 +2376,14 @@ async function onAutoMatch() {
         for (const g of groupings) {
             g.memberGids.forEach(gid => { const i = STATE.poolOrder.indexOf(gid); if (i !== -1) STATE.poolOrder.splice(i, 1); });
             STATE.groups.push(g);
+        }
+        if (!groupings.length) {
+            showNotice('none', 'Auto-match found nothing to group in ' + poolRecs.length + ' pool recording(s) at the "'
+                + SETTINGS.matchCutoff + '" cutoff. Try a looser cutoff, or group by hand.');
+        } else {
+            const recs = groupings.reduce((a, g) => a + g.memberGids.length, 0);
+            showNotice('ok', 'Auto-match formed ' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's')
+                + ' from ' + recs + ' recording' + (recs === 1 ? '' : 's') + ' at the "' + SETTINGS.matchCutoff + '" cutoff.');
         }
         renderAll();
     } finally { busyEnd(); btn.disabled = false; btn.textContent = orig; }
@@ -2702,8 +2785,8 @@ function buildShell() {
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
-        + '<div class="fs-runsum" id="fs-runsum" style="display:none"></div><div class="fs-colbody" id="fs-groups-body"></div></div></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" title="expand every group and every release table (or collapse it all again)">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
+        + '<div class="fs-notice" id="fs-notice" style="display:none"></div><div class="fs-runsum" id="fs-runsum" style="display:none"></div><div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
         + '<button type="button" id="fs-mergeall" class="fs-btn fs-primary">Merge All →</button></div></div>';
@@ -2730,10 +2813,14 @@ function buildShell() {
     // wrapper, not a bare reference: onclick hands the click Event to the first
     // parameter, which has bitten this script before (#503, mergeAll's NaN)
     document.getElementById('fs-collapseall').onclick = () => toggleCollapseAll();
+    document.getElementById('fs-expandall-deep').onclick = () => toggleExpandAllDeep();
     document.getElementById('fs-pooltog').onclick = () => setPoolCollapsed(true);
     document.getElementById('fs-poolrail').onclick = () => setPoolCollapsed(false);
     setPoolCollapsed(SETTINGS.poolCollapsed === true);
     document.getElementById('fs-clearmerged').onclick = () => { clearMerged(); renderAll(); };
+    document.getElementById('fs-notice').addEventListener('click', e => {
+        if (e.target.classList.contains('fs-noticeclose')) showNotice(null, null);
+    });
     document.getElementById('fs-runsum').addEventListener('click', e => {
         if (e.target.classList.contains('fs-runclose')) { _lastRun = null; renderRunSummary(); }
     });
@@ -2841,11 +2928,12 @@ try {
         pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
-        renderRunSummary, getLastRun: () => _lastRun,
-        toggleCollapseAll, allGroupsCollapsed, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
+        renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice,
+        lengthDiffLabel,
+        toggleCollapseAll, allGroupsCollapsed, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
-        openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
+        openFusion, closeFusion, onAutoMatch, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
         gmGet, gmPost, wsGet, parseRetryAfter, setNetTrouble, clearNetTrouble,
         getLogLines: () => _logBuf.map(r => r.line),
         getBusyCount: () => _busyCount,
