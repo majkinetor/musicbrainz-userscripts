@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.200426
+// @version      2026.8.21.214204
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1317,6 +1317,7 @@ async function mergeGroup(group) {
         Log.info('  POST landed at ' + finalUrl + (reRendered ? ' (still the merge form — treating as failure)' : ' (redirected away — success)'));
         if (reRendered) throw new Error('merge form returned an error (nothing submitted) — check you are logged in with merge privileges');
         group.state = 'done';
+        group.mergedUrl = finalUrl || null;
         Log.ok('✓ Merged group ' + group.id + ' → ' + finalUrl);
     } catch (e) {
         group.state = 'error'; group.error = e.message;
@@ -1329,6 +1330,30 @@ async function mergeGroup(group) {
 // each merge is its own GET+POST pair, independent of every other group's, so
 // a small worker pool runs several at once instead of one strictly after
 // another. Capped (not unbounded) to stay reasonable towards MB's server.
+// #529 (majkinetor): "Merge all should have summary at the end, basically show
+// text that is collapsed". A run's outcome otherwise only existed in the log,
+// which meant opening a separate window to find out whether anything failed.
+// Collapsed to one line by default; <details> gives the toggle for free.
+let _lastRun = null;
+function renderRunSummary(run) {
+    if (run !== undefined) _lastRun = run;
+    const host = document.getElementById('fs-runsum'); if (!host) return;
+    if (!_lastRun) { host.innerHTML = ''; host.style.display = 'none'; return; }
+    const r = _lastRun;
+    const head = (r.failed ? '⚠ ' : '✓ ') + 'Merge All finished - ' + r.merged + ' merged'
+        + (r.failed ? ', ' + r.failed + ' failed' : '') + ' (' + r.recordings + ' recordings) at ' + r.at;
+    const rows = r.items.map(it => '<li class="' + (it.ok ? 'fs-runok' : 'fs-runbad') + '">'
+        + (it.ok ? '✓ ' : '✗ ') + escapeHtml(it.title) + ' <span class="fs-runn">(' + it.n + ')</span>'
+        + (it.ok
+            ? (it.url ? ' <a href="' + escapeHtml(it.url) + '" target="_blank" rel="noopener">view</a>' : '')
+            : ' <span class="fs-runerr">' + escapeHtml(it.error || 'failed') + '</span>')
+        + '</li>').join('');
+    host.style.display = '';
+    host.innerHTML = '<details class="fs-runsum-d"' + (r.failed ? ' open' : '') + '>'
+        + '<summary>' + escapeHtml(head) + '</summary>'
+        + '<ul class="fs-runlist">' + rows + '</ul></details>'
+        + '<span class="fs-runclose" title="dismiss this summary">✕</span>';
+}
 async function mergeAll(concurrency) {
     // Coerce defensively: a stray click Event (or anything non-numeric) landing
     // here used to poison Math.min into NaN, which made Array.from({length:NaN})
@@ -1353,6 +1378,16 @@ async function mergeAll(concurrency) {
         }
     }
     await Promise.all(Array.from({ length: workers }, worker));
+    _lastRun = {
+        merged: doneCount, failed: failCount,
+        recordings: pending.reduce((a, g) => a + (g.state === 'done' ? g.memberGids.length : 0), 0),
+        at: new Date().toLocaleTimeString(),
+        items: pending.map(g => {
+            const head = STATE.recordings.get(g.target) || STATE.recordings.get(g.memberGids[0]);
+            return { ok: g.state === 'done', title: head ? head.title : g.id, n: g.memberGids.length, url: g.mergedUrl || null, error: g.error || null };
+        }),
+    };
+    renderRunSummary();
     Log.info('══ Merge All finished: ' + doneCount + ' merged, ' + failCount + ' failed (of ' + pending.length + ') ══');
     } finally { busyEnd(); }
 }
@@ -1580,6 +1615,15 @@ function fsStyle() {
         + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-clearset{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-subcnt{font-size:10.5px;font-weight:600;color:var(--fs-muted);text-transform:none;letter-spacing:0;white-space:nowrap}'
+        + '.fs-runsum{position:relative;margin:8px 10px 0;border:1px solid rgba(28,155,99,.4);background:rgba(28,155,99,.07);border-radius:6px;font-size:11.5px}'
+        + '.fs-runsum-d>summary{cursor:pointer;padding:7px 26px 7px 10px;font-weight:600;color:#0f6b45;list-style:revert}'
+        + '.fs-runlist{margin:0;padding:2px 10px 8px 26px;max-height:220px;overflow:auto}'
+        + '.fs-runlist li{padding:1px 0;color:var(--fs-text)}'
+        + '.fs-runbad{color:var(--fs-red)}'
+        + '.fs-runn{color:var(--fs-muted);font-size:10px}'
+        + '.fs-runerr{color:var(--fs-red);font-size:10.5px}'
+        + '.fs-runclose{position:absolute;top:5px;right:7px;cursor:pointer;color:var(--fs-muted);font-size:12px;padding:2px 4px}'
+        + '.fs-runclose:hover{color:var(--fs-text)}'
         + '.fs-tierlegend{display:inline-flex;align-items:center;gap:9px;font-size:10px;color:var(--fs-muted)}'
         + '.fs-tierkey{display:inline-flex;align-items:center;gap:4px;cursor:help}'
         + '.fs-tierkey i{width:9px;height:9px;border-radius:2px;display:inline-block}'
@@ -2658,8 +2702,8 @@ function buildShell() {
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
-        + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
+        + '<div class="fs-runsum" id="fs-runsum" style="display:none"></div><div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
         + '<button type="button" id="fs-mergeall" class="fs-btn fs-primary">Merge All →</button></div></div>';
@@ -2690,6 +2734,9 @@ function buildShell() {
     document.getElementById('fs-poolrail').onclick = () => setPoolCollapsed(false);
     setPoolCollapsed(SETTINGS.poolCollapsed === true);
     document.getElementById('fs-clearmerged').onclick = () => { clearMerged(); renderAll(); };
+    document.getElementById('fs-runsum').addEventListener('click', e => {
+        if (e.target.classList.contains('fs-runclose')) { _lastRun = null; renderRunSummary(); }
+    });
     // The header status texts all describe work whose detail is in the log, so
     // clicking any of them opens it — including the network pill, whose tooltip
     // already said "see Log for detail" without offering a way to get there.
@@ -2794,6 +2841,7 @@ try {
         pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
+        renderRunSummary, getLastRun: () => _lastRun,
         toggleCollapseAll, allGroupsCollapsed, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
