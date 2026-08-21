@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.214852
+// @version      2026.8.21.215641
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1548,9 +1548,12 @@ function fsStyle() {
         + '.fs-reltbl::-webkit-scrollbar-track{background:transparent}'
         + '.fs-reltbl::-webkit-scrollbar-thumb{background:#d3d3e0;border-radius:4px}'
         + '.fs-reltbl:hover::-webkit-scrollbar-thumb{background:#b9b9cc}'
-        + '.fs-reltbl table{border-collapse:collapse;font-size:10.5px;width:100%}'
+        + '.fs-reltbl table{border-collapse:collapse;font-size:10.5px;width:100%;table-layout:fixed;min-width:1180px}'
+        + '.fs-reltbl col.c-num{width:44px} .fs-reltbl col.c-title{width:180px} .fs-reltbl col.c-len{width:52px}'
+        + '.fs-reltbl col.c-tart{width:140px} .fs-reltbl col.c-rel{width:210px} .fs-reltbl col.c-rart{width:130px}'
+        + '.fs-reltbl col.c-rgt{width:165px} .fs-reltbl col.c-cd{width:105px} .fs-reltbl col.c-label{width:140px} .fs-reltbl col.c-cat{width:110px}'
         + '.fs-reltbl th{text-align:left;font-weight:600;padding:4px 7px;border-bottom:1px solid var(--fs-border);white-space:nowrap;background:rgba(0,0,0,.03)}'
-        + '.fs-reltbl td{padding:3px 7px;border-bottom:1px solid rgba(0,0,0,.05);white-space:nowrap}'
+        + '.fs-reltbl td{padding:3px 7px;border-bottom:1px solid rgba(0,0,0,.05);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-reltbl tr:last-child td{border-bottom:none}'
         + '.fs-relband td{font-weight:600;background:rgba(0,0,0,.05);color:var(--fs-text)}'
         + '.fs-relload,.fs-relerr,.fs-relempty{padding:6px 9px;font-size:10.5px;color:var(--fs-muted)}'
@@ -1983,7 +1986,12 @@ function releaseTableHtml(rec) {
     if (rows === null) return '<div class="fs-reltbl fs-relerr">could not load releases for this recording</div>';
     if (!rows.length) return '<div class="fs-reltbl fs-relempty">this recording is not on any release</div>';
     const cell = v => escapeHtml(v == null || v === '' ? '—' : String(v));
-    let out = '<div class="fs-reltbl"><table><thead><tr>'
+    const td = (v, extra) => { const t = v == null || v === '' ? '—' : String(v);
+        return '<td title="' + escapeHtml(t) + '"' + (extra || '') + '>' + escapeHtml(t) + '</td>'; };
+    let out = '<div class="fs-reltbl"><table>'
+        + '<colgroup><col class="c-num"><col class="c-title"><col class="c-len"><col class="c-tart"><col class="c-rel">'
+        + '<col class="c-rart"><col class="c-rgt"><col class="c-cd"><col class="c-label"><col class="c-cat"></colgroup>'
+        + '<thead><tr>'
         + '<th>#</th><th>Title</th><th>Length</th><th>Track artist</th><th>Release title</th>'
         + '<th>Release artist</th><th>Release group type</th><th>Country/Date</th><th>Label</th><th>Catalog#</th>'
         + '</tr></thead><tbody>';
@@ -1997,15 +2005,15 @@ function releaseTableHtml(rec) {
         const cd = [r.country, r.date].filter(Boolean).join(' ') || '—';
         out += '<tr>'
             + '<td>' + escapeHtml(num) + '</td>'
-            + '<td>' + cell(r.trackTitle) + '</td>'
+            + td(r.trackTitle)
             + '<td>' + (r.trackLength ? dur(r.trackLength) : '—') + '</td>'
-            + '<td>' + cell(r.trackArtist) + '</td>'
-            + '<td><a href="/release/' + r.gid + '" target="_blank" rel="noopener">' + cell(r.title) + '</a></td>'
-            + '<td>' + cell(r.artist) + '</td>'
-            + '<td>' + cell([r.rgType, r.format].filter(Boolean).join(' · ')) + '</td>'
+            + td(r.trackArtist)
+            + '<td title="' + escapeHtml(r.title || '') + '"><a href="/release/' + r.gid + '" target="_blank" rel="noopener">' + cell(r.title) + '</a></td>'
+            + td(r.artist)
+            + td([r.rgType, r.format].filter(Boolean).join(' · '))
             + '<td>' + escapeHtml(cd) + '</td>'
-            + '<td>' + cell(r.label) + '</td>'
-            + '<td>' + cell(r.catalog) + '</td>'
+            + td(r.label)
+            + td(r.catalog)
             + '</tr>';
     }
     return out + '</tbody></table></div>';
