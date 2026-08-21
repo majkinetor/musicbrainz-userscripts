@@ -18,7 +18,7 @@ A review-and-merge assistant for MusicBrainz recordings: gather a pool of candid
     - **Release page** — that release's own recordings, plus a *"Load recordings from RG edition"* dropdown to pull in another edition from the same release group.
     - **Release group page** — every recording across every release in the group in one go.
     - **Recording page** — just that one recording, to start building a merge from scratch.
-    - **Artist → Recordings tab** — every recording on the current page of that table (MB paginates it; reopen Fusion after paging for more).
+    - **Artist → Recordings tab** — the artist's *entire* recording catalogue via the search API, not just the page you're looking at (MB paginates that table at 100 rows; Fusion pulls all of them, up to a 2000 safety cap).
     - Any page: paste a recording, release, or release-group MBID/URL into **Add** — a release or release-group URL pulls in every recording it contains.
 - **Recording names and artists are links** — underlined and click through to the real MB page from any card, merged or not, and every row shows the recording's full list of releases, deduped, with a "+N more" hint and the complete list in the tooltip. ISRC and AcoustID values themselves are shown on cards too, not just a presence dot.
 - **Video recordings are never mixed with audio** — a video recording gets a 🎬 marker everywhere it appears, and merging one with an audio recording is refused, hard, at every entry point (Auto-match, drag, double-click, select+click) — no signal, not even a shared ISRC, overrides this.

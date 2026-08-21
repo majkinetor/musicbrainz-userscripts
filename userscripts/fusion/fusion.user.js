@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.010149
+// @version      2026.8.21.115331
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.010149';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.115331';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -308,13 +308,17 @@ async function fetchReleaseRecordings(releaseMbid) {
     return { release: { gid: j.id, title: j.title, artistCredit: acName(j['artist-credit']) }, recordings: recs };
 }
 
-async function fetchRGRecordings(rgMbid) {
-    const rgMeta = await wsGet('/ws/2/release-group/' + rgMbid + '?inc=artist-credits&fmt=json');
-    const rg = rgMeta ? { gid: rgMeta.id, title: rgMeta.title, artistCredit: acName(rgMeta['artist-credit']) } : null;
+// Shared paginated recording search. The indexed search returns each
+// recording's releases, artist credit, ISRCs and video flag inline, so one
+// query per 100 recordings covers everything the pool needs — no per-recording
+// follow-ups. Used for both release-group (rgid:) and artist (arid:) seeding.
+const SEARCH_PAGE_LIMIT = 100;
+const SEARCH_MAX_PAGES = 20;   // 2000 recordings; guards a huge artist
+async function fetchRecordingsBySearch(luceneQuery, label) {
     const recordings = [];
-    let offset = 0; const limit = 100; let total = Infinity; let guard = 0;
-    while (offset < total && guard < 10) {
-        const j = await wsGet('/ws/2/recording?query=rgid:' + rgMbid + '&fmt=json&limit=' + limit + '&offset=' + offset);
+    let offset = 0, total = Infinity, pages = 0;
+    while (offset < total && pages < SEARCH_MAX_PAGES) {
+        const j = await wsGet('/ws/2/recording?query=' + encodeURIComponent(luceneQuery) + '&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
         if (!j) break;
         total = j.count || 0;
         for (const r of j.recordings || []) {
@@ -324,16 +328,47 @@ async function fetchRGRecordings(rgMbid) {
                 return { gid: rel.id, title: rel.title, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
             });
             const ac = r['artist-credit'];
-            // the rgid: search already returns every release this recording appears
-            // on, across every release group — not just the one queried — so it
-            // doubles as the deduped "all releases" list majkinetor asked for,
-            // no extra per-recording fetch needed for this scope.
+            // the search already returns every release a recording appears on,
+            // across every release group — so it doubles as the deduped
+            // "all releases" list, with no extra per-recording fetch.
             recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, releases, allReleases: releases }));
         }
-        offset += limit; guard++;
+        offset += SEARCH_PAGE_LIMIT; pages++;
     }
-    Log.info('RG seed: ' + recordings.length + ' recording(s) of ' + total + ' total (rgid:' + rgMbid + ')');
+    if (total > recordings.length) Log.warn(label + ': loaded ' + recordings.length + ' of ' + total + ' — stopped at the ' + SEARCH_MAX_PAGES + '-page cap');
+    Log.info(label + ': ' + recordings.length + ' recording(s) of ' + total + ' total (' + luceneQuery + ')');
+    return { recordings, total };
+}
+async function fetchRGRecordings(rgMbid) {
+    const rgMeta = await wsGet('/ws/2/release-group/' + rgMbid + '?inc=artist-credits&fmt=json');
+    const rg = rgMeta ? { gid: rgMeta.id, title: rgMeta.title, artistCredit: acName(rgMeta['artist-credit']) } : null;
+    const { recordings } = await fetchRecordingsBySearch('rgid:' + rgMbid, 'RG seed');
     return { rg, recordings };
+}
+// #529 (majkinetor): "scraping the page is not going to cut it, we need to use
+// an API here" — the artist page is paginated at 100 rows and its DOM layout
+// shifts with login state, so the whole artist catalogue now comes from the
+// indexed search instead (297 vs 100 for the artist that surfaced this).
+async function fetchArtistRecordings(artistMbid) {
+    const meta = await wsGet('/ws/2/artist/' + artistMbid + '?fmt=json');
+    const artist = meta ? { gid: meta.id, name: meta.name } : null;
+    const { recordings, total } = await fetchRecordingsBySearch('arid:' + artistMbid, 'Artist seed');
+    return { artist, recordings, total };
+}
+// MB's own merge checkboxes on an artist-recordings page carry the internal
+// numeric id Fusion would otherwise fetch one /ws/js/entity call at a time.
+// Purely additive: costs nothing, and merging from that page skips those calls.
+function harvestInternalIdsFromPage() {
+    let n = 0;
+    for (const tr of document.querySelectorAll('table.tbl tbody > tr')) {
+        const a = tr.querySelector('a[href^="/recording/"]');
+        const cb = tr.querySelector('input[name="add-to-merge"]');
+        if (!a || !cb || !/^\d+$/.test(cb.value)) continue;
+        const gid = (a.getAttribute('href').match(/[0-9a-fA-F-]{36}/) || [])[0];
+        if (gid) { _idCache.set(gid, Number(cb.value)); n++; }
+    }
+    if (n) Log.info('Harvested ' + n + ' internal recording id(s) from the page — those merges skip a lookup');
+    return n;
 }
 
 async function fetchRecordingByGid(gid) {
@@ -702,8 +737,11 @@ function fsStyle() {
     s.textContent = ''
         + '.fs-launch{position:fixed;z-index:2147483000;background:linear-gradient(180deg,#8a5cf6,#6d3ff0);color:#fff;border:1px solid #6d3ff0;border-radius:8px;padding:8px 14px;font:600 13px -apple-system,Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}'
         + '.fs-launch:hover{filter:brightness(1.08)}'
-        + '.fs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;display:flex;align-items:center;justify-content:center}'
-        + '.fs-cons{--fs-bg:#1b1c22;--fs-panel:#232430;--fs-panel2:#2a2b38;--fs-border:#3a3b4a;--fs-text:#e8e8ee;--fs-muted:#9a9bb0;--fs-purple:#8a5cf6;--fs-purple-d:#6d3ff0;--fs-green:#3ecf8e;--fs-amber:#e0a63e;--fs-red:#e0546a;--fs-blue:#4fa3e0;'
+        + '.fs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:2147483000;display:flex;align-items:center;justify-content:center}'
+        // Light palette (#529: "make UI white") — every colour in the window is
+        // driven from these tokens, so the theme is this one line plus the log
+        // panel below. Purple/green/amber/red darkened for contrast on white.
+        + '.fs-cons{--fs-bg:#f4f4f7;--fs-panel:#fff;--fs-panel2:#f0f0f4;--fs-border:#d7d7e0;--fs-text:#1e1e26;--fs-muted:#6b6b7d;--fs-purple:#6d3ff0;--fs-purple-d:#5a2fd8;--fs-green:#1c9b63;--fs-amber:#a8702a;--fs-red:#c8384f;--fs-blue:#2f7fbf;'
         + 'width:min(1180px,96vw);height:min(680px,92vh);max-width:98vw;max-height:96vh;min-width:640px;min-height:400px;resize:both;'
         + 'background:var(--fs-panel);color:var(--fs-text);border:1px solid var(--fs-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.5);'
         + 'font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}'
@@ -728,7 +766,7 @@ function fsStyle() {
         + '.fs-groups{flex:1;background:var(--fs-panel)}'
         + '.fs-colhdr{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--fs-border);font-weight:700;font-size:12px;letter-spacing:.3px;color:var(--fs-muted);text-transform:uppercase;background:var(--fs-panel2)}'
         + '.fs-cnt{background:var(--fs-panel);border:1px solid var(--fs-border);border-radius:10px;padding:1px 7px;color:var(--fs-text);font-weight:600}'
-        + '.fs-hint{text-transform:none;font-weight:400;color:#65667a}'
+        + '.fs-hint{text-transform:none;font-weight:400;color:var(--fs-muted)}'
         // #529 follow-up (majkinetor, screenshot): "I can't see individual
         // recordings here (have to zoom out)" — classic flexbox trap: a flex
         // item's default min-height:auto refuses to shrink below its natural
@@ -736,10 +774,10 @@ function fsStyle() {
         // own fixed height instead of scrolling — the overflow got clipped by
         // .fs-cons's overflow:hidden rather than showing a scrollbar in here.
         + '.fs-colbody{flex:1;min-height:0;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px}'
-        + '.fs-empty{color:#65667a;font-size:12px;padding:14px;text-align:center}'
+        + '.fs-empty{color:var(--fs-muted);font-size:12px;padding:14px;text-align:center}'
         + '.fs-pcard{background:var(--fs-panel2);border:1px solid var(--fs-border);border-radius:7px;padding:7px 9px;display:flex;align-items:center;gap:8px;cursor:grab;flex-shrink:0}'
         + '.fs-pcard.fs-selected{border-color:var(--fs-purple)}'
-        + '.fs-grip{color:#565768;font-size:12px;letter-spacing:-1px}'
+        + '.fs-grip{color:#b6b6c4;font-size:12px;letter-spacing:-1px}'
         + '.fs-info{flex:1;min-width:0}'
         + '.fs-t{font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         // #529 follow-up (majkinetor, screenshot): "you can see merged item no
@@ -747,17 +785,17 @@ function fsStyle() {
         // pointer-events:auto even after a merge), but color:inherit +
         // text-decoration:none until hover made every link visually identical
         // to plain text at rest, so it genuinely read as "no link" on sight.
-        + '.fs-t a{color:#c9b3ff;text-decoration:underline;text-decoration-color:rgba(201,179,255,.35)}'
+        + '.fs-t a{color:var(--fs-purple);text-decoration:underline;text-decoration-color:rgba(109,63,240,.4)}'
         + '.fs-t a:hover{color:var(--fs-purple);text-decoration-color:var(--fs-purple)}'
         + '.fs-artist{font-weight:400;color:var(--fs-muted);font-size:11.5px}'
         + '.fs-artist a{color:var(--fs-muted);text-decoration:underline;text-decoration-color:rgba(154,155,176,.35)}'
         + '.fs-artist a:hover{text-decoration-color:var(--fs-text);color:var(--fs-text)}'
         + '.fs-m{color:var(--fs-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}'
         + '.fs-ids{display:flex;gap:5px;margin-top:2px}'
-        + '.fs-idtag{font-size:9.5px;color:#9a9bb0;font-family:ui-monospace,Consolas,monospace;background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px}'
+        + '.fs-idtag{font-size:9.5px;color:var(--fs-muted);font-family:ui-monospace,Consolas,monospace;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:3px}'
         + '.fs-badges{display:flex;gap:3px;flex-shrink:0}'
         + '.fs-b{width:6px;height:6px;border-radius:50%}'
-        + '.fs-b-on{background:var(--fs-green)} .fs-b-off{background:#454657}'
+        + '.fs-b-on{background:var(--fs-green)} .fs-b-off{background:#ccccd8}'
         + '.fs-rm{color:var(--fs-muted);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0}'
         + '.fs-rm:hover{color:var(--fs-red)}'
         // flex-shrink:0 is the actual fix for the missing-rows bug: .fs-gcard
@@ -770,29 +808,29 @@ function fsStyle() {
         + '.fs-gcard-med{border-left-color:var(--fs-amber)}'
         + '.fs-gcard-manual{border-left-color:var(--fs-blue);border-left-style:dashed}'
         + '.fs-gcard.fs-active{outline:2px solid var(--fs-purple);outline-offset:-1px}'
-        + '.fs-ghdr{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--fs-border);cursor:pointer}'
+        + '.fs-ghdr{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,0,0,.025);border-bottom:1px solid var(--fs-border);cursor:pointer}'
         + '.fs-gt{font-weight:700;font-size:12.5px}'
-        + '.fs-gt a{color:#c9b3ff;text-decoration:underline;text-decoration-color:rgba(201,179,255,.35)}'
+        + '.fs-gt a{color:var(--fs-purple);text-decoration:underline;text-decoration-color:rgba(109,63,240,.4)}'
         + '.fs-gt a:hover{color:var(--fs-purple);text-decoration-color:var(--fs-purple)}'
         + '.fs-conf{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;letter-spacing:.2px}'
-        + '.fs-conf-high{background:rgba(62,207,142,.15);color:var(--fs-green)}'
-        + '.fs-conf-med{background:rgba(224,166,62,.15);color:var(--fs-amber)}'
-        + '.fs-conf-manual{background:rgba(79,163,224,.15);color:var(--fs-blue)}'
+        + '.fs-conf-high{background:rgba(28,155,99,.12);color:var(--fs-green)}'
+        + '.fs-conf-med{background:rgba(168,112,42,.13);color:var(--fs-amber)}'
+        + '.fs-conf-manual{background:rgba(47,127,191,.13);color:var(--fs-blue)}'
         + '.fs-sig{display:flex;gap:3px}'
         + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-muted)}'
-        + '.fs-sig span.hit{color:var(--fs-green);border-color:rgba(62,207,142,.4)}'
-        + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(138,92,246,.15);color:#c9b3ff;cursor:pointer;font-weight:600}'
-        + '.fs-mbtn.fs-done{background:rgba(62,207,142,.15);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
-        + '.fs-mbtn.fs-err{background:rgba(224,84,106,.15);border-color:var(--fs-red);color:#ffb3bd}'
+        + '.fs-sig span.hit{color:var(--fs-green);border-color:rgba(28,155,99,.45)}'
+        + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(109,63,240,.1);color:var(--fs-purple-d);cursor:pointer;font-weight:600}'
+        + '.fs-mbtn.fs-done{background:rgba(28,155,99,.12);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
+        + '.fs-mbtn.fs-err{background:rgba(200,56,79,.1);border-color:var(--fs-red);color:var(--fs-red)}'
         + '.fs-kill{cursor:pointer;font-size:13px;padding:2px 4px;opacity:.6}'
         + '.fs-kill:hover{opacity:1}'
         + '.fs-clearboard-btn{padding:2px 8px;font-size:11px;text-transform:none;font-weight:400;letter-spacing:0}'
         + '.fs-grows{padding:4px 6px}'
         + '.fs-grow{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px}'
-        + '.fs-grow:hover{background:rgba(255,255,255,.03)}'
-        + '.fs-grow.fs-target-row{background:rgba(138,92,246,.12)}'
-        + '.fs-grow.fs-target-row:hover{background:rgba(138,92,246,.18)}'
-        + '.fs-star{width:16px;flex-shrink:0;text-align:center;font-size:13px;color:#4a4b5c;cursor:pointer;opacity:0;transition:opacity .1s}'
+        + '.fs-grow:hover{background:rgba(0,0,0,.035)}'
+        + '.fs-grow.fs-target-row{background:rgba(109,63,240,.09)}'
+        + '.fs-grow.fs-target-row:hover{background:rgba(109,63,240,.14)}'
+        + '.fs-star{width:16px;flex-shrink:0;text-align:center;font-size:13px;color:#b6b6c4;cursor:pointer;opacity:0;transition:opacity .1s}'
         + '.fs-grow:hover .fs-star{opacity:1}'
         + '.fs-star-on{color:var(--fs-amber) !important;opacity:1 !important;cursor:default}'
         + '.fs-star-disabled{cursor:default}'
@@ -802,19 +840,19 @@ function fsStyle() {
         + '.fs-artistcol a:hover{text-decoration-color:var(--fs-text);color:var(--fs-text)}'
         + '.fs-grow .fs-rel{color:var(--fs-muted);font-size:11px;width:190px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-grow .fs-len{color:var(--fs-muted);font-size:11px;width:44px;flex-shrink:0}'
-        + '.fs-grow .fs-isrc{color:#7d7e94;font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace}'
+        + '.fs-grow .fs-isrc{color:var(--fs-muted);font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace}'
         + '.fs-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .1s}'
         + '.fs-grow:hover .fs-acts{opacity:1}'
         + '.fs-acts span{color:var(--fs-muted);cursor:pointer;font-size:12px;padding:1px 3px}'
         + '.fs-acts span:hover{color:var(--fs-text)}'
         + '.fs-rm-x:hover{color:var(--fs-red) !important}'
-        + '.fs-gerr{margin:0 8px 6px;padding:5px 8px;background:rgba(224,84,106,.12);border:1px solid rgba(224,84,106,.4);border-radius:5px;color:#ffb3bd;font-size:11px}'
-        + '.fs-gdrop{margin:6px 8px 8px;border:1px dashed var(--fs-border);border-radius:6px;padding:6px;text-align:center;color:#65667a;font-size:10.5px}'
+        + '.fs-gerr{margin:0 8px 6px;padding:5px 8px;background:rgba(200,56,79,.09);border:1px solid rgba(200,56,79,.35);border-radius:5px;color:var(--fs-red);font-size:11px}'
+        + '.fs-gdrop{margin:6px 8px 8px;border:1px dashed var(--fs-border);border-radius:6px;padding:6px;text-align:center;color:var(--fs-muted);font-size:10.5px}'
         + '.fs-newgroup{border:1px dashed var(--fs-border);border-radius:7px;padding:9px;text-align:center;color:var(--fs-muted);font-size:12px;cursor:pointer}'
         + '.fs-ftr{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--fs-panel2);border-top:1px solid var(--fs-border)}'
         + '.fs-sum{color:var(--fs-muted);font-size:12px}'
         + '.fs-sum b{color:var(--fs-text)}'
-        + '.fs-note{color:#7d7e94;font-size:11px}'
+        + '.fs-note{color:var(--fs-muted);font-size:11px}'
         + '.fs-settings{position:fixed;z-index:2147483001;background:#fff;color:#222;border:1px solid #cfd4da;border-radius:8px;padding:10px 14px;width:280px;box-shadow:0 8px 26px rgba(0,0,0,.25);font:13px -apple-system,Segoe UI,Arial,sans-serif}'
         + '.fs-settings h4{margin:0 0 8px;display:flex;align-items:center;gap:6px;font-size:14px}'
         + '.fs-settings .fs-ver{font-size:11px;color:#999;font-weight:normal}'
@@ -822,13 +860,13 @@ function fsStyle() {
         + '.fs-settings .fs-help{font-size:11px;color:#1DB954;text-decoration:none;border:1px solid #cfe9d6;border-radius:4px;padding:2px 8px}'
         + '.fs-opt{display:block;margin:8px 0;font-size:12px}'
         + '.fs-opt textarea{width:100%;box-sizing:border-box;margin-top:4px;font:12px inherit}'
-        + '.fs-logpop{position:fixed;top:60px;right:14px;width:420px;max-height:60vh;background:#1b2430;color:#eef2f7;border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,.4);z-index:2147483002;display:flex;flex-direction:column;overflow:hidden;font:12px -apple-system,Segoe UI,Arial,sans-serif}'
-        + '.fs-logpop-h{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#12181f;cursor:move;user-select:none}'
-        + '.fs-logpop-h button{background:#2a3542;border:1px solid #3a4757;color:#eef2f7;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer}'
+        + '.fs-logpop{position:fixed;top:60px;right:14px;width:420px;max-height:60vh;background:#fff;color:#1e1e26;border:1px solid #d7d7e0;border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,.4);z-index:2147483002;display:flex;flex-direction:column;overflow:hidden;font:12px -apple-system,Segoe UI,Arial,sans-serif}'
+        + '.fs-logpop-h{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f0f0f4;border-bottom:1px solid #d7d7e0;cursor:move;user-select:none}'
+        + '.fs-logpop-h button{background:#fff;border:1px solid #c9c9d6;color:#1e1e26;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer}'
         + '.fs-logpop-body{flex:1;overflow-y:auto;padding:6px 10px}'
-        + '.fs-logln{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05)}'
-        + '.fs-logts{color:#7d8aa0;margin-right:6px}'
-        + '.fs-logln-warn{color:#e0a63e} .fs-logln-error{color:#e0546a} .fs-logln-ok{color:#3ecf8e}';
+        + '.fs-logln{padding:2px 0;border-bottom:1px solid rgba(0,0,0,.06)}'
+        + '.fs-logts{color:#8a8a9c;margin-right:6px}'
+        + '.fs-logln-warn{color:#a8702a} .fs-logln-error{color:#c8384f} .fs-logln-ok{color:#1c9b63}';
     document.head.appendChild(s);
 }
 
@@ -1276,55 +1314,6 @@ function closeFusion() {
     document.getElementById('fs-overlay')?.remove();
     document.removeEventListener('keydown', _fsEscHandler);
 }
-// #529 follow-up (majkinetor, live): "There is no Fusion button on artist
-// recordings." That page is plain server-rendered HTML (unlike the React
-// relationship editor), so this scrapes the visible table — one page's worth
-// only; MB paginates it, and there's no single clean API query for "every
-// recording by this artist" the way rgid: is for a release group.
-function scrapeArtistRecordingsTable() {
-    const table = document.querySelector('table.tbl');
-    if (!table) { Log.warn('Artist-recordings scrape: no table.tbl on this page'); return { recordings: [], hasPager: false }; }
-    // Column-INDEX-independent by design (#529): the original version used
-    // td:nth-child(N), derived from an anonymous page. A logged-in user's page
-    // has an extra leading checkbox column (name="add-to-merge"), which shifts
-    // every index by one and made the scrape return 0 recordings. Other scripts
-    // can add columns too, so resolve columns by their HEADER TEXT and find the
-    // entity links anywhere in the row instead of at fixed positions.
-    const headers = [...table.querySelectorAll('thead th')].map(th => (th.textContent || '').trim().toLowerCase());
-    const colOf = name => headers.findIndex(h => h === name);
-    const lengthCol = colOf('length');
-    const rgCol = colOf('release groups');
-    const recs = [];
-    for (const tr of table.querySelectorAll('tbody > tr')) {
-        const recA = tr.querySelector('a[href^="/recording/"]');
-        if (!recA) continue;
-        const gid = (recA.getAttribute('href').match(/[0-9a-fA-F-]{36}/) || [])[0];
-        if (!gid) continue;
-        const title = (recA.textContent || '').trim();
-        const artistA = tr.querySelector('a[href^="/artist/"]');
-        const artistCredit = artistA ? (artistA.textContent || '').trim() : '';
-        const artistGid = artistA ? (artistA.getAttribute('href').match(/[0-9a-fA-F-]{36}/) || [])[0] || null : null;
-        const isrcs = [...tr.querySelectorAll('.isrc-list-container code')].map(c => (c.textContent || '').trim()).filter(Boolean);
-        // length: prefer the header-resolved column, else any cell that is exactly m:ss
-        let lenText = lengthCol >= 0 && tr.children[lengthCol] ? (tr.children[lengthCol].textContent || '').trim() : '';
-        if (!/^\d{1,3}:\d{2}$/.test(lenText)) {
-            const cell = [...tr.children].find(td => /^\d{1,3}:\d{2}$/.test((td.textContent || '').trim()));
-            lenText = cell ? cell.textContent.trim() : '';
-        }
-        const lm = lenText.match(/^(\d{1,3}):(\d{2})$/);
-        const length = lm ? (parseInt(lm[1], 10) * 60 + parseInt(lm[2], 10)) * 1000 : null;
-        const rgScope = rgCol >= 0 && tr.children[rgCol] ? tr.children[rgCol] : tr;
-        const rgLinks = [...rgScope.querySelectorAll('a[href^="/release-group/"]')].map(a => ({ gid: (a.getAttribute('href').match(/[0-9a-fA-F-]{36}/) || [])[0] || null, title: (a.textContent || '').trim(), trackNumber: null, trackCount: null }));
-        // MB's own merge checkbox carries the internal numeric id — harvest it so
-        // merging from this page doesn't need a /ws/js/entity lookup per recording.
-        const cb = tr.querySelector('input[name="add-to-merge"]');
-        const internalId = cb && /^\d+$/.test(cb.value) ? Number(cb.value) : null;
-        if (internalId) _idCache.set(gid, internalId);
-        recs.push(mkRecording(gid, { title, length, isrcs, artistCredit, artistGid, releases: rgLinks }));
-    }
-    if (!recs.length) Log.warn('Artist-recordings scrape: found table.tbl with ' + table.querySelectorAll('tbody > tr').length + ' row(s) but matched 0 recordings — table layout may have changed');
-    return { recordings: recs, hasPager: !!document.querySelector('.pagination, ul.pager') };
-}
 async function seedFromScope() {
     setScopeLabel('Loading…');
     if (SCOPE.type === 'release') {
@@ -1345,12 +1334,11 @@ async function seedFromScope() {
         if (rec) addToPool(rec);
         setScopeLabel(rec ? ('Recording: "' + rec.title + '"') : 'Recording');
     } else if (SCOPE.type === 'artist-recordings') {
-        const { recordings, hasPager } = scrapeArtistRecordingsTable();
+        harvestInternalIdsFromPage();   // free ids from the visible page, independent of seeding
+        const { artist, recordings, total } = await fetchArtistRecordings(SCOPE.mbid);
         recordings.forEach(r => addToPool(r));
-        setScopeLabel('Artist recordings' + (hasPager ? ' — this page only (' + recordings.length + '); use MB\'s own pager + reopen Fusion for more' : ''));
-        Log.info('Artist-recordings seed: ' + recordings.length + ' recording(s) scraped from the current page' + (hasPager ? ' (paginated — only this page)' : ''));
-        renderAll();
-        enrichAllReleases(recordings, 3, () => { if (FUSION_OPEN) renderAll(); }).catch(() => {});
+        setScopeLabel('Artist: ' + (artist ? '"' + artist.name + '"' : SCOPE.mbid)
+            + ' — ' + recordings.length + (total > recordings.length ? ' of ' + total : '') + ' recording(s)');
     }
     renderAll();
 }
@@ -1384,11 +1372,11 @@ try {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
-        mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchRecordingDetail,
+        mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchRecordingDetail, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
-        openFusion, closeFusion, seedFromScope, renderAll, scrapeArtistRecordingsTable,
+        openFusion, closeFusion, seedFromScope, renderAll,
         gmGet, gmPost, wsGet,
         getLogLines: () => _logBuf.map(r => r.line),
     };

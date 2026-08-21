@@ -392,40 +392,43 @@ ck(logVis.visible && logVis.inViewport, 'log panel is actually visible and withi
 ck(logVis.onTop, 'log panel is on top at its own position, not hidden behind the modal — the exact "log button does nothing" symptom');
 ck(logVis.lineCount > 0, 'log panel is populated with entries (' + logVis.lineCount + ')');
 
-// #529 (majkinetor): "Getting no recordings on artist". The scraper used
-// td:nth-child(N) indexes derived from an ANONYMOUS artist-recordings page.
-// A logged-in user's page has an extra leading checkbox column
-// (input[name=add-to-merge]) that shifts every index by one, so the scrape
-// matched 0 rows. Must run logged in (the shared .pw-profile is) — that is
-// precisely the condition the original probe missed.
+// #529 (majkinetor): "scraping the page is not going to cut it, we need to use
+// an API here". Artist seeding used to scrape the visible table, which capped
+// at MB's 100-row page AND broke entirely when the logged-in layout shifted the
+// columns. It now uses the indexed search (arid:), paginated — so the pool must
+// exceed one page's worth and carry data the DOM never exposed.
 await page.goto('https://test.musicbrainz.org/artist/c321a13a-1c52-43c0-b60a-3a454cb7f9a2/recordings', { waitUntil: 'domcontentloaded' });
 await page.addScriptTag({ content: code });
 await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
-await page.waitForTimeout(800);
-const artistScrape = await page.evaluate(() => {
+await page.click('#fs-launch');
+await page.waitForFunction(() => window.__fusion.STATE.poolOrder.length > 0, { timeout: 60000 });
+await page.waitForTimeout(500);
+const artistSeed = await page.evaluate(() => {
     const F = window.__fusion;
     const table = document.querySelector('table.tbl');
-    const s = F.scrapeArtistRecordingsTable();
-    const first = s.recordings[0];
+    const recs = [...F.STATE.recordings.values()];
     return {
         scope: F.SCOPE.type,
-        domRows: table ? table.querySelectorAll('tbody > tr').length : 0,
-        hasCheckboxCol: !!(table && table.querySelector('tbody > tr td:nth-child(1) input[name="add-to-merge"]')),
-        scraped: s.recordings.length,
-        firstTitle: first ? first.title : null,
-        firstHasArtist: !!(first && first.artistCredit),
-        anyWithLength: s.recordings.some(r => r.length != null),
-        anyWithRelease: s.recordings.some(r => r.releases.length > 0),
+        domRowsOnPage: table ? table.querySelectorAll('tbody > tr').length : 0,
+        pooled: F.STATE.poolOrder.length,
+        withReleases: recs.filter(r => r.releases.length).length,
+        withIsrc: recs.filter(r => r.isrcs.length).length,
+        withArtist: recs.filter(r => r.artistCredit).length,
+        seedLine: F.getLogLines().find(l => /Artist seed:/.test(l)) || '',
+        harvestLine: F.getLogLines().find(l => /Harvested \d+ internal/.test(l)) || '',
+        consBg: getComputedStyle(document.getElementById('fs-cons')).backgroundColor,
     };
 });
-console.log('artist scrape:', JSON.stringify(artistScrape));
-ck(artistScrape.scope === 'artist-recordings', 'Fusion detects artist-recordings scope');
-ck(artistScrape.hasCheckboxCol, 'this logged-in page really does have the extra leading checkbox column (the condition that broke it)');
-ck(artistScrape.scraped === artistScrape.domRows && artistScrape.scraped > 0,
-   'scraper matches EVERY row despite the shifted columns (' + artistScrape.scraped + '/' + artistScrape.domRows + ')');
-ck(!!artistScrape.firstTitle && artistScrape.firstHasArtist, 'scraped rows carry title + artist');
-ck(artistScrape.anyWithLength, 'scraped rows carry length (header-resolved column, not a fixed index)');
-ck(artistScrape.anyWithRelease, 'scraped rows carry release groups');
+console.log('artist seed:', JSON.stringify(artistSeed));
+ck(artistSeed.scope === 'artist-recordings', 'Fusion detects artist-recordings scope');
+ck(artistSeed.pooled > artistSeed.domRowsOnPage,
+   'API seeding gets MORE than the single visible page (' + artistSeed.pooled + ' pooled vs ' + artistSeed.domRowsOnPage + ' DOM rows) — the whole point of dropping the scrape');
+ck(/Artist seed: \d+ recording\(s\) of \d+ total \(arid:/.test(artistSeed.seedLine), 'log shows the arid: API seed with totals (' + artistSeed.seedLine + ')');
+ck(artistSeed.withReleases === artistSeed.pooled, 'every API-seeded recording carries its releases (' + artistSeed.withReleases + '/' + artistSeed.pooled + ')');
+ck(artistSeed.withArtist === artistSeed.pooled, 'every API-seeded recording carries an artist credit');
+ck(artistSeed.withIsrc > 0, 'API seeding carries ISRCs inline (' + artistSeed.withIsrc + ' recordings)');
+ck(/Harvested \d+ internal recording id/.test(artistSeed.harvestLine), 'internal ids harvested from the page\'s merge checkboxes (' + artistSeed.harvestLine + ')');
+ck(artistSeed.consBg === 'rgb(255, 255, 255)', 'window renders on a white background (' + artistSeed.consBg + ')');
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
