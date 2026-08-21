@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.183900
+// @version      2026.8.21.184919
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -296,7 +296,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: true, releasePrefetchCap: 200, makeVotable: false, matchCutoff: 'normal' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: true, releasePrefetchCap: 200, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
 // Stored settings win over defaults, so simply RAISING a default is invisible to
 // anyone who ever opened the config window (that saves every key, including the
 // ones they never touched). The old 60 cap dated from one-request-per-recording;
@@ -1360,6 +1360,14 @@ function fsStyle() {
         + '.fs-body{display:flex;flex:1;min-height:0}'
         + '.fs-col{display:flex;flex-direction:column;min-width:0;min-height:0}'
         + '.fs-pool{width:360px;border-right:1px solid var(--fs-border);background:var(--fs-bg)}'
+        + '.fs-body.fs-poolhidden .fs-pool{display:none}'
+        + '.fs-poolrail{display:none;flex-direction:column;align-items:center;gap:10px;width:28px;flex-shrink:0;padding:10px 0;cursor:pointer;border-right:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-muted)}'
+        + '.fs-body.fs-poolhidden .fs-poolrail{display:flex}'
+        + '.fs-poolrail:hover{background:rgba(109,63,240,.06);color:var(--fs-purple)}'
+        + '.fs-railarrow{font-size:14px;line-height:1}'
+        + '.fs-raillabel{writing-mode:vertical-rl;font-size:10px;font-weight:700;letter-spacing:.12em}'
+        + '.fs-pooltog{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:2px 5px;border-radius:3px;cursor:pointer;color:#c3c3d0;font-size:12px;line-height:1;flex-shrink:0}'
+        + '.fs-pooltog:hover{background:rgba(0,0,0,.05);color:var(--fs-muted)}'
         + '.fs-groups{flex:1;background:var(--fs-panel)}'
         + '.fs-colhdr{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--fs-border);font-weight:700;font-size:12px;letter-spacing:.3px;color:var(--fs-muted);text-transform:uppercase;background:var(--fs-panel2)}'
         + '.fs-cnt{background:var(--fs-panel);border:1px solid var(--fs-border);border-radius:10px;padding:1px 7px;color:var(--fs-text);font-weight:600}'
@@ -1430,7 +1438,11 @@ function fsStyle() {
         + '.fs-cnt{font-size:10.5px;color:var(--fs-muted);white-space:nowrap}'
         // The release table must scroll INSIDE the card — it has far more columns
         // than the card is wide, and letting it stretch would blow out the layout.
-        + '.fs-reltbl{overflow-x:auto;margin:0 0 6px 30px;border:1px solid var(--fs-border);border-radius:4px;background:#fff}'
+        + '.fs-reltbl{overflow-x:auto;margin:0 0 6px 30px;border:1px solid var(--fs-border);border-radius:4px;background:#fff;scrollbar-width:thin;scrollbar-color:#d3d3e0 transparent}'
+        + '.fs-reltbl::-webkit-scrollbar{height:7px}'
+        + '.fs-reltbl::-webkit-scrollbar-track{background:transparent}'
+        + '.fs-reltbl::-webkit-scrollbar-thumb{background:#d3d3e0;border-radius:4px}'
+        + '.fs-reltbl:hover::-webkit-scrollbar-thumb{background:#b9b9cc}'
         + '.fs-reltbl table{border-collapse:collapse;font-size:10.5px;width:100%}'
         + '.fs-reltbl th{text-align:left;font-weight:600;padding:4px 7px;border-bottom:1px solid var(--fs-border);white-space:nowrap;background:rgba(0,0,0,.03)}'
         + '.fs-reltbl td{padding:3px 7px;border-bottom:1px solid rgba(0,0,0,.05);white-space:nowrap}'
@@ -1642,6 +1654,23 @@ function poolCardHtml(rec) {
 // One button, and what it does next is decided by the majority: if anything is
 // still expanded it collapses everything, otherwise it expands everything —
 // so a half-collapsed board always has an obvious next move.
+// #529: "make pool collapsable itself to the left side". Collapsing hands the
+// pool's 360px to the groups column, which is what actually relieves the
+// release table's horizontal scrolling. A thin rail stays behind so the pool is
+// one click away and its count is still visible — collapsed, not hidden.
+function setPoolCollapsed(on) {
+    const body = document.getElementById('fs-body'); if (!body) return;
+    body.classList.toggle('fs-poolhidden', !!on);
+    const tog = document.getElementById('fs-pooltog');
+    if (tog) tog.title = on ? 'show the pool' : 'collapse the pool to give the groups the full width';
+    if (SETTINGS.poolCollapsed !== !!on) { SETTINGS.poolCollapsed = !!on; saveSettings(); }
+    renderPoolCount();
+}
+// Only the rail's copy: renderPool owns fs-pool-cnt, including its filtered
+// "shown / total" form, and two writers would fight over it.
+function renderPoolCount() {
+    const b = document.getElementById('fs-rail-cnt'); if (b) b.textContent = String(STATE.poolOrder.length);
+}
 function allGroupsCollapsed() {
     return STATE.groups.length > 0 && STATE.groups.every(g => STATE.collapsedGroups.has(g.id));
 }
@@ -1952,6 +1981,7 @@ function renderPool() {
         ? recs.map(poolCardHtml).join('')
         : '<div class="fs-empty">' + (q ? 'No pool recording matches “' + escapeHtml(q) + '”.' : 'Pool is empty — add a recording by MBID/URL above.') + '</div>';
     if (STATE.selected) { const c = body.querySelector('[data-gid="' + STATE.selected + '"]'); if (c) c.classList.add('fs-selected'); }
+    renderPoolCount();
 }
 function renderGroups() {
     const body = document.getElementById('fs-groups-body'); if (!body) return;
@@ -2490,8 +2520,9 @@ function buildShell() {
         + '<span>Cutoff <select id="fs-cutoff" title="How strict Auto-match is. Hover an option for what it means.">' + cutoffOpts + '</select></span></div>'
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
 
-        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."></div>'
+        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
+        + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
         + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
@@ -2520,6 +2551,9 @@ function buildShell() {
     // wrapper, not a bare reference: onclick hands the click Event to the first
     // parameter, which has bitten this script before (#503, mergeAll's NaN)
     document.getElementById('fs-collapseall').onclick = () => toggleCollapseAll();
+    document.getElementById('fs-pooltog').onclick = () => setPoolCollapsed(true);
+    document.getElementById('fs-poolrail').onclick = () => setPoolCollapsed(false);
+    setPoolCollapsed(SETTINGS.poolCollapsed === true);
     document.getElementById('fs-clearmerged').onclick = () => { clearMerged(); renderAll(); };
     // The header status texts all describe work whose detail is in the log, so
     // clicking any of them opens it — including the network pill, whose tooltip
@@ -2625,7 +2659,7 @@ try {
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress, lengthSpread,
-        toggleCollapseAll, allGroupsCollapsed, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
+        toggleCollapseAll, allGroupsCollapsed, setPoolCollapsed, renderPoolCount, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
