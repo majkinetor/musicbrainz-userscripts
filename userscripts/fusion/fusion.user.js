@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.183722
+// @version      2026.8.21.183900
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -564,10 +564,49 @@ async function fetchRecordingsBySearch(luceneQuery, label, onPage) {
     else Log.info(label + ': ' + recordings.length + ' recording(s) of ' + total + ' total (' + luceneQuery + ')');
     return { recordings, total: known ? total : recordings.length };
 }
+// Same unsound-search problem as the artist seed (#529), and here the fix is
+// strictly better than a workaround: browsing RELEASES in the release group with
+// inc=recordings walks the actual tracklists, so it is deterministic AND already
+// knows which release each recording sits on — no search enrichment needed, and
+// the ISRCs come from the database rather than the index.
 async function fetchRGRecordings(rgMbid, onPage) {
     const rgMeta = await wsGet('/ws/2/release-group/' + rgMbid + '?inc=artist-credits&fmt=json');
     const rg = rgMeta ? { gid: rgMeta.id, title: rgMeta.title, artistCredit: acName(rgMeta['artist-credit']) } : null;
-    const { recordings } = await fetchRecordingsBySearch('rgid:' + rgMbid, 'RG seed', onPage);
+    const byGid = new Map();
+    let offset = 0, total = Infinity, pages = 0;
+    while (offset < total && pages < SEARCH_MAX_PAGES) {
+        if (onPage) onPage(pages + 1, Number.isFinite(total) ? Math.ceil(total / SEARCH_PAGE_LIMIT) : null, byGid.size, null);
+        const j = await wsGet('/ws/2/release?release-group=' + rgMbid + '&inc=recordings+artist-credits+isrcs&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
+        if (!j) { Log.warn('RG seed: a request failed — the list may be incomplete'); break; }
+        total = j['release-count'] != null ? j['release-count'] : 0;
+        for (const rel of j.releases || []) {
+            const media = rel.media || [];
+            for (const med of media) {
+                for (const t of med.tracks || []) {
+                    const r = t.recording; if (!r || !r.id) continue;
+                    const relRef = { gid: rel.id, title: rel.title, trackNumber: t.number || null, trackCount: med['track-count'] || null, date: rel.date || null };
+                    const existing = byGid.get(r.id);
+                    if (existing) {
+                        if (!existing.releases.some(x => x.gid === rel.id)) existing.releases.push(relRef);
+                        continue;
+                    }
+                    const ac = r['artist-credit'] || t['artist-credit'];
+                    byGid.set(r.id, mkRecording(r.id, {
+                        title: r.title, length: r.length != null ? r.length : t.length,
+                        isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
+                        artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video,
+                        releases: [relRef], allReleases: null,
+                    }));
+                }
+            }
+        }
+        offset += SEARCH_PAGE_LIMIT; pages++;
+    }
+    const recordings = [...byGid.values()];
+    // releases here are the ones INSIDE this release group; a recording may also
+    // appear elsewhere, so allReleases stays null until asked for.
+    recordings.forEach(r => { r.releases = r.releases.slice(); });
+    Log.info('RG seed: ' + recordings.length + ' distinct recording(s) across ' + (Number.isFinite(total) ? total : '?') + ' release(s)');
     return { rg, recordings };
 }
 // #529 (majkinetor): "scraping the page is not going to cut it, we need to use
