@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.192437
+// @version      2026.8.21.194909
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -848,6 +848,27 @@ function removeFromPoolPermanently(gid) {
 //   signalsAll — holds for EVERY pair, i.e. the whole group genuinely agrees.
 //                This is what lights a chip, so a lit chip never overstates.
 const SIGNAL_KEYS = ['isrc', 'acoustid', 'length', 'title', 'artist'];
+// #529 (majkinetor): the card badge names the CUTOFF TIER instead of a
+// high/medium confidence. "strict" means the group still holds together with
+// Auto-match set to strict; "loose" means it would fall apart if you tightened
+// the setting. That is connectivity, not "some pair matched": a group is built
+// transitively, so it survives a tier only if every member is still reachable
+// from every other under that tier's rules.
+const TIER_COLORS = { strict: '#1c9b63', normal: '#2f7fbf', loose: '#a8702a', manual: '#9a9aab' };
+function groupTier(members) {
+    if (members.length < 2) return 'manual';
+    for (const cutoff of MATCH_CUTOFFS) {
+        const parent = new Map(members.map(m => [m.gid, m.gid]));
+        const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
+        for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
+            const sig = pairSignals(members[i], members[j], SETTINGS.lengthToleranceMs);
+            if (shouldUnion(sig, cutoff)) { const a = find(members[i].gid), b = find(members[j].gid); if (a !== b) parent.set(a, b); }
+        }
+        const root = find(members[0].gid);
+        if (members.every(m => find(m.gid) === root)) return cutoff;
+    }
+    return 'manual';   // only hand-built grouping explains it
+}
 function computeGroupConfidence(members) {
     let confidence = null;
     const signals = new Set();
@@ -862,12 +883,12 @@ function computeGroupConfidence(members) {
         SIGNAL_KEYS.forEach(k => { if (!sig[k]) all.delete(k); });   // drop any pair disagrees on
         if (!confidence && shouldUnion(sig, SETTINGS.matchCutoff)) confidence = 'medium';
     }
-    return { confidence: confidence || 'manual', signals: [...signals], signalsAll: [...all] };
+    return { confidence: confidence || 'manual', tier: groupTier(members), signals: [...signals], signalsAll: [...all] };
 }
 function refreshGroupMeta(g) {
     const members = g.memberGids.map(x => STATE.recordings.get(x)).filter(Boolean);
     const meta = computeGroupConfidence(members);
-    g.confidence = meta.confidence; g.signals = meta.signals; g.signalsAll = meta.signalsAll;
+    g.confidence = meta.confidence; g.tier = meta.tier; g.signals = meta.signals; g.signalsAll = meta.signalsAll;
     if (!g.memberGids.includes(g.target)) g.target = g.memberGids[0];
 }
 // #529 follow-up (majkinetor, live): "'Return to pool' returns the entire
@@ -931,7 +952,7 @@ function addToGroup(gid, groupId) {
 function createGroupWithMember(gid) {
     const i = STATE.poolOrder.indexOf(gid); if (i === -1) return null;
     STATE.poolOrder.splice(i, 1);
-    const g = { id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: [gid], confidence: 'manual', signals: [], signalsAll: [], target: gid, state: 'pending', error: null, editNote: null, editing: false };
+    const g = { id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: [gid], confidence: 'manual', tier: 'manual', signals: [], signalsAll: [], target: gid, state: 'pending', error: null, editNote: null, editing: false };
     STATE.groups.push(g);
     Log.info('Created new group with ' + gid);
     return g;
@@ -1028,7 +1049,7 @@ function autoMatch(pool, tolMs, cutoff) {
         if (members.length < 2) continue;
         const meta = computeGroupConfidence(members);
         const target = members.slice().sort((a, b) => b.releases.length - a.releases.length)[0].gid;
-        groups.push({ id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: members.map(m => m.gid), confidence: meta.confidence, signals: meta.signals, signalsAll: meta.signalsAll, target, state: 'pending', error: null, editNote: null, editing: false });
+        groups.push({ id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: members.map(m => m.gid), confidence: meta.confidence, tier: meta.tier, signals: meta.signals, signalsAll: meta.signalsAll, target, state: 'pending', error: null, editNote: null, editing: false });
     }
     return groups;
 }
@@ -1450,7 +1471,14 @@ function fsStyle() {
         + '.fs-relband td{font-weight:600;background:rgba(0,0,0,.05);color:var(--fs-text)}'
         + '.fs-relload,.fs-relerr,.fs-relempty{padding:6px 9px;font-size:10.5px;color:var(--fs-muted)}'
         + '.fs-relerr{color:var(--fs-red)}'
-        + '.fs-gt{font-weight:700;font-size:12.5px}'
+        + '.fs-gt{font-weight:700;font-size:12.5px;flex:0 1 260px;min-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.fs-gnum{width:20px;flex-shrink:0;text-align:right;font-weight:800;font-size:12px;color:var(--fs-muted);cursor:help}'
+        + '.fs-sig span{box-sizing:border-box;width:64px;text-align:center}'
+        + '.fs-tier-strict{border-left-color:#1c9b63;background:rgba(28,155,99,.045)}'
+        + '.fs-tier-normal{border-left-color:#2f7fbf;background:rgba(47,127,191,.045)}'
+        + '.fs-tier-loose{border-left-color:#a8702a;background:rgba(168,112,42,.05)}'
+        + '.fs-tier-manual{border-left-color:#9a9aab;background:rgba(154,154,171,.05)}'
+        + '.fs-gcard.fs-dragover{outline:2px dashed var(--fs-purple);outline-offset:-3px}'
         + '.fs-gt a{color:var(--fs-purple);text-decoration:underline;text-decoration-color:rgba(109,63,240,.4)}'
         + '.fs-gt a:hover{color:var(--fs-purple);text-decoration-color:var(--fs-purple)}'
         + '.fs-conf{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;letter-spacing:.2px}'
@@ -1467,7 +1495,7 @@ function fsStyle() {
         + '.fs-sig span.hit{background:rgba(28,155,99,.16);border-color:rgba(28,155,99,.7);color:#0f6b45;font-weight:700;opacity:1}'
         + '.fs-sig span.partial{border-style:dashed;border-color:rgba(28,155,99,.5);color:#3f8f6b;opacity:.85}'
         + '.fs-mergeicon{vertical-align:-2px;margin-right:2px}'
-        + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(109,63,240,.1);color:var(--fs-purple-d);cursor:pointer;font-weight:600}'
+        + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(109,63,240,.1);color:var(--fs-purple-d);cursor:pointer;font-weight:600;white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:5px}'
         + '.fs-mbtn.fs-done{background:rgba(28,155,99,.12);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
         + '.fs-mbtn.fs-err{background:rgba(200,56,79,.1);border-color:var(--fs-red);color:var(--fs-red)}'
         // shared-identifier tints (#529) — one colour per distinct value shared
@@ -1525,16 +1553,18 @@ function fsStyle() {
         + '.fs-acts span:hover{color:var(--fs-text)}'
         + '.fs-rm-x:hover{color:var(--fs-red) !important}'
         + '.fs-gerr{margin:0 8px 6px;padding:5px 8px;background:rgba(200,56,79,.09);border:1px solid rgba(200,56,79,.35);border-radius:5px;color:var(--fs-red);font-size:11px}'
-        + '.fs-gdrop{margin:6px 8px 8px;border:1px dashed var(--fs-border);border-radius:6px;padding:6px;text-align:center;color:var(--fs-muted);font-size:10.5px}'
         + '.fs-newgroup{border:1px dashed var(--fs-border);border-radius:7px;padding:9px;text-align:center;color:var(--fs-muted);font-size:12px;cursor:pointer}'
         + '.fs-ftr{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--fs-panel2);border-top:1px solid var(--fs-border)}'
         + '.fs-idmore{color:var(--fs-muted);font-size:9px}'
         + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-clearset{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-subcnt{font-size:10.5px;font-weight:600;color:var(--fs-muted);text-transform:none;letter-spacing:0;white-space:nowrap}'
+        + '.fs-tierlegend{display:inline-flex;align-items:center;gap:9px;font-size:10px;color:var(--fs-muted)}'
+        + '.fs-tierkey{display:inline-flex;align-items:center;gap:4px;cursor:help}'
+        + '.fs-tierkey i{width:9px;height:9px;border-radius:2px;display:inline-block}'
         + '.fs-toLog{cursor:pointer} .fs-toLog:hover{text-decoration:underline}'
         + '.fs-clearset .fs-btn{padding:2px 8px}'
-        + '.fs-detbtn{font-size:10px;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:2px 6px;cursor:pointer;white-space:nowrap;background:#fff}'
+        + '.fs-detbtn{font-size:12px;line-height:1;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:3px 6px;cursor:pointer;white-space:nowrap;background:#fff;flex-shrink:0}'
         + '.fs-detbtn:hover{border-color:var(--fs-purple);color:var(--fs-purple)}'
         + '.fs-detbtn-on{background:rgba(109,63,240,.09);border-color:var(--fs-purple);color:var(--fs-purple)}'
         + '.fs-idstat{white-space:nowrap;cursor:help}'
@@ -1921,7 +1951,6 @@ function groupCardHtml(group) {
             + '</div>';
     }).join('');
     const errMsg = group.state === 'error' ? '<div class="fs-gerr">' + escapeHtml(group.error || 'merge failed') + '</div>' : '';
-    const dropZone = done ? '' : '<div class="fs-gdrop" data-act="drop-zone">drop from pool to add another recording to this group</div>';
     const activeCls = (STATE.activeGroupId === group.id ? ' fs-active' : '') + (members.some(m => m.editsPending) ? ' fs-has-pending' : '');
     const head = ordered[0];
     const hasNote = !!(group.editNote && group.editNote.trim());
@@ -1945,20 +1974,32 @@ function groupCardHtml(group) {
     // header — confidence, chips and Merge stay usable — and hides only the rows,
     // so a long board can be skimmed without losing the ability to act on it.
     const collapsed = STATE.collapsedGroups.has(group.id);
-    return '<div class="fs-gcard fs-gcard-' + confClass + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '">'
+    // #529 (majkinetor): "Keep matrix at the middle (A), remove '2 recordings' as
+    // it is redundant … remove STRICT/NORMAL etc. and use colors (C), with non
+    // intrusive background row color for each variant."
+    //   · the leading count already says how many recordings, so the words go
+    //   · the title cell is FIXED width, which is what puts every chip at the
+    //     same x across cards — the matrix only aligns if the thing before it
+    //     cannot vary
+    //   · the tier is carried by the row tint and left rail, not a text pill
+    const tier = group.tier || 'manual';
+    const tierWhy = tier === 'manual'
+        ? 'Grouped by hand — no cutoff level would have formed this group automatically'
+        : 'Holds together at the "' + tier + '" cutoff' + (tier === 'loose' ? ' — it would not form at a stricter setting' : '');
+    return '<div class="fs-gcard fs-gcard-' + confClass + ' fs-tier-' + tier + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '" title="' + escapeHtml(tierWhy) + '">'
         + '<div class="fs-ghdr">'
+        + '<span class="fs-gnum" title="' + members.length + ' recording' + (members.length === 1 ? '' : 's') + ' in this group">' + members.length + '</span>'
         + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>'
         + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
-        + (collapsed ? '<span class="fs-cnt">' + members.length + ' recording' + (members.length === 1 ? '' : 's') + '</span>' : '')
-        + noteBtn
+        + '<div class="fs-sig">' + sigChips + '</div>'
         + (collapsed ? '' : '<span class="fs-detbtn' + (groupAllExpanded(group) ? ' fs-detbtn-on' : '') + '" data-act="toggle-all-details" title="'
             + (groupAllExpanded(group) ? 'hide the release tables for every recording in this group' : 'show the release tables for every recording in this group') + '">'
-            + (groupAllExpanded(group) ? '▤ Hide details' : '▤ All details') + '</span>')
-        + '<span class="fs-conf fs-conf-' + confClass + '">' + confLabel + '</span>'
-        + '<div class="fs-sig">' + sigChips + '</div><div class="fs-sp"></div>'
+            + '▤' + '</span>')
+        + '<div class="fs-sp"></div>'
+        + noteBtn
         + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
         + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span></div>'
-        + (collapsed ? '' : '<div class="fs-grows">' + rows + '</div>' + errMsg + dropZone) + '</div>';
+        + (collapsed ? '' : '<div class="fs-grows">' + rows + '</div>' + errMsg) + '</div>';
 }
 
 // #529 (majkinetor): "add pool filtering as one types in the header instead" —
@@ -2383,6 +2424,14 @@ function wireDelegatedEvents() {
         // click the card's header (but not its Merge button) to make it the
         // "current" group for double-click-to-add and empty-zone drops.
         if (!act && e.target.closest('.fs-ghdr') && !e.target.closest('.fs-mbtn')) {
+            // The standing "drop from pool…" line is gone (#529: spammy), so the
+            // click-to-add it carried moves here: with a pool recording selected,
+            // clicking a group adds it; otherwise the click just makes the group
+            // current, as before.
+            if (STATE.selected && STATE.poolOrder.includes(STATE.selected)) {
+                if (addToGroup(STATE.selected, card.dataset.gid)) STATE.activeGroupId = card.dataset.gid;
+                STATE.selected = null; renderAll(); return;
+            }
             STATE.activeGroupId = STATE.activeGroupId === card.dataset.gid ? null : card.dataset.gid;
             renderGroups(); return;
         }
@@ -2411,14 +2460,23 @@ function wireDelegatedEvents() {
         }
         if (act === 'note-cancel') { const g = findGroup(card.dataset.gid); if (g) { g.editing = false; renderGroups(); } return; }
         if (act === 'note-clear') { const g = findGroup(card.dataset.gid); if (g) { g.editNote = null; g.editing = false; Log.info('Edit note for group ' + g.id + ' reset to auto'); renderGroups(); } return; }
-        if (act === 'drop-zone' && STATE.selected && STATE.poolOrder.includes(STATE.selected)) { if (addToGroup(STATE.selected, card.dataset.gid)) STATE.activeGroupId = card.dataset.gid; STATE.selected = null; renderAll(); return; }
     });
     // "entire zone" drag&drop (#529 follow-up): dropping anywhere over a group
     // card adds to THAT group; dropping on #fs-newgroup OR on empty background
     // (not over any card) creates a new group — not just a narrow strip. One
     // listener on the outer column; children's events bubble up to it.
     groupsCol.addEventListener('dragover', e => { if (STATE._dragSrc) e.preventDefault(); });
+    groupsCol.addEventListener('dragover', e => {
+        const card = e.target.closest && e.target.closest('.fs-gcard');
+        groupsCol.querySelectorAll('.fs-dragover').forEach(x => { if (x !== card) x.classList.remove('fs-dragover'); });
+        if (card) card.classList.add('fs-dragover');
+    });
+    groupsCol.addEventListener('dragleave', e => {
+        const card = e.target.closest && e.target.closest('.fs-gcard');
+        if (card && !card.contains(e.relatedTarget)) card.classList.remove('fs-dragover');
+    });
     groupsCol.addEventListener('drop', e => {
+        groupsCol.querySelectorAll('.fs-dragover').forEach(x => x.classList.remove('fs-dragover'));
         if (!STATE._dragSrc) return;
         e.preventDefault();
         const card = e.target.closest('.fs-gcard');
@@ -2521,14 +2579,25 @@ function buildShell() {
         normal: 'Normal — a shared identifier, or title AND artist AND a close length together.',
         loose: 'Loose — a shared identifier, or title with either a close length or a matching artist. Most matches, needs the most review.',
     };
-    const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '') + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
+    // #529 (majkinetor): "show color in the cutoff combo for reference" — the
+    // card rows are tinted by tier and nothing else decoded those colours.
+    // Native <option> styling is patchy across browsers, so the swatch is drawn
+    // as a coloured square in a sibling strip that is always visible, and the
+    // options carry the colour too where the browser honours it.
+    const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '')
+        + ' style="background:' + TIER_COLORS[c] + '22"'
+        + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
+    const tierKey = MATCH_CUTOFFS.concat('manual').map(c => '<span class="fs-tierkey" title="'
+        + escapeHtml(c === 'manual' ? 'Grouped by hand — no cutoff level forms it automatically' : (CUTOFF_HELP[c] || ''))
+        + '"><i style="background:' + TIER_COLORS[c] + '"></i>' + c + '</span>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
         + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" title="open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" title="open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" title="open the activity log">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
-        + '<span>Cutoff <select id="fs-cutoff" title="How strict Auto-match is. Hover an option for what it means.">' + cutoffOpts + '</select></span></div>'
+        + '<span>Cutoff <select id="fs-cutoff" title="How strict Auto-match is. Hover an option for what it means.">' + cutoffOpts + '</select></span>'
+        + '<span class="fs-tierlegend" title="Each group card is tinted by the strictest cutoff at which it still holds together">' + tierKey + '</span></div>'
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
 
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
@@ -2667,7 +2736,7 @@ try {
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
-        pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
+        pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress, lengthSpread,
         toggleCollapseAll, allGroupsCollapsed, setPoolCollapsed, renderPoolCount, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
