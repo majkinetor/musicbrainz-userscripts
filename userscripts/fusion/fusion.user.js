@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.140155
+// @version      2026.8.21.142637
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -21,7 +21,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.140155';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.142637';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -291,6 +291,7 @@ function shouldUnion(sig, cutoff) {
     // groups with audio recordings." A hard gate — no cutoff level, no signal
     // strength (not even a shared ISRC) overrides it.
     if (sig.videoMismatch) return false;
+    if (sig.pendingEdit) return false;   // never auto-group a recording with an open edit (#529)
     if (sig.isrc || sig.acoustid) return true;
     if (cutoff === 'strict') return false;
     if (cutoff === 'loose') return (sig.title && sig.length) || (sig.title && sig.artist);
@@ -319,7 +320,7 @@ function mkRecording(gid, opts) {
     // enrichAllReleases); true/false once known. #529: "Video recordings should
     // never be added to groups with audio recordings" — null is deliberately
     // treated as "don't block" everywhere, only a known true/false mismatch does.
-    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null }, opts || {});
+    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null, editsPending: null }, opts || {});
 }
 
 async function fetchReleaseRecordings(releaseMbid) {
@@ -448,6 +449,41 @@ async function enrichAllReleases(recs, concurrency, onProgress) {
     await Promise.all(Array.from({ length: Math.min(concurrency, recs.length) }, worker));
 }
 
+// #529 (majkinetor): "we should also have recordings with pending edits
+// highlighted … Probably shouldn't include them in auto merging too."
+// WS2 doesn't expose pending edits at all; MB's internal /ws/js/entity does
+// (editsPending), and Fusion already calls it for internal ids — so one fetch
+// yields both. Merging an entity with an open edit risks compounding or
+// conflicting with whatever is already in the queue.
+const _pendingCache = new Map();
+async function fetchEntityMeta(gid) {
+    if (_pendingCache.has(gid)) return _pendingCache.get(gid);
+    let meta = null;
+    try {
+        const j = await fetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }).then(r => r.json());
+        if (j && j.gid) meta = { id: j.id || null, editsPending: !!j.editsPending };
+    } catch (e) { Log.error('fetchEntityMeta(' + gid + ') failed: ' + e.message); }
+    _pendingCache.set(gid, meta);
+    if (meta && meta.id) _idCache.set(gid, meta.id);
+    return meta;
+}
+async function enrichPendingEdits(recs, concurrency, onProgress) {
+    const todo = recs.filter(r => r.editsPending == null);
+    if (!todo.length) return;
+    concurrency = concurrency || 4;
+    let i = 0, done = 0, flagged = 0;
+    async function worker() {
+        while (i < todo.length) {
+            const rec = todo[i++];
+            const meta = await fetchEntityMeta(rec.gid);
+            rec.editsPending = meta ? meta.editsPending : false;
+            if (rec.editsPending) flagged++;
+            done++; if (onProgress) onProgress(done, todo.length);
+        }
+    }
+    await Promise.all(Array.from({ length: Math.min(concurrency, todo.length) }, worker));
+    if (flagged) Log.warn(flagged + ' recording(s) have pending edits — excluded from auto-match and blocked from merging');
+}
 const _idCache = new Map();
 async function resolveInternalId(gid) {
     if (_idCache.has(gid)) return _idCache.get(gid);
@@ -614,7 +650,8 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false, pendingEdit: false };
+    if (a.editsPending || b.editsPending) sig.pendingEdit = true;
     // null (unknown) video status never blocks — only a KNOWN true vs. false mismatch does.
     if (a.video != null && b.video != null && a.video !== b.video) sig.videoMismatch = true;
     if (a.isrcs.length && b.isrcs.length && a.isrcs.some(x => b.isrcs.includes(x))) sig.isrc = true;
@@ -737,6 +774,13 @@ async function mergeGroup(group) {
     if (group.state === 'busy') { Log.warn('merge skipped: group ' + group.id + ' is already merging'); return; }
     if (group.state === 'done') { Log.warn('merge skipped: group ' + group.id + ' is already merged'); return; }
     if (group.memberGids.length < 2) { Log.warn('merge skipped: group ' + group.id + ' has fewer than 2 members (' + group.memberGids.length + ')'); return; }
+    const pending = group.memberGids.map(g => STATE.recordings.get(g)).filter(r => r && r.editsPending);
+    if (pending.length) {
+        group.state = 'error';
+        group.error = 'Has pending edit(s): ' + pending.map(r => r.title).join(', ') + ' — resolve them in MB first';
+        Log.warn('merge blocked for group ' + group.id + ' — ' + pending.length + ' member(s) have pending edits');
+        renderGroups(); renderFooter(); return;
+    }
     Log.info('▶ Merge group ' + group.id + ' — confidence=' + group.confidence + ' signals=[' + group.signals.join(',') + ']');
     group.memberGids.forEach(gid => Log.info('  member ' + gid + (gid === group.target ? ' (TARGET/kept)' : '') + ': ' + describeRecordingForLog(STATE.recordings.get(gid))));
     group.state = 'busy'; group.error = null; renderGroups();
@@ -913,6 +957,10 @@ function fsStyle() {
         + '.fs-idc3{background:rgba(109,63,240,.14);color:#5a2fd8 !important}'
         + '.fs-idc4{background:rgba(200,56,79,.14);color:#a82c40 !important}'
         + '.fs-idc5{background:rgba(20,140,150,.16);color:#0d6b73 !important}'
+        + '.fs-rec-video{display:inline-flex;vertical-align:-2px;color:#6f42c1;margin-left:1px}'
+        + '.fs-rec-video svg{display:block}'
+        + '.fs-pending{background:rgba(168,112,42,.15);color:#8a5a1f;border:1px solid rgba(168,112,42,.4);border-radius:3px;padding:0 4px;font-size:9.5px;font-weight:700;white-space:nowrap}'
+        + '.fs-gcard.fs-has-pending{border-left-color:var(--fs-amber) !important;border-left-style:dashed !important}'
         + '.fs-note-btn{cursor:pointer;font-size:12px;padding:1px 6px;border-radius:4px;border:1px solid var(--fs-border);color:var(--fs-muted);background:var(--fs-panel2);flex-shrink:0}'
         + '.fs-note-btn:hover{color:var(--fs-text);border-color:var(--fs-muted)}'
         + '.fs-note-btn.fs-has-note{background:rgba(109,63,240,.12);border-color:var(--fs-purple);color:var(--fs-purple-d);font-weight:700}'
@@ -929,19 +977,22 @@ function fsStyle() {
         + '.fs-grows{padding:4px 6px}'
         + '.fs-grow{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px}'
         + '.fs-grow:hover{background:rgba(0,0,0,.035)}'
-        + '.fs-grow.fs-target-row{background:rgba(109,63,240,.09)}'
-        + '.fs-grow.fs-target-row:hover{background:rgba(109,63,240,.14)}'
+        // no target-row wash: the ★ and the row's position at the top of the card already say which recording is kept (#529).
         + '.fs-star{width:16px;flex-shrink:0;text-align:center;font-size:13px;color:#b6b6c4;cursor:pointer;opacity:0;transition:opacity .1s}'
         + '.fs-grow:hover .fs-star{opacity:1}'
         + '.fs-star-on{color:var(--fs-amber) !important;opacity:1 !important;cursor:default}'
         + '.fs-star-disabled{cursor:default}'
+        // box-sizing matters on these fixed-width flex cells (#529): the
+        // shared-identifier tint adds horizontal padding, and under content-box that
+        // padding ADDED to the width (96px→104px), so tinted rows sat 8px left of
+        // untinted ones — the artist/length columns visibly failed to line up.
         + '.fs-grow .fs-t{flex:1;min-width:0}'
-        + '.fs-artistcol{color:var(--fs-muted);font-size:11px;width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.fs-artistcol{box-sizing:border-box;color:var(--fs-muted);font-size:11px;width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-artistcol a{color:var(--fs-muted);text-decoration:underline;text-decoration-color:rgba(154,155,176,.35)}'
         + '.fs-artistcol a:hover{text-decoration-color:var(--fs-text);color:var(--fs-text)}'
-        + '.fs-grow .fs-rel{color:var(--fs-muted);font-size:11px;width:190px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.fs-grow .fs-len{color:var(--fs-muted);font-size:11px;width:44px;flex-shrink:0}'
-        + '.fs-grow .fs-isrc{color:var(--fs-muted);font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace}'
+        + '.fs-grow .fs-rel{box-sizing:border-box;color:var(--fs-muted);font-size:11px;width:190px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.fs-grow .fs-len{box-sizing:border-box;color:var(--fs-muted);font-size:11px;width:44px;flex-shrink:0}'
+        + '.fs-grow .fs-isrc{box-sizing:border-box;color:var(--fs-muted);font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace}'
         + '.fs-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .1s}'
         + '.fs-grow:hover .fs-acts{opacity:1}'
         + '.fs-acts span{color:var(--fs-muted);cursor:pointer;font-size:12px;padding:1px 3px}'
@@ -1010,7 +1061,11 @@ function releasesSummary(rec) {
 }
 // #529 follow-up: "Show video marker" — a visible badge, not just a
 // behind-the-scenes exclusion rule, so it's obvious before you even try to group one.
-function videoBadge(rec) { return rec.video === true ? '<span class="fs-vid" title="video recording">🎬</span> ' : ''; }
+// #529 (majkinetor): "use the same image for video recording as Apollo" —
+// apollo_editor's #303 VIDEO_MARK, which itself mirrors MB's native recordings-table marker.
+const VIDEO_MARK = '<span class="fs-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
+function videoBadge(rec) { return rec.video === true ? VIDEO_MARK + ' ' : ''; }
+function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from auto-match and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
 // #529 follow-up: "we should see isrc and accousticid in the card too" — the
 // pool card only showed presence dots; show the actual values (AcoustID
 // truncated, it's a 36-char UUID — full value is in the tooltip).
@@ -1029,7 +1084,7 @@ function poolCardHtml(rec) {
     const acOn = rec.acoustids && rec.acoustids.length ? 'on' : 'off';
     return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
-        + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + videoBadge(rec) + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
+        + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + pendingBadge(rec) + videoBadge(rec) + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
         + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
         + '<div class="fs-badges"><span class="fs-b fs-b-' + isrcOn + '" title="ISRC"></span><span class="fs-b fs-b-' + acOn + '" title="AcoustID"></span></div>'
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
@@ -1080,7 +1135,7 @@ function groupCardHtml(group) {
             : '<span class="fs-star' + (canPick ? '' : ' fs-star-disabled') + '" data-act="' + (canPick ? 'set-target' : '') + '" title="' + (canPick ? 'make this the merge target' : '') + '">☆</span>';
         return '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
             + star
-            + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + videoBadge(m) + recLink(m.gid, m.title) + '</span>'
+            + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + '</span>'
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + '<span class="fs-len">' + dur(m.length) + '</span>'
@@ -1090,7 +1145,7 @@ function groupCardHtml(group) {
     }).join('');
     const errMsg = group.state === 'error' ? '<div class="fs-gerr">' + escapeHtml(group.error || 'merge failed') + '</div>' : '';
     const dropZone = done ? '' : '<div class="fs-gdrop" data-act="drop-zone">drop from pool to add another recording to this group</div>';
-    const activeCls = STATE.activeGroupId === group.id ? ' fs-active' : '';
+    const activeCls = (STATE.activeGroupId === group.id ? ' fs-active' : '') + (members.some(m => m.editsPending) ? ' fs-has-pending' : '');
     const head = ordered[0];
     const hasNote = !!(group.editNote && group.editNote.trim());
     // #529 (majkinetor): "add in each card edit button in the title - clicking it
@@ -1162,14 +1217,28 @@ async function withBusy(label, fn) { busyStart(label); try { return await fn(); 
 // freshly seeded pool always showed them as unknown even though the data was
 // one batched request away. Seeding now kicks this off in the background —
 // batched (50 MBIDs/request), non-blocking, re-rendering as results land.
+// Background enrichment re-renders as results land, which REPLACES pool card
+// nodes. A native dblclick only fires when both clicks hit the same element, so
+// a render landing between a user's two clicks silently swallows the gesture —
+// the same failure mode that made Merge All look dead (#529). Coalesce
+// background renders and hold them off briefly after any pool click.
+let _bgRenderTimer = null, _lastPoolClick = 0;
+function scheduleBackgroundRender() {
+    if (!FUSION_OPEN) return;
+    clearTimeout(_bgRenderTimer);
+    const sinceClick = Date.now() - _lastPoolClick;
+    _bgRenderTimer = setTimeout(() => { if (FUSION_OPEN) renderAll(); }, Math.max(250, 700 - sinceClick));
+}
 function enrichPoolInBackground(recordings) {
     if (!recordings.length) return;
     if (SETTINGS.acoustidEnrich === false) { Log.info('AcoustID lookup disabled in options — skipping background lookup'); return; }
     if (recordings.length > SETTINGS.acoustidPoolCap) { Log.warn('Skipping background AcoustID lookup — ' + recordings.length + ' recordings exceeds the cap (' + SETTINGS.acoustidPoolCap + '); Auto-match will still do it'); return; }
     busyStart('fetching AcoustIDs…');
-    enrichAcoustIds(recordings, 4, () => { if (FUSION_OPEN) renderAll(); })
-        .catch(e => Log.error('Background AcoustID lookup failed: ' + e.message))
-        .finally(() => { busyEnd(); if (FUSION_OPEN) renderAll(); });
+    Promise.all([
+        enrichAcoustIds(recordings, 4, scheduleBackgroundRender),
+        enrichPendingEdits(recordings, 4, scheduleBackgroundRender),
+    ]).catch(e => Log.error('Background lookup failed: ' + e.message))
+      .finally(() => { busyEnd(); scheduleBackgroundRender(); });
 }
 
 let _scopeBaseLabel = '';
@@ -1191,6 +1260,8 @@ async function onAutoMatch() {
         // already sitting in a group were previously never looked up, so two rows
         // sharing an AcoustID could show one value and one blank.
         const allRecs = [...STATE.recordings.values()];
+        btn.textContent = 'Matching… (pending edits)';
+        await enrichPendingEdits(allRecs, 4, (done, total) => { btn.textContent = 'Matching… (pending ' + done + '/' + total + ')'; });
         btn.textContent = 'Matching… (ISRCs)';
         await enrichIsrcs(allRecs, 4, (done, total) => { btn.textContent = 'Matching… (ISRC ' + done + '/' + total + ')'; });
         if (SETTINGS.acoustidEnrich) {
@@ -1380,6 +1451,7 @@ function wireDelegatedEvents() {
     poolBody.addEventListener('click', e => {
         const card = e.target.closest('.fs-pcard'); if (!card) return;
         const gid = card.dataset.gid;
+        _lastPoolClick = Date.now();
         if (e.target.dataset.act === 'pool-remove') { removeFromPoolPermanently(gid); renderAll(); return; }
         STATE.selected = STATE.selected === gid ? null : gid;
         // Real bug (majkinetor: "Merge all is unclickable"): a full renderPool()
@@ -1606,7 +1678,7 @@ async function seedFromScope() {
         setScopeLabel(release ? ('Release: "' + release.title + '" · ' + release.artistCredit) : 'Release');
         renderAll();
         await maybeShowRGDropdown(SCOPE.mbid);
-        enrichAllReleases(recordings, 3, () => { if (FUSION_OPEN) renderAll(); }).catch(() => {});
+        enrichAllReleases(recordings, 3, scheduleBackgroundRender).catch(() => {});
         enrichPoolInBackground(recordings);
     } else if (SCOPE.type === 'release-group') {
         const { rg, recordings } = await fetchRGRecordings(SCOPE.mbid);
@@ -1662,7 +1734,7 @@ try {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
-        mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
+        mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,

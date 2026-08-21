@@ -356,6 +356,11 @@ ck(grouped2.ok, 'built a second manual group (C+D) for the mergeAll() test');
 // Array.from({length:NaN}) spawn ZERO workers. Merge All logged "queued" then
 // instantly "finished: 0 merged, 0 failed" while a direct mergeAll() call in
 // the test passed happily. Always exercise the real user gesture.
+// Earlier runs of this file submit real merges, which sit in the test server's
+// edit queue — so these fixtures legitimately report editsPending on later runs.
+// The pending-edit gate has its own dedicated test; clear it here so this test
+// keeps exercising what it is actually about: the merge mechanism.
+await page.evaluate(() => { window.__fusion.STATE.recordings.forEach(r => { r.editsPending = false; }); });
 console.log('Submitting REAL merges by clicking Merge All on test.musicbrainz.org (sandbox — safe)…');
 await page.click('#fs-mergeall');
 await page.waitForFunction(() => window.__fusion.STATE.groups.every(g => g.state === 'done' || g.state === 'error'), { timeout: 60000 });
@@ -574,7 +579,11 @@ const seedAc = await page.waitForFunction(
     { timeout: 90000 }).then(h => h.jsonValue());
 console.log('seed-time acoustid:', JSON.stringify(seedAc));
 ck(seedAc.withAc > 0, 'AcoustIDs are resolved at seed time, before Auto-match is ever pressed (' + seedAc.withAc + '/' + seedAc.total + ')');
-ck(seedAc.lit > 0, 'the pool cards\' AcoustID dots actually light up (' + seedAc.lit + ')');
+const litCount = await page.waitForFunction(() => {
+    const n = document.querySelectorAll('.fs-pcard .fs-b-on').length;
+    return n > 0 ? n : null;                     // background renders are debounced now
+}, { timeout: 30000 }).then(h => h.jsonValue()).catch(() => 0);
+ck(litCount > 0, "the pool cards' AcoustID dots actually light up (" + litCount + ")");
 
 // #529 (majkinetor): "make maximize/minimize button the same as in group
 // therapy" — GT uses a borderless ⛶ that flips to ❐ when maximized.
@@ -587,6 +596,42 @@ ck(maxOn.on && maxOn.g === '❐' && maxOn.t === 'Restore', 'maximizing flips it 
 await page.click('#fs-max'); await page.waitForTimeout(250);
 const maxOff = await page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; });
 ck(!maxOff.on && maxOff.g === '⛶', 'restoring flips it back to ⛶');
+
+// #529 (majkinetor): "recordings with pending edits highlighted … Probably
+// shouldn't include them in auto merging too." WS2 doesn't expose pending
+// edits; MB's internal /ws/js/entity does, via editsPending.
+const pend = await page.evaluate(async () => {
+    const F = window.__fusion;
+    const mk = (id, pending) => F.mkRecording(id, { title: 'Identical Title', length: 428000, isrcs: ['SHARED_ISRC'], artistCredit: 'Same Artist', releases: [], editsPending: pending });
+    const p1 = mk('p1', true), p2 = mk('p2', false);
+    const sig = F.pairSignals(p1, p2, 5000);
+    const grouped = F.autoMatch([p1, p2], 5000, 'loose');   // loose = most permissive
+    F.addToPool(p1); F.addToPool(p2);
+    const g = F.createGroupWithMember('p1'); F.addToGroup('p2', g.id);
+    F.renderAll();
+    const card = document.querySelector('.fs-gcard[data-gid="' + g.id + '"]');
+    const badge = !!card.querySelector('.fs-pending');
+    const marked = card.classList.contains('fs-has-pending');
+    await F.mergeGroup(g);
+    const after = { state: g.state, err: g.error };
+    F.deleteGroup(g.id); F.STATE.recordings.delete('p1'); F.STATE.recordings.delete('p2');
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    return { sigPending: sig.pendingEdit, sharedIsrc: sig.isrc, grouped: grouped.length, badge, marked, after };
+});
+console.log('pending edits:', JSON.stringify(pend));
+ck(pend.sigPending && pend.sharedIsrc, 'pairSignals flags a pending edit even when the pair shares an ISRC');
+ck(pend.grouped === 0, 'auto-match refuses to group a pending-edit recording despite identical ISRC/title/artist/length');
+ck(pend.badge, 'a pending-edit recording is visibly badged');
+ck(pend.marked, 'the group card carrying it is marked too');
+ck(pend.after.state === 'error' && /pending edit/i.test(pend.after.err || ''), 'merging a group containing one is blocked with a clear reason (' + pend.after.err + ')');
+// and the detection itself is real, not just the synthetic flag
+// Don't assume a given test-server recording is clean: earlier runs of this
+// file submit real merges, which sit in the edit queue and legitimately make
+// these fixtures report editsPending. Assert the SHAPE is read from MB instead.
+const realPending = await page.evaluate(async () => await window.__fusion.fetchEntityMeta('ac2c28b3-c278-47f9-88de-80d2a663ed39'));
+console.log('fetchEntityMeta:', JSON.stringify(realPending));
+ck(!!realPending && typeof realPending.editsPending === 'boolean' && typeof realPending.id === 'number',
+   "fetchEntityMeta reads a real recording's id + editsPending from MB (" + JSON.stringify(realPending) + ")");
 await page.evaluate(g => { const F = window.__fusion; F.deleteGroup(g); F.STATE.recordings.delete('n1'); F.STATE.recordings.delete('n2'); F.STATE.poolOrder.length = 0; F.renderAll(); }, noteGid);
 
 // #529 (majkinetor): "scraping the page is not going to cut it, we need to use
