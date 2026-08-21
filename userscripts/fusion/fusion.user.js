@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.153630
+// @version      2026.8.21.154155
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -21,7 +21,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.153630';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.154155';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -212,7 +212,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, acoustidEnrich: true, acoustidPoolCap: 60, makeVotable: false, matchCutoff: 'normal' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 60, makeVotable: false, matchCutoff: 'normal' };
 function loadSettings() {
     try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
     catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
@@ -292,6 +292,14 @@ function shouldUnion(sig, cutoff) {
     // strength (not even a shared ISRC) overrides it.
     if (sig.videoMismatch) return false;
     if (sig.pendingEdit) return false;   // never auto-group a recording with an open edit (#529)
+    // #529 (majkinetor): "we should never have such a big difference in length
+    // in auto merge" — a 0:42 reprise was auto-grouped with 4:11/4:17 takes,
+    // because the loose cutoff's title+artist path checks no length at all.
+    // A grossly different KNOWN length now blocks auto-grouping outright, ahead
+    // of even ISRC/AcoustID: those identify a work, not necessarily the same
+    // take, and four minutes apart is never the same recording. Manual grouping
+    // is still allowed — that's a deliberate human decision, not a guess.
+    if (sig.lengthConflict) return false;
     if (sig.isrc || sig.acoustid) return true;
     if (cutoff === 'strict') return false;
     if (cutoff === 'loose') return (sig.title && sig.length) || (sig.title && sig.artist);
@@ -633,6 +641,10 @@ function addToGroup(gid, groupId) {
     g.memberGids.push(gid);
     refreshGroupMeta(g);
     Log.info('Added ' + gid + ' to group ' + groupId);
+    return true;   // callers branch on this to set the current group — the
+                   // success path used to fall through as undefined, so a
+                   // double-click add never made its group current and the next
+                   // one silently targeted the LAST group instead.
 }
 function createGroupWithMember(gid) {
     const i = STATE.poolOrder.indexOf(gid); if (i === -1) return null;
@@ -661,8 +673,11 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false, pendingEdit: false };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false, pendingEdit: false, lengthConflict: false };
     if (a.editsPending || b.editsPending) sig.pendingEdit = true;
+    // both lengths known and far apart — see shouldUnion. Unknown length never
+    // counts as a conflict; it just means we can't tell.
+    if (a.length != null && b.length != null && Math.abs(a.length - b.length) > (SETTINGS.grossLengthMs || 30000)) sig.lengthConflict = true;
     // null (unknown) video status never blocks — only a KNOWN true vs. false mismatch does.
     if (a.video != null && b.video != null && a.video !== b.video) sig.videoMismatch = true;
     if (a.isrcs.length && b.isrcs.length && a.isrcs.some(x => b.isrcs.includes(x))) sig.isrc = true;
@@ -678,12 +693,21 @@ function autoMatch(pool, tolMs, cutoff) {
     const parent = new Map(pool.map(r => [r.gid, r.gid]));
     const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
     const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
+    let lengthBlocked = 0;
     for (let i = 0; i < pool.length; i++) {
         for (let j = i + 1; j < pool.length; j++) {
             const sig = pairSignals(pool[i], pool[j], tolMs);
+            // a pair that would otherwise have grouped, held back purely by the
+            // gross-length guard — worth reporting rather than silently dropping
+            if (sig.lengthConflict && (sig.isrc || sig.acoustid || (sig.title && sig.artist) || (sig.title && sig.length))) {
+                lengthBlocked++;
+                Log.info('  not grouped (length differs by ' + Math.round(Math.abs(pool[i].length - pool[j].length) / 1000) + 's): "'
+                    + pool[i].title + '" ' + dur(pool[i].length) + ' vs "' + pool[j].title + '" ' + dur(pool[j].length));
+            }
             if (shouldUnion(sig, cutoff)) union(pool[i].gid, pool[j].gid);
         }
     }
+    if (lengthBlocked) Log.warn(lengthBlocked + ' pair(s) held back by the gross-length guard (>' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart) — group them by hand if they really are the same take');
     const byRoot = new Map();
     for (const r of pool) { const root = find(r.gid); if (!byRoot.has(root)) byRoot.set(root, []); byRoot.get(root).push(r); }
     const groups = [];
@@ -1598,16 +1622,19 @@ function openSettings(anchor) {
     s.innerHTML = '<h4>' + ICON + ' Fusion <span class="fs-ver" title="installed script version">v' + VERSION + '</span><button class="fs-logbtn" type="button" title="Open the activity log">Log</button><a class="fs-help" href="' + HELP_URL + '" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
-        + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>';
+        + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>'
+        + '<label class="fs-opt" title="Auto-match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Never auto-group if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
     document.body.appendChild(s);
     const r = anchor.getBoundingClientRect();
     s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
     s.querySelector('#fs-opt-votable').checked = !!SETTINGS.makeVotable;
     s.querySelector('#fs-opt-acoustid').checked = SETTINGS.acoustidEnrich !== false;
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
+    s.querySelector('#fs-opt-gross').value = Math.round((SETTINGS.grossLengthMs != null ? SETTINGS.grossLengthMs : 30000) / 1000);
     s.querySelector('#fs-opt-votable').onchange = e => { SETTINGS.makeVotable = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
+    s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
     s.querySelector('.fs-logbtn').onclick = () => { s.remove(); openLog(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);

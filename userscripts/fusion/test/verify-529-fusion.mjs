@@ -720,6 +720,66 @@ ck(chip('Artist').cls === 'hit', 'Artist DOES shine — every member agrees on i
 ck(chip('Length').cls === '', 'Length stays unlit — no pair matches at all');
 ck(/every recording/i.test(chip('Artist').title) && /not all/i.test(chip('ISRC').title), 'the chip tooltips spell out the difference');
 ck(!/ISRC/i.test(sigSem.note) && /artist/i.test(sigSem.note), 'the edit note only claims what holds group-wide (' + sigSem.note + ')');
+
+// #529 (majkinetor): "we should never have such a big difference in length in
+// auto merge" — a 0:42 reprise was auto-grouped with 4:11/4:17 takes, because
+// the loose cutoff's title+artist path checks no length at all.
+const gross = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = (id, title, len, isrc) => F.mkRecording(id, { title, length: len, isrcs: isrc ? [isrc] : [], acoustids: [], artistCredit: 'Mocky', releases: [], editsPending: false });
+    const a = mk('g1', 'Music to My Ears', 251000);
+    const b = mk('g2', 'Music to My Ears (reprise)', 42000);
+    const c = mk('g3', 'Music to My Ears', 253000);
+    const out = {};
+    out.conflictFlag = F.pairSignals(a, b, 5000).lengthConflict;
+    out.smallGapNoConflict = F.pairSignals(a, c, 5000).lengthConflict;
+    const loose = F.autoMatch([a, b, c], 5000, 'loose');
+    out.looseGroups = loose.map(g => g.memberGids.slice().sort());
+    out.reprisePooled = !loose.some(g => g.memberGids.includes('g2'));
+    // a shared identifier must not drag a four-minute gap together either
+    const d = mk('g4', 'Music to My Ears', 251000, 'XX0000000001');
+    const e = mk('g5', 'Music to My Ears (reprise)', 42000, 'XX0000000001');
+    out.identifierCannotOverride = F.autoMatch([d, e], 5000, 'loose').length === 0;
+    // normal, small differences still group
+    out.smallDiffStillGroups = F.autoMatch([mk('h1', 'Same Take', 251000), mk('h2', 'Same Take', 253000)], 5000, 'normal').length === 1;
+    // unknown length is not a conflict — we simply cannot tell
+    out.unknownLengthNoConflict = F.pairSignals(mk('u1', 'X', null), mk('u2', 'X', 42000), 5000).lengthConflict;
+    // manual grouping stays possible: a deliberate human decision, not a guess
+    F.addToPool(a); F.addToPool(b);
+    const grp = F.createGroupWithMember('g1');
+    out.manualStillAllowed = F.addToGroup('g2', grp.id);
+    F.deleteGroup(grp.id); ['g1','g2'].forEach(x => F.STATE.recordings.delete(x));
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    return out;
+});
+console.log('gross length:', JSON.stringify(gross));
+ck(gross.conflictFlag === true, 'a 0:42 vs 4:11 pair is flagged as a gross length conflict');
+ck(gross.smallGapNoConflict === false, 'a couple of seconds apart is NOT a conflict');
+ck(gross.unknownLengthNoConflict === false, 'an unknown length is never treated as a conflict');
+ck(gross.reprisePooled, 'the 0:42 reprise is no longer auto-grouped with the full-length takes');
+ck(gross.looseGroups.length === 1 && gross.looseGroups[0].join(',') === 'g1,g3', 'the two full-length takes still group together (' + JSON.stringify(gross.looseGroups) + ')');
+ck(gross.identifierCannotOverride, 'not even a shared ISRC auto-groups across a four-minute gap');
+ck(gross.smallDiffStillGroups, 'ordinary near-identical lengths still auto-group');
+ck(gross.manualStillAllowed === true, 'manual grouping across the gap is still permitted — the guard only constrains AUTO-match');
+
+// addToGroup's success path used to fall through as undefined, so callers that
+// branch on it never set the current group after a double-click add.
+const retVal = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = id => F.mkRecording(id, { title: 'R' + id, length: 200000, isrcs: [], acoustids: [], artistCredit: 'A', releases: [], editsPending: false });
+    ['r1','r2','r3'].forEach(id => F.addToPool(mk(id)));
+    const gA = F.createGroupWithMember('r1');
+    const gB = F.createGroupWithMember('r2');
+    F.STATE.activeGroupId = gA.id;                 // user made A current
+    const ret = F.addToGroup('r3', gA.id);
+    const out = { ret, aSize: F.findGroup(gA.id).memberGids.length, bSize: F.findGroup(gB.id).memberGids.length };
+    [gA.id, gB.id].forEach(id => F.deleteGroup(id));
+    ['r1','r2','r3'].forEach(x => F.STATE.recordings.delete(x));
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    return out;
+});
+ck(retVal.ret === true, 'addToGroup returns true on success, so callers can tell it worked (was undefined)');
+ck(retVal.aSize === 2 && retVal.bSize === 1, 'the recording lands in the CURRENT group, not the last-created one');
 // and the detection itself is real, not just the synthetic flag
 // Don't assume a given test-server recording is clean: earlier runs of this
 // file submit real merges, which sit in the edit queue and legitimately make
