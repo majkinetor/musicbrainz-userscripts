@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.221229
+// @version      2026.8.21.222843
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -668,7 +668,10 @@ async function fetchRecordingByGid(gid) {
 // recording at fetch time, so this backfills the rest lazily.
 async function fetchAllReleases(gid) {
     const j = await wsGet('/ws/2/recording/' + gid + '?inc=releases&fmt=json');
-    if (!j) return { releases: [], video: null };
+    // null, not an empty list: a failed lookup is not "this recording is on no
+    // release". Returning [] here made enrichAllReleases record the absence as
+    // fact — the same overclaim the AcoustID and ISRC paths already had to lose.
+    if (!j) return null;
     const seen = new Set(); const out = [];
     for (const rel of j.releases || []) {
         if (seen.has(rel.id)) continue;
@@ -732,13 +735,17 @@ async function fetchReleaseDetails(gid) {
 async function enrichAllReleases(recs, concurrency, onProgress) {
     concurrency = concurrency || 3;
     let i = 0, done = 0;
+    const epoch = _bgEpoch;
     async function worker() {
         while (i < recs.length) {
+            if (!bgAlive(epoch)) return;
             const rec = recs[i++];
             if (rec.allReleases == null) {
                 const r = await fetchAllReleases(rec.gid);
-                rec.allReleases = r.releases;
-                if (rec.video == null) rec.video = r.video;
+                if (r) {
+                    rec.allReleases = r.releases;
+                    if (rec.video == null) rec.video = r.video;
+                }
             }
             done++; if (onProgress) onProgress(done, recs.length);
         }
@@ -1104,7 +1111,9 @@ async function enrichAcoustIdsNow(recs, concurrency, onProgress) {
         });
         return true;
     };
+    const epoch = _bgEpoch;
     for (let i = 0; i < pending.length; i += ACOUSTID_BATCH) {
+        if (!bgAlive(epoch)) { Log.warn('AcoustID lookup stopped after ' + done + ' of ' + pending.length + ' recording(s)'); break; }
         const slice = pending.slice(i, i + ACOUSTID_BATCH);
         if (!await runBatch(slice)) failed.push(slice);
         done += slice.length;
@@ -1648,6 +1657,8 @@ function fsStyle() {
         + '.fs-ftr{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--fs-panel2);border-top:1px solid var(--fs-border)}'
         + '.fs-idmore{color:var(--fs-muted);font-size:9px}'
         + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
+        + '.fs-bgstop{margin-left:6px;padding:0 4px;border-radius:3px;font-weight:700;color:var(--fs-muted);background:rgba(0,0,0,.06)}'
+        + '.fs-bgstop:hover{background:rgba(200,56,79,.15);color:var(--fs-red)}'
         + '.fs-clearset{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-subcnt{font-size:10.5px;font-weight:600;color:var(--fs-muted);text-transform:none;letter-spacing:0;white-space:nowrap}'
         + '.fs-runsum{position:relative;margin:8px 10px 0;border:1px solid rgba(28,155,99,.4);background:rgba(28,155,99,.07);border-radius:6px;font-size:11.5px}'
@@ -1843,7 +1854,9 @@ async function toggleExpandAllDeep() {
     if (!missing.length) return;
     Log.info('Expand all details: loading release tables for ' + missing.length + ' recording(s)');
     let done = 0;
+    const epoch = _bgEpoch;
     for (const gid of missing) {
+        if (!bgAlive(epoch)) { Log.warn('Stopped loading release tables after ' + done + ' of ' + missing.length); break; }
         setBgTask('Loading recording releases ' + (done + 1) + '/' + missing.length + '…');
         try { storeReleaseDetails(gid, await fetchReleaseDetails(gid)); }
         catch (e) { STATE.releaseDetails.set(gid, null); Log.warn('Release lookup failed for ' + gid + ': ' + e.message); }
@@ -1893,10 +1906,12 @@ async function prefetchGroupReleases() {
     }
     _prefetchCapWarned = 0;
     _prefetchRunning = true;
+    const epoch = _bgEpoch;
     Log.info('Background release prefetch: ' + wanted.length + ' recording(s) in ' + STATE.groups.length + ' group(s)');
     let done = 0;
     try {
         for (const gid of wanted) {
+            if (!bgAlive(epoch)) { Log.warn('Release prefetch stopped after ' + done + ' of ' + wanted.length); break; }
             // Groups can be dissolved or merged while this runs — skip anything
             // that has left the board rather than fetching data nobody wants.
             if (!STATE.groups.some(g => g.memberGids.includes(gid))) { done++; continue; }
@@ -1935,7 +1950,9 @@ async function toggleAllDetails(groupId) {
     const missing = g.memberGids.filter(gid => !STATE.releaseDetails.has(gid));
     if (!missing.length) return;
     let done = 0;
+    const epoch = _bgEpoch;
     for (const gid of missing) {
+        if (!bgAlive(epoch)) { Log.warn('Stopped loading release tables after ' + done + ' of ' + missing.length); break; }
         setBgTask('Loading recording releases ' + (done + 1) + '/' + missing.length + '…');
         try { storeReleaseDetails(gid, await fetchReleaseDetails(gid)); }
         catch (e) { STATE.releaseDetails.set(gid, null); Log.warn('Release lookup failed for ' + gid + ': ' + e.message); }
@@ -2277,8 +2294,24 @@ let _bgLabel = '';
 function setBgTask(text) {
     _bgLabel = text || '';
     const e = document.getElementById('fs-bgtask'); if (!e) return;
-    if (_bgLabel) { e.textContent = _bgLabel; e.style.display = ''; }
-    else { e.style.display = 'none'; e.textContent = ''; }
+    if (_bgLabel) {
+        e.innerHTML = '<span class="fs-bgtext">' + escapeHtml(_bgLabel) + '</span>'
+            + '<span class="fs-bgstop" title="stop loading">✕</span>';
+        e.style.display = '';
+    } else { e.style.display = 'none'; e.innerHTML = ''; }
+}
+// #529 (majkinetor): "Provide a way to stop ongoing fetching". Background work
+// runs in loops that can span hundreds of requests; there was no way out but
+// closing the page. Every such loop captures the epoch it started in and stops
+// as soon as it changes, so cancelling takes effect at the next request rather
+// than needing an abortable transport.
+let _bgEpoch = 0;
+function bgAlive(epoch) { return epoch === _bgEpoch; }
+function cancelBackground() {
+    _bgEpoch++;
+    setBgTask('');
+    clearNetTrouble();
+    Log.warn('Background loading cancelled — whatever had already arrived is kept');
 }
 function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
 function busyEnd() { _busyCount = Math.max(0, _busyCount - 1); if (_busyCount === 0) _busyLabel = ''; renderBusy(); }
@@ -2797,7 +2830,7 @@ function buildShell() {
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><button type="button" id="fs-expandall-deep" class="fs-btn" title="expand every group and every release table (or collapse it all again)">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" title="expand every group and every release table (or collapse it all again)">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
         + '<div class="fs-runsum" id="fs-runsum" style="display:none"></div><div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
@@ -2838,7 +2871,10 @@ function buildShell() {
     // already said "see Log for detail" without offering a way to get there.
     for (const id of ['fs-scope', 'fs-busy', 'fs-bgtask', 'fs-netbanner']) {
         const el = document.getElementById(id);
-        if (el) { el.classList.add('fs-toLog'); el.onclick = () => openLog(); }
+        if (el) {
+            el.classList.add('fs-toLog');
+            el.onclick = (e) => { if (e.target.classList.contains('fs-bgstop')) cancelBackground(); else openLog(); };
+        }
     }
     document.getElementById('fs-rg-editions').addEventListener('change', onLoadRgEdition);
     const poolFilter = document.getElementById('fs-pool-filter');
@@ -2937,7 +2973,7 @@ try {
         pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
-        renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice,
+        renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive,
         lengthDiffLabel,
         toggleCollapseAll, allGroupsCollapsed, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
