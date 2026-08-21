@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.222843
+// @version      2026.8.21.225035
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -501,6 +501,7 @@ async function fetchRecordingsByBrowse(browseQuery, label, onPage) {
 // index missed 86 of 310 on the artist that surfaced this). Non-blocking, and
 // it goes through the same rate-limit gate as everything else.
 async function backfillMissingReleases(recordings) {
+    if (_bgStopped) return;
     const missing = recordings.filter(r => r.allReleases == null);
     if (!missing.length) return;
     Log.info('Filling in release lists for ' + missing.length + ' recording(s) the search index did not return');
@@ -1841,6 +1842,7 @@ function everythingExpanded() {
         && STATE.groups.every(g => !STATE.collapsedGroups.has(g.id) && g.memberGids.every(m => STATE.expandedReleases.has(m)));
 }
 async function toggleExpandAllDeep() {
+    resumeBackground('you used Expand all details');
     if (everythingExpanded()) {
         STATE.groups.forEach(g => g.memberGids.forEach(m => STATE.expandedReleases.delete(m)));
         STATE.groups.forEach(g => STATE.collapsedGroups.add(g.id));
@@ -1886,7 +1888,7 @@ function renderCollapseAllBtn() {
 // to) anything the user does; nothing here calls busyStart.
 let _prefetchRunning = false, _prefetchCapWarned = 0;
 async function prefetchGroupReleases() {
-    if (!SETTINGS.prefetchGroupReleases || _prefetchRunning) return;
+    if (!SETTINGS.prefetchGroupReleases || _prefetchRunning || _bgStopped) return;
     const wanted = [];
     for (const g of STATE.groups) {
         for (const gid of g.memberGids) {
@@ -1940,6 +1942,7 @@ function groupAllExpanded(group) {
 }
 async function toggleAllDetails(groupId) {
     const g = findGroup(groupId); if (!g) return;
+    resumeBackground('you opened a card’s details');
     if (groupAllExpanded(g)) {
         g.memberGids.forEach(gid => STATE.expandedReleases.delete(gid));
         renderGroups();
@@ -1980,6 +1983,7 @@ function storeReleaseDetails(gid, rows) {
     if (!rec.releases || !rec.releases.length) rec.releases = list;
 }
 async function toggleReleaseDetails(gid) {
+    resumeBackground('you expanded a recording');
     if (STATE.expandedReleases.has(gid)) { STATE.expandedReleases.delete(gid); renderGroups(); return; }
     STATE.expandedReleases.add(gid);
     renderGroups();                                  // show "loading…" straight away
@@ -2305,13 +2309,24 @@ function setBgTask(text) {
 // closing the page. Every such loop captures the epoch it started in and stops
 // as soon as it changes, so cancelling takes effect at the next request rather
 // than needing an abortable transport.
-let _bgEpoch = 0;
-function bgAlive(epoch) { return epoch === _bgEpoch; }
+// Cancelling has to STICK. renderGroups kicks the prefetch on every render, and
+// the prefetch re-queues itself while anything is still missing, so a plain
+// "stop this loop" was undone by the very next repaint (#529: "after hitting
+// [x] button it keeps coming back"). Automatic background work stays off until
+// the user asks for something explicitly.
+let _bgEpoch = 0, _bgStopped = false;
+function bgAlive(epoch) { return epoch === _bgEpoch && !_bgStopped; }
+function resumeBackground(why) {
+    if (!_bgStopped) return;
+    _bgStopped = false;
+    Log.info('Background loading re-enabled (' + why + ')');
+}
 function cancelBackground() {
     _bgEpoch++;
+    _bgStopped = true;
     setBgTask('');
     clearNetTrouble();
-    Log.warn('Background loading cancelled — whatever had already arrived is kept');
+    Log.warn('Background loading stopped — what already arrived is kept; it will not restart by itself');
 }
 function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
 function busyEnd() { _busyCount = Math.max(0, _busyCount - 1); if (_busyCount === 0) _busyLabel = ''; renderBusy(); }
@@ -2973,7 +2988,7 @@ try {
         pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
-        renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive,
+        renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,
         toggleCollapseAll, allGroupsCollapsed, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
