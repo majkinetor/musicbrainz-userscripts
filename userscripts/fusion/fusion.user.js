@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.181327
+// @version      2026.8.21.181550
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -214,7 +214,7 @@ function renderNetBanner() {
     // short in the bar, the detail in the tooltip: the header is a single line
     // and a long message would push the scope label out of it.
     el.textContent = '⚠ ' + (_netTrouble.kind === 'offline' ? 'no connection' : 'throttled');
-    el.title = long + ' (see Log for detail)';
+    el.title = long + ' — click for the log';
     el.className = 'fs-netbanner' + (_netTrouble.kind === 'offline' ? ' fs-netbanner-err' : '');
 }
 const MB_MAX_WAIT_MS = 60000;   // never park longer than this on one hint
@@ -1211,7 +1211,7 @@ function fsStyle() {
         + '.fs-btn{border:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}'
         + '.fs-btn.fs-primary{background:linear-gradient(180deg,var(--fs-purple),var(--fs-purple-d));border-color:var(--fs-purple-d);color:#fff;font-weight:600}'
         + '.fs-btn:disabled{opacity:.5;cursor:default}'
-        + '.fs-netbanner{display:inline-flex;align-items:center;box-sizing:border-box;height:18px;padding:0 8px;border-radius:4px;font-size:11px;line-height:1;font-weight:600;white-space:nowrap;cursor:help;background:rgba(168,112,42,.14);color:#8a5a1f;border:1px solid rgba(168,112,42,.4)}'
+        + '.fs-netbanner{display:inline-flex;align-items:center;box-sizing:border-box;height:18px;padding:0 8px;border-radius:4px;font-size:11px;line-height:1;font-weight:600;white-space:nowrap;cursor:pointer;background:rgba(168,112,42,.14);color:#8a5a1f;border:1px solid rgba(168,112,42,.4)}'
         + '.fs-netbanner.fs-netbanner-err{background:rgba(200,56,79,.12);color:var(--fs-red);border-color:rgba(200,56,79,.45)}'
         + '.fs-legend{display:flex;gap:10px;color:var(--fs-muted);font-size:11px;align-items:center}'
         + '.fs-body{display:flex;flex:1;min-height:0}'
@@ -1374,6 +1374,7 @@ function fsStyle() {
         + '.fs-idmore{color:var(--fs-muted);font-size:9px}'
         + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-clearset{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--fs-muted);white-space:nowrap}'
+        + '.fs-toLog{cursor:pointer} .fs-toLog:hover{text-decoration:underline}'
         + '.fs-clearset .fs-btn{padding:2px 8px}'
         + '.fs-detbtn{font-size:10px;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:2px 6px;cursor:pointer;white-space:nowrap;background:#fff}'
         + '.fs-detbtn:hover{border-color:var(--fs-purple);color:var(--fs-purple)}'
@@ -1685,8 +1686,16 @@ function groupCardHtml(group) {
     // the truth once a recording carries more than one — two rows can be linked
     // by different ids, so whichever one the cell picked, some real relationship
     // stayed invisible and the colours read as a contradiction.
+    // #529 (majkinetor): "sort id's … so we don't have them moving places across
+    // rows (9e is first on pos 1 then at pos 2)". The order has to come from the
+    // GROUP, not from each recording's own array, or the same value lands on a
+    // different line in each row. Most-shared first (that is the line that
+    // explains why the group exists), ties broken alphabetically so it is total
+    // and stable.
+    const idRank = (v) => (-(idCounts.get(v) || 0));
+    const sortIds = (vals) => vals.slice().sort((a, b) => idRank(a) - idRank(b) || (a < b ? -1 : a > b ? 1 : 0));
     const idCell = (list, isAcoustid) => {
-        const vals = uniq(list || []);
+        const vals = sortIds(uniq(list || []));
         if (!vals.length) return '<span class="fs-isrc"><span class="fs-idnone">—</span></span>';
         const label = isAcoustid ? 'AcoustID' : 'ISRC';
         const tags = vals.map(v => {
@@ -2307,7 +2316,7 @@ function buildShell() {
     };
     const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '') + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" title="open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" title="open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" title="open the activity log">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
@@ -2346,6 +2355,13 @@ function buildShell() {
     // parameter, which has bitten this script before (#503, mergeAll's NaN)
     document.getElementById('fs-collapseall').onclick = () => toggleCollapseAll();
     document.getElementById('fs-clearmerged').onclick = () => { clearMerged(); renderAll(); };
+    // The header status texts all describe work whose detail is in the log, so
+    // clicking any of them opens it — including the network pill, whose tooltip
+    // already said "see Log for detail" without offering a way to get there.
+    for (const id of ['fs-scope', 'fs-busy', 'fs-bgtask', 'fs-netbanner']) {
+        const el = document.getElementById(id);
+        if (el) { el.classList.add('fs-toLog'); el.onclick = () => openLog(); }
+    }
     document.getElementById('fs-rg-editions').addEventListener('change', onLoadRgEdition);
     const poolFilter = document.getElementById('fs-pool-filter');
     poolFilter.addEventListener('input', () => { STATE.poolFilter = poolFilter.value.trim(); renderPool(); });
