@@ -649,6 +649,77 @@ ck(chipVis.lit.length > 0 && chipVis.dim.length > 0, 'the card has both matched 
 ck(chipVis.lit.every(c => c.bg !== 'rgba(0, 0, 0, 0)' && c.bg !== 'rgb(255, 255, 255)'), 'matched chips carry a filled tint, not just coloured text');
 ck(chipVis.lit.every(c => Number(c.weight) >= 700), 'matched chips are bold');
 ck(chipVis.dim.every(c => Number(c.op) < 1) && chipVis.lit.every(c => Number(c.op) === 1), 'unmatched chips are faded back so matched ones stand out');
+
+// #529 (majkinetor): "add pool filtering as one types in the header instead".
+// A VIEW filter only — it must never change what Auto-match/merges operate on.
+const filt = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = (id, title, artist, isrc, relTitle) => F.mkRecording(id, { title, length: 1000, isrcs: isrc ? [isrc] : [], artistCredit: artist, releases: [{ gid: 'r', title: relTitle, trackNumber: '1' }], editsPending: false });
+    F.addToPool(mk('f1', 'Alpha Song', 'Some Artist', 'AAAA11111111', 'First Album'));
+    F.addToPool(mk('f2', 'Beta Song', 'Other Artist', 'BBBB22222222', 'Second Album'));
+    F.addToPool(mk('f3', 'Gamma Song', 'Some Artist', null, 'First Album'));
+    F.renderAll();
+    const count = () => document.querySelectorAll('.fs-pcard').length;
+    const badge = () => document.getElementById('fs-pool-cnt').textContent;
+    const apply = q => { STATE_set(q); return { n: count(), badge: badge() }; };
+    function STATE_set(q) { F.STATE.poolFilter = q; F.renderPool(); }
+    const total = { n: count(), badge: badge() };
+    const byTitle = apply('alpha');
+    const byArtist = apply('some artist');
+    const byIsrc = apply('BBBB22222222');
+    const byRelease = apply('first album');
+    const caseIns = apply('ALPHA');
+    const none = apply('zzz-nothing');
+    const emptyMsg = (document.querySelector('.fs-empty') || {}).textContent || '';
+    const poolIntact = F.STATE.poolOrder.length;
+    STATE_set('');
+    const cleared = { n: count(), badge: badge() };
+    ['f1','f2','f3'].forEach(g => F.STATE.recordings.delete(g));
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    return { total, byTitle, byArtist, byIsrc, byRelease, caseIns, none, emptyMsg, poolIntact, cleared };
+});
+console.log('pool filter:', JSON.stringify(filt));
+ck(filt.total.n === 3, 'unfiltered pool shows every card (' + filt.total.n + ')');
+ck(filt.byTitle.n === 1, 'typing filters by title (' + filt.byTitle.n + ')');
+ck(filt.byArtist.n === 2, 'filters by artist credit (' + filt.byArtist.n + ')');
+ck(filt.byIsrc.n === 1, 'filters by ISRC (' + filt.byIsrc.n + ')');
+ck(filt.byRelease.n === 2, 'filters by release title (' + filt.byRelease.n + ')');
+ck(filt.caseIns.n === 1, 'matching is case-insensitive');
+ck(filt.byTitle.badge.indexOf(' / ') !== -1, 'the header count shows matched / total while filtering (' + filt.byTitle.badge + ')');
+ck(filt.none.n === 0 && /matches/i.test(filt.emptyMsg), 'a filter with no matches explains itself rather than looking empty');
+ck(filt.poolIntact === 3, 'filtering NEVER removes anything from the pool — Auto-match and merges still see all of it');
+ck(filt.cleared.n === 3 && filt.cleared.badge === '3', 'clearing the filter restores the full pool view');
+
+// #529 (majkinetor): "chips shine even if not entire group has them all, isrc
+// here is not shared by 1 member … the same goes for title". A chip must mean
+// "every recording in this group agrees", not "some pair happened to match".
+const sigSem = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = (id, title, isrc, len) => F.mkRecording(id, { title, length: len, isrcs: isrc ? [isrc] : [], acoustids: [], artistCredit: 'Mocky', releases: [], editsPending: false });
+    // 2 of 3 share an ISRC; the third differs in title and length
+    F.addToPool(mk('s1', 'Extended Vacation (Radio Slave mix)', 'DEQ320600296', 387000));
+    F.addToPool(mk('s2', 'Extended Vacation (Radio Slave remix)', 'DEQ320600296', 349000));
+    F.addToPool(mk('s3', 'Extended Vacation (Rekid MIX)', null, 280000));
+    const g = F.createGroupWithMember('s1'); F.addToGroup('s2', g.id); F.addToGroup('s3', g.id);
+    F.renderAll();
+    const card = document.querySelector('.fs-gcard[data-gid="' + g.id + '"]');
+    const chips = [...card.querySelectorAll('.fs-sig span')].map(x => ({ t: x.textContent, cls: x.className, title: x.title }));
+    const note = F.buildEditNote(g).split(String.fromCharCode(10))[0];
+    const res = { signals: g.signals, signalsAll: g.signalsAll, chips, note };
+    F.deleteGroup(g.id); ['s1','s2','s3'].forEach(x => F.STATE.recordings.delete(x));
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    return res;
+});
+console.log('signal semantics:', JSON.stringify(sigSem));
+const chip = t => sigSem.chips.find(c => c.t === t) || {};
+ck(sigSem.signals.includes('isrc'), 'the pairwise signal set still records that SOME pair shares an ISRC (why the group formed)');
+ck(!sigSem.signalsAll.includes('isrc'), 'but the group-wide set does NOT, since one member has no ISRC');
+ck(chip('ISRC').cls === 'partial', 'the ISRC chip therefore does not shine — it reads as partial (' + chip('ISRC').cls + ')');
+ck(chip('Title').cls === 'partial', 'same for Title, where one member differs (' + chip('Title').cls + ')');
+ck(chip('Artist').cls === 'hit', 'Artist DOES shine — every member agrees on it');
+ck(chip('Length').cls === '', 'Length stays unlit — no pair matches at all');
+ck(/every recording/i.test(chip('Artist').title) && /not all/i.test(chip('ISRC').title), 'the chip tooltips spell out the difference');
+ck(!/ISRC/i.test(sigSem.note) && /artist/i.test(sigSem.note), 'the edit note only claims what holds group-wide (' + sigSem.note + ')');
 // and the detection itself is real, not just the synthetic flag
 // Don't assume a given test-server recording is clean: earlier runs of this
 // file submit real merges, which sit in the edit queue and legitimately make

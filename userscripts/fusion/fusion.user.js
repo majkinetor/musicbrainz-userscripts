@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.144808
+// @version      2026.8.21.153630
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -21,7 +21,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.144808';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.153630';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -536,7 +536,7 @@ async function fetchAcoustIds(gid) {
 }
 
 // ── pool / groups state ──────────────────────────────────────────────────
-const STATE = { recordings: new Map(), poolOrder: [], groups: [], selected: null, activeGroupId: null, _dragSrc: null, releaseInfo: null, rgInfo: null };
+const STATE = { recordings: new Map(), poolOrder: [], groups: [], poolFilter: '', selected: null, activeGroupId: null, _dragSrc: null, releaseInfo: null, rgInfo: null };
 
 function addToPool(rec) {
     if (STATE.recordings.has(rec.gid)) return false;
@@ -550,8 +550,18 @@ function removeFromPoolPermanently(gid) {
     STATE.recordings.delete(gid);
     Log.info('Removed ' + gid + ' from the pool');
 }
+// Two different notions, deliberately kept apart (#529: "chips shine even if
+// not entire group has them all, isrc here is not shared by 1 member"):
+//   signals    — holds for at least ONE pair. Explains why the group formed
+//                (groups are built transitively, so A~B by ISRC and B~C by
+//                title is a legitimate group) and drives the confidence badge.
+//   signalsAll — holds for EVERY pair, i.e. the whole group genuinely agrees.
+//                This is what lights a chip, so a lit chip never overstates.
+const SIGNAL_KEYS = ['isrc', 'acoustid', 'length', 'title', 'artist'];
 function computeGroupConfidence(members) {
-    let confidence = null; const signals = new Set();
+    let confidence = null;
+    const signals = new Set();
+    const all = new Set(members.length > 1 ? SIGNAL_KEYS : []);   // intersection seed
     for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
         const sig = pairSignals(members[i], members[j], SETTINGS.lengthToleranceMs);
         if (sig.isrc) { signals.add('isrc'); confidence = 'high'; }
@@ -559,14 +569,15 @@ function computeGroupConfidence(members) {
         if (sig.length) signals.add('length');
         if (sig.title) signals.add('title');
         if (sig.artist) signals.add('artist');
+        SIGNAL_KEYS.forEach(k => { if (!sig[k]) all.delete(k); });   // drop any pair disagrees on
         if (!confidence && shouldUnion(sig, SETTINGS.matchCutoff)) confidence = 'medium';
     }
-    return { confidence: confidence || 'manual', signals: [...signals] };
+    return { confidence: confidence || 'manual', signals: [...signals], signalsAll: [...all] };
 }
 function refreshGroupMeta(g) {
     const members = g.memberGids.map(x => STATE.recordings.get(x)).filter(Boolean);
     const meta = computeGroupConfidence(members);
-    g.confidence = meta.confidence; g.signals = meta.signals;
+    g.confidence = meta.confidence; g.signals = meta.signals; g.signalsAll = meta.signalsAll;
     if (!g.memberGids.includes(g.target)) g.target = g.memberGids[0];
 }
 // #529 follow-up (majkinetor, live): "'Return to pool' returns the entire
@@ -626,7 +637,7 @@ function addToGroup(gid, groupId) {
 function createGroupWithMember(gid) {
     const i = STATE.poolOrder.indexOf(gid); if (i === -1) return null;
     STATE.poolOrder.splice(i, 1);
-    const g = { id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: [gid], confidence: 'manual', signals: [], target: gid, state: 'pending', error: null, editNote: null, editing: false };
+    const g = { id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: [gid], confidence: 'manual', signals: [], signalsAll: [], target: gid, state: 'pending', error: null, editNote: null, editing: false };
     STATE.groups.push(g);
     Log.info('Created new group with ' + gid);
     return g;
@@ -680,7 +691,7 @@ function autoMatch(pool, tolMs, cutoff) {
         if (members.length < 2) continue;
         const meta = computeGroupConfidence(members);
         const target = members.slice().sort((a, b) => b.releases.length - a.releases.length)[0].gid;
-        groups.push({ id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: members.map(m => m.gid), confidence: meta.confidence, signals: meta.signals, target, state: 'pending', error: null, editNote: null, editing: false });
+        groups.push({ id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: members.map(m => m.gid), confidence: meta.confidence, signals: meta.signals, signalsAll: meta.signalsAll, target, state: 'pending', error: null, editNote: null, editing: false });
     }
     return groups;
 }
@@ -736,7 +747,8 @@ async function enrichIsrcs(recs, concurrency, onProgress) {
 // merge.make_votable and no CSRF token, session cookie authorises) ──────────
 function autoEditNote(group) {
     const sigLabel = { isrc: 'same ISRC', acoustid: 'same AcoustID', length: 'length within ' + Math.round(SETTINGS.lengthToleranceMs / 1000) + 's', title: 'similar title', artist: 'similar artist' };
-    const reasons = (group.signals || []).map(s => sigLabel[s] || s).join(', ') || 'manually grouped';
+    const basis = (group.signalsAll && group.signalsAll.length) ? group.signalsAll : (group.signals || []);
+    const reasons = basis.map(s => sigLabel[s] || s).join(', ') || 'manually grouped';
     return 'Merged via Fusion — ' + reasons + '.';
 }
 // #529 (majkinetor): a per-group edit note, editable from the card. A custom
@@ -893,6 +905,9 @@ function fsStyle() {
         + '.fs-colhdr{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--fs-border);font-weight:700;font-size:12px;letter-spacing:.3px;color:var(--fs-muted);text-transform:uppercase;background:var(--fs-panel2)}'
         + '.fs-cnt{background:var(--fs-panel);border:1px solid var(--fs-border);border-radius:10px;padding:1px 7px;color:var(--fs-text);font-weight:600}'
         + '.fs-hint{text-transform:none;font-weight:400;color:var(--fs-muted)}'
+        + '.fs-poolfilter{flex:1;min-width:0;max-width:210px;box-sizing:border-box;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-text);border-radius:6px;padding:3px 8px;font:400 11.5px -apple-system,Segoe UI,Arial,sans-serif;text-transform:none;letter-spacing:0}'
+        + '.fs-poolfilter:focus{outline:none;border-color:var(--fs-purple)}'
+        + '.fs-cnt.fs-cnt-filtered{color:var(--fs-purple-d);border-color:var(--fs-purple)}'
         // #529 follow-up (majkinetor, screenshot): "I can't see individual
         // recordings here (have to zoom out)" — classic flexbox trap: a flex
         // item's default min-height:auto refuses to shrink below its natural
@@ -950,6 +965,7 @@ function fsStyle() {
         // border and bold text, and unmatched ones are deliberately faded back.
         + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-muted);opacity:.55}'
         + '.fs-sig span.hit{background:rgba(28,155,99,.16);border-color:rgba(28,155,99,.7);color:#0f6b45;font-weight:700;opacity:1}'
+        + '.fs-sig span.partial{border-style:dashed;border-color:rgba(28,155,99,.5);color:#3f8f6b;opacity:.85}'
         + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(109,63,240,.1);color:var(--fs-purple-d);cursor:pointer;font-weight:600}'
         + '.fs-mbtn.fs-done{background:rgba(28,155,99,.12);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
         + '.fs-mbtn.fs-err{background:rgba(200,56,79,.1);border-color:var(--fs-red);color:var(--fs-red)}'
@@ -1104,7 +1120,15 @@ function groupCardHtml(group) {
     const confClass = group.confidence === 'high' ? 'high' : group.confidence === 'medium' ? 'med' : 'manual';
     const confLabel = group.confidence === 'high' ? 'HIGH' : group.confidence === 'medium' ? 'MEDIUM' : 'MANUAL';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
-    const sigChips = Object.keys(sigNames).map(k => '<span class="' + (group.signals.includes(k) ? 'hit' : '') + '">' + sigNames[k] + '</span>').join('');
+    const sigAll = group.signalsAll || [];
+    const sigChips = Object.keys(sigNames).map(k => {
+        const lit = sigAll.includes(k);
+        const partial = !lit && (group.signals || []).includes(k);
+        const title = lit ? sigNames[k] + ' matches across every recording in this group'
+            : partial ? sigNames[k] + ' matches only some of these recordings, not all'
+            : 'no ' + sigNames[k] + ' match';
+        return '<span class="' + (lit ? 'hit' : partial ? 'partial' : '') + '" title="' + title + '">' + sigNames[k] + '</span>';
+    }).join('');
     const busy = group.state === 'busy', done = group.state === 'done';
     const tooFew = members.length < 2;
     const stateLabel = busy ? '⏳ Merging…' : done ? '✓ Merged' : group.state === 'error' ? '⚠ Retry merge' : tooFew ? '⚡ Merge ↗ (needs 2+)' : '⚡ Merge ↗';
@@ -1179,11 +1203,26 @@ function groupCardHtml(group) {
         + '<div class="fs-grows">' + rows + '</div>' + errMsg + dropZone + '</div>';
 }
 
+// #529 (majkinetor): "add pool filtering as one types in the header instead" —
+// the header hint was static text; it is now a filter box. Purely a VIEW
+// filter: Auto-match, merges and counts still operate on the whole pool, so a
+// filter left in the box can never silently narrow what actually gets matched.
+function poolMatches(rec, q) {
+    if (!q) return true;
+    const hay = [rec.title, rec.artistCredit, ...(rec.isrcs || []), ...(rec.acoustids || []), ...(rec.releases || []).map(r => r.title)]
+        .filter(Boolean).join(' ');
+    return normName(hay).includes(normName(q));
+}
 function renderPool() {
     const body = document.getElementById('fs-pool-body'); if (!body) return;
-    document.getElementById('fs-pool-cnt').textContent = String(STATE.poolOrder.length);
-    const recs = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
-    body.innerHTML = recs.length ? recs.map(poolCardHtml).join('') : '<div class="fs-empty">Pool is empty — add a recording by MBID/URL above.</div>';
+    const q = STATE.poolFilter || '';
+    const all = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
+    const recs = q ? all.filter(r => poolMatches(r, q)) : all;
+    const cnt = document.getElementById('fs-pool-cnt');
+    if (cnt) { cnt.textContent = q ? recs.length + ' / ' + all.length : String(all.length); cnt.classList.toggle('fs-cnt-filtered', !!q); }
+    body.innerHTML = recs.length
+        ? recs.map(poolCardHtml).join('')
+        : '<div class="fs-empty">' + (q ? 'No pool recording matches “' + escapeHtml(q) + '”.' : 'Pool is empty — add a recording by MBID/URL above.') + '</div>';
     if (STATE.selected) { const c = body.querySelector('[data-gid="' + STATE.selected + '"]'); if (c) c.classList.add('fs-selected'); }
 }
 function renderGroups() {
@@ -1228,11 +1267,19 @@ async function withBusy(label, fn) { busyStart(label); try { return await fn(); 
 // the same failure mode that made Merge All look dead (#529). Coalesce
 // background renders and hold them off briefly after any pool click.
 let _bgRenderTimer = null, _lastPoolClick = 0;
+const POOL_CLICK_GRACE = 700;   // ms after a pool click during which we never re-render
 function scheduleBackgroundRender() {
     if (!FUSION_OPEN) return;
     clearTimeout(_bgRenderTimer);
-    const sinceClick = Date.now() - _lastPoolClick;
-    _bgRenderTimer = setTimeout(() => { if (FUSION_OPEN) renderAll(); }, Math.max(250, 700 - sinceClick));
+    // Re-check the grace window at FIRE time, not just when scheduling: a timer
+    // armed before the user clicked would otherwise still fire mid-gesture and
+    // swallow their double-click. Keep pushing it out while clicks keep coming.
+    const fire = () => {
+        const since = Date.now() - _lastPoolClick;
+        if (since < POOL_CLICK_GRACE) { _bgRenderTimer = setTimeout(fire, POOL_CLICK_GRACE - since); return; }
+        if (FUSION_OPEN) renderAll();
+    };
+    _bgRenderTimer = setTimeout(fire, 250);
 }
 function enrichPoolInBackground(recordings) {
     if (!recordings.length) return;
@@ -1438,7 +1485,7 @@ function moveDraggedToNewGroup() {
     else {
         const old = findGroup(src.groupId);
         if (old) { const i = old.memberGids.indexOf(src.gid); if (i !== -1) old.memberGids.splice(i, 1); dissolveOrRefresh(old); }
-        g = { id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: [src.gid], confidence: 'manual', signals: [], target: src.gid, state: 'pending', error: null, editNote: null, editing: false };
+        g = { id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: [src.gid], confidence: 'manual', signals: [], signalsAll: [], target: src.gid, state: 'pending', error: null, editNote: null, editing: false };
         STATE.groups.push(g);
     }
     STATE.selected = null; STATE._dragSrc = null; if (g) STATE.activeGroupId = g.id;
@@ -1635,7 +1682,7 @@ function buildShell() {
         + '<span><span class="fs-dot" style="background:var(--fs-amber)"></span>Length ±' + Math.round(SETTINGS.lengthToleranceMs / 1000) + 's</span>'
         + '<span>Cutoff <select id="fs-cutoff" title="how strict Auto-match is">' + cutoffOpts + '</select></span></div>'
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
-        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">drag or double-click to add to a group</span></div>'
+        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="delete every group — all recordings return to the pool">↩ Clear board</button></div>'
         + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
@@ -1663,6 +1710,9 @@ function buildShell() {
     document.getElementById('fs-mergeall').onclick = () => mergeAll();
     document.getElementById('fs-clearboard').onclick = () => { clearBoard(); renderAll(); };
     document.getElementById('fs-rg-editions').addEventListener('change', onLoadRgEdition);
+    const poolFilter = document.getElementById('fs-pool-filter');
+    poolFilter.addEventListener('input', () => { STATE.poolFilter = poolFilter.value.trim(); renderPool(); });
+    poolFilter.addEventListener('keydown', e => { if (e.key === 'Escape' && poolFilter.value) { e.stopPropagation(); poolFilter.value = ''; STATE.poolFilter = ''; renderPool(); } });
     document.getElementById('fs-cutoff').addEventListener('change', e => { SETTINGS.matchCutoff = e.target.value; saveSettings(); Log.info('Match cutoff set to ' + SETTINGS.matchCutoff); });
     wireWindowChrome(document.getElementById('fs-cons'), document.getElementById('fs-hdr'), document.getElementById('fs-max'));
     wireDelegatedEvents();
@@ -1740,10 +1790,10 @@ try {
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
-        pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
+        pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
-        openFusion, closeFusion, seedFromScope, renderAll, busyStart, busyEnd,
+        openFusion, closeFusion, seedFromScope, renderAll, renderPool, renderGroups, busyStart, busyEnd,
         gmGet, gmPost, wsGet,
         getLogLines: () => _logBuf.map(r => r.line),
     };
