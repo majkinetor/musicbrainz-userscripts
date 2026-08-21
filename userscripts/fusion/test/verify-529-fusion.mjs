@@ -624,6 +624,31 @@ ck(pend.grouped === 0, 'auto-match refuses to group a pending-edit recording des
 ck(pend.badge, 'a pending-edit recording is visibly badged');
 ck(pend.marked, 'the group card carrying it is marked too');
 ck(pend.after.state === 'error' && /pending edit/i.test(pend.after.err || ''), 'merging a group containing one is blocked with a clear reason (' + pend.after.err + ')');
+
+// #529 (majkinetor): "chips are still not highlighted, although it says HIGH".
+// The .hit class was applied all along — it just didn't READ as lit at 9.5px.
+// Assert real visual separation, not merely the class.
+const chipVis = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = id => F.mkRecording(id, { title: 'Same', length: 546000, isrcs: [], acoustids: ['SHARED_AC'], artistCredit: 'Same Artist', releases: [], editsPending: false });
+    F.addToPool(mk('v1')); F.addToPool(mk('v2'));
+    const g = F.createGroupWithMember('v1'); F.addToGroup('v2', g.id);
+    F.renderAll();
+    const card = document.querySelector('.fs-gcard[data-gid="' + g.id + '"]');
+    const chips = [...card.querySelectorAll('.fs-sig span')].map(s => ({
+        t: s.textContent, hit: s.classList.contains('hit'),
+        bg: getComputedStyle(s).backgroundColor, weight: getComputedStyle(s).fontWeight, op: getComputedStyle(s).opacity,
+    }));
+    F.deleteGroup(g.id); F.STATE.recordings.delete('v1'); F.STATE.recordings.delete('v2');
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    const lit = chips.filter(c => c.hit), dim = chips.filter(c => !c.hit);
+    return { lit, dim };
+});
+console.log('chips:', JSON.stringify(chipVis));
+ck(chipVis.lit.length > 0 && chipVis.dim.length > 0, 'the card has both matched and unmatched signal chips to compare');
+ck(chipVis.lit.every(c => c.bg !== 'rgba(0, 0, 0, 0)' && c.bg !== 'rgb(255, 255, 255)'), 'matched chips carry a filled tint, not just coloured text');
+ck(chipVis.lit.every(c => Number(c.weight) >= 700), 'matched chips are bold');
+ck(chipVis.dim.every(c => Number(c.op) < 1) && chipVis.lit.every(c => Number(c.op) === 1), 'unmatched chips are faded back so matched ones stand out');
 // and the detection itself is real, not just the synthetic flag
 // Don't assume a given test-server recording is clean: earlier runs of this
 // file submit real merges, which sit in the edit queue and legitimately make

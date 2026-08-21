@@ -40,3 +40,6 @@ Batch import entity fields from Harmony and standalone
 
 [Bandcamp Player Enhanced](./userscripts/bandcamp_player_enhanced/README.md)<img src="./userscripts/bandcamp_player_enhanced/icon.svg" align="left" width="32"><br>
 Bandcamp album player with keyboard shortcuts
+
+[Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
+Merge duplicate recordings: pool/groups review UI, multi-signal auto-match, background submit
