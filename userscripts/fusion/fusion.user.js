@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.115331
+// @version      2026.8.21.132836
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -20,7 +20,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.115331';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.132836';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -741,7 +741,7 @@ function fsStyle() {
         // Light palette (#529: "make UI white") — every colour in the window is
         // driven from these tokens, so the theme is this one line plus the log
         // panel below. Purple/green/amber/red darkened for contrast on white.
-        + '.fs-cons{--fs-bg:#f4f4f7;--fs-panel:#fff;--fs-panel2:#f0f0f4;--fs-border:#d7d7e0;--fs-text:#1e1e26;--fs-muted:#6b6b7d;--fs-purple:#6d3ff0;--fs-purple-d:#5a2fd8;--fs-green:#1c9b63;--fs-amber:#a8702a;--fs-red:#c8384f;--fs-blue:#2f7fbf;'
+        + '.fs-cons{--fs-bg:#f7f8fa;--fs-panel:#fff;--fs-panel2:#fbfbfd;--fs-border:#e3e3ec;--fs-text:#1e1e26;--fs-muted:#6b6b7d;--fs-purple:#6d3ff0;--fs-purple-d:#5a2fd8;--fs-green:#1c9b63;--fs-amber:#a8702a;--fs-red:#c8384f;--fs-blue:#2f7fbf;'
         + 'width:min(1180px,96vw);height:min(680px,92vh);max-width:98vw;max-height:96vh;min-width:640px;min-height:400px;resize:both;'
         + 'background:var(--fs-panel);color:var(--fs-text);border:1px solid var(--fs-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.5);'
         + 'font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}'
@@ -754,6 +754,8 @@ function fsStyle() {
         + '.fs-cfgbtn:hover,.fs-x:hover{color:var(--fs-text)}'
         + '.fs-ctrl{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--fs-panel);border-bottom:1px solid var(--fs-border);flex-wrap:wrap}'
         + '.fs-ctrl select,.fs-ctrl input[type=text]{background:var(--fs-panel2);border:1px solid var(--fs-border);color:var(--fs-text);border-radius:6px;padding:5px 8px;font-size:12px}'
+        + '#fs-rg-editions{max-width:420px}'
+        + '#fs-rg-editions:disabled{opacity:.7;font-style:italic;cursor:default}'
         + '.fs-ctrl input[type=text]{width:220px}'
         + '.fs-btn{border:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}'
         + '.fs-btn.fs-primary{background:linear-gradient(180deg,var(--fs-purple),var(--fs-purple-d));border-color:var(--fs-purple-d);color:#fff;font-weight:600}'
@@ -775,7 +777,7 @@ function fsStyle() {
         // .fs-cons's overflow:hidden rather than showing a scrollbar in here.
         + '.fs-colbody{flex:1;min-height:0;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px}'
         + '.fs-empty{color:var(--fs-muted);font-size:12px;padding:14px;text-align:center}'
-        + '.fs-pcard{background:var(--fs-panel2);border:1px solid var(--fs-border);border-radius:7px;padding:7px 9px;display:flex;align-items:center;gap:8px;cursor:grab;flex-shrink:0}'
+        + '.fs-pcard{background:var(--fs-panel);border:1px solid var(--fs-border);border-radius:7px;padding:7px 9px;display:flex;align-items:center;gap:8px;cursor:grab;flex-shrink:0}'
         + '.fs-pcard.fs-selected{border-color:var(--fs-purple)}'
         + '.fs-grip{color:#b6b6c4;font-size:12px;letter-spacing:-1px}'
         + '.fs-info{flex:1;min-width:0}'
@@ -804,7 +806,7 @@ function fsStyle() {
         // flexbox happily squashed every card to fit .fs-colbody's available
         // space (clipping the rows inside via that same overflow:hidden)
         // instead of letting .fs-colbody's own overflow-y:auto scroll.
-        + '.fs-gcard{background:var(--fs-panel2);border:1px solid var(--fs-border);border-left:3px solid var(--fs-green);border-radius:7px;overflow:hidden;flex-shrink:0}'
+        + '.fs-gcard{background:var(--fs-panel);border:1px solid var(--fs-border);border-left:3px solid var(--fs-green);border-radius:7px;overflow:hidden;flex-shrink:0}'
         + '.fs-gcard-med{border-left-color:var(--fs-amber)}'
         + '.fs-gcard-manual{border-left-color:var(--fs-blue);border-left-style:dashed}'
         + '.fs-gcard.fs-active{outline:2px solid var(--fs-purple);outline-offset:-1px}'
@@ -987,7 +989,13 @@ function renderFooter() {
 }
 function renderAll() { renderPool(); renderGroups(); renderFooter(); }
 
-function setScopeLabel(text) { const e = document.getElementById('fs-scope'); if (e) e.textContent = text; }
+// _scopeBaseLabel remembers the scope text on its own, so later additions (the
+// RG-edition count) can't compound by re-reading and re-appending the DOM text.
+let _scopeBaseLabel = '';
+function setScopeLabel(text) { _scopeBaseLabel = text; const e = document.getElementById('fs-scope'); if (e) e.textContent = text; }
+// append to the REMEMBERED base, never to whatever is currently rendered —
+// otherwise re-running this would keep tacking the suffix on again and again.
+function setScopeSuffix(suffix) { const e = document.getElementById('fs-scope'); if (e) e.textContent = _scopeBaseLabel + suffix; }
 
 async function onAutoMatch() {
     const btn = document.getElementById('fs-automatch'); if (!btn) return;
@@ -1052,17 +1060,58 @@ async function onAddByMbid() {
     Log.info('Added ' + added + ' new recording(s) from that ' + type);
     input.value = ''; renderAll();
 }
+// #529 (majkinetor): "include all details on the release in RG (year, format
+// etc.)" — a bare title+date made near-identical reissues impossible to tell
+// apart. inc=releases+media carries format/track-count/country/status too, at
+// no extra request cost.
+function mediaSummary(rel) {
+    const media = rel.media || [];
+    if (!media.length) return '';
+    const counts = new Map();
+    media.forEach(m => { const f = m.format || 'unknown'; counts.set(f, (counts.get(f) || 0) + 1); });
+    return [...counts].map(([f, n]) => (n > 1 ? n + '×' : '') + f).join(' + ');
+}
+function describeEdition(rel) {
+    const bits = [];
+    if (rel.date) bits.push(rel.date);
+    const fmt = mediaSummary(rel); if (fmt) bits.push(fmt);
+    const tracks = (rel.media || []).reduce((n, m) => n + (m['track-count'] || 0), 0) || rel['track-count'];
+    if (tracks) bits.push(tracks + ' track' + (tracks === 1 ? '' : 's'));
+    if (rel.country) bits.push(rel.country);
+    if (rel.status && rel.status !== 'Official') bits.push(rel.status);
+    return rel.title + (bits.length ? ' — ' + bits.join(' · ') : '');
+}
+// #529 (majkinetor): "RG button on release doesn't show immediately so it's not
+// obvious that there is anything there" — this takes two sequential WS2 calls,
+// so show the control up front in a disabled "checking…" state rather than
+// having it pop into existence seconds later (or never).
 async function maybeShowRGDropdown(releaseMbid) {
+    const sel = document.getElementById('fs-rg-editions'); if (!sel) return;
+    const setPlaceholder = (text, show) => {
+        sel.innerHTML = '<option value="">' + escapeHtml(text) + '</option>';
+        sel.disabled = true;
+        sel.style.display = show ? '' : 'none';
+    };
+    setPlaceholder('⏳ Checking release group for other editions…', true);
+    Log.info('Checking release group for sibling editions…');
     const j = await wsGet('/ws/2/release/' + releaseMbid + '?inc=release-groups&fmt=json');
     const rgId = j && j['release-group'] && j['release-group'].id;
-    if (!rgId) return;
-    const rgRels = await wsGet('/ws/2/release-group/' + rgId + '?inc=releases&fmt=json');
-    const siblings = ((rgRels && rgRels.releases) || []).filter(r => r.id !== releaseMbid);
-    if (!siblings.length) return;
-    const sel = document.getElementById('fs-rg-editions'); if (!sel) return;
-    sel.innerHTML = '<option value="">+ Load recordings from RG edition ▾</option>' + siblings.map(r => '<option value="' + r.id + '">' + escapeHtml(r.title) + (r.date ? ' (' + r.date + ')' : '') + '</option>').join('');
+    if (!rgId) { Log.warn('Could not resolve this release\'s release group — edition loader unavailable'); setPlaceholder('', false); return; }
+    const rgRels = await wsGet('/ws/2/release-group/' + rgId + '?inc=releases+media&fmt=json');
+    if (!rgRels) { setPlaceholder('⚠ Could not load release group editions', true); sel.disabled = true; return; }
+    const siblings = ((rgRels.releases) || []).filter(r => r.id !== releaseMbid);
+    if (!siblings.length) {
+        Log.info('Release group has no other editions');
+        setPlaceholder('No other editions in this release group', true);
+        return;
+    }
+    siblings.sort((a, b) => String(a.date || '9999').localeCompare(String(b.date || '9999')));
+    sel.innerHTML = '<option value="">+ Load recordings from RG edition (' + siblings.length + ') ▾</option>'
+        + siblings.map(r => '<option value="' + r.id + '">' + escapeHtml(describeEdition(r)) + '</option>').join('');
+    sel.disabled = false;
     sel.style.display = '';
-    setScopeLabel((document.getElementById('fs-scope').textContent || '') + ' — release group has ' + siblings.length + ' other edition' + (siblings.length === 1 ? '' : 's'));
+    Log.info('Release group has ' + siblings.length + ' other edition(s): ' + siblings.map(r => describeEdition(r)).join(' | '));
+    setScopeSuffix(' — release group has ' + siblings.length + ' other edition' + (siblings.length === 1 ? '' : 's'));
 }
 async function onLoadRgEdition(e) {
     const relMbid = e.target.value; if (!relMbid) return;
