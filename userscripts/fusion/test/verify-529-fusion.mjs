@@ -21,7 +21,11 @@ await ctx.addInitScript(() => {
     // used solely to exercise Fusion's own merge_queue/merge POST flow live.
     window.GM_xmlhttpRequest = async (opts) => {
         try {
-            const r = await fetch(opts.url, { method: opts.method || 'GET', headers: opts.headers || {}, body: opts.data, redirect: 'follow', credentials: 'include' });
+            // credentials:'include' is ILLEGAL against Access-Control-Allow-Origin:* —
+            // it silently fails CORS. Real GM_xmlhttpRequest isn't CORS-bound at all;
+            // here, only same-origin (MB) calls need the session cookie.
+            const sameOrigin = new URL(opts.url, location.href).origin === location.origin;
+            const r = await fetch(opts.url, { method: opts.method || 'GET', headers: opts.headers || {}, body: opts.data, redirect: 'follow', credentials: sameOrigin ? 'include' : 'omit' });
             const text = await r.text();
             opts.onload && opts.onload({ status: r.status, responseText: text, finalUrl: r.url });
         } catch (e) { opts.onerror && opts.onerror(e); }
@@ -199,6 +203,43 @@ ck(engineChecks.autoMatchNeverGroupsVideoWithAudio, 'autoMatch never groups a vi
 ck(engineChecks.manualAddRefusesVideoAudioMix, 'addToGroup refuses to manually mix video into an audio group (and vice versa)');
 ck(engineChecks.videoStaysInPoolAfterRefusal, 'a refused video/audio add leaves the recording in the pool, not silently dropped');
 ck(engineChecks.unknownVideoNeverBlocks, 'unknown (null) video status never blocks a match — only a KNOWN mismatch does');
+
+// #529 (majkinetor): "I didn't see a single AcoustID, although all should have
+// it basically" — correct: MB does NOT store AcoustIDs as recording→URL
+// relationships (verified: a recording with 2 AcoustIDs has zero url-rels), so
+// the original source was simply wrong and always yielded []. They come from
+// AcoustID's own list_by_mbid, which needs no key and supports batching.
+const acoustidCheck = await page.evaluate(async () => {
+    const F = window.__fusion;
+    const known = '5a54cad7-97f7-43bb-b05a-59723da75e16';   // has AcoustIDs
+    const map = await F.fetchAcoustIdsBatch([known, 'ac2c28b3-c278-47f9-88de-80d2a663ed39']);
+    const rec = F.mkRecording(known, { title: 'AcoustID probe', length: 1000, isrcs: [], artistCredit: 'X', releases: [] });
+    await F.enrichAcoustIds([rec], 4);
+    return { batchKeys: [...map.keys()].length, knownIds: map.get(known) || [], viaEnrich: rec.acoustids };
+});
+console.log('acoustid:', JSON.stringify(acoustidCheck));
+ck(acoustidCheck.batchKeys === 2, 'fetchAcoustIdsBatch resolves multiple MBIDs in ONE request (' + acoustidCheck.batchKeys + ' keys)');
+ck(acoustidCheck.knownIds.length > 0, 'a recording known to have AcoustIDs actually returns them (' + JSON.stringify(acoustidCheck.knownIds) + ') — the old url-rels source always returned none');
+ck(acoustidCheck.viaEnrich.length > 0, 'enrichAcoustIds populates rec.acoustids from the real service');
+
+// #529 (majkinetor): per-group edit note, opened from a ✎ in the card title,
+// with the button coloured differently when a custom note exists.
+const noteCheck = await page.evaluate(() => {
+    const F = window.__fusion;
+    const a = F.mkRecording('n1', { title: 'N1', length: 1000, isrcs: [], artistCredit: 'X', releases: [] });
+    const b = F.mkRecording('n2', { title: 'N2', length: 1000, isrcs: [], artistCredit: 'X', releases: [] });
+    F.addToPool(a); F.addToPool(b);
+    const g = F.createGroupWithMember('n1'); F.addToGroup('n2', g.id);
+    const auto = F.buildEditNote(g);
+    g.editNote = 'Same take, verified by ear.';
+    const custom = F.buildEditNote(g);
+    F.deleteGroup(g.id); F.STATE.recordings.delete('n1'); F.STATE.recordings.delete('n2');
+    F.STATE.poolOrder.length = 0;
+    return { auto, custom };
+});
+ck(/Merged via Fusion/.test(noteCheck.auto), 'a group with no custom note still gets the auto-generated note');
+ck(noteCheck.custom.startsWith('Same take, verified by ear.'), 'a custom note replaces the auto reason line');
+ck(/Fusion v.* by majkinetor/.test(noteCheck.custom), 'the attribution footer is appended even to a custom note');
 
 // #529 (majkinetor): a recording that demonstrably has an ISRC on MB was
 // showing isrc=none in the log after release-group seeding. The rgid: SEARCH
@@ -391,6 +432,42 @@ ck(logVis.position === 'fixed', 'log panel is positioned (fixed) — i.e. its CS
 ck(logVis.visible && logVis.inViewport, 'log panel is actually visible and within the viewport');
 ck(logVis.onTop, 'log panel is on top at its own position, not hidden behind the modal — the exact "log button does nothing" symptom');
 ck(logVis.lineCount > 0, 'log panel is populated with entries (' + logVis.lineCount + ')');
+
+// #529 (majkinetor): the ✎ edit-note button on a card — driven by REAL clicks
+// with the UI actually open, since this is a DOM/CSS behaviour.
+await page.evaluate(() => { document.getElementById('fs-logpop')?.remove(); document.getElementById('fs-settings')?.remove(); });
+const noteGid = await page.evaluate(() => {
+    const F = window.__fusion;
+    const a = F.mkRecording('n1', { title: 'Note A', length: 1000, isrcs: [], artistCredit: 'X', releases: [] });
+    const b = F.mkRecording('n2', { title: 'Note B', length: 1000, isrcs: [], artistCredit: 'X', releases: [] });
+    F.addToPool(a); F.addToPool(b);
+    const g = F.createGroupWithMember('n1'); F.addToGroup('n2', g.id);
+    F.renderAll();
+    return g.id;
+});
+const plainColor = await page.evaluate(g => { const b = document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-note-btn'); return b ? getComputedStyle(b).color : ''; }, noteGid);
+await page.click('.fs-gcard[data-gid="' + noteGid + '"] [data-act="edit-note"]');
+await page.waitForTimeout(200);
+const editing = await page.evaluate(g => ({
+    ta: !!document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-note-ta'),
+    rowsGone: !document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-grow'),
+}), noteGid);
+ck(editing.ta && editing.rowsGone, 'clicking ✎ turns the whole card into the edit-note textbox (member rows replaced)');
+await page.fill('.fs-gcard[data-gid="' + noteGid + '"] .fs-note-ta', 'Same take, verified by ear.');
+await page.click('.fs-gcard[data-gid="' + noteGid + '"] [data-act="note-save"]');
+await page.waitForTimeout(200);
+const saved = await page.evaluate(g => {
+    const grp = window.__fusion.findGroup(g);
+    const b = document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-note-btn');
+    return { stored: grp.editNote, hasClass: b ? b.classList.contains('fs-has-note') : false, color: b ? getComputedStyle(b).color : '', note: window.__fusion.buildEditNote(grp), rowsBack: !!document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-grow') };
+}, noteGid);
+console.log('edit note:', JSON.stringify(saved));
+ck(saved.stored === 'Same take, verified by ear.', 'the typed note is saved on the group');
+ck(saved.rowsBack, 'saving returns the card to its normal member-row view');
+ck(saved.hasClass, 'the ✎ button is marked as having a custom note');
+ck(saved.color !== plainColor, 'the ✎ button changes colour once a note exists (' + saved.color + ' vs ' + plainColor + ')');
+ck(saved.note.startsWith('Same take, verified by ear.') && /Fusion v.* by majkinetor/.test(saved.note), 'the merge will submit the custom note plus the attribution footer');
+await page.evaluate(g => { const F = window.__fusion; F.deleteGroup(g); F.STATE.recordings.delete('n1'); F.STATE.recordings.delete('n2'); F.STATE.poolOrder.length = 0; F.renderAll(); }, noteGid);
 
 // #529 (majkinetor): "scraping the page is not going to cut it, we need to use
 // an API here". Artist seeding used to scrape the visible table, which capped
