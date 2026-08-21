@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.154155
+// @version      2026.8.21.155057
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -21,7 +21,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.154155';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.155057';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -769,11 +769,59 @@ async function enrichIsrcs(recs, concurrency, onProgress) {
 // /recording/merge_queue?add-to-merge=<id>×N redirects to /recording/merge, whose
 // self-posting form has merge.merging.N / merge.target / merge.edit_note /
 // merge.make_votable and no CSRF token, session cookie authorises) ──────────
+// #529 (majkinetor): "we should also have more precise log message … says
+// similar title while title is the same. Check also how other userscript does
+// it." Modelled on jesus2099's MASS MERGE RECORDINGS note: itemised evidence
+// carrying the ACTUAL values, and distinguishing an exact match from a close
+// one, so a reviewer can judge the merge without opening anything.
+const uniq = arr => [...new Set(arr)];
+function fmtList(vals, max) {
+    max = max || 4;
+    const shown = vals.slice(0, max).map(v => '"' + v + '"').join(', ');
+    return vals.length > max ? shown + ' (+' + (vals.length - max) + ' more)' : shown;
+}
+function evidenceLines(group, members) {
+    const all = group.signalsAll || [];
+    const lines = [];
+    if (all.includes('title')) {
+        const titles = uniq(members.map(m => m.title).filter(Boolean));
+        if (titles.length === 1) lines.push('Same title ' + fmtList(titles));
+        else if (uniq(titles.map(t => t.toLowerCase())).length === 1) lines.push('Same title, differing case: ' + fmtList(titles));
+        else lines.push('Similar titles: ' + fmtList(titles));
+    }
+    if (all.includes('artist')) {
+        const acs = uniq(members.map(m => m.artistCredit).filter(Boolean));
+        lines.push((acs.length === 1 ? 'Same artist credit ' : 'Similar artist credits: ') + fmtList(acs));
+    }
+    if (all.includes('length')) {
+        const lens = members.map(m => m.length).filter(l => l != null);
+        const lo = Math.min(...lens), hi = Math.max(...lens);
+        lines.push(lo === hi
+            ? 'Same length ' + dur(lo)
+            : 'Very close lengths (within ' + Math.round((hi - lo) / 1000) + 's: ' + dur(lo) + ' – ' + dur(hi) + ')');
+    }
+    if (all.includes('isrc')) {
+        const shared = uniq(members[0].isrcs.filter(i => members.every(m => (m.isrcs || []).includes(i))));
+        if (shared.length) lines.push('Same ISRC ' + shared.join(', '));
+    }
+    if (all.includes('acoustid')) {
+        const shared = uniq((members[0].acoustids || []).filter(a => members.every(m => (m.acoustids || []).includes(a))));
+        if (shared.length) lines.push('Same AcoustID ' + shared.join(', '));
+    }
+    return lines;
+}
 function autoEditNote(group) {
-    const sigLabel = { isrc: 'same ISRC', acoustid: 'same AcoustID', length: 'length within ' + Math.round(SETTINGS.lengthToleranceMs / 1000) + 's', title: 'similar title', artist: 'similar artist' };
-    const basis = (group.signalsAll && group.signalsAll.length) ? group.signalsAll : (group.signals || []);
-    const reasons = basis.map(s => sigLabel[s] || s).join(', ') || 'manually grouped';
-    return 'Merged via Fusion — ' + reasons + '.';
+    const members = group.memberGids.map(g => STATE.recordings.get(g)).filter(Boolean);
+    const target = STATE.recordings.get(group.target) || members[0];
+    const lines = evidenceLines(group, members);
+    const out = ['Merging ' + members.length + ' recordings into ' + (target ? '"' + target.title + '"' : 'one') + '.'];
+    if (lines.length) { out.push(''); lines.forEach(l => out.push('- ' + l)); }
+    else out.push('', '- Grouped manually; no automatic signal matched across every recording.');
+    // partial signals are stated as partial rather than silently omitted
+    const partial = (group.signals || []).filter(x => !(group.signalsAll || []).includes(x));
+    if (partial.length) out.push('', 'Matching only some of them: ' + partial.join(', ') + '.');
+    if (target && target.gid) out.push('', 'Keeping: ' + location.origin + '/recording/' + target.gid);
+    return out.join('\n');
 }
 // #529 (majkinetor): a per-group edit note, editable from the card. A custom
 // note REPLACES the auto-generated reason line; the attribution footer is
@@ -1819,7 +1867,7 @@ try {
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
-        buildEditNote, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
+        buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, renderAll, renderPool, renderGroups, busyStart, busyEnd,
         gmGet, gmPost, wsGet,
         getLogLines: () => _logBuf.map(r => r.line),

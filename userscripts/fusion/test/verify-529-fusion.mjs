@@ -237,7 +237,7 @@ const noteCheck = await page.evaluate(() => {
     F.STATE.poolOrder.length = 0;
     return { auto, custom };
 });
-ck(/Merged via Fusion/.test(noteCheck.auto), 'a group with no custom note still gets the auto-generated note');
+ck(/Merging \d+ recordings into/.test(noteCheck.auto), 'a group with no custom note still gets the auto-generated note');
 ck(noteCheck.custom.startsWith('Same take, verified by ear.'), 'a custom note replaces the auto reason line');
 ck(/Fusion v.* by majkinetor/.test(noteCheck.custom), 'the attribution footer is appended even to a custom note');
 
@@ -704,7 +704,7 @@ const sigSem = await page.evaluate(() => {
     F.renderAll();
     const card = document.querySelector('.fs-gcard[data-gid="' + g.id + '"]');
     const chips = [...card.querySelectorAll('.fs-sig span')].map(x => ({ t: x.textContent, cls: x.className, title: x.title }));
-    const note = F.buildEditNote(g).split(String.fromCharCode(10))[0];
+    const note = F.buildEditNote(g);
     const res = { signals: g.signals, signalsAll: g.signalsAll, chips, note };
     F.deleteGroup(g.id); ['s1','s2','s3'].forEach(x => F.STATE.recordings.delete(x));
     F.STATE.poolOrder.length = 0; F.renderAll();
@@ -719,7 +719,8 @@ ck(chip('Title').cls === 'partial', 'same for Title, where one member differs ('
 ck(chip('Artist').cls === 'hit', 'Artist DOES shine — every member agrees on it');
 ck(chip('Length').cls === '', 'Length stays unlit — no pair matches at all');
 ck(/every recording/i.test(chip('Artist').title) && /not all/i.test(chip('ISRC').title), 'the chip tooltips spell out the difference');
-ck(!/ISRC/i.test(sigSem.note) && /artist/i.test(sigSem.note), 'the edit note only claims what holds group-wide (' + sigSem.note + ')');
+ck(!/Same ISRC/i.test(sigSem.note) && /artist credit/i.test(sigSem.note), 'the edit note only claims what holds group-wide — artist yes, ISRC no');
+ck(/Matching only some of them: .*isrc/i.test(sigSem.note), 'and states the partially-matching signals as partial rather than omitting them');
 
 // #529 (majkinetor): "we should never have such a big difference in length in
 // auto merge" — a 0:42 reprise was auto-grouped with 4:11/4:17 takes, because
@@ -780,6 +781,39 @@ const retVal = await page.evaluate(() => {
 });
 ck(retVal.ret === true, 'addToGroup returns true on success, so callers can tell it worked (was undefined)');
 ck(retVal.aSize === 2 && retVal.bSize === 1, 'the recording lands in the CURRENT group, not the last-created one');
+
+// #529 (majkinetor): "more precise log message … says similar title while title
+// is the same." Modelled on jesus2099's MASS MERGE RECORDINGS note: itemised
+// evidence carrying real values, exact vs close stated honestly.
+const noteText = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = (id, title, len, isrc) => F.mkRecording(id, { title, length: len, isrcs: isrc ? [isrc] : [], acoustids: [], artistCredit: 'Mocky', releases: [], editsPending: false });
+    const out = {};
+    // identical titles + identical lengths + a shared ISRC
+    ['x1','x2'].forEach(id => F.addToPool(mk(id, 'Sweet Music', 244000, 'DEQ320400030')));
+    let g = F.createGroupWithMember('x1'); F.addToGroup('x2', g.id);
+    out.exact = F.buildEditNote(g);
+    F.deleteGroup(g.id); ['x1','x2'].forEach(x => F.STATE.recordings.delete(x)); F.STATE.poolOrder.length = 0;
+    // same title but differing case, and lengths a few seconds apart
+    F.addToPool(mk('y1', 'Sweet Music', 244000));
+    F.addToPool(mk('y2', 'Sweet music', 239000));
+    g = F.createGroupWithMember('y1'); F.addToGroup('y2', g.id);
+    out.caseDiff = F.buildEditNote(g);
+    F.deleteGroup(g.id); ['y1','y2'].forEach(x => F.STATE.recordings.delete(x)); F.STATE.poolOrder.length = 0;
+    F.renderAll();
+    return out;
+});
+console.log('--- edit note (exact) ---\n' + noteText.exact);
+ck(noteText.exact.includes('Same title "Sweet Music"'), 'an identical title is reported as "Same title", not "similar"');
+ck(noteText.exact.includes('Same length 4:04'), 'an identical length is reported exactly, with the value');
+ck(noteText.exact.includes('Same ISRC DEQ320400030'), 'the shared ISRC is quoted in full');
+ck(noteText.exact.includes('Same artist credit "Mocky"'), 'the artist credit is quoted');
+ck(/Merging 2 recordings into "Sweet Music"/.test(noteText.exact), 'the note opens with what is being merged into what');
+ck(/Keeping: http/.test(noteText.exact), 'the surviving recording is linked for the reviewer');
+ck(/Fusion v.* by majkinetor/.test(noteText.exact), 'the attribution footer is still appended');
+ck(noteText.caseDiff.includes('Same title, differing case'), 'a case-only difference is called out precisely (' + (noteText.caseDiff.split(String.fromCharCode(10)).find(l => l.indexOf('title') !== -1) || '') + ')');
+ck(/Very close lengths \(within \d+s: .* – .*\)/.test(noteText.caseDiff), 'near-but-not-equal lengths report the actual spread');
+ck(!/similar title/i.test(noteText.exact) && !/similar title/i.test(noteText.caseDiff), 'never claims "similar title" when the titles actually match');
 // and the detection itself is real, not just the synthetic flag
 // Don't assume a given test-server recording is clean: earlier runs of this
 // file submit real merges, which sit in the edit queue and legitimately make
