@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <title>Fusion</title>
+  <g fill="none" stroke="#8a5cf6" stroke-width="7">
+    <ellipse cx="64" cy="64" rx="52" ry="22"/>
+    <ellipse cx="64" cy="64" rx="52" ry="22" transform="rotate(60 64 64)"/>
+    <ellipse cx="64" cy="64" rx="52" ry="22" transform="rotate(120 64 64)"/>
+  </g>
+  <circle cx="64" cy="64" r="14" fill="#6d3ff0"/>
+</svg>
