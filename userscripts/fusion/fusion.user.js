@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.174052
+// @version      2026.8.21.174538
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -974,9 +974,12 @@ function evidenceLines(group, members) {
     if (all.includes('length')) {
         const lens = members.map(m => m.length).filter(l => l != null);
         const lo = Math.min(...lens), hi = Math.max(...lens);
+        // #529 (majkinetor): "length in this case could be stated as Max Length
+        // Difference: 5s" — name the gap explicitly rather than leaving the
+        // reader to subtract the range themselves.
         lines.push(lo === hi
             ? 'Same length ' + dur(lo)
-            : 'Very close lengths (within ' + Math.round((hi - lo) / 1000) + 's: ' + dur(lo) + ' – ' + dur(hi) + ')');
+            : 'Max length difference ' + Math.round((hi - lo) / 1000) + 's (' + dur(lo) + ' – ' + dur(hi) + ')');
     }
     if (all.includes('isrc')) {
         const shared = uniq(members[0].isrcs.filter(i => members.every(m => (m.isrcs || []).includes(i))));
@@ -988,17 +991,36 @@ function evidenceLines(group, members) {
     }
     return lines;
 }
+// Widest gap between any two known lengths in the group — the number that
+// actually matters when lengths only "sort of" agree.
+function lengthSpread(members) {
+    const lens = members.map(m => m.length).filter(l => typeof l === 'number' && l > 0);
+    if (lens.length < 2) return null;
+    return Math.max(...lens) - Math.min(...lens);
+}
 function autoEditNote(group) {
     const members = group.memberGids.map(g => STATE.recordings.get(g)).filter(Boolean);
     const target = STATE.recordings.get(group.target) || members[0];
     const lines = evidenceLines(group, members);
-    const out = ['Merging ' + members.length + ' recordings into ' + (target ? '"' + target.title + '"' : 'one') + '.'];
+    // #529 (majkinetor): "Move 'Keeping ...' to the first line and name it
+    // 'Merge 3 recordings into "Sweet music": <URL>'." The kept recording is the
+    // single most important fact in the note, so it leads instead of trailing
+    // after the evidence.
+    const keptUrl = target && target.gid ? location.origin + '/recording/' + target.gid : '';
+    const out = ['Merge ' + members.length + ' recordings into ' + (target ? '"' + target.title + '"' : 'one') + (keptUrl ? ': ' + keptUrl : '.')];
     if (lines.length) { out.push(''); lines.forEach(l => out.push('- ' + l)); }
     else out.push('', '- Grouped manually; no automatic signal matched across every recording.');
-    // partial signals are stated as partial rather than silently omitted
+    // Partial signals are stated as partial rather than silently omitted — and
+    // length gets a concrete number instead of a bare "matching only some of
+    // them: length", which said nothing about how far apart they actually were.
     const partial = (group.signals || []).filter(x => !(group.signalsAll || []).includes(x));
-    if (partial.length) out.push('', 'Matching only some of them: ' + partial.join(', ') + '.');
-    if (target && target.gid) out.push('', 'Keeping: ' + location.origin + '/recording/' + target.gid);
+    const rest = partial.filter(x => x !== 'length');
+    if (partial.includes('length')) {
+        const spread = lengthSpread(members);
+        if (spread != null) out.push('', 'Max length difference: ' + Math.round(spread / 1000) + 's');
+        else rest.push('length');
+    }
+    if (rest.length) out.push('', 'Matching only some of them: ' + rest.join(', ') + '.');
     return out.join('\n');
 }
 // #529 (majkinetor): a per-group edit note, editable from the card. A custom
@@ -1301,6 +1323,7 @@ function fsStyle() {
         + '.fs-gdrop{margin:6px 8px 8px;border:1px dashed var(--fs-border);border-radius:6px;padding:6px;text-align:center;color:var(--fs-muted);font-size:10.5px}'
         + '.fs-newgroup{border:1px dashed var(--fs-border);border-radius:7px;padding:9px;text-align:center;color:var(--fs-muted);font-size:12px;cursor:pointer}'
         + '.fs-ftr{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--fs-panel2);border-top:1px solid var(--fs-border)}'
+        + '.fs-idmore{color:var(--fs-muted);font-size:9px}'
         + '.fs-idstat{white-space:nowrap;cursor:help}'
         + '.fs-idstat-none{color:var(--fs-muted)}'
         + '.fs-sum{color:var(--fs-muted);font-size:12px}'
@@ -1315,7 +1338,7 @@ function fsStyle() {
         + '.fs-opt textarea{width:100%;box-sizing:border-box;margin-top:4px;font:12px inherit}'
         // log viewer — ported from apollo_editor's #283 window (wider, centred,
         // minimize/restore, badge, per-severity colouring), in Fusion's light palette.
-        + '.fs-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:2147483002;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:#fff;border:1px solid #cfc4ee;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.28);font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222;overflow:hidden}'
+        + '.fs-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:2147483002;display:flex;flex-direction:column;width:min(1240px,94vw);max-height:78vh;background:#fff;border:1px solid #cfc4ee;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.28);font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222;overflow:hidden}'
         + '.fs-logpop .fs-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e7e1f5;color:#563b8f;cursor:move;user-select:none}'
         + '.fs-logpop .fs-logpop-sp{margin-left:auto}'
         + '.fs-logpop .fs-log-badge{color:#9a8cba;font-size:11px}'
@@ -1488,21 +1511,35 @@ function groupCardHtml(group) {
     // identifier shared by 2+ members gets a tint, and each DISTINCT shared value
     // gets its own colour, so which rows actually agree is visible at a glance.
     // Values appearing only once stay plain, since they prove nothing.
+    // Count how many MEMBERS carry each value, not how many times it occurs:
+    // a value listed twice on one recording proves nothing about agreement.
     const idCounts = new Map();
     ordered.forEach(m => {
-        [...(m.isrcs || []), ...(m.acoustids || [])].forEach(v => idCounts.set(v, (idCounts.get(v) || 0) + 1));
+        uniq([...(m.isrcs || []), ...(m.acoustids || [])]).forEach(v => idCounts.set(v, (idCounts.get(v) || 0) + 1));
     });
     const idColor = new Map();
     ordered.forEach(m => {
-        [...(m.isrcs || []), ...(m.acoustids || [])].forEach(v => {
+        uniq([...(m.isrcs || []), ...(m.acoustids || [])]).forEach(v => {
             if (idCounts.get(v) > 1 && !idColor.has(v)) idColor.set(v, 'fs-idc' + (idColor.size % 6));
         });
     });
-    const idCell = (val, isAcoustid) => {
-        if (!val) return '<span class="fs-isrc">—</span>';
+    // #529 (majkinetor, "This accousticId isn't matching"): a recording can carry
+    // SEVERAL AcoustIDs, and showing list[0] displayed a non-shared one next to
+    // another row's shared one — so a correctly-matched group looked mismatched.
+    // Show the value that actually links this row to the rest, and say how many
+    // more there are rather than hiding them.
+    const idCell = (list, isAcoustid) => {
+        const vals = uniq(list || []);
+        if (!vals.length) return '<span class="fs-isrc">—</span>';
+        const val = vals.find(v => (idCounts.get(v) || 0) > 1) || vals[0];
         const cls = idColor.get(val) || '';
-        const shown = isAcoustid ? escapeHtml(val.slice(0, 8)) + '…' : escapeHtml(val);
-        const title = (isAcoustid ? 'AcoustID ' : 'ISRC ') + escapeHtml(val) + (cls ? ' — shared with another recording in this group' : '');
+        const extra = vals.length - 1;
+        const shown = (isAcoustid ? escapeHtml(val.slice(0, 8)) + '…' : escapeHtml(val))
+            + (extra ? '<span class="fs-idmore"> +' + extra + '</span>' : '');
+        const label = isAcoustid ? 'AcoustID' : 'ISRC';
+        const title = label + ' ' + escapeHtml(val)
+            + (cls ? ' — shared with another recording in this group' : '')
+            + (extra ? ' — all ' + vals.length + ': ' + escapeHtml(vals.join(', ')) : '');
         return '<span class="fs-isrc ' + cls + '" title="' + title + '">' + shown + '</span>';
     };
     const rows = ordered.map(m => {
@@ -1521,8 +1558,8 @@ function groupCardHtml(group) {
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + '<span class="fs-len">' + dur(m.length) + '</span>'
-            + idCell((m.isrcs && m.isrcs[0]) || '', false)
-            + idCell((m.acoustids && m.acoustids[0]) || '', true)
+            + idCell(m.isrcs, false)
+            + idCell(m.acoustids, true)
             + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>'
             + (expanded ? releaseTableHtml(m) : '')
             + '</div>';
@@ -2223,7 +2260,7 @@ try {
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
-        fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress,
+        fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress, lengthSpread,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
