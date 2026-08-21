@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.194909
+// @version      2026.8.21.195828
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1471,7 +1471,10 @@ function fsStyle() {
         + '.fs-relband td{font-weight:600;background:rgba(0,0,0,.05);color:var(--fs-text)}'
         + '.fs-relload,.fs-relerr,.fs-relempty{padding:6px 9px;font-size:10.5px;color:var(--fs-muted)}'
         + '.fs-relerr{color:var(--fs-red)}'
-        + '.fs-gt{font-weight:700;font-size:12.5px;flex:0 1 260px;min-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.fs-gt{font-weight:700;font-size:12.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.fs-ghdr-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}'
+        + '.fs-ghl{display:flex;align-items:center;gap:8px;min-width:0}'
+        + '.fs-ghr{display:flex;align-items:center;gap:8px;justify-self:end}'
         + '.fs-gnum{width:20px;flex-shrink:0;text-align:right;font-weight:800;font-size:12px;color:var(--fs-muted);cursor:help}'
         + '.fs-sig span{box-sizing:border-box;width:64px;text-align:center}'
         + '.fs-tier-strict{border-left-color:#1c9b63;background:rgba(28,155,99,.045)}'
@@ -1987,18 +1990,27 @@ function groupCardHtml(group) {
         ? 'Grouped by hand — no cutoff level would have formed this group automatically'
         : 'Holds together at the "' + tier + '" cutoff' + (tier === 'loose' ? ' — it would not form at a stricter setting' : '');
     return '<div class="fs-gcard fs-gcard-' + confClass + ' fs-tier-' + tier + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '" title="' + escapeHtml(tierWhy) + '">'
-        + '<div class="fs-ghdr">'
+        // Three tracks — 1fr | auto | 1fr — so the chip matrix is centred on the
+        // CARD, not merely at a fixed offset after the title (#529: "matrix is
+        // not in the middle"). Equal side tracks also mean the centre column
+        // lands at the same x on every card without the title needing a fixed
+        // width, so long titles no longer have to be truncated to keep the
+        // matrix aligned.
+        + '<div class="fs-ghdr fs-ghdr-grid">'
+        + '<div class="fs-ghl">'
         + '<span class="fs-gnum" title="' + members.length + ' recording' + (members.length === 1 ? '' : 's') + ' in this group">' + members.length + '</span>'
         + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>'
         + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
+        + '</div>'
         + '<div class="fs-sig">' + sigChips + '</div>'
+        + '<div class="fs-ghr">'
         + (collapsed ? '' : '<span class="fs-detbtn' + (groupAllExpanded(group) ? ' fs-detbtn-on' : '') + '" data-act="toggle-all-details" title="'
             + (groupAllExpanded(group) ? 'hide the release tables for every recording in this group' : 'show the release tables for every recording in this group') + '">'
             + '▤' + '</span>')
-        + '<div class="fs-sp"></div>'
         + noteBtn
         + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
-        + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span></div>'
+        + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span>'
+        + '</div></div>'
         + (collapsed ? '' : '<div class="fs-grows">' + rows + '</div>' + errMsg) + '</div>';
 }
 
