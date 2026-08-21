@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.170556
+// @version      2026.8.21.171508
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -282,8 +282,20 @@ async function wsGet(path, retries) {
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
 const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, makeVotable: false, matchCutoff: 'normal' };
+// Stored settings win over defaults, so simply RAISING a default is invisible to
+// anyone who ever opened the config window (that saves every key, including the
+// ones they never touched). The old 60 cap dated from one-request-per-recording;
+// now that list_by_mbid batches 50 at a time it only served to leave big pools
+// with no AcoustID data at all. Lift that specific stale value — but only when
+// it's still exactly the retired default, so a cap someone deliberately chose
+// stays theirs.
+const RETIRED_ACOUSTID_CAP = 60;
+function migrateSettings(s) {
+    if (s.acoustidPoolCap === RETIRED_ACOUSTID_CAP) s.acoustidPoolCap = SETTINGS_DEFAULTS.acoustidPoolCap;
+    return s;
+}
 function loadSettings() {
-    try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
+    try { return migrateSettings(Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}')))); }
     catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
 }
 function saveSettings() { try { GM_setValue(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {} }
@@ -1094,6 +1106,14 @@ function fsStyle() {
         + '.fs-m{color:var(--fs-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}'
         + '.fs-ids{display:flex;gap:5px;margin-top:2px}'
         + '.fs-idtag{font-size:9.5px;color:var(--fs-muted);font-family:ui-monospace,Consolas,monospace;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:3px}'
+        // Presence dots: does this recording have an ISRC / an AcoustID. The
+        // legend that used to explain them is gone (#529: "I don't see how it is
+        // used"), so the dots carry their own meaning — each keeps a distinct
+        // colour and a tooltip that names the identifier and says present/absent.
+        + '.fs-badges{display:flex;gap:3px;flex-shrink:0}'
+        + '.fs-b{width:6px;height:6px;border-radius:50%;background:#ccccd8}'
+        + '.fs-b-isrc.fs-b-on{background:var(--fs-green)} .fs-b-acid.fs-b-on{background:var(--fs-blue)}'
+        + '.fs-b-unknown{background:transparent;box-shadow:inset 0 0 0 1px #ccccd8}'
         + '.fs-rm{color:var(--fs-muted);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0}'
         + '.fs-rm:hover{color:var(--fs-red)}'
         // flex-shrink:0 is the actual fix for the missing-rows bug: .fs-gcard
@@ -1258,12 +1278,31 @@ function idsLine(rec) {
     if (acid) out += '<span class="fs-idtag" title="AcoustID ' + escapeHtml(acid) + '">' + escapeHtml(acid.slice(0, 8)) + '…</span>';
     return out + '</div>';
 }
+// A dot per identifier. "not looked up yet" is deliberately a THIRD state, not
+// folded into "absent": with acoustids left null (lookup skipped or still
+// running) an unlit dot would otherwise claim the recording has no AcoustID
+// when nobody ever asked. Same reason isrcsKnown exists on the fetch side.
+function presenceDots(rec) {
+    const dot = (cls, label, list, known) => {
+        const n = list ? list.length : 0;
+        const state = !known ? 'unknown' : n ? 'on' : 'off';
+        const title = state === 'unknown' ? label + ' not looked up yet'
+            : state === 'on' ? n + ' ' + label + (n > 1 ? 's' : '') + ': ' + list.join(', ')
+                : 'no ' + label + ' on this recording';
+        return '<span class="fs-b fs-b-' + cls + ' fs-b-' + state + '" title="' + escapeHtml(title) + '"></span>';
+    };
+    return '<div class="fs-badges">'
+        + dot('isrc', 'ISRC', rec.isrcs, rec.isrcsKnown)
+        + dot('acid', 'AcoustID', rec.acoustids, rec.acoustids != null)
+        + '</div>';
+}
 function poolCardHtml(rec) {
     const rs = releasesSummary(rec);
     return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
         + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + pendingBadge(rec) + videoBadge(rec) + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
         + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
+        + presenceDots(rec)
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
 }
 function groupCardHtml(group) {
@@ -1984,6 +2023,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
+        migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,

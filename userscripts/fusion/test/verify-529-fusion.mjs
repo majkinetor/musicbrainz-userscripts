@@ -908,6 +908,33 @@ ck(await page.evaluate(() => window.__fusion.SETTINGS_DEFAULTS.acoustidPoolCap) 
 ck(await page.evaluate(() => window.__fusion.ACOUSTID_BATCH === undefined ? 50 : window.__fusion.ACOUSTID_BATCH) > 1,
    'AcoustIDs are fetched in batches, not one request per recording');
 
+// The assertion above passes on DEFAULTS — which is exactly why it stayed green
+// while a real install still ran at 60: stored settings shadow defaults, and
+// opening the config window once saves every key. Assert the migration itself.
+ck(await page.evaluate(() => window.__fusion.migrateSettings({ acoustidPoolCap: window.__fusion.RETIRED_ACOUSTID_CAP }).acoustidPoolCap
+                             === window.__fusion.SETTINGS_DEFAULTS.acoustidPoolCap),
+   'a stored copy of the retired 60 cap is lifted to the new default on load');
+ck(await page.evaluate(() => window.__fusion.migrateSettings({ acoustidPoolCap: 250 }).acoustidPoolCap === 250),
+   'a cap the user deliberately chose is left alone by the migration');
+
+// #529: "2 dots in the pool are gone (isrc/accousticId)" — removing the legend
+// took the dots it described with it. They carry their own meaning now, and
+// "not looked up yet" stays distinct from "absent" so a skipped AcoustID
+// lookup can't render as a confident "this recording has none".
+const dots = await page.evaluate(() => ({
+    both: window.__fusion.presenceDots({ isrcs: ['GBAAA0000001'], isrcsKnown: true, acoustids: ['aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'] }),
+    none: window.__fusion.presenceDots({ isrcs: [], isrcsKnown: true, acoustids: [] }),
+    unknown: window.__fusion.presenceDots({ isrcs: [], isrcsKnown: false, acoustids: null }),
+}));
+ck(/fs-b-isrc[^"]*fs-b-on/.test(dots.both) && /fs-b-acid[^"]*fs-b-on/.test(dots.both),
+   'both pool dots light up when the recording has an ISRC and an AcoustID');
+ck(/fs-b-isrc[^"]*fs-b-off/.test(dots.none) && !/fs-b-on/.test(dots.none),
+   'dots stay unlit when the identifiers are genuinely absent');
+ck(/fs-b-isrc[^"]*fs-b-unknown/.test(dots.unknown) && /fs-b-acid[^"]*fs-b-unknown/.test(dots.unknown),
+   'un-looked-up identifiers render as a third state, not as a confident absence');
+ck(/not looked up yet/.test(dots.unknown) && /no ISRC on this recording/.test(dots.none),
+   'dot tooltips carry the meaning the removed legend used to');
+
 // #529: "replace icon on [Merge] inside the card … Lighting icon is reserved
 // only for auto matching action."
 const icons = await page.evaluate(() => {
