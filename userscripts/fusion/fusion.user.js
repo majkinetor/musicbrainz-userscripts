@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.171508
+// @version      2026.8.21.172813
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -248,11 +248,17 @@ async function wsGet(path, retries) {
             const ms = Date.now() - t0;
             if (r.status === 503 || r.status === 429) {
                 const ra = parseRetryAfter(r.headers.get('Retry-After'));
-                // fall back to exponential backoff only when the server didn't say
-                const wait = ra != null ? ra : Math.min(1000 * Math.pow(2, attempt), 30000);   // same fallback as falcon's mbThrottle
+                // Retry-After is a FLOOR on the wait, never a replacement for
+                // backoff. MB really does answer "Retry-After: 0" (#529), and
+                // taking that literally made the header DISABLE the backoff:
+                // five attempts fired inside 150ms and gave up before the
+                // server had a chance to recover. Whichever is longer wins.
+                const backoff = Math.min(1000 * Math.pow(2, attempt), 30000);   // same shape as falcon's mbThrottle
+                const wait = Math.max(ra || 0, backoff);
                 Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms) — MB busy'
-                    + (ra != null ? '; Retry-After: ' + Math.round(ra / 1000) + 's' : '; no Retry-After, backing off ' + Math.round(wait / 1000) + 's'));
-                if (attempt < retries) { mbGateFor(wait, 'server returned ' + r.status + (ra != null ? ' with Retry-After ' + Math.round(ra / 1000) + 's' : '')); continue; }
+                    + (ra != null ? '; Retry-After: ' + Math.round(ra / 1000) + 's' : '; no Retry-After')
+                    + ', waiting ' + Math.round(wait / 1000) + 's');
+                if (attempt < retries) { mbGateFor(wait, 'server returned ' + r.status + (ra ? ' with Retry-After ' + Math.round(ra / 1000) + 's' : '')); continue; }
                 Log.error('GET ' + path + ' gave up after ' + (retries + 1) + ' attempts (still ' + r.status + ')');
                 setNetTrouble('throttled', 'gave up on a request after ' + (retries + 1) + ' attempts (HTTP ' + r.status + ')');
                 return null;
@@ -441,10 +447,10 @@ const SEARCH_PAGE_LIMIT = 100;
 const SEARCH_MAX_PAGES = 20;   // 2000 recordings; guards a huge artist
 async function fetchRecordingsBySearch(luceneQuery, label) {
     const recordings = [];
-    let offset = 0, total = Infinity, pages = 0;
+    let offset = 0, total = Infinity, pages = 0, truncatedBy = null;
     while (offset < total && pages < SEARCH_MAX_PAGES) {
         const j = await wsGet('/ws/2/recording?query=' + encodeURIComponent(luceneQuery) + '&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
-        if (!j) break;
+        if (!j) { truncatedBy = 'a failed request'; break; }
         total = j.count || 0;
         for (const r of j.recordings || []) {
             const releases = (r.releases || []).map(rel => {
@@ -459,11 +465,16 @@ async function fetchRecordingsBySearch(luceneQuery, label) {
             recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true, releases, allReleases: releases }));
         }
         offset += SEARCH_PAGE_LIMIT; pages++;
+        if (pages >= SEARCH_MAX_PAGES && offset < total) truncatedBy = 'the ' + SEARCH_MAX_PAGES + '-page cap';
     }
     // total stays Infinity when the FIRST page never came back — reporting
     // "0 of Infinity" is worse than admitting we don't know (#529).
     const known = Number.isFinite(total);
-    if (known && total > recordings.length) Log.warn(label + ': loaded ' + recordings.length + ' of ' + total + ' — stopped at the ' + SEARCH_MAX_PAGES + '-page cap');
+    // Don't blame the page cap for every shortfall: a 503'd page stops the loop
+    // after 3 pages and reporting that as "the 20-page cap" sends you looking in
+    // entirely the wrong place (#529 — it read "stopped at the 20-page cap"
+    // immediately under a give-up-after-5-attempts error).
+    if (known && total > recordings.length) Log.warn(label + ': loaded ' + recordings.length + ' of ' + total + ' — stopped by ' + (truncatedBy || 'an incomplete response'));
     if (!known) Log.error(label + ': could not load anything — MusicBrainz did not answer');
     else Log.info(label + ': ' + recordings.length + ' recording(s) of ' + total + ' total (' + luceneQuery + ')');
     return { recordings, total: known ? total : recordings.length };
@@ -522,6 +533,56 @@ async function fetchAllReleases(gid) {
         out.push({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null });
     }
     return { releases: out, video: !!j.video };
+}
+// #529 (majkinetor, with a screenshot of MB's own merge-page release table):
+// "We need all details when merging. Lets have all releases expandable for a
+// recording." Browsing releases BY recording is the only single request that
+// carries every column that table shows — label and catalogue number are not
+// valid inc parameters on the recording resource at all ("labels is not a valid
+// inc parameter for the recording resource"), and inc=recordings is what turns
+// the media summary into real tracks, giving the track's own number, length and
+// artist as they appear on that particular release.
+// Fetched on demand, per recording, only when a row is actually expanded.
+async function fetchReleaseDetails(gid) {
+    const j = await wsGet('/ws/2/release?recording=' + gid + '&inc=labels+media+release-groups+artist-credits+recordings&limit=100&fmt=json');
+    if (!j) return null;
+    const out = [];
+    for (const rel of j.releases || []) {
+        const li = (rel['label-info'] || [])[0] || {};
+        const rg = rel['release-group'] || {};
+        const ev = (rel['release-events'] || [])[0] || {};
+        const area = ev.area || {};
+        // Find the track for THIS recording; a release can list it more than once.
+        let track = null, medium = null;
+        for (const med of rel.media || []) {
+            for (const t of med.tracks || []) {
+                if (t.recording && t.recording.id === gid) { track = t; medium = med; break; }
+            }
+            if (track) break;
+        }
+        const secondary = (rg['secondary-types'] || []).join(' + ');
+        out.push({
+            gid: rel.id,
+            status: rel.status || null,
+            title: rel.title || '',
+            artist: acName(rel['artist-credit']),
+            rgType: [rg['primary-type'] || '', secondary].filter(Boolean).join(' + ') || null,
+            country: rel.country || (area['iso-3166-1-codes'] || [])[0] || null,
+            date: rel.date || ev.date || null,
+            label: li.label ? li.label.name : null,
+            catalog: li['catalog-number'] || null,
+            format: medium ? medium.format || null : null,
+            trackNumber: track ? track.number : null,
+            trackTitle: track ? track.title : null,
+            trackLength: track ? (track.length || (track.recording && track.recording.length) || null) : null,
+            trackArtist: track ? acName(track['artist-credit']) : null,
+            discNumber: medium && (rel.media || []).length > 1 ? medium.position : null,
+        });
+    }
+    // Group the way MB's own table does: Official first, then the rest.
+    const rank = s => (s === 'Official' ? 0 : s ? 1 : 2);
+    out.sort((a, b) => rank(a.status) - rank(b.status) || String(a.date || '').localeCompare(String(b.date || '')));
+    return out;
 }
 // also backfills `video` for recordings whose seed source didn't carry it
 // (the artist-recordings DOM scrape has no video indicator in the table).
@@ -629,7 +690,11 @@ async function fetchAcoustIds(gid) {
 }
 
 // ── pool / groups state ──────────────────────────────────────────────────
-const STATE = { recordings: new Map(), poolOrder: [], groups: [], poolFilter: '', selected: null, activeGroupId: null, _dragSrc: null, releaseInfo: null, rgInfo: null };
+const STATE = { recordings: new Map(), poolOrder: [], groups: [], poolFilter: '', selected: null, activeGroupId: null, _dragSrc: null, releaseInfo: null, rgInfo: null,
+    // #529: per-recording release tables, expanded on demand. The Map doubles as
+    // the cache — a missing key means "never asked" (renders "loading…"), null
+    // means the lookup failed, so a failed fetch doesn't retry on every render.
+    expandedReleases: new Set(), releaseDetails: new Map(), collapsedGroups: new Set() };
 
 function addToPool(rec) {
     if (STATE.recordings.has(rec.gid)) return false;
@@ -809,7 +874,20 @@ function autoMatch(pool, tolMs, cutoff) {
 // round-trip per pool recording; on anything bigger than a handful of tracks
 // that dominates Auto-match's wall time with nothing visible happening. Report
 // live N/M counts back to the caller so the button (and the log) can show it.
-async function enrichAcoustIds(recs, concurrency, onProgress) {
+// Serialized on purpose. The seed fires enrichment as a floating promise while
+// auto-match-on-open starts its own, and each snapshots "which recordings still
+// have acoustids == null" BEFORE the other writes its results back — so both
+// asked AcoustID for an overlapping set. In majkinetor's log four batches of 50
+// covered far fewer than 200 distinct MBIDs, some queried twice and others
+// never. Queueing makes the second caller's filter run after the first has
+// stored its answers, so it only asks for what is genuinely still missing.
+let _acoustidQueue = Promise.resolve();
+function enrichAcoustIds(recs, concurrency, onProgress) {
+    const run = () => enrichAcoustIdsNow(recs, concurrency, onProgress);
+    _acoustidQueue = _acoustidQueue.then(run, run);
+    return _acoustidQueue;
+}
+async function enrichAcoustIdsNow(recs, concurrency, onProgress) {
     const pending = recs.filter(r => r.acoustids == null);
     if (!pending.length) { if (onProgress) onProgress(recs.length, recs.length); return; }
     let done = recs.length - pending.length;
@@ -1127,6 +1205,21 @@ function fsStyle() {
         + '.fs-gcard-manual{border-left-color:var(--fs-blue);border-left-style:dashed}'
         + '.fs-gcard.fs-active{outline:2px solid var(--fs-purple);outline-offset:-1px}'
         + '.fs-ghdr{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,0,0,.025);border-bottom:1px solid var(--fs-border);cursor:pointer}'
+        // Collapse/expand toggles. Generous hit area, never a bare glyph (#419).
+        + '.fs-ctog,.fs-exp{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:2px 3px;border-radius:3px;cursor:pointer;color:var(--fs-muted);font-size:11px;flex-shrink:0}'
+        + '.fs-ctog:hover,.fs-exp:hover{background:rgba(0,0,0,.07);color:var(--fs-text)}'
+        + '.fs-gcard-collapsed .fs-ghdr{border-bottom:none}'
+        + '.fs-cnt{font-size:10.5px;color:var(--fs-muted);white-space:nowrap}'
+        // The release table must scroll INSIDE the card — it has far more columns
+        // than the card is wide, and letting it stretch would blow out the layout.
+        + '.fs-reltbl{overflow-x:auto;margin:0 0 6px 30px;border:1px solid var(--fs-border);border-radius:4px;background:#fff}'
+        + '.fs-reltbl table{border-collapse:collapse;font-size:10.5px;width:100%}'
+        + '.fs-reltbl th{text-align:left;font-weight:600;padding:4px 7px;border-bottom:1px solid var(--fs-border);white-space:nowrap;background:rgba(0,0,0,.03)}'
+        + '.fs-reltbl td{padding:3px 7px;border-bottom:1px solid rgba(0,0,0,.05);white-space:nowrap}'
+        + '.fs-reltbl tr:last-child td{border-bottom:none}'
+        + '.fs-relband td{font-weight:600;background:rgba(0,0,0,.05);color:var(--fs-text)}'
+        + '.fs-relload,.fs-relerr,.fs-relempty{padding:6px 9px;font-size:10.5px;color:var(--fs-muted)}'
+        + '.fs-relerr{color:var(--fs-red)}'
         + '.fs-gt{font-weight:700;font-size:12.5px}'
         + '.fs-gt a{color:var(--fs-purple);text-decoration:underline;text-decoration-color:rgba(109,63,240,.4)}'
         + '.fs-gt a:hover{color:var(--fs-purple);text-decoration-color:var(--fs-purple)}'
@@ -1305,6 +1398,59 @@ function poolCardHtml(rec) {
         + presenceDots(rec)
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
 }
+// The expanded per-recording release table (#529). Columns follow MB's own
+// merge-page table so the two can be read side by side, with a status band
+// ("Official" / "Promotion" / …) heading each run exactly as MB does it.
+async function toggleReleaseDetails(gid) {
+    if (STATE.expandedReleases.has(gid)) { STATE.expandedReleases.delete(gid); renderGroups(); return; }
+    STATE.expandedReleases.add(gid);
+    renderGroups();                                  // show "loading…" straight away
+    if (STATE.releaseDetails.has(gid)) return;       // cached (including a cached failure)
+    const rec = STATE.recordings.get(gid);
+    Log.info('Fetching full release details for ' + (rec ? describeRecordingForLog(rec) : gid));
+    busyStart();
+    try {
+        const rows = await fetchReleaseDetails(gid);
+        STATE.releaseDetails.set(gid, rows);
+        Log.info(rows ? 'Release details: ' + rows.length + ' release(s) for ' + (rec ? rec.title : gid) : 'Release details lookup failed for ' + gid);
+    } catch (e) {
+        STATE.releaseDetails.set(gid, null);
+        Log.error('Release details lookup error: ' + e.message);
+    } finally { busyEnd(); renderGroups(); }
+}
+function releaseTableHtml(rec) {
+    const rows = STATE.releaseDetails.get(rec.gid);
+    if (rows === undefined) return '<div class="fs-reltbl fs-relload">loading releases…</div>';
+    if (rows === null) return '<div class="fs-reltbl fs-relerr">could not load releases for this recording</div>';
+    if (!rows.length) return '<div class="fs-reltbl fs-relempty">this recording is not on any release</div>';
+    const cell = v => escapeHtml(v == null || v === '' ? '—' : String(v));
+    let out = '<div class="fs-reltbl"><table><thead><tr>'
+        + '<th>#</th><th>Title</th><th>Length</th><th>Track artist</th><th>Release title</th>'
+        + '<th>Release artist</th><th>Release group type</th><th>Country/Date</th><th>Label</th><th>Catalog#</th>'
+        + '</tr></thead><tbody>';
+    let band = undefined;
+    for (const r of rows) {
+        if (r.status !== band) {
+            band = r.status;
+            out += '<tr class="fs-relband"><td colspan="10">' + escapeHtml(band || 'No status') + '</td></tr>';
+        }
+        const num = (r.discNumber ? r.discNumber + '.' : '') + (r.trackNumber == null ? '—' : r.trackNumber);
+        const cd = [r.country, r.date].filter(Boolean).join(' ') || '—';
+        out += '<tr>'
+            + '<td>' + escapeHtml(num) + '</td>'
+            + '<td>' + cell(r.trackTitle) + '</td>'
+            + '<td>' + (r.trackLength ? dur(r.trackLength) : '—') + '</td>'
+            + '<td>' + cell(r.trackArtist) + '</td>'
+            + '<td><a href="/release/' + r.gid + '" target="_blank" rel="noopener">' + cell(r.title) + '</a></td>'
+            + '<td>' + cell(r.artist) + '</td>'
+            + '<td>' + cell([r.rgType, r.format].filter(Boolean).join(' · ')) + '</td>'
+            + '<td>' + escapeHtml(cd) + '</td>'
+            + '<td>' + cell(r.label) + '</td>'
+            + '<td>' + cell(r.catalog) + '</td>'
+            + '</tr>';
+    }
+    return out + '</tbody></table></div>';
+}
 function groupCardHtml(group) {
     const members = group.memberGids.map(g => STATE.recordings.get(g)).filter(Boolean);
     // #529 follow-up: "remove radios, make hover action that one is merge
@@ -1357,7 +1503,10 @@ function groupCardHtml(group) {
         const star = isTarget
             ? '<span class="fs-star fs-star-on" title="merge target — this one is kept">★</span>'
             : '<span class="fs-star' + (canPick ? '' : ' fs-star-disabled') + '" data-act="' + (canPick ? 'set-target' : '') + '" title="' + (canPick ? 'make this the merge target' : '') + '">☆</span>';
-        return '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
+        const expanded = STATE.expandedReleases.has(m.gid);
+        return '<div class="fs-growwrap">'
+            + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
+            + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" title="' + (expanded ? 'hide' : 'show') + ' every release this recording appears on">' + (expanded ? '▾' : '▸') + '</span>'
             + star
             + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + '</span>'
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
@@ -1365,7 +1514,9 @@ function groupCardHtml(group) {
             + '<span class="fs-len">' + dur(m.length) + '</span>'
             + idCell((m.isrcs && m.isrcs[0]) || '', false)
             + idCell((m.acoustids && m.acoustids[0]) || '', true)
-            + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>';
+            + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>'
+            + (expanded ? releaseTableHtml(m) : '')
+            + '</div>';
     }).join('');
     const errMsg = group.state === 'error' ? '<div class="fs-gerr">' + escapeHtml(group.error || 'merge failed') + '</div>' : '';
     const dropZone = done ? '' : '<div class="fs-gdrop" data-act="drop-zone">drop from pool to add another recording to this group</div>';
@@ -1388,14 +1539,21 @@ function groupCardHtml(group) {
             + '<div class="fs-note-wrap"><textarea class="fs-note-ta" spellcheck="false" placeholder="Edit note submitted with this merge…">' + escapeHtml(draft) + '</textarea>'
             + '<div class="fs-note-hint">Replaces the auto-generated reason line. Fusion\'s attribution footer is always appended.</div></div></div>';
     }
-    return '<div class="fs-gcard fs-gcard-' + confClass + activeCls + '" data-gid="' + group.id + '">'
-        + '<div class="fs-ghdr"><span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
+    // #529: "We should also be able to collapse entire card." Collapsed keeps the
+    // header — confidence, chips and Merge stay usable — and hides only the rows,
+    // so a long board can be skimmed without losing the ability to act on it.
+    const collapsed = STATE.collapsedGroups.has(group.id);
+    return '<div class="fs-gcard fs-gcard-' + confClass + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '">'
+        + '<div class="fs-ghdr">'
+        + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▸' : '▾') + '</span>'
+        + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
+        + (collapsed ? '<span class="fs-cnt">' + members.length + ' recording' + (members.length === 1 ? '' : 's') + '</span>' : '')
         + noteBtn
         + '<span class="fs-conf fs-conf-' + confClass + '">' + confLabel + '</span>'
         + '<div class="fs-sig">' + sigChips + '</div><div class="fs-sp"></div>'
         + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
         + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span></div>'
-        + '<div class="fs-grows">' + rows + '</div>' + errMsg + dropZone + '</div>';
+        + (collapsed ? '' : '<div class="fs-grows">' + rows + '</div>' + errMsg + dropZone) + '</div>';
 }
 
 // #529 (majkinetor): "add pool filtering as one types in the header instead" —
@@ -1767,6 +1925,12 @@ function wireDelegatedEvents() {
             STATE.activeGroupId = STATE.activeGroupId === card.dataset.gid ? null : card.dataset.gid;
             renderGroups(); return;
         }
+        if (act === 'toggle-releases' && row) { toggleReleaseDetails(row.dataset.gid); return; }
+        if (act === 'toggle-card') {
+            const id = card.dataset.gid;
+            if (STATE.collapsedGroups.has(id)) STATE.collapsedGroups.delete(id); else STATE.collapsedGroups.add(id);
+            renderGroups(); return;
+        }
         if (act === 'set-target' && row) { const g = findGroup(card.dataset.gid); if (g) { g.target = row.dataset.gid; renderGroups(); } return; }
         if (act === 'return' && row) { returnToPool(row.dataset.gid, card.dataset.gid); renderAll(); return; }
         if (act === 'remove-both' && row) { removeFromGroupAndPool(row.dataset.gid, card.dataset.gid); renderAll(); return; }
@@ -2024,6 +2188,7 @@ try {
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
+        fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
