@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.215641
+// @version      2026.8.21.220840
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1437,7 +1437,7 @@ function fsStyle() {
         // driven from these tokens, so the theme is this one line plus the log
         // panel below. Purple/green/amber/red darkened for contrast on white.
         + '.fs-cons{--fs-bg:#f7f8fa;--fs-panel:#fff;--fs-panel2:#fbfbfd;--fs-border:#e3e3ec;--fs-text:#1e1e26;--fs-muted:#6b6b7d;--fs-purple:#6d3ff0;--fs-purple-d:#5a2fd8;--fs-green:#1c9b63;--fs-amber:#a8702a;--fs-red:#c8384f;--fs-blue:#2f7fbf;'
-        + 'width:min(1180px,calc(100% - 24px));height:min(680px,92vh);max-width:calc(100% - 16px);max-height:96vh;min-width:640px;min-height:400px;resize:both;'
+        + 'width:min(1560px,calc(100% - 24px));height:min(760px,92vh);max-width:calc(100% - 16px);max-height:96vh;min-width:640px;min-height:400px;resize:both;'
         + 'background:var(--fs-panel);color:var(--fs-text);border:1px solid var(--fs-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.5);'
         + 'font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}'
         + '.fs-cons.fs-maximized{position:fixed !important;left:8px !important;top:8px !important;right:8px !important;bottom:8px !important;width:auto !important;height:auto !important;max-width:none !important;max-height:none !important;margin:0 !important}'
@@ -1548,10 +1548,10 @@ function fsStyle() {
         + '.fs-reltbl::-webkit-scrollbar-track{background:transparent}'
         + '.fs-reltbl::-webkit-scrollbar-thumb{background:#d3d3e0;border-radius:4px}'
         + '.fs-reltbl:hover::-webkit-scrollbar-thumb{background:#b9b9cc}'
-        + '.fs-reltbl table{border-collapse:collapse;font-size:10.5px;width:100%;table-layout:fixed;min-width:1180px}'
-        + '.fs-reltbl col.c-num{width:44px} .fs-reltbl col.c-title{width:180px} .fs-reltbl col.c-len{width:52px}'
-        + '.fs-reltbl col.c-tart{width:140px} .fs-reltbl col.c-rel{width:210px} .fs-reltbl col.c-rart{width:130px}'
-        + '.fs-reltbl col.c-rgt{width:165px} .fs-reltbl col.c-cd{width:105px} .fs-reltbl col.c-label{width:140px} .fs-reltbl col.c-cat{width:110px}'
+        + '.fs-reltbl table{border-collapse:collapse;font-size:10.5px;width:100%;table-layout:fixed;min-width:720px}'
+        + '.fs-reltbl col.c-num{width:3.5%} .fs-reltbl col.c-title{width:14%} .fs-reltbl col.c-len{width:4.5%}'
+        + '.fs-reltbl col.c-tart{width:11%} .fs-reltbl col.c-rel{width:17%} .fs-reltbl col.c-rart{width:10.5%}'
+        + '.fs-reltbl col.c-rgt{width:13%} .fs-reltbl col.c-cd{width:8.5%} .fs-reltbl col.c-label{width:10.5%} .fs-reltbl col.c-cat{width:7%}'
         + '.fs-reltbl th{text-align:left;font-weight:600;padding:4px 7px;border-bottom:1px solid var(--fs-border);white-space:nowrap;background:rgba(0,0,0,.03)}'
         + '.fs-reltbl td{padding:3px 7px;border-bottom:1px solid rgba(0,0,0,.05);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-reltbl tr:last-child td{border-bottom:none}'
