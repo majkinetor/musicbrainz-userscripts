@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.134152
+// @version      2026.8.21.140155
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -21,7 +21,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.134152';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.140155';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -61,60 +61,94 @@ const Log = {
     error: (...a) => _logRecord('error', a),
     ok: (...a) => _logRecord('ok', a),
 };
+const _lpad = (n, w) => String(n).padStart(w || 2, '0');
+const _logTs = d => _lpad(d.getHours()) + ':' + _lpad(d.getMinutes()) + ':' + _lpad(d.getSeconds()) + '.' + _lpad(d.getMilliseconds(), 3);
+const _logCounts = () => _logBuf.reduce((a, e) => { if (e.kind === 'warn') a.warn++; else if (e.kind === 'error') a.error++; return a; }, { warn: 0, error: 0 });
+// escape, then turn http(s) URLs into clickable links (Apollo's _logLinkify)
+const _logLinkify = s => escapeHtml(s).replace(/(https?:\/\/[^\s<]+)/g, m => {
+    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
+    const url = m.slice(0, m.length - t.length);
+    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+});
 function logMarkdown() {
-    const body = _logBuf.map(r => '[' + new Date(r.t).toLocaleTimeString() + '] [' + r.kind + '] ' + r.line).join('\n') || '(empty)';
-    return '<details><summary>Fusion — session log</summary>\n\n```log\n' + body + '\n```\n\n</details>';
+    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ' };
+    const body = _logBuf.length ? _logBuf.map(r => _logTs(new Date(r.t)) + '  ' + (PRE[r.kind] || '') + r.line).join('\n') : '(no activity logged)';
+    const c = _logCounts();
+    const tally = (c.warn || c.error) ? ' (' + c.warn + ' warning' + (c.warn === 1 ? '' : 's') + ', ' + c.error + ' error' + (c.error === 1 ? '' : 's') + ')' : '';
+    return '<details><summary>Fusion v' + VERSION + ' — session log' + tally + '</summary>\n\n```log\n' + body + '\n```\n\n</details>';
 }
 async function copyLog(btn) {
     const md = logMarkdown(); let ok = false;
-    try { await navigator.clipboard.writeText(md); ok = true; } catch (e) {}
-    if (btn) { btn.textContent = ok ? 'Copied!' : 'Copy failed'; setTimeout(() => { btn.textContent = 'Copy'; }, 1500); }
+    try { await navigator.clipboard.writeText(md); ok = true; }
+    catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
+    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
 }
 // remembered position of the draggable log window (#529)
 const LOGWIN_KEY = 'fusion.logwin';
 function loadLogWinState() { try { return JSON.parse(GM_getValue(LOGWIN_KEY, '{}')); } catch (e) { return {}; } }
 function saveLogWinState(patch) { try { GM_setValue(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWinState(), patch))); } catch (e) {} }
+// #529 (majkinetor): "Make entire log window as in apollo (it has min/maximize,
+// wider etc.)" — ported from apollo_editor's #283 log viewer: wider centred
+// window, minimize/restore docking to the bottom-left, an entry-count + warn/err
+// badge, clickable URLs, per-severity colouring, Escape to close, and
+// open/minimized/position all remembered across sessions.
+// NB the container needs BOTH the id and the .fs-logpop class — its CSS is a
+// class rule, and setting only the id once left it entirely unstyled (invisible
+// behind the modal) while still passing an existence check.
 function openLog() {
     document.getElementById('fs-logpop')?.remove();
     fsStyle();
-    // The CSS for this panel is a CLASS rule (.fs-logpop{position:fixed;…}), so
-    // setting only the id left it completely unstyled: position:static, no
-    // background, no z-index — it rendered as a transparent block at the bottom
-    // of the page, behind the modal. It "existed" (getElementById found it),
-    // which is exactly why an existence-only test kept passing while the user
-    // saw nothing happen. #529 (majkinetor: "log button does nothing").
+    saveLogWinState({ open: true });
+    const st = loadLogWinState();
     const pop = el('div', 'fs-logpop'); pop.id = 'fs-logpop';
-    pop.innerHTML = '<div class="fs-logpop-h"><b>Fusion — activity log</b><span class="fs-sp"></span><button class="fs-logpop-copy" type="button">Copy</button><button class="fs-logpop-x" type="button">✕</button></div><div class="fs-logpop-body"></div>';
+    pop.innerHTML = '<div class="fs-logpop-h"><b>Fusion — activity log</b> <span class="fs-log-badge"></span><span class="fs-logpop-sp"></span>'
+        + '<button class="fs-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+        + '<button class="fs-logpop-min" type="button" title="Minimize">–</button>'
+        + '<button class="fs-logpop-x" type="button" title="Close">✕</button></div>'
+        + '<div class="fs-log-list"></div>';
     document.body.appendChild(pop);
-    const body = pop.querySelector('.fs-logpop-body');
-    const render = () => { body.innerHTML = _logBuf.map(r => '<div class="fs-logln fs-logln-' + r.kind + '"><span class="fs-logts">' + new Date(r.t).toLocaleTimeString() + '</span> ' + escapeHtml(r.line) + '</div>').join(''); body.scrollTop = body.scrollHeight; };
+    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+    const list = pop.querySelector('.fs-log-list');
+    const render = () => {
+        list.innerHTML = _logBuf.length
+            ? _logBuf.map(r => '<div class="fs-log-li fs-log-' + r.kind + '"><span class="fs-log-t">' + _logTs(new Date(r.t)) + '</span><span class="fs-log-m">' + _logLinkify(r.line) + '</span></div>').join('')
+            : '<div class="fs-log-empty">No activity yet.</div>';
+        const c = _logCounts();
+        pop.querySelector('.fs-log-badge').textContent = '(' + _logBuf.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
+        list.scrollTop = list.scrollHeight;
+    };
     render();
     _logListeners.add(render);
-    const close = () => { _logListeners.delete(render); pop.remove(); };
-    pop.querySelector('.fs-logpop-x').onclick = close;
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    const close = () => { saveLogWinState({ open: false }); _logListeners.delete(render); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.fs-logpop-copy').onclick = () => copyLog(pop.querySelector('.fs-logpop-copy'));
-    // #529 follow-up (majkinetor): "make log window movable" — drag by its
-    // header, position remembered across opens (same idiom as the main window).
-    const hdr = pop.querySelector('.fs-logpop-h');
-    const st = loadLogWinState();
-    if (st.left != null && st.top != null) { pop.style.left = st.left + 'px'; pop.style.top = st.top + 'px'; pop.style.right = 'auto'; }
-    hdr.addEventListener('mousedown', e => {
+    const minBtn = pop.querySelector('.fs-logpop-min');
+    const setMin = m => {
+        minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+        if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+        else if (pop._restore) { Object.assign(pop.style, pop._restore); }
+    };
+    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWinState({ min: m }); };
+    if (st.min) { pop.classList.add('min'); setMin(true); }
+    pop.querySelector('.fs-logpop-x').onclick = close;
+    pop.querySelector('.fs-logpop-h').addEventListener('mousedown', e => {
         if (e.target.closest('button')) return;
+        e.preventDefault();
         const r = pop.getBoundingClientRect();
-        pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto';
+        pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
         const ox = e.clientX - r.left, oy = e.clientY - r.top;
         const mv = ev => {
-            pop.style.left = Math.max(0, Math.min(innerWidth - 80, ev.clientX - ox)) + 'px';
-            pop.style.top = Math.max(0, Math.min(innerHeight - 30, ev.clientY - oy)) + 'px';
+            pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+            pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px';
         };
         const up = () => {
             document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
-            const r2 = pop.getBoundingClientRect();
-            saveLogWinState({ left: r2.left, top: r2.top });
+            if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWinState({ left: pop.style.left, top: pop.style.top }); }
         };
         document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
-        e.preventDefault();
     });
+    document.addEventListener('keydown', onKey);
 }
 
 /* ── GM_xmlhttpRequest promisified (ported from isrc_scout's http/gmGet/gmPost) —
@@ -706,6 +740,7 @@ async function mergeGroup(group) {
     Log.info('▶ Merge group ' + group.id + ' — confidence=' + group.confidence + ' signals=[' + group.signals.join(',') + ']');
     group.memberGids.forEach(gid => Log.info('  member ' + gid + (gid === group.target ? ' (TARGET/kept)' : '') + ': ' + describeRecordingForLog(STATE.recordings.get(gid))));
     group.state = 'busy'; group.error = null; renderGroups();
+    busyStart('merging…');
     try {
         const ids = await ensureInternalIds(group.memberGids);
         Log.info('  resolved internal ids: ' + group.memberGids.map((gid, i) => gid.slice(0, 8) + '…→' + ids[i]).join(', '));
@@ -736,6 +771,7 @@ async function mergeGroup(group) {
         group.state = 'error'; group.error = e.message;
         Log.error('✗ Merge failed for group ' + group.id + ': ' + e.message);
     }
+    busyEnd();
     renderGroups(); renderFooter();
 }
 // #529 follow-up (majkinetor): "Merge all should be parallel if possible" —
@@ -751,6 +787,8 @@ async function mergeAll(concurrency) {
     concurrency = Number.isFinite(n) && n >= 1 ? Math.floor(n) : 3;
     const pending = STATE.groups.filter(g => g.state === 'pending' || g.state === 'error');
     const workers = Math.max(1, Math.min(concurrency, pending.length));
+    busyStart('merging ' + pending.length + ' group(s)…');
+    try {
     Log.info('══ Merge All: ' + pending.length + ' group(s) queued, up to ' + workers + ' in parallel ══');
     if (!pending.length) { Log.warn('Merge All: nothing to do — no group is in pending/error state (already merged, or none formed yet)'); return; }
     let doneCount = 0, failCount = 0;
@@ -765,6 +803,7 @@ async function mergeAll(concurrency) {
     }
     await Promise.all(Array.from({ length: workers }, worker));
     Log.info('══ Merge All finished: ' + doneCount + ' merged, ' + failCount + ' failed (of ' + pending.length + ') ══');
+    } finally { busyEnd(); }
 }
 
 /* ════════════════════════════════ UI ════════════════════════════════ */
@@ -786,7 +825,11 @@ function fsStyle() {
         + '.fs-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--fs-panel2);border-bottom:1px solid var(--fs-border);cursor:move}'
         + '.fs-title{font-weight:700;font-size:14px}'
         + '.fs-scope{color:var(--fs-muted);font-size:12px}'
+        + '.fs-busy{color:var(--fs-purple-d);font-size:12px;font-weight:600;animation:fs-pulse 1.1s ease-in-out infinite;white-space:nowrap}'
+        + '@keyframes fs-pulse{0%,100%{opacity:1}50%{opacity:.25}}'
         + '.fs-sp{flex:1}'
+        + '.fs-cons-x{background:none;border:none;font-size:16px;color:#8892a0;cursor:pointer;padding:2px 8px;border-radius:5px;line-height:1}'
+        + '.fs-cons-x:hover{background:rgba(0,0,0,.06);color:var(--fs-text)}'
         + '.fs-cfgbtn,.fs-x{color:var(--fs-muted);cursor:pointer;font-size:15px;padding:2px 6px}'
         + '.fs-cfgbtn:hover,.fs-x:hover{color:var(--fs-text)}'
         + '.fs-ctrl{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--fs-panel);border-bottom:1px solid var(--fs-border);flex-wrap:wrap}'
@@ -861,6 +904,15 @@ function fsStyle() {
         + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(109,63,240,.1);color:var(--fs-purple-d);cursor:pointer;font-weight:600}'
         + '.fs-mbtn.fs-done{background:rgba(28,155,99,.12);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
         + '.fs-mbtn.fs-err{background:rgba(200,56,79,.1);border-color:var(--fs-red);color:var(--fs-red)}'
+        // shared-identifier tints (#529) — one colour per distinct value shared
+        // by 2+ members of a card, so agreeing rows are obvious at a glance.
+        + '.fs-idc0,.fs-idc1,.fs-idc2,.fs-idc3,.fs-idc4,.fs-idc5{border-radius:3px;padding:1px 4px;font-weight:600}'
+        + '.fs-idc0{background:rgba(28,155,99,.16);color:#0f6b45 !important}'
+        + '.fs-idc1{background:rgba(47,127,191,.16);color:#1f5f92 !important}'
+        + '.fs-idc2{background:rgba(168,112,42,.18);color:#8a5a1f !important}'
+        + '.fs-idc3{background:rgba(109,63,240,.14);color:#5a2fd8 !important}'
+        + '.fs-idc4{background:rgba(200,56,79,.14);color:#a82c40 !important}'
+        + '.fs-idc5{background:rgba(20,140,150,.16);color:#0d6b73 !important}'
         + '.fs-note-btn{cursor:pointer;font-size:12px;padding:1px 6px;border-radius:4px;border:1px solid var(--fs-border);color:var(--fs-muted);background:var(--fs-panel2);flex-shrink:0}'
         + '.fs-note-btn:hover{color:var(--fs-text);border-color:var(--fs-muted)}'
         + '.fs-note-btn.fs-has-note{background:rgba(109,63,240,.12);border-color:var(--fs-purple);color:var(--fs-purple-d);font-weight:700}'
@@ -909,13 +961,26 @@ function fsStyle() {
         + '.fs-settings .fs-help{font-size:11px;color:#1DB954;text-decoration:none;border:1px solid #cfe9d6;border-radius:4px;padding:2px 8px}'
         + '.fs-opt{display:block;margin:8px 0;font-size:12px}'
         + '.fs-opt textarea{width:100%;box-sizing:border-box;margin-top:4px;font:12px inherit}'
-        + '.fs-logpop{position:fixed;top:60px;right:14px;width:420px;max-height:60vh;background:#fff;color:#1e1e26;border:1px solid #d7d7e0;border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,.4);z-index:2147483002;display:flex;flex-direction:column;overflow:hidden;font:12px -apple-system,Segoe UI,Arial,sans-serif}'
-        + '.fs-logpop-h{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f0f0f4;border-bottom:1px solid #d7d7e0;cursor:move;user-select:none}'
-        + '.fs-logpop-h button{background:#fff;border:1px solid #c9c9d6;color:#1e1e26;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer}'
-        + '.fs-logpop-body{flex:1;overflow-y:auto;padding:6px 10px}'
-        + '.fs-logln{padding:2px 0;border-bottom:1px solid rgba(0,0,0,.06)}'
-        + '.fs-logts{color:#8a8a9c;margin-right:6px}'
-        + '.fs-logln-warn{color:#a8702a} .fs-logln-error{color:#c8384f} .fs-logln-ok{color:#1c9b63}';
+        // log viewer — ported from apollo_editor's #283 window (wider, centred,
+        // minimize/restore, badge, per-severity colouring), in Fusion's light palette.
+        + '.fs-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:2147483002;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:#fff;border:1px solid #cfc4ee;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.28);font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222;overflow:hidden}'
+        + '.fs-logpop .fs-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e7e1f5;color:#563b8f;cursor:move;user-select:none}'
+        + '.fs-logpop .fs-logpop-sp{margin-left:auto}'
+        + '.fs-logpop .fs-log-badge{color:#9a8cba;font-size:11px}'
+        + '.fs-logpop .fs-logpop-copy,.fs-logpop .fs-logpop-x,.fs-logpop .fs-logpop-min{font:12px Arial;color:#5f3ec0;background:#f5f1fc;border:1px solid #cec0ef;border-radius:5px;padding:2px 9px;cursor:pointer}'
+        + '.fs-logpop .fs-logpop-copy:hover,.fs-logpop .fs-logpop-x:hover,.fs-logpop .fs-logpop-min:hover{background:#ebe3f9}'
+        + '.fs-logpop.min .fs-log-list,.fs-logpop.min .fs-logpop-copy{display:none}'
+        + '.fs-logpop.min{max-height:none;width:auto}'
+        + '.fs-logpop.min .fs-logpop-sp{display:none}'
+        + '.fs-logpop .fs-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#fbfaff;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}'
+        + '.fs-logpop .fs-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}'
+        + '.fs-logpop .fs-log-t{color:#a99fc2;flex:0 0 auto}'
+        + '.fs-logpop .fs-log-m{flex:1 1 auto;color:#444}'
+        + '.fs-logpop .fs-log-m a{color:#5f3ec0}'
+        + '.fs-logpop .fs-log-ok .fs-log-m{color:#2e7d4f}'
+        + '.fs-logpop .fs-log-warn .fs-log-m{color:#b06a00}'
+        + '.fs-logpop .fs-log-error .fs-log-m{color:#c0344d}'
+        + '.fs-logpop .fs-log-empty{color:#9a8cba}';
     document.head.appendChild(s);
 }
 
@@ -984,6 +1049,28 @@ function groupCardHtml(group) {
     const tooFew = members.length < 2;
     const stateLabel = busy ? '⏳ Merging…' : done ? '✓ Merged' : group.state === 'error' ? '⚠ Retry merge' : tooFew ? '⚡ Merge ↗ (needs 2+)' : '⚡ Merge ↗';
     const stateCls = done ? 'fs-done' : group.state === 'error' ? 'fs-err' : '';
+    // #529 (majkinetor): "we should color the same isrc/acousticid within card …
+    // If there are multiple groups, each should have its own color" — any
+    // identifier shared by 2+ members gets a tint, and each DISTINCT shared value
+    // gets its own colour, so which rows actually agree is visible at a glance.
+    // Values appearing only once stay plain, since they prove nothing.
+    const idCounts = new Map();
+    ordered.forEach(m => {
+        [...(m.isrcs || []), ...(m.acoustids || [])].forEach(v => idCounts.set(v, (idCounts.get(v) || 0) + 1));
+    });
+    const idColor = new Map();
+    ordered.forEach(m => {
+        [...(m.isrcs || []), ...(m.acoustids || [])].forEach(v => {
+            if (idCounts.get(v) > 1 && !idColor.has(v)) idColor.set(v, 'fs-idc' + (idColor.size % 6));
+        });
+    });
+    const idCell = (val, isAcoustid) => {
+        if (!val) return '<span class="fs-isrc">—</span>';
+        const cls = idColor.get(val) || '';
+        const shown = isAcoustid ? escapeHtml(val.slice(0, 8)) + '…' : escapeHtml(val);
+        const title = (isAcoustid ? 'AcoustID ' : 'ISRC ') + escapeHtml(val) + (cls ? ' — shared with another recording in this group' : '');
+        return '<span class="fs-isrc ' + cls + '" title="' + title + '">' + shown + '</span>';
+    };
     const rows = ordered.map(m => {
         const rs = releasesSummary(m);
         const isTarget = group.target === m.gid;
@@ -997,8 +1084,8 @@ function groupCardHtml(group) {
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + '<span class="fs-len">' + dur(m.length) + '</span>'
-            + '<span class="fs-isrc">' + ((m.isrcs && m.isrcs[0]) || '—') + '</span>'
-            + '<span class="fs-isrc" title="' + (m.acoustids && m.acoustids[0] ? 'AcoustID ' + escapeHtml(m.acoustids[0]) : '') + '">' + (m.acoustids && m.acoustids[0] ? escapeHtml(m.acoustids[0].slice(0, 8)) + '…' : '—') + '</span>'
+            + idCell((m.isrcs && m.isrcs[0]) || '', false)
+            + idCell((m.acoustids && m.acoustids[0]) || '', true)
             + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>';
     }).join('');
     const errMsg = group.state === 'error' ? '<div class="fs-gerr">' + escapeHtml(group.error || 'merge failed') + '</div>' : '';
@@ -1056,6 +1143,35 @@ function renderAll() { renderPool(); renderGroups(); renderFooter(); }
 
 // _scopeBaseLabel remembers the scope text on its own, so later additions (the
 // RG-edition count) can't compound by re-reading and re-appending the DOM text.
+// #529 (majkinetor): "it's not clear loading is happening - make it flashing in
+// the title" — a pulsing indicator next to the title for as long as ANY async
+// operation is in flight. Ref-counted, so overlapping operations (seeding while
+// the RG lookup runs) don't clear it early.
+let _busyCount = 0, _busyLabel = '';
+function renderBusy() {
+    const e = document.getElementById('fs-busy'); if (!e) return;
+    if (_busyCount > 0) { e.textContent = '⏳ ' + (_busyLabel || 'working…'); e.style.display = ''; }
+    else { e.style.display = 'none'; e.textContent = ''; }
+}
+function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
+function busyEnd() { _busyCount = Math.max(0, _busyCount - 1); if (_busyCount === 0) _busyLabel = ''; renderBusy(); }
+async function withBusy(label, fn) { busyStart(label); try { return await fn(); } finally { busyEnd(); } }
+
+// #529 (majkinetor): "acoustic id still not fully fetched … no dot in the pool
+// is lighted". AcoustIDs used to be looked up ONLY inside Auto-match, so a
+// freshly seeded pool always showed them as unknown even though the data was
+// one batched request away. Seeding now kicks this off in the background —
+// batched (50 MBIDs/request), non-blocking, re-rendering as results land.
+function enrichPoolInBackground(recordings) {
+    if (!recordings.length) return;
+    if (SETTINGS.acoustidEnrich === false) { Log.info('AcoustID lookup disabled in options — skipping background lookup'); return; }
+    if (recordings.length > SETTINGS.acoustidPoolCap) { Log.warn('Skipping background AcoustID lookup — ' + recordings.length + ' recordings exceeds the cap (' + SETTINGS.acoustidPoolCap + '); Auto-match will still do it'); return; }
+    busyStart('fetching AcoustIDs…');
+    enrichAcoustIds(recordings, 4, () => { if (FUSION_OPEN) renderAll(); })
+        .catch(e => Log.error('Background AcoustID lookup failed: ' + e.message))
+        .finally(() => { busyEnd(); if (FUSION_OPEN) renderAll(); });
+}
+
 let _scopeBaseLabel = '';
 function setScopeLabel(text) { _scopeBaseLabel = text; const e = document.getElementById('fs-scope'); if (e) e.textContent = text; }
 // append to the REMEMBERED base, never to whatever is currently rendered —
@@ -1066,18 +1182,22 @@ async function onAutoMatch() {
     const btn = document.getElementById('fs-automatch'); if (!btn) return;
     btn.disabled = true; const orig = btn.textContent;
     btn.textContent = 'Matching…';
+    busyStart('auto-matching…');
     try {
         const poolRecs = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
         Log.info('Auto-match starting on ' + poolRecs.length + ' pool recording(s), cutoff=' + SETTINGS.matchCutoff);
         poolRecs.forEach(r => Log.info('  pool: ' + describeRecordingForLog(r)));
-        // reconcile ISRC/video from MB before comparing — the search index lags (#529)
+        // Enrich EVERY known recording, not just ungrouped ones (#529): members
+        // already sitting in a group were previously never looked up, so two rows
+        // sharing an AcoustID could show one value and one blank.
+        const allRecs = [...STATE.recordings.values()];
         btn.textContent = 'Matching… (ISRCs)';
-        await enrichIsrcs(poolRecs, 4, (done, total) => { btn.textContent = 'Matching… (ISRC ' + done + '/' + total + ')'; });
+        await enrichIsrcs(allRecs, 4, (done, total) => { btn.textContent = 'Matching… (ISRC ' + done + '/' + total + ')'; });
         if (SETTINGS.acoustidEnrich) {
-            if (poolRecs.length <= SETTINGS.acoustidPoolCap) {
-                Log.info('Looking up AcoustIDs for ' + poolRecs.length + ' pool recording(s) (batched, api.acoustid.org)…');
-                await enrichAcoustIds(poolRecs, 4, (done, total) => { btn.textContent = 'Matching… (AcoustID ' + done + '/' + total + ')'; });
-            } else Log.warn('Skipping AcoustID lookup — pool has ' + poolRecs.length + ' recordings (cap ' + SETTINGS.acoustidPoolCap + ')');
+            if (allRecs.length <= SETTINGS.acoustidPoolCap) {
+                Log.info('Looking up AcoustIDs for ' + allRecs.length + ' recording(s) (batched, api.acoustid.org)…');
+                await enrichAcoustIds(allRecs, 4, (done, total) => { btn.textContent = 'Matching… (AcoustID ' + done + '/' + total + ')'; });
+            } else Log.warn('Skipping AcoustID lookup — ' + allRecs.length + ' recordings exceeds the cap (' + SETTINGS.acoustidPoolCap + ')');
         }
         btn.textContent = 'Matching… (comparing)';
         const groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
@@ -1091,7 +1211,7 @@ async function onAutoMatch() {
             STATE.groups.push(g);
         }
         renderAll();
-    } finally { btn.disabled = false; btn.textContent = orig; }
+    } finally { busyEnd(); btn.disabled = false; btn.textContent = orig; }
 }
 // #529 follow-up (majkinetor, live): "I should be able to add release URL and
 // release group URL to get all recordings from them" — detect the entity type
@@ -1115,18 +1235,24 @@ async function onAddByMbid() {
     if (type === 'recording') {
         if (STATE.recordings.has(mbid)) { Log.warn('Add: ' + mbid + ' is already in the pool or a group'); input.value = ''; return; }
         Log.info('Adding recording ' + mbid + '…');
-        const rec = await fetchRecordingByGid(mbid);
+        busyStart('adding recording…');
+        const rec = await fetchRecordingByGid(mbid).finally(() => busyEnd());
         if (!rec) { Log.error('Add: could not fetch recording ' + mbid + ' (is it a recording MBID?)'); return; }
-        addToPool(rec); input.value = ''; renderAll();
+        addToPool(rec); input.value = ''; renderAll(); enrichPoolInBackground([rec]);
         return;
     }
     if (type === 'artist') { Log.warn('Add: pasting an artist URL/MBID isn\'t supported — open Fusion from that artist\'s Recordings tab instead'); return; }
     Log.info('Adding all recordings from ' + type + ' ' + mbid + '…');
+    busyStart('adding ' + type + '…');
+    try {
     const { recordings } = type === 'release' ? await fetchReleaseRecordings(mbid) : await fetchRGRecordings(mbid);
     let added = 0;
-    recordings.forEach(r => { if (addToPool(r)) added++; });
+    const fresh = recordings.filter(r => addToPool(r)); added = fresh.length;
     Log.info('Added ' + added + ' new recording(s) from that ' + type);
-    input.value = ''; renderAll();
+    enrichPoolInBackground(fresh);
+    input.value = '';
+    } finally { busyEnd(); }
+    renderAll();
 }
 // #529 (majkinetor): "include all details on the release in RG (year, format
 // etc.)" — a bare title+date made near-identical reissues impossible to tell
@@ -1162,6 +1288,8 @@ async function maybeShowRGDropdown(releaseMbid) {
     };
     setPlaceholder('⏳ Checking release group for other editions…', true);
     Log.info('Checking release group for sibling editions…');
+    busyStart('checking release group…');
+    try {
     const j = await wsGet('/ws/2/release/' + releaseMbid + '?inc=release-groups&fmt=json');
     const rgId = j && j['release-group'] && j['release-group'].id;
     if (!rgId) { Log.warn('Could not resolve this release\'s release group — edition loader unavailable'); setPlaceholder('', false); return; }
@@ -1180,15 +1308,21 @@ async function maybeShowRGDropdown(releaseMbid) {
     sel.style.display = '';
     Log.info('Release group has ' + siblings.length + ' other edition(s): ' + siblings.map(r => describeEdition(r)).join(' | '));
     setScopeSuffix(' — release group has ' + siblings.length + ' other edition' + (siblings.length === 1 ? '' : 's'));
+    } finally { busyEnd(); }
 }
 async function onLoadRgEdition(e) {
     const relMbid = e.target.value; if (!relMbid) return;
     Log.info('Loading recordings from edition ' + relMbid + '…');
+    busyStart('loading edition…');
+    try {
     const { recordings } = await fetchReleaseRecordings(relMbid);
     let added = 0;
-    recordings.forEach(r => { if (addToPool(r)) added++; });
+    const freshEd = recordings.filter(r => addToPool(r)); added = freshEd.length;
     Log.info('Added ' + added + ' new recording(s) from that edition');
-    e.target.value = ''; renderAll();
+    enrichPoolInBackground(freshEd);
+    e.target.value = '';
+    } finally { busyEnd(); }
+    renderAll();
 }
 
 // #529 follow-up (majkinetor, live): a recording needs to move pool→group,
@@ -1339,7 +1473,7 @@ function openSettings(anchor) {
     const s = el('div', 'fs-settings'); s.id = 'fs-settings';
     s.innerHTML = '<h4>' + ICON + ' Fusion <span class="fs-ver" title="installed script version">v' + VERSION + '</span><button class="fs-logbtn" type="button" title="Open the activity log">Log</button><a class="fs-help" href="' + HELP_URL + '" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
-        + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Enrich matches with AcoustID (recording URL-rels)</label>'
+        + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>';
     document.body.appendChild(s);
     const r = anchor.getBoundingClientRect();
@@ -1362,19 +1496,23 @@ function loadWinState() { try { return JSON.parse(GM_getValue(WINSTATE_KEY, '{}'
 function saveWinState(patch) { try { GM_setValue(WINSTATE_KEY, JSON.stringify(Object.assign(loadWinState(), patch))); } catch (e) {} }
 function applyWinState(cons) {
     const st = loadWinState();
-    if (st.maximized) { cons.classList.add('fs-maximized'); return; }
+    if (st.maximized) { cons.classList.add('fs-maximized'); const mb = document.getElementById('fs-max'); if (mb) { mb.textContent = '❐'; mb.title = 'Restore'; } return; }
     if (st.left != null && st.top != null) { cons.style.position = 'fixed'; cons.style.left = st.left + 'px'; cons.style.top = st.top + 'px'; cons.style.margin = '0'; }
     if (st.width != null) cons.style.width = st.width + 'px';
     if (st.height != null) cons.style.height = st.height + 'px';
 }
-function toggleMaximize(cons) {
+// glyphs/behaviour match group_therapy's maximize control (⛶ / ❐, gt-cons-x style)
+function toggleMaximize(cons, btn) {
     const nowMax = !cons.classList.contains('fs-maximized');
     cons.classList.toggle('fs-maximized', nowMax);
+    if (nowMax) { cons._savedW = cons.style.width; cons._savedH = cons.style.height; cons.style.width = ''; cons.style.height = ''; }
+    else { cons.style.width = cons._savedW || ''; cons.style.height = cons._savedH || ''; }
+    if (btn) { btn.textContent = nowMax ? '❐' : '⛶'; btn.title = nowMax ? 'Restore' : 'Maximize'; }
     saveWinState({ maximized: nowMax });
 }
 function wireWindowChrome(cons, hdr, maxBtn) {
     applyWinState(cons);
-    maxBtn.onclick = () => toggleMaximize(cons);
+    maxBtn.onclick = () => toggleMaximize(cons, maxBtn);
     hdr.addEventListener('mousedown', e => {
         if (e.target.closest('button, .fs-cfgbtn, .fs-x, select, input')) return;
         if (cons.classList.contains('fs-maximized')) return;
@@ -1398,14 +1536,21 @@ function wireWindowChrome(cons, hdr, maxBtn) {
 }
 
 let FUSION_OPEN = false;
-function _fsEscHandler(e) { if (e.key === 'Escape') closeFusion(); }
+// Escape closes the TOP-MOST thing only: if the log window (or the settings
+// popup) is open it handles its own Escape, and the main window stays put —
+// otherwise one keypress tore down everything at once.
+function _fsEscHandler(e) {
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('fs-logpop') || document.getElementById('fs-settings')) return;
+    closeFusion();
+}
 function buildShell() {
     document.getElementById('fs-overlay')?.remove();
     const overlay = el('div', 'fs-overlay'); overlay.id = 'fs-overlay';
     const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '') + '>' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
-        + '<span class="fs-cfgbtn" id="fs-max" title="maximize / restore">⤢</span><span class="fs-cfgbtn" id="fs-cfg" title="Fusion — options / log / help">⚙</span><span class="fs-x" id="fs-close" title="close">✕</span></div>'
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none"></span><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
+        + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
         + '<div class="fs-sp"></div><div class="fs-legend"><span><span class="fs-dot" style="background:var(--fs-green)"></span>ISRC</span>'
@@ -1452,6 +1597,8 @@ function closeFusion() {
 }
 async function seedFromScope() {
     setScopeLabel('Loading…');
+    busyStart('loading recordings…');
+    try {
     if (SCOPE.type === 'release') {
         const { release, recordings } = await fetchReleaseRecordings(SCOPE.mbid);
         STATE.releaseInfo = release;
@@ -1460,22 +1607,27 @@ async function seedFromScope() {
         renderAll();
         await maybeShowRGDropdown(SCOPE.mbid);
         enrichAllReleases(recordings, 3, () => { if (FUSION_OPEN) renderAll(); }).catch(() => {});
+        enrichPoolInBackground(recordings);
     } else if (SCOPE.type === 'release-group') {
         const { rg, recordings } = await fetchRGRecordings(SCOPE.mbid);
         STATE.rgInfo = rg;
         recordings.forEach(r => addToPool(r));
         setScopeLabel(rg ? ('Release group: "' + rg.title + '" · ' + rg.artistCredit) : 'Release group');
+        enrichPoolInBackground(recordings);
     } else if (SCOPE.type === 'recording') {
         const rec = await fetchRecordingByGid(SCOPE.mbid);
         if (rec) addToPool(rec);
         setScopeLabel(rec ? ('Recording: "' + rec.title + '"') : 'Recording');
+        if (rec) enrichPoolInBackground([rec]);
     } else if (SCOPE.type === 'artist-recordings') {
         harvestInternalIdsFromPage();   // free ids from the visible page, independent of seeding
         const { artist, recordings, total } = await fetchArtistRecordings(SCOPE.mbid);
         recordings.forEach(r => addToPool(r));
         setScopeLabel('Artist: ' + (artist ? '"' + artist.name + '"' : SCOPE.mbid)
             + ' — ' + recordings.length + (total > recordings.length ? ' of ' + total : '') + ' recording(s)');
+        enrichPoolInBackground(recordings);
     }
+    } finally { busyEnd(); }
     renderAll();
 }
 async function openFusion() {
@@ -1500,6 +1652,8 @@ function ensureLauncher() {
 function boot() {
     Log.info('Fusion v' + VERSION + ' — startup on ' + SCOPE.type + ' ' + SCOPE.mbid);
     ensureLauncher();
+    // reopen the log window if it was left open (same as apollo_editor #283)
+    try { if (loadLogWinState().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 800); } catch (e) {}
 }
 boot();
 
@@ -1512,7 +1666,7 @@ try {
         pairSignals, computeGroupConfidence, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
-        openFusion, closeFusion, seedFromScope, renderAll,
+        openFusion, closeFusion, seedFromScope, renderAll, busyStart, busyEnd,
         gmGet, gmPost, wsGet,
         getLogLines: () => _logBuf.map(r => r.line),
     };

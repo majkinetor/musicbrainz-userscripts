@@ -423,7 +423,7 @@ const logVis = await page.evaluate(() => {
         visible: cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) !== 0,
         inViewport: r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.bottom > 0,
         onTop: !!hit && pop.contains(hit),
-        lineCount: pop.querySelectorAll('.fs-logln').length,
+        lineCount: pop.querySelectorAll('.fs-log-li').length,
     };
 });
 console.log('log panel visibility:', JSON.stringify(logVis));
@@ -432,6 +432,47 @@ ck(logVis.position === 'fixed', 'log panel is positioned (fixed) — i.e. its CS
 ck(logVis.visible && logVis.inViewport, 'log panel is actually visible and within the viewport');
 ck(logVis.onTop, 'log panel is on top at its own position, not hidden behind the modal — the exact "log button does nothing" symptom');
 ck(logVis.lineCount > 0, 'log panel is populated with entries (' + logVis.lineCount + ')');
+
+// #529 (majkinetor): "Make entire log window as in apollo (it has min/maximize,
+// wider etc.)" — the Apollo-style viewer: wider, badge, minimize/restore,
+// clickable URLs, severity colouring, Escape-to-close, state remembered.
+const logWin = await page.evaluate(() => {
+    const pop = document.getElementById('fs-logpop');
+    const r = pop.getBoundingClientRect();
+    return {
+        width: Math.round(r.width),
+        badge: pop.querySelector('.fs-log-badge') ? pop.querySelector('.fs-log-badge').textContent : null,
+        hasMin: !!pop.querySelector('.fs-logpop-min'),
+        hasCopy: !!pop.querySelector('.fs-logpop-copy'),
+        links: pop.querySelectorAll('.fs-log-m a').length,
+        severityColoured: (() => {
+            const w = pop.querySelector('.fs-log-warn .fs-log-m'), i = pop.querySelector('.fs-log-info .fs-log-m');
+            return w && i ? getComputedStyle(w).color !== getComputedStyle(i).color : null;
+        })(),
+    };
+});
+console.log('log window:', JSON.stringify(logWin));
+ck(logWin.width >= 600, 'log window is wide like Apollo\'s (' + logWin.width + 'px, was 420)');
+ck(logWin.hasMin && logWin.hasCopy, 'log window has both Minimize and Copy controls');
+ck(/^\(\d+\)/.test(logWin.badge || ''), 'header shows an entry-count badge (' + logWin.badge + ')');
+ck(logWin.links > 0, 'URLs in log lines are rendered as clickable links (' + logWin.links + ')');
+ck(logWin.severityColoured !== false, 'warn lines are coloured differently from info lines');
+// minimize / restore
+await page.click('#fs-logpop .fs-logpop-min');
+await page.waitForTimeout(200);
+const minned = await page.evaluate(() => {
+    const pop = document.getElementById('fs-logpop');
+    return { hasMinClass: pop.classList.contains('min'), listVisible: getComputedStyle(pop.querySelector('.fs-log-list')).display !== 'none', btn: pop.querySelector('.fs-logpop-min').textContent };
+});
+ck(minned.hasMinClass && !minned.listVisible, 'Minimize collapses the log list, leaving just the title bar');
+ck(minned.btn === '▢', 'the minimize button flips to a restore glyph');
+await page.click('#fs-logpop .fs-logpop-min');
+await page.waitForTimeout(200);
+ck(await page.evaluate(() => getComputedStyle(document.getElementById('fs-logpop').querySelector('.fs-log-list')).display !== 'none'), 'Restore brings the log list back');
+// Escape closes, and the open-state is remembered
+await page.keyboard.press('Escape');
+await page.waitForTimeout(200);
+ck(await page.evaluate(() => !document.getElementById('fs-logpop')), 'Escape closes the log window');
 
 // #529 (majkinetor): the ✎ edit-note button on a card — driven by REAL clicks
 // with the UI actually open, since this is a DOM/CSS behaviour.
@@ -467,6 +508,85 @@ ck(saved.rowsBack, 'saving returns the card to its normal member-row view');
 ck(saved.hasClass, 'the ✎ button is marked as having a custom note');
 ck(saved.color !== plainColor, 'the ✎ button changes colour once a note exists (' + saved.color + ' vs ' + plainColor + ')');
 ck(saved.note.startsWith('Same take, verified by ear.') && /Fusion v.* by majkinetor/.test(saved.note), 'the merge will submit the custom note plus the attribution footer');
+
+// #529 (majkinetor): "we should color the same isrc/acousticid within card …
+// If there are multiple groups, each should have its own color." Only values
+// shared by 2+ members get a tint; a value appearing once proves nothing.
+const tint = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = (id, isrc, acid) => F.mkRecording(id, { title: 'T', length: 1000, isrcs: isrc ? [isrc] : [], acoustids: acid ? [acid] : [], artistCredit: 'X', releases: [] });
+    // SHARED_A on two members, SHARED_B on two others, LONELY on one
+    const recs = [mk('c1', 'SHARED_A', null), mk('c2', 'SHARED_A', null), mk('c3', null, 'SHARED_B'), mk('c4', null, 'SHARED_B'), mk('c5', 'LONELY', null)];
+    recs.forEach(r => F.addToPool(r));
+    const g = F.createGroupWithMember('c1');
+    ['c2', 'c3', 'c4', 'c5'].forEach(x => F.addToGroup(x, g.id));
+    F.renderAll();
+    const card = document.querySelector('.fs-gcard[data-gid="' + g.id + '"]');
+    const cells = [...card.querySelectorAll('.fs-isrc')].map(s => ({ v: s.textContent.trim(), cls: (s.className.match(/fs-idc\d/) || [''])[0] }));
+    const out = {
+        sharedA: cells.filter(c => c.v === 'SHARED_A').map(c => c.cls),
+        sharedB: cells.filter(c => /^SHARED_B/.test(c.v) || /^SHARED_B/.test(c.v.replace('…', ''))).map(c => c.cls),
+        lonely: cells.filter(c => c.v === 'LONELY').map(c => c.cls),
+        dashes: cells.filter(c => c.v === '—').map(c => c.cls),
+    };
+    F.deleteGroup(g.id); ['c1','c2','c3','c4','c5'].forEach(x => F.STATE.recordings.delete(x));
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    return out;
+});
+console.log('tint:', JSON.stringify(tint));
+ck(tint.sharedA.length === 2 && tint.sharedA[0] && tint.sharedA[0] === tint.sharedA[1], 'both rows carrying the same ISRC get the SAME tint (' + JSON.stringify(tint.sharedA) + ')');
+ck(tint.sharedB.length === 2 && tint.sharedB[0] && tint.sharedB[0] === tint.sharedB[1], 'both rows carrying the same AcoustID get the same tint (' + JSON.stringify(tint.sharedB) + ')');
+ck(tint.sharedA[0] !== tint.sharedB[0], 'a DIFFERENT shared value gets a DIFFERENT colour (' + tint.sharedA[0] + ' vs ' + tint.sharedB[0] + ')');
+ck(tint.lonely.every(c => !c), 'an identifier held by only one member is not tinted');
+ck(tint.dashes.every(c => !c), 'empty (—) identifier cells are never tinted');
+
+// #529 (majkinetor): "it's not clear loading is happening - make it flashing in
+// the title" — a ref-counted pulsing indicator next to the window title.
+const busy = await page.evaluate(async () => {
+    const F = window.__fusion;
+    const e = document.getElementById('fs-busy');
+    const hiddenAtRest = e.style.display === 'none';
+    F.busyStart('testing…');
+    const shown = { display: e.style.display, text: e.textContent, anim: getComputedStyle(e).animationName };
+    F.busyStart('nested…');          // overlapping op
+    F.busyEnd();                     // inner finishes — must STAY visible
+    const stillShown = e.style.display !== 'none';
+    F.busyEnd();                     // outer finishes — now hidden
+    return { hiddenAtRest, shown, stillShown, hiddenAfter: e.style.display === 'none' };
+});
+console.log('busy:', JSON.stringify(busy));
+ck(busy.hiddenAtRest, 'the loading indicator is hidden when idle');
+ck(busy.shown.display !== 'none' && /⏳/.test(busy.shown.text), 'it appears in the title while work is in flight (' + busy.shown.text + ')');
+ck(busy.shown.anim === 'fs-pulse', 'it flashes (CSS pulse animation applied)');
+ck(busy.stillShown, 'a nested operation finishing does not clear it early (ref-counted)');
+ck(busy.hiddenAfter, 'it clears once the last operation finishes');
+
+// #529 (majkinetor): "acoustic id still not fully fetched … no dot in the pool
+// is lighted". AcoustIDs used to be fetched ONLY by Auto-match, so a freshly
+// seeded pool always showed them unknown. Seeding now enriches in the
+// background — assert it happens WITHOUT pressing Auto-match.
+await page.goto('https://test.musicbrainz.org/release-group/ce90ac93-3c64-464a-8a44-ce6f20ae0f53', { waitUntil: 'domcontentloaded' });
+await page.addScriptTag({ content: code });
+await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
+await page.click('#fs-launch');
+const seedAc = await page.waitForFunction(
+    () => { const r = [...window.__fusion.STATE.recordings.values()]; return r.length && r.every(x => x.acoustids !== null) ? { total: r.length, withAc: r.filter(x => x.acoustids.length).length, lit: document.querySelectorAll('.fs-pcard .fs-b-on').length } : null; },
+    { timeout: 90000 }).then(h => h.jsonValue());
+console.log('seed-time acoustid:', JSON.stringify(seedAc));
+ck(seedAc.withAc > 0, 'AcoustIDs are resolved at seed time, before Auto-match is ever pressed (' + seedAc.withAc + '/' + seedAc.total + ')');
+ck(seedAc.lit > 0, 'the pool cards\' AcoustID dots actually light up (' + seedAc.lit + ')');
+
+// #529 (majkinetor): "make maximize/minimize button the same as in group
+// therapy" — GT uses a borderless ⛶ that flips to ❐ when maximized.
+const maxRest = await page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, border: getComputedStyle(b).borderStyle }; });
+ck(maxRest.g === '⛶', 'maximize button uses Group Therapy\'s ⛶ glyph (' + maxRest.g + ')');
+ck(maxRest.border === 'none', 'and Group Therapy\'s borderless styling');
+await page.click('#fs-max'); await page.waitForTimeout(250);
+const maxOn = await page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, t: b.title, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; });
+ck(maxOn.on && maxOn.g === '❐' && maxOn.t === 'Restore', 'maximizing flips it to ❐ / "Restore" like GT (' + JSON.stringify(maxOn) + ')');
+await page.click('#fs-max'); await page.waitForTimeout(250);
+const maxOff = await page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; });
+ck(!maxOff.on && maxOff.g === '⛶', 'restoring flips it back to ⛶');
 await page.evaluate(g => { const F = window.__fusion; F.deleteGroup(g); F.STATE.recordings.delete('n1'); F.STATE.recordings.delete('n2'); F.STATE.poolOrder.length = 0; F.renderAll(); }, noteGid);
 
 // #529 (majkinetor): "scraping the page is not going to cut it, we need to use
