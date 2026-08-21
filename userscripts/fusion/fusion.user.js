@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.182305
+// @version      2026.8.21.182853
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -424,7 +424,7 @@ function mkRecording(gid, opts) {
     // enrichAllReleases); true/false once known. #529: "Video recordings should
     // never be added to groups with audio recordings" — null is deliberately
     // treated as "don't block" everywhere, only a known true/false mismatch does.
-    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false }, opts || {});
+    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false, isrcSource: null }, opts || {});
 }
 
 async function fetchReleaseRecordings(releaseMbid) {
@@ -439,7 +439,7 @@ async function fetchReleaseRecordings(releaseMbid) {
                 title: r.title || t.title,
                 length: r.length != null ? r.length : t.length,
                 isrcs: r.isrcs || [],
-                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true,
+                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index',
                 releases: [{ gid: j.id, title: j.title, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
             }));
         }
@@ -475,7 +475,7 @@ async function fetchRecordingsBySearch(luceneQuery, label, onPage) {
             // the search already returns every release a recording appears on,
             // across every release group — so it doubles as the deduped
             // "all releases" list, with no extra per-recording fetch.
-            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true, releases, allReleases: releases }));
+            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index', releases, allReleases: releases }));
         }
         offset += SEARCH_PAGE_LIMIT; pages++;
         if (pages >= SEARCH_MAX_PAGES && offset < total) truncatedBy = 'the ' + SEARCH_MAX_PAGES + '-page cap';
@@ -529,7 +529,7 @@ async function fetchRecordingByGid(gid) {
     if (!j) return null;
     const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null }));
     const ac = j['artist-credit'];
-    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!j.video, isrcsKnown: true, releases, allReleases: releases });
+    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', releases, allReleases: releases });
 }
 // #529 follow-up (majkinetor, with a screenshot of jesus2099's reference
 // script): "We should have a list of recording releases too (deduped)" — the
@@ -683,6 +683,13 @@ async function fetchRecordingDetail(gid) {
 // list_by_mbid needs no API key and supports batching, so one request covers
 // up to ACOUSTID_BATCH recordings.
 const ACOUSTID_BATCH = 50;
+// Returns a Map on success, or NULL when the lookup itself failed. The
+// distinction matters: this used to return an empty Map for a transport error
+// exactly as it does for "asked, found nothing", and the caller then wrote []
+// onto all 50 recordings in the batch — recording a FAILURE as the confident
+// claim "this recording has no AcoustID" (#529: "in previous run I didn't get
+// all acoustIDs, in repeated run they showed"). A fresh run got fresh state and
+// a working request, which is exactly why a repeat looked like a fix.
 async function fetchAcoustIdsBatch(gids) {
     if (!gids.length) return new Map();
     const qs = gids.map(g => 'mbid=' + encodeURIComponent(g)).join('&');
@@ -690,16 +697,16 @@ async function fetchAcoustIdsBatch(gids) {
     const out = new Map();
     try {
         const r = await gmGet(url, { Accept: 'application/json' });
-        if (r.status < 200 || r.status >= 300) { Log.warn('AcoustID lookup failed: HTTP ' + r.status); return out; }
+        if (r.status < 200 || r.status >= 300) { Log.warn('AcoustID lookup failed: HTTP ' + r.status + ' for ' + gids.length + ' recording(s) — left unknown, not recorded as "none"'); return null; }
         const j = JSON.parse(r.responseText || '{}');
-        if (j.status !== 'ok') { Log.warn('AcoustID lookup returned status=' + j.status); return out; }
+        if (j.status !== 'ok') { Log.warn('AcoustID lookup returned status=' + j.status + ' for ' + gids.length + ' recording(s) — left unknown'); return null; }
         for (const entry of j.mbids || []) out.set(entry.mbid, (entry.tracks || []).map(t => t.id));
-    } catch (e) { Log.error('AcoustID lookup error: ' + e.message); }
+    } catch (e) { Log.error('AcoustID lookup error: ' + e.message + ' — ' + gids.length + ' recording(s) left unknown'); return null; }
     return out;
 }
 async function fetchAcoustIds(gid) {
     const map = await fetchAcoustIdsBatch([gid]);
-    return map.get(gid) || [];
+    return map ? (map.get(gid) || []) : null;
 }
 
 // ── pool / groups state ──────────────────────────────────────────────────
@@ -936,17 +943,38 @@ async function enrichAcoustIdsNow(recs, concurrency, onProgress) {
     if (!pending.length) { if (onProgress) onProgress(recs.length, recs.length); return; }
     let done = recs.length - pending.length;
     let found = 0;
-    for (let i = 0; i < pending.length; i += ACOUSTID_BATCH) {
-        const slice = pending.slice(i, i + ACOUSTID_BATCH);
+    const failed = [];
+    const runBatch = async (slice) => {
         const map = await fetchAcoustIdsBatch(slice.map(r => r.gid));
+        if (!map) return false;                       // leave them null = "not looked up"
         slice.forEach(rec => {
-            rec.acoustids = map.get(rec.gid) || [];
+            rec.acoustids = map.get(rec.gid) || [];   // only NOW does empty mean "none"
             if (rec.acoustids.length) found++;
         });
+        return true;
+    };
+    for (let i = 0; i < pending.length; i += ACOUSTID_BATCH) {
+        const slice = pending.slice(i, i + ACOUSTID_BATCH);
+        if (!await runBatch(slice)) failed.push(slice);
         done += slice.length;
         if (onProgress) onProgress(done, recs.length);
     }
-    Log.info('AcoustID lookup: ' + found + ' of ' + pending.length + ' recording(s) have an AcoustID');
+    // One retry for whole batches that failed, so a single blip doesn't leave a
+    // chunk of the pool unresolved for the rest of the session.
+    if (failed.length) {
+        const n = failed.reduce((a, s) => a + s.length, 0);
+        Log.warn('AcoustID: ' + failed.length + ' batch(es) failed (' + n + ' recording(s)) — retrying once');
+        const stillFailed = [];
+        for (const slice of failed) if (!await runBatch(slice)) stillFailed.push(slice);
+        const left = stillFailed.reduce((a, s) => a + s.length, 0);
+        if (left) {
+            Log.error('AcoustID: ' + left + ' recording(s) could not be checked — shown as unknown, NOT as "no AcoustID"');
+            setNetTrouble('offline', left + ' recording(s) could not be checked against AcoustID');
+        }
+    }
+    const checked = pending.length - failed.reduce((a, s) => a + s.length, 0);
+    Log.info('AcoustID lookup: ' + found + ' of ' + checked + ' checked recording(s) have an AcoustID'
+        + (checked < pending.length ? ' (' + (pending.length - checked) + ' could not be checked)' : ''));
 }
 // ISRC/video reconciliation against MB's authoritative per-recording lookup —
 // the rgid:/arid: search index can lag and report none where MB actually has
@@ -976,6 +1004,7 @@ async function enrichIsrcs(recs, concurrency, onProgress) {
                 }
                 if (rec.video == null) rec.video = d.video;
                 rec.isrcsKnown = true;
+                rec.isrcSource = 'entity';   // now confirmed against the entity, not the index
             }
             done++; if (onProgress) onProgress(done, pending.length);
         }
@@ -1260,6 +1289,7 @@ function fsStyle() {
         + '.fs-b{width:6px;height:6px;border-radius:50%;background:#ccccd8}'
         + '.fs-b-isrc.fs-b-on{background:var(--fs-green)} .fs-b-acid.fs-b-on{background:var(--fs-blue)}'
         + '.fs-b-unknown{background:transparent;box-shadow:inset 0 0 0 1px #ccccd8}'
+        + '.fs-b-unconfirmed{background:#e6e6ef;box-shadow:inset 0 0 0 1px #b9b9c8}'
         + '.fs-rm{color:var(--fs-muted);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0}'
         + '.fs-rm:hover{color:var(--fs-red)}'
         // flex-shrink:0 is the actual fix for the missing-rows bug: .fs-gcard
@@ -1363,6 +1393,7 @@ function fsStyle() {
         + '.fs-grow .fs-isrc{box-sizing:border-box;color:var(--fs-muted);font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace;display:flex;flex-direction:column;gap:2px;align-items:flex-start}'
         + '.fs-idv{border-radius:3px;padding:1px 4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.45}'
         + '.fs-idnone{padding:1px 0;line-height:1.45}'
+        + '.fs-idunk{color:#b9b9c8;cursor:help;font-weight:700}'
         + '.fs-grow .fs-t,.fs-grow .fs-artistcol,.fs-grow .fs-rel,.fs-grow .fs-len,.fs-grow .fs-star,.fs-grow .fs-acts,.fs-grow .fs-exp{line-height:1.45;padding-top:1px}'
         + '.fs-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .1s}'
         + '.fs-grow:hover .fs-acts{opacity:1}'
@@ -1465,17 +1496,22 @@ function idsLine(rec) {
 // running) an unlit dot would otherwise claim the recording has no AcoustID
 // when nobody ever asked. Same reason isrcsKnown exists on the fetch side.
 function presenceDots(rec) {
-    const dot = (cls, label, list, known) => {
+    const dot = (cls, label, list, known, unconfirmed, why) => {
         const n = list ? list.length : 0;
-        const state = !known ? 'unknown' : n ? 'on' : 'off';
+        // "absent" is only claimed when something authoritative actually said so.
+        // An empty list from the SEARCH INDEX is not that: the index lags, so it
+        // reports none for recordings MusicBrainz does have (#529).
+        const state = !known ? 'unknown' : n ? 'on' : (unconfirmed ? 'unconfirmed' : 'off');
         const title = state === 'unknown' ? label + ' not looked up yet'
             : state === 'on' ? n + ' ' + label + (n > 1 ? 's' : '') + ': ' + list.join(', ')
-                : 'no ' + label + ' on this recording';
+                : state === 'unconfirmed' ? 'no ' + label + ' found — ' + why
+                    : 'no ' + label + ' on this recording';
         return '<span class="fs-b fs-b-' + cls + ' fs-b-' + state + '" title="' + escapeHtml(title) + '"></span>';
     };
     return '<div class="fs-badges">'
-        + dot('isrc', 'ISRC', rec.isrcs, rec.isrcsKnown)
-        + dot('acid', 'AcoustID', rec.acoustids, rec.acoustids != null)
+        + dot('isrc', 'ISRC', rec.isrcs, rec.isrcsKnown, rec.isrcSource === 'index',
+              'this comes from the search index, which lags; not confirmed against the recording itself')
+        + dot('acid', 'AcoustID', rec.acoustids, rec.acoustids != null, false, '')
         + '</div>';
 }
 function poolCardHtml(rec) {
@@ -1696,10 +1732,22 @@ function groupCardHtml(group) {
     // and stable.
     const idRank = (v) => (-(idCounts.get(v) || 0));
     const sortIds = (vals) => vals.slice().sort((a, b) => idRank(a) - idRank(b) || (a < b ? -1 : a > b ? 1 : 0));
-    const idCell = (list, isAcoustid) => {
+    const idCell = (rec, kind) => {
+        const isAcoustid = kind === 'acoustid';
+        const list = isAcoustid ? rec.acoustids : rec.isrcs;
         const vals = sortIds(uniq(list || []));
-        if (!vals.length) return '<span class="fs-isrc"><span class="fs-idnone">—</span></span>';
         const label = isAcoustid ? 'AcoustID' : 'ISRC';
+        if (!vals.length) {
+            // An em dash asserts "none". Only say that when something
+            // authoritative did; otherwise say we do not know (#529).
+            const known = isAcoustid ? rec.acoustids != null : !!rec.isrcsKnown;
+            const unconfirmed = !isAcoustid && rec.isrcSource === 'index';
+            const mark = !known ? '?' : unconfirmed ? '·' : '—';
+            const tip = !known ? label + ' not looked up yet'
+                : unconfirmed ? 'no ' + label + ' found, but this comes from the search index, which lags — not confirmed against the recording itself'
+                    : 'no ' + label + ' on this recording';
+            return '<span class="fs-isrc"><span class="fs-idnone' + (known && !unconfirmed ? '' : ' fs-idunk') + '" title="' + escapeHtml(tip) + '">' + mark + '</span></span>';
+        }
         const tags = vals.map(v => {
             const cls = idColor.get(v) || '';
             const shown = isAcoustid ? escapeHtml(v.slice(0, 8)) + '…' : escapeHtml(v);
@@ -1724,8 +1772,8 @@ function groupCardHtml(group) {
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + '<span class="fs-len">' + dur(m.length) + '</span>'
-            + idCell(m.isrcs, false)
-            + idCell(m.acoustids, true)
+            + idCell(m, 'isrc')
+            + idCell(m, 'acoustid')
             + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>'
             + (expanded ? releaseTableHtml(m) : '')
             + '</div>';
@@ -1812,6 +1860,7 @@ function renderFooter() {
     // looked up are excluded from the denominator rather than counted as zero,
     // matching the pool dots' unknown/absent distinction.
     const all = [...STATE.recordings.values()];
+    const isrcUnconfirmed = all.filter(r => r.isrcsKnown && r.isrcSource === 'index' && !(r.isrcs && r.isrcs.length)).length;
     const isrcKnown = all.filter(r => r.isrcsKnown);
     const withIsrc = isrcKnown.filter(r => r.isrcs && r.isrcs.length).length;
     const acidKnown = all.filter(r => r.acoustids != null);
@@ -1819,8 +1868,11 @@ function renderFooter() {
     const idPart = (label, n, known, total) => {
         if (!known) return '<span class="fs-idstat fs-idstat-none" title="' + label + 's have not been looked up yet">' + label + ' —</span>';
         const pending = total - known;
+        const unconf = label === 'ISRC' ? isrcUnconfirmed : 0;
         return '<span class="fs-idstat" title="' + n + ' of ' + known + ' checked recording(s) have an ' + label
-            + (pending ? '; ' + pending + ' not looked up yet' : '') + '"><b>' + n + '</b>/' + known + ' ' + label + (pending ? '*' : '') + '</span>';
+            + (pending ? '; ' + pending + ' not looked up yet' : '')
+            + (unconf ? '; ' + unconf + ' reported none by the search index only, which lags — not confirmed against the recording' : '')
+            + '"><b>' + n + '</b>/' + known + ' ' + label + (pending || unconf ? '*' : '') + '</span>';
     };
     if (sum) sum.innerHTML = '<b>' + STATE.groups.length + '</b> group' + (STATE.groups.length === 1 ? '' : 's') + ' · <b>' + ready + '</b> ready' + (done ? ' · <b>' + done + '</b> merged' : '') + ' · <b>' + STATE.poolOrder.length + '</b> in pool'
         + ' · ' + idPart('ISRC', withIsrc, isrcKnown.length, all.length)
