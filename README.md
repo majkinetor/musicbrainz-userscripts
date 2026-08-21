@@ -34,12 +34,11 @@ Find and verify URLs for a particular MusicBrainz release on online platforms
 [Scribe](./userscripts/scribe/README.md) <img src="./userscripts/scribe/scribe.svg" align="left" width="32"><br>
 Edit MusicBrainz in your real editor (VS Code, Vim, …)
 
-
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
 Batch import entity fields from Harmony and standalone
 
+[Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
+Merge duplicate recordings: review UI, auto-match, background submit
+
 [Bandcamp Player Enhanced](./userscripts/bandcamp_player_enhanced/README.md)<img src="./userscripts/bandcamp_player_enhanced/icon.svg" align="left" width="32"><br>
 Bandcamp album player with keyboard shortcuts
-
-[Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
-Merge duplicate recordings: pool/groups review UI, multi-signal auto-match, background submit
