@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.184919
+// @version      2026.8.21.185416
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1531,6 +1531,7 @@ function fsStyle() {
         + '.fs-idmore{color:var(--fs-muted);font-size:9px}'
         + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-clearset{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--fs-muted);white-space:nowrap}'
+        + '.fs-subcnt{font-size:10.5px;font-weight:600;color:var(--fs-muted);text-transform:none;letter-spacing:0;white-space:nowrap}'
         + '.fs-toLog{cursor:pointer} .fs-toLog:hover{text-decoration:underline}'
         + '.fs-clearset .fs-btn{padding:2px 8px}'
         + '.fs-detbtn{font-size:10px;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:2px 6px;cursor:pointer;white-space:nowrap;background:#fff}'
@@ -1986,6 +1987,15 @@ function renderPool() {
 function renderGroups() {
     const body = document.getElementById('fs-groups-body'); if (!body) return;
     document.getElementById('fs-groups-cnt').textContent = String(STATE.groups.length);
+    // #529 (majkinetor): "add number of recordings in the groups too … It shows
+    // 16 groups but no number of total recordings" — the group count alone says
+    // nothing about how much of the pool is actually staged for merging.
+    const recs = document.getElementById('fs-groups-recs');
+    if (recs) {
+        const n = STATE.groups.reduce((a, g) => a + g.memberGids.length, 0);
+        recs.textContent = n ? n + ' recording' + (n === 1 ? '' : 's') : '';
+        recs.title = n ? n + ' recording(s) staged across ' + STATE.groups.length + ' group(s)' : '';
+    }
     body.innerHTML = STATE.groups.map(groupCardHtml).join('') + '<div class="fs-newgroup" id="fs-newgroup">+ New group — drag a pool recording here, or select one and click here</div>';
     renderCollapseAllBtn();
     // Groups just changed, so there may be new members to warm the cache for.
@@ -2523,7 +2533,7 @@ function buildShell() {
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
         + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
