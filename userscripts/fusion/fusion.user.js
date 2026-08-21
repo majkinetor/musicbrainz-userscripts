@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.195828
+// @version      2026.8.21.200426
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -495,6 +495,23 @@ async function fetchRecordingsByBrowse(browseQuery, label, onPage) {
 // that cannot be trusted. So it runs as a best-effort enricher over a membership
 // list that came from browse: whatever it returns gets used, whatever it misses
 // keeps allReleases null and is fetched on demand later.
+// Whatever the search index did not cover is fetched per recording afterwards,
+// in the background. Without this the pool column would sit on "—" forever for
+// those recordings (#529: the browse seed cannot ask for releases, and the
+// index missed 86 of 310 on the artist that surfaced this). Non-blocking, and
+// it goes through the same rate-limit gate as everything else.
+async function backfillMissingReleases(recordings) {
+    const missing = recordings.filter(r => r.allReleases == null);
+    if (!missing.length) return;
+    Log.info('Filling in release lists for ' + missing.length + ' recording(s) the search index did not return');
+    await enrichAllReleases(missing, 3, (done, total) => {
+        setBgTask('Loading release lists ' + done + '/' + total + '…');
+        scheduleBackgroundRender();
+    });
+    setBgTask('');
+    const left = recordings.filter(r => r.allReleases == null).length;
+    Log.info('Release lists: backfill finished' + (left ? ' — ' + left + ' still unknown' : ''));
+}
 async function enrichReleasesFromSearch(luceneQuery, recordings) {
     const byGid = new Map(recordings.map(r => [r.gid, r]));
     let offset = 0, total = Infinity, pages = 0, matched = 0;
@@ -618,6 +635,7 @@ async function fetchArtistRecordings(artistMbid, onPage) {
     const artist = meta ? { gid: meta.id, name: meta.name } : null;
     const { recordings, total } = await fetchRecordingsByBrowse('artist=' + artistMbid, 'Artist seed', onPage);
     await enrichReleasesFromSearch('arid:' + artistMbid, recordings);
+    backfillMissingReleases(recordings).catch(e => Log.warn('Release backfill failed: ' + e.message));
     return { artist, recordings, total };
 }
 // MB's own merge checkboxes on an artist-recordings page carry the internal
@@ -1621,9 +1639,17 @@ function artistLink(rec) {
 // the visible text stays short so rows don't blow out.
 function releasesSummary(rec) {
     const primary = rec.releases[0];
-    const primaryText = primary ? (primary.title + (primary.trackNumber ? ' · track ' + primary.trackNumber : '')) : '(no release)';
     const full = rec.allReleases;
-    if (full == null) return { text: primaryText + ' …', tooltip: primaryText + '\n(loading full release list…)' };
+    // #529 (majkinetor): "We have 'no release' on some rows although expanding
+    // them shows releases" — and the tooltip claimed a load was in progress when
+    // nothing was. Browse seeding cannot ask for releases, and the search pass
+    // that fills them in does not cover every recording, so an empty list here
+    // usually means "never fetched" rather than "on no release". Claiming the
+    // latter states a fact we do not have — the same mistake the AcoustID and
+    // ISRC displays used to make.
+    if (!primary && full == null) return { text: '—', tooltip: 'Release list not loaded for this recording yet — expand it to fetch' };
+    const primaryText = primary ? (primary.title + (primary.trackNumber ? ' · track ' + primary.trackNumber : '')) : '(no release)';
+    if (full == null) return { text: primaryText + ' …', tooltip: primaryText + '\n(more releases may exist — not loaded yet)' };
     const seen = new Set(); const lines = [];
     for (const r of full) { const key = r.gid || r.title; if (key && !seen.has(key)) { seen.add(key); lines.push(r.title + (r.date ? ' (' + r.date + ')' : '')); } }
     if (lines.length <= 1) return { text: primaryText, tooltip: lines[0] || primaryText };
@@ -1756,7 +1782,7 @@ async function prefetchGroupReleases() {
             if (!STATE.groups.some(g => g.memberGids.includes(gid))) { done++; continue; }
             if (STATE.releaseDetails.has(gid)) { done++; continue; }
             setBgTask('Loading recording releases ' + (done + 1) + '/' + wanted.length + '…');
-            try { STATE.releaseDetails.set(gid, await fetchReleaseDetails(gid)); }
+            try { storeReleaseDetails(gid, await fetchReleaseDetails(gid)); }
             catch (e) { STATE.releaseDetails.set(gid, null); Log.warn('Release prefetch failed for ' + gid + ': ' + e.message); }
             done++;
             // only repaint if the row is actually open; the rest is cache warming
@@ -1791,13 +1817,30 @@ async function toggleAllDetails(groupId) {
     let done = 0;
     for (const gid of missing) {
         setBgTask('Loading recording releases ' + (done + 1) + '/' + missing.length + '…');
-        try { STATE.releaseDetails.set(gid, await fetchReleaseDetails(gid)); }
+        try { storeReleaseDetails(gid, await fetchReleaseDetails(gid)); }
         catch (e) { STATE.releaseDetails.set(gid, null); Log.warn('Release lookup failed for ' + gid + ': ' + e.message); }
         done++;
         renderGroups();                               // these rows ARE open, so repaint
     }
     setBgTask('');
     Log.info('Loaded release details for ' + done + ' recording(s) in the group');
+}
+// The expanded table and the row summary were reading different sources: the
+// table used the freshly fetched detail, the summary used whatever the seed
+// happened to carry. Store in one place and backfill the recording, so a row
+// can never say "no release" while its own table lists them (#529).
+function storeReleaseDetails(gid, rows) {
+    STATE.releaseDetails.set(gid, rows);
+    const rec = STATE.recordings.get(gid);
+    if (!rec || !rows) return;
+    const seen = new Set(); const list = [];
+    for (const r of rows) {
+        if (!r.gid || seen.has(r.gid)) continue;
+        seen.add(r.gid);
+        list.push({ gid: r.gid, title: r.title, trackNumber: r.trackNumber, trackCount: null, date: r.date || null });
+    }
+    rec.allReleases = list;
+    if (!rec.releases || !rec.releases.length) rec.releases = list;
 }
 async function toggleReleaseDetails(gid) {
     if (STATE.expandedReleases.has(gid)) { STATE.expandedReleases.delete(gid); renderGroups(); return; }
@@ -1809,7 +1852,7 @@ async function toggleReleaseDetails(gid) {
     busyStart();
     try {
         const rows = await fetchReleaseDetails(gid);
-        STATE.releaseDetails.set(gid, rows);
+        storeReleaseDetails(gid, rows);
         Log.info(rows ? 'Release details: ' + rows.length + ' release(s) for ' + (rec ? rec.title : gid) : 'Release details lookup failed for ' + gid);
     } catch (e) {
         STATE.releaseDetails.set(gid, null);
@@ -2750,8 +2793,8 @@ try {
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
-        fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress, lengthSpread,
-        toggleCollapseAll, allGroupsCollapsed, setPoolCollapsed, renderPoolCount, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
+        fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
+        toggleCollapseAll, allGroupsCollapsed, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
