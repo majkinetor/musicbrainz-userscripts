@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.175757
+// @version      2026.8.21.181042
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -820,6 +820,32 @@ function deleteGroup(groupId) {
     if (STATE.activeGroupId === groupId) STATE.activeGroupId = null;
     Log.info('Deleted group ' + groupId + ' — ' + g.memberGids.length + ' member(s) returned to pool');
 }
+// #529 (majkinetor): "change the Clear board button so it can also clear
+// merged: Clear: [all] [merged]". Merged groups are NOT dissolved back into the
+// pool the way deleteGroup does it — the non-target recordings no longer exist
+// in MusicBrainz, and the surviving target is stale (its releases and ISRCs just
+// changed). Putting either back in the pool would invite re-merging something
+// that is already gone, so a merged group leaves the board entirely.
+function clearMerged() {
+    const done = STATE.groups.filter(g => g.state === 'done');
+    if (!done.length) { Log.info('Clear merged: nothing merged yet'); return 0; }
+    let dropped = 0;
+    for (const g of done) {
+        for (const gid of g.memberGids) {
+            STATE.recordings.delete(gid);
+            const i = STATE.poolOrder.indexOf(gid); if (i !== -1) STATE.poolOrder.splice(i, 1);
+            STATE.expandedReleases.delete(gid);
+            STATE.releaseDetails.delete(gid);
+            dropped++;
+        }
+        STATE.collapsedGroups.delete(g.id);
+        if (STATE.activeGroupId === g.id) STATE.activeGroupId = null;
+    }
+    const ids = new Set(done.map(g => g.id));
+    STATE.groups = STATE.groups.filter(g => !ids.has(g.id));
+    Log.info('Clear merged: removed ' + done.length + ' merged group(s) and ' + dropped + ' recording(s) from the board');
+    return done.length;
+}
 function clearBoard() {
     const n = STATE.groups.length;
     STATE.groups.slice().forEach(g => deleteGroup(g.id));
@@ -1306,7 +1332,7 @@ function fsStyle() {
         + '.fs-kill:hover{opacity:1}'
         + '.fs-clearboard-btn{padding:2px 8px;font-size:11px;text-transform:none;font-weight:400;letter-spacing:0}'
         + '.fs-grows{padding:4px 6px}'
-        + '.fs-grow{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px}'
+        + '.fs-grow{display:flex;align-items:flex-start;gap:8px;padding:5px 7px;border-radius:5px}'
         + '.fs-grow:hover{background:rgba(0,0,0,.035)}'
         // no target-row wash: the ★ and the row's position at the top of the card already say which recording is kept (#529).
         + '.fs-star{width:16px;flex-shrink:0;text-align:center;font-size:13px;color:#b6b6c4;cursor:pointer;opacity:0;transition:opacity .1s}'
@@ -1323,7 +1349,10 @@ function fsStyle() {
         + '.fs-artistcol a:hover{text-decoration-color:var(--fs-text);color:var(--fs-text)}'
         + '.fs-grow .fs-rel{box-sizing:border-box;color:var(--fs-muted);font-size:11px;width:190px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-grow .fs-len{box-sizing:border-box;color:var(--fs-muted);font-size:11px;width:44px;flex-shrink:0}'
-        + '.fs-grow .fs-isrc{box-sizing:border-box;color:var(--fs-muted);font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace}'
+        + '.fs-grow .fs-isrc{box-sizing:border-box;color:var(--fs-muted);font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace;display:flex;flex-direction:column;gap:2px;align-items:flex-start}'
+        + '.fs-idv{border-radius:3px;padding:1px 4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.45}'
+        + '.fs-idnone{padding:1px 0;line-height:1.45}'
+        + '.fs-grow .fs-t,.fs-grow .fs-artistcol,.fs-grow .fs-rel,.fs-grow .fs-len,.fs-grow .fs-star,.fs-grow .fs-acts,.fs-grow .fs-exp{line-height:1.45;padding-top:1px}'
         + '.fs-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .1s}'
         + '.fs-grow:hover .fs-acts{opacity:1}'
         + '.fs-acts span{color:var(--fs-muted);cursor:pointer;font-size:12px;padding:1px 3px}'
@@ -1335,6 +1364,8 @@ function fsStyle() {
         + '.fs-ftr{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--fs-panel2);border-top:1px solid var(--fs-border)}'
         + '.fs-idmore{color:var(--fs-muted);font-size:9px}'
         + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
+        + '.fs-clearset{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--fs-muted);white-space:nowrap}'
+        + '.fs-clearset .fs-btn{padding:2px 8px}'
         + '.fs-detbtn{font-size:10px;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:2px 6px;cursor:pointer;white-space:nowrap;background:#fff}'
         + '.fs-detbtn:hover{border-color:var(--fs-purple);color:var(--fs-purple)}'
         + '.fs-detbtn-on{background:rgba(109,63,240,.09);border-color:var(--fs-purple);color:var(--fs-purple)}'
@@ -1640,19 +1671,22 @@ function groupCardHtml(group) {
     // another row's shared one — so a correctly-matched group looked mismatched.
     // Show the value that actually links this row to the rest, and say how many
     // more there are rather than hiding them.
+    // #529 (majkinetor, option B): show EVERY identifier, stacked one per line,
+    // for ISRCs as well as AcoustIDs. Showing a single value could never express
+    // the truth once a recording carries more than one — two rows can be linked
+    // by different ids, so whichever one the cell picked, some real relationship
+    // stayed invisible and the colours read as a contradiction.
     const idCell = (list, isAcoustid) => {
         const vals = uniq(list || []);
-        if (!vals.length) return '<span class="fs-isrc">—</span>';
-        const val = vals.find(v => (idCounts.get(v) || 0) > 1) || vals[0];
-        const cls = idColor.get(val) || '';
-        const extra = vals.length - 1;
-        const shown = (isAcoustid ? escapeHtml(val.slice(0, 8)) + '…' : escapeHtml(val))
-            + (extra ? '<span class="fs-idmore"> +' + extra + '</span>' : '');
+        if (!vals.length) return '<span class="fs-isrc"><span class="fs-idnone">—</span></span>';
         const label = isAcoustid ? 'AcoustID' : 'ISRC';
-        const title = label + ' ' + escapeHtml(val)
-            + (cls ? ' — shared with another recording in this group' : '')
-            + (extra ? ' — all ' + vals.length + ': ' + escapeHtml(vals.join(', ')) : '');
-        return '<span class="fs-isrc ' + cls + '" title="' + title + '">' + shown + '</span>';
+        const tags = vals.map(v => {
+            const cls = idColor.get(v) || '';
+            const shown = isAcoustid ? escapeHtml(v.slice(0, 8)) + '…' : escapeHtml(v);
+            const title = label + ' ' + escapeHtml(v) + (cls ? ' — shared with another recording in this group' : ' — only on this recording');
+            return '<span class="fs-idv ' + cls + '" title="' + title + '">' + shown + '</span>';
+        }).join('');
+        return '<span class="fs-isrc">' + tags + '</span>';
     };
     const rows = ordered.map(m => {
         const rs = releasesSummary(m);
@@ -2274,7 +2308,7 @@ function buildShell() {
         + '<div class="fs-netbanner" id="fs-netbanner" style="display:none"></div>'
         + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="delete every group — all recordings return to the pool">↩ Clear board</button></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
         + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
@@ -2302,6 +2336,7 @@ function buildShell() {
     // wrapper, not a bare reference: onclick hands the click Event to the first
     // parameter, which has bitten this script before (#503, mergeAll's NaN)
     document.getElementById('fs-collapseall').onclick = () => toggleCollapseAll();
+    document.getElementById('fs-clearmerged').onclick = () => { clearMerged(); renderAll(); };
     document.getElementById('fs-rg-editions').addEventListener('change', onLoadRgEdition);
     const poolFilter = document.getElementById('fs-pool-filter');
     poolFilter.addEventListener('input', () => { STATE.poolFilter = poolFilter.value.trim(); renderPool(); });
@@ -2398,7 +2433,7 @@ try {
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress, lengthSpread,
-        toggleCollapseAll, allGroupsCollapsed, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded,
+        toggleCollapseAll, allGroupsCollapsed, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
