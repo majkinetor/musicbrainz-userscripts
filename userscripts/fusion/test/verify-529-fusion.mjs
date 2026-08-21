@@ -35,14 +35,29 @@ const page = ctx.pages()[0] || await ctx.newPage();
 
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 
-// Fresh, never-merged recordings on a test-server release ("Demos 5") — a
-// prior run of this file already consumed the release used earlier
-// (3a37a35f…) via real merges, so this uses an untouched one instead.
-const RELEASE = '4394bacf-e985-4084-809d-fcc227a4782b';
-const RECORDING_A = 'ac2c28b3-c278-47f9-88de-80d2a663ed39';
-const RECORDING_B = '2da3ee28-67d0-4125-b91a-149555634b5d';
-const RECORDING_C = 'd02c00a6-1e9f-4f5e-b671-aa4a22b02a47';
-const RECORDING_D = 'b97bc761-ff3c-476a-a00c-038a43603621';
+// This suite performs REAL merges on the sandbox, so it CONSUMES its own
+// fixtures: recordings hardcoded here get merged into one another, and a later
+// run then finds fewer distinct recordings than it needs — which is exactly how
+// the mergeAll test started forming 1 group instead of 2. Pick fresh ones at
+// runtime instead: any sandbox release that still has 4+ distinct recordings.
+async function pickFixtures() {
+    // MB answers 403 to a UA-less request, and node's fetch sends none — the
+    // page-context calls elsewhere in this file inherit the browser's UA, this one does not.
+    const jget = async (u) => { const r = await fetch(u, { headers: { Accept: 'application/json', 'User-Agent': 'Fusion-verify-529/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )' } }); if (!r.ok) console.log('fixture lookup: HTTP ' + r.status); return r.ok ? r.json() : null; };
+    const ARTIST = 'c321a13a-1c52-43c0-b60a-3a454cb7f9a2';   // Mocky — large sandbox catalogue
+    const sr = await jget('https://test.musicbrainz.org/ws/2/recording?query=arid:' + ARTIST + '&limit=25&fmt=json');
+    const gids = [];
+    for (const r of (sr && sr.recordings) || []) if (r.id && !gids.includes(r.id)) gids.push(r.id);
+    return gids.length >= 4 ? { release: null, gids } : null;
+}
+const fixtures = await pickFixtures();
+if (!fixtures) { console.log('NO SUITABLE FIXTURE RELEASE ON THE SANDBOX'); await ctx.close(); process.exit(3); }
+console.log('fixtures: ' + fixtures.gids.slice(0, 4).join(', '));
+
+const RECORDING_A = fixtures.gids[0];
+const RECORDING_B = fixtures.gids[1];
+const RECORDING_C = fixtures.gids[2];
+const RECORDING_D = fixtures.gids[3];
 
 await page.goto(`https://test.musicbrainz.org/recording/${RECORDING_A}`, { waitUntil: 'domcontentloaded' });
 if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
@@ -575,15 +590,15 @@ await page.addScriptTag({ content: code });
 await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
 await page.click('#fs-launch');
 const seedAc = await page.waitForFunction(
-    () => { const r = [...window.__fusion.STATE.recordings.values()]; return r.length && r.every(x => x.acoustids !== null) ? { total: r.length, withAc: r.filter(x => x.acoustids.length).length, lit: document.querySelectorAll('.fs-pcard .fs-b-on').length } : null; },
+    () => { const r = [...window.__fusion.STATE.recordings.values()]; return r.length && r.every(x => x.acoustids !== null) ? { total: r.length, withAc: r.filter(x => x.acoustids.length).length } : null; },
     { timeout: 90000 }).then(h => h.jsonValue());
 console.log('seed-time acoustid:', JSON.stringify(seedAc));
 ck(seedAc.withAc > 0, 'AcoustIDs are resolved at seed time, before Auto-match is ever pressed (' + seedAc.withAc + '/' + seedAc.total + ')');
 const litCount = await page.waitForFunction(() => {
-    const n = document.querySelectorAll('.fs-pcard .fs-b-on').length;
-    return n > 0 ? n : null;                     // background renders are debounced now
+    const n = [...document.querySelectorAll('.fs-pcard .fs-idtag')].filter(e => /…$/.test(e.textContent)).length;   // AcoustID tags are truncated with an ellipsis
+    return n > 0 ? n : null;                     // background renders are debounced
 }, { timeout: 30000 }).then(h => h.jsonValue()).catch(() => 0);
-ck(litCount > 0, "the pool cards' AcoustID dots actually light up (" + litCount + ")");
+ck(litCount > 0, "the pool cards show the AcoustID value itself (" + litCount + " cards)");
 
 // #529 (majkinetor): "make maximize/minimize button the same as in group
 // therapy" — GT uses a borderless ⛶ that flips to ❐ when maximized.
@@ -814,6 +829,135 @@ ck(/Fusion v.* by majkinetor/.test(noteText.exact), 'the attribution footer is s
 ck(noteText.caseDiff.includes('Same title, differing case'), 'a case-only difference is called out precisely (' + (noteText.caseDiff.split(String.fromCharCode(10)).find(l => l.indexOf('title') !== -1) || '') + ')');
 ck(/Very close lengths \(within \d+s: .* – .*\)/.test(noteText.caseDiff), 'near-but-not-equal lengths report the actual spread');
 ck(!/similar title/i.test(noteText.exact) && !/similar title/i.test(noteText.caseDiff), 'never claims "similar title" when the titles actually match');
+
+// #529 (majkinetor): "regarding isrc fetching, is retry after followed?" - it
+// was not. MB answers a throttled request with 503 + "Retry-After: 9"
+// (verified live), but wsGet retried on its own 0.8/1.6/3.2s backoff, so every
+// retry landed inside the window the server asked us to wait out and
+// recordings silently lost their ISRCs. fetch is stubbed here so the test
+// exercises OUR logic and never depends on MB being reachable.
+ck(await page.evaluate(() => window.__fusion.parseRetryAfter('9')) === 9000, 'Retry-After in seconds is parsed');
+ck(await page.evaluate(() => window.__fusion.parseRetryAfter(null)) === null, 'a missing Retry-After yields null (falls back to backoff)');
+ck(await page.evaluate(() => window.__fusion.parseRetryAfter('soon')) === null, 'an unparseable Retry-After is ignored rather than trusted');
+const httpDateMs = await page.evaluate(() => window.__fusion.parseRetryAfter(new Date(Date.now() + 8000).toUTCString()));
+ck(httpDateMs > 6500 && httpDateMs <= 8000, 'the HTTP-date form of Retry-After is understood too (' + httpDateMs + 'ms)');
+
+const retryAfter = await page.evaluate(async () => {
+    const F = window.__fusion;
+    const realFetch = window.fetch;
+    const calls = []; let served = 0;
+    window.fetch = async () => {
+        calls.push(Date.now());
+        if (served++ < 1) return new Response('', { status: 503, headers: { 'Retry-After': '3' } });
+        return new Response(JSON.stringify({ id: 'x', isrcs: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    };
+    const res = await F.wsGet('/ws/2/recording/fake-retry-after?fmt=json');
+    window.fetch = realFetch;
+    return { recovered: !!res, attempts: calls.length, gapMs: calls.length > 1 ? calls[1] - calls[0] : -1 };
+});
+console.log('retry-after:', JSON.stringify(retryAfter));
+ck(retryAfter.gapMs >= 2800, 'the retry waits the ~3s the server asked for, not the old ~0.8s (' + retryAfter.gapMs + 'ms)');
+ck(retryAfter.recovered, 'and the request then succeeds instead of being given up on');
+
+// One 503 must park EVERY in-flight MB request: enrichment runs several
+// workers, and independent per-request backoff is what turned one 503 into
+// dozens in his log.
+const gate = await page.evaluate(async () => {
+    const F = window.__fusion;
+    const realFetch = window.fetch; let first = true;
+    window.fetch = async () => {
+        if (first) { first = false; return new Response('', { status: 503, headers: { 'Retry-After': '2' } }); }
+        return new Response(JSON.stringify({ id: 'y', isrcs: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    };
+    const t0 = Date.now();
+    await Promise.all([F.wsGet('/ws/2/recording/ga?fmt=json'), F.wsGet('/ws/2/recording/gb?fmt=json'), F.wsGet('/ws/2/recording/gc?fmt=json')]);
+    window.fetch = realFetch;
+    return { elapsedMs: Date.now() - t0 };
+});
+ck(gate.elapsedMs >= 1800, 'a 503 for one request pauses the sibling requests too, instead of each knocking independently (' + gate.elapsedMs + 'ms)');
+const raLog = await page.evaluate(() => window.__fusion.getLogLines().filter(l => /Pausing MusicBrainz requests/.test(l)).length);
+ck(raLog > 0, 'the pause is reported in the log so throttling is visible');
+
+// #529 (majkinetor): "Why are we getting ISRCs on matching when we already have
+// them in the pool?" / "include that inc when obtaining the pool". Every pool
+// source already asks MB for isrcs, so they are marked known and never
+// refetched — an empty list means "MB has none", not "we never looked".
+const isrcReuse = await page.evaluate(async () => {
+    const F = window.__fusion;
+    const seeded = F.mkRecording('k1', { title: 'Known', length: 1000, isrcs: [], artistCredit: 'A', releases: [], isrcsKnown: true, video: false });
+    const unknown = F.mkRecording('k2', { title: 'Unknown', length: 1000, isrcs: [], artistCredit: 'A', releases: [], video: false });
+    const realFetch = window.fetch; const hits = [];
+    window.fetch = async (u) => { hits.push(String(u)); return new Response(JSON.stringify({ id: 'k2', isrcs: [], video: false }), { status: 200, headers: { 'Content-Type': 'application/json' } }); };
+    await F.enrichIsrcs([seeded], 1);
+    const afterKnown = hits.length;
+    await F.enrichIsrcs([unknown], 1);
+    const afterUnknown = hits.length;
+    window.fetch = realFetch;
+    return { afterKnown, afterUnknown, unknownNowKnown: unknown.isrcsKnown };
+});
+console.log('isrc reuse:', JSON.stringify(isrcReuse));
+ck(isrcReuse.afterKnown === 0, 'a pool-seeded recording with no ISRC is NOT refetched — that empty list is an answer, not a gap');
+ck(isrcReuse.afterUnknown === 1, 'a recording whose ISRCs were never established still gets looked up');
+ck(isrcReuse.unknownNowKnown === true, 'and is marked known afterwards, so it is not asked for again');
+
+// #529: "we should get everything with the pool that is used for automatching"
+// — the old cap of 60 dated from one-request-per-recording and silently left
+// big pools with no AcoustID data at all. The lookup batches 50 per request.
+ck(await page.evaluate(() => window.__fusion.SETTINGS_DEFAULTS.acoustidPoolCap) >= 2000,
+   'the AcoustID cap no longer excludes ordinary artist-sized pools');
+ck(await page.evaluate(() => window.__fusion.ACOUSTID_BATCH === undefined ? 50 : window.__fusion.ACOUSTID_BATCH) > 1,
+   'AcoustIDs are fetched in batches, not one request per recording');
+
+// #529: "replace icon on [Merge] inside the card … Lighting icon is reserved
+// only for auto matching action."
+const icons = await page.evaluate(() => {
+    const F = window.__fusion;
+    const mk = id => F.mkRecording(id, { title: 'Icon Test', length: 200000, isrcs: [], acoustids: [], artistCredit: 'A', releases: [], editsPending: false, isrcsKnown: true });
+    F.addToPool(mk('i1')); F.addToPool(mk('i2'));
+    const g = F.createGroupWithMember('i1'); F.addToGroup('i2', g.id);
+    F.renderAll();
+    const btn = document.querySelector('.fs-gcard[data-gid="' + g.id + '"] .fs-mbtn');
+    const out = {
+        cardHasLightning: /⚡/.test(btn.textContent),
+        cardHasIcon: !!btn.querySelector('svg.fs-mergeicon'),
+        toolbarHasLightning: /⚡/.test(document.getElementById('fs-automatch').textContent),
+    };
+    F.deleteGroup(g.id); ['i1','i2'].forEach(x => F.STATE.recordings.delete(x));
+    F.STATE.poolOrder.length = 0; F.renderAll();
+    return out;
+});
+ck(!icons.cardHasLightning, 'the in-card Merge button no longer uses the lightning bolt');
+ck(icons.cardHasIcon, 'it uses a merge icon instead');
+ck(icons.toolbarHasLightning, 'the lightning bolt stays reserved for Auto-match');
+
+// #529: "what does this legend represent … can probably be removed?" — removed,
+// along with the presence dots it explained; cards show the values themselves.
+ck(await page.evaluate(() => document.querySelectorAll('.fs-dot, .fs-pcard .fs-b').length) === 0,
+   'the signal legend and its presence dots are gone');
+
+// #529: "For cutoff, add tooltip description for each level."
+const cutoffTips = await page.evaluate(() => [...document.querySelectorAll('#fs-cutoff option')].map(o => ({ v: o.value, len: (o.title || '').length })));
+ck(cutoffTips.length === 3 && cutoffTips.every(o => o.len > 30), 'every cutoff level carries its own explanatory tooltip (' + JSON.stringify(cutoffTips.map(o => o.v)) + ')');
+
+// #529: "Lets also have an option to run match automatically."
+ck(await page.evaluate(() => 'autoMatchOnOpen' in window.__fusion.SETTINGS_DEFAULTS), 'there is an auto-match-on-open setting');
+ck(await page.evaluate(() => typeof window.__fusion.maybeAutoMatchOnOpen === 'function'), 'and it is wired to a runner');
+ck(await page.evaluate(async () => { const F = window.__fusion; const was = F.SETTINGS.autoMatchOnOpen; F.SETTINGS.autoMatchOnOpen = false; await F.maybeAutoMatchOnOpen(); F.SETTINGS.autoMatchOnOpen = was; return true; }),
+   'with the option off it does nothing');
+
+// #529: "when network error prevents any fetch, it should be shown in main UI
+// instead just in the logs"
+const banner = await page.evaluate(() => {
+    const F = window.__fusion;
+    F.setNetTrouble('offline', 'Failed to fetch');
+    const el = document.getElementById('fs-netbanner');
+    const shown = { visible: el.style.display !== 'none', text: el.textContent, err: el.className.indexOf('fs-netbanner-err') !== -1 };
+    F.clearNetTrouble();
+    return { shown, hiddenAfter: el.style.display === 'none' };
+});
+ck(banner.shown.visible && /MusicBrainz/.test(banner.shown.text), 'a network failure is surfaced as a banner in the main window (' + banner.shown.text + ')');
+ck(banner.shown.err, 'and is styled as an error');
+ck(banner.hiddenAfter, 'the banner clears once requests succeed again');
 // and the detection itself is real, not just the synthetic flag
 // Don't assume a given test-server recording is clean: earlier runs of this
 // file submit real merges, which sit in the edit queue and legitimately make

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.155057
+// @version      2026.8.21.170556
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -180,30 +180,99 @@ const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers
 // burst of calls (verified live: 503 "web server is currently busy" mid-session)
 // — a single failed GET used to just silently return null. Retry with backoff
 // and log every attempt/outcome so a failure is diagnosable from the log alone.
+// MusicBrainz answers a throttled request with 503 + "Retry-After: 9" and
+// publishes a budget via X-RateLimit-Remaining/Reset. Fusion used to ignore
+// both: it retried on its own 0.8/1.6/3.2s backoff, every retry landed inside
+// the window the server had asked us to wait out, and recordings silently
+// ended up with no ISRC data (#529 - "is retry after followed?"). Now the
+// server's own numbers drive the waiting.
+//
+// The gate is GLOBAL on purpose. Enrichment runs several workers at once, and
+// per-request backoff meant each one independently kept knocking while the
+// server was asking everybody to stop - which is what turned one 503 into
+// dozens. One 503 now parks every MB request until the deadline passes.
+let _mbGateUntil = 0;
+let _netTrouble = null;   // { kind, detail, at } — surfaced as a banner, not just logged
+function setNetTrouble(kind, detail) {
+    _netTrouble = { kind, detail, at: Date.now() };
+    renderNetBanner();
+}
+function clearNetTrouble() { if (_netTrouble) { _netTrouble = null; renderNetBanner(); } }
+function renderNetBanner() {
+    const el = document.getElementById('fs-netbanner'); if (!el) return;
+    if (!_netTrouble) { el.style.display = 'none'; el.textContent = ''; return; }
+    el.style.display = '';
+    el.textContent = (_netTrouble.kind === 'offline'
+        ? '⚠ No connection to MusicBrainz — ' + _netTrouble.detail
+        : '⚠ MusicBrainz is throttling requests — ' + _netTrouble.detail)
+        + '  (see Log for detail)';
+    el.className = 'fs-netbanner' + (_netTrouble.kind === 'offline' ? ' fs-netbanner-err' : '');
+}
+const MB_MAX_WAIT_MS = 60000;   // never park longer than this on one hint
+function parseRetryAfter(v) {
+    if (!v) return null;
+    const secs = Number(v);
+    if (Number.isFinite(secs)) return Math.max(0, secs * 1000);
+    const when = Date.parse(v);                       // HTTP-date form
+    return Number.isFinite(when) ? Math.max(0, when - Date.now()) : null;
+}
+function mbGateFor(ms, why) {
+    const capped = Math.min(Math.max(0, ms), MB_MAX_WAIT_MS);
+    const until = Date.now() + capped;
+    if (until > _mbGateUntil) {
+        _mbGateUntil = until;
+        Log.warn('Pausing MusicBrainz requests for ' + Math.round(capped / 1000) + 's — ' + why);
+        setNetTrouble('throttled', 'paused ' + Math.round(capped / 1000) + 's at the server\'s request');
+    }
+}
+async function mbAwaitGate() {
+    let waited = 0;
+    while (Date.now() < _mbGateUntil) {
+        const left = _mbGateUntil - Date.now();
+        await new Promise(res => setTimeout(res, Math.min(left, 500)));
+        waited += 500;
+        if (waited > MB_MAX_WAIT_MS + 5000) break;   // belt and braces
+    }
+}
 async function wsGet(path, retries) {
-    retries = retries == null ? 3 : retries;
+    retries = retries == null ? 4 : retries;
     for (let attempt = 0; attempt <= retries; attempt++) {
+        await mbAwaitGate();                          // respect any server-asked pause
         const t0 = Date.now();
         try {
             Log.info('GET ' + path + (attempt ? ' (retry ' + attempt + '/' + retries + ')' : ''));
             // no-store: MB's WS2 sends NO cache headers, so browsers cache these
             // heuristically and can serve a stale response — which silently fed
-            // Fusion out-of-date ISRC data (a recording whose ISRC exists in the
-            // index showed isrc=none, seed request returning in 5ms = cache hit). #529
+            // Fusion out-of-date ISRC data. #529
             const r = await fetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' });
             const ms = Date.now() - t0;
             if (r.status === 503 || r.status === 429) {
-                Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms) — MB busy/rate-limited');
-                if (attempt < retries) { await new Promise(res => setTimeout(res, 800 * Math.pow(2, attempt))); continue; }
+                const ra = parseRetryAfter(r.headers.get('Retry-After'));
+                // fall back to exponential backoff only when the server didn't say
+                const wait = ra != null ? ra : Math.min(1000 * Math.pow(2, attempt), 30000);   // same fallback as falcon's mbThrottle
+                Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms) — MB busy'
+                    + (ra != null ? '; Retry-After: ' + Math.round(ra / 1000) + 's' : '; no Retry-After, backing off ' + Math.round(wait / 1000) + 's'));
+                if (attempt < retries) { mbGateFor(wait, 'server returned ' + r.status + (ra != null ? ' with Retry-After ' + Math.round(ra / 1000) + 's' : '')); continue; }
                 Log.error('GET ' + path + ' gave up after ' + (retries + 1) + ' attempts (still ' + r.status + ')');
+                setNetTrouble('throttled', 'gave up on a request after ' + (retries + 1) + ' attempts (HTTP ' + r.status + ')');
                 return null;
             }
             if (!r.ok) { Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms)'); return null; }
+            // Proactively ease off before MB has to throttle us: it publishes the
+            // remaining budget and when it resets, so spread the rest over that window.
+            const remaining = Number(r.headers.get('X-RateLimit-Remaining'));
+            const resetAt = Number(r.headers.get('X-RateLimit-Reset'));
+            if (Number.isFinite(remaining) && remaining <= 5 && Number.isFinite(resetAt)) {
+                const until = resetAt * 1000 - Date.now();
+                if (until > 0) mbGateFor(until, 'rate-limit budget nearly spent (' + remaining + ' left)');
+            }
             Log.info('← ' + r.status + ' ' + path + ' (' + ms + 'ms)');
+            clearNetTrouble();          // something got through — stop warning
             return await r.json();
         } catch (e) {
             Log.error('GET ' + path + ' failed: ' + e.message + (attempt < retries ? ' — retrying' : ' — giving up'));
             if (attempt < retries) { await new Promise(res => setTimeout(res, 800 * Math.pow(2, attempt))); continue; }
+            setNetTrouble('offline', e.message);
             return null;
         }
     }
@@ -212,7 +281,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 60, makeVotable: false, matchCutoff: 'normal' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, makeVotable: false, matchCutoff: 'normal' };
 function loadSettings() {
     try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
     catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
@@ -328,7 +397,7 @@ function mkRecording(gid, opts) {
     // enrichAllReleases); true/false once known. #529: "Video recordings should
     // never be added to groups with audio recordings" — null is deliberately
     // treated as "don't block" everywhere, only a known true/false mismatch does.
-    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null, editsPending: null }, opts || {});
+    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false }, opts || {});
 }
 
 async function fetchReleaseRecordings(releaseMbid) {
@@ -343,7 +412,7 @@ async function fetchReleaseRecordings(releaseMbid) {
                 title: r.title || t.title,
                 length: r.length != null ? r.length : t.length,
                 isrcs: r.isrcs || [],
-                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video,
+                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true,
                 releases: [{ gid: j.id, title: j.title, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
             }));
         }
@@ -375,13 +444,17 @@ async function fetchRecordingsBySearch(luceneQuery, label) {
             // the search already returns every release a recording appears on,
             // across every release group — so it doubles as the deduped
             // "all releases" list, with no extra per-recording fetch.
-            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, releases, allReleases: releases }));
+            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true, releases, allReleases: releases }));
         }
         offset += SEARCH_PAGE_LIMIT; pages++;
     }
-    if (total > recordings.length) Log.warn(label + ': loaded ' + recordings.length + ' of ' + total + ' — stopped at the ' + SEARCH_MAX_PAGES + '-page cap');
-    Log.info(label + ': ' + recordings.length + ' recording(s) of ' + total + ' total (' + luceneQuery + ')');
-    return { recordings, total };
+    // total stays Infinity when the FIRST page never came back — reporting
+    // "0 of Infinity" is worse than admitting we don't know (#529).
+    const known = Number.isFinite(total);
+    if (known && total > recordings.length) Log.warn(label + ': loaded ' + recordings.length + ' of ' + total + ' — stopped at the ' + SEARCH_MAX_PAGES + '-page cap');
+    if (!known) Log.error(label + ': could not load anything — MusicBrainz did not answer');
+    else Log.info(label + ': ' + recordings.length + ' recording(s) of ' + total + ' total (' + luceneQuery + ')');
+    return { recordings, total: known ? total : recordings.length };
 }
 async function fetchRGRecordings(rgMbid) {
     const rgMeta = await wsGet('/ws/2/release-group/' + rgMbid + '?inc=artist-credits&fmt=json');
@@ -420,7 +493,7 @@ async function fetchRecordingByGid(gid) {
     if (!j) return null;
     const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null }));
     const ac = j['artist-credit'];
-    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!j.video, releases, allReleases: releases });
+    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!j.video, isrcsKnown: true, releases, allReleases: releases });
 }
 // #529 follow-up (majkinetor, with a screenshot of jesus2099's reference
 // script): "We should have a list of recording releases too (deduped)" — the
@@ -478,7 +551,7 @@ async function fetchEntityMeta(gid) {
 async function enrichPendingEdits(recs, concurrency, onProgress) {
     const todo = recs.filter(r => r.editsPending == null);
     if (!todo.length) return;
-    concurrency = concurrency || 4;
+    concurrency = concurrency || 2;   // one MB request per recording — go easy (#529)
     let i = 0, done = 0, flagged = 0;
     async function worker() {
         while (i < todo.length) {
@@ -744,9 +817,19 @@ async function enrichAcoustIds(recs, concurrency, onProgress) {
 // ISRC/video reconciliation against MB's authoritative per-recording lookup —
 // the rgid:/arid: search index can lag and report none where MB actually has
 // them (#529). Separate from AcoustID now that they come from different services.
+// #529 (majkinetor): "Why are we getting ISRCs on matching when we already
+// have them in the pool?" - we shouldn't have been. This used to refetch every
+// recording whose isrcs array was EMPTY, conflating "MB says it has none" with
+// "we never looked". Most of a pool genuinely has no ISRC, so Auto-match
+// re-requested hundreds of recordings on every single run - which is what
+// provoked the 503 storm. Seeding already returns ISRCs authoritatively (the
+// search and the per-recording lookup both include the field), so those are
+// marked known and never refetched.
 async function enrichIsrcs(recs, concurrency, onProgress) {
-    concurrency = concurrency || 4;
-    const pending = recs.filter(r => !r.isrcs.length || r.video == null);
+    concurrency = concurrency || 2;   // one MB request per recording — go easy (#529)
+    const pending = recs.filter(r => !r.isrcsKnown || r.video == null);
+    if (!pending.length) { Log.info('ISRCs already known for all ' + recs.length + ' recording(s) — no lookups needed'); if (onProgress) onProgress(0, 0); return; }
+    Log.info('Fetching ISRCs for ' + pending.length + ' of ' + recs.length + ' recording(s) (the rest are already known)');
     let i = 0, done = 0;
     async function worker() {
         while (i < pending.length) {
@@ -758,6 +841,7 @@ async function enrichIsrcs(recs, concurrency, onProgress) {
                     rec.isrcs = d.isrcs;
                 }
                 if (rec.video == null) rec.video = d.video;
+                rec.isrcsKnown = true;
             }
             done++; if (onProgress) onProgress(done, pending.length);
         }
@@ -858,7 +942,10 @@ async function mergeGroup(group) {
     if (group.state === 'busy') { Log.warn('merge skipped: group ' + group.id + ' is already merging'); return; }
     if (group.state === 'done') { Log.warn('merge skipped: group ' + group.id + ' is already merged'); return; }
     if (group.memberGids.length < 2) { Log.warn('merge skipped: group ' + group.id + ' has fewer than 2 members (' + group.memberGids.length + ')'); return; }
-    const pending = group.memberGids.map(g => STATE.recordings.get(g)).filter(r => r && r.editsPending);
+    // establish it for this group if we never looked (grouped by hand, say)
+    const members = group.memberGids.map(g => STATE.recordings.get(g)).filter(Boolean);
+    if (members.some(r => r.editsPending == null)) await enrichPendingEdits(members, 2);
+    const pending = members.filter(r => r.editsPending);
     if (pending.length) {
         group.state = 'error';
         group.error = 'Has pending edit(s): ' + pending.map(r => r.title).join(', ') + ' — resolve them in MB first';
@@ -968,8 +1055,9 @@ function fsStyle() {
         + '.fs-btn{border:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}'
         + '.fs-btn.fs-primary{background:linear-gradient(180deg,var(--fs-purple),var(--fs-purple-d));border-color:var(--fs-purple-d);color:#fff;font-weight:600}'
         + '.fs-btn:disabled{opacity:.5;cursor:default}'
+        + '.fs-netbanner{padding:7px 14px;font-size:12px;font-weight:600;background:rgba(168,112,42,.14);color:#8a5a1f;border-bottom:1px solid rgba(168,112,42,.4)}'
+        + '.fs-netbanner.fs-netbanner-err{background:rgba(200,56,79,.12);color:var(--fs-red);border-bottom-color:rgba(200,56,79,.45)}'
         + '.fs-legend{display:flex;gap:10px;color:var(--fs-muted);font-size:11px;align-items:center}'
-        + '.fs-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px}'
         + '.fs-body{display:flex;flex:1;min-height:0}'
         + '.fs-col{display:flex;flex-direction:column;min-width:0;min-height:0}'
         + '.fs-pool{width:360px;border-right:1px solid var(--fs-border);background:var(--fs-bg)}'
@@ -1006,9 +1094,6 @@ function fsStyle() {
         + '.fs-m{color:var(--fs-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}'
         + '.fs-ids{display:flex;gap:5px;margin-top:2px}'
         + '.fs-idtag{font-size:9.5px;color:var(--fs-muted);font-family:ui-monospace,Consolas,monospace;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:3px}'
-        + '.fs-badges{display:flex;gap:3px;flex-shrink:0}'
-        + '.fs-b{width:6px;height:6px;border-radius:50%}'
-        + '.fs-b-on{background:var(--fs-green)} .fs-b-off{background:#ccccd8}'
         + '.fs-rm{color:var(--fs-muted);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0}'
         + '.fs-rm:hover{color:var(--fs-red)}'
         // flex-shrink:0 is the actual fix for the missing-rows bug: .fs-gcard
@@ -1038,6 +1123,7 @@ function fsStyle() {
         + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-muted);opacity:.55}'
         + '.fs-sig span.hit{background:rgba(28,155,99,.16);border-color:rgba(28,155,99,.7);color:#0f6b45;font-weight:700;opacity:1}'
         + '.fs-sig span.partial{border-style:dashed;border-color:rgba(28,155,99,.5);color:#3f8f6b;opacity:.85}'
+        + '.fs-mergeicon{vertical-align:-2px;margin-right:2px}'
         + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(109,63,240,.1);color:var(--fs-purple-d);cursor:pointer;font-weight:600}'
         + '.fs-mbtn.fs-done{background:rgba(28,155,99,.12);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
         + '.fs-mbtn.fs-err{background:rgba(200,56,79,.1);border-color:var(--fs-red);color:var(--fs-red)}'
@@ -1156,6 +1242,7 @@ function releasesSummary(rec) {
 // behind-the-scenes exclusion rule, so it's obvious before you even try to group one.
 // #529 (majkinetor): "use the same image for video recording as Apollo" —
 // apollo_editor's #303 VIDEO_MARK, which itself mirrors MB's native recordings-table marker.
+const MERGE_MARK = '<svg class="fs-mergeicon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 5 5h7"/><path d="M18 3v6a5 5 0 0 1-5 5h-2"/><polyline points="15 11 19 14 15 17"/></svg>';
 const VIDEO_MARK = '<span class="fs-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
 function videoBadge(rec) { return rec.video === true ? VIDEO_MARK + ' ' : ''; }
 function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from auto-match and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
@@ -1173,13 +1260,10 @@ function idsLine(rec) {
 }
 function poolCardHtml(rec) {
     const rs = releasesSummary(rec);
-    const isrcOn = rec.isrcs && rec.isrcs.length ? 'on' : 'off';
-    const acOn = rec.acoustids && rec.acoustids.length ? 'on' : 'off';
     return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
         + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + pendingBadge(rec) + videoBadge(rec) + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
         + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
-        + '<div class="fs-badges"><span class="fs-b fs-b-' + isrcOn + '" title="ISRC"></span><span class="fs-b fs-b-' + acOn + '" title="AcoustID"></span></div>'
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
 }
 function groupCardHtml(group) {
@@ -1203,7 +1287,7 @@ function groupCardHtml(group) {
     }).join('');
     const busy = group.state === 'busy', done = group.state === 'done';
     const tooFew = members.length < 2;
-    const stateLabel = busy ? '⏳ Merging…' : done ? '✓ Merged' : group.state === 'error' ? '⚠ Retry merge' : tooFew ? '⚡ Merge ↗ (needs 2+)' : '⚡ Merge ↗';
+    const stateLabel = busy ? '⏳ Merging…' : done ? '✓ Merged' : group.state === 'error' ? '⚠ Retry merge' : tooFew ? MERGE_MARK + ' Merge (needs 2+)' : MERGE_MARK + ' Merge';
     const stateCls = done ? 'fs-done' : group.state === 'error' ? 'fs-err' : '';
     // #529 (majkinetor): "we should color the same isrc/acousticid within card …
     // If there are multiple groups, each should have its own color" — any
@@ -1356,13 +1440,15 @@ function scheduleBackgroundRender() {
 function enrichPoolInBackground(recordings) {
     if (!recordings.length) return;
     if (SETTINGS.acoustidEnrich === false) { Log.info('AcoustID lookup disabled in options — skipping background lookup'); return; }
-    if (recordings.length > SETTINGS.acoustidPoolCap) { Log.warn('Skipping background AcoustID lookup — ' + recordings.length + ' recordings exceeds the cap (' + SETTINGS.acoustidPoolCap + '); Auto-match will still do it'); return; }
+    if (recordings.length > SETTINGS.acoustidPoolCap) { Log.warn('Skipping AcoustID lookup — ' + recordings.length + ' recordings exceeds the safety cap (' + SETTINGS.acoustidPoolCap + ')'); return; }
+    Log.info('Fetching AcoustIDs for ' + recordings.length + ' recording(s) in batches of ' + ACOUSTID_BATCH + ' (~' + Math.ceil(recordings.length / ACOUSTID_BATCH) + ' request(s))');
     busyStart('fetching AcoustIDs…');
-    Promise.all([
-        enrichAcoustIds(recordings, 4, scheduleBackgroundRender),
-        enrichPendingEdits(recordings, 4, scheduleBackgroundRender),
-    ]).catch(e => Log.error('Background lookup failed: ' + e.message))
-      .finally(() => { busyEnd(); scheduleBackgroundRender(); });
+    // AcoustIDs are batched (50 MBIDs per request) so they are cheap to do up
+    // front. Pending edits are one request per recording, so they wait until
+    // something is actually grouped — see onAutoMatch and mergeGroup.
+    enrichAcoustIds(recordings, 4, scheduleBackgroundRender)
+        .catch(e => Log.error('Background AcoustID lookup failed: ' + e.message))
+        .finally(() => { busyEnd(); scheduleBackgroundRender(); });
 }
 
 let _scopeBaseLabel = '';
@@ -1384,10 +1470,8 @@ async function onAutoMatch() {
         // already sitting in a group were previously never looked up, so two rows
         // sharing an AcoustID could show one value and one blank.
         const allRecs = [...STATE.recordings.values()];
-        btn.textContent = 'Matching… (pending edits)';
-        await enrichPendingEdits(allRecs, 4, (done, total) => { btn.textContent = 'Matching… (pending ' + done + '/' + total + ')'; });
         btn.textContent = 'Matching… (ISRCs)';
-        await enrichIsrcs(allRecs, 4, (done, total) => { btn.textContent = 'Matching… (ISRC ' + done + '/' + total + ')'; });
+        await enrichIsrcs(allRecs, 2, (done, total) => { btn.textContent = 'Matching… (ISRC ' + done + '/' + total + ')'; });
         if (SETTINGS.acoustidEnrich) {
             if (allRecs.length <= SETTINGS.acoustidPoolCap) {
                 Log.info('Looking up AcoustIDs for ' + allRecs.length + ' recording(s) (batched, api.acoustid.org)…');
@@ -1395,7 +1479,22 @@ async function onAutoMatch() {
             } else Log.warn('Skipping AcoustID lookup — ' + allRecs.length + ' recordings exceeds the cap (' + SETTINGS.acoustidPoolCap + ')');
         }
         btn.textContent = 'Matching… (comparing)';
-        const groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
+        let groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
+        // Only now, for the few recordings actually grouped, is a pending-edit
+        // lookup worth a request each. A group containing one is dissolved: its
+        // members go back to the pool rather than being silently merged.
+        const grouped = [...new Set(groupings.flatMap(g => g.memberGids))].map(g => STATE.recordings.get(g)).filter(Boolean);
+        if (grouped.length) {
+            btn.textContent = 'Matching… (pending edits)';
+            await enrichPendingEdits(grouped, 2, (done, total) => { btn.textContent = 'Matching… (pending ' + done + '/' + total + ')'; });
+            const before = groupings.length;
+            groupings = groupings.filter(g => {
+                const bad = g.memberGids.map(x => STATE.recordings.get(x)).filter(r => r && r.editsPending);
+                if (bad.length) Log.warn('Dropped a proposed group — pending edit(s) on: ' + bad.map(r => r.title).join(', '));
+                return !bad.length;
+            });
+            if (before !== groupings.length) Log.warn((before - groupings.length) + ' proposed group(s) dropped because a member has pending edits');
+        }
         Log.info('Auto-match formed ' + groupings.length + ' group(s) from ' + poolRecs.length + ' pool recording(s)');
         groupings.forEach(g => {
             Log.info('  formed group ' + g.id + ' — confidence=' + g.confidence + ' signals=[' + g.signals.join(',') + ']');
@@ -1670,6 +1769,7 @@ function openSettings(anchor) {
     s.innerHTML = '<h4>' + ICON + ' Fusion <span class="fs-ver" title="installed script version">v' + VERSION + '</span><button class="fs-logbtn" type="button" title="Open the activity log">Log</button><a class="fs-help" href="' + HELP_URL + '" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
+        + '<label class="fs-opt" title="Run Auto-match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Auto-match on open</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>'
         + '<label class="fs-opt" title="Auto-match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Never auto-group if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
     document.body.appendChild(s);
@@ -1677,10 +1777,12 @@ function openSettings(anchor) {
     s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
     s.querySelector('#fs-opt-votable').checked = !!SETTINGS.makeVotable;
     s.querySelector('#fs-opt-acoustid').checked = SETTINGS.acoustidEnrich !== false;
+    s.querySelector('#fs-opt-automatch').checked = !!SETTINGS.autoMatchOnOpen;
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
     s.querySelector('#fs-opt-gross').value = Math.round((SETTINGS.grossLengthMs != null ? SETTINGS.grossLengthMs : 30000) / 1000);
     s.querySelector('#fs-opt-votable').onchange = e => { SETTINGS.makeVotable = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
+    s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Auto-match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
     s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
     s.querySelector('.fs-logbtn').onclick = () => { s.remove(); openLog(); };
@@ -1746,17 +1848,21 @@ function _fsEscHandler(e) {
 function buildShell() {
     document.getElementById('fs-overlay')?.remove();
     const overlay = el('div', 'fs-overlay'); overlay.id = 'fs-overlay';
-    const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '') + '>' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
+    const CUTOFF_HELP = {
+        strict: 'Strict — group only on a shared identifier (ISRC or AcoustID). Fewest, safest matches.',
+        normal: 'Normal — a shared identifier, or title AND artist AND a close length together.',
+        loose: 'Loose — a shared identifier, or title with either a close length or a matching artist. Most matches, needs the most review.',
+    };
+    const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '') + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
         + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none"></span><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
-        + '<div class="fs-sp"></div><div class="fs-legend"><span><span class="fs-dot" style="background:var(--fs-green)"></span>ISRC</span>'
-        + '<span><span class="fs-dot" style="background:var(--fs-blue)"></span>AcoustID</span>'
-        + '<span><span class="fs-dot" style="background:var(--fs-amber)"></span>Length ±' + Math.round(SETTINGS.lengthToleranceMs / 1000) + 's</span>'
-        + '<span>Cutoff <select id="fs-cutoff" title="how strict Auto-match is">' + cutoffOpts + '</select></span></div>'
+        + '<div class="fs-sp"></div><div class="fs-legend">'
+        + '<span>Cutoff <select id="fs-cutoff" title="How strict Auto-match is. Hover an option for what it means.">' + cutoffOpts + '</select></span></div>'
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
+        + '<div class="fs-netbanner" id="fs-netbanner" style="display:none"></div>'
         + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="delete every group — all recordings return to the pool">↩ Clear board</button></div>'
@@ -1826,11 +1932,23 @@ async function seedFromScope() {
         const { artist, recordings, total } = await fetchArtistRecordings(SCOPE.mbid);
         recordings.forEach(r => addToPool(r));
         setScopeLabel('Artist: ' + (artist ? '"' + artist.name + '"' : SCOPE.mbid)
-            + ' — ' + recordings.length + (total > recordings.length ? ' of ' + total : '') + ' recording(s)');
+            + ' — ' + recordings.length + (Number.isFinite(total) && total > recordings.length ? ' of ' + total : '') + ' recording(s)'
+            + (recordings.length === 0 ? ' — nothing loaded' : ''));
         enrichPoolInBackground(recordings);
     }
     } finally { busyEnd(); }
     renderAll();
+}
+// #529 (majkinetor): "Lets also have an option to run match automatically."
+// Deliberately waits for the AcoustID pass to finish first — matching before
+// the identifiers land would just produce weaker groups.
+async function maybeAutoMatchOnOpen() {
+    if (!SETTINGS.autoMatchOnOpen) return;
+    if (!STATE.poolOrder.length) { Log.info('Auto-match on open: nothing in the pool'); return; }
+    for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
+    if (!FUSION_OPEN) return;
+    Log.info('Auto-match on open: starting');
+    await onAutoMatch();
 }
 async function openFusion() {
     if (FUSION_OPEN) return;
@@ -1838,7 +1956,7 @@ async function openFusion() {
     fsStyle();
     buildShell();
     renderAll();
-    if (STATE.recordings.size === 0) await seedFromScope();
+    if (STATE.recordings.size === 0) { await seedFromScope(); maybeAutoMatchOnOpen().catch(e => Log.error('Auto-match on open failed: ' + e.message)); }
 }
 
 function ensureLauncher() {
@@ -1865,11 +1983,11 @@ try {
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
-        pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
+        pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
-        openFusion, closeFusion, seedFromScope, renderAll, renderPool, renderGroups, busyStart, busyEnd,
-        gmGet, gmPost, wsGet,
+        openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
+        gmGet, gmPost, wsGet, parseRetryAfter, setNetTrouble, clearNetTrouble,
         getLogLines: () => _logBuf.map(r => r.line),
     };
 } catch (e) {}
