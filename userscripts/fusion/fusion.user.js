@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.21.174538
+// @version      2026.8.21.175757
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -287,7 +287,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, makeVotable: false, matchCutoff: 'normal' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: true, releasePrefetchCap: 200, makeVotable: false, matchCutoff: 'normal' };
 // Stored settings win over defaults, so simply RAISING a default is invisible to
 // anyone who ever opened the config window (that saves every key, including the
 // ones they never touched). The old 60 cap dated from one-request-per-recording;
@@ -823,6 +823,11 @@ function deleteGroup(groupId) {
 function clearBoard() {
     const n = STATE.groups.length;
     STATE.groups.slice().forEach(g => deleteGroup(g.id));
+    // Per-card view state belongs to groups that no longer exist; leaving it
+    // behind makes a re-grouped recording come back mysteriously pre-expanded.
+    // releaseDetails is a CACHE keyed by gid, so that one deliberately survives.
+    STATE.expandedReleases.clear();
+    STATE.collapsedGroups.clear();
     Log.info('Cleared board — ' + n + ' group(s) dissolved, every member returned to the pool');
 }
 
@@ -1235,8 +1240,13 @@ function fsStyle() {
         // #467, #529 — third recurrence of the same rule). ▶/▼ are the full-size
         // triangles; ▸/▾ are Unicode's *small* ones and read as shrunken however
         // much padding is wrapped around them.
-        + '.fs-ctog,.fs-exp{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:2px 5px;border-radius:3px;cursor:pointer;color:var(--fs-muted);font-size:14px;line-height:1;flex-shrink:0}'
-        + '.fs-ctog:hover,.fs-exp:hover{background:rgba(0,0,0,.07);color:var(--fs-text)}'
+        // Full-size glyph, but LIGHT: a solid 14px triangle in the muted text
+        // colour reads as heavy as the titles it sits next to (#529 — "too dark
+        // and intrusive"). Size is the accessibility requirement, weight is not,
+        // so the contrast lives in the hover instead of the resting state.
+        + '.fs-ctog,.fs-exp{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:2px 5px;border-radius:3px;cursor:pointer;color:#c3c3d0;font-size:14px;line-height:1;flex-shrink:0;transition:color .12s,background .12s}'
+        + '.fs-ctog:hover,.fs-exp:hover{background:rgba(0,0,0,.05);color:var(--fs-muted)}'
+        + '.fs-exp-on,.fs-gcard-collapsed .fs-ctog{color:#a9a9bb}'
         + '.fs-gcard-collapsed .fs-ghdr{border-bottom:none}'
         + '.fs-cnt{font-size:10.5px;color:var(--fs-muted);white-space:nowrap}'
         // The release table must scroll INSIDE the card — it has far more columns
@@ -1324,6 +1334,10 @@ function fsStyle() {
         + '.fs-newgroup{border:1px dashed var(--fs-border);border-radius:7px;padding:9px;text-align:center;color:var(--fs-muted);font-size:12px;cursor:pointer}'
         + '.fs-ftr{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--fs-panel2);border-top:1px solid var(--fs-border)}'
         + '.fs-idmore{color:var(--fs-muted);font-size:9px}'
+        + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
+        + '.fs-detbtn{font-size:10px;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:2px 6px;cursor:pointer;white-space:nowrap;background:#fff}'
+        + '.fs-detbtn:hover{border-color:var(--fs-purple);color:var(--fs-purple)}'
+        + '.fs-detbtn-on{background:rgba(109,63,240,.09);border-color:var(--fs-purple);color:var(--fs-purple)}'
         + '.fs-idstat{white-space:nowrap;cursor:help}'
         + '.fs-idstat-none{color:var(--fs-muted)}'
         + '.fs-sum{color:var(--fs-muted);font-size:12px}'
@@ -1433,6 +1447,104 @@ function poolCardHtml(rec) {
 // The expanded per-recording release table (#529). Columns follow MB's own
 // merge-page table so the two can be read side by side, with a status band
 // ("Official" / "Promotion" / …) heading each run exactly as MB does it.
+// #529: "add collapse all toggle above (should toggle collapsing on all cards)".
+// One button, and what it does next is decided by the majority: if anything is
+// still expanded it collapses everything, otherwise it expands everything —
+// so a half-collapsed board always has an obvious next move.
+function allGroupsCollapsed() {
+    return STATE.groups.length > 0 && STATE.groups.every(g => STATE.collapsedGroups.has(g.id));
+}
+function toggleCollapseAll() {
+    if (allGroupsCollapsed()) STATE.collapsedGroups.clear();
+    else STATE.groups.forEach(g => STATE.collapsedGroups.add(g.id));
+    renderGroups();
+}
+function renderCollapseAllBtn() {
+    const b = document.getElementById('fs-collapseall'); if (!b) return;
+    const collapsed = allGroupsCollapsed();
+    b.textContent = collapsed ? '▶ Expand all' : '▼ Collapse all';
+    b.title = collapsed ? 'expand every group card' : 'collapse every group card';
+    b.disabled = STATE.groups.length === 0;
+}
+// #529: "add an option to load releases in the background for created groups …
+// but should not block from working". Only recordings that are actually IN a
+// group are prefetched — that is the set you are about to merge, and it is far
+// smaller than the pool. Sequential and gated, so it queues behind (and yields
+// to) anything the user does; nothing here calls busyStart.
+let _prefetchRunning = false, _prefetchCapWarned = 0;
+async function prefetchGroupReleases() {
+    if (!SETTINGS.prefetchGroupReleases || _prefetchRunning) return;
+    const wanted = [];
+    for (const g of STATE.groups) {
+        for (const gid of g.memberGids) {
+            if (!STATE.releaseDetails.has(gid) && !wanted.includes(gid)) wanted.push(gid);
+        }
+    }
+    if (!wanted.length) return;
+    const cap = SETTINGS.releasePrefetchCap || 200;
+    if (wanted.length > cap) {
+        // renderGroups calls this on EVERY render, so warn once per board size
+        // rather than replaying the same line into the log on every repaint.
+        if (_prefetchCapWarned !== wanted.length) {
+            _prefetchCapWarned = wanted.length;
+            Log.warn('Background release prefetch: ' + wanted.length + ' recording(s) exceeds the cap (' + cap + ') — expand a row to load its releases on demand instead');
+        }
+        return;
+    }
+    _prefetchCapWarned = 0;
+    _prefetchRunning = true;
+    Log.info('Background release prefetch: ' + wanted.length + ' recording(s) in ' + STATE.groups.length + ' group(s)');
+    let done = 0;
+    try {
+        for (const gid of wanted) {
+            // Groups can be dissolved or merged while this runs — skip anything
+            // that has left the board rather than fetching data nobody wants.
+            if (!STATE.groups.some(g => g.memberGids.includes(gid))) { done++; continue; }
+            if (STATE.releaseDetails.has(gid)) { done++; continue; }
+            setBgTask('Loading recording releases ' + (done + 1) + '/' + wanted.length + '…');
+            try { STATE.releaseDetails.set(gid, await fetchReleaseDetails(gid)); }
+            catch (e) { STATE.releaseDetails.set(gid, null); Log.warn('Release prefetch failed for ' + gid + ': ' + e.message); }
+            done++;
+            // only repaint if the row is actually open; the rest is cache warming
+            if (STATE.expandedReleases.has(gid)) renderGroups();
+        }
+        Log.info('Background release prefetch: finished ' + done + ' of ' + wanted.length);
+    } finally {
+        _prefetchRunning = false;
+        setBgTask('');
+        // a group created while this was running still needs its turn
+        if (STATE.groups.some(g => g.memberGids.some(m => !STATE.releaseDetails.has(m)))) setTimeout(prefetchGroupReleases, 0);
+    }
+}
+// #529: "add uncollapse/all details toggle in the card itself" — one control per
+// card that opens (or closes) the release table for EVERY recording in it,
+// rather than clicking each row's caret in turn. Same all-or-nothing rule as
+// the board-level Collapse all: if anything is still closed, open everything.
+function groupAllExpanded(group) {
+    return group.memberGids.length > 0 && group.memberGids.every(g => STATE.expandedReleases.has(g));
+}
+async function toggleAllDetails(groupId) {
+    const g = findGroup(groupId); if (!g) return;
+    if (groupAllExpanded(g)) {
+        g.memberGids.forEach(gid => STATE.expandedReleases.delete(gid));
+        renderGroups();
+        return;
+    }
+    g.memberGids.forEach(gid => STATE.expandedReleases.add(gid));
+    renderGroups();                                   // loading stubs appear at once
+    const missing = g.memberGids.filter(gid => !STATE.releaseDetails.has(gid));
+    if (!missing.length) return;
+    let done = 0;
+    for (const gid of missing) {
+        setBgTask('Loading recording releases ' + (done + 1) + '/' + missing.length + '…');
+        try { STATE.releaseDetails.set(gid, await fetchReleaseDetails(gid)); }
+        catch (e) { STATE.releaseDetails.set(gid, null); Log.warn('Release lookup failed for ' + gid + ': ' + e.message); }
+        done++;
+        renderGroups();                               // these rows ARE open, so repaint
+    }
+    setBgTask('');
+    Log.info('Loaded release details for ' + done + ' recording(s) in the group');
+}
 async function toggleReleaseDetails(gid) {
     if (STATE.expandedReleases.has(gid)) { STATE.expandedReleases.delete(gid); renderGroups(); return; }
     STATE.expandedReleases.add(gid);
@@ -1595,6 +1707,9 @@ function groupCardHtml(group) {
         + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
         + (collapsed ? '<span class="fs-cnt">' + members.length + ' recording' + (members.length === 1 ? '' : 's') + '</span>' : '')
         + noteBtn
+        + (collapsed ? '' : '<span class="fs-detbtn' + (groupAllExpanded(group) ? ' fs-detbtn-on' : '') + '" data-act="toggle-all-details" title="'
+            + (groupAllExpanded(group) ? 'hide the release tables for every recording in this group' : 'show the release tables for every recording in this group') + '">'
+            + (groupAllExpanded(group) ? '▤ Hide details' : '▤ All details') + '</span>')
         + '<span class="fs-conf fs-conf-' + confClass + '">' + confLabel + '</span>'
         + '<div class="fs-sig">' + sigChips + '</div><div class="fs-sp"></div>'
         + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
@@ -1628,6 +1743,10 @@ function renderGroups() {
     const body = document.getElementById('fs-groups-body'); if (!body) return;
     document.getElementById('fs-groups-cnt').textContent = String(STATE.groups.length);
     body.innerHTML = STATE.groups.map(groupCardHtml).join('') + '<div class="fs-newgroup" id="fs-newgroup">+ New group — drag a pool recording here, or select one and click here</div>';
+    renderCollapseAllBtn();
+    // Groups just changed, so there may be new members to warm the cache for.
+    // Fire-and-forget: it must never make rendering wait on the network.
+    prefetchGroupReleases();
 }
 function renderFooter() {
     const ready = STATE.groups.filter(g => g.state === 'pending' || g.state === 'error').length;
@@ -1667,6 +1786,17 @@ let _busyCount = 0, _busyLabel = '';
 function renderBusy() {
     const e = document.getElementById('fs-busy'); if (!e) return;
     if (_busyCount > 0) { e.textContent = '⏳ ' + (_busyLabel || 'working…'); e.style.display = ''; }
+    else { e.style.display = 'none'; e.textContent = ''; }
+}
+// A SEPARATE indicator from the _busyCount one on purpose. Background work must
+// not participate in that counter: maybeAutoMatchOnOpen waits for it to drain,
+// so counting a long prefetch there would stall auto-match — and #529 asked for
+// this explicitly ("should not block from working").
+let _bgLabel = '';
+function setBgTask(text) {
+    _bgLabel = text || '';
+    const e = document.getElementById('fs-bgtask'); if (!e) return;
+    if (_bgLabel) { e.textContent = _bgLabel; e.style.display = ''; }
     else { e.style.display = 'none'; e.textContent = ''; }
 }
 function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
@@ -1998,6 +2128,7 @@ function wireDelegatedEvents() {
             renderGroups(); return;
         }
         if (act === 'toggle-releases' && row) { toggleReleaseDetails(row.dataset.gid); return; }
+        if (act === 'toggle-all-details') { toggleAllDetails(card.dataset.gid); return; }
         if (act === 'toggle-card') {
             const id = card.dataset.gid;
             if (STATE.collapsedGroups.has(id)) STATE.collapsedGroups.delete(id); else STATE.collapsedGroups.add(id);
@@ -2045,6 +2176,7 @@ function openSettings(anchor) {
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
         + '<label class="fs-opt" title="Run Auto-match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Auto-match on open</label>'
+        + '<label class="fs-opt" title="As soon as a group is formed, quietly fetch the full release list for every recording in it, so expanding a row is instant. Runs in the background and never blocks the UI."><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>'
         + '<label class="fs-opt" title="Auto-match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Never auto-group if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
     document.body.appendChild(s);
@@ -2055,9 +2187,11 @@ function openSettings(anchor) {
     s.querySelector('#fs-opt-automatch').checked = !!SETTINGS.autoMatchOnOpen;
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
     s.querySelector('#fs-opt-gross').value = Math.round((SETTINGS.grossLengthMs != null ? SETTINGS.grossLengthMs : 30000) / 1000);
+    s.querySelector('#fs-opt-prefetch').checked = !!SETTINGS.prefetchGroupReleases;
     s.querySelector('#fs-opt-votable').onchange = e => { SETTINGS.makeVotable = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Auto-match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
+    s.querySelector('#fs-opt-prefetch').onchange = e => { SETTINGS.prefetchGroupReleases = e.target.checked; saveSettings(); Log.info('Background release prefetch: ' + (SETTINGS.prefetchGroupReleases ? 'on' : 'off')); if (SETTINGS.prefetchGroupReleases) prefetchGroupReleases(); };
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
     s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
     s.querySelector('.fs-logbtn').onclick = () => { s.remove(); openLog(); };
@@ -2130,7 +2264,7 @@ function buildShell() {
     };
     const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '') + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none"></span><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none"></span><div class="fs-scope" id="fs-scope">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
@@ -2140,7 +2274,7 @@ function buildShell() {
         + '<div class="fs-netbanner" id="fs-netbanner" style="display:none"></div>'
         + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="delete every group — all recordings return to the pool">↩ Clear board</button></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-sp"></span><span class="fs-hint">click a group to make it current · ready to merge</span><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="delete every group — all recordings return to the pool">↩ Clear board</button></div>'
         + '<div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
@@ -2165,6 +2299,9 @@ function buildShell() {
     // whole Merge All silently no-ops. Bit us live; see the guard in mergeAll too.
     document.getElementById('fs-mergeall').onclick = () => mergeAll();
     document.getElementById('fs-clearboard').onclick = () => { clearBoard(); renderAll(); };
+    // wrapper, not a bare reference: onclick hands the click Event to the first
+    // parameter, which has bitten this script before (#503, mergeAll's NaN)
+    document.getElementById('fs-collapseall').onclick = () => toggleCollapseAll();
     document.getElementById('fs-rg-editions').addEventListener('change', onLoadRgEdition);
     const poolFilter = document.getElementById('fs-pool-filter');
     poolFilter.addEventListener('input', () => { STATE.poolFilter = poolFilter.value.trim(); renderPool(); });
@@ -2261,11 +2398,13 @@ try {
         pairSignals, poolMatches, computeGroupConfidence, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP,
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, renderFooter, seedPageProgress, lengthSpread,
+        toggleCollapseAll, allGroupsCollapsed, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
         gmGet, gmPost, wsGet, parseRetryAfter, setNetTrouble, clearNetTrouble,
         getLogLines: () => _logBuf.map(r => r.line),
+        getBusyCount: () => _busyCount,
     };
 } catch (e) {}
 
