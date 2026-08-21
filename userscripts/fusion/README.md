@@ -3,7 +3,6 @@
 A merge assistant for MusicBrainz recordings: gather a pool of candidates, let auto-match group the likely duplicates, adjust by hand, then submit every merge directly in the background
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/fusion/fusion.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/fusion/fusion.user.js)
-    - Not yet in the [String Theory](../string_theory/README.md) bundle — still under active review
 - [Changelog](./CHANGELOG.md)
 
 <img width="3590" height="1783" alt="image" src="https://github.com/user-attachments/assets/662a1db3-e588-460b-91e7-aa4c585ab8b7" />
