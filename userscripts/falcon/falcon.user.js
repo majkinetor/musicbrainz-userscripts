@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.214650
+// @version      2026.8.22.221742
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -343,16 +343,20 @@
   function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
-     disambiguation, isrcs, cover: [{url, comment, type, candidates:
+     disambiguation, isrcs, video, cover: [{url, comment, type, candidates:
      [{provider,url,width?,height?,size?}]}], coverExistingCount, urlResults,
      status, error} ── entityType is one of artist/label/recording/release/
      release_group. Field usage by type (#496 — the rest are always present on
      the item internally for simplicity, but only these are ever read/rendered):
        - urls[]: all types (release_group and release included, #495)
        - isrcs[]: recording only
-       - disambiguation: recording only (MB's own form field for this is
+       - video: recording only (#534) — boolean, MB's Video checkbox. Only ever
+         seeded when TRUE: leaving it out preserves an existing flag, so false
+         means "don't touch", not "clear it". Falcon never unsets it on MB.
+       - disambiguation: all five types (#533; MB's own form field for this is
          internally called `comment`, but Falcon's own field is named for what
-         it actually is — #496: "don't use `comment` for two unrelated things")
+         it actually is — #496: "don't use `comment` for two unrelated things").
+         A release's is typed into MB's Knockout editor rather than seeded.
        - cover[]: release only — an ARRAY (a release can carry more than one
          cover image; Falcon today only ever populates one entry from Harmony,
          but the shape supports more so a future batch/JSON import can add
@@ -631,7 +635,7 @@
           merged++;
           return;
         }
-        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', disambiguation: '', isrcs: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', disambiguation: '', isrcs: [], video: false, cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); noteSessionReleaseName(name); } });
         pickBestCover(relItem);
@@ -666,7 +670,7 @@
         if (p.name && !existing.name) { existing.name = p.name; if (existing.entityType === 'release') noteSessionReleaseName(p.name); }
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], video: p.video === true, cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       // #509 (majkinetor): "Since Harmony already resolves names, we could
       // just fetch and use them instead of bombing MB." scrapeHarmonyActions
@@ -812,11 +816,13 @@
         // "skipped 35 unusable row(s)". Disambiguation is per-DISAMBIGUATABLE;
         // only the ISRC half is recording-only.
         const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
-          || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean));
+          || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
+          || (type === 'recording' && r.video === true);
         if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
         const reItem = {
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
           note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
+          video: type === 'recording' && r.video === true,
           cover: coverArr, coverExistingCount: null,
           name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
@@ -1727,6 +1733,7 @@
       (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
       || releaseCommentSet
       || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
+      || (item.entityType === 'recording' && item.video)
     );
     if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no disambiguation/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
@@ -1939,6 +1946,12 @@
     if (COMMENT_SEEDS.has(item.entityType) && item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
     if (item.entityType === 'recording') {
       (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
+      // #534: MB's Video checkbox — `edit-recording.video=1` ticks it as the
+      // page renders, same as every other seeded field (verified on the
+      // sandbox). Only ever seeded when asked for: an UNSEEDED video param
+      // leaves an already-video recording ticked (also verified), so Falcon's
+      // other recording edits can never silently clear the flag.
+      if (item.video) params.set(`${prefix}video`, '1');
     }
     if (item.note) params.set(`${prefix}edit_note`, item.note);
     return `${MB_TARGET}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit?${params.toString()}`;
@@ -2235,6 +2248,7 @@
       const hasWork = item.urls.length
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
         || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
+        || (item.entityType === 'recording' && item.video)
         || (item.entityType === 'release' && (item.cover || []).some(c => c.url));
       if (!hasWork) {
         item.status = 'skipped';
@@ -2926,7 +2940,7 @@
           // type-specific — only including them where the type actually uses
           // them, same reasoning as isrcs[] just below.
           if (DISAMBIGUATABLE.has(i.entityType)) item.disambiguation = i.disambiguation || '';
-          if (i.entityType === 'recording') item.isrcs = i.isrcs || [];
+          if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
           // #494/#496: cover art is a release item's whole payload — an
           // array of {url, comment, type, candidates}, one entry per image.
           if (i.entityType === 'release') item.cover = (i.cover || []).map(c => ({ url: c.url || '', comment: c.comment || '', type: c.type || 'Front', candidates: c.candidates || [] }));
@@ -3135,6 +3149,26 @@
         if (it) it.isrcs = isrcInp.value.split(',').map(s => s.trim().toUpperCase().replace(/[\s-]/g, '')).filter(Boolean);
         return;
       }
+      // #534 (majkinetor): "Recordings video attribute … its just a checkbox on
+      // recording form". Ticking it on a row that is part of the current
+      // SELECTION applies to every selected recording at once — the point of
+      // the issue is mass-flagging (it cites loujine's set-video-recordings
+      // script), and doing that one expanded row at a time would be no better
+      // than MB's own form.
+      const videoChk = e.target.closest('.falcon-video-input');
+      if (videoChk) {
+        const it = queue.find(i => i.id === videoChk.dataset.id);
+        if (it) {
+          const on = videoChk.checked;
+          const targets = _selectedIds.has(it.id)
+            ? queue.filter(i => _selectedIds.has(i.id) && i.entityType === 'recording' && i.status !== 'active')
+            : [it];
+          targets.forEach(i => { i.video = on; });
+          if (targets.length > 1) log('info', `${on ? 'flagged' : 'un-flagged'} ${targets.length} selected recording(s) as video`);
+          renderQueue();
+        }
+        return;
+      }
       // #494/#496: "Falcon side — accept URL for the image" — the auto-picked
       // candidate is always user-editable/overridable, same spirit as the
       // disambiguation/ISRC fields above. Each targets its own cover[] entry.
@@ -3323,6 +3357,8 @@
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
         ${it.entityType === 'recording' ? `<input type="text" class="falcon-isrc-input" data-id="${it.id}" placeholder="ISRC(s), comma-separated" value="${esc((it.isrcs || []).join(', '))}" ${it.status === 'active' ? 'disabled' : ''}
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />` : ''}
+        ${it.entityType === 'recording' ? `<label title="Flag this recording as a video (MusicBrainz's Video checkbox)" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;color:#555">
+          <input type="checkbox" class="falcon-video-input" data-id="${it.id}" ${it.video ? 'checked' : ''} ${it.status === 'active' ? 'disabled' : ''} style="margin:0;cursor:pointer" />🎬 Video</label>` : ''}
       </div>`
       // #494/#496: cover art has no urls[] row to show — the image URL IS the
       // payload, so it gets the same input treatment (auto-picked from

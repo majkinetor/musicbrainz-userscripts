@@ -54,6 +54,8 @@ On a **release-group** page the same button reads **+ Add from group** and offer
 
 Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about, then press Start.
 
+Ticking a recording's **🎬 Video** flag while it is part of the current selection applies it to *every selected recording*, so flagging a whole tracklist is one tick. MusicBrainz treats a video change as votable, so it won't show on the recording until the edit passes.
+
 Rows you never touched are **skipped**, not failed: an item with no url, disambiguation, ISRC or cover has nothing to submit, so Falcon leaves it alone and says so. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
 
 It also works as a way to *produce* a JSON worksheet: add the entities, press **Export**, fill the file in at your leisure, then **Import** it back and Start.
@@ -106,6 +108,7 @@ Field usage by entity type
 | --- | --- | --- | --- | --- | --- |
 | External links | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
+| Video | — | — | yes | — | — |
 | Disambiguation | yes | yes | yes | yes | yes |
 | Cover art | — | — | — | yes| — |
 
@@ -151,6 +154,7 @@ Falcon has basic entity forms — the file is loaded by **Import**, written by *
 | `mbid` | string | the entity's MBID |
 | `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
 | `note` | string | edit note |
+| `video` | boolean | recording-only — MB's **Video** checkbox. Only ever sent when `true`; leaving it out preserves whatever the recording already has, so `false` means *don't touch*, never *clear it*. Falcon never unsets the flag |
 | `disambiguation` | string | MB's own disambiguation comment field — every entity type has one. For a release it is the **Disambiguation** box under *Additional information* in the release editor |
 | `isrcs[]` | array of string | recording-only |
 | `cover[]` | array of `{url, comment, type, candidates}` | release-only — the cover art to upload. An **array**: a release can carry more than one cover image, though Falcon today only ever populates one entry from Harmony. Each entry's own `comment` is that image's upload comment (unrelated to `disambiguation`); `type` is MB's cover-art type (`Front`, `Back`, `Booklet`, `Medium`, …, default `Front`); `candidates` are not-yet-measured alternates Falcon is still picking a winner from |
