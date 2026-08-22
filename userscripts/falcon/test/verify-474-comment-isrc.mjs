@@ -168,6 +168,23 @@ ck(roundTrip.res.added === 5, `every url-less row carrying only a disambiguation
 ck(roundTrip.res.skipped === 1, 'and a row with nothing on it at all is still rejected');
 ck(roundTrip.queued.every(x => x.d === 'test falcon batch'), 'the disambiguation survives the round trip');
 
+// #535: import the example file EXACTLY as shipped. It is hand-written — no
+// `urls` key at all — and the import gate used to require one, so the file in
+// the README imported as "added 0 item(s), skipped 2 unusable row(s)". Reading
+// it from disk rather than restating it here is the point: the documented
+// example and the tested example cannot drift apart.
+const exampleJson = await readFile(resolve(HERE, '..', 'examples', 'aliases.json'), 'utf8');
+const example = await page.evaluate(t => {
+  window.__falconTest.setQueue([]);
+  const res = window.__falconTest.importQueueJson(t, 'examples/aliases.json');
+  return { res, q: window.__falconTest.getQueue().map(i => ({ t: i.entityType, urls: i.urls.length, aliases: (i.aliases || []).map(a => `${a.name}${a.locale ? '@' + a.locale : ''}${a.type ? ' (' + a.type + ')' : ''}`) })) };
+}, exampleJson);
+console.log('examples/aliases.json -> ' + JSON.stringify(example.res));
+example.q.forEach(x => console.log(`  ${x.t}: ${x.aliases.length} alias(es) — ${x.aliases.join(' | ')}`));
+ck(example.res.added === 2 && example.res.skipped === 0, `the shipped alias example imports (added ${example.res.added}, skipped ${example.res.skipped})`);
+ck(example.q.every(x => x.urls === 0), 'even though not one of its rows has a urls key');
+ck(example.q.some(x => x.aliases.some(a => /@ja$/.test(a))), 'and the "name@locale" shorthand is expanded');
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();

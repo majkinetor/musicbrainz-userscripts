@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.223424
+// @version      2026.8.22.224437
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -809,22 +809,25 @@
       // #494: a release row has no urls[] at all — its payload is r.cover.
       const coverArr = type === 'release' ? normalizeCoverForImport(r) : [];
       const hasCover = coverArr.some(c => c.url || (c.candidates && c.candidates.length));
-      if (Array.isArray(r.urls) || hasCover) {
+      // ⚠ Work out what this row actually CARRIES before deciding how to read
+      // it. This gate used to be `Array.isArray(r.urls) || hasCover`, which
+      // silently rejected any hand-written row that simply had no "urls" key —
+      // including the alias example shipped in examples/aliases.json ("added 0
+      // item(s), skipped 2 unusable row(s)"). urls is optional now; a row is
+      // importable if it carries any payload Falcon knows how to submit.
+      const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
+        || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
+        || (type === 'recording' && r.video === true)
+        || normalizeAliases(r.aliases).length > 0;
+      if (Array.isArray(r.urls) || hasCover || hasMeta) {
         // full item: reinstate it whole, status and all
         const urls = Array.isArray(r.urls) ? r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null })) : [];
-        // #474: a row carrying only a disambiguation/isrc (no urls at all) is a
-        // legitimate item now that fillAndSubmit knows to look for one — only
-        // reject empty-urls rows that have nothing else to offer.
-        // (r.comment accepted too — pre-#496 exports used that field name.)
-        // ⚠ #533: this was still `type === 'recording' && …` after every type
-        // gained a disambiguation, so Falcon could not re-import its OWN export:
-        // 35 url-less release rows with a disambiguation each came back as
-        // "skipped 35 unusable row(s)". Disambiguation is per-DISAMBIGUATABLE;
-        // only the ISRC half is recording-only.
-        const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
-          || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
-          || (type === 'recording' && r.video === true)
-          || normalizeAliases(r.aliases).length;
+        // #474/#533: a row carrying only a disambiguation/isrc/video/alias (no
+        // urls at all) is a legitimate item — hasMeta above is what decides
+        // that, per type: disambiguation on any of the five, ISRC and video on
+        // recordings, aliases on everything. (r.comment accepted too —
+        // pre-#496 exports used that field name.) A row with none of it is the
+        // only kind that gets rejected.
         if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
         const reItem = {
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
