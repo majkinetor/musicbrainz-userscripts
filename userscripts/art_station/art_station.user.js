@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.17
+// @version      2026.8.22
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1938,15 +1938,51 @@
   function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } return ART_PROVIDERS.find(x => x.re.test(h)) || null; }
   // ALL of the release/event's external link URLs (one WS2 fetch, cached) — used both by
   // the recognised-provider list and by #250 custom-provider link matching.
-  let _urlRels = null;
+  // #530 (majkinetor): "Cover art URLs not available randomly" — the popover said
+  // "No supported platforms linked on this release" while MB's own tab offered
+  // "Import from Discogs" at the same moment, so the link was certainly there.
+  // The old code cached [] whenever the request FAILED (503, offline, throw),
+  // and [] is truthy, so that "this release has no links" verdict stuck for the
+  // rest of the page. MusicBrainz 503s often enough that one unlucky request
+  // silently disabled sourcing — hence "switching back & forth usually fixes it"
+  // (a reload retries) "but not always" (it can fail again).
+  //
+  // Now: transient failures retry with backoff, a failure is NEVER cached as an
+  // answer, and concurrent callers share one in-flight request instead of
+  // racing each other into MB's rate limiter.
+  let _urlRels = null, _urlRelsInflight = null;
+  async function releaseUrlsRaw() {
+    for (let attempt = 1; ; attempt++) {
+      let r = null;
+      try {
+        r = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+      } catch (e) {
+        if (attempt >= 4) { asLog.warn(`Links: could not reach MusicBrainz (${e.message}) — sourcing left unknown, not "no links"`); return null; }
+      }
+      if (r && r.ok) {
+        const j = await r.json();
+        return [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+      }
+      // 404 means the entity genuinely isn't there; anything else transient is worth a retry
+      if (r && r.status === 404) return [];
+      if (attempt >= 4) { asLog.warn(`Links: MusicBrainz returned ${r ? r.status : 'no response'} — sourcing left unknown, not "no links"`); return null; }
+      const wait = Number(r && r.headers.get('Retry-After')) * 1000 || (500 * attempt + Math.floor(Math.random() * 400));
+      asLog.debug(`Links: got ${r ? r.status : 'network error'}, retrying (${attempt}/3) in ${Math.round(wait)}ms`);
+      await new Promise(res => setTimeout(res, Math.min(wait, 8000)));
+    }
+  }
   async function releaseUrls() {
     if (_urlRels) return _urlRels;
-    try {
-      const j = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
-      _urlRels = [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
-    } catch (e) { _urlRels = []; }
-    return _urlRels;
+    if (!_urlRelsInflight) {
+      _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
+    }
+    const got = await _urlRelsInflight;
+    if (got) _urlRels = got;      // only a real answer is remembered
+    return got || [];
   }
+  // Did we actually manage to read the links? The popover needs to tell "MB says
+  // none" apart from "we could not ask", which is the whole point of #530.
+  function urlRelsKnown() { return _urlRels !== null; }
   // the release/event's external links → the recognised art providers, deduped
   async function artProviderLinks() {
     const seen = new Set(), out = [];
@@ -2021,7 +2057,21 @@
     // populate "Import from <provider>" buttons from the release's linked platforms
     getProvLinks().then(provs => {
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
-      if (!provs.length) { box.textContent = `No supported platforms linked on this ${ENT.kind}.`; placePop(pop, btn.getBoundingClientRect()); return; }
+      if (!provs.length) {
+        // #530: never claim "no platforms" when the lookup itself failed — that
+        // is what made a transient MusicBrainz 503 look like a release with no
+        // links, with no way to tell and no way to retry.
+        if (!urlRelsKnown()) {
+          box.classList.remove('as-pop-note');
+          box.innerHTML = `<div class="as-pop-note">Could not read this ${ENT.kind}'s links from MusicBrainz.</div>`
+            + `<button class="as-btn as-src-retry">↻ Retry</button>`;
+          const rb = box.querySelector('.as-src-retry');
+          if (rb) rb.onclick = () => { _urlRels = null; _provLinks = null; pop.remove(); openSourcePop(btn); };
+        } else {
+          box.textContent = `No supported platforms linked on this ${ENT.kind}.`;
+        }
+        placePop(pop, btn.getBoundingClientRect()); return;
+      }
       box.classList.remove('as-pop-note');
       box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('')
         + (provs.length > 1 ? `<button class="as-btn as-src-all">⬇ Import all ${provs.length} sources</button>` : '');

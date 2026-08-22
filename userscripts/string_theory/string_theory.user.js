@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.20.214654
+// @version      2026.8.22.131735
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.20.214654 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.17\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.19\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19.204230");
+  console.log('%c String Theory %c v2026.8.22.131735 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.22\n  · Credit Hoarder v2026.8.17\n  · Group Therapy v2026.8.19\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19.204230");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8104,7 +8104,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.17","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.17","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.22","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.22","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -10028,15 +10028,51 @@ try {
   function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } return ART_PROVIDERS.find(x => x.re.test(h)) || null; }
   // ALL of the release/event's external link URLs (one WS2 fetch, cached) — used both by
   // the recognised-provider list and by #250 custom-provider link matching.
-  let _urlRels = null;
+  // #530 (majkinetor): "Cover art URLs not available randomly" — the popover said
+  // "No supported platforms linked on this release" while MB's own tab offered
+  // "Import from Discogs" at the same moment, so the link was certainly there.
+  // The old code cached [] whenever the request FAILED (503, offline, throw),
+  // and [] is truthy, so that "this release has no links" verdict stuck for the
+  // rest of the page. MusicBrainz 503s often enough that one unlucky request
+  // silently disabled sourcing — hence "switching back & forth usually fixes it"
+  // (a reload retries) "but not always" (it can fail again).
+  //
+  // Now: transient failures retry with backoff, a failure is NEVER cached as an
+  // answer, and concurrent callers share one in-flight request instead of
+  // racing each other into MB's rate limiter.
+  let _urlRels = null, _urlRelsInflight = null;
+  async function releaseUrlsRaw() {
+    for (let attempt = 1; ; attempt++) {
+      let r = null;
+      try {
+        r = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+      } catch (e) {
+        if (attempt >= 4) { asLog.warn(`Links: could not reach MusicBrainz (${e.message}) — sourcing left unknown, not "no links"`); return null; }
+      }
+      if (r && r.ok) {
+        const j = await r.json();
+        return [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+      }
+      // 404 means the entity genuinely isn't there; anything else transient is worth a retry
+      if (r && r.status === 404) return [];
+      if (attempt >= 4) { asLog.warn(`Links: MusicBrainz returned ${r ? r.status : 'no response'} — sourcing left unknown, not "no links"`); return null; }
+      const wait = Number(r && r.headers.get('Retry-After')) * 1000 || (500 * attempt + Math.floor(Math.random() * 400));
+      asLog.debug(`Links: got ${r ? r.status : 'network error'}, retrying (${attempt}/3) in ${Math.round(wait)}ms`);
+      await new Promise(res => setTimeout(res, Math.min(wait, 8000)));
+    }
+  }
   async function releaseUrls() {
     if (_urlRels) return _urlRels;
-    try {
-      const j = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
-      _urlRels = [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
-    } catch (e) { _urlRels = []; }
-    return _urlRels;
+    if (!_urlRelsInflight) {
+      _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
+    }
+    const got = await _urlRelsInflight;
+    if (got) _urlRels = got;      // only a real answer is remembered
+    return got || [];
   }
+  // Did we actually manage to read the links? The popover needs to tell "MB says
+  // none" apart from "we could not ask", which is the whole point of #530.
+  function urlRelsKnown() { return _urlRels !== null; }
   // the release/event's external links → the recognised art providers, deduped
   async function artProviderLinks() {
     const seen = new Set(), out = [];
@@ -10111,7 +10147,21 @@ try {
     // populate "Import from <provider>" buttons from the release's linked platforms
     getProvLinks().then(provs => {
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
-      if (!provs.length) { box.textContent = `No supported platforms linked on this ${ENT.kind}.`; placePop(pop, btn.getBoundingClientRect()); return; }
+      if (!provs.length) {
+        // #530: never claim "no platforms" when the lookup itself failed — that
+        // is what made a transient MusicBrainz 503 look like a release with no
+        // links, with no way to tell and no way to retry.
+        if (!urlRelsKnown()) {
+          box.classList.remove('as-pop-note');
+          box.innerHTML = `<div class="as-pop-note">Could not read this ${ENT.kind}'s links from MusicBrainz.</div>`
+            + `<button class="as-btn as-src-retry">↻ Retry</button>`;
+          const rb = box.querySelector('.as-src-retry');
+          if (rb) rb.onclick = () => { _urlRels = null; _provLinks = null; pop.remove(); openSourcePop(btn); };
+        } else {
+          box.textContent = `No supported platforms linked on this ${ENT.kind}.`;
+        }
+        placePop(pop, btn.getBoundingClientRect()); return;
+      }
       box.classList.remove('as-pop-note');
       box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('')
         + (provs.length > 1 ? `<button class="as-btn as-src-all">⬇ Import all ${provs.length} sources</button>` : '');
