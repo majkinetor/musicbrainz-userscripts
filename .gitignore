@@ -32,3 +32,4 @@ dev/notif-channel/node_modules/
 # userscript test harness. Populate once with `node test/login.mjs` from any
 # harness. Never commit — it holds session cookies.
 /.pw-profile/
+userscripts/falcon/test/_535-aliases.json
