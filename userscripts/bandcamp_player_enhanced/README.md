@@ -3,6 +3,7 @@
 Bandcamp album player with keyboard shortcuts, preview and various customizations.
 
 - Install: [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/bandcamp_player_enhanced/bandcamp_player_enhanced.user.js)
+- [Changelog](./CHANGELOG.md)
 
 <img width="1000" src="./screenshots/player.png" />
 
