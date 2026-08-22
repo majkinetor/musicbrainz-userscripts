@@ -123,6 +123,36 @@ ck(/Discogs/.test(after), 'reopening keeps showing the platform, not a stale emp
     ck(ms < 5000, `and without waiting on it (${ms}ms, MB stubbed to take 12s)`);
 }
 
+// ── #530 follow-up: "Discogs is mistakenly added here" ──────────────────────
+// A release page renders TWO ul.external_links blocks: the release's own, and
+// the release GROUP's. This release has only a Qobuz link of its own; the
+// Discogs master under "Release group external links" is not its link, and
+// offering "Import from Discogs" for it is wrong.
+{
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+    for (let a = 1; ; a++) {
+        try { await page.goto('https://musicbrainz.org/release/90c17217-5893-48a2-8e90-9f803338fdbc/cover-art', { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
+        catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
+    }
+    await page.waitForTimeout(400);
+    // prove the page really is the two-block case before asserting anything
+    const blocks = await page.evaluate(() => [...document.querySelectorAll('ul.external_links')].length);
+    const rgHasDiscogs = await page.evaluate(() => [...document.querySelectorAll('ul.external_links a[href]')].some(a => /discogs\.com\/master\//.test(a.href)));
+    console.log(`two-block release: ${blocks} ul.external_links block(s), release-group Discogs master present: ${rgHasDiscogs}`);
+    ck(blocks >= 2 && rgHasDiscogs, 'the fixture really does carry a release-group Discogs link (otherwise this test proves nothing)');
+    await page.addScriptTag({ content: code });
+    await page.waitForSelector('#as-root', { timeout: 15000 });
+    await page.click('.as-src');
+    await page.waitForSelector('.as-src-pop', { timeout: 5000 });
+    await page.waitForFunction(() => {
+        const b = document.querySelector('.as-src-prov');
+        return b && !/Looking for/.test(b.textContent);
+    }, null, { timeout: 30000 });
+    const txt = (await page.locator('.as-src-prov').textContent() || '').trim();
+    console.log('two-block release popover: ' + JSON.stringify(txt));
+    ck(!/Discogs/.test(txt), "the release group's Discogs link is NOT offered as the release's source");
+}
+
 ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');
 await ctx.close();
 console.log(fail ? ('FAILURES: ' + fail) : 'ALL PASS');

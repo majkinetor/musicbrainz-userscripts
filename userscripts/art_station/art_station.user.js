@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.22
+// @version      2026.8.22.201228
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1985,10 +1985,42 @@
   // MB renders them in `ul.external_links`, which measures at 0ms against ~200ms
   // for the API on a good day and far worse on a bad one. So read the page
   // first and treat the network as enrichment rather than the source of truth.
+  //
+  // Careful: a release page renders MORE than one of these. The sidebar has
+  // "External links" (the release's own) AND "Release group external links",
+  // and both use `ul.external_links`. Scooping every block attributed the
+  // release group's Discogs *master* to the release and offered "Import from
+  // Discogs" on a release that has no Discogs link at all (majkinetor, #530:
+  // "Discogs is mistakenly added here"). Only the block under the entity's own
+  // heading counts — the prefixed ones belong to a different entity.
   function pageLinks() {
     try {
-      return [...new Set([...document.querySelectorAll('ul.external_links li a[href]')].map(a => a.href).filter(Boolean))];
+      const out = [];
+      for (const ul of document.querySelectorAll('ul.external_links')) {
+        if (!ownLinkBlock(ul)) {
+          const skipped = [...ul.querySelectorAll('li a[href]')].map(a => a.href);
+          if (skipped.length) asLog.debug(`Links: ignoring ${skipped.length} link(s) that belong to another entity (${skipped.join(', ')})`);
+          continue;
+        }
+        ul.querySelectorAll('li a[href]').forEach(a => { if (a.href) out.push(a.href); });
+      }
+      return [...new Set(out)];
     } catch (e) { return []; }
+  }
+  // The nearest heading above the list, walking out through ancestors — MB wraps
+  // each block in its own div. Unheaded blocks are kept: on a page that renders
+  // only one list there is nothing to confuse it with, and dropping it would
+  // send us back to waiting on WS2.
+  function ownLinkBlock(ul) {
+    let node = ul, head = null;
+    while (node && !head) {
+      for (let p = node.previousElementSibling; p; p = p.previousElementSibling) {
+        if (/^H[1-4]$/.test(p.tagName)) { head = (p.textContent || '').trim(); break; }
+      }
+      node = node.parentElement;
+    }
+    if (!head) return true;
+    return /^external links$/i.test(head);
   }
   async function releaseUrls() {
     if (_urlRels) return _urlRels;
