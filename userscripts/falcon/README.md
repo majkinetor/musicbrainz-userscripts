@@ -52,21 +52,11 @@ On a **release-group** page the same button reads **+ Add from group** and offer
 
 <img src="./screenshots/add-from-release.png" width="520">
 
-Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about (**disambiguation** on any type that has one and **ISRCs** on recordings, urls on any type — see [Attributes](#attributes)), then press Start.
-
-A release takes a different route to the same place. The other four edit pages are plain forms, so the comment travels in the seed url; the release editor is an app that ignores seeded parameters, so Falcon types the value into the field instead and lets the editor build the edit. Nothing to do differently as a user — it is just slower, and it needs the editor to finish loading, so a release row spends a few extra seconds on the page.
-
-One thing to expect on disambiguation: MusicBrainz applies an *added* comment straight away,
-but a *changed* one (replacing an existing comment) is queued as a normal edit for a vote.
-Falcon reports both as done — the edit was submitted either way; the second kind just won't
-be visible on the entity until it passes.
+Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about, then press Start.
 
 Rows you never touched are **skipped**, not failed: an item with no url, disambiguation, ISRC or cover has nothing to submit, so Falcon leaves it alone and says so. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
 
 It also works as a way to *produce* a JSON worksheet: add the entities, press **Export**, fill the file in at your leisure, then **Import** it back and Start.
-
-> [!TIP]
-> Names come from the same request that fetches the tracklist, so rows are labelled immediately without a lookup per entity, and an entity appearing on several tracks is added once.
 
 ### From Harmony
 
