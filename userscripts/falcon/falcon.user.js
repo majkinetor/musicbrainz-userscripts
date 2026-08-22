@@ -2587,6 +2587,12 @@
     if (panel) return;
     const style = document.createElement('style');
     style.textContent = [
+      // #532 follow-up (majkinetor): "disamb. comment hint looks like its normal
+      // text". Both meta inputs are styled identically — the ISRC one only READ
+      // as a hint because it happens to be monospace, so the disambiguation one
+      // looked like a value already typed in. Placeholders say so explicitly now
+      // (and MusicBrainz's own page CSS was darkening the browser default).
+      '#falcon-panel input::placeholder{color:#9b9fb0;font-style:italic;opacity:1}',
       '.falcon-bar.falcon-compact .falcon-bt{display:none}',
       '.falcon-bar button{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}',
       // Borderless (majkinetor: "its too intrusive"). A row of boxed native
