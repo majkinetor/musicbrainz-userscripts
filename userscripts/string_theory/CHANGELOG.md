@@ -1,5 +1,25 @@
 # String Theory Changelog
 
+## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Cover art URLs not available randomly ([#530](https://github.com/majkinetor/musicbrainz-userscripts/issues/530))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Toolbar sometimes doesn't appear ([#531](https://github.com/majkinetor/musicbrainz-userscripts/issues/531))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Parse "copyright under exclusive license crediting" ([#528](https://github.com/majkinetor/musicbrainz-userscripts/issues/528))
+1. Various text parser improvements ([#525](https://github.com/majkinetor/musicbrainz-userscripts/issues/525))
+1. Copyright parsing improvements ([#524](https://github.com/majkinetor/musicbrainz-userscripts/issues/524))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Logging consolidation ([#527](https://github.com/majkinetor/musicbrainz-userscripts/issues/527))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

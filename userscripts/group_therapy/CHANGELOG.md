@@ -1,5 +1,13 @@
 # Group Therapy
 
+## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
+
+### Features
+
+1. Parse "copyright under exclusive license crediting" ([#528](https://github.com/majkinetor/musicbrainz-userscripts/issues/528))
+1. Various text parser improvements ([#525](https://github.com/majkinetor/musicbrainz-userscripts/issues/525))
+1. Copyright parsing improvements ([#524](https://github.com/majkinetor/musicbrainz-userscripts/issues/524))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 ### Features

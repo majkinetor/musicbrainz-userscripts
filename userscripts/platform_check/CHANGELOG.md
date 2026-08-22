@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
+
+### Features
+
+1. Logging consolidation ([#527](https://github.com/majkinetor/musicbrainz-userscripts/issues/527))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 - Small improvements

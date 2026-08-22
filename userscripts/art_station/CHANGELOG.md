@@ -1,5 +1,11 @@
 # Art Station Changelog
 
+## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
+
+### Fixes
+
+1. Cover art URLs not available randomly ([#530](https://github.com/majkinetor/musicbrainz-userscripts/issues/530))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 ### Features

@@ -1,5 +1,11 @@
 # Credit Hoarder Changelog
 
+## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
+
+### Fixes
+
+1. Toolbar sometimes doesn't appear ([#531](https://github.com/majkinetor/musicbrainz-userscripts/issues/531))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 ### Fixes
