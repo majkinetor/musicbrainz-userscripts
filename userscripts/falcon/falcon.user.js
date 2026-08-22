@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.224437
+// @version      2026.8.22.232238
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2320,13 +2320,70 @@
     const msg = [...errDoc.querySelectorAll('.error, .errors li, p.error')].map(n => (n.textContent || '').trim()).filter(Boolean)[0];
     throw new Error(msg || 'MusicBrainz rejected the alias without saying why');
   }
+  // #535 (majkinetor): "One scary issue is that MB allows total duplicates, so
+  // spamming is possible." Confirmed on the sandbox — submitting the identical
+  // alias twice creates TWO of them, no error, no warning. Re-running a queue,
+  // or importing the same JSON twice, would quietly litter the database.
+  //
+  // So Falcon checks before every item and refuses to add one MusicBrainz
+  // already has. Two aliases are "the same" when the name and locale match and
+  // (where a type was asked for) the type matches — MB's own notion of an
+  // alias's identity.
+  //
+  // ⚠ A FAILED lookup must never read as "no aliases yet". That is the bug
+  // class that has bitten this repo repeatedly (art_station #530, credit
+  // hoarder #531): catch → empty → confident negative. mbThrottle.fetchJson
+  // resolves NULL on failure, which is indistinguishable from an entity with
+  // no aliases unless it is checked explicitly — so it is, and the aliases are
+  // held back rather than risking the duplicates this guard exists to prevent.
+  async function fetchExistingAliases(item) {
+    const seg = entityUrlSegment(item.entityType);
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${seg}/${item.mbid}?inc=aliases&fmt=json`, undefined, true);
+    if (!j || !Array.isArray(j.aliases)) return null;    // could not ask — NOT "none"
+    return j.aliases;
+  }
+  const aliasKey = (name, locale, type) => [String(name || '').trim(), String(locale || '').trim().toLowerCase(), String(type || '').trim().toLowerCase()].join(' ');
+  function isDuplicateAlias(alias, existing) {
+    const want = String(alias.name || '').trim();
+    const wantLocale = String(alias.locale || '').trim().toLowerCase();
+    const wantType = String(alias.type || '').trim().toLowerCase();
+    return existing.some(e => {
+      if (String(e.name || '').trim() !== want) return false;
+      if (String(e.locale || '').trim().toLowerCase() !== wantLocale) return false;
+      // no type asked for → any type counts as already-there
+      return !wantType || String(e.type || '').trim().toLowerCase() === wantType;
+    });
+  }
   // All of an item's aliases, in order. One failing doesn't stop the rest —
   // same contract as cover[] and urls[].
   async function runAliasItem(item, tag, card) {
     if (card) updateWorkerLabel(card, item);   // no card when driven directly (tests)
-    const list = (item.aliases || []).filter(a => a && String(a.name || '').trim());
+    let list = (item.aliases || []).filter(a => a && String(a.name || '').trim());
     const errs = [];
-    let ok = 0;
+    let ok = 0, dupes = 0;
+    // the same alias twice in one payload is a duplicate too, and cheaper to
+    // catch here than after MB has created both
+    const seenInBatch = new Set();
+    list = list.filter(a => {
+      const k = aliasKey(a.name, a.locale, a.type);
+      if (seenInBatch.has(k)) { dupes++; dbg(tag, `alias "${a.name}" appears twice in this item — submitting it once`); return false; }
+      seenInBatch.add(k); return true;
+    });
+    const existing = list.length ? await fetchExistingAliases(item) : [];
+    if (existing === null) {
+      const why = 'could not read the existing aliases from MusicBrainz, so these were not submitted (MB allows exact duplicates, and re-running would create them) — Retry failed to try again';
+      log('warn', `${tag} ${entityLabel(item)} — ${why}`);
+      item.aliasResults = { ok: 0, total: list.length, dupes, errors: list.map(a => `alias "${a.name}": ${why}`) };
+      return item.aliasResults;
+    }
+    const before = list.length;
+    list = list.filter(a => {
+      if (!isDuplicateAlias(a, existing)) return true;
+      dupes++;
+      log('info', `${tag} ${entityLabel(item)} — alias "${a.name}"${a.locale ? ` [${a.locale}]` : ''} is already on this entity, skipping (MusicBrainz would happily add a second copy)`);
+      return false;
+    });
+    dbg(tag, `aliases: ${before} requested, ${list.length} new, ${dupes} already present or repeated`);
     for (let i = 0; i < list.length; i++) {
       const a = list[i];
       try {
@@ -2339,8 +2396,8 @@
         log('error', `${tag} ${entityLabel(item)} — alias "${a.name}" failed: ${m}`);
       }
     }
-    item.aliasResults = { ok, total: list.length, errors: errs };
-    dbg(tag, `aliases: ${ok}/${list.length} added` + (errs.length ? ` — ${errs.join(' | ')}` : ''));
+    item.aliasResults = { ok, total: list.length, dupes, errors: errs };
+    dbg(tag, `aliases: ${ok}/${list.length} added` + (dupes ? `, ${dupes} skipped as already present` : '') + (errs.length ? ` — ${errs.join(' | ')}` : ''));
     return item.aliasResults;
   }
   // Aliases are their own MB edits, independent of the entity's form edit and
@@ -2355,6 +2412,13 @@
   }
   function finishAliasOnlyItem(item, tag) {
     const r = item.aliasResults;
+    // every alias already present: the desired state holds, nothing to do —
+    // 'skipped', the same way an all-links-already-there item is reported.
+    if (r && !r.total && r.dupes) {
+      item.status = 'skipped'; item.error = '';
+      log('info', `${tag} ${entityLabel(item)} — already has all ${r.dupes} alias(es), nothing to add`);
+      return;
+    }
     if (!r || !r.total) { item.status = 'skipped'; item.error = ''; return; }
     if (!r.errors.length) { item.status = 'done'; item.error = ''; }
     else { item.status = r.ok ? 'partial' : 'failed'; item.error = r.errors.join(' | '); }
@@ -3932,7 +3996,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495

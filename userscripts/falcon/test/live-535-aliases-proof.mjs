@@ -121,6 +121,49 @@ for (const r of recs) {
 }
 ck(withBoth === recs.length, `all ${recs.length} recording(s) now carry both translations (${withBoth})`);
 if (missing.length) missing.forEach(m => console.log('  MISSING ' + m));
+// ── re-running the SAME JSON must add nothing ───────────────────────────────
+// majkinetor: "One scary issue is that MB allows total duplicates, so spamming
+// is possible." Confirmed — MB creates a second identical alias without a
+// murmur. This is the guard against it, and it is checked against the API
+// (alias COUNT before and after), not just against what Falcon reports.
+{
+  const countAliases = async () => {
+    let n = 0;
+    for (const r of recs) { const j = await ws2(`recording/${r.id}?inc=aliases&fmt=json`); n += ((j && j.aliases) || []).length; await sleep(1200); }
+    return n;
+  };
+  const countBefore = await countAliases();
+  const rerunCtx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', { headless: true, viewport: { width: 1400, height: 900 } });
+  await rerunCtx.addInitScript(() => {
+    const s = new Map();
+    window.GM_getValue = (k, d) => s.has(k) ? s.get(k) : d;
+    window.GM_setValue = (k, v) => s.set(k, v);
+    window.GM_deleteValue = k => s.delete(k);
+    window.GM_info = { script: { name: 'Falcon', version: 't' } };
+  });
+  const rp = rerunCtx.pages()[0] || await rerunCtx.newPage();
+  for (let a = 1; ; a++) {
+    try { await rp.goto(`${HOST}/release/${RELEASE}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
+    catch (e) { if (a >= 3) throw e; await rp.waitForTimeout(5000); }
+  }
+  await rp.waitForTimeout(1000);
+  await rp.addScriptTag({ content: code });
+  await rp.waitForTimeout(500);
+  await rp.evaluate(t => window.__falconTest.importQueueJson(t, 'rerun'), JSON.stringify(payload));
+  await rp.click('#falcon-launcher');
+  await rp.waitForSelector('#falcon-panel', { timeout: 15000 });
+  await rp.evaluate(() => window.__falconTest.start());
+  await rp.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 300000 }).catch(() => {});
+  const rerun = await rp.evaluate(() => window.__falconTest.getQueue().map(i => ({ s: i.status, a: i.aliasResults })));
+  console.log('re-run outcome: ' + JSON.stringify(rerun));
+  await rerunCtx.close();
+  ck(rerun.every(o => o.a && o.a.ok === 0 && o.a.dupes === 2), 'a second run of the same JSON submits nothing — every alias is recognised as already present');
+  ck(rerun.every(o => o.s === 'skipped'), 'and the rows report skipped, not done');
+  const countAfter = await countAliases();
+  console.log(`alias count across the ${recs.length} recordings: before re-run ${countBefore}, after ${countAfter}`);
+  ck(countAfter === countBefore, `MusicBrainz gained no duplicates (${countBefore} -> ${countAfter})`);
+}
+
 // ── aliases are not a recording-only feature ────────────────────────────────
 // majkinetor: "I think they work the same on all entities although some have
 // different enums (e.g. recordings doesn't have legal name type)". Proving one

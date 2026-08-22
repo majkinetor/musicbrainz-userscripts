@@ -74,6 +74,8 @@ Every entity type can carry aliases, and each one is a separate MusicBrainz edit
 
 An expanded queue row shows a 🏷 **aliases** strip where you can add one by typing `name` or `name@locale`, and remove any before the run.
 
+Falcon **never adds an alias the entity already has**: before each item it reads the current aliases and skips any whose name, locale and type already match (MusicBrainz itself allows exact duplicates without complaint, so re-running a queue or importing the same file twice would otherwise litter it). A row whose aliases are all already present reports **skipped**. If that check can't be made — MusicBrainz unreachable — the aliases are held back rather than risking duplicates, and **Retry failed** picks them up later.
+
 > [!WARNING]
 > MusicBrainz **silently discards the locale** (and *primary for locale*) on a **Search hint** alias — the same submission stores `pl` under *Recording name* and nothing under *Search hint*, with no error either way. Falcon warns in the log when a search hint carries a locale. For a localised title use the `<entity> name` type.
 
