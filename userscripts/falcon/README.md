@@ -48,6 +48,8 @@ Open Falcon on a **release** (or **release-group**) page and the toolbar offers 
 | **Artists** | the release artist plus every track artist |
 | **Labels** | the labels on the release |
 
+On a **release-group** page the same button reads **+ Add from group** and offers the group itself (ticked by default) plus **Releases** — every release in the group, named, in one go.
+
 <img src="./screenshots/add-from-release.png" width="520">
 
 Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about (**disambiguation** on any type that has one and **ISRCs** on recordings, urls on any type — see [Attributes](#attributes)), then press Start.

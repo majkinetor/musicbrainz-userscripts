@@ -111,6 +111,53 @@ ck(after.firstStatus !== 'skipped', 'the row that WAS filled in is NOT skipped �
 // a defect — the property that matters is that the BLANK rows never reach MB.
 ck(posts === 1, `only the one filled row attempted a submit (${posts} POST(s) — the blank rows never touched MusicBrainz)`);
 ck(after.failed === 1, 'and it is the only non-skipped outcome (its POST was aborted by this test)');
+// ── #533 follow-up (majkinetor): "Add from group should have releases" ──────
+// On a release-group page the menu only ever offered the group itself. The
+// count is checked against MB's own release-count for the group, so a paging
+// bug that silently dropped releases would fail here rather than look like a
+// group that just has fewer releases.
+{
+    const rgid = await page.evaluate(async (mbid) => {
+        const j = await window.__falconTest.fetchReleaseGraph(mbid);
+        return j['release-group'].id;
+    }, RELEASE);
+    for (let a = 1; ; a++) {
+        try { await page.goto(`https://test.musicbrainz.org/release-group/${rgid}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
+        catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
+    }
+    await page.waitForTimeout(1000);
+    await page.addScriptTag({ content: code });
+    await page.waitForTimeout(500);
+    const rgCtx = await page.evaluate(() => window.__falconTest.pageEntityContext());
+    ck(rgCtx && rgCtx.kind === 'release-group', 'a release-group page is recognised');
+
+    await page.click('#falcon-launcher');
+    await page.waitForSelector('#falcon-add-page', { timeout: 15000 });
+    ck((await page.locator('#falcon-add-page .falcon-bt').textContent()) === 'Add from group', 'the button says "Add from group" there');
+    await page.click('#falcon-add-page');
+    await page.waitForSelector('.falcon-addmenu', { timeout: 5000 });
+    const opts = await page.evaluate(() => [...document.querySelectorAll('.falcon-addmenu label')].map(l => ({ w: l.querySelector('input').dataset.w, checked: l.querySelector('input').checked })));
+    console.log('release-group menu: ' + JSON.stringify(opts));
+    ck(opts.some(o => o.w === 'release'), "the menu offers the group's releases (#533)");
+    ck(opts.find(o => o.w === 'release_group')?.checked === true, 'and the group itself is still the pre-ticked default');
+
+    await page.evaluate(() => window.__falconTest.setQueue([]));
+    await page.check('.falcon-addmenu input[data-w="release"]');
+    await page.click('.falcon-addmenu [data-a="ok"]');
+    await page.waitForFunction(() => window.__falconTest.getQueue().length > 1, null, { timeout: 60000 }).catch(() => {});
+    await page.waitForTimeout(800);
+    const rgq = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ t: i.entityType, n: i.name })));
+    const expected = await page.evaluate(async (id) => {
+        const j = await window.__falconTest.mbThrottle.fetchJson(`https://test.musicbrainz.org/ws/2/release?release-group=${id}&limit=1&fmt=json`, undefined, true);
+        return j['release-count'];
+    }, rgid);
+    const got = rgq.filter(x => x.t === 'release').length;
+    console.log(`queued from group: ${got} release(s) + ${rgq.filter(x => x.t === 'release_group').length} group; MB says the group has ${expected}`);
+    ck(got === expected, `every release in the group was queued (${got}/${expected})`);
+    ck(rgq.filter(x => x.t === 'release_group').length === 1, 'along with the group itself');
+    ck(rgq.filter(x => x.t === 'release').every(x => x.n), 'each release row arrives named');
+}
+
 ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');
 await ctx.close();
 console.log(fail ? ('FAILURES: ' + fail) : 'ALL PASS');

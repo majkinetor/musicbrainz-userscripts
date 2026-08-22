@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.204226
+// @version      2026.8.22.210153
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -710,6 +710,30 @@
   async function fetchReleaseGraph(mbid) {
     const url = `${MB_ORIGIN}/ws/2/release/${mbid}?inc=recordings+artist-credits+labels+release-groups+media&fmt=json`;
     return await mbThrottle.fetchJson(url, undefined, true);
+  }
+  // #533 follow-up (majkinetor): "Add from group should have releases" — on a
+  // release-group page the menu only ever offered the group itself.
+  // ⚠ BROWSE, not search. `/ws/2/release?release-group=<mbid>` pages
+  // deterministically; the indexed-search equivalent (`query=rgid:`) drops and
+  // repeats rows across pages — measured elsewhere in this repo at 310 hits for
+  // 224 distinct releases, with 86 never returned at all. A missing release
+  // here would look like the group simply not having it.
+  async function fetchGroupReleases(rgMbid) {
+    const out = [];
+    const seen = new Set();
+    for (let offset = 0; offset < 5000; offset += 100) {
+      const url = `${MB_ORIGIN}/ws/2/release?release-group=${rgMbid}&limit=100&offset=${offset}&fmt=json`;
+      const j = await mbThrottle.fetchJson(url, undefined, true);
+      const batch = (j && j.releases) || [];
+      for (const r of batch) {
+        if (!r.id || seen.has(r.id)) continue;
+        seen.add(r.id);
+        out.push({ entityType: 'release', mbid: r.id, name: r.title || null, note: '' });
+      }
+      const total = j && j['release-count'];
+      if (!batch.length || (total != null && out.length >= total)) break;
+    }
+    return out;
   }
   // Turn that graph into addToQueue tuples for the chosen types. Names come
   // straight from the response so no row needs a follow-up name lookup (#509).
@@ -2945,7 +2969,9 @@
         menu.innerHTML =
           '<div style="font-weight:600;margin-bottom:6px">Add to queue</div>'
           + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="recording" checked> Recordings <span style="color:#888">(tracklist)</span></label>')
-          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release"> This release</label>')
+          + (rgOnly
+            ? '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release"> Releases <span style="color:#888">(all in this group)</span></label>'
+            : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release"> This release</label>')
           + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release_group"' + (rgOnly ? ' checked' : '') + '> Release group</label>'
           + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="artist"> Artists</label>')
           + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="label"> Labels</label>')
@@ -2964,8 +2990,19 @@
           btn.disabled = true;
           try {
             if (rgOnly) {
-              const res = addToQueue([{ entityType: 'release_group', mbid: ctx.mbid, note: '' }]);
-              log('info', `added ${res.added} release group to the queue`);
+              const tuples = [];
+              if (want.release_group) tuples.push({ entityType: 'release_group', mbid: ctx.mbid, name: null, note: '' });
+              if (want.release) {
+                log('info', `reading this group's releases from MusicBrainz…`);
+                const rels = await fetchGroupReleases(ctx.mbid);
+                if (!rels.length) log('warn', 'MusicBrainz listed no releases in this group');
+                tuples.push(...rels);
+              }
+              if (!tuples.length) { log('warn', 'nothing selected — tick Release group or Releases'); return; }
+              const res = addToQueue(tuples);
+              const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
+              log('info', `added ${res.added} row(s) from this release group (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
+                + (res.merged ? ` — ${res.merged} merged into rows already queued` : ''));
             } else {
               const j = await fetchReleaseGraph(ctx.mbid);
               if (!j || !j.id) { log('warn', `could not read release ${ctx.mbid} from MusicBrainz — nothing added`); return; }
@@ -3624,7 +3661,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, releaseGraphTuples, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
