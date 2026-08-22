@@ -26,6 +26,10 @@ const TARGETS = [
   // a sandbox label that carries NO disambiguation of its own — the point is to
   // prove Falcon can set one, not to overwrite somebody's real annotation
   { type: 'label',         mbid: '0bef945e-5ab2-4276-8296-921b48d45ace', seg: 'label' },
+  // the follow-up ("Release also has disambiguation attribute"): this one does
+  // NOT go through seeding — its KO editor ignores the param, so Falcon types
+  // the field. Included here precisely because it takes the other route.
+  { type: 'release',       mbid: '3a37a35f-1e06-457f-9b2a-46155c5c03ce', seg: 'release' },
 ];
 // seconds included: a minute-resolution stamp made two runs in the same minute
 // indistinguishable, which briefly looked like the edit had not applied.
@@ -69,7 +73,16 @@ await page.waitForTimeout(600);
 // every supported type is offered a disambiguation box
 const supported = await page.evaluate(() => [...window.__falconTest.DISAMBIGUATABLE].sort());
 console.log('DISAMBIGUATABLE: ' + supported.join(', '));
-ck(supported.join(',') === 'artist,label,recording,release_group', 'artist, label, recording and release_group are all supported');
+ck(supported.join(',') === 'artist,label,recording,release,release_group', 'all five entity types with a disambiguation are supported');
+// and the two routes are wired the way they have to be: seeded for the four
+// plain forms, typed for the release. Asserting the seed url proves the release
+// is NOT seeded — sending edit-release.comment would silently do nothing.
+const seeds = await page.evaluate(() => ({
+  artist: window.__falconTest.buildSeedEditUrl({ entityType: 'artist', mbid: '00000000-0000-0000-0000-000000000000', urls: [], disambiguation: 'x', isrcs: [] }),
+  release: window.__falconTest.buildSeedEditUrl({ entityType: 'release', mbid: '00000000-0000-0000-0000-000000000000', urls: [], disambiguation: 'x', isrcs: [] }),
+}));
+ck(seeds.artist.includes('edit-artist.comment=x'), 'a plain form gets the comment seeded into the url');
+ck(!seeds.release.includes('comment=x'), 'a release does NOT — its editor ignores the param, so seeding it would be a silent no-op');
 
 // The workers live in the panel, so it has to be open — with it closed the
 // queue simply stays 'queued' and nothing runs (learned the hard way).
@@ -103,20 +116,40 @@ await ctx.close();
 console.log('disambiguation AFTER:');
 const ectx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', { headless: true, viewport: { width: 1300, height: 900 } });
 const epage = ectx.pages()[0] || await ectx.newPage();
-const openEditHas = async (seg, mbid, stamp) => {
+// ⚠ /<entity>/<mbid>/open_edits lists edits for RELATED entities too: a
+// release's page carries its recordings' edits. An earlier version of this just
+// searched that page's text for the stamp, so the release check passed on a
+// RECORDING edit's stamp while no "Edit release" edit existed at all — the
+// release path was submitting nothing and this test said ALL PASS. So match the
+// edit's own type header, not just the page text.
+// MB tags each edit's header div with the edit's own type — `edit-header … 
+// edit-artist`, `edit-release-group`, and so on — which beats parsing the title.
+// The edit's BODY (where the Disambiguation row lives) is a following sibling,
+// so collect forward until the next header.
+const EDIT_CLASS = { artist: 'edit-artist', label: 'edit-label', recording: 'edit-recording', release: 'edit-release', release_group: 'edit-release-group' };
+const openEditHas = async (seg, mbid, stamp, cls) => {
   for (let a = 1; ; a++) {
     try { await epage.goto(`${HOST}/${seg}/${mbid}/open_edits`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
     catch (e) { if (a >= 3) return false; await epage.waitForTimeout(5000); }
   }
   await epage.waitForTimeout(1200);
-  return await epage.evaluate(s => (document.body.innerText || '').includes(s), stamp);
+  return await epage.evaluate(({ stamp, cls }) => {
+    // classList, not a substring: "edit-release" must not match an
+    // "edit-release-group" header.
+    const heads = [...document.querySelectorAll('.edit-header')].filter(h => h.classList.contains(cls));
+    return heads.some(h => {
+      let text = h.innerText || '';
+      for (let n = h.nextElementSibling; n && !n.classList.contains('edit-header'); n = n.nextElementSibling) text += String.fromCharCode(10) + (n.innerText || '');
+      return text.includes(stamp) && /Disambiguation/i.test(text);
+    });
+  }, { stamp, cls });
 };
 for (const t of TARGETS) {
   const after = await readBack(t.seg, t.mbid);
   const applied = after === STAMP;
-  const queued = applied ? false : await openEditHas(t.seg, t.mbid, STAMP);
+  const queued = applied ? false : await openEditHas(t.seg, t.mbid, STAMP, EDIT_CLASS[t.type]);
   console.log('  ' + t.type.padEnd(14) + JSON.stringify(after) + (applied ? '   [applied immediately]' : queued ? '   [submitted, pending a vote]' : '   [NOT FOUND]'));
-  ck(applied || queued, `${t.type}: Falcon's disambiguation reached MusicBrainz` + (queued ? ' (queued for voting — it was a change, not an addition)' : ''));
+  ck(applied || queued, `${t.type}: Falcon's disambiguation reached MusicBrainz as a real "${EDIT_CLASS[t.type].replace('edit-', 'edit ')}" edit with a Disambiguation change` + (queued ? ' (queued for voting — it was a change, not an addition)' : ''));
 }
 await ectx.close();
 ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');

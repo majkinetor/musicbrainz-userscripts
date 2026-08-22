@@ -52,6 +52,8 @@ Open Falcon on a **release** (or **release-group**) page and the toolbar offers 
 
 Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about (**disambiguation** on any type that has one and **ISRCs** on recordings, urls on any type — see [Attributes](#attributes)), then press Start.
 
+A release takes a different route to the same place. The other four edit pages are plain forms, so the comment travels in the seed url; the release editor is an app that ignores seeded parameters, so Falcon types the value into the field instead and lets the editor build the edit. Nothing to do differently as a user — it is just slower, and it needs the editor to finish loading, so a release row spends a few extra seconds on the page.
+
 One thing to expect on disambiguation: MusicBrainz applies an *added* comment straight away,
 but a *changed* one (replacing an existing comment) is queued as a normal edit for a vote.
 Falcon reports both as done — the edit was submitted either way; the second kind just won't
@@ -112,7 +114,7 @@ Field usage by entity type
 | --- | --- | --- | --- | --- | --- |
 | External links | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
-| Disambiguation | yes | yes | yes | — | yes |
+| Disambiguation | yes | yes | yes | yes | yes |
 | Cover art | — | — | — | yes| — |
 
 ## JSON model
@@ -159,7 +161,7 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
 | `mbid` | string | the entity's MBID |
 | `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
 | `note` | string | edit note |
-| `disambiguation` | string | MB's own disambiguation comment field — artists, labels, recordings and release groups. Releases have no comment field of their own, so it is ignored there |
+| `disambiguation` | string | MB's own disambiguation comment field — every entity type has one. For a release it is the **Disambiguation** box under *Additional information* in the release editor |
 | `isrcs[]` | array of string | recording-only |
 | `cover[]` | array of `{url, comment, type, candidates}` | release-only — the cover art to upload. An **array**: a release can carry more than one cover image, though Falcon today only ever populates one entry from Harmony. Each entry's own `comment` is that image's upload comment (unrelated to `disambiguation`); `type` is MB's cover-art type (`Front`, `Back`, `Booklet`, `Medium`, …, default `Front`); `candidates` are not-yet-measured alternates Falcon is still picking a winner from |
 | `name` | string or null | display name — re-fetched if omitted, so it's optional |

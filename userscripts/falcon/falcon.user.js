@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.195934
+// @version      2026.8.22.204226
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -447,14 +447,25 @@
   // 'release_group' (underscore, MB's own inconsistency — verified live).
   function entityUrlSegment(entityType) { return entityType === 'release_group' ? 'release-group' : entityType; }
   // #533 (majkinetor): "We currently support Disambiguation for recordings.
-  // Lets complete it for other entities." Every MB entity HAS a disambiguation,
-  // but Falcon can only set one where the edit form is a plain server-rendered
-  // form it can seed by url. `release` is deliberately absent: its editor is
-  // MB's React release editor, whose comment box has an id but no form name,
-  // and it ignores both `edit-release.comment=` and `comment=` in the query
-  // string (both verified on the sandbox). Seeding it would need the release
-  // editor driven as an app, which is a different job from this one.
-  const DISAMBIGUATABLE = new Set(['artist', 'label', 'recording', 'release_group']);
+  // Lets complete it for other entities." — then: "Release also has
+  // disambiguation attribute. A field in 'Additional Information'. Not sure if
+  // there is an API or form must be driven."
+  //
+  // Every MB entity has one, and Falcon now sets all five. They take two
+  // different routes, because the release editor is not a form like the others:
+  const DISAMBIGUATABLE = new Set(['artist', 'label', 'recording', 'release_group', 'release']);
+  // …four are plain server-rendered forms, seeded straight from the url like
+  // every other field here…
+  const COMMENT_SEEDS = new Set(['artist', 'label', 'recording', 'release_group']);
+  // …and `release` is the odd one out. Its editor is a Knockout APP: the server
+  // only hands seeded data to it on /release/add, so on /release/<mbid>/edit
+  // both `edit-release.comment=` and `comment=` are ignored outright (verified
+  // on the sandbox — the box stays empty and no edit is staged). Its state is
+  // reachable though, so the field gets typed into instead; see
+  // setReleaseComment. Note this is specific to the KO-owned fields: the
+  // external-links section on the same page is a separate component that DOES
+  // read `edit-release.url.N.text` from the query string, which is why seeded
+  // release urls have always worked.
   // accepts: "<mbid>,<url>" · "<mbid> <url>" · "<entityType>:<mbid>,<url>" ·
   // or a full MB entity URL in place of the bare mbid.
   function parseLine(line) {
@@ -1250,6 +1261,78 @@
       return true;
     } catch (e) { return false; }
   }
+  // #533 follow-up: the release's disambiguation ("Additional information" →
+  // Disambiguation on the Release information tab). Seeding can't reach it (see
+  // DISAMBIGUATABLE), so type it the way a human would: native value setter +
+  // real input/change events. Deliberately DOM-driven rather than poking
+  // MB.releaseEditor's observable directly — the observable lives in the page's
+  // realm, which a userscript sandbox sees through an Xray wrapper in Firefox,
+  // and the KO `value` binding picks a typed change up anyway.
+  //
+  // The read-back afterwards is the part that matters: if MB ever renames the
+  // field, this returns false and the caller reports the item as failed instead
+  // of quietly submitting a form with nothing in it.
+  // MB.releaseEditor lives in the PAGE's realm. Falcon is a @grant-ed userscript,
+  // so in Firefox the sandbox sees the iframe's window through an Xray wrapper
+  // and `win.MB` reads as undefined — `.wrappedJSObject` is what gets past it.
+  // Only ever used to CHECK the editor's state, never as the write path.
+  function releaseEditorApi(win) {
+    try {
+      const w = (win && win.wrappedJSObject) || win;
+      const re = w && w.MB && w.MB.releaseEditor;
+      return (re && re.rootField && typeof re.rootField.release === 'function') ? re : null;
+    } catch (e) { return null; }
+  }
+  // ⚠ The release editor boots asynchronously: the input exists in the markup
+  // well before Knockout binds to it, and binding OVERWRITES whatever is in the
+  // box with the model's value. Typing too early therefore looks like it worked
+  // (the field reads back correctly) and is then silently wiped a moment later —
+  // which is exactly what happened on the first cut of this: Falcon submitted a
+  // form with no change on it, MB created no edit, and the item still reported
+  // 'done'. So wait for the editor, and re-read after a beat to be sure the
+  // value survived binding.
+  async function setReleaseComment(iframe, value) {
+    const ready = await waitFor(() => {
+      const d = frameDoc(iframe); if (!d) return null;
+      const el = d.querySelector('#release-editor #comment, #comment');
+      if (!el) return null;
+      const api = releaseEditorApi(frameWin(iframe));
+      // when the API is reachable, insist the release itself is loaded;
+      // otherwise fall back to MB's own submit button existing, which the
+      // editor only renders once it has built its tabs
+      if (api) { try { return api.rootField.release() ? true : null; } catch (e) { return null; } }
+      return d.querySelector('#enter-edit') ? true : null;
+    }, 20000);
+    const doc = frameDoc(iframe), win = frameWin(iframe);
+    const input = doc && doc.querySelector('#release-editor #comment, #comment');
+    if (!ready || !input) return { ok: false, why: 'the release editor never finished loading its disambiguation field' };
+    if ((input.value || '').trim() === String(value).trim()) return { ok: true, unchanged: true, before: input.value || '' };
+    const before = input.value || '';
+    const type = () => {
+      const setVal = Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, 'value').set;
+      setVal.call(input, value);
+      input.dispatchEvent(new win.Event('input', { bubbles: true }));
+      input.dispatchEvent(new win.Event('change', { bubbles: true }));
+    };
+    try {
+      type();
+      await wait(500);
+      if (input.value !== value) { type(); await wait(700); }   // bound late and wiped it — type again
+    } catch (e) { return { ok: false, why: `could not write the field — ${e.message || e}` }; }
+    if (input.value !== value) return { ok: false, why: `the field did not keep the value (reads ${JSON.stringify(input.value)})`, before };
+    // The field holding the text is not proof the editor noticed. Where the API
+    // is reachable, ask it what it will actually submit.
+    const api = releaseEditorApi(win);
+    if (api) {
+      let staged = null, ko = null;
+      try { ko = api.rootField.release().comment(); } catch (e) {}
+      try { staged = api.allEdits().length; } catch (e) {}
+      if (ko !== null && ko !== value) return { ok: false, why: `the release editor's own state still reads ${JSON.stringify(ko)} — the typed value did not reach it`, before };
+      if (staged === 0) return { ok: false, why: 'MusicBrainz staged no edit for this change', before };
+      return { ok: true, before, after: input.value, staged };
+    }
+    return { ok: true, before, after: input.value, staged: null };
+  }
   // #495: the release editor's own "Enter edit" button lives inside its
   // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
   // active) — a bare element.click() on the tab link does nothing (jQuery UI
@@ -1595,7 +1678,26 @@
     // `comment` means its cover-art image comment (#494), never submitted
     // here at all, so it must not count as "something to submit" for THIS
     // form.
-    const hasFieldChange = !!((DISAMBIGUATABLE.has(item.entityType) && item.disambiguation) || (item.entityType === 'recording' && item.isrcs && item.isrcs.length));
+    // A release's disambiguation is the one field that is not already in the
+    // page by the time we get here (it can't be seeded), so type it now —
+    // before the has-anything-changed checks below, which must see it.
+    let releaseCommentSet = false;
+    if (item.entityType === 'release' && (item.disambiguation || '').trim()) {
+      const r = await setReleaseComment(iframe, item.disambiguation.trim());
+      releaseCommentSet = !!r.ok;
+      if (r.ok && r.unchanged) dbg(tag, `disambiguation already reads ${JSON.stringify(r.before)} — nothing to change`);
+      else if (r.ok) dbg(tag, `disambiguation typed into the release editor: ${JSON.stringify(r.before)} → ${JSON.stringify(r.after)}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      else dbg(tag, `DISAMBIGUATION NOT SET — ${r.why}`);
+      if (!r.ok) results.push({ url: '(disambiguation)', ok: false, error: r.why });
+      // "already reads that" is not a change; let the no-op path below catch it
+      // rather than submitting a form MB will reject as changing nothing.
+      if (r.unchanged) releaseCommentSet = false;
+    }
+    const hasFieldChange = !!(
+      (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
+      || releaseCommentSet
+      || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
+    );
     if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no disambiguation/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
     // visibility): when every url is ALREADY on the entity with the right type,
@@ -1802,7 +1904,9 @@
     // named `disambiguation` instead, #496, but the wire param name below is
     // MB's, not ours — and `isrcs` is a repeatable field keyed by index, same
     // pattern as url.N above).
-    if (DISAMBIGUATABLE.has(item.entityType) && item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
+    // release is absent from COMMENT_SEEDS on purpose — its KO editor ignores
+    // the param (see DISAMBIGUATABLE); setReleaseComment types it in instead.
+    if (COMMENT_SEEDS.has(item.entityType) && item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
     if (item.entityType === 'recording') {
       (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
     }
@@ -2109,7 +2213,14 @@
         renderQueue();
         continue;
       }
-      if (item.entityType === 'release' && !item.urls.length) {
+      // ⚠ #533: "no urls" is not the same as "cover-only" any more. A release
+      // can now carry a disambiguation, and that has to go through the form
+      // pipeline (it is typed into the release editor — see setReleaseComment).
+      // This branch used to swallow such an item: runCoverItem with an empty
+      // cover list finds nothing to fail on and reports 'done', so the queue
+      // showed a green row for an item that never opened an edit page at all.
+      const coverOnly = item.entityType === 'release' && !item.urls.length && !(item.disambiguation || '').trim();
+      if (coverOnly) {
         await runCoverItem(item, tag, card);
         continue;
       }
@@ -3158,8 +3269,9 @@
     // for filling it") — disambiguation + ISRC are recording-only MB fields
     // (see buildSeedEditUrl), so only offered here for entityType 'recording'.
     // No auto-computation: whatever's typed here is seeded verbatim.
-    // #533: the disambiguation box is offered for every type MB lets us seed it
-    // on (see DISAMBIGUATABLE); ISRCs stay recording-only, because only
+    // #533: the disambiguation box is offered for every type that has one —
+    // all five, including release (typed into its KO editor rather than seeded,
+    // see setReleaseComment). ISRCs stay recording-only, because only
     // recordings have them.
     const canDisambig = DISAMBIGUATABLE.has(it.entityType);
     const meta = canDisambig ? `
