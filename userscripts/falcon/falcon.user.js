@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22
+// @version      2026.8.22.195934
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -446,6 +446,15 @@
   // 'release-group' (hyphen) while the internal value/seed-param prefix stays
   // 'release_group' (underscore, MB's own inconsistency — verified live).
   function entityUrlSegment(entityType) { return entityType === 'release_group' ? 'release-group' : entityType; }
+  // #533 (majkinetor): "We currently support Disambiguation for recordings.
+  // Lets complete it for other entities." Every MB entity HAS a disambiguation,
+  // but Falcon can only set one where the edit form is a plain server-rendered
+  // form it can seed by url. `release` is deliberately absent: its editor is
+  // MB's React release editor, whose comment box has an id but no form name,
+  // and it ignores both `edit-release.comment=` and `comment=` in the query
+  // string (both verified on the sandbox). Seeding it would need the release
+  // editor driven as an app, which is a different job from this one.
+  const DISAMBIGUATABLE = new Set(['artist', 'label', 'recording', 'release_group']);
   // accepts: "<mbid>,<url>" · "<mbid> <url>" · "<entityType>:<mbid>,<url>" ·
   // or a full MB entity URL in place of the bare mbid.
   function parseLine(line) {
@@ -1586,7 +1595,7 @@
     // `comment` means its cover-art image comment (#494), never submitted
     // here at all, so it must not count as "something to submit" for THIS
     // form.
-    const hasFieldChange = item.entityType === 'recording' && !!(item.disambiguation || (item.isrcs && item.isrcs.length));
+    const hasFieldChange = !!((DISAMBIGUATABLE.has(item.entityType) && item.disambiguation) || (item.entityType === 'recording' && item.isrcs && item.isrcs.length));
     if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no disambiguation/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
     // visibility): when every url is ALREADY on the entity with the right type,
@@ -1759,7 +1768,13 @@
   // rare enough for a manual-review tab that the human can add the second by
   // hand if they need it (they're already there reviewing).
   function buildSeedEditUrl(item) {
-    const prefix = `edit-${item.entityType}.`;
+    // ⚠ MB's form prefix uses the URL segment, not Falcon's internal type name:
+    // a release group's fields are `edit-release-group.*` (hyphen), NOT
+    // `edit-release_group.*`. Verified on the sandbox while doing #533 —
+    // seeding the underscore form leaves the field EMPTY, the hyphen form fills
+    // it. This was silently breaking every seeded release-group url too (#495),
+    // not just the disambiguation this comment was added for.
+    const prefix = `edit-${entityUrlSegment(item.entityType)}.`;
     const params = new URLSearchParams();
     // ⚠ Dedupe on url + link type, NOT on url alone. The same url under two
     // different link types is a legitimate pair (a Bandcamp track that is both
@@ -1787,8 +1802,8 @@
     // named `disambiguation` instead, #496, but the wire param name below is
     // MB's, not ours — and `isrcs` is a repeatable field keyed by index, same
     // pattern as url.N above).
+    if (DISAMBIGUATABLE.has(item.entityType) && item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
     if (item.entityType === 'recording') {
-      if (item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
       (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
     }
     if (item.note) params.set(`${prefix}edit_note`, item.note);
@@ -2084,7 +2099,8 @@
       // care about. Pressing Start with the rest still blank must not open an
       // edit page per untouched row and submit nothing; skip them plainly.
       const hasWork = item.urls.length
-        || (item.entityType === 'recording' && ((item.disambiguation || '').trim() || (item.isrcs || []).some(Boolean)))
+        || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
+        || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
         || (item.entityType === 'release' && (item.cover || []).some(c => c.url));
       if (!hasWork) {
         item.status = 'skipped';
@@ -2768,7 +2784,8 @@
           // #496: disambiguation (recording) and cover[] (release) are
           // type-specific — only including them where the type actually uses
           // them, same reasoning as isrcs[] just below.
-          if (i.entityType === 'recording') { item.disambiguation = i.disambiguation || ''; item.isrcs = i.isrcs || []; }
+          if (DISAMBIGUATABLE.has(i.entityType)) item.disambiguation = i.disambiguation || '';
+          if (i.entityType === 'recording') item.isrcs = i.isrcs || [];
           // #494/#496: cover art is a release item's whole payload — an
           // array of {url, comment, type, candidates}, one entry per image.
           if (i.entityType === 'release') item.cover = (i.cover || []).map(c => ({ url: c.url || '', comment: c.comment || '', type: c.type || 'Front', candidates: c.candidates || [] }));
@@ -3141,12 +3158,16 @@
     // for filling it") — disambiguation + ISRC are recording-only MB fields
     // (see buildSeedEditUrl), so only offered here for entityType 'recording'.
     // No auto-computation: whatever's typed here is seeded verbatim.
-    const meta = it.entityType === 'recording' ? `
+    // #533: the disambiguation box is offered for every type MB lets us seed it
+    // on (see DISAMBIGUATABLE); ISRCs stay recording-only, because only
+    // recordings have them.
+    const canDisambig = DISAMBIGUATABLE.has(it.entityType);
+    const meta = canDisambig ? `
       <div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 30px;font-size:10.5px">
         <input type="text" class="falcon-disambiguation-input" data-id="${it.id}" placeholder="disambiguation comment" value="${esc(it.disambiguation || '')}" ${it.status === 'active' ? 'disabled' : ''}
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
-        <input type="text" class="falcon-isrc-input" data-id="${it.id}" placeholder="ISRC(s), comma-separated" value="${esc((it.isrcs || []).join(', '))}" ${it.status === 'active' ? 'disabled' : ''}
-          style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />
+        ${it.entityType === 'recording' ? `<input type="text" class="falcon-isrc-input" data-id="${it.id}" placeholder="ISRC(s), comma-separated" value="${esc((it.isrcs || []).join(', '))}" ${it.status === 'active' ? 'disabled' : ''}
+          style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />` : ''}
       </div>`
       // #494/#496: cover art has no urls[] row to show — the image URL IS the
       // payload, so it gets the same input treatment (auto-picked from
@@ -3491,7 +3512,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { pageEntityContext, fetchReleaseGraph, releaseGraphTuples, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, releaseGraphTuples, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495

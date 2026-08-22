@@ -54,8 +54,11 @@ const artUrl = await page.evaluate(() => window.__falconTest.buildSeedEditUrl({
   urls: [{ url: 'https://myspace.com/x' }],
 }));
 const artParams = new URL(artUrl).searchParams;
-ck(artParams.get('edit-artist.comment') === null && artParams.get('edit-artist.isrcs.0.value') === null,
-  'comment/isrcs are recording-only — never seeded for an artist');
+// #533 changed half of this: disambiguation is no longer recording-only (every
+// entity has one, and MB's artist/label/release-group forms all take it). ISRCs
+// still are — only recordings have them.
+ck(artParams.get('edit-artist.comment') === 'should be ignored', 'disambiguation IS seeded for an artist now (#533)');
+ck(artParams.get('edit-artist.isrcs.0.value') === null, 'ISRCs remain recording-only — never seeded for an artist');
 
 // ── addToQueue: a new item picks up comment/isrc; a later tuple for the SAME
 // entity merges in without clobbering, and dedupes a repeated isrc ────────

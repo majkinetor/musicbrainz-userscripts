@@ -62,7 +62,13 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
   }), TEST_RG);
   console.log('RG seed url:', seedUrl);
   ck(seedUrl.includes(`/release-group/${TEST_RG}/edit?`), 'seed URL path uses the hyphenated release-group segment');
-  ck(seedUrl.includes('edit-release_group.url.0.text='), 'seed param prefix uses the underscored release_group (matches MB\'s own scheme)');
+  // #533: this previously asserted the UNDERSCORED prefix and claimed it
+  // "matches MB's own scheme". It does not — verified live on the sandbox:
+  // seeding /release-group/<mbid>/edit?edit-release_group.comment=X leaves the
+  // field EMPTY, while edit-release-group.comment=X fills it. MB's form prefix
+  // follows the URL segment, so every seeded release-group url was being
+  // silently ignored — the test had locked the bug in.
+  ck(seedUrl.includes('edit-release-group.url.0.text='), 'seed param prefix uses the HYPHENATED release-group, which is how MB actually names its form fields');
 }
 
 // 2. Live, read-only: release editor tab-activation reveals its own submit
