@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.17
+// @version      2026.8.22
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -662,6 +662,58 @@
     // picked up by a full worker fleet, not whatever's left running.
     if (added > 0) topUpWorkers();
     return { merged, added };
+  }
+  /* ── #532: add the current release's entities to the queue ────────────────
+     (majkinetor) "When falcon is started on release page, it is empty. We
+     could have an Add button that can add related entities so we could edit
+     supported fields. I am interested in recordings disambiguation now. It
+     could also serve as a way to produce JSON that person can fill up later."
+
+     So this is deliberately NOT an import of things to submit — it seeds the
+     queue with the release's own entities as EMPTY, editable rows. Fill in a
+     disambiguation (or ISRC, or url) on the ones you care about and press
+     Start; rows still carrying nothing are skipped rather than failed (see
+     the no-work guard in workerLoop), which is what makes "add now, fill in
+     later" and "export as JSON, fill it in, re-import" both work. */
+  const RELEASE_PATH_RE = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  const RG_PATH_RE = /\/release-group\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  // What can this page offer? release-group pages have no tracklist of their own.
+  function pageEntityContext() {
+    if (ON_HARMONY) return null;
+    const rg = location.pathname.match(RG_PATH_RE);
+    if (rg) return { kind: 'release-group', mbid: rg[1] };
+    const rel = location.pathname.match(RELEASE_PATH_RE);
+    if (rel) return { kind: 'release', mbid: rel[1] };
+    return null;
+  }
+  // One request covers every type offered below.
+  async function fetchReleaseGraph(mbid) {
+    const url = `${MB_ORIGIN}/ws/2/release/${mbid}?inc=recordings+artist-credits+labels+release-groups+media&fmt=json`;
+    return await mbThrottle.fetchJson(url, undefined, true);
+  }
+  // Turn that graph into addToQueue tuples for the chosen types. Names come
+  // straight from the response so no row needs a follow-up name lookup (#509).
+  function releaseGraphTuples(j, want, note) {
+    const out = [];
+    const seen = new Set();
+    const push = (entityType, mbid, name) => {
+      if (!mbid) return;
+      const k = entityType + ':' + mbid; if (seen.has(k)) return; seen.add(k);
+      out.push({ entityType, mbid, name: name || null, note });
+    };
+    if (want.recording) for (const m of (j.media || [])) for (const t of (m.tracks || [])) {
+      const r = t.recording; if (r) push('recording', r.id, r.title || t.title);
+    }
+    if (want.release) push('release', j.id, j.title);
+    if (want.release_group && j['release-group']) push('release_group', j['release-group'].id, j['release-group'].title);
+    if (want.artist) {
+      for (const ac of (j['artist-credit'] || [])) if (ac.artist) push('artist', ac.artist.id, ac.artist.name);
+      for (const m of (j.media || [])) for (const t of (m.tracks || [])) {
+        for (const ac of ((t.recording && t.recording['artist-credit']) || t['artist-credit'] || [])) if (ac.artist) push('artist', ac.artist.id, ac.artist.name);
+      }
+    }
+    if (want.label) for (const li of (j['label-info'] || [])) if (li.label) push('label', li.label.id, li.label.name);
+    return out;
   }
   // #500: fetches the release's real tracklist (recording mbids in track
   // order) and places each Nth ISRC onto the Nth recording — the same
@@ -2027,6 +2079,20 @@
       // One WITH urls falls through to the normal pipeline below like any
       // other type, and picks up the cover step afterward at each exit (see
       // needsCover below) since the two are independent MB edits.
+      // #532: a row seeded from the release page starts EMPTY on purpose — the
+      // point is to fill in a disambiguation (or ISRC, or url) on the ones you
+      // care about. Pressing Start with the rest still blank must not open an
+      // edit page per untouched row and submit nothing; skip them plainly.
+      const hasWork = item.urls.length
+        || (item.entityType === 'recording' && ((item.disambiguation || '').trim() || (item.isrcs || []).some(Boolean)))
+        || (item.entityType === 'release' && (item.cover || []).some(c => c.url));
+      if (!hasWork) {
+        item.status = 'skipped';
+        item.error = 'nothing to submit yet — add a url, disambiguation or ISRC';
+        log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
+        renderQueue();
+        continue;
+      }
       if (item.entityType === 'release' && !item.urls.length) {
         await runCoverItem(item, tag, card);
         continue;
@@ -2591,6 +2657,7 @@
         <div id="falcon-queue-toolbar" class="falcon-bar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;color:#666;flex:0 0 auto">
           <input type="checkbox" id="falcon-select-all" title="Select all" style="flex:0 0 auto" />
           <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail"><span class="falcon-bi">▾</span><span class="falcon-bt">Expand all</span></button>
+          <button type="button" id="falcon-add-page" title="Add this release's entities to the queue as empty rows to edit" style="padding:2px 8px;cursor:pointer;display:none"><span class="falcon-bi">+</span><span class="falcon-bt">Add from release</span></button>
           <button type="button" id="falcon-import" title="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↓</span><span class="falcon-bt">Import</span></button>
           <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
           <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↻</span><span class="falcon-bt">Retry failed</span></button>
@@ -2724,6 +2791,64 @@
       log('info', `re-queued ${retryable.length} failed/partial item(s) for another attempt`);
       renderQueue();
     };
+    // #532: only offered where there is actually something to add — a release
+    // page (its tracklist, artists, labels, RG) or a release-group page.
+    (function wireAddFromPage() {
+      const btn = document.getElementById('falcon-add-page'); if (!btn) return;
+      const ctx = pageEntityContext();
+      if (!ctx) return;                       // stays display:none elsewhere
+      btn.style.display = '';
+      const bt = btn.querySelector('.falcon-bt');
+      if (bt) bt.textContent = ctx.kind === 'release-group' ? 'Add from group' : 'Add from release';
+      btn.onclick = () => {
+        document.querySelectorAll('.falcon-addmenu').forEach(m => m.remove());
+        const menu = document.createElement('div');
+        menu.className = 'falcon-addmenu';
+        const r = btn.getBoundingClientRect();
+        menu.style.cssText = `position:fixed;left:${Math.round(r.left)}px;top:${Math.round(r.bottom + 4)}px;z-index:2147483647;`
+          + 'background:#fff;border:1px solid #ccd;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px 10px;font-size:12px;color:#222;min-width:210px';
+        const rgOnly = ctx.kind === 'release-group';
+        menu.innerHTML =
+          '<div style="font-weight:600;margin-bottom:6px">Add to queue</div>'
+          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="recording" checked> Recordings <span style="color:#888">(tracklist)</span></label>')
+          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release"> This release</label>')
+          + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release_group"' + (rgOnly ? ' checked' : '') + '> Release group</label>'
+          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="artist"> Artists</label>')
+          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="label"> Labels</label>')
+          + '<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">'
+          + '<button type="button" data-a="cancel" style="padding:2px 8px;cursor:pointer">Cancel</button>'
+          + '<button type="button" data-a="ok" style="padding:2px 10px;cursor:pointer;font-weight:600">Add</button></div>';
+        document.body.appendChild(menu);
+        const close = () => { menu.remove(); document.removeEventListener('mousedown', off, true); };
+        const off = e => { if (!menu.contains(e.target) && e.target !== btn) close(); };
+        setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+        menu.querySelector('[data-a="cancel"]').onclick = close;
+        menu.querySelector('[data-a="ok"]').onclick = async () => {
+          const want = {};
+          menu.querySelectorAll('input[data-w]').forEach(cb => { want[cb.dataset.w] = cb.checked; });
+          close();
+          btn.disabled = true;
+          try {
+            if (rgOnly) {
+              const res = addToQueue([{ entityType: 'release_group', mbid: ctx.mbid, note: '' }]);
+              log('info', `added ${res.added} release group to the queue`);
+            } else {
+              const j = await fetchReleaseGraph(ctx.mbid);
+              if (!j || !j.id) { log('warn', `could not read release ${ctx.mbid} from MusicBrainz — nothing added`); return; }
+              const tuples = releaseGraphTuples(j, want, '');
+              if (!tuples.length) { log('warn', 'nothing selected, or the release has none of the chosen entities'); return; }
+              const res = addToQueue(tuples);
+              const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
+              log('info', `added ${res.added} row(s) from "${j.title || ctx.mbid}" (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
+                + (res.merged ? ` — ${res.merged} merged into rows already queued` : ''));
+            }
+            renderQueue();
+          } catch (e) {
+            log('error', `add from page failed: ${(e && e.message) || e}`);
+          } finally { btn.disabled = false; }
+        };
+      };
+    })();
     document.getElementById('falcon-import').onclick = () => document.getElementById('falcon-import-file').click();
     document.getElementById('falcon-import-file').onchange = function () {
       const file = this.files && this.files[0];
@@ -3360,7 +3485,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+  window.__falconTest = { pageEntityContext, fetchReleaseGraph, releaseGraphTuples, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
