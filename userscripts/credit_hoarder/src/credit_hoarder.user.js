@@ -168,13 +168,21 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
     // do — a linked provider OR at least one title-derived remixer — so CH stays
     // out of the way on releases it can't help with. The "Titles" source is then
     // offered only when that probe found remixes.
+    // #531 ("Toolbar sometimes doesn't appear"): the probe's failure used to be
+    // swallowed into `{}`, which is indistinguishable from "this release has no
+    // linked sources" — and that branch returns without mounting anything. So a
+    // single MusicBrainz hiccup made the toolbar vanish with no explanation, and
+    // a refresh appeared to fix it. The lookup retries now; if it still fails we
+    // mount ANYWAY rather than silently deciding there is nothing to do.
     Promise.all([
-        getSourceUrlsForRelease(m[1]).catch(() => ({})),
-        probeTitleRemixes(m[1]),
-    ]).then(([sources, remix]) => {
+        getSourceUrlsForRelease(m[1]).then(s => ({ sources: s, failed: false }))
+            .catch(e => { console.warn('[credit_hoarder] could not read release sources:', e); return { sources: {}, failed: true }; }),
+        probeTitleRemixes(m[1]).catch(() => null),
+    ]).then(([probe, remix]) => {
+        const sources = probe.sources;
         const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
         const remixCount  = remix?.count || 0;
-        if (!hasProvider && remixCount === 0) return;   // nothing to import — don't mount
-        insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });
+        if (!probe.failed && !hasProvider && remixCount === 0) return;   // MB says there is nothing to import
+        insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
     });
 });

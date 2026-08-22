@@ -564,6 +564,17 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         srcButtons.push(b);
         srcIcons.appendChild(b);
     });
+    // #531: the source probe failed, so the icon row is empty for a reason that
+    // is not "this release has no sources". Say so where the icons would be —
+    // an empty toolbar with no explanation is barely better than no toolbar.
+    if (meta.sourceProbeFailed && !importSources.length) {
+        const warn = document.createElement('span');
+        warn.className = 'discogs-src-probe-failed';
+        warn.style.cssText = 'font-size:0.8rem;color:#9a5b00;';
+        warn.textContent = 'could not read this release’s links from MusicBrainz — reload to retry';
+        warn.title = 'The /ws/js/release lookup failed (MusicBrainz was busy or unreachable), so the linked import sources are unknown.';
+        srcIcons.appendChild(warn);
+    }
     // #408: "Import all" — fan out to every source, merge + dedup, and review once. Only worth
     // showing when >1 source is linked (a single source is just the per-source icon).
     if (importSources.length > 1) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.8.17
+// @version      2026.8.22.150041
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -304,9 +304,26 @@
     }
     return [...labels].sort();
   }
-  function getSourceUrlsForRelease(mbid) {
+  async function getSourceUrlsForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
-    return fetch(url).then((body) => body.json()).then((json) => {
+    let json = null;
+    for (let attempt = 1; ; attempt++) {
+      let res = null;
+      try {
+        res = await fetch(url, { headers: { Accept: "application/json" } });
+      } catch (e) {
+        if (attempt >= 4) throw e;
+      }
+      if (res && res.ok) {
+        json = await res.json();
+        break;
+      }
+      if (res && res.status === 404) return {};
+      if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : "no response"}`);
+      const wait = Number(res && res.headers.get("Retry-After")) * 1e3 || 400 * attempt + Math.floor(Math.random() * 300);
+      await new Promise((r) => setTimeout(r, Math.min(wait, 8e3)));
+    }
+    {
       const rels = json.relationships || [];
       const abs = (u) => u && u.startsWith("//") ? "https:" + u : u;
       const href = (pred) => abs(rels.find(pred)?.target?.href_url || null);
@@ -320,7 +337,7 @@
         metalArchives: href((rel) => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || ""))
         // #453
       };
-    });
+    }
   }
   function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
@@ -6877,6 +6894,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       srcButtons.push(b);
       srcIcons.appendChild(b);
     });
+    if (meta.sourceProbeFailed && !importSources.length) {
+      const warn = document.createElement("span");
+      warn.className = "discogs-src-probe-failed";
+      warn.style.cssText = "font-size:0.8rem;color:#9a5b00;";
+      warn.textContent = "could not read this release\u2019s links from MusicBrainz \u2014 reload to retry";
+      warn.title = "The /ws/js/release lookup failed (MusicBrainz was busy or unreachable), so the linked import sources are unknown.";
+      srcIcons.appendChild(warn);
+    }
     if (importSources.length > 1) {
       const allBtn = document.createElement("button");
       allBtn.type = "button";
@@ -8252,13 +8277,17 @@ ${lines}
     const m = window.location.href.match(re);
     if (!m) return;
     Promise.all([
-      getSourceUrlsForRelease(m[1]).catch(() => ({})),
-      probeTitleRemixes(m[1])
-    ]).then(([sources, remix]) => {
+      getSourceUrlsForRelease(m[1]).then((s) => ({ sources: s, failed: false })).catch((e) => {
+        console.warn("[credit_hoarder] could not read release sources:", e);
+        return { sources: {}, failed: true };
+      }),
+      probeTitleRemixes(m[1]).catch(() => null)
+    ]).then(([probe, remix]) => {
+      const sources = probe.sources;
       const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
       const remixCount = remix?.count || 0;
-      if (!hasProvider && remixCount === 0) return;
-      insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });
+      if (!probe.failed && !hasProvider && remixCount === 0) return;
+      insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
     });
   });
 })();

@@ -241,11 +241,25 @@ export function getDiscogsUrlForRelease(mbid) {
  * call `getDiscogsUrlForRelease` always made — just harvested for all
  * import sources at once.
  */
-export function getSourceUrlsForRelease(mbid) {
+export async function getSourceUrlsForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
-    return fetch(url)
-        .then(body => body.json())
-        .then(json => {
+    // #531 ("Toolbar sometimes doesn't appear"): this used to be a bare
+    // fetch().json(). MusicBrainz answers a busy moment with a 503 HTML page,
+    // .json() throws, and the caller's catch turned that into "this release has
+    // no linked sources" — so the toolbar silently never mounted and a refresh
+    // "fixed" it. Retry transient failures, and THROW on a real one so the
+    // caller can tell "MB says none" from "we could not ask".
+    let json = null;
+    for (let attempt = 1; ; attempt++) {
+        let res = null;
+        try { res = await fetch(url, { headers: { Accept: 'application/json' } }); } catch (e) { if (attempt >= 4) throw e; }
+        if (res && res.ok) { json = await res.json(); break; }
+        if (res && res.status === 404) return {};             // release genuinely absent
+        if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : 'no response'}`);
+        const wait = Number(res && res.headers.get('Retry-After')) * 1000 || (400 * attempt + Math.floor(Math.random() * 300));
+        await new Promise(r => setTimeout(r, Math.min(wait, 8000)));
+    }
+    {
             const rels = json.relationships || [];
             // MB's rel hrefs are protocol-relative (`//tidal.com/…`) —
             // absolutize so logs / edit notes / tab-opens get a real URL.
@@ -259,7 +273,7 @@ export function getSourceUrlsForRelease(mbid) {
                 apple:   href(rel => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || '')),   // #435; iTunes URLs #436
                 metalArchives: href(rel => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || '')),   // #453
             };
-        });
+    }
 }
 
 /**
