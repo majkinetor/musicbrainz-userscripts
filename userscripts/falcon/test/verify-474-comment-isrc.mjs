@@ -140,6 +140,34 @@ const releaseCoverCommentResult = await page.evaluate(async () => {
 console.log('release-with-cover-comment fillAndSubmit result:', JSON.stringify(releaseCoverCommentResult));
 ck(releaseCoverCommentResult.committed === false && !releaseCoverCommentResult.manual, `a release item's cover[].comment (cover-art semantics, not this form's) does not count as a field change (got ${JSON.stringify(releaseCoverCommentResult)})`);
 
+// #533 (majkinetor, with the file): Falcon could not re-import its OWN export.
+// The import gate still read `type === 'recording' && (disambiguation || …)`
+// from #474, so 35 url-less release rows each carrying a disambiguation came
+// back as "added 0 item(s), skipped 35 unusable row(s)". The same shape as the
+// release-group seed prefix: a #533 surface that nothing pointed at.
+const roundTrip = await page.evaluate(() => {
+  const mk = (entityType, mbid) => ({ entityType, mbid, name: 'x', note: '', urls: [], status: 'queued', error: '', urlResults: null, disambiguation: 'test falcon batch', cover: [] });
+  const doc = {
+    falcon: 'test', exported: new Date().toISOString(),
+    items: [
+      mk('release', '00968b44-407a-4745-beaf-a2cd43e21193'),
+      mk('artist', '5441c29d-3602-4898-b1a1-b77fa23b8e50'),
+      mk('label', '0bef945e-5ab2-4276-8296-921b48d45ace'),
+      mk('release_group', 'ed64def7-4a2f-4ff7-9ae3-fbdfac9f8e0e'),
+      mk('recording', '2bea9225-3cee-4a23-b8f3-cd705bed3d06'),
+      // …and one with genuinely nothing on it, which SHOULD still be rejected
+      { entityType: 'release', mbid: '3a37a35f-1e06-457f-9b2a-46155c5c03ce', urls: [], disambiguation: '', cover: [] },
+    ],
+  };
+  window.__falconTest.setQueue([]);
+  const res = window.__falconTest.importQueueJson(JSON.stringify(doc), 'round-trip.json');
+  return { res, queued: window.__falconTest.getQueue().map(i => ({ t: i.entityType, d: i.disambiguation })) };
+});
+console.log('round trip: ' + JSON.stringify(roundTrip.res) + ' -> ' + JSON.stringify(roundTrip.queued.map(x => x.t)));
+ck(roundTrip.res.added === 5, `every url-less row carrying only a disambiguation imports, whatever its type (added ${roundTrip.res.added}/5)`);
+ck(roundTrip.res.skipped === 1, 'and a row with nothing on it at all is still rejected');
+ck(roundTrip.queued.every(x => x.d === 'test falcon batch'), 'the disambiguation survives the round trip');
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
