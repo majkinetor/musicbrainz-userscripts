@@ -119,7 +119,7 @@ Field usage by entity type
 
 ## JSON model
 
-Falcon has no per-entity form — the file loaded by **Import**, written by **Export**, and used internally is the actual interface for batch loading; Harmony and `?falcon=` are just producers of this same shape. Root is either a bare array of items or `{"items": [...]}` (Export writes the latter, with `falcon`/`exported` metadata alongside):
+Falcon has basic entity forms — the file is loaded by **Import**, written by **Export**, and used internally is the actual interface for batch loading; Harmony and `?falcon=` are just producers of this same shape. Root is either a bare array of items or `{"items": [...]}`:
 
 ```json
 {
@@ -141,15 +141,13 @@ Falcon has no per-entity form — the file loaded by **Import**, written by **Ex
       "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7",
       "urls": [],
       "disambiguation": "live version",
-      "isrcs": ["NLTH62000001"],
-      "status": "queued"
+      "isrcs": ["NLTH62000001"]
     },
     {
       "entityType": "release",
       "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
       "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
-      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "comment": "page 1", "type": "Booklet", "candidates": [] }],
-      "status": "queued"
+      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "comment": "page 1", "type": "Booklet", "candidates": [] }]
     }
   ]
 }
