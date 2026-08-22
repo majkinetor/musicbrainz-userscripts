@@ -56,9 +56,26 @@ Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in 
 
 Ticking a recording's **🎬 Video** flag while it is part of the current selection applies it to *every selected recording*, so flagging a whole tracklist is one tick. MusicBrainz treats a video change as votable, so it won't show on the recording until the edit passes.
 
-Rows you never touched are **skipped**, not failed: an item with no url, disambiguation, ISRC or cover has nothing to submit, so Falcon leaves it alone and says so. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
+Rows you never touched are **skipped**, not failed: an item with no url, disambiguation, ISRC, alias or cover has nothing to submit, so Falcon leaves it alone and says so. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
 
 It also works as a way to *produce* a JSON worksheet: add the entities, press **Export**, fill the file in at your leisure, then **Import** it back and Start.
+
+### Aliases
+
+Every entity type can carry aliases, and each one is a separate MusicBrainz edit — so localising a 20-track release is 40 edits. Falcon submits them straight to MB's `add-alias` form (no edit page, no iframe), which is why the bulk path is a JSON file rather than the UI: see [examples/aliases.json](./examples/aliases.json).
+
+```json
+{ "entityType": "recording", "mbid": "…",
+  "aliases": [
+    { "name": "town goes on! (wersja polska)", "locale": "pl", "type": "Recording name", "primary": true },
+    { "name": "town goes on! (deutsche Fassung)", "locale": "de", "type": "Recording name", "primary": true }
+  ] }
+```
+
+An expanded queue row shows a 🏷 **aliases** strip where you can add one by typing `name` or `name@locale`, and remove any before the run.
+
+> [!WARNING]
+> MusicBrainz **silently discards the locale** (and *primary for locale*) on a **Search hint** alias — the same submission stores `pl` under *Recording name* and nothing under *Search hint*, with no error either way. Falcon warns in the log when a search hint carries a locale. For a localised title use the `<entity> name` type.
 
 ### From Harmony
 
@@ -109,6 +126,7 @@ Field usage by entity type
 | External links | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
 | Video | — | — | yes | — | — |
+| Aliases | yes | yes | yes | yes | yes |
 | Disambiguation | yes | yes | yes | yes | yes |
 | Cover art | — | — | — | yes| — |
 
@@ -154,6 +172,7 @@ Falcon has basic entity forms — the file is loaded by **Import**, written by *
 | `mbid` | string | the entity's MBID |
 | `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
 | `note` | string | edit note |
+| `aliases[]` | array of `{name, locale, type, primary, sortName, begin, end, ended}` | all types — each entry becomes **its own MusicBrainz edit**, submitted through `/<entity>/<mbid>/add-alias`. `type` is the alias type's name as MB spells it for that entity (`Recording name`, `Search hint`, `Legal name` on artists) and is matched against the form's own list, so a wrong one fails with the valid options rather than guessing. Shorthand accepted: a bare string, or `"name@locale"` |
 | `video` | boolean | recording-only — MB's **Video** checkbox. Only ever sent when `true`; leaving it out preserves whatever the recording already has, so `false` means *don't touch*, never *clear it*. Falcon never unsets the flag |
 | `disambiguation` | string | MB's own disambiguation comment field — every entity type has one. For a release it is the **Disambiguation** box under *Additional information* in the release editor |
 | `isrcs[]` | array of string | recording-only |

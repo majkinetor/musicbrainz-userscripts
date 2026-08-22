@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.221742
+// @version      2026.8.22.223424
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -343,13 +343,19 @@
   function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
-     disambiguation, isrcs, video, cover: [{url, comment, type, candidates:
+     disambiguation, isrcs, video, aliases: [{name, locale, type, primary,
+     sortName, begin, end, ended}], cover: [{url, comment, type, candidates:
      [{provider,url,width?,height?,size?}]}], coverExistingCount, urlResults,
      status, error} ── entityType is one of artist/label/recording/release/
      release_group. Field usage by type (#496 — the rest are always present on
      the item internally for simplicity, but only these are ever read/rendered):
        - urls[]: all types (release_group and release included, #495)
        - isrcs[]: recording only
+       - aliases[]: all types (#535) — each entry is one MB edit, submitted
+         through /<entity>/<mbid>/add-alias rather than the entity's own edit
+         form (see submitAlias). `type` is the alias type's NAME as MB spells
+         it for that entity ("Recording name", "Search hint", "Legal name" on
+         artists) and is resolved against the form's own <select>.
        - video: recording only (#534) — boolean, MB's Video checkbox. Only ever
          seeded when TRUE: leaving it out preserves an existing flag, so false
          means "don't touch", not "clear it". Falcon never unsets it on MB.
@@ -635,7 +641,7 @@
           merged++;
           return;
         }
-        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', disambiguation: '', isrcs: [], video: false, cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', disambiguation: '', isrcs: [], video: false, aliases: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); noteSessionReleaseName(name); } });
         pickBestCover(relItem);
@@ -670,7 +676,7 @@
         if (p.name && !existing.name) { existing.name = p.name; if (existing.entityType === 'release') noteSessionReleaseName(p.name); }
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], video: p.video === true, cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], video: p.video === true, aliases: normalizeAliases(p.aliases), cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       // #509 (majkinetor): "Since Harmony already resolves names, we could
       // just fetch and use them instead of bombing MB." scrapeHarmonyActions
@@ -817,12 +823,14 @@
         // only the ISRC half is recording-only.
         const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
           || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
-          || (type === 'recording' && r.video === true);
+          || (type === 'recording' && r.video === true)
+          || normalizeAliases(r.aliases).length;
         if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
         const reItem = {
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
           note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
           video: type === 'recording' && r.video === true,
+          aliases: normalizeAliases(r.aliases),
           cover: coverArr, coverExistingCount: null,
           name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
@@ -2184,6 +2192,179 @@
     if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
     log('info', `${tag} release ${item.mbid} — cover art added (${entry.type})`);
   }
+  // ── #535 aliases ───────────────────────────────────────────────────────────
+  // majkinetor: "It would be good to support at least recording aliases as
+  // Picard 3 will probably use them for localization … there is an tab aliases
+  // outside of normal edit. Not sure if there is API".
+  //
+  // There is no write API, but /<entity>/<mbid>/add-alias is a PLAIN
+  // server-rendered form (`form.edit-alias`) with no CSRF token — so it can be
+  // fetched, filled and POSTed directly, exactly like the add-cover-art form
+  // already is. No iframe, no page load, one HTTP round trip per alias, which
+  // matters because MB creates ONE EDIT PER ALIAS: "2 translations for all
+  // recordings" of a 20-track release is 40 submissions.
+  //
+  // Field names verified live on the sandbox:
+  //   edit-alias.name / .sort_name / .locale / .primary_for_locale / .type_id
+  //   edit-alias.period.{begin,end}_date.{year,month,day} / .period.ended
+  //   edit-alias.edit_note
+  // Accepts the shorthand a hand-written JSON is likely to use: a bare string
+  // ("Nazwa"), "name@locale" ("Nazwa@pl"), or the full object. Anything without
+  // a name is dropped rather than silently submitted as a blank alias.
+  function normalizeAliases(raw) {
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    for (const a of raw) {
+      if (typeof a === 'string') {
+        const m = a.match(/^(.*?)@([a-zA-Z]{2,3}(?:[_-][A-Za-z]{2,4})?)$/);
+        const name = (m ? m[1] : a).trim();
+        if (name) out.push({ name, locale: m ? m[2].replace('-', '_') : '', type: '', primary: false, sortName: '', begin: '', end: '', ended: false });
+        continue;
+      }
+      if (!a || typeof a !== 'object') continue;
+      const name = String(a.name || '').trim();
+      if (!name) continue;
+      out.push({
+        name,
+        locale: String(a.locale || '').trim().replace('-', '_'),
+        type: a.type == null ? '' : String(a.type).trim(),
+        primary: a.primary === true || a.primary_for_locale === true,
+        sortName: String(a.sortName || a.sort_name || '').trim(),
+        begin: String(a.begin || '').trim(), end: String(a.end || '').trim(), ended: a.ended === true,
+      });
+    }
+    return out;
+  }
+  const ALIAS_TYPE_IDS = {};   // per entity type, resolved from the form itself
+  // The type_id numbering differs per entity (artist has "Legal name", a
+  // recording doesn't — majkinetor noted this), so never hardcode it: read the
+  // <select> on the form we just fetched and match on the option's TEXT.
+  function resolveAliasTypeId(doc, wanted) {
+    const sel = doc.querySelector('select[name="edit-alias.type_id"]');
+    if (!sel) return { id: null, why: 'this entity has no alias-type list' };
+    const opts = [...sel.querySelectorAll('option')].map(o => ({ v: o.value, t: (o.textContent || '').trim() }));
+    if (/^\d+$/.test(String(wanted))) {
+      return opts.some(o => o.v === String(wanted)) ? { id: String(wanted) } : { id: null, why: `type id ${wanted} is not offered here` };
+    }
+    const want = String(wanted).trim().toLowerCase();
+    const hit = opts.find(o => o.t.toLowerCase() === want) || opts.find(o => o.t.toLowerCase().startsWith(want));
+    if (hit) return { id: hit.v };
+    return { id: null, why: `unknown alias type ${JSON.stringify(wanted)} — this entity offers: ${opts.filter(o => o.v).map(o => o.t).join(', ')}` };
+  }
+  function splitDateParts(s) {
+    const m = String(s || '').trim().match(/^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$/);
+    return m ? { year: m[1], month: m[2] || '', day: m[3] || '' } : { year: '', month: '', day: '' };
+  }
+  // One alias → one MB edit. Returns nothing on success, throws with MB's own
+  // message on failure.
+  async function submitAlias(item, alias, tag) {
+    const seg = entityUrlSegment(item.entityType);
+    const url = `${MB_ORIGIN}/${seg}/${item.mbid}/add-alias`;
+    const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(`GET add-alias ${r.status}`); return r.text(); });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const form = doc.querySelector('form.edit-alias');
+    if (!form) throw new Error('MusicBrainz did not serve an alias form (are we still logged in?)');
+
+    // start from the form's own defaults so nothing MB expects goes missing
+    const p = new URLSearchParams();
+    form.querySelectorAll('input, select, textarea').forEach(el => {
+      if (!el.name) return;
+      if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) p.set(el.name, el.value || '1'); return; }
+      p.set(el.name, el.value || '');
+    });
+    p.set('edit-alias.name', alias.name);
+    // MB pre-fills sort_name with the entity's own name; for a localised alias
+    // the sensible default is the alias text itself, not the original title.
+    p.set('edit-alias.sort_name', alias.sortName || alias.name);
+    p.set('edit-alias.locale', alias.locale || '');
+    if (alias.primary && alias.locale) p.set('edit-alias.primary_for_locale', '1'); else p.delete('edit-alias.primary_for_locale');
+    if (alias.type) {
+      const { id, why } = resolveAliasTypeId(doc, alias.type);
+      if (!id) throw new Error(why);
+      p.set('edit-alias.type_id', id);
+      ALIAS_TYPE_IDS[item.entityType] = ALIAS_TYPE_IDS[item.entityType] || {};
+      ALIAS_TYPE_IDS[item.entityType][String(alias.type).toLowerCase()] = id;
+      // ⚠ MusicBrainz SILENTLY DISCARDS locale and primary-for-locale on a
+      // "Search hint" alias — measured on the sandbox: the same POST stores
+      // locale "pl" under type "Artist name" and null under "Search hint".
+      // Nothing in the response says so, so without this the queue would show
+      // a localised alias that MB stored as locale-less. Say it, and stop
+      // sending the fields, so what's submitted matches what gets stored.
+      if (/search hint/i.test(String(alias.type)) && (alias.locale || alias.primary)) {
+        log('warn', `${entityLabel(item)} — alias "${alias.name}": MusicBrainz ignores locale/primary on a Search hint, so ${JSON.stringify(alias.locale || '')} will not be stored (use a "${item.entityType.replace('_', ' ')} name" alias for a localised title)`);
+        p.set('edit-alias.locale', '');
+        p.delete('edit-alias.primary_for_locale');
+      }
+    }
+    const b = splitDateParts(alias.begin), e = splitDateParts(alias.end);
+    p.set('edit-alias.period.begin_date.year', b.year); p.set('edit-alias.period.begin_date.month', b.month); p.set('edit-alias.period.begin_date.day', b.day);
+    p.set('edit-alias.period.end_date.year', e.year); p.set('edit-alias.period.end_date.month', e.month); p.set('edit-alias.period.end_date.day', e.day);
+    if (alias.ended) p.set('edit-alias.period.ended', '1'); else p.delete('edit-alias.period.ended');
+    p.set('edit-alias.edit_note', [item.note, FALCON_SIGNATURE()].filter(Boolean).join('\n\n'));
+
+    dbg(tag, `alias POST ${seg}/${item.mbid}: ${JSON.stringify({ name: alias.name, locale: alias.locale || '(none)', type: alias.type || '(none)', primary: !!alias.primary })}`);
+    const res = await fetch(url, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: p.toString(),
+    });
+    if (!res.ok) throw new Error(`add-alias submit ${res.status}`);
+    // MB redirects to the entity's alias tab on success and re-renders the form
+    // with errors on failure — so "did we land back on the form" is the signal.
+    const backHtml = await res.text();
+    if (!/\/add-alias\b/.test(res.url)) return;
+    const errDoc = new DOMParser().parseFromString(backHtml, 'text/html');
+    const msg = [...errDoc.querySelectorAll('.error, .errors li, p.error')].map(n => (n.textContent || '').trim()).filter(Boolean)[0];
+    throw new Error(msg || 'MusicBrainz rejected the alias without saying why');
+  }
+  // All of an item's aliases, in order. One failing doesn't stop the rest —
+  // same contract as cover[] and urls[].
+  async function runAliasItem(item, tag, card) {
+    if (card) updateWorkerLabel(card, item);   // no card when driven directly (tests)
+    const list = (item.aliases || []).filter(a => a && String(a.name || '').trim());
+    const errs = [];
+    let ok = 0;
+    for (let i = 0; i < list.length; i++) {
+      const a = list[i];
+      try {
+        log('info', `${tag} ${entityLabel(item)} — adding alias ${i + 1}/${list.length}: "${a.name}"${a.locale ? ` [${a.locale}]` : ''}`);
+        await submitAlias(item, a, tag);
+        ok++;
+      } catch (e) {
+        const m = (e && e.message) || String(e);
+        errs.push(`alias "${a.name}"${a.locale ? ` [${a.locale}]` : ''}: ${m}`);
+        log('error', `${tag} ${entityLabel(item)} — alias "${a.name}" failed: ${m}`);
+      }
+    }
+    item.aliasResults = { ok, total: list.length, errors: errs };
+    dbg(tag, `aliases: ${ok}/${list.length} added` + (errs.length ? ` — ${errs.join(' | ')}` : ''));
+    return item.aliasResults;
+  }
+  // Aliases are their own MB edits, independent of the entity's form edit and
+  // of the cover upload — so they fold into the row's status the same way the
+  // cover does: all good keeps whatever the rest achieved, some good is
+  // 'partial', none good is 'failed'.
+  function aliasPrior(item) {
+    const r = item.aliasResults;
+    if (!r || !r.total) return undefined;
+    if (!r.errors.length) return { status: 'done', error: '' };
+    return { status: r.ok ? 'partial' : 'failed', error: r.errors.join(' | ') };
+  }
+  function finishAliasOnlyItem(item, tag) {
+    const r = item.aliasResults;
+    if (!r || !r.total) { item.status = 'skipped'; item.error = ''; return; }
+    if (!r.errors.length) { item.status = 'done'; item.error = ''; }
+    else { item.status = r.ok ? 'partial' : 'failed'; item.error = r.errors.join(' | '); }
+    log(r.errors.length ? 'warn' : 'info', `${tag} ${entityLabel(item)} — ${r.ok}/${r.total} alias(es) added`);
+  }
+  function mergeAliasOutcome(item) {
+    const r = item.aliasResults;
+    if (!r || !r.total || !r.errors.length) return;
+    const msg = r.errors.join(' | ');
+    const restOk = item.status === 'done' || item.status === 'skipped';
+    if (restOk) { item.status = r.ok ? 'partial' : 'failed'; item.error = msg; }
+    else { item.status = 'failed'; item.error = [item.error, msg].filter(Boolean).join(' | '); }
+  }
   async function runCoverItem(item, tag, card, priorLinks) {
     updateWorkerLabel(card, item);
     const tStart = Date.now();
@@ -2245,30 +2426,33 @@
       // point is to fill in a disambiguation (or ISRC, or url) on the ones you
       // care about. Pressing Start with the rest still blank must not open an
       // edit page per untouched row and submit nothing; skip them plainly.
-      const hasWork = item.urls.length
+      // ⚠ Everything that counts as work has to be listed in BOTH places: here,
+      // and in the no-form check just below. #533 was exactly this — a release
+      // whose only work was a disambiguation got routed to the cover path and
+      // reported 'done' having submitted nothing.
+      const needsCover = item.entityType === 'release' && (item.cover || []).some(c => c.url);
+      const needsAliases = (item.aliases || []).some(a => a && String(a.name || '').trim());
+      const needsForm = !!(item.urls.length
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
         || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
-        || (item.entityType === 'recording' && item.video)
-        || (item.entityType === 'release' && (item.cover || []).some(c => c.url));
-      if (!hasWork) {
+        || (item.entityType === 'recording' && item.video));
+      if (!needsForm && !needsCover && !needsAliases) {
         item.status = 'skipped';
-        item.error = 'nothing to submit yet — add a url, disambiguation or ISRC';
+        item.error = 'nothing to submit yet — add a url, disambiguation, ISRC, alias or cover';
         log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
         renderQueue();
         continue;
       }
-      // ⚠ #533: "no urls" is not the same as "cover-only" any more. A release
-      // can now carry a disambiguation, and that has to go through the form
-      // pipeline (it is typed into the release editor — see setReleaseComment).
-      // This branch used to swallow such an item: runCoverItem with an empty
-      // cover list finds nothing to fail on and reports 'done', so the queue
-      // showed a green row for an item that never opened an edit page at all.
-      const coverOnly = item.entityType === 'release' && !item.urls.length && !(item.disambiguation || '').trim();
-      if (coverOnly) {
-        await runCoverItem(item, tag, card);
+      // Nothing for the edit FORM to do: the remaining work (aliases, cover art)
+      // is submitted straight to MusicBrainz, no iframe needed. #535 aliases go
+      // through their own plain form POST, same as the cover upload API.
+      if (!needsForm) {
+        if (needsAliases) await runAliasItem(item, tag, card);
+        if (needsCover) await runCoverItem(item, tag, card, aliasPrior(item));
+        else finishAliasOnlyItem(item, tag);
+        renderQueue();
         continue;
       }
-      const needsCover = item.entityType === 'release' && item.cover.some(c => c.url);
       log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
       // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
       // already been used.
@@ -2365,6 +2549,7 @@
         // #495: the cover upload is a plain API call, independent of this
         // iframe — still worth attempting even though the link form never
         // loaded.
+        if (needsAliases) { await runAliasItem(item, tag, card); mergeAliasOutcome(item); }
         if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
         retireCard(card, item.error); scheduleRender('queue');
         const replacement = spawnWorkerCard();
@@ -2422,6 +2607,9 @@
       // #495: the cover upload is independent of how the link submission went
       // (or whether it ran at all) — run it and fold its outcome into
       // item.status/error before deciding whether this card can keep going.
+      // #535: aliases are separate edits; run them whatever the form edit did,
+      // then fold their outcome in before the cover step reads item.status.
+      if (needsAliases) { await runAliasItem(item, tag, card); mergeAliasOutcome(item); }
       if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
       renderQueue();
       if (r && (r.committed || r.noop)) {
@@ -2941,6 +3129,10 @@
           // them, same reasoning as isrcs[] just below.
           if (DISAMBIGUATABLE.has(i.entityType)) item.disambiguation = i.disambiguation || '';
           if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
+          // #535: aliases exist on every type, so they are exported whenever
+          // the item has any — and the export doubles as the JSON template.
+          if ((i.aliases || []).length) item.aliases = i.aliases.map(a => ({ name: a.name, locale: a.locale || '', type: a.type || '', primary: !!a.primary, sortName: a.sortName || '', begin: a.begin || '', end: a.end || '', ended: !!a.ended }));
+          if (i.aliasResults) item.aliasResults = i.aliasResults;
           // #494/#496: cover art is a release item's whole payload — an
           // array of {url, comment, type, candidates}, one entry per image.
           if (i.entityType === 'release') item.cover = (i.cover || []).map(c => ({ url: c.url || '', comment: c.comment || '', type: c.type || 'Front', candidates: c.candidates || [] }));
@@ -3136,6 +3328,13 @@
       queue.filter(i => i.entityType === type && i.status !== 'active').forEach(i => _selectedIds.add(i.id));
       renderQueue();
     });
+    list.addEventListener('click', e => {
+      const del = e.target.closest('.falcon-alias-del');
+      if (!del) return;
+      e.preventDefault(); e.stopPropagation();
+      const it = queue.find(i => i.id === del.dataset.id);
+      if (it) { it.aliases.splice(+del.dataset.idx, 1); renderQueue(); }
+    });
     list.addEventListener('change', e => {
       const chk = e.target.closest('.falcon-row-check');
       if (chk) { chk.checked ? _selectedIds.add(chk.dataset.id) : _selectedIds.delete(chk.dataset.id); renderQueue(); return; }
@@ -3155,6 +3354,15 @@
       // the issue is mass-flagging (it cites loujine's set-video-recordings
       // script), and doing that one expanded row at a time would be no better
       // than MB's own form.
+      // #535: type a name (optionally "name@pl") and it becomes an alias on
+      // this row. Deliberately minimal — the bulk path is JSON.
+      const aliasAdd = e.target.closest('.falcon-alias-add');
+      if (aliasAdd) {
+        const it = queue.find(i => i.id === aliasAdd.dataset.id);
+        const parsed = normalizeAliases([aliasAdd.value]);
+        if (it && parsed.length) { it.aliases = (it.aliases || []).concat(parsed); aliasAdd.value = ''; renderQueue(); }
+        return;
+      }
       const videoChk = e.target.closest('.falcon-video-input');
       if (videoChk) {
         const it = queue.find(i => i.id === videoChk.dataset.id);
@@ -3382,7 +3590,25 @@
         </div>`).join('')}
         ${it.coverExistingCount ? `<div style="color:#a35b00;font-size:10px">⚠ this release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
-    return urlRows + meta;
+    // #535: aliases apply to every entity type, so they get their own strip
+    // under whatever else this type shows. Each alias is one MB edit; the
+    // bulk case ("2 translations for all recordings") is meant to arrive as
+    // JSON, so this stays a light add/remove list rather than a form.
+    const aliasList = (it.aliases || []).map((a, idx) => `
+      <span title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · ') || 'alias')}"
+        style="display:inline-flex;align-items:center;gap:4px;background:#eef2ff;border:1px solid #dde3ff;border-radius:10px;padding:1px 4px 1px 7px;max-width:100%">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.name)}${a.locale ? ` <span style="color:#6a6f85">[${esc(a.locale)}]</span>` : ''}${a.primary ? ' ★' : ''}</span>
+        <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${it.status === 'active' ? 'disabled' : ''}
+          style="border:none;background:none;cursor:pointer;color:#8a8f9e;font-size:11px;line-height:1;padding:2px 3px">✕</button>
+      </span>`).join('');
+    const aliasRow = `
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:3px 0 3px 30px;font-size:10.5px">
+        <span style="color:#777;flex:0 0 auto">🏷 aliases</span>
+        ${aliasList || '<span style="color:#9b9fb0;font-style:italic">none</span>'}
+        <input type="text" class="falcon-alias-add" data-id="${it.id}" placeholder="add alias — name, or name@locale" ${it.status === 'active' ? 'disabled' : ''}
+          style="flex:1 1 140px;min-width:110px;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
+      </div>`;
+    return urlRows + meta + aliasRow;
   }
   // #497: one chip per distinct entity type currently in the queue, showing
   // its count — click to toggle whether that type's still-queued items get
@@ -3703,7 +3929,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
