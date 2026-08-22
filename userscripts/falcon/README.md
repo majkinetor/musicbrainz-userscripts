@@ -14,7 +14,7 @@ Falcon provides unified interface to bulk edit supported entity [attributes](#at
 
 ## Usage
 
-1. Populate a queue from [Harmony](#from-harmony) or import a [JSON file](#json-model) by accessing Falcon on any Musicbrainz page (CTRL+ALT+F).
+1. Populate a queue from [Harmony](#from-harmony), [the release you are on](#from-the-current-release), or import a [JSON file](#json-model) by accessing Falcon on any Musicbrainz page (CTRL+ALT+F).
 2. Review the queue (remove some entities or edit attributes), then press Start button to process it.
    - Right-click a row's entity-type column to select every item of that same type at once so you can remove them
    - Or, click the chips in the header (`art`/`lbl`/`rec`/`rel`/`rg`) to exclude all instances of specific entity without removing them from queue 
@@ -35,6 +35,29 @@ Row button **⇗** opens that entity's edit page in a real tab, pre-filled the s
 **Export** writes the queue back out *with each item's status and per-url outcome*, so a partly-finished run can be kept as a record, or re-imported to retry only what failed — items that already show `done` are not re-run.
 
 **Retry failed** re-queues every `failed`/`partial` item for another attempt in place — no export/import round trip needed. Useful when the cause was transient (MusicBrainz being slow, a timeout) rather than the item genuinely being broken.
+
+### From the current release
+
+Open Falcon on a **release** (or **release-group**) page and the toolbar offers **+ Add from release** — it fills the queue with that release's own entities so you can edit them in bulk:
+
+| | |
+|---|---|
+| **Recordings** | every track's recording, from the tracklist (ticked by default) |
+| **This release** | the release itself |
+| **Release group** | its release group |
+| **Artists** | the release artist plus every track artist |
+| **Labels** | the labels on the release |
+
+<img src="./screenshots/add-from-release.png" width="520">
+
+Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about (recording **disambiguation** and **ISRCs**, urls on any type — see [Attributes](#attributes)), then press Start.
+
+Rows you never touched are **skipped**, not failed: an item with no url, disambiguation, ISRC or cover has nothing to submit, so Falcon leaves it alone and says so. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
+
+It also works as a way to *produce* a JSON worksheet: add the entities, press **Export**, fill the file in at your leisure, then **Import** it back and Start.
+
+> [!TIP]
+> Names come from the same request that fetches the tracklist, so rows are labelled immediately without a lookup per entity, and an entity appearing on several tracks is added once.
 
 ### From Harmony
 
@@ -73,6 +96,7 @@ If API is available, Falcon uses it rather then driving a form.
 |partial|Some array data is added, other failed|
 |failed|Completelly failed
 |manual|User has manually added data for the entity|
+|skipped|Nothing to submit — either MusicBrainz reported no change, or the row has no url/disambiguation/ISRC/cover filled in yet (see [From the current release](#from-the-current-release))|
 |excluded|Excluded by disabling entity chip at the header|
 
 ## Attributes 
