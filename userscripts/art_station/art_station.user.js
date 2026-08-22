@@ -1961,7 +1961,15 @@
       }
       if (r && r.ok) {
         const j = await r.json();
-        return [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+        const urls = [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+        // #530 (majkinetor): "Please make detailed log about this." Log what MB
+        // actually returned, so a report never again comes down to guessing
+        // whether the fetch failed, returned nothing, or returned links whose
+        // domain simply isn't a recognised art provider.
+        asLog.info(`Links: MusicBrainz returned ${((j && j.relations) || []).length} relationship(s), ${urls.length} URL(s)`
+          + (attempt > 1 ? ` (after ${attempt} attempts)` : ''));
+        urls.forEach(u => { const pr = providerOf(u); asLog.debug(`  link ${u} → ${pr ? pr.name : 'no art provider for this domain'}`); });
+        return urls;
       }
       // 404 means the entity genuinely isn't there; anything else transient is worth a retry
       if (r && r.status === 404) return [];
@@ -1971,9 +1979,41 @@
       await new Promise(res => setTimeout(res, Math.min(wait, 8000)));
     }
   }
+  // #530 follow-up (majkinetor: "it actually showed now, but it took 10+
+  // seconds"). MusicBrainz's WS2 is intermittently very slow — 28s and 43s
+  // responses show up in his logs — and the links are ALREADY on the page:
+  // MB renders them in `ul.external_links`, which measures at 0ms against ~200ms
+  // for the API on a good day and far worse on a bad one. So read the page
+  // first and treat the network as enrichment rather than the source of truth.
+  function pageLinks() {
+    try {
+      return [...new Set([...document.querySelectorAll('ul.external_links li a[href]')].map(a => a.href).filter(Boolean))];
+    } catch (e) { return []; }
+  }
   async function releaseUrls() {
     if (_urlRels) return _urlRels;
+    const dom = pageLinks();
+    if (dom.length) {
+      _urlRels = dom;
+      asLog.info(`Links: ${dom.length} link(s) read from the page (no request needed)`);
+      dom.forEach(u => { const pr = providerOf(u); asLog.debug(`  link ${u} → ${pr ? pr.name : 'no art provider for this domain'}`); });
+      // still ask MB in the background — the sidebar can omit links, and the
+      // answer refreshes the count without anyone waiting on it.
+      if (!_urlRelsInflight) {
+        _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
+        _urlRelsInflight.then(extra => {
+          if (!extra) return;
+          const merged = [...new Set([..._urlRels, ...extra])];
+          if (merged.length !== _urlRels.length) {
+            asLog.info(`Links: MusicBrainz added ${merged.length - _urlRels.length} link(s) the page did not list`);
+            _urlRels = merged; _provLinks = null; refreshSrcCount();
+          }
+        }).catch(() => {});
+      }
+      return _urlRels;
+    }
     if (!_urlRelsInflight) {
+      asLog.debug(`Links: reading ${ENT.kind} relationships from /ws/2/${ENT.kind}/${MBID}?inc=url-rels`);
       _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
     }
     const got = await _urlRelsInflight;
@@ -1985,12 +2025,25 @@
   function urlRelsKnown() { return _urlRels !== null; }
   // the release/event's external links → the recognised art providers, deduped
   async function artProviderLinks() {
-    const seen = new Set(), out = [];
-    for (const u of await releaseUrls()) {
+    const urls = await releaseUrls();
+    // One entry per provider. Reading links off the page (see releaseUrls) picks
+    // up sibling links the API did not return — a Discogs *master* alongside the
+    // *release*, say — and two identically-labelled "Import from Discogs"
+    // buttons is worse than one. Prefer the release-level URL when both exist.
+    const byProv = new Map();
+    for (const u of urls) {
       const prov = providerOf(u); if (!prov) continue;
-      const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
-      out.push({ name: prov.name, url: u, icon: provIconUrl(prov.domain) });
+      const cur = byProv.get(prov.name);
+      const isMaster = /\/master\//i.test(u);
+      if (!cur || (/\/master\//i.test(cur.url) && !isMaster)) byProv.set(prov.name, { name: prov.name, url: u, icon: provIconUrl(prov.domain) });
     }
+    const out = [...byProv.values()];
+    // Say which of the three cases this is, every time — "0 providers" reads
+    // very differently depending on whether the links could be read at all.
+    if (!urlRelsKnown()) asLog.warn(`Links: could not read this ${ENT.kind}'s links — sourcing unavailable (NOT "no links")`);
+    else if (!urls.length) asLog.info(`Links: this ${ENT.kind} has no external links at all`);
+    else asLog.info(`Links: ${out.length} art provider(s) matched from ${urls.length} link(s)`
+      + (out.length ? ' — ' + out.map(x => x.name).join(', ') : ' — none of the linked domains is a supported provider'));
     return out;
   }
   // #250 (vzell) custom providers whose declared `match` hits a link on THIS release,

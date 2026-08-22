@@ -41,6 +41,10 @@ for (let a = 1; ; a++) {
 }
 if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
 await page.waitForTimeout(400);
+// Art Station now reads ul.external_links straight off the page (see the
+// slow-MB case at the bottom). Strip them here so this half of the test still
+// exercises the FETCH path, which is what the caching bug lived in.
+await page.evaluate(() => document.querySelectorAll('ul.external_links').forEach(el => el.remove()));
 await page.addScriptTag({ content: code });
 await page.waitForSelector('#as-root', { timeout: 15000 });
 await page.waitForTimeout(600);
@@ -63,7 +67,7 @@ ck(urlRelHits >= 2, 'transient failures were retried, not accepted first time ('
 
 // ── the fix: retrying after MB recovers must find the link ──────────────────
 mode = 'ok';
-await page.click('.as-src-retry');
+await page.click('.as-src-retry');   // still the fetch path — the page links are stripped
 await page.waitForSelector('.as-src-pop', { timeout: 5000 });
 await page.waitForFunction(() => {
     const b = document.querySelector('.as-src-prov');
@@ -84,6 +88,40 @@ const sticky = await page.evaluate(() => {
 await page.waitForTimeout(800);
 const after = (await page.locator('.as-src-prov').textContent() || '').trim();
 ck(/Discogs/.test(after), 'reopening keeps showing the platform, not a stale empty result');
+
+
+// ── #530 follow-up: "it actually showed now, but it took 10+ seconds" ───────
+// MB's WS2 is intermittently very slow, and the links are already in the page's
+// ul.external_links. Reading those means the popover does not wait on the
+// network at all — verified on a release that really does carry a Discogs link.
+{
+    let hits = 0;
+    await page.route(u => /\/ws\/2\/release\/[0-9a-f-]{36}\?.*url-rels/.test(u.href), async route => {
+        hits++;
+        await new Promise(r => setTimeout(r, 12000));      // MB having a bad day
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ relations: [] }) });
+    });
+    for (let a = 1; ; a++) {
+        try { await page.goto('https://musicbrainz.org/release/3ff95b73-7b0e-4f84-8962-e111ff27b656/cover-art', { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
+        catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
+    }
+    await page.waitForTimeout(400);
+    await page.addScriptTag({ content: code });
+    await page.waitForSelector('#as-root', { timeout: 15000 });
+    const t0 = Date.now();
+    await page.click('.as-src');
+    await page.waitForSelector('.as-src-pop', { timeout: 5000 });
+    await page.waitForFunction(() => {
+        const b = document.querySelector('.as-src-prov');
+        return b && !/Looking for/.test(b.textContent);
+    }, null, { timeout: 20000 });
+    const ms = Date.now() - t0;
+    const txt = (await page.locator('.as-src-prov').textContent() || '').trim();
+    console.log(`slow-MB case: settled in ${ms}ms -> ${JSON.stringify(txt)} (ws2 calls so far: ${hits})`);
+    ck(/Discogs/.test(txt), 'the Discogs link is found even while MusicBrainz is stalling');
+    ck((txt.match(/Import from Discogs/g) || []).length === 1, 'one Discogs button, not one per sibling link (release + master)');
+    ck(ms < 5000, `and without waiting on it (${ms}ms, MB stubbed to take 12s)`);
+}
 
 ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');
 await ctx.close();

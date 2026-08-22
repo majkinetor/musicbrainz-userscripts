@@ -71,13 +71,24 @@ if (appeared) {
     const warn = (await page.locator('.discogs-src-probe-failed').textContent().catch(() => '')) || '';
     console.log('warning shown: ' + JSON.stringify(warn.trim()));
     ck(/could not read/i.test(warn), 'and it says why it has no sources rather than looking empty');
+    // #531: the diagnosis must reach the log the user actually reads. These
+    // lines are emitted BEFORE the bar exists, so they only appear if the
+    // logger buffers and replays them on mount.
+    const logText = await page.locator('.discogs-output').textContent().catch(() => '');
+    console.log('--- log (first 12 lines) ---');
+    console.log(logText.slice(0, 600));
+    ck(/could not read this release/i.test(logText), 'the log explains the source probe failed (buffered from before the bar mounted)');
+    ck(/retrying \(1\/3\)/i.test(logText), 'the log shows the retries');
+    ck(/Toolbar: source probe FAILED/i.test(logText), 'the log states why the toolbar mounted anyway');
 }
 
 // ── control: with MB healthy the toolbar mounts with its real sources ───────
 mode = 'ok';
 relHits = 0;
 await load();
-await page.waitForSelector('.discogs-bar', { timeout: 30000 });
+const ok2 = await page.waitForSelector('.discogs-bar', { timeout: 30000 }).then(() => true).catch(() => false);
+ck(ok2, 'toolbar mounts on the healthy path too');
+if (!ok2) { console.log('healthy-path DOM: ' + await page.evaluate(() => document.body.innerHTML.length + ' bytes, bar=' + !!document.querySelector('.discogs-bar'))); }
 const icons = await page.locator('.discogs-src-icons .discogs-src-ico').count();
 const warnGone = await page.locator('.discogs-src-probe-failed').count();
 const iconNames = await page.locator('.discogs-src-icons .discogs-src-ico').evaluateAll(els => els.map(e => e.dataset.src));

@@ -1010,6 +1010,19 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     outputDiv.append(reviewSlot, logPanel);
     outputDiv.dataset.logfilter = 'all';
 
+    // #531: give the logger a home AT MOUNT, not only when an import run starts.
+    // Startup diagnostics (the source probe, its retries, why the toolbar mounted)
+    // are emitted before any run and were previously buffered with nowhere to go
+    // — which is precisely what you need to read when the complaint is that the
+    // toolbar came up empty. setLogContainer replays whatever was buffered.
+    if (!_logs) {
+        _logs = document.createElement('ul');
+        _logs.className = 'logs';
+        logBody.appendChild(_logs);
+        setLogContainer(_logs);
+        if (_logs.children.length) outputDiv.classList.remove('empty');
+    }
+
     const applyLogOpen = () => { const open = gmLoad(LOG_OPEN_KEY) === '1'; outputDiv.classList.toggle('log-open', open); logSplit.classList.toggle('active', open); };
     try { applyLogOpen(); } catch (e) {}
     const setLogOpen = (open) => {

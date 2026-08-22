@@ -43,6 +43,12 @@ function _notifyCounts() {
 /** Wire the logger to its <ul> container. Called by ui-bar.js at insertion time. */
 export function setLogContainer(el) {
     _logs = el;
+    // #531 (majkinetor: "Add adequate logs here too, so I can inspect if it
+    // fails again"): anything logged BEFORE the bar mounts used to be dropped on
+    // the floor — which is exactly the window that matters when the complaint is
+    // "the toolbar didn't appear". Replay whatever was buffered.
+    const pending = _pending.splice(0, _pending.length);
+    pending.forEach(a => _emit(...a));
 }
 
 /** Current log container — read-only access for callers that need it (rare). */
@@ -57,8 +63,10 @@ let _review = null;
 export function setReviewContainer(el) { _review = el; }
 export function getReviewContainer() { return _review || _logs; }
 
+const _pending = [];
+const PENDING_MAX = 200;   // a stuck page must not grow this without bound
 function _emit(html, plainText, sev) {
-    if (!_logs) return;
+    if (!_logs) { if (_pending.length < PENDING_MAX) _pending.push([html, plainText, sev]); return; }
     const li = document.createElement('li');
     if (sev) li.dataset.sev = sev;   // 'warn' / 'error' — lets the log toolbar filter by severity (#142)
     // Tally for the header badge (#118).

@@ -13,7 +13,8 @@
 // Side-effect imports (`./storage.js`, `./ui-bar.js`) trigger module init at
 // load time — opening IndexedDB and running the localStorage-cleanup IIFE.
 
-import { getSourceUrlsForRelease } from './api-mb.js';
+import { getSourceUrlsForRelease, logSourceProbe } from './api-mb.js';
+import { log } from './log.js';
 import { insertDiscogsBar, probeTitleRemixes } from './ui-bar.js';
 import { DISCOGS_CHANNEL }       from './constants.js';
 import { runTidalHarvestPage }   from './sources/tidal.js';
@@ -176,12 +177,20 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
     // mount ANYWAY rather than silently deciding there is nothing to do.
     Promise.all([
         getSourceUrlsForRelease(m[1]).then(s => ({ sources: s, failed: false }))
-            .catch(e => { console.warn('[credit_hoarder] could not read release sources:', e); return { sources: {}, failed: true }; }),
-        probeTitleRemixes(m[1]).catch(() => null),
+            .catch(e => {
+                log.error(`Sources: could not read this release's links from MusicBrainz — ${e.message}. `
+                    + 'Showing the toolbar anyway; reload to retry.');
+                console.warn('[credit_hoarder] could not read release sources:', e);
+                return { sources: {}, failed: true };
+            }),
+        probeTitleRemixes(m[1]).catch(e => { log.warn(`Titles: remix probe failed — ${e.message}`); return null; }),
     ]).then(([probe, remix]) => {
         const sources = probe.sources;
         const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
         const remixCount  = remix?.count || 0;
+        if (!probe.failed) logSourceProbe(sources, Object.keys(sources).length);
+        log.info(`Toolbar: ${probe.failed ? 'source probe FAILED' : hasProvider ? 'linked source(s) found' : 'no linked sources'}`
+            + `, ${remixCount} title-derived remixer(s) — ${(probe.failed || hasProvider || remixCount) ? 'mounting' : 'not mounting (nothing to import)'}`);
         if (!probe.failed && !hasProvider && remixCount === 0) return;   // MB says there is nothing to import
         insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
     });

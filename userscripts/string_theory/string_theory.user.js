@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.150124
+// @version      2026.8.22.152505
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.22.150124 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.22\n  · Credit Hoarder v2026.8.22.150041\n  · Group Therapy v2026.8.19\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19.204230");
+  console.log('%c String Theory %c v2026.8.22.152505 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.22\n  · Credit Hoarder v2026.8.22.152438\n  · Group Therapy v2026.8.19\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.19.204230");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -10051,7 +10051,15 @@ try {
       }
       if (r && r.ok) {
         const j = await r.json();
-        return [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+        const urls = [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+        // #530 (majkinetor): "Please make detailed log about this." Log what MB
+        // actually returned, so a report never again comes down to guessing
+        // whether the fetch failed, returned nothing, or returned links whose
+        // domain simply isn't a recognised art provider.
+        asLog.info(`Links: MusicBrainz returned ${((j && j.relations) || []).length} relationship(s), ${urls.length} URL(s)`
+          + (attempt > 1 ? ` (after ${attempt} attempts)` : ''));
+        urls.forEach(u => { const pr = providerOf(u); asLog.debug(`  link ${u} → ${pr ? pr.name : 'no art provider for this domain'}`); });
+        return urls;
       }
       // 404 means the entity genuinely isn't there; anything else transient is worth a retry
       if (r && r.status === 404) return [];
@@ -10061,9 +10069,41 @@ try {
       await new Promise(res => setTimeout(res, Math.min(wait, 8000)));
     }
   }
+  // #530 follow-up (majkinetor: "it actually showed now, but it took 10+
+  // seconds"). MusicBrainz's WS2 is intermittently very slow — 28s and 43s
+  // responses show up in his logs — and the links are ALREADY on the page:
+  // MB renders them in `ul.external_links`, which measures at 0ms against ~200ms
+  // for the API on a good day and far worse on a bad one. So read the page
+  // first and treat the network as enrichment rather than the source of truth.
+  function pageLinks() {
+    try {
+      return [...new Set([...document.querySelectorAll('ul.external_links li a[href]')].map(a => a.href).filter(Boolean))];
+    } catch (e) { return []; }
+  }
   async function releaseUrls() {
     if (_urlRels) return _urlRels;
+    const dom = pageLinks();
+    if (dom.length) {
+      _urlRels = dom;
+      asLog.info(`Links: ${dom.length} link(s) read from the page (no request needed)`);
+      dom.forEach(u => { const pr = providerOf(u); asLog.debug(`  link ${u} → ${pr ? pr.name : 'no art provider for this domain'}`); });
+      // still ask MB in the background — the sidebar can omit links, and the
+      // answer refreshes the count without anyone waiting on it.
+      if (!_urlRelsInflight) {
+        _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
+        _urlRelsInflight.then(extra => {
+          if (!extra) return;
+          const merged = [...new Set([..._urlRels, ...extra])];
+          if (merged.length !== _urlRels.length) {
+            asLog.info(`Links: MusicBrainz added ${merged.length - _urlRels.length} link(s) the page did not list`);
+            _urlRels = merged; _provLinks = null; refreshSrcCount();
+          }
+        }).catch(() => {});
+      }
+      return _urlRels;
+    }
     if (!_urlRelsInflight) {
+      asLog.debug(`Links: reading ${ENT.kind} relationships from /ws/2/${ENT.kind}/${MBID}?inc=url-rels`);
       _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
     }
     const got = await _urlRelsInflight;
@@ -10075,12 +10115,25 @@ try {
   function urlRelsKnown() { return _urlRels !== null; }
   // the release/event's external links → the recognised art providers, deduped
   async function artProviderLinks() {
-    const seen = new Set(), out = [];
-    for (const u of await releaseUrls()) {
+    const urls = await releaseUrls();
+    // One entry per provider. Reading links off the page (see releaseUrls) picks
+    // up sibling links the API did not return — a Discogs *master* alongside the
+    // *release*, say — and two identically-labelled "Import from Discogs"
+    // buttons is worse than one. Prefer the release-level URL when both exist.
+    const byProv = new Map();
+    for (const u of urls) {
       const prov = providerOf(u); if (!prov) continue;
-      const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
-      out.push({ name: prov.name, url: u, icon: provIconUrl(prov.domain) });
+      const cur = byProv.get(prov.name);
+      const isMaster = /\/master\//i.test(u);
+      if (!cur || (/\/master\//i.test(cur.url) && !isMaster)) byProv.set(prov.name, { name: prov.name, url: u, icon: provIconUrl(prov.domain) });
     }
+    const out = [...byProv.values()];
+    // Say which of the three cases this is, every time — "0 providers" reads
+    // very differently depending on whether the links could be read at all.
+    if (!urlRelsKnown()) asLog.warn(`Links: could not read this ${ENT.kind}'s links — sourcing unavailable (NOT "no links")`);
+    else if (!urls.length) asLog.info(`Links: this ${ENT.kind} has no external links at all`);
+    else asLog.info(`Links: ${out.length} art provider(s) matched from ${urls.length} link(s)`
+      + (out.length ? ' — ' + out.map(x => x.name).join(', ') : ' — none of the linked domains is a supported provider'));
     return out;
   }
   // #250 (vzell) custom providers whose declared `match` hits a link on THIS release,
@@ -11833,7 +11886,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.22.150041","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.22.150041","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.22.152438","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.22.152438","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -11898,6 +11951,8 @@ try {
   }
   function setLogContainer(el) {
     _logs = el;
+    const pending = _pending.splice(0, _pending.length);
+    pending.forEach((a) => _emit(...a));
   }
   function getLogContainer() {
     return _logs;
@@ -11909,8 +11964,13 @@ try {
   function getReviewContainer() {
     return _review || _logs;
   }
+  var _pending = [];
+  var PENDING_MAX = 200;
   function _emit(html, plainText, sev) {
-    if (!_logs) return;
+    if (!_logs) {
+      if (_pending.length < PENDING_MAX) _pending.push([html, plainText, sev]);
+      return;
+    }
     const li = document.createElement("li");
     if (sev) li.dataset.sev = sev;
     if (sev === "warn") {
@@ -12119,15 +12179,21 @@ try {
       }
       if (res && res.ok) {
         json = await res.json();
+        if (attempt > 1) log.info(`Sources: MusicBrainz answered on attempt ${attempt}`);
         break;
       }
-      if (res && res.status === 404) return {};
-      if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : "no response"}`);
+      if (res && res.status === 404) {
+        log.warn(`Sources: MusicBrainz says this release does not exist (404)`);
+        return {};
+      }
+      if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : "no response"} after ${attempt} attempts`);
       const wait = Number(res && res.headers.get("Retry-After")) * 1e3 || 400 * attempt + Math.floor(Math.random() * 300);
+      log.warn(`Sources: MusicBrainz returned ${res ? res.status : "no response"} \u2014 retrying (${attempt}/3) in ${Math.round(wait)}ms`);
       await new Promise((r) => setTimeout(r, Math.min(wait, 8e3)));
     }
     {
       const rels = json.relationships || [];
+      log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release`);
       const abs = (u) => u && u.startsWith("//") ? "https:" + u : u;
       const href = (pred) => abs(rels.find(pred)?.target?.href_url || null);
       return {
@@ -12141,6 +12207,11 @@ try {
         // #453
       };
     }
+  }
+  function logSourceProbe(sources, urlCount) {
+    const found = Object.entries(sources || {}).filter(([, v]) => v);
+    log.info(`Sources: ${found.length} import source(s) from ${urlCount} link(s)` + (found.length ? " \u2014 " + found.map(([k]) => k).join(", ") : " \u2014 none of the links is a supported source"));
+    found.forEach(([k, v]) => logDebug(`  source ${k}: ${v}`));
   }
   function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
@@ -19075,6 +19146,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     logPanel.append(logToolbar, logBody);
     outputDiv.append(reviewSlot, logPanel);
     outputDiv.dataset.logfilter = "all";
+    if (!_logs2) {
+      _logs2 = document.createElement("ul");
+      _logs2.className = "logs";
+      logBody.appendChild(_logs2);
+      setLogContainer(_logs2);
+      if (_logs2.children.length) outputDiv.classList.remove("empty");
+    }
     const applyLogOpen = () => {
       const open = gmLoad(LOG_OPEN_KEY) === "1";
       outputDiv.classList.toggle("log-open", open);
@@ -20081,14 +20159,20 @@ ${lines}
     if (!m) return;
     Promise.all([
       getSourceUrlsForRelease(m[1]).then((s) => ({ sources: s, failed: false })).catch((e) => {
+        log.error(`Sources: could not read this release's links from MusicBrainz \u2014 ${e.message}. Showing the toolbar anyway; reload to retry.`);
         console.warn("[credit_hoarder] could not read release sources:", e);
         return { sources: {}, failed: true };
       }),
-      probeTitleRemixes(m[1]).catch(() => null)
+      probeTitleRemixes(m[1]).catch((e) => {
+        log.warn(`Titles: remix probe failed \u2014 ${e.message}`);
+        return null;
+      })
     ]).then(([probe, remix]) => {
       const sources = probe.sources;
       const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
       const remixCount = remix?.count || 0;
+      if (!probe.failed) logSourceProbe(sources, Object.keys(sources).length);
+      log.info(`Toolbar: ${probe.failed ? "source probe FAILED" : hasProvider ? "linked source(s) found" : "no linked sources"}, ${remixCount} title-derived remixer(s) \u2014 ${probe.failed || hasProvider || remixCount ? "mounting" : "not mounting (nothing to import)"}`);
       if (!probe.failed && !hasProvider && remixCount === 0) return;
       insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
     });

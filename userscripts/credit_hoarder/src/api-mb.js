@@ -253,14 +253,16 @@ export async function getSourceUrlsForRelease(mbid) {
     for (let attempt = 1; ; attempt++) {
         let res = null;
         try { res = await fetch(url, { headers: { Accept: 'application/json' } }); } catch (e) { if (attempt >= 4) throw e; }
-        if (res && res.ok) { json = await res.json(); break; }
-        if (res && res.status === 404) return {};             // release genuinely absent
-        if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : 'no response'}`);
+        if (res && res.ok) { json = await res.json(); if (attempt > 1) log.info(`Sources: MusicBrainz answered on attempt ${attempt}`); break; }
+        if (res && res.status === 404) { log.warn(`Sources: MusicBrainz says this release does not exist (404)`); return {}; }
+        if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : 'no response'} after ${attempt} attempts`);
         const wait = Number(res && res.headers.get('Retry-After')) * 1000 || (400 * attempt + Math.floor(Math.random() * 300));
+        log.warn(`Sources: MusicBrainz returned ${res ? res.status : 'no response'} — retrying (${attempt}/3) in ${Math.round(wait)}ms`);
         await new Promise(r => setTimeout(r, Math.min(wait, 8000)));
     }
     {
             const rels = json.relationships || [];
+            log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release`);
             // MB's rel hrefs are protocol-relative (`//tidal.com/…`) —
             // absolutize so logs / edit notes / tab-opens get a real URL.
             const abs  = u => u && u.startsWith('//') ? 'https:' + u : u;
@@ -274,6 +276,19 @@ export async function getSourceUrlsForRelease(mbid) {
                 metalArchives: href(rel => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || '')),   // #453
             };
     }
+}
+
+/**
+ * #531 (majkinetor: "Add adequate logs here too, so I can inspect if it fails
+ * again"). Report what the source probe actually saw. Without this, a release
+ * with no import sources and a release whose probe failed produced the same
+ * (silent) outcome, which is what made the missing toolbar undiagnosable.
+ */
+export function logSourceProbe(sources, urlCount) {
+    const found = Object.entries(sources || {}).filter(([, v]) => v);
+    log.info(`Sources: ${found.length} import source(s) from ${urlCount} link(s)`
+        + (found.length ? ' — ' + found.map(([k]) => k).join(', ') : ' — none of the links is a supported source'));
+    found.forEach(([k, v]) => logDebug(`  source ${k}: ${v}`));
 }
 
 /**

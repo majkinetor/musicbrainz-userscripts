@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.8.22.150041
+// @version      2026.8.22.152438
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -95,6 +95,8 @@
   }
   function setLogContainer(el) {
     _logs = el;
+    const pending = _pending.splice(0, _pending.length);
+    pending.forEach((a) => _emit(...a));
   }
   function getLogContainer() {
     return _logs;
@@ -106,8 +108,13 @@
   function getReviewContainer() {
     return _review || _logs;
   }
+  var _pending = [];
+  var PENDING_MAX = 200;
   function _emit(html, plainText, sev) {
-    if (!_logs) return;
+    if (!_logs) {
+      if (_pending.length < PENDING_MAX) _pending.push([html, plainText, sev]);
+      return;
+    }
     const li = document.createElement("li");
     if (sev) li.dataset.sev = sev;
     if (sev === "warn") {
@@ -316,15 +323,21 @@
       }
       if (res && res.ok) {
         json = await res.json();
+        if (attempt > 1) log.info(`Sources: MusicBrainz answered on attempt ${attempt}`);
         break;
       }
-      if (res && res.status === 404) return {};
-      if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : "no response"}`);
+      if (res && res.status === 404) {
+        log.warn(`Sources: MusicBrainz says this release does not exist (404)`);
+        return {};
+      }
+      if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : "no response"} after ${attempt} attempts`);
       const wait = Number(res && res.headers.get("Retry-After")) * 1e3 || 400 * attempt + Math.floor(Math.random() * 300);
+      log.warn(`Sources: MusicBrainz returned ${res ? res.status : "no response"} \u2014 retrying (${attempt}/3) in ${Math.round(wait)}ms`);
       await new Promise((r) => setTimeout(r, Math.min(wait, 8e3)));
     }
     {
       const rels = json.relationships || [];
+      log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release`);
       const abs = (u) => u && u.startsWith("//") ? "https:" + u : u;
       const href = (pred) => abs(rels.find(pred)?.target?.href_url || null);
       return {
@@ -338,6 +351,11 @@
         // #453
       };
     }
+  }
+  function logSourceProbe(sources, urlCount) {
+    const found = Object.entries(sources || {}).filter(([, v]) => v);
+    log.info(`Sources: ${found.length} import source(s) from ${urlCount} link(s)` + (found.length ? " \u2014 " + found.map(([k]) => k).join(", ") : " \u2014 none of the links is a supported source"));
+    found.forEach(([k, v]) => logDebug(`  source ${k}: ${v}`));
   }
   function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
@@ -7272,6 +7290,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     logPanel.append(logToolbar, logBody);
     outputDiv.append(reviewSlot, logPanel);
     outputDiv.dataset.logfilter = "all";
+    if (!_logs2) {
+      _logs2 = document.createElement("ul");
+      _logs2.className = "logs";
+      logBody.appendChild(_logs2);
+      setLogContainer(_logs2);
+      if (_logs2.children.length) outputDiv.classList.remove("empty");
+    }
     const applyLogOpen = () => {
       const open = gmLoad(LOG_OPEN_KEY) === "1";
       outputDiv.classList.toggle("log-open", open);
@@ -8278,14 +8303,20 @@ ${lines}
     if (!m) return;
     Promise.all([
       getSourceUrlsForRelease(m[1]).then((s) => ({ sources: s, failed: false })).catch((e) => {
+        log.error(`Sources: could not read this release's links from MusicBrainz \u2014 ${e.message}. Showing the toolbar anyway; reload to retry.`);
         console.warn("[credit_hoarder] could not read release sources:", e);
         return { sources: {}, failed: true };
       }),
-      probeTitleRemixes(m[1]).catch(() => null)
+      probeTitleRemixes(m[1]).catch((e) => {
+        log.warn(`Titles: remix probe failed \u2014 ${e.message}`);
+        return null;
+      })
     ]).then(([probe, remix]) => {
       const sources = probe.sources;
       const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
       const remixCount = remix?.count || 0;
+      if (!probe.failed) logSourceProbe(sources, Object.keys(sources).length);
+      log.info(`Toolbar: ${probe.failed ? "source probe FAILED" : hasProvider ? "linked source(s) found" : "no linked sources"}, ${remixCount} title-derived remixer(s) \u2014 ${probe.failed || hasProvider || remixCount ? "mounting" : "not mounting (nothing to import)"}`);
       if (!probe.failed && !hasProvider && remixCount === 0) return;
       insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
     });
