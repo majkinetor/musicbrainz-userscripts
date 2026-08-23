@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.162622
+// @version      2026.8.23.173427
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -83,6 +83,15 @@
     set hideLauncher(v) { GM_setValue('falcon:hideLauncher', !!v); },
     get coverOnlyIfNone() { return GM_getValue('falcon:coverOnlyIfNone', false) === true; },
     set coverOnlyIfNone(v) { GM_setValue('falcon:coverOnlyIfNone', !!v); },
+    // #537 (majkinetor): "I think this is all very complicated and is not
+    // something Falcon should do. Add an option to not process Harmony covers."
+    // Cover art is the one payload Falcon cannot get exactly right on its own —
+    // Harmony links a provider's thumbnail, and reaching the full-size image
+    // means owning per-provider URL rules (see the issue). With this on, Falcon
+    // leaves covers alone entirely and you use ECAU or Art Station for them;
+    // everything else in a Harmony batch still goes through as usual.
+    get skipHarmonyCovers() { return GM_getValue('falcon:skipHarmonyCovers', false) === true; },
+    set skipHarmonyCovers(v) { GM_setValue('falcon:skipHarmonyCovers', !!v); },
     // #508 follow-up (majkinetor): "Auto start Harmony import (off by default)".
     get autoStartHarmonyImport() { return GM_getValue('falcon:autoStartHarmonyImport', false) === true; },
     set autoStartHarmonyImport(v) { GM_setValue('falcon:autoStartHarmonyImport', !!v); },
@@ -629,6 +638,13 @@
       // have BOTH a cover AND urls (added via the generic path just below,
       // same as any other type), landing in the same item since both paths
       // dedup on (entityType, mbid) identically.
+      // #537: with "Ignore Harmony cover art" on, a cover payload is dropped
+      // here as well as at send time — an older Harmony tab (or a hand-made
+      // ?falcon= url) can still carry one, and the option should hold.
+      if (p.entityType === 'release' && p.coverCandidates && cfg.skipHarmonyCovers) {
+        log('info', `ignoring cover art for release ${p.mbid} — "Ignore Harmony cover art" is on`);
+        return;   // this is a forEach callback, not a loop
+      }
       if (p.entityType === 'release' && p.coverCandidates) {
         const existingRel = queue.find(i => i.status === 'queued' && i.entityType === 'release' && i.mbid === p.mbid);
         if (existingRel) {
@@ -1216,7 +1232,7 @@
   let harmonyBtn = null;
   function ensureHarmonyButton() {
     const items = scrapeHarmonyActions();
-    const cover = scrapeHarmonyCover();
+    const cover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();   // #537
     // #500: the isrc fallback only matters when there are no recording
     // tuples for scrapeHarmonyActions to have already zipped isrcs onto.
     const isrcFallback = items.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
@@ -1249,7 +1265,8 @@
           }
           lbl.textContent = prevLbl;
         }
-        const foundCover = scrapeHarmonyCover();
+        // #537: nothing to send, and nothing to count on the button either.
+        const foundCover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
         const foundIsrcFallback = found.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
         if (!found.length && !foundCover && !foundIsrcFallback) { alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`); return; }
         const token = makePendingToken();
@@ -3076,7 +3093,7 @@
     // Add covers only when there aren't any enabled here") — a log dump
     // alone doesn't say which toggles were active, which matters for
     // reading a run's behavior back later (this exact bug report needed it).
-    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}`);
+    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}`);
     suspendNameLookups();   // cosmetic lookups must not eat the workers' rate-limit budget
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
@@ -3272,6 +3289,9 @@
         </label>
         <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="If a release already has cover art, skip adding another instead of uploading blind — Harmony offers cover art whether or not the release already has some">
           <input type="checkbox" id="falcon-opt-cover-only-if-none" /> <span>Add covers only when there aren't any</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. Harmony links a provider thumbnail rather than the full-size image, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
+          <input type="checkbox" id="falcon-opt-skip-harmony-covers" /> <span>Ignore Harmony cover art</span>
         </label>
         <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
           <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start Harmony import</span>
@@ -3592,6 +3612,9 @@
     const coverOnlyCb = document.getElementById('falcon-opt-cover-only-if-none');
     coverOnlyCb.checked = cfg.coverOnlyIfNone;
     coverOnlyCb.onchange = () => { cfg.coverOnlyIfNone = coverOnlyCb.checked; };
+    const skipCoversCb = document.getElementById('falcon-opt-skip-harmony-covers');
+    skipCoversCb.checked = cfg.skipHarmonyCovers;
+    skipCoversCb.onchange = () => { cfg.skipHarmonyCovers = skipCoversCb.checked; };
     const autoStartCb = document.getElementById('falcon-opt-auto-start-harmony');
     autoStartCb.checked = cfg.autoStartHarmonyImport;
     autoStartCb.onchange = () => { cfg.autoStartHarmonyImport = autoStartCb.checked; };
