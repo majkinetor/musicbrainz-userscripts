@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.194121
+// @version      2026.8.23.220737
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -85,11 +85,12 @@
     set coverOnlyIfNone(v) { GM_setValue('falcon:coverOnlyIfNone', !!v); },
     // #537 (majkinetor): "I think this is all very complicated and is not
     // something Falcon should do. Add an option to not process Harmony covers."
-    // Cover art is the one payload Falcon cannot get exactly right on its own —
-    // Harmony links a provider's thumbnail, and reaching the full-size image
-    // means owning per-provider URL rules (see the issue). With this on, Falcon
-    // leaves covers alone entirely and you use ECAU or Art Station for them;
-    // everything else in a Harmony batch still goes through as usual.
+    // Cover art is the one payload Falcon cannot get exactly right on its own:
+    // Harmony gives the image URL the provider's own API returns, which is
+    // often not the largest that provider will serve, and reaching the bigger
+    // one means owning per-provider URL rules (see the issue). With this on,
+    // Falcon leaves covers alone entirely and you use ECAU or Art Station for
+    // them; everything else in a Harmony batch still goes through as usual.
     get skipHarmonyCovers() { return GM_getValue('falcon:skipHarmonyCovers', false) === true; },
     set skipHarmonyCovers(v) { GM_setValue('falcon:skipHarmonyCovers', !!v); },
     // #508 follow-up (majkinetor): "Auto start Harmony import (off by default)".
@@ -3335,7 +3336,7 @@
           <legend style="padding:0 5px;font-weight:600;color:#1b2a4a;font-size:11px">
             <a href="https://harmony.pulsewidth.org.uk/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" title="Harmony — the importer these options apply to">Harmony</a>
           </legend>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. Harmony links a provider thumbnail rather than the full-size image, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. The URL Harmony gives is whatever the provider's API returns, which is often not the largest that provider will serve, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
             <input type="checkbox" id="falcon-opt-skip-harmony-covers" /> <span>Ignore cover art</span>
           </label>
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
