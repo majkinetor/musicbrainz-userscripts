@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.214642
+// @version      2026.8.23.222341
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2719,14 +2719,13 @@
       // next row" — a long "→ 12 tracks: 1, 2, 3 …" pushed the button off the
       // end. Scope and Match now travel as ONE right-hand group that shrinks
       // (the track list truncates) instead of wrapping the button away.
-      + '.gt-tp-right{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 1 auto;min-width:0}'
-      + '.gt-tp-presets{flex:1 0 100%;display:flex;flex-wrap:wrap;gap:6px;margin-left:0}'
+      + '.gt-cons-foot .gt-tp-scope{margin-right:auto}'
       + '.gt-tp-pat{width:180px;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:13px monospace;outline:none}'
       + '.gt-tp-pat:focus{border-color:#4a90d9}'
       + '.gt-tp-clr{background:none;border:none;color:#8892a0;cursor:pointer;padding:2px 4px}.gt-tp-clr:hover{color:#556}'
       + '.gt-tp-presets{display:flex;gap:4px;flex-wrap:wrap}'
       + '.gt-tp-chip{font:11px monospace;background:#f3f4f7;border:1px solid #dde1e7;border-radius:11px;padding:2px 9px;cursor:pointer;color:#444}.gt-tp-chip:hover{background:#eef4fb;border-color:#cfe0f0}'
-      + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;background:#f3f4f7;border-radius:11px;padding:2px 9px;min-width:0}'
+      + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#6b7280;background:#f3f4f7;border-radius:11px;padding:3px 10px;min-width:0}'
       + '.gt-tp-scope-lbl{color:#8892a0}'
       + '.gt-tp-scope-sel{font:inherit;font-size:11px;border:1px solid #dcdfe6;border-radius:5px;background:#fff;padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid #dcdfe6;border-radius:5px;padding:1px 6px}'
@@ -2788,7 +2787,7 @@
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
-      + '.gt-tp-ctrl .gt-tp-resolve{flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font:13px inherit;color:#5f3ec0;font-weight:bold}'
+      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font:13px inherit;color:#5f3ec0;font-weight:bold}'
       + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
       + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
       + '.gt-tp-apop{width:340px}'
@@ -3170,15 +3169,13 @@
     }
     scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); };
     tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
-    // #539 follow-up (majkinetor): "With enough tracks, Match button goes to
-    // next row." The five preset chips plus the pattern box already filled the
-    // bar, so the scope + Match group wrapped — and once wrapped, a long track
-    // list separated them. The row now carries only the controls you act with
-    // (pattern · scope · Match); the preset chips, which are a convenience
-    // list, take the line below and can wrap freely there.
-    const rightGroup = el('span', 'gt-tp-right');
-    rightGroup.append(scopeWrap, resolveBtn);
-    ctrl.append(patIn, patClr, rightGroup, presets);
+    // #539 follow-up (majkinetor): "We again have new row, this time for out of
+    // the box patterns … Move scope to the bottom, opposite of Apply." So the
+    // top bar is back to what it was — pattern · presets · ⚡ Match — and the
+    // scope control lives in the footer instead, at the opposite end from
+    // Apply. It belongs there anyway: it is part of deciding what Apply does,
+    // not part of writing the pattern.
+    ctrl.append(patIn, patClr, presets, resolveBtn);
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -3231,7 +3228,7 @@
     applyClearBtn.title = 'Apply the resolved rows, then open the annotation editor pre-cleared for you to review and submit';
     applyClearBtn.style.display = 'none';
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
-    foot.append(cnt, applyClearBtn, applyBtn);
+    foot.append(scopeWrap, cnt, applyClearBtn, applyBtn);   // #539: scope at the far left, Apply at the far right
 
     const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
     // #522 follow-up (majkinetor, live): "Lets have an option to remove a
