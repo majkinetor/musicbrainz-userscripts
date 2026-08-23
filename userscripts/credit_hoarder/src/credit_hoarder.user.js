@@ -177,17 +177,22 @@ if (/musicbrainz\.org$/i.test(location.hostname)) (function () {
     // only left after MusicBrainz's own page finished booting — pure dead time
     // on a page that fires six /ws/js/type-info requests of its own.
     const tProbe = since();
-    const probes = Promise.all([
-        getSourceUrlsForRelease(m[1]).then(s => { log.info(`Boot: source probe done (+${since() - tProbe}ms)`); return { sources: s, failed: false }; })
-            .catch(e => {
-                log.error(`Sources: could not read this release's links from MusicBrainz — ${e.message}. `
-                    + 'Showing the toolbar anyway; reload to retry.');
-                console.warn('[credit_hoarder] could not read release sources:', e);
-                return { sources: {}, failed: true };
-            }),
-        probeTitleRemixes(m[1]).then(r => { log.info(`Boot: title-remix probe done (+${since() - tProbe}ms)`); return r; })
-            .catch(e => { log.warn(`Titles: remix probe failed — ${e.message}`); return null; }),
-    ]);
+    const sourceProbe = getSourceUrlsForRelease(m[1])
+        .then(s => { log.info(`Boot: source probe done (+${since() - tProbe}ms)`); return { sources: s, failed: false }; })
+        .catch(e => {
+            log.error(`Sources: could not read this release's links from MusicBrainz — ${e.message}. `
+                + 'Showing the toolbar anyway; reload to retry.');
+            console.warn('[credit_hoarder] could not read release sources:', e);
+            return { sources: {}, failed: true };
+        });
+    // ⚠ NOT awaited before mounting. This one reads the tracklist from the
+    // PUBLIC ws/2 API — rate-limited and, per majkinetor's console export,
+    // occasionally 12 seconds slow — and it only decides whether to offer the
+    // "Titles" source. Holding the whole toolbar for it meant a release whose
+    // Discogs link was known in 457ms showed nothing for 12.3s (#531).
+    const remixProbe = probeTitleRemixes(m[1])
+        .then(r => { log.info(`Boot: title-remix probe done (+${since() - tProbe}ms)`); return r; })
+        .catch(e => { log.warn(`Titles: remix probe failed — ${e.message}`); return null; });
 
     // Native readiness, so this does not depend on the page's jQuery having
     // loaded and run its own ready queue first.
@@ -196,7 +201,26 @@ if (/musicbrainz\.org$/i.test(location.hostname)) (function () {
         document.addEventListener('DOMContentLoaded', () => resolve(), { once: true });
     }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
 
-    Promise.all([probes, domReady]).then(([[probe, remix]]) => bootstrapBar(probe, remix, m[1]));
+    Promise.all([sourceProbe, domReady]).then(([probe]) => {
+        // Mount on what we know now. If the release has no linked source, the
+        // Titles probe is the only thing that could justify a toolbar, so that
+        // is the one case worth waiting for.
+        const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz
+            || probe.sources.deezer || probe.sources.apple || probe.sources.metalArchives);
+        if (known || probe.failed) {
+            bootstrapBar(probe, null, m[1]);
+            remixProbe.then(remix => {
+                const n = remix?.count || 0;
+                if (!n) return;
+                const bar = document.querySelector('.discogs-bar');
+                const outcome = bar?._addTitlesSource ? bar._addTitlesSource(n) : 'no bar';
+                log.info(`Titles: ${n} remixer(s) derivable from the track titles — ${outcome} (+${since()}ms)`);
+            });
+            return;
+        }
+        log.info('Boot: no linked source — waiting for the title-remix probe before deciding whether to show anything');
+        remixProbe.then(remix => bootstrapBar(probe, remix, m[1]));
+    });
 })();
 
 function bootstrapBar(probe, remix, releaseMbid) {

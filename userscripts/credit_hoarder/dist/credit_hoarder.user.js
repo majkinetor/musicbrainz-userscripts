@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.8.23.171612
+// @version      2026.8.23.175213
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -6904,7 +6904,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     };
     const srcButtons = [];
     let importing = false;
-    importSources.forEach((s) => {
+    const makeSrcButton = (s) => {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "discogs-src-ico";
@@ -6925,7 +6925,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       });
       srcButtons.push(b);
       srcIcons.appendChild(b);
-    });
+      return b;
+    };
+    importSources.forEach(makeSrcButton);
     if (meta.sourceProbeFailed && !importSources.length) {
       const warn = document.createElement("span");
       warn.className = "discogs-src-probe-failed";
@@ -6934,7 +6936,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       warn.title = "The /ws/js/release lookup failed (MusicBrainz was busy or unreachable), so the linked import sources are unknown.";
       srcIcons.appendChild(warn);
     }
-    if (importSources.length > 1) {
+    const makeAllButton = () => {
+      if (importSources.length <= 1 || srcIcons.querySelector(".discogs-src-all")) return;
       const allBtn = document.createElement("button");
       allBtn.type = "button";
       allBtn.className = "discogs-src-ico discogs-src-all";
@@ -6951,7 +6954,18 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       });
       srcButtons.push(allBtn);
       srcIcons.appendChild(allBtn);
-    }
+    };
+    makeAllButton();
+    const addTitlesSource = (count) => {
+      if (!(count > 0)) return "none";
+      if (importSources.some((x) => x.name === "Titles")) return "already";
+      const src = { name: "Titles", url: "", run: (g, c, collect) => runTitlesImport(g, c, collect) };
+      importSources.push(src);
+      makeSrcButton(src);
+      makeAllButton();
+      return "added";
+    };
+    bar._addTitlesSource = addTitlesSource;
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
@@ -8319,28 +8333,41 @@ ${lines}
     if (!m) return;
     log.info(`Boot: script running (document.readyState=${document.readyState}, ${Math.round(performance.now())}ms into the page)`);
     const tProbe = since();
-    const probes = Promise.all([
-      getSourceUrlsForRelease(m[1]).then((s) => {
-        log.info(`Boot: source probe done (+${since() - tProbe}ms)`);
-        return { sources: s, failed: false };
-      }).catch((e) => {
-        log.error(`Sources: could not read this release's links from MusicBrainz \u2014 ${e.message}. Showing the toolbar anyway; reload to retry.`);
-        console.warn("[credit_hoarder] could not read release sources:", e);
-        return { sources: {}, failed: true };
-      }),
-      probeTitleRemixes(m[1]).then((r) => {
-        log.info(`Boot: title-remix probe done (+${since() - tProbe}ms)`);
-        return r;
-      }).catch((e) => {
-        log.warn(`Titles: remix probe failed \u2014 ${e.message}`);
-        return null;
-      })
-    ]);
+    const sourceProbe = getSourceUrlsForRelease(m[1]).then((s) => {
+      log.info(`Boot: source probe done (+${since() - tProbe}ms)`);
+      return { sources: s, failed: false };
+    }).catch((e) => {
+      log.error(`Sources: could not read this release's links from MusicBrainz \u2014 ${e.message}. Showing the toolbar anyway; reload to retry.`);
+      console.warn("[credit_hoarder] could not read release sources:", e);
+      return { sources: {}, failed: true };
+    });
+    const remixProbe = probeTitleRemixes(m[1]).then((r) => {
+      log.info(`Boot: title-remix probe done (+${since() - tProbe}ms)`);
+      return r;
+    }).catch((e) => {
+      log.warn(`Titles: remix probe failed \u2014 ${e.message}`);
+      return null;
+    });
     const domReady = new Promise((resolve) => {
       if (document.readyState === "interactive" || document.readyState === "complete") return resolve();
       document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
     }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
-    Promise.all([probes, domReady]).then(([[probe, remix]]) => bootstrapBar(probe, remix, m[1]));
+    Promise.all([sourceProbe, domReady]).then(([probe]) => {
+      const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz || probe.sources.deezer || probe.sources.apple || probe.sources.metalArchives);
+      if (known || probe.failed) {
+        bootstrapBar(probe, null, m[1]);
+        remixProbe.then((remix) => {
+          const n = remix?.count || 0;
+          if (!n) return;
+          const bar = document.querySelector(".discogs-bar");
+          const outcome = bar?._addTitlesSource ? bar._addTitlesSource(n) : "no bar";
+          log.info(`Titles: ${n} remixer(s) derivable from the track titles \u2014 ${outcome} (+${since()}ms)`);
+        });
+        return;
+      }
+      log.info("Boot: no linked source \u2014 waiting for the title-remix probe before deciding whether to show anything");
+      remixProbe.then((remix) => bootstrapBar(probe, remix, m[1]));
+    });
   })();
   function bootstrapBar(probe, remix, releaseMbid) {
     {
