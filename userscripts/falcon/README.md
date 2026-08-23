@@ -95,9 +95,10 @@ Falcon currently adds front cover art from Harmony, although it generally suppor
 
 A cover-art item is added via API (sign → upload → register), the same one [Art Station](../art_station) uses.
 
-Its edit note records where the image came from, in the spirit of ECAU's — the source URL, its measured size, and which candidates it was chosen over, so a voter can judge the pick:
+Its edit note records where the image came from, in the spirit of ECAU's — the source URL, its measured size, and which candidates it was chosen over, so a voter can judge the pick — and, for a Harmony batch, the page it came from:
 
 ```
+Imported from Harmony: https://harmony.pulsewidth.org.uk/release/actions?…
 Cover art (Front) from iTunes
 * https://a1.mzstatic.com/…/cover.jpg (3000×3000, 5.58 MB)
 Chosen as the largest of 2 candidates — also offered: Deezer 1000×1000

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.132119
+// @version      2026.8.23.132707
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -343,8 +343,8 @@
   function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
 
   /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
-     disambiguation, isrcs, video, aliases: [{name, locale, type, primary,
-     sortName, begin, end, ended}], cover: [{url, comment, type, candidates:
+     disambiguation, isrcs, video, source, aliases: [{name, locale, type,
+     primary, sortName, begin, end, ended}], cover: [{url, comment, type, candidates:
      [{provider,url,width?,height?,size?}]}], coverExistingCount, urlResults,
      status, error} ── entityType is one of artist/label/recording/release/
      release_group. Field usage by type (#496 — the rest are always present on
@@ -632,6 +632,7 @@
       if (p.entityType === 'release' && p.coverCandidates) {
         const existingRel = queue.find(i => i.status === 'queued' && i.entityType === 'release' && i.mbid === p.mbid);
         if (existingRel) {
+          if (p.source && !existingRel.source) existingRel.source = p.source;
           if (!existingRel.cover.length) existingRel.cover.push(newCoverEntry());
           const entry = existingRel.cover[0];
           const before = entry.candidates.length;
@@ -641,7 +642,7 @@
           merged++;
           return;
         }
-        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', disambiguation: '', isrcs: [], video: false, aliases: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', source: p.source || '', disambiguation: '', isrcs: [], video: false, aliases: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); noteSessionReleaseName(name); } });
         pickBestCover(relItem);
@@ -834,6 +835,7 @@
           note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
           video: type === 'recording' && r.video === true,
           aliases: normalizeAliases(r.aliases),
+          source: typeof r.source === 'string' ? r.source : '',
           cover: coverArr, coverExistingCount: null,
           name: r.name || null, urlResults: r.urlResults || null,
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
@@ -1252,7 +1254,11 @@
         if (!found.length && !foundCover && !foundIsrcFallback) { alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`); return; }
         const token = makePendingToken();
         const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined }));
-        if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates });
+        // #536 follow-up (majkinetor): "edit note should probably show that it
+        // was from harmony page". Nothing downstream knew where a batch came
+        // from, so the cover note could name the image's provider but not the
+        // page that proposed it. Harmony's Release Actions url IS that page.
+        if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates, source: location.href });
         if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
         GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
         const relMbid = harmonyReleaseMbid();
@@ -2498,6 +2504,14 @@
     const wh = (actual && actual.width && actual.height) ? `${actual.width}×${actual.height}` : dims(chosen);
     const lines = [];
     if (item.note) lines.push(item.note);
+    // ECAU leads with the page the image came from; Falcon's is Harmony's
+    // Release Actions page (or whatever produced the queue). Named explicitly
+    // rather than left as a bare url — "Harmony" is the useful word for a voter.
+    if (item.source) {
+      let where = 'Imported from';
+      try { if (/(^|\.)harmony\./i.test(new URL(item.source).hostname)) where = 'Imported from Harmony'; } catch (e) {}
+      lines.push(`${where}: ${item.source}`);
+    }
     lines.push(`Cover art (${entry.type || 'Front'})${chosen && chosen.provider ? ` from ${chosen.provider}` : ''}`);
     lines.push(`* ${entry.url}${(wh || size) ? ` (${[wh, size].filter(Boolean).join(', ')})` : ''}`);
     const others = cands.filter(c => c.url !== entry.url).map(c => `${c.provider}${dims(c) ? ` ${dims(c)}` : ''}`);
@@ -3275,6 +3289,7 @@
           // the item has any — and the export doubles as the JSON template.
           if ((i.aliases || []).length) item.aliases = i.aliases.map(a => ({ name: a.name, locale: a.locale || '', type: a.type || '', primary: !!a.primary, sortName: a.sortName || '', begin: a.begin || '', end: a.end || '', ended: !!a.ended }));
           if (i.aliasResults) item.aliasResults = i.aliasResults;
+          if (i.source) item.source = i.source;
           // #494/#496: cover art is a release item's whole payload — an
           // array of {url, comment, type, candidates}, one entry per image.
           if (i.entityType === 'release') item.cover = (i.cover || []).map(c => ({ url: c.url || '', comment: c.comment || '', type: c.type || 'Front', candidates: c.candidates || [] }));

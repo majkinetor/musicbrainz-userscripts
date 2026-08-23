@@ -72,14 +72,18 @@ await page.click('#falcon-launcher');
 await page.waitForSelector('#falcon-panel', { timeout: 15000 });
 
 const NOTE = 'Falcon #536 edit-note proof';
-await page.evaluate(({ mbid, cands, note }) => {
+// majkinetor's follow-up: "edit note should probably show that it was from
+// harmony page". A Harmony batch stamps item.source with the Release Actions
+// url it was sent from.
+const SOURCE = 'https://harmony.pulsewidth.org.uk/release/actions?release_mbid=' + RELEASE;
+await page.evaluate(({ mbid, cands, note, source }) => {
   window.__falconTest.setQueue([{
-    id: 'n1', entityType: 'release', mbid, name: null, note, urls: [], disambiguation: '',
+    id: 'n1', entityType: 'release', mbid, name: null, note, source, urls: [], disambiguation: '',
     isrcs: [], video: false, aliases: [], coverExistingCount: null, urlResults: null,
     cover: [{ url: '', comment: 'Falcon proof image', type: 'Front', candidates: cands }],
     status: 'queued', error: '',
   }]);
-}, { mbid: RELEASE, cands: CANDIDATES, note: NOTE });
+}, { mbid: RELEASE, cands: CANDIDATES, note: NOTE, source: SOURCE });
 
 // let it measure and pick, then inspect the note it WOULD send
 await page.evaluate(() => window.__falconTest.pickBestCover(window.__falconTest.getQueue()[0]));
@@ -97,6 +101,7 @@ ck(preview.note.includes(preview.picked), 'the note states the exact image URL b
 ck(/from iTunes/.test(preview.note), 'and which provider it came from');
 ck(/also offered: Deezer 1000×1000/.test(preview.note), 'and what it beat, so a voter can judge the choice');
 ck(/Falcon v/.test(preview.note), 'with the script signature still there');
+ck(preview.note.includes(`Imported from Harmony: ${SOURCE}`), 'and the Harmony page the batch came from is named');
 
 // ── now really upload it, and read the note back off MusicBrainz ────────────
 const t0 = Date.now();
@@ -123,6 +128,7 @@ console.log('---');
 ck(!!landed && landed.includes(NOTE), "MusicBrainz stored the note (found on the release's newest Add cover art edit)");
 ck(!!landed && /mzstatic/.test(landed), 'including the source image URL');
 ck(!!landed && /also offered/.test(landed), 'and the candidates it was chosen over');
+ck(!!landed && /Imported from Harmony/.test(landed), 'and that it came from Harmony');
 
 ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');
 await ctx.close();
