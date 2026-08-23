@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.191416
+// @version      2026.8.23.194121
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -3327,15 +3327,24 @@
         <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="If a release already has cover art, skip adding another instead of uploading blind — Harmony offers cover art whether or not the release already has some">
           <input type="checkbox" id="falcon-opt-cover-only-if-none" /> <span>Add covers only when there aren't any</span>
         </label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. Harmony links a provider thumbnail rather than the full-size image, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
-          <input type="checkbox" id="falcon-opt-skip-harmony-covers" /> <span>Ignore Harmony cover art</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
-          <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start Harmony import</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="On: 'Send to Falcon' opens MusicBrainz in a new tab (today's behavior). Off: navigates this same Harmony tab to MusicBrainz instead">
-          <input type="checkbox" id="falcon-opt-open-new-tab" /> <span>Open from Harmony in new tab</span>
-        </label>
+        <!-- majkinetor: "Group harmony options under 1 section". Three of these
+             only ever apply to a batch arriving from Harmony, so they read as a
+             set rather than as three unrelated toggles that happen to repeat the
+             word. The heading carries the context, so the labels drop it. -->
+        <fieldset style="border:1px solid #e3e6ef;border-radius:5px;margin:2px 0 0;padding:6px 10px 8px;display:flex;flex-direction:column;gap:10px">
+          <legend style="padding:0 5px;font-weight:600;color:#1b2a4a;font-size:11px">
+            <a href="https://harmony.pulsewidth.org.uk/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" title="Harmony — the importer these options apply to">Harmony</a>
+          </legend>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. Harmony links a provider thumbnail rather than the full-size image, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
+            <input type="checkbox" id="falcon-opt-skip-harmony-covers" /> <span>Ignore cover art</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
+            <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start import</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="On: 'Send to Falcon' opens MusicBrainz in a new tab (today's behavior). Off: navigates this same Harmony tab to MusicBrainz instead">
+            <input type="checkbox" id="falcon-opt-open-new-tab" /> <span>Open in new tab</span>
+          </label>
+        </fieldset>
         <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
           <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
         </label>
