@@ -165,9 +165,25 @@ Where a role/entity isn't resolved, a **search** link opens a picker (search, pa
 
 Each line can be fixed up without leaving the table: a **pattern override** applies just to that line, its **raw text is directly editable** (writes back into the pasted text above), and **✕** removes the line entirely (from both the table and the source text). The window has a **maximize** button and **drag-resizable columns**.
 
+**Scope** ([#539](https://github.com/majkinetor/musicbrainz-userscripts/issues/539)) decides where the credits land: the **Release** (default), or specific **Recordings**. Choosing Recordings reveals a track selector taking any mix of:
+
+| you type | you get |
+|---|---|
+| `3` or `A1` | the track with that number, as shown in the editor |
+| `5-7` | tracks 5 through 7 |
+| `1,3` | just those |
+| `2:4` / `2:4-6` | track 4 (or 4–6) **on medium 2** — a colon, so `2-4` can only ever mean a range |
+| `2:*` | every track on medium 2 |
+| `all` | every track |
+| *(empty)* | the tracks **ticked** in the editor |
+
+It shows what it matched — `→ 2 tracks: 1, 3` — before you apply anything, since a selector that means something other than you thought would quietly credit the wrong recordings. The roles offered follow the scope too: artist→recording and artist→release are different link-type vocabularies in MusicBrainz (a recording has no "booklet editor", a release has no "video appearance"), so switching scope re-matches the roles.
+
+This replaces parsing at release level and then moving the credits onto a recording afterwards — *"Parsed 18 credits from text / Moved 18 release credits to 1 selected recording"*, four times over.
+
 **Apply** stages the resolved rows as real relationships in the editor and closes the tool — nothing is submitted; you review and save yourself. If the text came from **Load annotation**, an **Apply & clear annotation** button also appears: it applies, then opens the release's own annotation editor pre-cleared so you can review and submit removing the now-redundant free text in one more click (there's no way to stage that as part of the same batched edit, so it isn't automatic). The pasted text and every resolution made so far are remembered for as long as the page stays open — closing and reopening the tool picks up where you left off, but a real page reload starts fresh.
 
-Deliberately single-line-only: multi-line/grouped-block credit formats and per-track scoping aren't parsed (they show as unmatched, not an error) — pick them off manually, or fix the odd line with a per-line pattern override.
+Deliberately single-line-only: multi-line/grouped-block credit formats aren't parsed, and a track reference *inside* the text (`… (A2, B3)`) is not read — scope is chosen for the whole batch, not per line (unparsed track references show as unmatched text, not an error) — pick them off manually, or fix the odd line with a per-line pattern override.
 
 ### Replace role
 

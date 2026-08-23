@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.180541
+// @version      2026.8.23.211952
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.23.180541 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.22\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.8.23.211952 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.23.211930\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -20275,7 +20275,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.22","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.22","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.23.211930","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.23.211930","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -21022,6 +21022,57 @@ ${lines}
   // Must go ONE AT A TIME with a re-read between clicks — all the rels are on the same row, and
   // each removal re-renders it, so pre-collected × buttons go stale after the first click. We
   // re-query the row each pass and remove the next rel matching (linkType + target gid).
+  // ── #539: choosing recordings by track number ───────────────────────────────
+  // Every track row carries its DISPLAYED number in td.pos — "1" on a CD, "A1"
+  // on a vinyl — and MB numbers restart per medium, so a plain "3" can name
+  // more than one track. Rows are returned with their medium so the selector
+  // can disambiguate, and the parser shows what it matched before anything is
+  // applied.
+  function txpTrackRows() {
+    const out = [];
+    let medium = 1;
+    const all = [...document.querySelectorAll('#content tr, table tr')];
+    for (const tr of all) {
+      if (!tr.classList.contains('track')) {
+        // medium headers look like "1▼CD" / "2▼CD"; keep the last number seen
+        const m = (tr.className || '').includes('subh') && (tr.innerText || '').trim().match(/^(\d+)/);
+        if (m) medium = parseInt(m[1], 10);
+        continue;
+      }
+      const rec = recordingEntity(tr);
+      if (!rec) continue;
+      const num = ((tr.querySelector('td.pos') || {}).textContent || '').trim();
+      out.push({ tr, rec, medium, num, ordinal: out.length + 1, title: val(rec.name) || '' });
+    }
+    return out;
+  }
+  // Accepts, comma- or space-separated: a literal track number as displayed
+  // (`3`, `A1`), a numeric range (`5-7`), a medium-qualified number or range
+  // (`2:4`, `2:4-6`), a whole medium (`2:*`), or `all`. A colon is used for the
+  // medium rather than a dash so `2-4` can only ever mean a range.
+  function txpMatchTracks(spec, rows) {
+    const s = String(spec || '').trim();
+    if (!s) return [];
+    if (/^all$/i.test(s)) return rows.slice();
+    const picked = new Set();
+    const numOf = r => { const n = parseInt(String(r.num).replace(/^\D+/, ''), 10); return isFinite(n) ? n : null; };
+    for (const tok of s.split(/[,\s]+/).filter(Boolean)) {
+      let m;
+      if ((m = tok.match(/^(\d+):(\*|all)$/i))) {
+        rows.filter(r => r.medium === +m[1]).forEach(r => picked.add(r));
+      } else if ((m = tok.match(/^(\d+):(\d+)(?:-(\d+))?$/))) {
+        const [lo, hi] = [+m[2], m[3] ? +m[3] : +m[2]];
+        rows.filter(r => r.medium === +m[1] && numOf(r) >= lo && numOf(r) <= hi).forEach(r => picked.add(r));
+      } else if ((m = tok.match(/^(\d+)-(\d+)$/))) {
+        const [lo, hi] = [+m[1], +m[2]];
+        rows.filter(r => numOf(r) !== null && numOf(r) >= lo && numOf(r) <= hi).forEach(r => picked.add(r));
+      } else {
+        const t = tok.toLowerCase();
+        rows.filter(r => String(r.num).toLowerCase() === t).forEach(r => picked.add(r));
+      }
+    }
+    return rows.filter(r => picked.has(r));
+  }
   const rowForRecording = gid => [...document.querySelectorAll('tr.track')].find(tr => { const rec = recordingEntity(tr); return rec && rec.gid === gid; });
   async function removeSourceRels(srcGid, srcRels) {
     const want = new Set(srcRels.map(s => s.linkTypeID + '|' + (s.other && s.other.gid)));
@@ -22934,7 +22985,11 @@ ${lines}
       + '.gt-tp-clr{background:none;border:none;color:#8892a0;cursor:pointer;padding:2px 4px}.gt-tp-clr:hover{color:#556}'
       + '.gt-tp-presets{display:flex;gap:4px;flex-wrap:wrap}'
       + '.gt-tp-chip{font:11px monospace;background:#f3f4f7;border:1px solid #dde1e7;border-radius:11px;padding:2px 9px;cursor:pointer;color:#444}.gt-tp-chip:hover{background:#eef4fb;border-color:#cfe0f0}'
-      + '.gt-tp-scope{margin-left:auto;font-size:11px;color:#8892a0;background:#f3f4f7;border-radius:11px;padding:2px 9px}'
+      + '.gt-tp-scope{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;background:#f3f4f7;border-radius:11px;padding:2px 9px}'
+      + '.gt-tp-scope-lbl{color:#8892a0}'
+      + '.gt-tp-scope-sel{font:inherit;font-size:11px;border:1px solid #dcdfe6;border-radius:5px;background:#fff;padding:1px 3px}'
+      + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid #dcdfe6;border-radius:5px;padding:1px 6px}'
+      + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis}'
       + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid #cfd4da;border-radius:5px;background:#fff;cursor:pointer;font:12px inherit;color:#444}.gt-cons-hdr .gt-tp-anno:hover{background:#f2f4f7}'
       + '.gt-tp-src{padding:0 14px}'
       + '.gt-tp-srctgl{display:block;background:none;border:none;color:#2e6da4;cursor:pointer;font:12px inherit;padding:6px 0}'
@@ -23063,6 +23118,12 @@ ${lines}
     const saved = txpLoadState(release.gid);
 
     let pattern = (saved && saved.pattern) || _txpPattern;
+    // #539 (majkinetor): "Currently we have Scope: Release only … This could be
+    // done faster if user is allowed to select recording by track number(s)."
+    // He was applying credits to the release and then moving them onto one
+    // recording, four times over. `spec` is a track selector (see txpMatchTracks)
+    // and only means anything while kind === 'recording'.
+    let scope = { kind: (saved && saved.scopeKind) || 'release', spec: (saved && saved.scopeSpec) || '' };
     let lines = [];                  // [{ raw, override }]
     // #522 follow-up (majkinetor): drives whether "Apply & clear annotation"
     // is even offered — only true right after "Load annotation" succeeds,
@@ -23325,7 +23386,45 @@ ${lines}
     // (renderWorkMatch's `tb`), styled the same bold-purple "primary" way.
     const resolveBtn = el('button', 'gt-tp-resolve', '⚡ Match'); resolveBtn.type = 'button';
     resolveBtn.title = 'Resolve every role and entity that can auto-resolve';
-    ctrl.append(patIn, patClr, presets, el('span', 'gt-tp-scope', 'Scope: Release'), resolveBtn);
+    // #539: scope picker. Release is still the default — the recording scope is
+    // opt-in and inert until a track selector is typed.
+    const scopeWrap = el('span', 'gt-tp-scope');
+    const scopeSel = el('select', 'gt-tp-scope-sel');
+    [['release', 'Release'], ['recording', 'Recordings']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; scopeSel.appendChild(o); });
+    scopeSel.value = scope.kind;
+    const tracksIn = el('input', 'gt-tp-tracks'); tracksIn.type = 'text'; tracksIn.value = scope.spec;
+    tracksIn.placeholder = 'tracks: 1,3,5-7 · 2:4 · all';
+    tracksIn.title = 'Which recordings the credits go on: a track number as shown (3, A1), a range (5-7), '
+      + 'a medium-qualified number or range (2:4, 2:4-6), a whole medium (2:*), or all. '
+      + 'Leave empty to use the tracks ticked in the editor.';
+    const tracksInfo = el('span', 'gt-tp-tracks-info', '');
+    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo);
+    // What did that selector actually match? Shown before anything is applied,
+    // because "1-3" meaning something other than you thought is a silent way to
+    // credit the wrong recordings.
+    const refreshScopeUi = () => {
+      const rec = scope.kind === 'recording';
+      tracksIn.style.display = rec ? '' : 'none';
+      tracksInfo.style.display = rec ? '' : 'none';
+      if (!rec) return;
+      const targets = txpScopeTargets();
+      const ticked = !scope.spec.trim();
+      tracksInfo.textContent = targets.length
+        ? `→ ${targets.length} track${targets.length > 1 ? 's' : ''}${ticked ? ' (ticked)' : ''}: ${targets.map(t => t.num).join(', ')}`
+        : (ticked ? '→ no tracks ticked' : '→ nothing matched');
+      tracksInfo.style.color = targets.length ? '#3a7d4f' : '#b3541e';
+      tracksInfo.title = targets.map(t => `${t.num}  ${t.title}`).join('\n');
+    };
+    // The recordings this run will credit: an explicit selector wins, otherwise
+    // the editor's own ticked tracks (the same idiom as GT's other tools).
+    function txpScopeTargets() {
+      const rows = txpTrackRows();
+      if (scope.spec.trim()) return txpMatchTracks(scope.spec, rows);
+      return rows.filter(r => { const cb = r.tr.querySelector('input.recording'); return cb && cb.checked; });
+    }
+    scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); };
+    tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
+    ctrl.append(patIn, patClr, presets, scopeWrap, resolveBtn);
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -23547,9 +23646,14 @@ ${lines}
         // network) and must happen BEFORE the unified entity-resolution
         // list below, since an ordinary row's entity type (rowEntityType)
         // depends on its role's classification.
-        const artistCands = linkTypesForPair('artist', 'release');
-        const labelCands = linkTypesForPair('label', 'release');
-        const placeCands = linkTypesForPair('place', 'release');   // #525: "recorded at", "mixed at", "mastered at", …
+        // #539: the role vocabulary is per entity PAIR — "recorded at" exists
+        // for both, but plenty of release roles have no recording equivalent
+        // and vice versa. Follow the chosen scope, or a recording run would be
+        // matched against release-only link types.
+        const scopeTarget = scope.kind === 'recording' ? 'recording' : 'release';
+        const artistCands = linkTypesForPair('artist', scopeTarget);
+        const labelCands = linkTypesForPair('label', scopeTarget);
+        const placeCands = linkTypesForPair('place', scopeTarget);   // #525: "recorded at", "mixed at", "mastered at", …
         const instrumentLt = artistCands.find(c => c.name === 'instrument');
         const instrumentCands = instrumentLt ? txpInstrumentCandidates() : [];
         const roleTexts = [...new Set(creditRows.map(r => (r.role || '').toLowerCase().trim()).filter(Boolean))];
@@ -23608,8 +23712,9 @@ ${lines}
     }
 
     function txpPickRole(r) {
-      const artistCands = linkTypesForPair('artist', 'release');
-      const labelCands = linkTypesForPair('label', 'release');
+      const scopeTarget = scope.kind === 'recording' ? 'recording' : 'release';   // #539
+      const artistCands = linkTypesForPair('artist', scopeTarget);
+      const labelCands = linkTypesForPair('label', scopeTarget);
       const instrumentLt = artistCands.find(c => c.name === 'instrument');
       // offer specific instruments alongside the direct link types (tagged
       // so onPick can tell them apart and build the right {id, attributeId}
@@ -23622,7 +23727,7 @@ ${lines}
         ...artistCands.map(c => ({ ...c, _entityType: 'artist' })),
         ...labelCands.map(c => ({ ...c, _entityType: 'label', desc: (c.desc ? c.desc + ' ' : '') + '(label)' })),
         // #525: place roles too — "recorded at", "mixed at", "mastered at" …
-        ...linkTypesForPair('place', 'release').map(c => ({ ...c, _entityType: 'place', desc: (c.desc ? c.desc + ' ' : '') + '(place)' })),
+        ...linkTypesForPair('place', scopeTarget).map(c => ({ ...c, _entityType: 'place', desc: (c.desc ? c.desc + ' ' : '') + '(place)' })),
         ...instrumentOpts,
       ];
       // #522 follow-up (majkinetor, live): "when clicking search on a role,
@@ -23807,22 +23912,37 @@ ${lines}
     // exact same dispatch logic before opening the annotation editor.
     async function applyResolvedRows() {
       const re = RE(); if (!re) { toast('Editor not ready'); return null; }
-      const rows = parsedRows().map(attachResolution).filter(r => r.matched && r.roleMatch && r.entityMatch && !appliedKeys.has(r.key));
+      // #539: one dispatch per (credit × target). appliedKeys is keyed per
+      // target too, so the same parsed text can be applied to track 3 now and
+      // track 7 later without the second run thinking it already ran.
+      const targets = scope.kind === 'recording' ? txpScopeTargets().map(t => t.rec) : [release];
+      if (!targets.length) {
+        toast(scope.spec.trim() ? 'No track matched that selection' : 'No tracks ticked — type track numbers or tick some');
+        return null;
+      }
+      const keyFor = (r, target) => (targets.length === 1 && scope.kind !== 'recording') ? r.key : `${r.key}|${target.gid || target.id}`;
+      const rows = parsedRows().map(attachResolution).filter(r => r.matched && r.roleMatch && r.entityMatch
+        && targets.some(t => !appliedKeys.has(keyFor(r, t))));
       if (!rows.length) { toast('Nothing resolved to apply'); return null; }
       let ok = 0, fail = 0;
       for (const r of rows) {
-        try {
-          const credit = r.entity && r.entity !== (r.entityMatch.name || '') ? r.entity : '';
-          const dates = r.year ? { begin_date: { year: parseInt(r.year, 10), month: null, day: null }, end_date: null, ended: false } : null;
-          // an instrument-role match carries an attributeId (the "instrument"
-          // link type doesn't say WHICH instrument on its own).
-          const attrs = r.roleMatch.attributeId ? buildAttrTree([{ typeID: r.roleMatch.attributeId, text_value: '', credited_as: '' }]) : null;
-          dispatchRelationship(re, release, r.entityMatch, r.roleMatch.id, credit, attrs, dates);
-          appliedKeys.add(r.key); ok++;
-        } catch (e) { fail++; try { console.warn('[Group Therapy] text-parser apply failed:', e); } catch (_) {} }
+        const credit = r.entity && r.entity !== (r.entityMatch.name || '') ? r.entity : '';
+        const dates = r.year ? { begin_date: { year: parseInt(r.year, 10), month: null, day: null }, end_date: null, ended: false } : null;
+        // an instrument-role match carries an attributeId (the "instrument"
+        // link type doesn't say WHICH instrument on its own).
+        const attrs = r.roleMatch.attributeId ? buildAttrTree([{ typeID: r.roleMatch.attributeId, text_value: '', credited_as: '' }]) : null;
+        for (const target of targets) {
+          const k = keyFor(r, target);
+          if (appliedKeys.has(k)) continue;
+          try {
+            dispatchRelationship(re, target, r.entityMatch, r.roleMatch.id, credit, attrs, dates);
+            appliedKeys.add(k); ok++;
+          } catch (e) { fail++; try { console.warn('[Group Therapy] text-parser apply failed:', e); } catch (_) {} }
+        }
       }
-      if (ok) markUsed(`Parsed ${ok} credit${ok > 1 ? 's' : ''} from text`);
-      toast(fail ? `Applied ${ok}, ${fail} failed — see console` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''} — review & save`);
+      const where = scope.kind === 'recording' ? ` to ${targets.length} recording${targets.length > 1 ? 's' : ''}` : '';
+      if (ok) markUsed(`Parsed ${ok} credit${ok > 1 ? 's' : ''} from text${where}`);
+      toast(fail ? `Applied ${ok}, ${fail} failed — see console` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''}${where} — review & save`);
       saveState();
       return { ok, fail };
     }
@@ -23856,6 +23976,7 @@ ${lines}
     // rebuilt on load (see the `saved` restore below).
     const saveState = () => txpSaveState(release.gid, {
       text: ta.value, pattern,
+      scopeKind: scope.kind, scopeSpec: scope.spec,
       roleCache: [...roleCache.entries()],
       entityCache: [...entityCache.entries()],
       entityOverride: [...entityOverride.entries()],
@@ -23926,6 +24047,7 @@ ${lines}
       (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
     }
     render();
+    refreshScopeUi();   // #539: show what the saved scope selects, before anything is touched
     setTimeout(() => { try { patIn.focus(); patIn.select(); } catch (e) {} }, 30);
   }
 
@@ -24248,6 +24370,7 @@ ${lines}
     try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE, replacementRoles, replaceRole, replaceRoleMenuItems, relEnds, openRolePicker,
       // #522 text parser
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
+      txpTrackRows, txpMatchTracks,   // #539 recording scope
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
       txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNarrowByScore, txpInstrumentCandidates,
       txpSplitCompoundCopyrightLines,
