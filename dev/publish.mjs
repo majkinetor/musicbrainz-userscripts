@@ -55,14 +55,37 @@ function todayTag() {
   return tag;
 }
 
+// An issue that shipped, was REOPENED because the fix was incomplete, and then
+// fixed and closed again keeps its `released` label from the first time — so it
+// silently never appears in a changelog again. That is not hypothetical: #530
+// and #531 were released on 2026.8.22, reopened the same day, fixed again, and
+// their second round shipped in 2026.8.23 under "Small improvements".
+//
+// Anything re-closed AFTER the last release is unreleased work, whatever its
+// label says. Compares against the previous release's timestamp, so a normal
+// already-released issue (closed long before it) still stays out.
+function lastReleaseTime() {
+  try {
+    const rel = JSON.parse(gh('release', 'list', '--repo', REPO, '--limit', '1', '--json', 'createdAt,tagName'));
+    return rel.length ? { at: Date.parse(rel[0].createdAt), tag: rel[0].tagName } : null;
+  } catch (e) { return null; }
+}
+
 function collectIssues() {
-  const all = JSON.parse(gh('issue', 'list', '--repo', REPO, '--state', 'closed', '--limit', '1000', '--json', 'number,title,labels,stateReason'));
+  const all = JSON.parse(gh('issue', 'list', '--repo', REPO, '--state', 'closed', '--limit', '1000', '--json', 'number,title,labels,stateReason,closedAt'));
+  const prev = lastReleaseTime();
   const groups = {};   // dir → { name, path, features:[], fixes:[] }
   const included = [];
   for (const i of all) {
     const names = i.labels.map(l => l.name);
     if (i.stateReason === 'NOT_PLANNED') continue;   // "Closed as not planned" → out of the changelog, same as the wontfix label
-    if (['released', 'skip changelog', 'wontfix'].some(x => names.includes(x))) continue;
+    if (['skip changelog', 'wontfix'].some(x => names.includes(x))) continue;
+    if (names.includes('released')) {
+      // …unless it was re-closed after the last release: reopened-and-fixed-again.
+      const reFixed = prev && i.closedAt && Date.parse(i.closedAt) > prev.at;
+      if (!reFixed) continue;
+      console.log(`    (re-including #${i.number} — labelled released, but closed again after ${prev.tag})`);
+    }
     const areas = names.filter(n => AREA_RE.test(n)); if (!areas.length) continue;   // an issue can span several scripts
     const kind = names.includes('enhancement') ? 'features' : names.includes('bug') ? 'fixes' : null; if (!kind) continue;
     for (const area of areas) {   // add it to EACH script's changelog (cross-cutting work, e.g. a shared Qobuz API)
