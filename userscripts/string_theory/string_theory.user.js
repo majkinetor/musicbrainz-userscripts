@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.201243
+// @version      2026.8.23.171636
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.22.201243 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.22.201228\n  · Credit Hoarder v2026.8.22\n  · Group Therapy v2026.8.22\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.8.23.171636 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.17\n  · Art Station v2026.8.22.201228\n  · Credit Hoarder v2026.8.23.171612\n  · Group Therapy v2026.8.22\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -11918,7 +11918,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.22","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.22","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.23.171612","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.23.171612","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -11998,7 +11998,17 @@ try {
   }
   var _pending = [];
   var PENDING_MAX = 200;
+  function _console(plainText, sev) {
+    try {
+      const line = "[credit_hoarder] " + String(plainText).replace(/<[^>]*>/g, "").trim();
+      if (sev === "error") console.error(line);
+      else if (sev === "warn") console.warn(line);
+      else console.log(line);
+    } catch (e) {
+    }
+  }
   function _emit(html, plainText, sev) {
+    _console(plainText, sev);
     if (!_logs) {
       if (_pending.length < PENDING_MAX) _pending.push([html, plainText, sev]);
       return;
@@ -12225,7 +12235,9 @@ try {
     }
     {
       const rels = json.relationships || [];
-      log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release`);
+      const urlRels = rels.filter((r) => r.target?.href_url);
+      log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release, ${urlRels.length} of them url(s)`);
+      _lastLinkCount = urlRels.length;
       const abs = (u) => u && u.startsWith("//") ? "https:" + u : u;
       const href = (pred) => abs(rels.find(pred)?.target?.href_url || null);
       return {
@@ -12240,9 +12252,11 @@ try {
       };
     }
   }
+  var _lastLinkCount = 0;
   function logSourceProbe(sources, urlCount) {
     const found = Object.entries(sources || {}).filter(([, v]) => v);
-    log.info(`Sources: ${found.length} import source(s) from ${urlCount} link(s)` + (found.length ? " \u2014 " + found.map(([k]) => k).join(", ") : " \u2014 none of the links is a supported source"));
+    const n = urlCount == null ? _lastLinkCount : urlCount;
+    log.info(`Sources: ${found.length} import source(s) from ${n} link(s)` + (found.length ? " \u2014 " + found.map(([k]) => k).join(", ") : " \u2014 none of the links is a supported source"));
     found.forEach(([k, v]) => logDebug(`  source ${k}: ${v}`));
   }
   function resolveLinkTypeId(name, type0, type1) {
@@ -20185,30 +20199,49 @@ ${lines}
       setTimeout(() => window.close(), CLOSE_DELAY_MS);
     });
   })();
-  if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function() {
+  var T0 = typeof performance !== "undefined" ? performance.now() : Date.now();
+  var since = () => Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - T0);
+  if (/musicbrainz\.org$/i.test(location.hostname)) (function() {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
-    Promise.all([
-      getSourceUrlsForRelease(m[1]).then((s) => ({ sources: s, failed: false })).catch((e) => {
+    log.info(`Boot: script running (document.readyState=${document.readyState}, ${Math.round(performance.now())}ms into the page)`);
+    const tProbe = since();
+    const probes = Promise.all([
+      getSourceUrlsForRelease(m[1]).then((s) => {
+        log.info(`Boot: source probe done (+${since() - tProbe}ms)`);
+        return { sources: s, failed: false };
+      }).catch((e) => {
         log.error(`Sources: could not read this release's links from MusicBrainz \u2014 ${e.message}. Showing the toolbar anyway; reload to retry.`);
         console.warn("[credit_hoarder] could not read release sources:", e);
         return { sources: {}, failed: true };
       }),
-      probeTitleRemixes(m[1]).catch((e) => {
+      probeTitleRemixes(m[1]).then((r) => {
+        log.info(`Boot: title-remix probe done (+${since() - tProbe}ms)`);
+        return r;
+      }).catch((e) => {
         log.warn(`Titles: remix probe failed \u2014 ${e.message}`);
         return null;
       })
-    ]).then(([probe, remix]) => {
+    ]);
+    const domReady = new Promise((resolve) => {
+      if (document.readyState === "interactive" || document.readyState === "complete") return resolve();
+      document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
+    }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
+    Promise.all([probes, domReady]).then(([[probe, remix]]) => bootstrapBar(probe, remix, m[1]));
+  })();
+  function bootstrapBar(probe, remix, releaseMbid) {
+    {
       const sources = probe.sources;
       const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
       const remixCount = remix?.count || 0;
-      if (!probe.failed) logSourceProbe(sources, Object.keys(sources).length);
+      if (!probe.failed) logSourceProbe(sources);
       log.info(`Toolbar: ${probe.failed ? "source probe FAILED" : hasProvider ? "linked source(s) found" : "no linked sources"}, ${remixCount} title-derived remixer(s) \u2014 ${probe.failed || hasProvider || remixCount ? "mounting" : "not mounting (nothing to import)"}`);
       if (!probe.failed && !hasProvider && remixCount === 0) return;
       insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
-    });
-  });
+      log.info(`Boot: toolbar mounted (+${since()}ms from script start)`);
+    }
+  }
 })();
 });
 })(typeof GM_info !== 'undefined' ? GM_info : undefined);

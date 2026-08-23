@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.8.22
+// @version      2026.8.23.171612
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -110,7 +110,17 @@
   }
   var _pending = [];
   var PENDING_MAX = 200;
+  function _console(plainText, sev) {
+    try {
+      const line = "[credit_hoarder] " + String(plainText).replace(/<[^>]*>/g, "").trim();
+      if (sev === "error") console.error(line);
+      else if (sev === "warn") console.warn(line);
+      else console.log(line);
+    } catch (e) {
+    }
+  }
   function _emit(html, plainText, sev) {
+    _console(plainText, sev);
     if (!_logs) {
       if (_pending.length < PENDING_MAX) _pending.push([html, plainText, sev]);
       return;
@@ -337,7 +347,9 @@
     }
     {
       const rels = json.relationships || [];
-      log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release`);
+      const urlRels = rels.filter((r) => r.target?.href_url);
+      log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release, ${urlRels.length} of them url(s)`);
+      _lastLinkCount = urlRels.length;
       const abs = (u) => u && u.startsWith("//") ? "https:" + u : u;
       const href = (pred) => abs(rels.find(pred)?.target?.href_url || null);
       return {
@@ -352,9 +364,11 @@
       };
     }
   }
+  var _lastLinkCount = 0;
   function logSourceProbe(sources, urlCount) {
     const found = Object.entries(sources || {}).filter(([, v]) => v);
-    log.info(`Sources: ${found.length} import source(s) from ${urlCount} link(s)` + (found.length ? " \u2014 " + found.map(([k]) => k).join(", ") : " \u2014 none of the links is a supported source"));
+    const n = urlCount == null ? _lastLinkCount : urlCount;
+    log.info(`Sources: ${found.length} import source(s) from ${n} link(s)` + (found.length ? " \u2014 " + found.map(([k]) => k).join(", ") : " \u2014 none of the links is a supported source"));
     found.forEach(([k, v]) => logDebug(`  source ${k}: ${v}`));
   }
   function resolveLinkTypeId(name, type0, type1) {
@@ -8297,28 +8311,47 @@ ${lines}
       setTimeout(() => window.close(), CLOSE_DELAY_MS);
     });
   })();
-  if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function() {
+  var T0 = typeof performance !== "undefined" ? performance.now() : Date.now();
+  var since = () => Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - T0);
+  if (/musicbrainz\.org$/i.test(location.hostname)) (function() {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
-    Promise.all([
-      getSourceUrlsForRelease(m[1]).then((s) => ({ sources: s, failed: false })).catch((e) => {
+    log.info(`Boot: script running (document.readyState=${document.readyState}, ${Math.round(performance.now())}ms into the page)`);
+    const tProbe = since();
+    const probes = Promise.all([
+      getSourceUrlsForRelease(m[1]).then((s) => {
+        log.info(`Boot: source probe done (+${since() - tProbe}ms)`);
+        return { sources: s, failed: false };
+      }).catch((e) => {
         log.error(`Sources: could not read this release's links from MusicBrainz \u2014 ${e.message}. Showing the toolbar anyway; reload to retry.`);
         console.warn("[credit_hoarder] could not read release sources:", e);
         return { sources: {}, failed: true };
       }),
-      probeTitleRemixes(m[1]).catch((e) => {
+      probeTitleRemixes(m[1]).then((r) => {
+        log.info(`Boot: title-remix probe done (+${since() - tProbe}ms)`);
+        return r;
+      }).catch((e) => {
         log.warn(`Titles: remix probe failed \u2014 ${e.message}`);
         return null;
       })
-    ]).then(([probe, remix]) => {
+    ]);
+    const domReady = new Promise((resolve) => {
+      if (document.readyState === "interactive" || document.readyState === "complete") return resolve();
+      document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
+    }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
+    Promise.all([probes, domReady]).then(([[probe, remix]]) => bootstrapBar(probe, remix, m[1]));
+  })();
+  function bootstrapBar(probe, remix, releaseMbid) {
+    {
       const sources = probe.sources;
       const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
       const remixCount = remix?.count || 0;
-      if (!probe.failed) logSourceProbe(sources, Object.keys(sources).length);
+      if (!probe.failed) logSourceProbe(sources);
       log.info(`Toolbar: ${probe.failed ? "source probe FAILED" : hasProvider ? "linked source(s) found" : "no linked sources"}, ${remixCount} title-derived remixer(s) \u2014 ${probe.failed || hasProvider || remixCount ? "mounting" : "not mounting (nothing to import)"}`);
       if (!probe.failed && !hasProvider && remixCount === 0) return;
       insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
-    });
-  });
+      log.info(`Boot: toolbar mounted (+${since()}ms from script start)`);
+    }
+  }
 })();

@@ -65,7 +65,22 @@ export function getReviewContainer() { return _review || _logs; }
 
 const _pending = [];
 const PENDING_MAX = 200;   // a stuck page must not grow this without bound
+// #531 follow-up (majkinetor): "How can I check log in that case (maybe we
+// should print it in console)". The bar's log only exists once the bar mounts,
+// and the whole problem being chased is a bar that mounts LATE — so the lines
+// that would explain the wait are the ones with nowhere to go. They are
+// buffered for the bar (below) and mirrored to the console immediately, where
+// they survive regardless of whether the bar ever appears.
+function _console(plainText, sev) {
+    try {
+        const line = '[credit_hoarder] ' + String(plainText).replace(/<[^>]*>/g, '').trim();
+        if (sev === 'error') console.error(line);
+        else if (sev === 'warn') console.warn(line);
+        else console.log(line);
+    } catch (e) { /* never let logging break a run */ }
+}
 function _emit(html, plainText, sev) {
+    _console(plainText, sev);
     if (!_logs) { if (_pending.length < PENDING_MAX) _pending.push([html, plainText, sev]); return; }
     const li = document.createElement('li');
     if (sev) li.dataset.sev = sev;   // 'warn' / 'error' — lets the log toolbar filter by severity (#142)
