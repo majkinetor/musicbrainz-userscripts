@@ -176,7 +176,26 @@ Falcon has basic entity forms — the file is loaded by **Import**, written by *
       "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
       "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
       "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "comment": "page 1", "type": "Booklet", "candidates": [] }]
-    }
+    },
+    {
+      "entityType": "recording",
+      "mbid": "2bea9225-3cee-4a23-b8f3-cd705bed3d06",
+      "note": "localised titles",
+      "aliases": [
+        {
+          "name": "town goes on! (wersja polska)",
+          "locale": "pl",
+          "type": "Recording name",
+          "primary": true
+        },
+        {
+          "name": "town goes on! (deutsche Fassung)",
+          "locale": "de",
+          "type": "Recording name",
+          "primary": true
+        }
+      ]
+     },
   ]
 }
 ```
