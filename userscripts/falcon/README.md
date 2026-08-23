@@ -89,7 +89,7 @@ Harmony integration fills Falcon queue with external links for all entities, rec
 
 #### Cover art
 
-When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes a queue item for the release itself, showing *cover* in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — measuring each one itself when Harmony's own page doesn't already say so. Expand the row to see (and override) the picked URL, set its **type** (Front, Back, Booklet, …), add a **comment** for that specific image, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
+When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes a queue item for the release itself, showing *cover* in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — **measuring every candidate itself**. Harmony's captions are not describing the linked image (on one real release Tidal advertised 3000×3000 for a 1280×1280 file, and Spotify 2000×2000 for a 640×640 one), so they are only used as a last resort for a candidate that can't be fetched at all. Expand the row to see (and override) the picked URL, set its **type** (Front, Back, Booklet, …), add a **comment** for that specific image, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
 
 Falcon currently adds front cover art from Harmony, although it generally supports a list (which can be hand-written [JSON](#json-model)).
 

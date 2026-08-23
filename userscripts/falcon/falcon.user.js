@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.22.232238
+// @version      2026.8.23.131101
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1115,8 +1115,25 @@
   // size. Runs AFTER the item is already queued (fire-and-forget, mirroring
   // fetchEntityName's post-add enrichment at addToQueue) rather than before
   // Harmony's window.open(), since an await there risks the popup being
-  // blocked. Candidates that already carry caption metadata (see
-  // parseCoverCaptionMeta) cost no fetch at all; the rest are measured live.
+  // blocked.
+  //
+  // ⚠ EVERY candidate is measured. This used to trust Harmony's caption
+  // metadata whenever it was present and only measure the rest — and the
+  // caption is not describing the linked image. Measured on majkinetor's own
+  // export (release c5e238d3, "CHROME"), three of four were wrong:
+  //
+  //     provider   caption            actual image
+  //     Spotify    2000x2000 790KB    640x640    72KB
+  //     Deezer     1200x1200 727KB    1000x1000 115KB
+  //     iTunes     3000x3000 5.58MB   3000x3000 5.7MB   (the only honest one)
+  //     Tidal      3000x3000 2.56MB   1280x1280 191KB
+  //
+  // Tidal's fake 3000x3000 tied with iTunes on area and won the smaller-size
+  // tie-break, so Falcon uploaded a 1280px image while a real 3000px one was
+  // sitting in the list — the "it added lower res" both majkinetor and chaban
+  // reported. The caption is now only a fallback for a candidate that cannot be
+  // fetched at all, and the measured numbers are written back onto the
+  // candidate so the row's provider chips stop advertising fiction.
   async function pickBestCover(item) {
     // #496: cover[] is an array, but Falcon only ever auto-picks for the
     // first entry — the one entry Harmony's candidates land in today.
@@ -1129,13 +1146,27 @@
       if (!best || area > best.area || (area === best.area && size < best.size)) best = { url: c.url, provider: c.provider, area, size, width, height };
     };
     for (const c of candidates) {
-      if (c.width && c.height && c.size) { consider(c, c.width, c.height, c.size); continue; }
-      try { const m = await measureCandidate(c.url); consider(c, m.width, m.height, m.size); }
-      catch (e) { dbg('[cover]', `${item.mbid}: ${c.provider} candidate failed to measure — ${e.message}`); }
+      try {
+        const m = await measureCandidate(c.url);
+        if (c.width && c.height && (c.width !== m.width || c.height !== m.height)) {
+          log('warn', `cover: ${c.provider} advertised ${c.width}×${c.height} but the image is ${m.width}×${m.height} — using the real size`);
+        }
+        c.width = m.width; c.height = m.height; c.size = m.size;
+        dbg('[cover]', `${item.mbid}: ${c.provider} measured ${m.width}×${m.height}, ${(m.size / 1024).toFixed(0)}KB`);
+        consider(c, m.width, m.height, m.size);
+      } catch (e) {
+        dbg('[cover]', `${item.mbid}: ${c.provider} candidate failed to measure — ${e.message}`);
+        // Only now is the caption worth anything: it is all we have. Flagged,
+        // because a wrong number here can still win the pick.
+        if (c.width && c.height && c.size) {
+          dbg('[cover]', `${item.mbid}: falling back to ${c.provider}'s advertised ${c.width}×${c.height} (unverified)`);
+          consider(c, c.width, c.height, c.size);
+        }
+      }
     }
     if (!best) return;
     entry.url = best.url;
-    dbg('[cover]', `${item.mbid}: picked ${best.provider} (${best.width}x${best.height}, ${best.size}b) of ${candidates.length} candidate(s)`);
+    log('info', `cover: picked ${best.provider} — ${best.width}×${best.height}, ${(best.size / 1024).toFixed(0)}KB (best of ${candidates.length} measured candidate(s))`);
     scheduleRender('queue');
   }
   // #494 follow-up (majkinetor): "Harmony always presents cover art even if
@@ -3625,8 +3656,13 @@
     // all five, including release (typed into its KO editor rather than seeded,
     // see setReleaseComment). ISRCs stay recording-only, because only
     // recordings have them.
+    // ⚠ These are NOT alternatives. #533 put 'release' into DISAMBIGUATABLE,
+    // and this used to read `canDisambig ? <disambiguation> : release ? <cover>`
+    // — so the moment a release could carry a disambiguation, its COVER ART
+    // editor became unreachable (majkinetor, with a screenshot: "there is no
+    // cover shown after we added disamb"). A release needs both blocks.
     const canDisambig = DISAMBIGUATABLE.has(it.entityType);
-    const meta = canDisambig ? `
+    const metaDisambig = canDisambig ? `
       <div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 30px;font-size:10.5px">
         <input type="text" class="falcon-disambiguation-input" data-id="${it.id}" placeholder="disambiguation comment" value="${esc(it.disambiguation || '')}" ${it.status === 'active' ? 'disabled' : ''}
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px" />
@@ -3634,14 +3670,14 @@
           style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid #ddd;border-radius:3px;font-family:'Courier New',monospace" />` : ''}
         ${it.entityType === 'recording' ? `<label title="Flag this recording as a video (MusicBrainz's Video checkbox)" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;color:#555">
           <input type="checkbox" class="falcon-video-input" data-id="${it.id}" ${it.video ? 'checked' : ''} ${it.status === 'active' ? 'disabled' : ''} style="margin:0;cursor:pointer" />🎬 Video</label>` : ''}
-      </div>`
-      // #494/#496: cover art has no urls[] row to show — the image URL IS the
-      // payload, so it gets the same input treatment (auto-picked from
-      // Harmony's candidates but always user-editable/overridable), plus a
-      // type picker and a provider picker when more than one candidate was
-      // found. cover[] is an array — one row per entry (Falcon only ever
-      // populates one today, but a JSON import can carry more).
-      : it.entityType === 'release' ? `
+      </div>` : '';
+    // #494/#496: cover art has no urls[] row to show — the image URL IS the
+    // payload, so it gets the same input treatment (auto-picked from Harmony's
+    // candidates but always user-editable/overridable), plus a type picker and
+    // a provider picker when more than one candidate was found. cover[] is an
+    // array — one row per entry (Falcon only ever populates one today, but a
+    // JSON import can carry more).
+    const metaCover = it.entityType === 'release' ? `
       <div style="display:flex;flex-direction:column;gap:6px;padding:3px 0 3px 30px;font-size:10.5px">
         ${it.cover.map((c, idx) => `
         <div style="display:flex;flex-direction:column;gap:4px">
@@ -3657,6 +3693,8 @@
         </div>`).join('')}
         ${it.coverExistingCount ? `<div style="color:#a35b00;font-size:10px">⚠ this release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
+    // A release gets BOTH: its disambiguation box and its cover-art editor.
+    const meta = metaDisambig + metaCover;
     // #535: aliases apply to every entity type, so they get their own strip
     // under whatever else this type shows. Each alias is one MB edit; the
     // bulk case ("2 translations for all recordings") is meant to arrive as
