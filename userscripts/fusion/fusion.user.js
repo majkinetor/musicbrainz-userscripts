@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.22
+// @version      2026.8.23.215939
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1448,10 +1448,18 @@ function fsStyle() {
     if (document.getElementById('fs-style')) return;
     const s = el('style'); s.id = 'fs-style';
     s.textContent = ''
-        + '.fs-launch{position:fixed;z-index:2147483000;background:linear-gradient(180deg,#8a5cf6,#6d3ff0);color:#fff;border:1px solid #6d3ff0;border-radius:8px;padding:8px 14px;font:600 13px -apple-system,Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}'
-        + '.fs-launch{display:inline-flex;align-items:center;gap:6px}'
-        + '.fs-launch-i{font-size:19px;line-height:1}'
-        + '.fs-launch:hover{filter:brightness(1.08)}'
+        // majkinetor: "Make fusion icon be without text so it naturaly stack
+        // over other icons" … "make it more like Falcon icon in appearance".
+        // A wide labelled pill sat awkwardly beside the round icon-only
+        // launchers the other scripts put in the same corner. Same circle,
+        // same size, same resting opacity as Falcon's — only the glyph and its
+        // colour differ, so the stack is uniform but each is still identifiable.
+        + '.fs-launch{position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;padding:0;'
+          + 'display:flex;align-items:center;justify-content:center;cursor:pointer;'
+          + 'background:rgba(255,255,255,.55);color:#6d3ff0;box-shadow:0 2px 8px rgba(0,0,0,.18);'
+          + 'opacity:.55;transition:background .15s,transform .1s,opacity .15s}'
+        + '.fs-launch-i{font-size:21px;line-height:1}'
+        + '.fs-launch:hover{opacity:1;transform:scale(1.08)}'
         + '.fs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:2147483000;display:flex;align-items:center;justify-content:center}'
         // Light palette (#529: "make UI white") — every colour in the window is
         // driven from these tokens, so the theme is this one line plus the log
@@ -2973,8 +2981,8 @@ function ensureLauncher() {
     if (document.getElementById('fs-launch')) return;
     fsStyle();
     const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
-    btn.innerHTML = '<span class="fs-launch-i">' + ICON + '</span> Fusion';
-    btn.title = 'Fusion — merge recordings';
+    btn.innerHTML = '<span class="fs-launch-i">' + ICON + '</span>';
+    btn.title = 'Fusion — merge recordings';   // icon-only: the tooltip carries the name
     btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30';
     btn.onclick = () => openFusion();
     document.body.appendChild(btn);
