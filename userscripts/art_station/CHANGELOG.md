@@ -1,5 +1,9 @@
 # Art Station Changelog
 
+## [2026.8.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.23)
+
+- Small improvements
+
 ## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
 
 ### Fixes
