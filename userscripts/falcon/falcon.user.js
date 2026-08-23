@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.131101
+// @version      2026.8.23.132119
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2181,7 +2181,15 @@
     }
     if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
 
-    log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB)`);
+    // what MusicBrainz is actually about to receive — the edit note quotes this
+    // rather than any provider-supplied number
+    const actual = { size: blob.size, width: 0, height: 0 };
+    try {
+      const bmp = await createImageBitmap(blob);
+      actual.width = bmp.width; actual.height = bmp.height;
+      if (bmp.close) bmp.close();
+    } catch (e) { dbg(tag, `release ${item.mbid}: could not measure the fetched image — ${e.message || e}`); }
+    log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB${actual.width ? `, ${actual.width}×${actual.height}` : ''})`);
     const fd = new FormData();
     Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
     fd.append('file', blob, 'cover.' + (mime.split('/')[1] || 'jpg'));
@@ -2221,7 +2229,7 @@
     // #494 follow-up: "add falcon edit message as usual"), appended after
     // whatever note the item already carries (e.g. from Harmony) rather than
     // replacing it.
-    p.append('add-cover-art.edit_note', [item.note, FALCON_SIGNATURE()].filter(Boolean).join('\n\n'));
+    p.append('add-cover-art.edit_note', coverEditNote(item, entry, actual));
     const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
     if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
     log('info', `${tag} release ${item.mbid} — cover art added (${entry.type})`);
@@ -2462,6 +2470,42 @@
     const restOk = item.status === 'done' || item.status === 'skipped';
     if (restOk) { item.status = r.ok ? 'partial' : 'failed'; item.error = msg; }
     else { item.status = 'failed'; item.error = [item.error, msg].filter(Boolean).join(' | '); }
+  }
+  // #536 (majkinetor): "Unlike Art Station or native MB cover art uploader with
+  // ECAU Falcon doesn't add detailed edit note indicating source". Falcon was
+  // sending its signature line and nothing else, so a reviewer had no way to
+  // see where the image came from.
+  //
+  // Modelled on ECAU's own note (edit 151499664 on production), which reads:
+  //     <source page>
+  //     * <original image url>
+  //     → Maximised to <url>
+  //     –
+  //     MB: Enhanced Cover Art Uploads … / <repo url>
+  //
+  // Falcon has no "maximised" step, but it does CHOOSE between providers, so
+  // the note says which one won and what it beat — the part a voter cannot
+  // otherwise reconstruct.
+  function coverEditNote(item, entry, actual) {
+    const cands = entry.candidates || [];
+    const chosen = cands.find(c => c.url === entry.url) || null;
+    const dims = c => (c && c.width && c.height) ? `${c.width}×${c.height}` : '';
+    const mb = n => (n && n > 0) ? `${(n / 1048576).toFixed(2)} MB` : '';
+    // Prefer what was actually downloaded and uploaded over anything recorded
+    // earlier — the note should describe the bytes MusicBrainz received, not a
+    // provider's claim about them (see pickBestCover on how wrong those get).
+    const size = mb((actual && actual.size) || (chosen && chosen.size));
+    const wh = (actual && actual.width && actual.height) ? `${actual.width}×${actual.height}` : dims(chosen);
+    const lines = [];
+    if (item.note) lines.push(item.note);
+    lines.push(`Cover art (${entry.type || 'Front'})${chosen && chosen.provider ? ` from ${chosen.provider}` : ''}`);
+    lines.push(`* ${entry.url}${(wh || size) ? ` (${[wh, size].filter(Boolean).join(', ')})` : ''}`);
+    const others = cands.filter(c => c.url !== entry.url).map(c => `${c.provider}${dims(c) ? ` ${dims(c)}` : ''}`);
+    if (others.length) lines.push(`Chosen as the largest of ${cands.length} candidates — also offered: ${others.join(', ')}`);
+    if (entry.comment) lines.push(`Image comment: ${entry.comment}`);
+    lines.push('–');
+    lines.push(FALCON_SIGNATURE());
+    return lines.join('\n');
   }
   async function runCoverItem(item, tag, card, priorLinks) {
     updateWorkerLabel(card, item);
@@ -4036,7 +4080,7 @@
   // Test hook only (#467) — no behavior change.
   window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
     // #494
-    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, coverEditNote, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
     entityUrlSegment, activateReleaseEditNoteTab,
     // #497
