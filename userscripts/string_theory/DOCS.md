@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-23 21:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-23 22:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1009,7 +1009,7 @@ Where a role/entity isn't resolved, a **search** link opens a picker (search, pa
 
 Each line can be fixed up without leaving the table: a **pattern override** applies just to that line, its **raw text is directly editable** (writes back into the pasted text above), and **✕** removes the line entirely (from both the table and the source text). The window has a **maximize** button and **drag-resizable columns**.
 
-**Scope** ([#539](https://github.com/majkinetor/musicbrainz-userscripts/issues/539)) decides where the credits land: the **Release** (default), or specific **Recordings**. Choosing Recordings reveals a track selector taking any mix of:
+**Scope** ([#539](https://github.com/majkinetor/musicbrainz-userscripts/issues/539)), at the bottom-left of the window opposite **Apply**, decides where the credits land: the **Release** (default), or specific **Recordings**. Choosing Recordings reveals a track selector taking any mix of:
 
 | you type | you get |
 |---|---|

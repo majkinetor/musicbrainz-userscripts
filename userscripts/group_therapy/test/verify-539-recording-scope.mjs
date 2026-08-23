@@ -166,11 +166,13 @@ console.log('edit note:' + NL + note.split(NL).map(l => '   ' + l).join(NL));
 ck(/Parsed \d+ credits? from text to 2 recordings/.test(note), 'the edit note records how many recordings were credited');
 ck(/tracks 1, 3/.test(note), 'and names the tracks — ' + JSON.stringify((note.match(/\(tracks?[^)]*\)/) || [])[0] || ''));
 
-// ── the toolbar keeps ⚡ Match with the controls, however long the list ──────
-// "With enough tracks, Match button goes to next row." Same row is asserted by
-// vertical position, with a tolerance: the button and the scope pill are
-// different heights, so their tops differ by a pixel or two on one line.
-// Apply closes the window (#522), so reopen it — the scope is remembered.
+// ── layout: the top bar stays one row, scope sits opposite Apply ────────────
+// majkinetor, twice: "With enough tracks, Match button goes to next row", then
+// "We again have new row, this time for out of the box patterns … Move scope to
+// the bottom, opposite of Apply." So the top bar carries pattern · presets ·
+// Match on ONE row and the scope control lives in the footer. Tolerances are
+// used deliberately — these elements are different heights, so their tops
+// differ by a pixel or two on the same visual row.
 await page.evaluate(() => {
   const b = [...document.querySelectorAll('button')].find(x => /text parser/i.test(x.textContent || ''));
   if (b) b.click();
@@ -180,12 +182,19 @@ await page.selectOption('.gt-tp-scope-sel', 'recording');
 await page.fill('.gt-tp-tracks', 'all');
 await page.waitForTimeout(300);
 const geo = await page.evaluate(() => {
-  const r = sel => { const b = document.querySelector(sel).getBoundingClientRect(); return Math.round(b.top); };
-  return { pat: r('.gt-tp-pat'), scope: r('.gt-tp-scope'), match: r('.gt-tp-resolve'), info: (document.querySelector('.gt-tp-tracks-info').textContent || '').trim() };
+  const r = sel => { const b = document.querySelector(sel).getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left), right: Math.round(b.right) }; };
+  return {
+    pat: r('.gt-tp-pat'), presets: r('.gt-tp-presets'), match: r('.gt-tp-resolve'),
+    scope: r('.gt-tp-scope'), apply: r('.gt-cons-apply'),
+    info: (document.querySelector('.gt-tp-tracks-info').textContent || '').trim(),
+  };
 });
-console.log('toolbar rows: ' + JSON.stringify(geo));
-ck(Math.abs(geo.match - geo.scope) < 12, 'Match sits on the same row as the scope control');
-ck(Math.abs(geo.match - geo.pat) < 12, 'and as the pattern box — it does not wrap away');
+console.log('layout: ' + JSON.stringify(geo));
+ck(Math.abs(geo.match.top - geo.pat.top) < 12, 'Match is on the pattern row');
+ck(Math.abs(geo.presets.top - geo.pat.top) < 12, 'and so are the preset chips — the top bar is one row');
+ck(Math.abs(geo.scope.top - geo.apply.top) < 16, 'the scope control sits in the footer, on the Apply row');
+ck(geo.scope.right < geo.apply.left, 'at the opposite end from Apply');
+ck(geo.scope.top > geo.pat.top, 'i.e. below the toolbar, not in it');
 ck(/\+\d+$/.test(geo.info) || geo.info.split(',').length <= 7, 'a long selection is summarised rather than listed in full — ' + JSON.stringify(geo.info));
 
 ck(posts === 0, `nothing was submitted (${posts} POSTs to /edit)`);
