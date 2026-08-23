@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "entityType": "recording",
+      "mbid": "2bea9225-3cee-4a23-b8f3-cd705bed3d06",
+      "note": "localised titles",
+      "aliases": [
+        {
+          "name": "town goes on! (wersja polska)",
+          "locale": "pl",
+          "type": "Recording name",
+          "primary": true
+        },
+        {
+          "name": "town goes on! (deutsche Fassung)",
+          "locale": "de",
+          "type": "Recording name",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "entityType": "artist",
+      "mbid": "82ca9599-5a15-4ff5-90d5-59ac8afaf5c7",
+      "aliases": [
+        {
+          "name": "Mochikomame",
+          "locale": "en",
+          "type": "Artist name"
+        },
+        {
+          "name": "mochi komame",
+          "type": "Search hint"
+        },
+        "もちこまめ@ja"
+      ]
+    }
+  ]
+}
