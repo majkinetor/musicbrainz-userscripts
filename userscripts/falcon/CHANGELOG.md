@@ -1,5 +1,16 @@
 # Falcon 
 
+## [2026.8.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.23)
+
+### Features
+
+1. Option to not process Harmony covers ([#537](https://github.com/majkinetor/musicbrainz-userscripts/issues/537))
+1. Detailed edit note for cover art addition ([#536](https://github.com/majkinetor/musicbrainz-userscripts/issues/536))
+1. Alias atribute for all entities ([#535](https://github.com/majkinetor/musicbrainz-userscripts/issues/535))
+1. Recordings video attribute ([#534](https://github.com/majkinetor/musicbrainz-userscripts/issues/534))
+1. Disambiguation for all entities ([#533](https://github.com/majkinetor/musicbrainz-userscripts/issues/533))
+1. Option to add entities from current release ([#532](https://github.com/majkinetor/musicbrainz-userscripts/issues/532))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 ### Features

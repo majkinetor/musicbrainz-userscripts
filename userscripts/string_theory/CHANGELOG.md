@@ -1,5 +1,15 @@
 # String Theory Changelog
 
+## [2026.8.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.23)
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Small improvements
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Small improvements
+
 ## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
 
 ### [Art Station](../art_station/CHANGELOG.md)
