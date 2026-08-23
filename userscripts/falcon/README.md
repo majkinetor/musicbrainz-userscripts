@@ -14,7 +14,7 @@ Falcon provides unified interface to bulk edit supported entity [attributes](#at
 
 ## Usage
 
-1. Populate a queue from [Harmony](#from-harmony), [the release you are on](#from-the-current-release), or import a [JSON file](#json-model) by accessing Falcon on any Musicbrainz page (CTRL+ALT+F).
+1. Populate a queue from [Harmony](#from-harmony), [the page you are on](#from-the-current-page), or import a [JSON file](#json-model) by accessing Falcon on any Musicbrainz page (CTRL+ALT+F).
 2. Review the queue (remove some entities or edit attributes), then press Start button to process it.
    - Right-click a row's entity-type column to select every item of that same type at once so you can remove them
    - Or, click the chips in the header (`art`/`lbl`/`rec`/`rel`/`rg`) to exclude all instances of specific entity without removing them from queue 
@@ -35,49 +35,6 @@ Row button **⇗** opens that entity's edit page in a real tab, pre-filled the s
 **Export** writes the queue back out *with each item's status and per-url outcome*, so a partly-finished run can be kept as a record, or re-imported to retry only what failed — items that already show `done` are not re-run.
 
 **Retry failed** re-queues every `failed`/`partial` item for another attempt in place — no export/import round trip needed. Useful when the cause was transient (MusicBrainz being slow, a timeout) rather than the item genuinely being broken.
-
-### From the current release
-
-Open Falcon on a **release** (or **release-group**) page and the toolbar offers **+ Add from release** — it fills the queue with that release's own entities so you can edit them in bulk:
-
-| | |
-|---|---|
-| **Recordings** | every track's recording, from the tracklist (ticked by default) |
-| **This release** | the release itself |
-| **Release group** | its release group |
-| **Artists** | the release artist plus every track artist |
-| **Labels** | the labels on the release |
-
-On a **release-group** page the same button reads **+ Add from group** and offers the group itself (ticked by default) plus **Releases** — every release in the group, named, in one go.
-
-<img src="./screenshots/add-from-release.png" width="520">
-
-Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about, then press Start.
-
-Ticking a recording's **🎬 Video** flag while it is part of the current selection applies it to *every selected recording*, so flagging a whole tracklist is one tick. MusicBrainz treats a video change as votable, so it won't show on the recording until the edit passes.
-
-Rows you never touched are **skipped**, not failed: an item with no url, disambiguation, ISRC, alias or cover has nothing to submit, so Falcon leaves it alone and says so. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
-
-It also works as a way to *produce* a JSON worksheet: add the entities, press **Export**, fill the file in at your leisure, then **Import** it back and Start.
-
-### Aliases
-
-Every entity type can carry aliases, and each one is a separate MusicBrainz edit — so localising a 20-track release is 40 edits. Falcon submits them straight to MB's `add-alias` form (no edit page, no iframe), which is why the bulk path is a JSON file rather than the UI: see [examples/aliases.json](./examples/aliases.json).
-
-```json
-{ "entityType": "recording", "mbid": "…",
-  "aliases": [
-    { "name": "town goes on! (wersja polska)", "locale": "pl", "type": "Recording name", "primary": true },
-    { "name": "town goes on! (deutsche Fassung)", "locale": "de", "type": "Recording name", "primary": true }
-  ] }
-```
-
-An expanded queue row shows a 🏷 **aliases** strip where you can add one by typing `name` or `name@locale`, and remove any before the run.
-
-Falcon **never adds an alias the entity already has**: before each item it reads the current aliases and skips any whose name, locale and type already match (MusicBrainz itself allows exact duplicates without complaint, so re-running a queue or importing the same file twice would otherwise litter it). A row whose aliases are all already present reports **skipped**. If that check can't be made — MusicBrainz unreachable — the aliases are held back rather than risking duplicates, and **Retry failed** picks them up later.
-
-> [!WARNING]
-> MusicBrainz **silently discards the locale** (and *primary for locale*) on a **Search hint** alias — the same submission stores `pl` under *Recording name* and nothing under *Search hint*, with no error either way. Falcon warns in the log when a search hint carries a locale. For a localised title use the `<entity> name` type.
 
 ### From Harmony
 
@@ -111,6 +68,16 @@ Chosen as the largest of 2 candidates — also offered: Deezer 1000×1000
 
 [ECAU]: https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads
 
+### From the current page
+
+Open Falcon on a **release** or **release-group** page and the toolbar offers **+ Add from** — it fills the queue with that page entities so you can edit them in bulk. Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about, then press Start. It also works as a way to *produce* a JSON worksheet: add the entities, press **Export**, fill the file in at your leisure, then **Import** it back and Start.
+
+<img src="./screenshots/add-from-release.png" width="520">
+
+Rows you never touched are **skipped**. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
+
+Ticking a recording's **🎬 Video** flag while it is part of the current selection applies it to *every selected recording*, so flagging a whole tracklist is one tick. MusicBrainz treats a video change as votable, so it won't show on the recording until the edit passes.
+
 ## How it works
 
 Since MusicBrainz sends no `X-Frame-Options` / CSP `frame-ancestors`, its edit pages can be framed — so Falcon's panel hosts a handful of same-origin `<iframe>` workers instead. Same-origin means the panel's own script can reach directly into each iframe's DOM — check the form, submit, and once MB redirects off `/edit`, load the next queued entity into a fresh iframe on that same worker. The worker count never grows with the queue size, and nothing opens or closes per item.
@@ -129,7 +96,7 @@ If API is available, Falcon uses it rather then driving a form.
 |partial|Some array data is added, other failed|
 |failed|Completelly failed
 |manual|User has manually added data for the entity|
-|skipped|Nothing to submit — either MusicBrainz reported no change, or the row has no url/disambiguation/ISRC/cover filled in yet (see [From the current release](#from-the-current-release))|
+|skipped|Nothing to submit — either MusicBrainz reported no change, or the row has no url/disambiguation/ISRC/cover filled in yet (see [From the current page](#from-the-current-page))|
 |excluded|Excluded by disabling entity chip at the header|
 
 ## Attributes 
@@ -144,6 +111,29 @@ Field usage by entity type
 | Aliases | yes | yes | yes | yes | yes |
 | Disambiguation | yes | yes | yes | yes | yes |
 | Cover art | — | — | — | yes| — |
+
+### Aliases
+
+Every entity type can carry aliases, and each one is a separate MusicBrainz edit — so localising a 20-track release is 40 edits. Falcon submits them straight to MB's `add-alias` form, which is why the bulk path is a JSON file rather than the UI: see [examples/aliases.json](./examples/aliases.json).
+
+```json
+{ 
+  "entityType": "recording", 
+  "mbid": "…",
+  "aliases": [
+    { "name": "town goes on! (wersja polska)", "locale": "pl", "type": "Recording name", "primary": true },
+    { "name": "town goes on! (deutsche Fassung)", "locale": "de", "type": "Recording name", "primary": true }
+  ] 
+}
+```
+
+An expanded queue row shows a 🏷 **aliases** strip where you can add one by typing `name` or `name@locale`, and remove any before the run.
+
+> [!WARNING]
+> Falcon **never adds an alias the entity already has**: before each item it reads the current aliases and skips any whose name, locale and type already match (MusicBrainz itself allows exact duplicates without complaint, so re-running a queue or importing the same file twice would otherwise litter it). A row whose aliases are all already present reports **skipped**. If that check can't be made — MusicBrainz unreachable — the aliases are held back rather than risking duplicates, and **Retry failed** picks them up later.
+
+> [!WARNING]
+> MusicBrainz **silently discards the locale** (and *primary for locale*) on a **Search hint** alias — the same submission stores `pl` under *Recording name* and nothing under *Search hint*, with no error either way. Falcon warns in the log when a search hint carries a locale. For a localised title use the `<entity> name` type.
 
 ## JSON model
 
@@ -176,26 +166,7 @@ Falcon has basic entity forms — the file is loaded by **Import**, written by *
       "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
       "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
       "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "comment": "page 1", "type": "Booklet", "candidates": [] }]
-    },
-    {
-      "entityType": "recording",
-      "mbid": "2bea9225-3cee-4a23-b8f3-cd705bed3d06",
-      "note": "localised titles",
-      "aliases": [
-        {
-          "name": "town goes on! (wersja polska)",
-          "locale": "pl",
-          "type": "Recording name",
-          "primary": true
-        },
-        {
-          "name": "town goes on! (deutsche Fassung)",
-          "locale": "de",
-          "type": "Recording name",
-          "primary": true
-        }
-      ]
-     },
+    }
   ]
 }
 ```
