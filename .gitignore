@@ -33,3 +33,4 @@ dev/notif-channel/node_modules/
 # harness. Never commit — it holds session cookies.
 /.pw-profile/
 userscripts/falcon/test/_535-aliases.json
+userscripts/credit_hoarder/_rp.mjs
