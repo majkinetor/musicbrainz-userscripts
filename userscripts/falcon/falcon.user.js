@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23
+// @version      2026.8.23.191416
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2629,9 +2629,16 @@
       // is submitted straight to MusicBrainz, no iframe needed. #535 aliases go
       // through their own plain form POST, same as the cover upload API.
       if (!needsForm) {
-        if (needsAliases) await runAliasItem(item, tag, card);
+        // #535 follow-up (majkinetor, on an alias-only run: "also missing
+        // worker time?"): this path never touched the iframe pipeline, which is
+        // where item.timing is set — so the summary showed a blank worker
+        // column and dashes for every duration on a run that plainly did work.
+        const tNoForm = Date.now();
+        let aliasMs = 0;
+        if (needsAliases) { const a0 = Date.now(); await runAliasItem(item, tag, card); aliasMs = Date.now() - a0; }
         if (needsCover) await runCoverItem(item, tag, card, aliasPrior(item));
         else finishAliasOnlyItem(item, tag);
+        item.timing = { worker: tag, loadMs: 0, settleMs: 0, fillMs: 0, submitMs: 0, aliasMs, totalMs: Date.now() - tNoForm };
         renderQueue();
         continue;
       }
@@ -2791,7 +2798,12 @@
       // item.status/error before deciding whether this card can keep going.
       // #535: aliases are separate edits; run them whatever the form edit did,
       // then fold their outcome in before the cover step reads item.status.
-      if (needsAliases) { await runAliasItem(item, tag, card); mergeAliasOutcome(item); }
+      if (needsAliases) {
+        const a0 = Date.now();
+        await runAliasItem(item, tag, card);
+        mergeAliasOutcome(item);
+        if (item.timing) item.timing.aliasMs = Date.now() - a0;
+      }
       if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
       renderQueue();
       if (r && (r.committed || r.noop)) {
@@ -2953,7 +2965,20 @@
       const pad = (v, n, right) => { const s = String(v); return right ? s.padStart(n) : s.padEnd(n); };
       const ms = v => (v == null ? '-' : String(Math.round(v)));
       const nameW = Math.min(28, Math.max(6, ...rows.map(i => entityLabel(i).length)));
-      const head = `${pad('w', 4)} ${pad('entity', nameW)} ${pad('status', 8)} ${pad('load', 7, 1)} ${pad('settle', 7, 1)} ${pad('fill', 7, 1)} ${pad('submit', 8, 1)} ${pad('total', 8, 1)}`;
+      // #535 follow-up (majkinetor): "Summary should contain alias info on
+      // workers". Only shown when the run involved aliases — an ordinary link
+      // run should not grow a column of dashes.
+      const anyAliases = rows.some(i => (i.aliases || []).length || i.aliasResults);
+      const aliasCell = i => {
+        const r = i.aliasResults;
+        if (!r) return (i.aliases || []).length ? '—' : '';
+        const bits = [`${r.ok}/${r.total + (r.dupes || 0)}`];
+        if (r.dupes) bits.push(`${r.dupes} dup`);
+        if (r.errors && r.errors.length) bits.push(`${r.errors.length} err`);
+        return bits.join(' ');
+      };
+      const head = `${pad('w', 4)} ${pad('entity', nameW)} ${pad('status', 8)} ${pad('load', 7, 1)} ${pad('settle', 7, 1)} ${pad('fill', 7, 1)} ${pad('submit', 8, 1)}`
+        + (anyAliases ? ` ${pad('alias', 9, 1)} ${pad('aliasMs', 8, 1)}` : '') + ` ${pad('total', 8, 1)}`;
       const lines = [head, '-'.repeat(head.length)];
       // #512 follow-up (majkinetor, live: "add on each worker what was done
       // in this log table like I shown on w1 and w2") — same categories the
@@ -2964,18 +2989,27 @@
         i.disambiguation ? 'disambiguation' : '',
         (i.isrcs || []).length ? 'isrc' : '',
         i.cover && i.cover.some(c => c.url) ? 'cover' : '',
+        (i.aliases || []).length ? `${i.aliases.length} alias${i.aliases.length === 1 ? '' : 'es'}` : '',
       ].filter(Boolean).join(', ');
       rows.forEach(i => {
         const t = i.timing || {};
         const what = rowBreakdown(i);
-        lines.push(`${pad(t.worker || '', 4)} ${pad(entityLabel(i).slice(0, nameW), nameW)} ${pad(i.status, 8)} ${pad(ms(t.loadMs), 7, 1)} ${pad(ms(t.settleMs), 7, 1)} ${pad(ms(t.fillMs), 7, 1)} ${pad(ms(t.submitMs), 8, 1)} ${pad(ms(t.totalMs), 8, 1)}` + (what ? `  ; ${what}` : ''));
+        lines.push(`${pad(t.worker || '', 4)} ${pad(entityLabel(i).slice(0, nameW), nameW)} ${pad(i.status, 8)} ${pad(ms(t.loadMs), 7, 1)} ${pad(ms(t.settleMs), 7, 1)} ${pad(ms(t.fillMs), 7, 1)} ${pad(ms(t.submitMs), 8, 1)}`
+          + (anyAliases ? ` ${pad(aliasCell(i), 9, 1)} ${pad(ms(t.aliasMs), 8, 1)}` : '')
+          + ` ${pad(ms(t.totalMs), 8, 1)}` + (what ? `  ; ${what}` : ''));
       });
       const timed = rows.filter(i => i.timing);
       const sum = k => timed.reduce((a, i) => a + (i.timing[k] || 0), 0);
       const avg = k => timed.length ? Math.round(sum(k) / timed.length) : null;
       const maxSubmit = timed.length ? Math.max(...timed.map(i => i.timing.submitMs || 0)) : 0;
       lines.push('-'.repeat(head.length));
-      lines.push(`${pad('', 4)} ${pad(`${rows.length} item(s)`, nameW)} ${pad('avg', 8)} ${pad(ms(avg('loadMs')), 7, 1)} ${pad(ms(avg('settleMs')), 7, 1)} ${pad(ms(avg('fillMs')), 7, 1)} ${pad(ms(avg('submitMs')), 8, 1)} ${pad(ms(avg('totalMs')), 8, 1)}`);
+      const aliasTotals = rows.reduce((m, i) => {
+        const r = i.aliasResults; if (!r) return m;
+        m.ok += r.ok; m.total += r.total + (r.dupes || 0); m.dupes += (r.dupes || 0); m.errors += (r.errors || []).length; return m;
+      }, { ok: 0, total: 0, dupes: 0, errors: 0 });
+      lines.push(`${pad('', 4)} ${pad(`${rows.length} item(s)`, nameW)} ${pad('avg', 8)} ${pad(ms(avg('loadMs')), 7, 1)} ${pad(ms(avg('settleMs')), 7, 1)} ${pad(ms(avg('fillMs')), 7, 1)} ${pad(ms(avg('submitMs')), 8, 1)}`
+        + (anyAliases ? ` ${pad(`${aliasTotals.ok}/${aliasTotals.total}`, 9, 1)} ${pad(ms(avg('aliasMs')), 8, 1)}` : '')
+        + ` ${pad(ms(avg('totalMs')), 8, 1)}`);
       const byStatus = rows.reduce((m, i) => { m[i.status] = (m[i.status] || 0) + 1; return m; }, {});
       // wall clock is NOT the sum of the item totals — workers overlap — so show
       // both: the sum is how much work happened, the wall clock is how long you
@@ -2995,6 +3029,9 @@
         withIsrc ? `isrc on ${withIsrc}` : '',
         withDisambiguation ? `disambiguation on ${withDisambiguation}` : '',
         withCover ? `cover on ${withCover}` : '',
+        aliasTotals.total ? `${aliasTotals.ok}/${aliasTotals.total} alias(es) on ${rows.filter(i => i.aliasResults).length}`
+          + (aliasTotals.dupes ? ` (${aliasTotals.dupes} already present)` : '')
+          + (aliasTotals.errors ? ` (${aliasTotals.errors} failed)` : '') : '',
       ].filter(Boolean).join(', ') || '—';
       log('info', `run summary (all times ms)\n${lines.join('\n')}\n` +
         `total run time: ${fmt(wallMs)} wall clock` +
