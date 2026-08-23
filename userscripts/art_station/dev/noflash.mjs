@@ -1,14 +1,12 @@
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/');
 const { chromium } = require('playwright');
 const MBID = '51431e0c-fdae-41a9-b8ff-65364c600eb4';
-const script = readFileSync('userscripts/art_station/art_station.user.js', 'utf8');
 const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', {
   headless: true, bypassCSP: true, viewport: { width: 1280, height: 900 },
 });
 // addInitScript => runs at document-start in every navigation, like a userscript
-await ctx.addInitScript({ content: script });
+await ctx.addInitScript({ path: 'userscripts/art_station/art_station.user.js' });
 const page = ctx.pages()[0] || await ctx.newPage();
 page.on('pageerror', e => console.log('PAGEERROR:', e.message));
 page.on('console', m => { if (m.type() === 'error') console.log('CONSOLE.ERR:', m.text()); });
