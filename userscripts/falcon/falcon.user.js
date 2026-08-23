@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.132707
+// @version      2026.8.23.162622
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -637,7 +637,7 @@
           const entry = existingRel.cover[0];
           const before = entry.candidates.length;
           p.coverCandidates.forEach(c => { if (!entry.candidates.some(x => x.url === c.url)) entry.candidates.push(c); });
-          if (entry.candidates.length > before) pickBestCover(existingRel);
+          if (entry.candidates.length > before) existingRel._coverPickPromise = trackSettling(pickBestCover(existingRel));
           if (existingRel.coverExistingCount == null) existingRel._coverCheckPromise = checkExistingCoverArt(existingRel);
           merged++;
           return;
@@ -645,7 +645,7 @@
         const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', source: p.source || '', disambiguation: '', isrcs: [], video: false, aliases: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); noteSessionReleaseName(name); } });
-        pickBestCover(relItem);
+        relItem._coverPickPromise = trackSettling(pickBestCover(relItem));
         relItem._coverCheckPromise = checkExistingCoverArt(relItem);
         added++;
         return;
@@ -659,7 +659,7 @@
       // real per-recording isrc tuples once it has one, same
       // queue-first-resolve-after shape as #494's cover candidates.
       if (p.entityType === 'recording' && p.pendingIsrcs) {
-        resolveIsrcFallback(p.pendingIsrcs.mbid, p.pendingIsrcs.isrcs, p.pendingIsrcs.note);
+        trackSettling(resolveIsrcFallback(p.pendingIsrcs.mbid, p.pendingIsrcs.isrcs, p.pendingIsrcs.note));
         return;
       }
       const existing = queue.find(i => i.status === 'queued' && i.entityType === p.entityType && i.mbid === p.mbid);
@@ -2532,6 +2532,12 @@
     // start at all), reading coverExistingCount as still null/falsy and
     // uploading a duplicate anyway. Only when the option is actually on is
     // it worth waiting on the in-flight promise the item was stamped with.
+    // the pick may still be measuring candidates — never upload the wrong one
+    // (or nothing at all) because we asked too early
+    if (item._coverPickPromise && (item.cover || []).some(c => !c.url && (c.candidates || []).length)) {
+      dbg(tag, `release ${item.mbid}: waiting for the best-cover pick to finish measuring`);
+      await item._coverPickPromise.catch(() => {});
+    }
     if (cfg.coverOnlyIfNone && item.coverExistingCount == null && item._coverCheckPromise) await item._coverCheckPromise;
     // Skipped, not failed: the item still counts as handled, just untouched.
     const skipCover = cfg.coverOnlyIfNone && !!item.coverExistingCount;
@@ -2586,7 +2592,10 @@
       // and in the no-form check just below. #533 was exactly this — a release
       // whose only work was a disambiguation got routed to the cover path and
       // reported 'done' having submitted nothing.
-      const needsCover = item.entityType === 'release' && (item.cover || []).some(c => c.url);
+      // ⚠ Candidates count as work even with no url chosen yet: the pick is
+      // asynchronous (it measures every candidate), and reading "no url" as
+      // "no cover" is what made a Harmony release report "nothing filled in".
+      const needsCover = item.entityType === 'release' && (item.cover || []).some(c => c.url || (c.candidates || []).length);
       const needsAliases = (item.aliases || []).some(a => a && String(a.name || '').trim());
       const needsForm = !!(item.urls.length
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
@@ -3013,6 +3022,33 @@
   // already active, this brings the spawned count up to what the CURRENT
   // queue actually calls for, regardless of what triggered the addition
   // (ISRC fallback, a mid-run import, anything).
+  // #536 follow-up (majkinetor, live log): a Harmony import auto-started, ran
+  // for 534ms, reported "release … — skipped, nothing filled in", and finished
+  // — while its cover pick was still measuring and its 10 ISRC-only recordings
+  // had not been resolved yet. Both arrived a second later, to a run that was
+  // already over. topUpWorkers only helps a run that is still going.
+  //
+  // So the queue now says when it is still growing/settling, and auto-start
+  // waits for that instead of racing it. Measuring every cover candidate (the
+  // fix for the wrong-resolution pick) made this window seconds wide; before
+  // that it was often zero, which is why it took this long to show up.
+  const _settling = new Set();
+  function trackSettling(promise) {
+    if (!promise || typeof promise.then !== 'function') return promise;
+    _settling.add(promise);
+    promise.catch(() => {}).finally(() => _settling.delete(promise));
+    return promise;
+  }
+  async function whenQueueSettles(timeoutMs) {
+    const deadline = Date.now() + (timeoutMs || 20000);
+    while (_settling.size && Date.now() < deadline) {
+      await Promise.race([
+        Promise.allSettled([..._settling]),
+        wait(500),
+      ]);
+    }
+    if (_settling.size) dbg('[queue]', `${_settling.size} enrichment(s) still in flight after the settle wait — starting anyway`);
+  }
   function topUpWorkers() {
     if (!running) return;
     const remaining = queue.filter(i => i.status === 'queued' && !_disabledTypes.has(i.entityType)).length;
@@ -4077,7 +4113,12 @@
       // default)" — only for a genuine Harmony-sourced seed (the GM-storage
       // token scheme), not an arbitrary `?falcon=` base64 payload some other
       // script/user constructed by hand.
-      if (seeded.fromHarmony && cfg.autoStartHarmonyImport) start();
+      if (seeded.fromHarmony && cfg.autoStartHarmonyImport) {
+        // …after the queue stops growing. See whenQueueSettles: starting on the
+        // synchronous half of a Harmony payload skipped the cover and left the
+        // recordings behind.
+        whenQueueSettles(20000).then(() => start());
+      }
     }
     // (An interrupted run used to force the panel open here on the Log tab. It
     // was scaffolding for chasing the tab-closing bug, and it had a nasty edge:
