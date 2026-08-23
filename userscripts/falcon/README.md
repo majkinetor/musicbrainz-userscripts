@@ -107,6 +107,10 @@ Chosen as the largest of 2 candidates — also offered: Deezer 1000×1000
 > [!WARNING] 
 > Harmony offers cover art whether or not the release already has some — adding one isn't idempotent the way links are. Falcon checks the Cover Art Archive as soon as a release item is queued and, if it already has cover art, the warning is shown.
 
+**Ignore Harmony cover art** (Settings, off by default) takes Falcon out of the cover business entirely — no cover row is sent from Harmony, none is counted on the *Send to Falcon* button, and one arriving from an older tab or a hand-written JSON is dropped with a line in the log. Links, ISRCs, disambiguations and aliases still import as usual. Worth turning on if you upload covers with [ECAU] or [Art Station](../art_station) instead: Harmony links a provider's *thumbnail* rather than the full-size image, and those tools maximise the URL first (see [#537](https://github.com/majkinetor/musicbrainz-userscripts/issues/537)).
+
+[ECAU]: https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads
+
 ## How it works
 
 Since MusicBrainz sends no `X-Frame-Options` / CSP `frame-ancestors`, its edit pages can be framed — so Falcon's panel hosts a handful of same-origin `<iframe>` workers instead. Same-origin means the panel's own script can reach directly into each iframe's DOM — check the form, submit, and once MB redirects off `/edit`, load the next queued entity into a fresh iframe on that same worker. The worker count never grows with the queue size, and nothing opens or closes per item.
