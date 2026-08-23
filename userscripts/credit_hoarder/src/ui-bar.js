@@ -543,7 +543,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // contextmenu too, so right-click (open the source page) would stop working
     // mid-import. Guard the click instead and leave the element interactive.
     let importing = false;
-    importSources.forEach(s => {
+    const makeSrcButton = s => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'discogs-src-ico';
@@ -563,7 +563,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         if (s.url) b.addEventListener('contextmenu', e => { e.preventDefault(); window.open(s.url, '_blank', 'noopener,noreferrer'); });
         srcButtons.push(b);
         srcIcons.appendChild(b);
-    });
+        return b;
+    };
+    importSources.forEach(makeSrcButton);
     // #531: the source probe failed, so the icon row is empty for a reason that
     // is not "this release has no sources". Say so where the icons would be —
     // an empty toolbar with no explanation is barely better than no toolbar.
@@ -577,7 +579,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     }
     // #408: "Import all" — fan out to every source, merge + dedup, and review once. Only worth
     // showing when >1 source is linked (a single source is just the per-source icon).
-    if (importSources.length > 1) {
+    const makeAllButton = () => {
+        if (importSources.length <= 1 || srcIcons.querySelector('.discogs-src-all')) return;
         const allBtn = document.createElement('button');
         allBtn.type = 'button';
         allBtn.className = 'discogs-src-ico discogs-src-all';
@@ -591,7 +594,29 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         });
         srcButtons.push(allBtn);
         srcIcons.appendChild(allBtn);
-    }
+    };
+    makeAllButton();
+    // #531 (majkinetor's console export: "title-remix probe done (+12347ms)" …
+    // "It looks like title-remix probe done is the culprit"): the bar used to
+    // wait for that probe before mounting, so a slow MusicBrainz WS2 — the
+    // public, rate-limited API it reads the tracklist from — held the whole
+    // toolbar hostage for 12s on a release whose Discogs link had been known
+    // for 11.9 of them. The bar now mounts on the source probe alone, and the
+    // Titles source is attached here if the probe lands afterwards.
+    //
+    // ⚠ Defined at MOUNT, not inside startImport() where _setProgress/_copy
+    // live: those are wired when an import begins, which is far too late for
+    // something the page-load probe calls.
+    const addTitlesSource = count => {
+        if (!(count > 0)) return 'none';
+        if (importSources.some(x => x.name === 'Titles')) return 'already';
+        const src = { name: 'Titles', url: '', run: (g, c, collect) => runTitlesImport(g, c, collect) };
+        importSources.push(src);
+        makeSrcButton(src);
+        makeAllButton();   // a second source may have just appeared
+        return 'added';
+    };
+    bar._addTitlesSource = addTitlesSource;
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
