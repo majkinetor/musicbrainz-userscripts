@@ -158,10 +158,49 @@ if (/(^|\.)metal-archives\.com$/i.test(location.hostname)) {
 // ── Release-page bootstrap ────────────────────────────────────────────────────
 // Guarded by hostname — the tidal.com companion context has no jQuery and
 // none of this applies there.
-if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () {
+// #531 (majkinetor): "Still happens. It can appear after around 10s … I can't
+// see the reason it waits." Nothing recorded WHEN each phase happened, so a
+// slow mount was indistinguishable from a slow probe or a late start. Every
+// phase is now stamped against script execution, and the log is mirrored to the
+// console (see log.js), so the next occurrence says which part was slow without
+// needing a repro.
+const T0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+const since = () => Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - T0);
+if (/musicbrainz\.org$/i.test(location.hostname)) (function () {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
+    log.info(`Boot: script running (document.readyState=${document.readyState}, ${Math.round(performance.now())}ms into the page)`);
+
+    // ⚠ The probes start NOW, not after the DOM is ready. They are plain fetches
+    // that need no DOM at all, and waiting for jQuery's ready meant the request
+    // only left after MusicBrainz's own page finished booting — pure dead time
+    // on a page that fires six /ws/js/type-info requests of its own.
+    const tProbe = since();
+    const probes = Promise.all([
+        getSourceUrlsForRelease(m[1]).then(s => { log.info(`Boot: source probe done (+${since() - tProbe}ms)`); return { sources: s, failed: false }; })
+            .catch(e => {
+                log.error(`Sources: could not read this release's links from MusicBrainz — ${e.message}. `
+                    + 'Showing the toolbar anyway; reload to retry.');
+                console.warn('[credit_hoarder] could not read release sources:', e);
+                return { sources: {}, failed: true };
+            }),
+        probeTitleRemixes(m[1]).then(r => { log.info(`Boot: title-remix probe done (+${since() - tProbe}ms)`); return r; })
+            .catch(e => { log.warn(`Titles: remix probe failed — ${e.message}`); return null; }),
+    ]);
+
+    // Native readiness, so this does not depend on the page's jQuery having
+    // loaded and run its own ready queue first.
+    const domReady = new Promise(resolve => {
+        if (document.readyState === 'interactive' || document.readyState === 'complete') return resolve();
+        document.addEventListener('DOMContentLoaded', () => resolve(), { once: true });
+    }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
+
+    Promise.all([probes, domReady]).then(([[probe, remix]]) => bootstrapBar(probe, remix, m[1]));
+})();
+
+function bootstrapBar(probe, remix, releaseMbid) {
+    {
     // (Hover-highlight #63 and batch-remove #68 moved to the Group Therapy userscript — #338.)
     // One rel probe, every import source (#193): detect the linked providers
     // (Discogs / Tidal / Qobuz), and in parallel probe the track titles for any
@@ -175,23 +214,14 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
     // single MusicBrainz hiccup made the toolbar vanish with no explanation, and
     // a refresh appeared to fix it. The lookup retries now; if it still fails we
     // mount ANYWAY rather than silently deciding there is nothing to do.
-    Promise.all([
-        getSourceUrlsForRelease(m[1]).then(s => ({ sources: s, failed: false }))
-            .catch(e => {
-                log.error(`Sources: could not read this release's links from MusicBrainz — ${e.message}. `
-                    + 'Showing the toolbar anyway; reload to retry.');
-                console.warn('[credit_hoarder] could not read release sources:', e);
-                return { sources: {}, failed: true };
-            }),
-        probeTitleRemixes(m[1]).catch(e => { log.warn(`Titles: remix probe failed — ${e.message}`); return null; }),
-    ]).then(([probe, remix]) => {
         const sources = probe.sources;
         const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
         const remixCount  = remix?.count || 0;
-        if (!probe.failed) logSourceProbe(sources, Object.keys(sources).length);
+        if (!probe.failed) logSourceProbe(sources);
         log.info(`Toolbar: ${probe.failed ? 'source probe FAILED' : hasProvider ? 'linked source(s) found' : 'no linked sources'}`
             + `, ${remixCount} title-derived remixer(s) — ${(probe.failed || hasProvider || remixCount) ? 'mounting' : 'not mounting (nothing to import)'}`);
         if (!probe.failed && !hasProvider && remixCount === 0) return;   // MB says there is nothing to import
         insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
-    });
-});
+        log.info(`Boot: toolbar mounted (+${since()}ms from script start)`);
+    }
+}

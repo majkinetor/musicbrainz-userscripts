@@ -262,7 +262,9 @@ export async function getSourceUrlsForRelease(mbid) {
     }
     {
             const rels = json.relationships || [];
-            log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release`);
+            const urlRels = rels.filter(r => r.target?.href_url);
+            log.info(`Sources: MusicBrainz returned ${rels.length} relationship(s) for this release, ${urlRels.length} of them url(s)`);
+            _lastLinkCount = urlRels.length;
             // MB's rel hrefs are protocol-relative (`//tidal.com/…`) —
             // absolutize so logs / edit notes / tab-opens get a real URL.
             const abs  = u => u && u.startsWith('//') ? 'https:' + u : u;
@@ -284,9 +286,17 @@ export async function getSourceUrlsForRelease(mbid) {
  * with no import sources and a release whose probe failed produced the same
  * (silent) outcome, which is what made the missing toolbar undiagnosable.
  */
+let _lastLinkCount = 0;
 export function logSourceProbe(sources, urlCount) {
     const found = Object.entries(sources || {}).filter(([, v]) => v);
-    log.info(`Sources: ${found.length} import source(s) from ${urlCount} link(s)`
+    // ⚠ #531 (majkinetor: "Not sure why it says 6 links"): the caller used to
+    // pass Object.keys(sources).length — the number of provider SLOTS this
+    // function looks for (discogs/tidal/qobuz/deezer/apple/metalArchives), not
+    // links on the release. It read as "6 links" on a release with one. The
+    // count now comes from the probe itself, which is the only place that has
+    // seen the relationships.
+    const n = urlCount == null ? _lastLinkCount : urlCount;
+    log.info(`Sources: ${found.length} import source(s) from ${n} link(s)`
         + (found.length ? ' — ' + found.map(([k]) => k).join(', ') : ' — none of the links is a supported source'));
     found.forEach(([k, v]) => logDebug(`  source ${k}: ${v}`));
 }
