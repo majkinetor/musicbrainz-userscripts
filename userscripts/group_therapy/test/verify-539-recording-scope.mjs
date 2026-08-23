@@ -153,6 +153,41 @@ const hit = gained.length ? gained : stagedOn;
 ck(hit.length === 2, `exactly the two selected recordings were credited (${JSON.stringify(hit)})`);
 ck(hit.includes('1') && hit.includes('3'), 'and they are tracks 1 and 3 — not track 2, and not the release');
 
+// ── #539 follow-up: the edit note has to say WHERE the credits went ─────────
+// majkinetor: "Make sure scope info is added to the edit note." A reviewer
+// reading a batched edit cannot tell which tracks were touched from the diff
+// alone once several runs are folded into one submission.
+const note = await page.evaluate(() => {
+  const ta = document.querySelector('textarea.edit-note, #edit-note-text');
+  return ta ? ta.value : '';
+});
+const NL = String.fromCharCode(10);
+console.log('edit note:' + NL + note.split(NL).map(l => '   ' + l).join(NL));
+ck(/Parsed \d+ credits? from text to 2 recordings/.test(note), 'the edit note records how many recordings were credited');
+ck(/tracks 1, 3/.test(note), 'and names the tracks — ' + JSON.stringify((note.match(/\(tracks?[^)]*\)/) || [])[0] || ''));
+
+// ── the toolbar keeps ⚡ Match with the controls, however long the list ──────
+// "With enough tracks, Match button goes to next row." Same row is asserted by
+// vertical position, with a tolerance: the button and the scope pill are
+// different heights, so their tops differ by a pixel or two on one line.
+// Apply closes the window (#522), so reopen it — the scope is remembered.
+await page.evaluate(() => {
+  const b = [...document.querySelectorAll('button')].find(x => /text parser/i.test(x.textContent || ''));
+  if (b) b.click();
+});
+await page.waitForSelector('.gt-tp-tracks', { timeout: 15000 });
+await page.selectOption('.gt-tp-scope-sel', 'recording');
+await page.fill('.gt-tp-tracks', 'all');
+await page.waitForTimeout(300);
+const geo = await page.evaluate(() => {
+  const r = sel => { const b = document.querySelector(sel).getBoundingClientRect(); return Math.round(b.top); };
+  return { pat: r('.gt-tp-pat'), scope: r('.gt-tp-scope'), match: r('.gt-tp-resolve'), info: (document.querySelector('.gt-tp-tracks-info').textContent || '').trim() };
+});
+console.log('toolbar rows: ' + JSON.stringify(geo));
+ck(Math.abs(geo.match - geo.scope) < 12, 'Match sits on the same row as the scope control');
+ck(Math.abs(geo.match - geo.pat) < 12, 'and as the pattern box — it does not wrap away');
+ck(/\+\d+$/.test(geo.info) || geo.info.split(',').length <= 7, 'a long selection is summarised rather than listed in full — ' + JSON.stringify(geo.info));
+
 ck(posts === 0, `nothing was submitted (${posts} POSTs to /edit)`);
 ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');
 await ctx.close();

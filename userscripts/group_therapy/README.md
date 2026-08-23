@@ -177,7 +177,9 @@ Each line can be fixed up without leaving the table: a **pattern override** appl
 | `all` | every track |
 | *(empty)* | the tracks **ticked** in the editor |
 
-It shows what it matched — `→ 2 tracks: 1, 3` — before you apply anything, since a selector that means something other than you thought would quietly credit the wrong recordings. The roles offered follow the scope too: artist→recording and artist→release are different link-type vocabularies in MusicBrainz (a recording has no "booklet editor", a release has no "video appearance"), so switching scope re-matches the roles.
+It shows what it matched — `→ 2 tracks: 1, 3` (a long selection is summarised, `→ 23 tracks: 1, 2, 3, 4, 5, 6 +17`, with the full list on hover) — before you apply anything, since a selector that means something other than you thought would quietly credit the wrong recordings. The roles offered follow the scope too: artist→recording and artist→release are different link-type vocabularies in MusicBrainz (a recording has no "booklet editor", a release has no "video appearance"), so switching scope re-matches the roles.
+
+The edit note records where the credits went — *Parsed 2 credits from text to 2 recordings (tracks 1, 3)* — so a reviewer can tell which tracks a batched edit touched.
 
 This replaces parsing at release level and then moving the credits onto a recording afterwards — *"Parsed 18 credits from text / Moved 18 release credits to 1 selected recording"*, four times over.
 
