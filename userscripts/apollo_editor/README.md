@@ -32,9 +32,9 @@ Beautification of native page, external links redesign, markdown annotation edit
 
 <img width="1200" src="./screenshots/release.png" />
 
-- **External links** moved to a right column with a **dead-link checker*
+- **External links** moved to a right column with a **dead-link checker**
     - **Right-click** a favicon/type to edit it.
-    - **Add link (+)** accepts **several links at once** and mines URLs out of whatever you paste including full HTML, sorting out duplicates, and setting a link type
+    - **Add link (+)** stays a compact **[+]** until clicked, then reads *Paste one or more links*: it accepts **several links at once** and mines URLs out of whatever you paste including full HTML, sorting out duplicates, and setting a link type
 - **[Markdown annotation editor](#annotation-editor)** in *Additional information*.
 - A **front-cover thumbnail** is positioned under the external links, linking to the release's cover-art page
 - Batch removal of array elements - date and labels - using right click on (x) button
