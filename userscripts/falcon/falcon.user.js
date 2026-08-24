@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.24.161204
+// @version      2026.8.24.180314
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1131,7 +1131,22 @@
       .map(f => {
         const a = f.querySelector('a[href]');
         if (!a) return null;
-        return { provider: f.getAttribute('data-provider') || '', url: a.getAttribute('href'), ...(parseCoverCaptionMeta(f) || {}) };
+        // #537 follow-up (chaban-mb): "A case could be made to modify ECAU so it
+        // replaces the image link to the maximised version or adding data
+        // attributes." Both shapes are read here, so whichever ECAU ships works
+        // with no per-provider rules of Falcon's own — which is the part
+        // majkinetor ruled out, rightly.
+        //
+        //   * href already maximised → nothing to do, it is just the url;
+        //   * data-maximised-url (or -maximized-) → preferred over the href.
+        //
+        // The caption ("3000×3000, 3.53 MB") already describes the maximised
+        // image, so today it disagrees with the url it sits next to; taking the
+        // attribute makes the two agree. Absent it, behaviour is unchanged.
+        const maxUrl = a.getAttribute('data-maximised-url') || a.getAttribute('data-maximized-url') || '';
+        const url = /^https?:\/\//i.test(maxUrl) ? maxUrl : a.getAttribute('href');
+        if (maxUrl && url === maxUrl) dbg('[cover]', `${f.getAttribute('data-provider') || '?'}: using ECAU's maximised url (${maxUrl})`);
+        return { provider: f.getAttribute('data-provider') || '', url, ...(parseCoverCaptionMeta(f) || {}) };
       })
       .filter(Boolean);
     return candidates.length ? { mbid, coverCandidates: candidates } : null;
