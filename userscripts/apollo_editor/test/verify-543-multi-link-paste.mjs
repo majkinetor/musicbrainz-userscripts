@@ -52,6 +52,15 @@ const mbPosts = () => posted.filter(u => /\/ws\/js\/edit\/create|musicbrainz\.or
 await page.addScriptTag({ content: code });
 await page.waitForTimeout(800);
 
+// majkinetor: "Make a hint show that it can be multiple links." MB's own
+// placeholder is "Add link", which advertises nothing.
+const hint = await page.waitForFunction(() => {
+  const i = [...document.querySelectorAll('#external-links-editor input[type=url]')].find(x => !x.value);
+  return i && i.placeholder !== 'Add link' ? i.placeholder : null;
+}, null, { timeout: 20000 }).then(h => h.jsonValue()).catch(() => null);
+console.log('add-link placeholder: ' + JSON.stringify(hint));
+ck(hint === 'Paste one or more links', 'the (+) row says several links can be pasted, not just "Add link"');
+
 const BC = 'https://digthiswayrecords.bandcamp.com/album/musical-breed-save-the-little-children';
 const SP = 'https://open.spotify.com/album/3ibDwnUIydFebHj3pNW9WR';
 const ex = await page.evaluate(({ BC, SP }) => {
