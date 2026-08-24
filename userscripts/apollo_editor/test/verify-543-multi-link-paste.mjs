@@ -61,6 +61,42 @@ const hint = await page.waitForFunction(() => {
 console.log('add-link placeholder: ' + JSON.stringify(hint));
 ck(hint === 'Paste one or more links', 'the (+) row says several links can be pasted, not just "Add link"');
 
+// ── the hint must not cost the collapsed [+] row ────────────────────────────
+// majkinetor, after the hint landed: "But its always shown now, it doesn't
+// collapse to (+) and draws over button". Six CSS rules were keyed on MB's own
+// placeholder TEXT (input[placeholder^="Add"]), so renaming it un-matched every
+// one of them. They key on :placeholder-shown now — "this input has no value",
+// which is what the add row actually is — but the only way to know that keeps
+// working is to measure it.
+const collapsed = await page.evaluate(() => {
+  const i = [...document.querySelectorAll('#external-links-editor input[type=url]')].find(x => !x.value);
+  return { riOn: document.body.classList.contains('tc-ri-on'), w: Math.round(i.getBoundingClientRect().width) };
+});
+console.log('add row at rest: ' + JSON.stringify(collapsed));
+ck(collapsed.riOn, 'Apollo\'s release-info view is on (these rules are scoped to it)');
+ck(collapsed.w <= 40, `the add row is collapsed to a [+] button when idle (${collapsed.w}px)`);
+
+const expanded = await page.evaluate(async () => {
+  const bar = document.querySelector('#tc-ri-toolbar');
+  // this sandbox release has no committed links, so the Check-links toolbar is
+  // hidden by an inline style; clear it so the CSS rule under test decides.
+  const before = bar ? (bar.style.display = '', getComputedStyle(bar).display) : null;
+  const i = [...document.querySelectorAll('#external-links-editor input[type=url]')].find(x => !x.value);
+  i.focus();
+  await new Promise(z => setTimeout(z, 250));
+  const ir = i.getBoundingClientRect();
+  const after = bar ? getComputedStyle(bar).display : null;
+  const br = bar ? bar.getBoundingClientRect() : null;
+  const overlaps = bar && after !== 'none' && !(br.right < ir.left || br.left > ir.right || br.bottom < ir.top || br.top > ir.bottom);
+  i.blur();
+  return { w: Math.round(ir.width), toolbarIdle: before, toolbarFocused: after, overlaps: !!overlaps };
+});
+console.log('add row focused: ' + JSON.stringify(expanded));
+ck(expanded.w > collapsed.w * 3, `and expands to a real input on focus (${collapsed.w} → ${expanded.w}px)`);
+ck(expanded.toolbarIdle !== 'none', 'the Check-links toolbar is visible when the row is idle');
+ck(expanded.toolbarFocused === 'none', 'and gets out of the way while the row is focused');
+ck(!expanded.overlaps, 'so it never draws over the input');
+
 const BC = 'https://digthiswayrecords.bandcamp.com/album/musical-breed-save-the-little-children';
 const SP = 'https://open.spotify.com/album/3ibDwnUIydFebHj3pNW9WR';
 const ex = await page.evaluate(({ BC, SP }) => {
