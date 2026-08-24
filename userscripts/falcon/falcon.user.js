@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.23.220737
+// @version      2026.8.24.161204
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -794,14 +794,31 @@
   // scraped anchors when there are none.
   async function resolveIsrcFallback(releaseMbid, isrcs, note) {
     const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${releaseMbid}?inc=recordings&fmt=json`, undefined, true);
-    if (!j || !Array.isArray(j.media)) { dbg('[isrc]', `${releaseMbid}: tracklist fetch failed, cannot place ${isrcs.length} ISRC(s)`); return; }
+    // ⚠ A failed lookup must not become "no ISRCs" — say so loudly. Silently
+    // dropping them is how a batch looks finished while half its data never
+    // left (#530/#531 are the same bug class).
+    if (!j || !Array.isArray(j.media)) {
+      log('error', `ISRCs: could not read ${releaseMbid}'s tracklist from MusicBrainz — ${isrcs.filter(Boolean).length} ISRC(s) were NOT queued. Reload and send again.`);
+      return;
+    }
     const recMbids = [];
     for (const m of j.media) for (const t of (m.tracks || [])) recMbids.push(t.recording && t.recording.id);
     const tuples = [];
-    isrcs.forEach((isrc, i) => { if (isrc && recMbids[i]) tuples.push({ entityType: 'recording', mbid: recMbids[i], note, isrc }); });
-    if (!tuples.length) { dbg('[isrc]', `${releaseMbid}: no ISRC could be matched to a track position`); return; }
+    const orphans = [];
+    isrcs.forEach((isrc, i) => {
+      if (!isrc) return;
+      if (recMbids[i]) tuples.push({ entityType: 'recording', mbid: recMbids[i], note, isrc });
+      else orphans.push(`isrc${i + 1}=${isrc}`);
+    });
+    // #540: MagicISRC numbers isrcN by track position, so a count mismatch means
+    // the tracklist changed since Harmony read it. Placing "as many as fit"
+    // would be exactly the misalignment this whole change exists to prevent.
+    if (orphans.length) {
+      log('warn', `ISRCs: MusicBrainz shows ${recMbids.length} track(s) but Harmony sent ${isrcs.length} ISRC(s) — ${orphans.length} had no track to sit on and were dropped rather than guessed at (${orphans.join(', ')}). Has the tracklist changed?`);
+    }
+    if (!tuples.length) { log('warn', `ISRCs: none of ${releaseMbid}'s ISRCs could be matched to a track position`); return; }
     const res = addToQueue(tuples);
-    log('info', `resolved ${res.added + res.merged} ISRC-only recording(s) from ${releaseMbid}'s tracklist (Harmony had no external links to zip them onto)`);
+    log('info', `ISRCs: placed ${res.added + res.merged} on ${releaseMbid}'s tracklist by track position (isrc1 → track 1, …)`);
   }
   // Reads what the Export button writes, and is deliberately forgiving about the
   // shape: the wrapper object `{items:[...]}`, or a bare array of items, or a
@@ -1062,12 +1079,23 @@
       const name = harmonyRowName(a);
       parseHarmonySeedUrl(href).forEach(t => { if (name) t.name = name; tuples.push(t); });
     });
-    const isrcs = scrapeHarmonyIsrcs();
-    if (isrcs.length) {
-      const recOrder = [];
-      tuples.forEach(t => { if (t.entityType === 'recording' && !recOrder.includes(t.mbid)) recOrder.push(t.mbid); });
-      recOrder.forEach((mbid, i) => { if (isrcs[i]) tuples.forEach(t => { if (t.mbid === mbid) t.isrc = isrcs[i]; }); });
-    }
+    // ⚠ #540: ISRCs are deliberately NOT attached here any more. They used to be
+    // zipped positionally onto the recordings found among these anchors — the
+    // Nth distinct recording got isrcN — and the comment above harmonyIsrcHref
+    // called out the assumption that every track has at least one link action.
+    // That assumption is false in the single most common re-run case: Harmony
+    // stops offering a "Link external IDs" action once the link exists, so on a
+    // second pass over a partly-finished release the earlier tracks drop out of
+    // this list and EVERY later ISRC shifts up by however many are missing.
+    //
+    // Reported on the MetaBrainz forum ("if it's a big album and some of the
+    // submissions failed halfway through and you restart it, some links and
+    // ISRCs will be attached to the wrong recordings") and confirmed on
+    // majkinetor's release 216a51c7: GBNRN1543507 is isrc7 and landed on track
+    // 10's recording — a 3-position shift, i.e. three earlier tracks no longer
+    // had an action. MagicISRC numbers isrcN by TRACK position, so the only
+    // sound mapping is against the real tracklist: see resolveIsrcFallback,
+    // which is now the single path for ISRCs rather than a fallback.
     return tuples;
   }
   // #494: Harmony sometimes annotates a cover figure's caption with a plain
@@ -1236,7 +1264,9 @@
     const cover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();   // #537
     // #500: the isrc fallback only matters when there are no recording
     // tuples for scrapeHarmonyActions to have already zipped isrcs onto.
-    const isrcFallback = items.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
+    // #540: no longer conditional on there being no recording actions — the
+    // tracklist is the only trustworthy source of "which track is isrcN".
+    const isrcFallback = harmonyIsrcFallback();
     const total = items.length + (cover ? 1 : 0) + (isrcFallback ? isrcFallback.isrcs.filter(Boolean).length : 0);
     if (!harmonyBtn) {
       harmonyBtn = document.createElement('button');
@@ -1268,7 +1298,7 @@
         }
         // #537: nothing to send, and nothing to count on the button either.
         const foundCover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
-        const foundIsrcFallback = found.some(t => t.entityType === 'recording') ? null : harmonyIsrcFallback();
+        const foundIsrcFallback = harmonyIsrcFallback();   // #540: always, see scrapeHarmonyActions
         if (!found.length && !foundCover && !foundIsrcFallback) { alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`); return; }
         const token = makePendingToken();
         const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined }));
@@ -4204,7 +4234,7 @@
   }
 
   // Test hook only (#467) — no behavior change.
-  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs,
+  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs, harmonyIsrcFallback, resolveIsrcFallback, scrapeHarmonyActions,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, coverEditNote, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
