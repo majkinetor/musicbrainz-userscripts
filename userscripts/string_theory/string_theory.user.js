@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.24.163608
+// @version      2026.8.24.172332
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,13 +76,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.24.163608 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.24.163545\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.23.222341\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.8.24.172332 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.24.172331\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.23.222341\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.163545","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.163545","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.172331","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.172331","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -5963,7 +5963,31 @@ try {
      (an exactly-equal length, then a position the RG agrees on), and if it is
      STILL ambiguous leave the slot unset. An unmatched slot is visible and
      costs a click; a confidently wrong one is neither. */
-  function recPickBest(cands, ctx, posGids) {
+  /* #541 — "Matching improvements when same recording is on different
+     positions". The position tie-break above has a hole: it trusts the slot
+     even when the release group is precisely what disagrees. In majkinetor's
+     group f8df5b35 sits at track 7 on one edition and track 10 on another, so
+     if only the first edition happens to cover slot 7, "the group agrees" is
+     an illusion built from a single contradictory source — and it would pick
+     confidently, and wrongly.
+
+     So a position only counts as evidence when it is STABLE: every tied
+     candidate the index knows about must sit at exactly one position across
+     the editions. A recording that moves between editions tells us nothing
+     about which slot it belongs in here.
+
+     `taken` additionally prefers a candidate no other slot has claimed this
+     run: two slots grabbing the same recording is nearly always the greedy
+     matcher double-spending one candidate rather than a genuine repeat. If
+     the only candidate is already taken it is still used (a release CAN carry
+     the same recording twice) — just noted by the caller. */
+  function recPositionsOf(posIndex, gid) {
+    const at = new Set();
+    if (!posIndex || !gid) return at;
+    posIndex.forEach((list, pk) => { if ((list || []).some(c => c && c.gid === gid)) at.add(pk); });
+    return at;
+  }
+  function recPickBest(cands, ctx, posGids, opts) {
     let bestLevel = Infinity; let tied = [];
     (cands || []).forEach(c => {
       if (!c) return;
@@ -5983,12 +6007,24 @@ try {
     }
     if (distinct.length > 1 && posGids && posGids.length) {
       // 2. the release group's own editions: keep candidates that actually sit
-      //    at THIS slot. When editions disagree, this stays ambiguous — which is
-      //    exactly the case that must not auto-link.
-      const atSlot = distinct.filter(c => c.gid && posGids.includes(c.gid));
-      if (atSlot.length === 1) distinct = atSlot;
+      //    at THIS slot — but only when none of the tied candidates wanders
+      //    between positions across those editions (#541).
+      const idx = opts && opts.posIndex;
+      const wanders = idx ? distinct.some(c => recPositionsOf(idx, c.gid).size > 1) : false;
+      if (!wanders) {
+        const atSlot = distinct.filter(c => c.gid && posGids.includes(c.gid));
+        if (atSlot.length === 1) distinct = atSlot;
+      }
     }
-    return { best: distinct[0], level: bestLevel, ambiguous: distinct.length > 1, tied: distinct };
+    // 3. prefer one no other slot has already claimed in this run (#541)
+    let reused = false;
+    if (distinct.length > 1 && opts && opts.taken && opts.taken.size) {
+      const free = distinct.filter(c => !opts.taken.has(c.gid));
+      if (free.length === 1) distinct = free;
+      else if (free.length) distinct = free;
+    }
+    if (distinct.length === 1 && opts && opts.taken && opts.taken.has(distinct[0].gid)) reused = true;
+    return { best: distinct[0], level: bestLevel, ambiguous: distinct.length > 1, tied: distinct, reused };
   }
   function recConfLevel(data, ctx) {
     if (!ctx) return 0;
@@ -6011,6 +6047,7 @@ try {
     const setStatus = t => { const e = wrap && wrap.querySelector('.tc-rec-amstatus'); if (e) e.textContent = t; };
     const maxLevel = CUTOFF[SETTINGS.recCutoff || 'near'];
     let linked = 0, considered = 0, ambiguous = 0;   // #540
+    const _takenGids = new Set();   // #541: recordings this run has already linked
     try {
       // ONE request: pull the whole release group's recordings, index by normalised title, match locally
       let byTitle = new Map(), pool = [];
@@ -6084,14 +6121,21 @@ try {
         // #540: settle the winner on evidence, and refuse to guess between equals.
         const pk2 = posKeyOf(r, ko);
         const posGids = pk2 ? (posIndex.get(pk2) || []).map(c => c.gid).filter(Boolean) : [];
-        const pick = recPickBest(seen, ctx, posGids);
+        const pick = recPickBest(seen, ctx, posGids, { posIndex, taken: _takenGids });
         best = pick.best; bestLevel = pick.level;
         if (pick.ambiguous && bestLevel <= maxLevel) {
           ambiguous++;
           Log.warn('rec-match #' + (r.number || (r.ti + 1)) + ' AMBIGUOUS — ' + pick.tied.length + ' recordings tie at level ' + bestLevel
             + ': ' + pick.tied.map(c => '"' + c.name + '" [' + (c.gid || '').slice(0, 8) + ']' + (c.length ? ' ' + Math.round(c.length / 1000) + 's' : '')).join(', ')
             + ' — left unset, pick one by hand (the release group disagrees about which belongs here)');
-        } else if (best && bestLevel <= maxLevel) { Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' LINK → "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '] level=' + bestLevel + ' (≤' + maxLevel + ')'); try { ko.setRecordingValue(recEntityFrom(best)); linked++; renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); } }
+        } else if (best && bestLevel <= maxLevel) {
+          Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' LINK → "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '] level=' + bestLevel + ' (≤' + maxLevel + ')');
+          // #541: a release can legitimately carry the same recording twice, so
+          // this still links — but say so, because the usual cause is the
+          // matcher spending one candidate on two slots.
+          if (pick.reused) Log.warn('rec-match #' + (r.number || (r.ti + 1)) + ' reuses "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '], already linked to an earlier track — correct only if this release really repeats it');
+          try { ko.setRecordingValue(recEntityFrom(best)); linked++; if (best.gid) _takenGids.add(best.gid); renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); }
+        }
         else Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' NO LINK — best=' + (best ? '"' + best.name + '" level=' + bestLevel + ' > cutoff ' + maxLevel : 'none'));   // #440 diag
       }
     } finally {

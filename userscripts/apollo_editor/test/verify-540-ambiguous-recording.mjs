@@ -57,6 +57,28 @@ const r = await page.evaluate(({ A, B }) => {
     sameTwice: pick([A, Object.assign({}, A)], track, []),
     // one candidate is the ordinary case and must still link
     single: pick([A], track, []),
+
+    // ── #541: a position only counts when the candidate STAYS there ─────────
+    // The real index for this group: f8df5b35 sits at 1.7 on one edition and
+    // at 1.10 on another. If only the first edition covers slot 1.7, the old
+    // rule saw "the group agrees" and picked confidently — and wrongly.
+    wanderingPos: (() => {
+      const posIndex = new Map([
+        ['1.7', [{ gid: B.gid, name: 'Toubaka' }]],
+        ['1.10', [{ gid: B.gid, name: 'Toubaka' }]],
+      ]);
+      return pick([A, B], track, [B.gid], { posIndex });
+    })(),
+    // …whereas a candidate that sits at one position on every edition is
+    // evidence, and still breaks the tie.
+    stablePos: (() => {
+      const posIndex = new Map([['1.7', [{ gid: B.gid, name: 'Toubaka' }]]]);
+      return pick([A, B], track, [B.gid], { posIndex });
+    })(),
+    // ── #541: don't spend one recording on two slots when there is a choice ──
+    avoidsReuse: pick([A, B], track, [], { taken: new Set([A.gid]) }),
+    // but a release CAN repeat a recording — one candidate, already used: link it, flagged
+    allowsRealRepeat: pick([A], track, [], { taken: new Set([A.gid]) }),
   };
 }, { A, B });
 
@@ -75,6 +97,15 @@ ck(r.lenBreaksTie.ambiguous === false && r.lenBreaksTie.best.gid === A.gid, 'an 
 
 ck(r.sameTwice.ambiguous === false, 'the same recording offered twice is not a tie');
 ck(r.single.ambiguous === false && r.single.best.gid === A.gid, 'and a lone candidate still links, as before');
+
+// ── #541 ───────────────────────────────────────────────────────────────────
+console.log('candidate wanders between positions → ' + JSON.stringify({ ambiguous: r.wanderingPos.ambiguous }));
+ck(r.wanderingPos.ambiguous === true, 'a slot is not evidence when the candidate sits elsewhere on another edition (#541)');
+console.log('candidate stays put → ' + JSON.stringify({ ambiguous: r.stablePos.ambiguous, best: (r.stablePos.best || {}).gid }));
+ck(r.stablePos.ambiguous === false && r.stablePos.best.gid === B.gid, 'but a stable position still breaks the tie');
+console.log('one candidate already taken → ' + JSON.stringify({ best: (r.avoidsReuse.best || {}).gid, ambiguous: r.avoidsReuse.ambiguous }));
+ck(r.avoidsReuse.best.gid === B.gid && r.avoidsReuse.ambiguous === false, 'a tie prefers the recording no other slot has claimed');
+ck(r.allowsRealRepeat.best.gid === A.gid && r.allowsRealRepeat.reused === true, 'and a genuine repeat still links, flagged as a reuse');
 
 await ctx.close();
 console.log(fail ? ('FAILURES: ' + fail) : 'ALL PASS');
