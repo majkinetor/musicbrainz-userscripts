@@ -44,6 +44,10 @@ Open a [Harmony] **Release Actions** page and a **"Send N to Falcon"** button ap
 
 Harmony integration fills Falcon queue with external links for all entities, recording isrcs and cover.
 
+ISRCs are placed by **tracklist position** — Harmony hands over the release plus MagicISRC's numbered list (`isrc1`, `isrc2`, …), and *isrcN* goes to track *N* as MusicBrainz has it. They are deliberately not matched against the recordings appearing in Harmony's own action list: Harmony stops offering a "Link external IDs" action once the link exists, so on a second pass over a partly-finished release that list is missing its earlier tracks and everything after the gap would shift ([#540](https://github.com/majkinetor/musicbrainz-userscripts/issues/540)). If the tracklist and the ISRC list disagree in length, the extras are dropped and the mismatch is logged rather than placed on whatever position happens to exist.
+
+Note this can only be as right as the data it is given: if a recording is linked to the *wrong* provider track, Harmony derives that track's ISRC for it and Falcon has no way to tell.
+
 #### Cover art
 
 When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes a queue item for the release itself, showing *cover* in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — **measuring every candidate itself**. Harmony's captions are not describing the linked image (on one real release Tidal advertised 3000×3000 for a 1280×1280 file, and Spotify 2000×2000 for a 640×640 one), so they are only used as a last resort for a candidate that can't be fetched at all. Expand the row to see (and override) the picked URL, set its **type** (Front, Back, Booklet, …), add a **comment** for that specific image, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
