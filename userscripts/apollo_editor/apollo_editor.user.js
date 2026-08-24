@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.17
+// @version      2026.8.24.163545
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -5877,6 +5877,53 @@
   // when its combined level ≤ the chosen cutoff. #119
   const CUTOFF = { exact: 0, tolerance: 1, near: 2, low: 3, vlow: 4 };
   function recComboLevel(d, ctx) { return recExactMatch(d, ctx) ? 0 : recConfLevel(d, ctx) + 1; }   // fold exact/green into one ladder with the lower bands
+  /* #540 — a TIE must not be settled by whichever candidate was seen first.
+     majkinetor's release group has two distinct recordings both called
+     "Toubaka", and its editions disagree about which sits at track 7 and which
+     at track 10:
+
+         092b3f5e "Discotheque 71"   Toubaka at  7 → f8df5b35
+         ebd5c67c                    Toubaka at 10 → f8df5b35
+         216a51c7 (the one edited)   Toubaka at  7 → 53cb0616
+
+     Both candidates therefore score identically on title (and on length, being
+     the same performance released twice), so the old `lvl < bestLevel` kept
+     whichever the pool happened to yield first — and the position tier, which
+     exists to disambiguate, offers the *other* one from a different edition.
+     The result links the wrong recording and looks perfectly plausible, which
+     is how it survived a visual check and only surfaced later as a wrong ISRC.
+
+     So: collect every candidate at the best level, break the tie on evidence
+     (an exactly-equal length, then a position the RG agrees on), and if it is
+     STILL ambiguous leave the slot unset. An unmatched slot is visible and
+     costs a click; a confidently wrong one is neither. */
+  function recPickBest(cands, ctx, posGids) {
+    let bestLevel = Infinity; let tied = [];
+    (cands || []).forEach(c => {
+      if (!c) return;
+      const lvl = (typeof c._level === 'number') ? c._level : recComboLevel(c, ctx);
+      if (lvl < bestLevel) { bestLevel = lvl; tied = [c]; }
+      else if (lvl === bestLevel) tied.push(c);
+    });
+    if (!tied.length) return { best: null, level: Infinity, ambiguous: false, tied: [] };
+    // the same recording offered by several tiers is not a tie
+    const byGid = new Map();
+    tied.forEach(c => { if (c.gid && !byGid.has(c.gid)) byGid.set(c.gid, c); });
+    let distinct = [...byGid.values()];
+    if (distinct.length > 1) {
+      // 1. an exactly-equal length is real evidence; a mere "within tolerance" is not
+      const exactLen = distinct.filter(c => c.length && ctx && ctx.length && recLenGap(c.length, ctx.length) === 0);
+      if (exactLen.length === 1) distinct = exactLen;
+    }
+    if (distinct.length > 1 && posGids && posGids.length) {
+      // 2. the release group's own editions: keep candidates that actually sit
+      //    at THIS slot. When editions disagree, this stays ambiguous — which is
+      //    exactly the case that must not auto-link.
+      const atSlot = distinct.filter(c => c.gid && posGids.includes(c.gid));
+      if (atSlot.length === 1) distinct = atSlot;
+    }
+    return { best: distinct[0], level: bestLevel, ambiguous: distinct.length > 1, tied: distinct };
+  }
   function recConfLevel(data, ctx) {
     if (!ctx) return 0;
     let n = 0; const lenDiff = recLenGap(data.length, ctx.length);
@@ -5897,7 +5944,7 @@
     const wrap = document.getElementById('tc-recwrap');
     const setStatus = t => { const e = wrap && wrap.querySelector('.tc-rec-amstatus'); if (e) e.textContent = t; };
     const maxLevel = CUTOFF[SETTINGS.recCutoff || 'near'];
-    let linked = 0, considered = 0;
+    let linked = 0, considered = 0, ambiguous = 0;   // #540
     try {
       // ONE request: pull the whole release group's recordings, index by normalised title, match locally
       let byTitle = new Map(), pool = [];
@@ -5922,15 +5969,19 @@
         const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen, artistGids: acArtistGids(u(ko.artistCredit)) };
         // best candidate from the local RG pool (normalised-title match; fuzzy scan if a Title tolerance is set).
         // lower confidence level wins; within the same level, an EXACT (no-tolerance) match is preferred. #119
+        // #540: every candidate is kept, with the level it scored, so a tie can be
+        // recognised at the end instead of being decided by arrival order.
         let best = null, bestLevel = Infinity;
-        const consider = d => { const lvl = recComboLevel(d, ctx); if (lvl < bestLevel) { bestLevel = lvl; best = d; } };   // lower combined level (exact < tolerance < near < …) wins
+        const seen = [];
+        const note = (d, lvl) => { if (!d) return; d._level = lvl; seen.push(d); if (lvl < bestLevel) { bestLevel = lvl; best = d; } };
+        const consider = d => note(d, recComboLevel(d, ctx));   // lower combined level (exact < tolerance < near < …) wins
         // #440 — a POSITION candidate that passed the similarity gate AND matches on LENGTH is
         // strong evidence it's the same recording, even when the recording's canonical title or
         // artist differ from the imported track (punctuation "Part"/"Pt.", or an extra backing
         // act like "… & Orchestre Afrisa"). Those diffs otherwise drag recComboLevel to 'low' and
         // it never links. Floor such a candidate to 'near' so it clears the default cutoff; a
         // DIFFERING length keeps its (worse) computed level, so this can't over-link.
-        const considerPos = d => { let lvl = recComboLevel(d, ctx); if (d.length && ctx.length && recLenGap(d.length, ctx.length) === 0) lvl = Math.min(lvl, CUTOFF.near); if (lvl < bestLevel) { bestLevel = lvl; best = d; } };
+        const considerPos = d => { let lvl = recComboLevel(d, ctx); if (d.length && ctx.length && recLenGap(d.length, ctx.length) === 0) lvl = Math.min(lvl, CUTOFF.near); note(d, lvl); };
         let cands = byTitle.get(recFold(r.title)) || [];
         if (!cands.length && (SETTINGS.recTitleTol || 0) > 0 && pool.length) cands = pool.filter(p => recTitleEq(p.name, r.title));
         cands.forEach(consider);
@@ -5964,14 +6015,27 @@
           }
           for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
-        if (best && bestLevel <= maxLevel) { Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' LINK → "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '] level=' + bestLevel + ' (≤' + maxLevel + ')'); try { ko.setRecordingValue(recEntityFrom(best)); linked++; renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); } }
+        // #540: settle the winner on evidence, and refuse to guess between equals.
+        const pk2 = posKeyOf(r, ko);
+        const posGids = pk2 ? (posIndex.get(pk2) || []).map(c => c.gid).filter(Boolean) : [];
+        const pick = recPickBest(seen, ctx, posGids);
+        best = pick.best; bestLevel = pick.level;
+        if (pick.ambiguous && bestLevel <= maxLevel) {
+          ambiguous++;
+          Log.warn('rec-match #' + (r.number || (r.ti + 1)) + ' AMBIGUOUS — ' + pick.tied.length + ' recordings tie at level ' + bestLevel
+            + ': ' + pick.tied.map(c => '"' + c.name + '" [' + (c.gid || '').slice(0, 8) + ']' + (c.length ? ' ' + Math.round(c.length / 1000) + 's' : '')).join(', ')
+            + ' — left unset, pick one by hand (the release group disagrees about which belongs here)');
+        } else if (best && bestLevel <= maxLevel) { Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' LINK → "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '] level=' + bestLevel + ' (≤' + maxLevel + ')'); try { ko.setRecordingValue(recEntityFrom(best)); linked++; renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); } }
         else Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' NO LINK — best=' + (best ? '"' + best.name + '" level=' + bestLevel + ' > cutoff ' + maxLevel : 'none'));   // #440 diag
       }
     } finally {
       _autoMatching = false;
       rerenderRec();
-      const w = document.getElementById('tc-recwrap'); const e = w && w.querySelector('.tc-rec-amstatus'); if (e) e.textContent = 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's');
-      Log.info('auto-match: linked', linked, 'of', considered, 'unset tracks');
+      const w = document.getElementById('tc-recwrap'); const e = w && w.querySelector('.tc-rec-amstatus');
+      // #540: an ambiguous slot is a result, not a silence — say so where the count is.
+      if (e) e.textContent = 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
+        + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '');
+      Log.info('auto-match: linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : ''));
     }
   }
   // submit-flag setters (per track / all tracks) + a light re-render of the recordings table
@@ -7976,7 +8040,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
