@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.24.172332
+// @version      2026.8.24.232329
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,13 +76,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.24.172332 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.24.172331\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.23.222341\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.8.24.232329 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.24.232300\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.23.222341\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.172331","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.172331","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.232300","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.24.232300","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -7373,6 +7373,137 @@ try {
       }, 240);
     });
   }
+  /* -- #543 paste several external links at once ----------------------------
+     majkinetor: "When multiple URLs are pasted, in (+) line, Apollo should add
+     them all at once ... Find out only links, no matter where they are, so they
+     could be intermingled with text", e.g.
+
+         Bandcamp: https://digthiswayrecords.bandcamp.com/album/musical-breed
+         Spotify: https://open.spotify.com/album/3ibDwnUIydFebHj3pNW9WR
+
+     or `Available on [Bandcamp](url) & [Spotify](url)`. So the paste is MINED
+     for urls rather than parsed as a list: anything that is not a url is
+     ignored, which covers both shapes without a format to learn.
+
+     (ROpdebee's mb_multi_external_links does this today, but it stopped
+     matching MB's markup and looks unmaintained -- he had to patch its selector
+     by hand.) */
+  const AL_URL_RE = /\bhttps?:\/\/[^\s<>"'`\)\]}]+/gi;
+  function alExtractUrls(text) {
+    const out = [];
+    const seen = new Set();
+    for (const raw of String(text || '').match(AL_URL_RE) || []) {
+      const url = raw.replace(/[.,;:!?]+$/, '');
+      let ok = false;
+      try { const u = new URL(url); ok = !!u.hostname && u.hostname.includes('.'); } catch (e) { ok = false; }
+      if (!ok) continue;
+      const key = url.toLowerCase();
+      if (seen.has(key)) continue;   // the same link twice in one paste is one link
+      seen.add(key);
+      out.push(url);
+    }
+    return out;
+  }
+  /* MB leaves the link type blank for hosts its classifier cannot decide, and a
+     blank REQUIRED select blocks the whole release editor's submit -- not just
+     that row. Platform Check already solved this; the table is duplicated here
+     rather than shared, the same way the pattern engine is (single-file
+     userscripts).
+     KEEP IN SYNC with platform_check.user.js's TYPE_FORCE. Order matters: the
+     first id MB actually offers for that row wins, because MB only lists types
+     applicable to the host. */
+  const AL_TYPE_FORCE = [
+    { test: u => /music\.apple\.com\/.*\/album\//i.test(u),     ids: ['980', '85'] },
+    { test: u => /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), ids: ['85', '980'] },
+    { test: u => /hdtracks\.com\//i.test(u),                    ids: ['74'] },
+    { test: u => /volumo\.com\/album\//i.test(u),               ids: ['74'] },
+    { test: u => /qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u), ids: ['74', '980'] },
+    { test: u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\//i.test(u), ids: ['85', '980'] },
+  ];
+  const alWaitFor = (fn, ms) => new Promise(resolve => {
+    const t0 = Date.now();
+    const tick = () => {
+      let v = null;
+      try { v = fn(); } catch (e) {}
+      if (v) return resolve(v);
+      if (Date.now() - t0 > (ms || 3000)) return resolve(null);
+      setTimeout(tick, 60);
+    };
+    tick();
+  });
+  const alAddInput = () => [...document.querySelectorAll('#external-links-editor input[type=url]')].find(i => !i.value);
+  // Fill ONE url into the editor's empty (+) input and wait for MB to accept it
+  // (it renders the row and hands us a fresh empty input for the next one).
+  async function alAddUrl(url) {
+    const input = alAddInput();
+    if (!input) return { url, ok: false, why: 'no empty link input' };
+    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    setVal.call(input, url);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    // The row keeps its url in the <input> while the editor is open — an <a.url>
+    // only appears once MB renders it as a committed link — so don't wait for
+    // one (that burned 4s per url waiting for something that never comes).
+    const row = input.closest('tr');
+    const force = AL_TYPE_FORCE.find(f => f.test(url));
+    let typed = null;
+    if (force && row) {
+      const select = await alWaitFor(() => {
+        const sib = row.nextElementSibling;
+        return (sib && sib.classList.contains('relationship-item')) ? sib.querySelector('select.link-type') : null;
+      }, 3000);
+      // only fill a select MB left empty -- never override a type it did resolve
+      if (select && !select.value) {
+        const opt = force.ids.map(id => [...select.options].find(o => o.value === id)).find(Boolean);
+        if (opt) {
+          const setSel = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+          setSel.call(select, opt.value);
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          typed = opt.textContent.trim();
+        }
+      }
+    }
+    // MB gives us a NEW empty input once the url is accepted; if it never does,
+    // the url was rejected (duplicate/invalid) and the next one would overwrite it.
+    const fresh = await alWaitFor(() => { const n = alAddInput(); return (n && n !== input) ? n : null; }, 4000);
+    return { url, ok: !!fresh, typed, why: fresh ? '' : 'MusicBrainz did not accept it (duplicate or unsupported?)' };
+  }
+  let _alBusy = false;
+  async function alAddUrls(urls) {
+    if (_alBusy) return [];
+    _alBusy = true;
+    const results = [];
+    try { for (const u of urls) results.push(await alAddUrl(u)); }
+    finally { _alBusy = false; }
+    const ok = results.filter(r => r.ok).length;
+    const typed = results.filter(r => r.typed).length;
+    Log.info('multi-link paste: added ' + ok + '/' + results.length + ' url(s)'
+      + (typed ? ', set ' + typed + ' link type(s) MusicBrainz left blank' : ''));
+    results.filter(r => !r.ok).forEach(r => Log.warn('multi-link paste: ' + r.url + ' -- ' + r.why));
+    return results;
+  }
+  // One delegated listener: the editor re-renders its rows constantly, so
+  // binding to the input itself would not survive.
+  let _alPasteHooked = false;
+  function installMultiLinkPaste() {
+    if (_alPasteHooked) return;
+    _alPasteHooked = true;
+    document.addEventListener('paste', ev => {
+      const input = ev.target;
+      if (!input || input.tagName !== 'INPUT' || input.type !== 'url') return;
+      if (!input.closest('#external-links-editor')) return;
+      const cd = ev.clipboardData || window.clipboardData;
+      const text = cd && cd.getData ? cd.getData('text') : '';
+      if (!text) return;
+      const urls = alExtractUrls(text);
+      // Exactly one url and nothing else pasted: that is MB's own case, so leave
+      // it alone -- no reason to take over ordinary single-link pasting.
+      if (urls.length === 1 && urls[0] === text.trim()) return;
+      if (!urls.length) return;
+      ev.preventDefault();
+      alAddUrls(urls);
+    }, true);
+  }
   let _checking = false;
   async function checkAllLinks(setEnded) {
     if (_checking) return; _checking = true;
@@ -8150,7 +8281,7 @@ try {
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
@@ -8190,6 +8321,11 @@ try {
       Log.info('Release:', (nm ? nm + ' — ' : '') + (mbid ? ORIGIN + '/release/' + mbid : location.href));
     } catch (e) {}
     Log.info('editor ready');
+    // #543: the multi-url paste hook belongs to the editor, not to Apollo's
+    // release-info panel — the (+) link row is MB's and is there whether or not
+    // that panel is showing. One delegated listener, self-guarded by the
+    // #external-links-editor check inside it.
+    installMultiLinkPaste();
     if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
     const tl = readTracklist();
