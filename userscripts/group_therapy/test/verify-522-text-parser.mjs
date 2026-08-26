@@ -178,13 +178,14 @@ if (anArtistGid) {
   await page.click('.gt-tp-search:not(.gt-tp-resolved)');
   await page.waitForTimeout(150);
   await page.fill('.gt-tp-q', anArtistGid);
-  await page.waitForTimeout(600);
-  // right-click: resolves via the shared, TEXT-keyed artistCache (not the
-  // position-only override) — test #11 below depends on this exact text
-  // ("Test Artist For 522") still showing resolved after the textarea is
-  // wiped and re-filled with the same credit line at a fresh position.
-  await page.click('.gt-tp-res', { button: 'right' });
-  await page.waitForTimeout(150);
+  // #544: a pasted MBID now resolves ITSELF — there is no result row to click
+  // any more. It applies to every row with this text (the shared, TEXT-keyed
+  // entityCache, not the position-only override), which is the same semantic
+  // the old right-click had here, and which test #11 below depends on: the
+  // text stays resolved after the textarea is wiped and re-filled with the
+  // same credit line at a fresh position.
+  await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
+  await page.waitForTimeout(250);
   const relCountBefore = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
   await page.click('.gt-cons-apply');
   await page.waitForTimeout(800);
@@ -578,27 +579,18 @@ const propArtistGid = anArtistGid;   // reuse the same real gid resolved earlier
 // page-wide selector, since role search buttons look identical.
 const artistSearchBtn = i => page.locator('.gt-tp-row').nth(i).locator('.gt-tp-c').nth(3).locator('.gt-tp-search');
 if (propArtistGid) {
+  // #544 swapped the two: a plain click is now the bulk case (every row with
+  // this text) and right-click is "this row only". Pasting an MBID resolves
+  // itself, bulk — so the single-row case is driven from a NAME search, which
+  // is the only path that still shows clickable result rows.
   await artistSearchBtn(0).click();
   await page.waitForTimeout(150);
   await page.fill('.gt-tp-q', propArtistGid);
-  await page.waitForTimeout(600);
-  await page.click('.gt-tp-res');   // plain LEFT click this time — this row only
-  await page.waitForTimeout(150);
-  const afterLeftClick = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => !!tr.querySelector('a.gt-tp-resolved')));
-  console.log('resolved (this row only) after left-click pick:', JSON.stringify(afterLeftClick));
-  ck(afterLeftClick[0] === true && afterLeftClick[1] === false, `a normal click resolves only the clicked row, not the other row sharing the same artist text (got ${JSON.stringify(afterLeftClick)})`);
-
-  // now right-click a candidate for the SECOND (still-unresolved) row — it
-  // should resolve BOTH rows (bulk, by shared text).
-  await artistSearchBtn(1).click();
-  await page.waitForTimeout(150);
-  await page.fill('.gt-tp-q', propArtistGid);
-  await page.waitForTimeout(600);
-  await page.click('.gt-tp-res', { button: 'right' });
-  await page.waitForTimeout(150);
-  const afterRightClick = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => !!tr.querySelector('a.gt-tp-resolved')));
-  console.log('resolved (propagated) after right-click pick:', JSON.stringify(afterRightClick));
-  ck(afterRightClick.every(Boolean), `a right click propagates to every row sharing that artist text (got ${JSON.stringify(afterRightClick)})`);
+  await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
+  await page.waitForTimeout(250);
+  const afterMbidPaste = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => !!tr.querySelector('a.gt-tp-resolved')));
+  console.log('resolved after pasting an MBID (#544 = bulk):', JSON.stringify(afterMbidPaste));
+  ck(afterMbidPaste.every(Boolean), `a pasted MBID resolves every row sharing that artist text (got ${JSON.stringify(afterMbidPaste)})`);
 } else {
   console.log('SKIP: no real artist gid available for the propagation test');
 }
@@ -624,9 +616,9 @@ if (artGid2) {
   await artistSearchBtn(0).click();
   await page.waitForTimeout(150);
   await page.fill('.gt-tp-q', artGid2);
-  await page.waitForTimeout(600);
-  await page.click('.gt-tp-res', { button: 'right' });
-  await page.waitForTimeout(150);
+  // #544: resolves itself on paste — no result row to click.
+  await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
+  await page.waitForTimeout(250);
   // regression guard: this exact li:0:0 position was already applied once
   // before (test 7, above) — a brand-new, never-applied line pasted at the
   // same position must NOT silently inherit that stale "✓ applied" status
@@ -999,9 +991,9 @@ if (anArtistGid && copyrightIds.artistId) {
   await page.click('.gt-tp-apop .gt-tp-tab:has-text("Artist")');
   await page.waitForTimeout(150);
   await page.fill('.gt-tp-q', anArtistGid);
-  await page.waitForTimeout(600);
-  await page.click('.gt-tp-res');
-  await page.waitForTimeout(200);
+  // #544: a pasted MBID resolves itself — no result row to click.
+  await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
+  await page.waitForTimeout(250);
   const relCountBefore = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
   await page.click('.gt-cons-apply');
   await page.waitForTimeout(600);
@@ -1055,14 +1047,14 @@ if (anArtistGid) {
   await page.click('.gt-tp-resolve');   // auto-resolves the role ("mastering")
   await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
   await page.waitForTimeout(200);
-  // resolve the entity via the picker's paste-MBID path, right-click to
-  // bulk-resolve via the shared text-keyed cache (same idiom as test 7).
+  // resolve the entity via the picker's paste-MBID path — since #544 that
+  // resolves itself, bulk (the shared text-keyed cache), which is exactly what
+  // the right-click used to do here.
   await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
   await page.waitForTimeout(150);
   await page.fill('.gt-tp-q', anArtistGid);
-  await page.waitForTimeout(600);
-  await page.click('.gt-tp-res', { button: 'right' });
-  await page.waitForTimeout(150);
+  await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
+  await page.waitForTimeout(250);
   // the raw-entity cell is always .gt-tp-c index 1 ([role, entity, →role,
   // →entity] is the parsed-cell order) — read through the row's own DOM
   // rather than a bare first-match selector, which would ambiguously hit

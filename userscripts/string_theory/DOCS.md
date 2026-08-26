@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-25 00:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-26 18:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -48,7 +48,9 @@ Beautification of native page, external links redesign, markdown annotation edit
 
 <img width="1200" src="../apollo_editor/screenshots/release.png" />
 
-- **External links** moved to a right column with a **dead-link checker**; **right-click** a favicon/type to edit it. The link row stays a compact **[+]** until you click it, then reads **"Paste one or more links"** — and accepts **several links at once** and mines them out of whatever you paste — `Bandcamp: <url>` on one line and `Spotify: <url>` on the next, or `Available on [Bandcamp](../apollo_editor/url) & [Spotify](../apollo_editor/url)` — labels, punctuation and markdown are ignored, duplicates collapse, and a link type MusicBrainz leaves blank (Bandcamp, Apple Music, Qobuz, SoundCloud, HDtracks, Volumo) is filled with the same preference table [Platform Check](../platform_check) uses, since a blank required type blocks the whole editor's submit. A plain single-url paste is left to MusicBrainz untouched ([#543](https://github.com/majkinetor/musicbrainz-userscripts/issues/543)).
+- **External links** moved to a right column with a **dead-link checker**
+    - **Right-click** a favicon/type to edit it.
+    - **Add link (+)** stays a compact **[+]** until clicked, then reads *Paste one or more links*: it accepts **several links at once** and mines URLs out of whatever you paste including full HTML, sorting out duplicates, and setting a link type
 - **[Markdown annotation editor](#annotation-editor)** in *Additional information*.
 - A **front-cover thumbnail** is positioned under the external links, linking to the release's cover-art page
 - Batch removal of array elements - date and labels - using right click on (x) button
@@ -1005,7 +1007,11 @@ Every entity resolves as an **artist** or a **label**, decided per row: a role t
 
 Every parsed line gets its own preview row, tinted by status (amber = matched but not fully resolved, red = the pattern didn't match at all, plain = ready) so you can scan the table at a glance instead of hunting for the small status dot. Role/entity auto-resolve where unambiguous — including a fuzzy fallback ("mastered by" finds "mastering", "compiled" finds "compiler"), a specific-instrument fallback (MB has no standalone "Guitar"/"Flute" link type — these resolve as the *instrument* relationship plus the matching attribute), and a score-based tie-break when MB returns more than one exact name match but one is a clearly better result (e.g. a distinctly higher search-relevance score than a same-named duplicate/bootleg entry). **⚡ Match**, at the top of the window (same spot Match Works puts its own ⚡ Match button) runs auto-resolution in one batch, showing live "Resolving N/M" progress in the button itself.
 
-Where a role/entity isn't resolved, a **search** link opens a picker (search, paste an MBID/URL, or "+" to create a new artist/label right from the search box). Once resolved, the cell stays clickable — click it again to reopen the picker and change it. For an already-resolved entity specifically, a left click reopens the picker while a **right click opens the entity itself** in a new tab. When the same name appears on several rows (e.g. one person credited with four different instruments), a normal click on a search result resolves only the row you clicked — right-click a result to apply it to every row sharing that same text at once.
+Where a role/entity isn't resolved, a **search** link opens a picker (search, paste an MBID/URL, or "+" to create a new artist/label right from the search box). Once resolved, the cell stays clickable — click it again to reopen the picker and change it. For an already-resolved entity specifically, a left click reopens the picker while a **right click opens the entity itself** in a new tab. When the same name appears on several rows (e.g. one person credited with four different instruments), a normal click on a search result resolves **every row sharing that text** — right-click a result to resolve only the row you clicked ([#544](https://github.com/majkinetor/musicbrainz-userscripts/issues/544)).
+
+**Pasting an MBID or URL resolves it immediately** — there is nothing to choose between, so no result row appears to click. The **+** button creates the missing artist/label with its name, sort name and type pre-filled and an edit note attributing the creation; **right-click +** does the same without the new tab taking focus, so a run of unresolved names can be fired off and picked up as each one lands.
+
+The role picker is keyboard-navigable: type to filter, **↑/↓** to move (**PgUp/PgDn**, **Home/End** to jump), **Enter** to take the highlighted role, **Esc** to cancel.
 
 Each line can be fixed up without leaving the table: a **pattern override** applies just to that line, its **raw text is directly editable** (writes back into the pasted text above), and **✕** removes the line entirely (from both the table and the source text). The window has a **maximize** button and **drag-resizable columns**.
 
@@ -1026,6 +1032,8 @@ It shows what it matched — `→ 2 tracks: 1, 3` (a long selection is summarise
 The edit note records where the credits went — *Parsed 2 credits from text to 2 recordings (tracks 1, 3)* — so a reviewer can tell which tracks a batched edit touched.
 
 This replaces parsing at release level and then moving the credits onto a recording afterwards — *"Parsed 18 credits from text / Moved 18 release credits to 1 selected recording"*, four times over.
+
+**🔒 Freeze matched** pins the current pattern onto every line that still uses the default pattern *and* already matches it, so you can then try a different pattern on what is left without disturbing them — the same idea as Apollo's own freeze.
 
 **Apply** stages the resolved rows as real relationships in the editor and closes the tool — nothing is submitted; you review and save yourself. If the text came from **Load annotation**, an **Apply & clear annotation** button also appears: it applies, then opens the release's own annotation editor pre-cleared so you can review and submit removing the now-redundant free text in one more click (there's no way to stage that as part of the same batched edit, so it isn't automatic). The pasted text and every resolution made so far are remembered for as long as the page stays open — closing and reopening the tool picks up where you left off, but a real page reload starts fresh.
 
@@ -1554,7 +1562,6 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 - **Multiple [platforms](#platforms)** supported with customizable position and visibility
 - **Header info** — MB's release year, format, label and track count in the dashboard header
-- **Progress indicator** (#422) — the ↻ refresh button spins (and can't be clicked) while scans run; when done, the total scan time shows in its tooltip
 - **Insert links to release** — open the release's edit page and insert one or all confirmed platform links. A Bandcamp album whose page includes a **digital** release gets **both** relationships on the one URL — *stream for free* and *purchase for download* (#423); physical-only Bandcamp pages get just the stream rel.
 - **Open all found** — open each confirmed platform page not yet in MB in its own tab (plus the Discogs master) Mismatches and unverifiable links are skipped. *(Watch for pop-up blocking.)*
 - **Options** — detailed appearance, authentication, link confidence settings etc.

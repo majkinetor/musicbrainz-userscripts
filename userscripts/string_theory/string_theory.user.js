@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.25.005740
+// @version      2026.8.26.185549
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -76,8 +76,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.25.005740 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.25.005710\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.23.222341\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.8.26.185549 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.25.005710\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.23\n  · Group Therapy v2026.8.26.185515\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -20549,7 +20549,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.23.222341","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.23.222341","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.26.185515","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.8.26.185515","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -21004,6 +21004,7 @@ ${lines}
       .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font:13px inherit;border:1px solid #c9ccd2;border-radius:4px}
       .gt-role-list{overflow:auto;flex:1;padding:0 4px 8px}
       .gt-role-row{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+      .gt-role-row.gt-role-active{background:#efeaff;box-shadow:inset 2px 0 0 #5f3ec0}   /* #544 keyboard cursor */
       .gt-role-row:hover{background:#eef3fb}
       .gt-role-name{font-weight:600;font-size:13px}
       .gt-role-recent{font-weight:400;font-size:10px;color:#6b8fb5;margin-left:6px}
@@ -23305,7 +23306,7 @@ ${lines}
       + '.gt-tp-row.gt-tp-st-red{background:#ffe0e0}'
       + '.gt-tp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-top:3px}'
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
-      + '.gt-tp-ov{width:110px;padding:3px 6px;border:1px solid #dde1e7;border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:#4a90d9}'
+      + '.gt-tp-ov{box-sizing:border-box;width:100%;min-width:0;padding:3px 6px;border:1px solid #dde1e7;border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:#4a90d9}'   /* #544: track the column instead of a fixed 110px, so a narrow column cannot clip the caret */
       + '.gt-tp-rawwrap{display:flex;align-items:center;gap:4px;width:100%}'
       + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:#556;font:11px inherit;outline:none}.gt-tp-raw:hover{border-color:#dde1e7}.gt-tp-raw:focus{border-color:#4a90d9;background:#fff}'
       + '.gt-tp-rowdel{flex:none;background:none;border:none;color:#c2c8d0;cursor:pointer;padding:2px 4px;font-size:12px}.gt-tp-rowdel:hover{color:#c0392b}'
@@ -23767,7 +23768,15 @@ ${lines}
     applyClearBtn.title = 'Apply the resolved rows, then open the annotation editor pre-cleared for you to review and submit';
     applyClearBtn.style.display = 'none';
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
-    foot.append(scopeWrap, cnt, applyClearBtn, applyBtn);   // #539: scope at the far left, Apply at the far right
+    // #544 (majkinetor): "Add [freeze pattern] option for matching rows the same
+    // as Apollo" — Apollo's tc-tpp-freeze. Stamps the current pattern into every
+    // still-default line that matches it right now, so trying a different
+    // pattern afterwards leaves those alone and only re-parses the rest.
+    // It lives in the footer rather than the top bar because that bar has twice
+    // been one control too wide (#539).
+    const freezeBtn = el('button', 'gt-cons-btn', '🔒 Freeze matched'); freezeBtn.type = 'button';
+    freezeBtn.title = 'Lock the current pattern onto every line that still uses the default pattern and already matches it — then try another pattern on what is left';
+    foot.append(scopeWrap, freezeBtn, cnt, applyClearBtn, applyBtn);   // #539: scope at the far left, Apply at the far right
 
     const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
     // #522 follow-up (majkinetor, live): "Lets have an option to remove a
@@ -24074,7 +24083,10 @@ ${lines}
       // post back. Keeping the window handle achieves the same thing: the create
       // tab is same-origin, so we can watch it land on /<kind>/<mbid> and adopt
       // that entity — and fall back to a name search if the tab is just closed.
-      createBtn.onclick = () => {
+      // #544 (majkinetor): "Implement right click on (+) to create entity in the
+      // background" — same creation, without the tab stealing focus, so a run of
+      // several unresolved names can be fired off and picked up as they land.
+      const startCreate = (background) => {
         const name = r.entity || '';
         const kind = searchKind;
         const params = new URLSearchParams();
@@ -24083,8 +24095,19 @@ ${lines}
           params.set('edit-artist.sort_name', txpGuessSortName(name));
           params.set('edit-artist.type_id', '1');            // Person — sort name above assumes it
         }
+        // #544: "Adding entity doesn't have any edit notes. It should do the
+        // same as CH/Apollo" — the created entity carried no attribution at
+        // all. Same shape as Apollo's entityActionNote: signature, then what
+        // was being done and where.
+        params.set(`edit-${kind}.edit_note`, txpCreateNote(kind));
         const win = window.open(`/${kind}/create?` + params.toString(), '_blank');
         if (!win) return;                                     // popup blocked — nothing to watch
+        if (background) {
+          // Hand focus straight back. There is no API for "open unfocused", so
+          // this is the usual pair — blur the new window, refocus ours.
+          try { win.blur(); } catch (e) {}
+          try { window.focus(); } catch (e) {}
+        }
         createBtn.classList.add('gt-tp-plus-wait');
         createBtn.title = `Waiting for the new ${kind}…`;
         let done = false;
@@ -24110,6 +24133,8 @@ ${lines}
           if (win.closed) finish(null);
         }, 600);
       };
+      createBtn.onclick = () => startCreate(false);
+      createBtn.addEventListener('contextmenu', e => { e.preventDefault(); startCreate(true); });   // #544
       qWrap.append(q, createBtn);
       popEl.appendChild(qWrap);
       const list = el('div', 'gt-tp-results'); popEl.appendChild(list);
@@ -24120,7 +24145,11 @@ ${lines}
       // click resolves every row sharing this exact entity text (the
       // shared entityCache, same as auto-resolve uses) — same propagation
       // as before, now opt-in instead of automatic.
-      popEl.appendChild(el('div', 'gt-tp-hint', 'Click: this row only · Right-click: every row with this same text'));
+      // #544 (majkinetor): "Let left click change all entities upon selection
+      // (currently it is on right click)." Swapped: the common case — one
+      // person credited on several lines — is now the plain click, and the
+      // narrow "just this row" case moved to right-click.
+      popEl.appendChild(el('div', 'gt-tp-hint', 'Click: every row with this same text · Right-click: this row only'));
       // header/placeholder/create-title/tab-highlight all depend on
       // searchKind, which the tabs above can change after the popover is
       // already open — kept in one place so toggling stays in sync.
@@ -24129,7 +24158,7 @@ ${lines}
         const PLURAL = { artist: 'artists', label: 'labels', place: 'places' };
         hdr.textContent = `Pick ${ARTICLE[searchKind]} for “${trunc(r.role || r.raw, 40)}”`;
         q.placeholder = `search ${PLURAL[searchKind]}, or paste an MBID / URL…`;
-        createBtn.title = `Create ${searchKind} “${trunc(r.entity || '', 40)}” ↗`;
+        createBtn.title = `Create ${searchKind} “${trunc(r.entity || '', 40)}” ↗  ·  right-click to create in the background`;
         if (canToggle) [...popEl.querySelectorAll('.gt-tp-tab')].forEach(b => b.classList.toggle('gt-tp-tab-on', b.dataset.kind === searchKind));
       };
       renderChrome();
@@ -24145,16 +24174,20 @@ ${lines}
         return row;
       };
       const wirePick = (row, entity) => {
-        row.addEventListener('click', () => pick(entity, false));
-        row.addEventListener('contextmenu', e => { e.preventDefault(); pick(entity, true); });
+        row.addEventListener('click', () => pick(entity, true));                                  // #544: all rows with this text
+        row.addEventListener('contextmenu', e => { e.preventDefault(); pick(entity, false); });   // #544: this row only
       };
       const runSearch = async () => {
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;
         const gid = (term.match(GID_RE) || [])[0];
         if (gid) {
+          // #544 (majkinetor): "pasting MBID should work imediately rather than
+          // showing search result". An MBID is already an exact answer — there
+          // is nothing to choose between — so resolve and take it. Applies to
+          // every row with this text, matching what a left click now does.
           const ent = await txpFetchEntity(gid, searchKind);
-          if (ent) { const row = resRow((ent.name || '') + (ent.disambiguation ? ` (${ent.disambiguation})` : ''), ent.entityType || ''); wirePick(row, ent); list.appendChild(row); }
-          else list.appendChild(el('div', 'gt-pop-note', 'Nothing found with that MBID.'));
+          if (ent) { pick(ent, true); return; }
+          list.appendChild(el('div', 'gt-pop-note', 'Nothing found with that MBID.'));
           return;
         }
         const searchFor = { artist: txpSearchArtist, label: txpSearchLabel, place: txpSearchPlace }[searchKind] || txpSearchArtist;
@@ -24163,8 +24196,8 @@ ${lines}
         if (!cands.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
         cands.forEach(c => {
           const row = resRow((c.name || '') + (c.comment ? ` (${c.comment})` : ''), c._kind);
-          row.addEventListener('click', async () => { const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, false); });
-          row.addEventListener('contextmenu', async e => { e.preventDefault(); const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, true); });
+          row.addEventListener('click', async () => { const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, true); });                                  // #544: all rows
+          row.addEventListener('contextmenu', async e => { e.preventDefault(); const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, false); });   // #544: this row only
           list.appendChild(row);
         });
       };
@@ -24319,6 +24352,23 @@ ${lines}
     }, 0));
     srcTgl.onclick = () => { const hidden = ta.style.display === 'none'; ta.style.display = hidden ? '' : 'none'; srcTgl.textContent = (hidden ? '▾' : '▸') + ' Paste credit text'; };
     resolveBtn.onclick = resolveAll;
+    // #544 freeze: per LINE, since the override is a line's property — a line
+    // that expanded into several rows is frozen once.
+    freezeBtn.onclick = () => {
+      const seen = new Set();
+      let n = 0;
+      parsedRows().forEach(r => {
+        if (seen.has(r.li)) return;
+        const ln = lines[r.li];
+        if (!ln || (ln.override || '').trim()) return;   // already pinned to something
+        if (!r.matched) return;                          // nothing matched, nothing to freeze
+        seen.add(r.li);
+        ln.override = pattern;
+        n++;
+      });
+      render(); saveState();
+      toast(n ? `Froze ${n} matched line${n !== 1 ? 's' : ''} to “${pattern}”` : 'No still-default lines match this pattern');
+    };
     applyBtn.onclick = txpApply;
     applyClearBtn.onclick = txpApplyAndClearAnnotation;
     // #522 follow-up (majkinetor, live): "Load annotation should load it into
@@ -24435,6 +24485,19 @@ ${lines}
   // existing relationship yet (the text parser is CREATING new credits, not
   // replacing one) — driven from two raw entityType strings instead. MB's
   // link_type table keys type0/type1 in a canonical (sorted) order.
+  // #544: attribution for an entity created from the parser. Mirrors Apollo's
+  // entityActionNote — the script signature, then what was being done and on
+  // which release — so the new artist/label is not an unexplained edit.
+  // Module scope on purpose: the __groupTherapy export at the bottom
+  // references it, and that export is wrapped in try/catch — defined inside
+  // openTextParser it threw ReferenceError there and silently took the WHOLE
+  // test hook down with it.
+  function txpCreateNote(kind) {
+    const relUrl = location.href.split(/[?#]/)[0].replace(/\/edit(-relationships)?$/, '');
+    return `${editNoteSig()}
+
+Created this ${kind} while adding credits parsed from text to ${relUrl}`;
+  }
   function linkTypesForPair(typeA, typeB) {
     const lts = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {};
     const [t0, t1] = [typeA, typeB].sort();
@@ -24496,6 +24559,21 @@ ${lines}
     ov.addEventListener('mousedown', e => { if (e.target === ov) done(); });
 
     let rows = [];
+    // #544 (majkinetor): "Keyboard up/down cant be used when selecting role."
+    // Enter used to fire rows[0] blindly, so the only reachable choice was
+    // whatever sorted first. An explicit cursor makes the list navigable and
+    // makes Enter mean "the one I can see highlighted".
+    let active = 0;
+    const paintActive = () => {
+      rows.forEach((row, i) => row.classList.toggle('gt-role-active', i === active));
+      const row = rows[active];
+      if (row && row.scrollIntoView) row.scrollIntoView({ block: 'nearest' });
+    };
+    const moveActive = delta => {
+      if (!rows.length) return;
+      active = (active + delta + rows.length) % rows.length;   // wraps, so Up from the top lands on the last
+      paintActive();
+    };
     function render() {
       const q = search.value.trim().toLowerCase();
       const hist = roleHistory();
@@ -24510,15 +24588,27 @@ ${lines}
         row.appendChild(nm);
         if (r.desc) row.appendChild(el('span', 'gt-role-desc', r.desc.slice(0, 110)));
         row.addEventListener('click', () => { rememberRole(r.id, r.name); done(); onPick(r); });
+        row.addEventListener('mousemove', () => { const i = rows.indexOf(row); if (i >= 0 && i !== active) { active = i; paintActive(); } });   // #544: keep mouse and keyboard on the same row
         list.appendChild(row);
         return row;
       });
       if (!shown.length) list.appendChild(el('div', 'gt-note', 'No role matches that filter'));
+      if (active >= rows.length) active = 0;   // #544: the filter just changed the list under us
+      paintActive();
     }
     search.addEventListener('input', render);
     search.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { e.preventDefault(); done(); }
-      if (e.key === 'Enter' && rows.length) { e.preventDefault(); rows[0].click(); }
+      if (e.key === 'Escape') { e.preventDefault(); done(); return; }
+      // #544: Up/Down move the cursor; PageUp/PageDown and Home/End jump, since
+      // the list runs to 200 roles and paging through it one at a time is not
+      // navigation. Enter takes whatever is highlighted.
+      if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); return; }
+      if (e.key === 'PageDown') { e.preventDefault(); moveActive(10); return; }
+      if (e.key === 'PageUp') { e.preventDefault(); moveActive(-10); return; }
+      if (e.key === 'Home') { e.preventDefault(); active = 0; paintActive(); return; }
+      if (e.key === 'End') { e.preventDefault(); active = Math.max(0, rows.length - 1); paintActive(); return; }
+      if (e.key === 'Enter' && rows.length) { e.preventDefault(); (rows[active] || rows[0]).click(); }
     });
     render();
     ov.appendChild(panel);
@@ -24670,6 +24760,7 @@ ${lines}
       // #522 text parser
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
       txpTrackRows, txpMatchTracks,   // #539 recording scope
+      txpCreateNote,   // #544
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
       txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNarrowByScore, txpInstrumentCandidates,
       txpSplitCompoundCopyrightLines,
