@@ -34,6 +34,9 @@ await ctx.addInitScript(() => {
   const store = new Map();
   window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
   window.GM_setValue = (k, v) => store.set(k, v);
+  // #544 follow-up: the background create goes through GM_openInTab — record
+  // the call instead of really opening a tab.
+  window.GM_openInTab = (u, o) => { window.__gtOpened = { u, o }; return { close() {}, closed: false }; };
   window.GM_info = { script: { name: 'Group Therapy', version: 't' } };
 });
 const page = ctx.pages()[0] || await ctx.newPage();
@@ -154,7 +157,9 @@ await page.waitForTimeout(300);
 // ── 4. Freeze matched ───────────────────────────────────────────────────────
 await setText(`Producer: もちこまめ${NL}Mixer: もちこまめ${NL}nonsense line with no pattern at all`, 'R: E');
 const froze = await page.evaluate(async () => {
-  const btn = [...document.querySelectorAll('.gt-tp button, .gt-cons-foot button')].find(b => /freeze/i.test(b.textContent || ''));
+  // it is icon-only now (#544 follow-up: "next to the pattern input … like
+  // Apollo"), so match the class, not the label text.
+  const btn = document.querySelector('.gt-tp-freeze');
   if (!btn) return { missing: true };
   btn.click();
   await new Promise(r => setTimeout(r, 500));
@@ -212,6 +217,84 @@ ck(!cellGeo.missing && cellGeo.cellW < 110,
 ck(!cellGeo.missing && cellGeo.value === 'R[,] - E[,] a very long pattern', 'and the long pattern really is in it');
 ck(!cellGeo.missing && cellGeo.inputRight <= cellGeo.cellRight + 1, '#3: the input stays inside its column, however narrow');
 ck(!cellGeo.missing && cellGeo.scrolls, 'and scrolls its own text, so the caret stays visible while typing');
+
+
+// ── #544 follow-up 1: Freeze belongs beside the pattern box, in the header ──
+await openParser();
+await setText(`Producer: Karlis Spade (Greenprint)${NL}Mixer: Someone Else Xyzzy`, 'R: E');
+// the pattern-cell step above left a per-line override behind, and a line
+// pinned to a non-matching pattern has no resolved cells to click below.
+await page.evaluate(() => {
+  document.querySelectorAll('.gt-tp-ov').forEach(i => { if (i.value) { i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); } });
+});
+await page.waitForTimeout(600);
+const freezeGeo = await page.evaluate(() => {
+  const f = document.querySelector('.gt-tp-freeze'), pat = document.querySelector('.gt-tp-pat'), res = document.querySelector('.gt-tp-resolve');
+  if (!f || !pat) return { missing: true };
+  const r = e => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left) }; };
+  return {
+    inHeader: !!f.closest('.gt-tp-ctrl'),
+    sameRowAsPattern: Math.abs(r(f).top - r(pat).top) < 12,
+    afterPattern: r(f).left > r(pat).left,
+    matchStillSameRow: res ? Math.abs(r(f).top - r(res).top) < 12 : null,
+    ctrlHeight: Math.round(document.querySelector('.gt-tp-ctrl').getBoundingClientRect().height),
+    inFooter: !!document.querySelector('.gt-cons-foot .gt-tp-freeze'),
+  };
+});
+console.log('freeze button: ' + JSON.stringify(freezeGeo));
+ck(!freezeGeo.missing && freezeGeo.inHeader && !freezeGeo.inFooter, 'Freeze sits in the header, not the footer');
+ck(freezeGeo.sameRowAsPattern && freezeGeo.afterPattern, 'right next to the pattern box');
+ck(freezeGeo.matchStillSameRow, 'and Match is still on that same row — the bar did not gain a second one');
+
+// ── #544 follow-up 3: the role picker was 920px wide and cut descriptions ───
+await page.evaluate(() => document.querySelector('.gt-tp-tbl tbody tr').querySelectorAll('button.gt-tp-search')[0].click());
+await page.waitForSelector('.gt-role-pick', { timeout: 8000 });
+await page.evaluate(() => { const q = document.querySelector('.gt-role-search'); q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); });
+await page.waitForTimeout(300);
+const pickGeo = await page.evaluate(() => {
+  const p = document.querySelector('.gt-role-pick'), b = p.getBoundingClientRect();
+  const d = [...document.querySelectorAll('.gt-role-desc')].find(x => x.textContent.length > 60);
+  const cs = d ? getComputedStyle(d) : null;
+  return {
+    w: Math.round(b.width), h: Math.round(b.height), vw: window.innerWidth,
+    sampleLen: d ? d.textContent.length : 0,
+    truncatedWithEllipsis: cs ? cs.textOverflow === 'ellipsis' && cs.whiteSpace === 'nowrap' : null,
+    fullyVisible: d ? d.scrollHeight <= d.clientHeight + 2 : null,
+  };
+});
+console.log('role picker: ' + JSON.stringify(pickGeo));
+ck(pickGeo.w <= 560, `the picker is its own size again, not .gt-cons's 920px (${pickGeo.w}px)`);
+ck(pickGeo.w < pickGeo.vw * 0.6, 'and nowhere near full width on a wide screen');
+ck(pickGeo.sampleLen > 60, 'a long description is present to check (otherwise the next check is vacuous)');
+ck(!pickGeo.truncatedWithEllipsis, 'descriptions are no longer one nowrap ellipsised line');
+ck(pickGeo.fullyVisible, 'and the sampled description fits within its two clamped lines');
+await page.evaluate(() => { const x = document.querySelector('.gt-role-pick .gt-x'); if (x) x.click(); });
+await page.waitForTimeout(300);
+
+// ── #544 follow-up 2: (+) seeds the SEARCH TEXT, and right-click backgrounds ─
+await page.evaluate(() => {
+  const row = document.querySelector('.gt-tp-tbl tbody tr');
+  const btns = row.querySelectorAll('button.gt-tp-search');
+  btns[btns.length - 1].click();
+});
+await page.waitForSelector('.gt-tp-apop', { timeout: 8000 });
+const prefill = await page.evaluate(() => document.querySelector('.gt-tp-q').value);
+console.log('search box prefill: ' + JSON.stringify(prefill));
+ck(/Greenprint/.test(prefill), 'the picker opens prefilled with the parsed text');
+const bg = await page.evaluate(() => {
+  const q = document.querySelector('.gt-tp-q');
+  q.value = 'Karlis Spade';                                   // the user trims the suffix
+  document.querySelector('.gt-tp-plus').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  const o = window.__gtOpened;
+  return o ? { active: o.o && o.o.active, url: decodeURIComponent(o.u) } : null;
+});
+console.log('right-click + → ' + JSON.stringify(bg && { active: bg.active, url: bg.url.slice(0, 90) }));
+ck(!!bg, 'right-clicking + goes through GM_openInTab');
+ck(bg && bg.active === false, 'with active:false — a real background tab, not a focused one');
+// decodeURIComponent leaves the form-encoded '+' alone, so match either form
+ck(bg && /edit-artist\.name=Karlis[+ ]Spade(&|$)/.test(bg.url), 'seeded with the EDITED search text, not the raw parsed name — ' + JSON.stringify((bg.url.match(/edit-artist\.name=[^&]*/) || [])[0]));
+ck(bg && !/Greenprint/.test(bg.url), 'so the discarded "(Greenprint)" suffix is gone');
+ck(bg && /edit-artist\.edit_note=/.test(bg.url), 'and it still carries the edit note');
 
 ck(posts === 0, `nothing was submitted (${posts} POSTs to /edit)`);
 ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');

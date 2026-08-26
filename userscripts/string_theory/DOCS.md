@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-26 18:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-26 19:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -922,11 +922,9 @@ The **date picker** ([#398](https://github.com/majkinetor/musicbrainz-userscript
 
 ##### From release 
 
-The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart (with an **↗** to open that release in a new tab first) — or use the **＋** to reveal a field and **paste** any release URL/MBID (it acts on paste, no button). It then shows a **checklist** of that release's release-level credits (artists + labels, with credited-as, attributes and dates); pick which to copy onto this release (MB merges any it already has).
+The **⧉ Copy from release…** opens a picker to choose one of **release group's** other releases. It then shows a **checklist** of that release's release-level credits (artists + labels, with credited-as, attributes and dates); pick which to copy onto this release (MB merges any it already has).
 
-**Format-aware cleansing** — since the source may be a different edition, credits whose role doesn't suit **this** release's format start **unticked** (re-tick to override), so you don't carry a vinyl-only production credit onto a digital edition. Two layers, both configurable:
-- **`gt-format-exclude`** — a *format-name → role-name* substring map; the default unticks pressed/printed/manufactured/vinyl roles on a *digital* edition. Override with a GM value (JSON object).
-- **`gt-format-only`** — a *role-name → the format families it belongs to* map, for roles that suit exactly one format; the default makes *lacquer cutting* vinyl-only and *glass mastering* optical-only (CD/DVD/SACD/Blu-ray), so they're unticked on every other format.
+**Format-aware cleansing** — since the source may be a different edition, credits whose role doesn't suit **this** release's format start **unseleced**, so you don't carry a vinyl-only production credit onto a digital edition.
 
 <img width="500" src="../group_therapy/screenshots/copy-release.png" /><br>
 
@@ -934,8 +932,8 @@ The **⧉ Copy from release…** button next to the *Release relationships* head
 
 The **Vertical:** section in the toolbar copies credits between the release and its own recordings, with two icon buttons:
 
-- **⬆ Release → recordings** — copy (or **Move**) the release-level credits onto its recordings — the ticked ones, or all if none are ticked. Release/packaging roles that don't belong on a recording (liner notes, compiler, mastering, artwork, design, photography, manufactured, pressed/printed, publishing, ℗/©, …) start **unticked**; re-tick to override.
-- **⬇ Recordings → release** — collect the recordings' credits onto the release as a **union** across all tracks (deduped by role + artist), each row showing the **track range** it covers (`*` = every track).
+- **⬆ Release → recordings** — copy (or **Move**) the selected release-level credits onto its recordings, or all if none are selected. Release/packaging roles that don't belong on a recording (liner notes, compiler, mastering, artwork, design, photography, manufactured, pressed/printed, publishing, ℗/©, …) start **unselected**
+- **⬇ Recordings → release** — collect the recordings' credits onto the release as a **union** across all tracks (deduped by role + artist), each row showing the **track range** it covers.
 
 Each credit's link type is mapped to the **destination's entity type by name** (e.g. artist-recording *producer* ↔ artist-release *producer*); a role with no equivalent for that entity is skipped and counted. **Move** also removes the source rels. As always, nothing is submitted — the changes land in the editor for you to review and save.
 
@@ -997,25 +995,25 @@ Paste text (or click **Load annotation** to pull the release's latest annotation
 - `E[,] - R[,]` / `R[,] - E[,]` — `Cameron Allen - Flute, Tenor Saxophone` splits the role text on commas (and `[, and]` also splits on the word "and"), turning one line into several rows — one per role, same entity. Splitting *both* sides is more general than picking just one: a side with no comma is simply a no-op split, and a comma on both sides produces every (role, entity) combination — `Producer, Mixer - Alice, Bob` becomes 4 rows. `R: E[,]` does the same split on a colon-separated line — `Published by: Warner Chappell, Sony Music Publishing` becomes two rows, same role. `[&]` splits on `&` instead of a comma — `R: E[&]` for `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` (needs surrounding whitespace, so a real name like "AT&T" isn't split mid-word).
 - A line can also hold **several credits at once**, separated by `;` — `Guitar: Alice; Bass: Bob` becomes two rows.
 
-`E` stands for **entity** — the credited name can resolve to either an artist or a label, decided per row (see below), not fixed by the pattern.
+`E` stands for **entity** — the credited name can resolve to either an artist, label or place, decided per row (see below), not fixed by the pattern.
 
-A **legal/copyright notice line** is recognized automatically by its marker — no pattern needed, no separate mode — and produces one row per notice found. Recognized markers: **©/(C)/copyright**, **℗/(P)/phonographic copyright**, **licensed to / licensed from / under exclusive licen[cs]e to/from**, **distributed by**, **marketed by** (and **marketed and distributed by**, which fires both). A year right after the marker is optional and, if there are several ("1994, 1996"), it's dropped rather than guessed at which one applies. Multiple holders on one line — `℗ 2012 Shady Records/Aftermath Records/Interscope Records` — split into one row per holder (on `/` or `|`; a piece has to look substantial enough on its own to count, so real names like "SA/NV" aren't chopped in two). Ordinary credits and notice lines can be pasted together in the same block.
+A **legal/copyright notice line** is recognized automatically by its marker — no pattern is used — and produces one row per notice found. Recognized markers: **©/(C)/copyright**, **℗/(P)/phonographic copyright**, **licensed to / licensed from / under exclusive licen[cs]e to/from**, **distributed by**, **marketed by** (and **marketed and distributed by**, which fires both). A year right after the marker is optional and, if there are several ("1994, 1996"), it's dropped rather than guessed at which one applies. Multiple holders on one line — `℗ 2012 Shady Records/Aftermath Records/Interscope Records` — split into one row per holder (on `/` or `|`; a piece has to look substantial enough on its own to count, so real names like "SA/NV" aren't chopped in two). Ordinary credits and notice lines can be pasted together in the same block.
 
 A line that packs **two different holders under two different markers** — `Copyright: Albarika Stores BV under exclusive license to Acid Jazz Acquisitions` — is auto-split into two separate lines (one marker each) the moment you paste it or load an annotation, so each holder ends up correctly separated instead of both rows sharing the same undifferentiated text. This only runs once, right after the paste/load — it won't fight you while you're editing by hand afterward.
 
-Every entity resolves as an **artist** or a **label**, decided per row: a role that only exists on one side in MusicBrainz (e.g. **published**/**distributed**/**marketed**/**licensee** are label-only — there's no artist-release equivalent at all) forces that side automatically, with no toggle offered — searching the other side would only ever come up empty. A role that exists on both sides (e.g. copyright/phonographic-copyright/licensor holders), or doesn't resolve at all yet, defaults to a **label** but auto-detects as an **artist** when the name matches one of the release's own credited artists (the usual reason the ambiguity comes up — a self-released artist crediting themselves); the picker shows an **Artist / Label toggle** to override the guess.
+Every entity resolves as an **artist**, **label**, or **place** decided per row: a role that only exists for one entity  (e.g. *published* is label-only, there's no artist-release equivalent at all) forces the picker to use that entity automatically, with no toggle offered. A role that exists for multiple entities (e.g. _copyright_ which exists for both artist and label), or doesn't resolve at all yet, defaults to a **label** but auto-detects as an **artist** when the name matches one of the release's own credited artists (the usual reason the ambiguity comes up — a self-released artist crediting themselves).
 
-Every parsed line gets its own preview row, tinted by status (amber = matched but not fully resolved, red = the pattern didn't match at all, plain = ready) so you can scan the table at a glance instead of hunting for the small status dot. Role/entity auto-resolve where unambiguous — including a fuzzy fallback ("mastered by" finds "mastering", "compiled" finds "compiler"), a specific-instrument fallback (MB has no standalone "Guitar"/"Flute" link type — these resolve as the *instrument* relationship plus the matching attribute), and a score-based tie-break when MB returns more than one exact name match but one is a clearly better result (e.g. a distinctly higher search-relevance score than a same-named duplicate/bootleg entry). **⚡ Match**, at the top of the window (same spot Match Works puts its own ⚡ Match button) runs auto-resolution in one batch, showing live "Resolving N/M" progress in the button itself.
+Every parsed line gets its own preview row, tinted by status (amber = matched but not fully resolved, red = the pattern didn't match at all, plain = ready). Role/entity auto-resolve where unambiguous — including a fuzzy fallback ("mastered by" finds "mastering", "compiled" finds "compiler"), a specific-instrument fallback, and a score-based tie-break when MB returns more than one exact name match but one is a clearly better result (e.g. a distinctly higher search-relevance score than a same-named duplicate/bootleg entry). Use **⚡ Match** at the top of the window to run auto-resolution.
 
-Where a role/entity isn't resolved, a **search** link opens a picker (search, paste an MBID/URL, or "+" to create a new artist/label right from the search box). Once resolved, the cell stays clickable — click it again to reopen the picker and change it. For an already-resolved entity specifically, a left click reopens the picker while a **right click opens the entity itself** in a new tab. When the same name appears on several rows (e.g. one person credited with four different instruments), a normal click on a search result resolves **every row sharing that text** — right-click a result to resolve only the row you clicked ([#544](https://github.com/majkinetor/musicbrainz-userscripts/issues/544)).
+Where a role/entity isn't resolved, a **search** link opens a picker (search, paste an MBID/URL, or "+" to create a new artist/label right from the search box). For an already-resolved entity specifically, a left click reopens the picker while a **right click opens the entity itself** in a new tab. When the same name appears on several rows (e.g. one person credited with four different instruments), a normal click on a search result resolves **every row sharing that text** — right-click a result to resolve only the row you clicked ([#544](https://github.com/majkinetor/musicbrainz-userscripts/issues/544)).
 
-**Pasting an MBID or URL resolves it immediately** — there is nothing to choose between, so no result row appears to click. The **+** button creates the missing artist/label with its name, sort name and type pre-filled and an edit note attributing the creation; **right-click +** does the same without the new tab taking focus, so a run of unresolved names can be fired off and picked up as each one lands.
+**Pasting an MBID or URL resolves it immediately** — there is nothing to choose between, so no result row appears to click. The **+** button creates the missing artist/label with its name, sort name and type pre-filled and an edit note attributing the creation; **right-click +** opens it as a real background tab (the created page posts its MBID back, as Credit Hoarder does), so a run of unresolved names can be fired off and picked up as each one lands. Whatever is in the **search box** is what gets created — trim a `(suffix)` off the name before pressing + and the trimmed name is used.
 
 The role picker is keyboard-navigable: type to filter, **↑/↓** to move (**PgUp/PgDn**, **Home/End** to jump), **Enter** to take the highlighted role, **Esc** to cancel.
 
 Each line can be fixed up without leaving the table: a **pattern override** applies just to that line, its **raw text is directly editable** (writes back into the pasted text above), and **✕** removes the line entirely (from both the table and the source text). The window has a **maximize** button and **drag-resizable columns**.
 
-**Scope** ([#539](https://github.com/majkinetor/musicbrainz-userscripts/issues/539)), at the bottom-left of the window opposite **Apply**, decides where the credits land: the **Release** (default), or specific **Recordings**. Choosing Recordings reveals a track selector taking any mix of:
+**Scope** at the bottom-left of the window decides where the credits land: the **Release** (default), or specific **Recordings**. Choosing Recordings reveals a track selector taking any mix of:
 
 | you type | you get |
 |---|---|
@@ -1027,17 +1025,15 @@ Each line can be fixed up without leaving the table: a **pattern override** appl
 | `all` | every track |
 | *(empty)* | the tracks **ticked** in the editor |
 
-It shows what it matched — `→ 2 tracks: 1, 3` (a long selection is summarised, `→ 23 tracks: 1, 2, 3, 4, 5, 6 +17`, with the full list on hover) — before you apply anything, since a selector that means something other than you thought would quietly credit the wrong recordings. The roles offered follow the scope too: artist→recording and artist→release are different link-type vocabularies in MusicBrainz (a recording has no "booklet editor", a release has no "video appearance"), so switching scope re-matches the roles.
+The roles offered follow the scope too: artist→recording and artist→release are different link-type vocabularies in MusicBrainz (a recording has no "booklet editor", a release has no "video appearance"), so switching scope re-matches the roles. The edit note records where the credits went — *Parsed 2 credits from text to 2 recordings (tracks 1, 3)* — so a reviewer can tell which tracks a batched edit touched.
 
-The edit note records where the credits went — *Parsed 2 credits from text to 2 recordings (tracks 1, 3)* — so a reviewer can tell which tracks a batched edit touched.
+**Apply** stages the resolved rows as real relationships in the editor and closes the tool — nothing is submitted; you review and save yourself. If the text came from **Load annotation**, an **Apply & clear annotation** button also appears: it applies, then opens the release's own annotation editor pre-cleared so you can review and submit removing the now-redundant free text in one more click. 
 
-This replaces parsing at release level and then moving the credits onto a recording afterwards — *"Parsed 18 credits from text / Moved 18 release credits to 1 selected recording"*, four times over.
+The pasted text and every resolution made so far are remembered for as long as the page stays open — closing and reopening the tool picks up where you left off, but a real page reload starts fresh.
 
-**🔒 Freeze matched** pins the current pattern onto every line that still uses the default pattern *and* already matches it, so you can then try a different pattern on what is left without disturbing them — the same idea as Apollo's own freeze.
+**🔒** beside the pattern box (*Freeze matched*) pins the current pattern onto every line that still uses the default pattern *and* already matches it, so you can then try a different pattern on what is left without disturbing them — the same idea as Apollo's own freeze.
 
-**Apply** stages the resolved rows as real relationships in the editor and closes the tool — nothing is submitted; you review and save yourself. If the text came from **Load annotation**, an **Apply & clear annotation** button also appears: it applies, then opens the release's own annotation editor pre-cleared so you can review and submit removing the now-redundant free text in one more click (there's no way to stage that as part of the same batched edit, so it isn't automatic). The pasted text and every resolution made so far are remembered for as long as the page stays open — closing and reopening the tool picks up where you left off, but a real page reload starts fresh.
-
-Deliberately single-line-only: multi-line/grouped-block credit formats aren't parsed, and a track reference *inside* the text (`… (A2, B3)`) is not read — scope is chosen for the whole batch, not per line (unparsed track references show as unmatched text, not an error) — pick them off manually, or fix the odd line with a per-line pattern override.
+Deliberately single-line-only: multi-line/grouped-block credit formats aren't parsed, and a track reference *inside* the text (`… (A2, B3)`) is not read — scope is chosen for the whole batch, not per line.
 
 #### Replace role
 
@@ -1063,7 +1059,7 @@ Hover any entity name or role label to light up every matching occurrence on the
 
 ### Edit note
 
-When (and only when) you actually **use** Group Therapy on a page, it stamps MB's edit-note field with a signature line and, under it, an accumulating list of what it did — e.g. *Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*, *Copied release credits from “The Vibe! Vol. 9”*. Any note already in the field (from another script, or your own text) is preserved ahead of ours, the signature is written once, and identical action lines aren't repeated. Nothing is submitted — it's there for you to review before you save.
+When (and only when) you actually **use** Group Therapy on a page, it stamps MB's edit-note field with a signature line and, under it, an accumulating list of what it did — e.g. *Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*. Any note already in the field is preserved, the signature is written once, and identical action lines aren't repeated. 
 
 <img width="650" src="../group_therapy/screenshots/edit-note.png" />
 
@@ -1079,10 +1075,6 @@ Open the **⚙ settings** popover from the toolbar. Every option is remembered p
 | **Auto-match on open** | off | When you open the work matcher, runs matching automatically (otherwise it opens unresolved and you click **⚡ Match**). |
 | **Uncollapse media on start** | off | On load, clicks MusicBrainz's **Expand all mediums** so every medium's tracks are reachable during the fill phase (MB collapses mediums past the first few). Expanding a large release takes a moment. |
 
-The **work matcher** popup carries its own controls, also persisted: the **Cutoff** confidence level, and — under **＋ New work** — the new-work **Type** and **lyrics language**.
-
-The **⋯ button** next to those opens the **recording-of relationship options** — the performance **attributes** (live, partial, instrumental, cover, medley…), **begin/end dates** and the **ended** flag, applied to every `recording → work` relationship the matcher creates. Everything selected there shows as **chips next to ⋯** (#432): attribute and *ended* chips are removable with their ×, the date chip re-opens the popover, and the ⋯ button itself highlights while any option is active — so a stray *live* attribute can't ride along unseen.
-
 ### Shortcuts
 
 | Where | Action |
@@ -1097,20 +1089,11 @@ The **⋯ button** next to those opens the **recording-of relationship options**
 | **[A] / [R]** on a credit (hover) | select all tracks crediting that artist · in the same role |
 | hover an entity name / role label | highlight all matches + show a count tooltip |
 
-The recording/work checkboxes and the `×` buttons carry a faint green accent and a tooltip so the
-right-click features are discoverable.
-
 ### Under the hood
 
-Group Therapy drives MusicBrainz's own relationship editor: it reads each relationship straight off the
-rendered rows (via their React state) and writes changes through MB's reducer — the same mechanism
-[Credit Hoarder](../credit_hoarder/README.md) uses to dispatch credits. Nothing is submitted for you;
-every change lands in the editor for you to **review and save**.
+Group Therapy drives MusicBrainz's own relationship editor: it reads each relationship straight off the rendered rows (via their React state) and writes changes through MB's reducer — the same mechanism [Credit Hoarder](../credit_hoarder/README.md) uses to dispatch credits.
 
-The small MB-editor dispatch helper is **bundled directly into this single file** rather than shared as a
-separate module, so Group Therapy stays a one-file, dependency-free userscript. If that helper is ever
-extracted into a standalone library for both scripts to import, it will live **outside** either userscript
-and be documented on its own.
+The small MB-editor dispatch helper is **bundled directly into this single file** rather than shared as a separate module, so Group Therapy stays a one-file, dependency-free userscript. If that helper is ever extracted into a standalone library for both scripts to import, it will live **outside** either userscript and be documented on its own.
 
 ---
 
