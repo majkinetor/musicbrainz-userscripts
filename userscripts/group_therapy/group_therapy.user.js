@@ -1,13 +1,17 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.26.185515
+// @version      2026.8.26.192817
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
 // @match        *://*.musicbrainz.org/release/*/edit-relationships
+// @match        *://*.musicbrainz.org/artist/*
+// @match        *://*.musicbrainz.org/label/*
+// @match        *://*.musicbrainz.org/place/*
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_openInTab
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
@@ -461,7 +465,7 @@
         outline:2px solid rgba(46,158,91,.55); outline-offset:1px; border-radius:3px; }
       /* Consolidate RG (#349) — the release×role matrix modal */
       .gt-cons-ov{position:fixed;inset:0;z-index:2147483646;background:rgba(20,24,30,.44);display:flex;align-items:center;justify-content:center}
-      .gt-role-pick{width:520px;max-width:92vw;max-height:70vh;display:flex;flex-direction:column}
+      .gt-cons.gt-role-pick{width:520px;max-width:92vw;max-height:min(560px,70vh);display:flex;flex-direction:column}   /* #544: .gt-cons is declared later with the same specificity and was overriding every one of these */
       .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font:13px inherit;border:1px solid #c9ccd2;border-radius:4px}
       .gt-role-list{overflow:auto;flex:1;padding:0 4px 8px}
       .gt-role-row{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
@@ -469,7 +473,7 @@
       .gt-role-row:hover{background:#eef3fb}
       .gt-role-name{font-weight:600;font-size:13px}
       .gt-role-recent{font-weight:400;font-size:10px;color:#6b8fb5;margin-left:6px}
-      .gt-role-desc{font-size:11px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .gt-role-desc{font-size:11px;color:#666;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}   /* #544: was one nowrap line + ellipsis, which cut every description; two wrapped lines instead */
       .gt-cons{background:#fff;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.35);width:min(920px,94vw);max-height:88vh;display:flex;flex-direction:column;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
       .gt-cons-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid #e7e9ee}
       .gt-cons-title{font-weight:700;font-size:14px;flex:1}
@@ -2788,6 +2792,8 @@
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
+      + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
+      + '.gt-tp-freeze:hover{background:#f1ebfb;border-color:#a98fe0}'
       + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font:13px inherit;color:#5f3ec0;font-weight:bold}'
       + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
       + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
@@ -3176,7 +3182,13 @@
     // scope control lives in the footer instead, at the opposite end from
     // Apply. It belongs there anyway: it is part of deciding what Apply does,
     // not part of writing the pattern.
-    ctrl.append(patIn, patClr, presets, resolveBtn);
+    // #544 (majkinetor): "Freeze matched should be next to the pattern input in
+    // the header (like Apollo)". Icon-only, per the standing toolbar rule — the
+    // top bar has twice been one control too wide (#539), and the tooltip
+    // carries the meaning.
+    const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
+    freezeBtn.title = 'Freeze matched — lock this pattern onto every line that still uses the default pattern and already matches it, then try another pattern on what is left';
+    ctrl.append(patIn, patClr, freezeBtn, presets, resolveBtn);
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -3235,9 +3247,7 @@
     // pattern afterwards leaves those alone and only re-parses the rest.
     // It lives in the footer rather than the top bar because that bar has twice
     // been one control too wide (#539).
-    const freezeBtn = el('button', 'gt-cons-btn', '🔒 Freeze matched'); freezeBtn.type = 'button';
-    freezeBtn.title = 'Lock the current pattern onto every line that still uses the default pattern and already matches it — then try another pattern on what is left';
-    foot.append(scopeWrap, freezeBtn, cnt, applyClearBtn, applyBtn);   // #539: scope at the far left, Apply at the far right
+    foot.append(scopeWrap, cnt, applyClearBtn, applyBtn);   // #539: scope at the far left, Apply at the far right
 
     const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
     // #522 follow-up (majkinetor, live): "Lets have an option to remove a
@@ -3548,7 +3558,10 @@
       // background" — same creation, without the tab stealing focus, so a run of
       // several unresolved names can be fired off and picked up as they land.
       const startCreate = (background) => {
-        const name = r.entity || '';
+        // #544: "it should not ignore the search string used but seed that one"
+        // — if the search box was edited to drop a "(Greenprint)" suffix, THAT
+        // is the name to create, not the raw parsed text.
+        const name = (q.value || '').trim() || r.entity || '';
         const kind = searchKind;
         const params = new URLSearchParams();
         params.set(`edit-${kind}.name`, name);
@@ -3561,16 +3574,35 @@
         // all. Same shape as Apollo's entityActionNote: signature, then what
         // was being done and where.
         params.set(`edit-${kind}.edit_note`, txpCreateNote(kind));
-        const win = window.open(`/${kind}/create?` + params.toString(), '_blank');
-        if (!win) return;                                     // popup blocked — nothing to watch
-        if (background) {
-          // Hand focus straight back. There is no API for "open unfocused", so
-          // this is the usual pair — blur the new window, refocus ours.
-          try { win.blur(); } catch (e) {}
-          try { window.focus(); } catch (e) {}
-        }
+        const url = `/${kind}/create?` + params.toString();
         createBtn.classList.add('gt-tp-plus-wait');
         createBtn.title = `Waiting for the new ${kind}…`;
+
+        // ── background: GM_openInTab, and the created page posts the MBID back
+        if (background && typeof GM_openInTab === 'function') {
+          const token = Math.random().toString(36).slice(2);
+          try { GM_setValue(GT_PENDING_KEY, JSON.stringify({ kind, token, ts: Date.now() })); } catch (e) {}
+          let ch = null, timeout = null;
+          const stop = () => { try { ch && ch.close(); } catch (e) {} clearTimeout(timeout); createBtn.classList.remove('gt-tp-plus-wait'); renderChrome(); };
+          try {
+            ch = new BroadcastChannel(GT_CREATE_CH);
+            ch.onmessage = async (ev) => {
+              const d = ev && ev.data;
+              if (!d || d.token !== token || d.kind !== kind || !d.gid) return;
+              stop();
+              const ent = await txpFetchEntity(d.gid, kind);
+              if (ent) pick(ent, true); else { q.value = name; runSearch(); }
+            };
+          } catch (e) { /* no BroadcastChannel — falls through to the timeout */ }
+          // Give up quietly rather than spinning forever if the tab is closed
+          // without saving; the name search is still there to fall back on.
+          timeout = setTimeout(() => { stop(); try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {} }, 10 * 60 * 1000);
+          GM_openInTab(url, { active: false, insert: true, setParent: true });
+          return;
+        }
+
+        // ── foreground: keep the window handle and watch where it lands
+        const win = window.open(url, '_blank');
         let done = false;
         const finish = async (gid) => {
           if (done) return; done = true;
@@ -4047,7 +4079,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         const nm = el('span', 'gt-role-name', r.name);
         if (rank(r) < 999) nm.appendChild(el('span', 'gt-role-recent', ' recent'));
         row.appendChild(nm);
-        if (r.desc) row.appendChild(el('span', 'gt-role-desc', r.desc.slice(0, 110)));
+        if (r.desc) row.appendChild(el('span', 'gt-role-desc', r.desc));   // #544: no 110-char truncation — the CSS clamps to two lines
         row.addEventListener('click', () => { rememberRole(r.id, r.name); done(); onPick(r); });
         row.addEventListener('mousemove', () => { const i = rows.indexOf(row); if (i >= 0 && i !== active) { active = i; paintActive(); } });   // #544: keep mouse and keyboard on the same row
         list.appendChild(row);
@@ -4228,6 +4260,35 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
+  /* #544 (majkinetor): "Right click on + doesn't create in the background" —
+     window.open + win.blur()/window.focus() does not put a tab in the
+     background in Chrome, so it behaved exactly like a left click.
+     GM_openInTab({active:false}) does, but it hands back no window handle, so
+     the created MBID cannot be read by polling the tab's URL the way the
+     foreground path does.
+     Credit Hoarder solved this by running on the created entity's own page and
+     posting the MBID back (#273); the same shape here. That is what the new
+     /artist/*, /label/*, /place/* matches are for — this handler and nothing
+     else. Everything below still boots only on the relationship editor. */
+  const GT_CREATE_CH = 'gt-entity-created';
+  const GT_PENDING_KEY = 'gt:pendingCreate';
+  const GT_ENTITY_PATH = /^\/(artist|label|place)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/i;
+  (function announceCreatedEntity() {
+    const m = location.pathname.match(GT_ENTITY_PATH);
+    if (!m) return;                                   // not an entity page
+    let pending = null;
+    try { pending = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
+    // Only answer a create WE started, for this entity type, in the last few
+    // minutes — otherwise merely browsing an artist page would close the tab.
+    if (!pending || pending.kind !== m[1].toLowerCase()) return;
+    if (!pending.ts || Date.now() - pending.ts > 10 * 60 * 1000) return;
+    try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {}
+    try {
+      const ch = new BroadcastChannel(GT_CREATE_CH);
+      ch.postMessage({ kind: m[1].toLowerCase(), gid: m[2].toLowerCase(), token: pending.token });
+      setTimeout(() => { try { ch.close(); } catch (e) {} try { window.close(); } catch (e) {} }, 300);
+    } catch (e) {}
+  })();
   // Self-guard the page: in the String Theory bundle this script runs on EVERY union-matched URL
   // (Apollo's /release/*/edit, /artist/*, …), so its hover-highlight etc. would bleed onto other pages.
   // Standalone the @match restricts it; the bundle doesn't — so only boot on the relationship editor.
