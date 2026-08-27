@@ -119,3 +119,32 @@ export function makeClickEvent(element) {
     });
     element.dispatchEvent(clickEvent);
 }
+
+/**
+ * Keep password managers out of our own text inputs.
+ *
+ * majkinetor, with a screenshot of LastPass's icon sitting inside the
+ * "Credited as" box: a bare `<input type="text">` next to a label is enough for
+ * LastPass (and 1Password, Bitwarden, Dashlane) to decide it might be a
+ * username field, so it injects its overlay icon and offers to fill it. That
+ * covers the text and, worse, invites a stray autofill into a credit name.
+ *
+ * Group Therapy already does exactly this for every input it creates (#522);
+ * same attribute set here, kept in one place so a new input cannot forget it.
+ */
+export function noPasswordManagers(el) {
+    if (!el) return el;
+    el.autocomplete = 'off';
+    el.setAttribute('data-lpignore', 'true');      // LastPass
+    el.setAttribute('data-1p-ignore', 'true');     // 1Password
+    el.setAttribute('data-bwignore', 'true');      // Bitwarden
+    el.setAttribute('data-form-type', 'other');    // Dashlane
+    return el;
+}
+
+/** `document.createElement('input')` with the above already applied. */
+export function textInput(type = 'text') {
+    const el = document.createElement('input');
+    el.type = type;
+    return noPasswordManagers(el);
+}
