@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.8.23
+// @version      2026.8.27.182251
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2149,6 +2149,15 @@
     });
     return { positions, multiVolume };
   }
+  function noPasswordManagers(el) {
+    if (!el) return el;
+    el.autocomplete = "off";
+    el.setAttribute("data-lpignore", "true");
+    el.setAttribute("data-1p-ignore", "true");
+    el.setAttribute("data-bwignore", "true");
+    el.setAttribute("data-form-type", "other");
+    return el;
+  }
 
   // src/sources/tidal.js
   var TIDAL_PERTRACK_BRIDGE = {
@@ -4129,7 +4138,7 @@ ${ourBlock}` : ourBlock;
         const credLabel = document.createElement("label");
         credLabel.textContent = "Credited as:";
         credLabel.style.cssText = "font-size:0.72rem;color:#888;flex-shrink:0;";
-        const credInput = document.createElement("input");
+        const credInput = noPasswordManagers(document.createElement("input"));
         credInput.type = "text";
         const CRED_BG_SAME = "#fff";
         const CRED_BG_DIFFERENT = "#fff4d0";
@@ -4218,7 +4227,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         candidateList.style.cssText = "display:flex;flex-direction:column;gap:0.2rem;margin-bottom:0.3rem;";
         const searchRow = document.createElement("div");
         searchRow.style.cssText = "display:flex;gap:0.3rem;";
-        const searchInput = document.createElement("input");
+        const searchInput = noPasswordManagers(document.createElement("input"));
         searchInput.type = "text";
         searchInput.value = displayName;
         searchInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;";
@@ -4738,7 +4747,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             nameLabel.style.cssText = FIELD_LABEL;
             nameLabel.textContent = "Name";
             modal.appendChild(nameLabel);
-            const nameInput = document.createElement("input");
+            const nameInput = noPasswordManagers(document.createElement("input"));
             nameInput.type = "text";
             nameInput.value = displayName;
             nameInput.style.cssText = FIELD_INPUT;
@@ -4751,7 +4760,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             disLabel.style.cssText = FIELD_LABEL;
             disLabel.textContent = "Disambiguation";
             modal.appendChild(disLabel);
-            const disInput = document.createElement("input");
+            const disInput = noPasswordManagers(document.createElement("input"));
             disInput.type = "text";
             disInput.value = defaultDis;
             disInput.style.cssText = FIELD_INPUT;

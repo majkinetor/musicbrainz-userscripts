@@ -12,6 +12,7 @@ import { SPECIAL_PURPOSE_ARTISTS }         from './data/special-purpose.js';
 import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
 import { getLogContainer, getReviewContainer } from './log.js';
+import { noPasswordManagers }               from './util.js';
 import { _hideBar }                        from './progress-bar.js';
 import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
 
@@ -628,7 +629,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const credLabel = document.createElement('label');
             credLabel.textContent = 'Credited as:';
             credLabel.style.cssText = 'font-size:0.72rem;color:#888;flex-shrink:0;';
-            const credInput = document.createElement('input');
+            const credInput = noPasswordManagers(document.createElement('input'));
             credInput.type = 'text';
             // Default background is plain white; when the user (or the
             // most-frequent-existing-credit pre-fill) sets a value
@@ -753,7 +754,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             const searchRow = document.createElement('div');
             searchRow.style.cssText = 'display:flex;gap:0.3rem;';
-            const searchInput = document.createElement('input');
+            const searchInput = noPasswordManagers(document.createElement('input'));
             searchInput.type = 'text';
             searchInput.value = displayName;
             searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;';
@@ -1422,7 +1423,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     nameLabel.textContent = 'Name';
                     modal.appendChild(nameLabel);
 
-                    const nameInput = document.createElement('input');
+                    const nameInput = noPasswordManagers(document.createElement('input'));
                     nameInput.type = 'text';
                     nameInput.value = displayName;
                     nameInput.style.cssText = FIELD_INPUT;
@@ -1440,7 +1441,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     disLabel.textContent = 'Disambiguation';
                     modal.appendChild(disLabel);
 
-                    const disInput = document.createElement('input');
+                    const disInput = noPasswordManagers(document.createElement('input'));
                     disInput.type = 'text';
                     disInput.value = defaultDis;
                     disInput.style.cssText = FIELD_INPUT;
