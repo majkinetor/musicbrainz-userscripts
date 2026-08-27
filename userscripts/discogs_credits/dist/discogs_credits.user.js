@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.8.17
+// @version      2026.8.27.182404
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2376,6 +2376,17 @@
     return base ? base + "\n\n" + ourNote : ourNote;
   }
 
+  // src/util.js
+  function noPasswordManagers(el) {
+    if (!el) return el;
+    el.autocomplete = "off";
+    el.setAttribute("data-lpignore", "true");
+    el.setAttribute("data-1p-ignore", "true");
+    el.setAttribute("data-bwignore", "true");
+    el.setAttribute("data-form-type", "other");
+    return el;
+  }
+
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
@@ -2717,7 +2728,7 @@
         const credLabel = document.createElement("label");
         credLabel.textContent = "Credited as:";
         credLabel.style.cssText = "font-size:0.72rem;color:#888;flex-shrink:0;";
-        const credInput = document.createElement("input");
+        const credInput = noPasswordManagers(document.createElement("input"));
         credInput.type = "text";
         const CRED_BG_SAME = "#fff";
         const CRED_BG_DIFFERENT = "#fff4d0";
@@ -2802,7 +2813,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         candidateList.style.cssText = "display:flex;flex-direction:column;gap:0.2rem;margin-bottom:0.3rem;";
         const searchRow = document.createElement("div");
         searchRow.style.cssText = "display:flex;gap:0.3rem;";
-        const searchInput = document.createElement("input");
+        const searchInput = noPasswordManagers(document.createElement("input"));
         searchInput.type = "text";
         searchInput.value = displayName;
         searchInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;";
@@ -3153,7 +3164,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             nameLabel.style.cssText = FIELD_LABEL;
             nameLabel.textContent = "Name";
             modal.appendChild(nameLabel);
-            const nameInput = document.createElement("input");
+            const nameInput = noPasswordManagers(document.createElement("input"));
             nameInput.type = "text";
             nameInput.value = displayName;
             nameInput.style.cssText = FIELD_INPUT;
@@ -3166,7 +3177,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             disLabel.style.cssText = FIELD_LABEL;
             disLabel.textContent = "Disambiguation";
             modal.appendChild(disLabel);
-            const disInput = document.createElement("input");
+            const disInput = noPasswordManagers(document.createElement("input"));
             disInput.type = "text";
             disInput.value = defaultDis;
             disInput.style.cssText = FIELD_INPUT;
