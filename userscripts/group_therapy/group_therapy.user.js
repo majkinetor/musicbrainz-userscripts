@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28.193758
+// @version      2026.8.28.203008
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3575,7 +3575,6 @@
         // all. Same shape as Apollo's entityActionNote: signature, then what
         // was being done and where.
         params.set(`edit-${kind}.edit_note`, txpCreateNote(kind));
-        const url = `/${kind}/create?` + params.toString();
         createBtn.classList.add('gt-tp-plus-wait');
         createBtn.title = `Waiting for the new ${kind}…`;
 
@@ -3583,6 +3582,23 @@
         if (background && typeof GM_openInTab === 'function') {
           const token = Math.random().toString(36).slice(2);
           try { GM_setValue(GT_PENDING_KEY, JSON.stringify({ kind, token, ts: Date.now() })); } catch (e) {}
+          // #544 follow-up (majkinetor): "When creating in the background, it
+          // doesn't click Enter in 2nd tab." The seeded /create page is only a
+          // filled-in FORM — in the foreground you see it and press Enter, but a
+          // background tab just sits there unsubmitted, so nothing is ever
+          // created and the parser waits for a post-back that cannot come.
+          // autoSubmitSeededCreate (below) presses it. This param is how that
+          // handler knows the form in front of it is the one THIS create opened
+          // — matching only on "a pending create of this kind exists" would also
+          // fire on a /artist/create the user opened by hand minutes later.
+          // MusicBrainz ignores parameters it does not know.
+          //
+          // ⚠ NOT named `gt_token`. `&gt` is a LEGACY HTML entity that decodes
+          // without its semicolon, so `&gt_token=…` came back out of any HTML
+          // attribute as `>_token=…` — measured: the submitted form's action
+          // carried `%3E_token`, and the handler's own check would then never
+          // match. Any name not starting with a legacy entity is fine.
+          params.set('x_gtcreate', token);
           let ch = null, timeout = null;
           const stop = () => { try { ch && ch.close(); } catch (e) {} clearTimeout(timeout); createBtn.classList.remove('gt-tp-plus-wait'); renderChrome(); };
           try {
@@ -3598,9 +3614,10 @@
           // Give up quietly rather than spinning forever if the tab is closed
           // without saving; the name search is still there to fall back on.
           timeout = setTimeout(() => { stop(); try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {} }, 10 * 60 * 1000);
-          GM_openInTab(url, { active: false, insert: true, setParent: true });
+          GM_openInTab(`/${kind}/create?` + params.toString(), { active: false, insert: true, setParent: true });
           return;
         }
+        const url = `/${kind}/create?` + params.toString();
 
         // ── foreground: keep the window handle and watch where it lands
         const win = window.open(url, '_blank');
@@ -4368,6 +4385,49 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       ch.postMessage({ kind: m[1].toLowerCase(), gid: m[2].toLowerCase(), token: pending.token });
       setTimeout(() => { try { ch.close(); } catch (e) {} try { window.close(); } catch (e) {} }, 300);
     } catch (e) {}
+  })();
+  /* #544 follow-up (majkinetor): "When creating in the background, it doesn't
+     click Enter in 2nd tab."
+
+     A seeded /<kind>/create URL only PRE-FILLS the form; MusicBrainz still waits
+     for "Enter edit". In the foreground that is the user's own click. In a
+     background tab nobody ever clicks it, so the entity is never created and the
+     text parser waits out its full ten minutes for a post-back that cannot come.
+
+     Three things keep this from ever submitting a form it should not:
+      • gt_token in the URL must equal the pending create's token, so this can
+        only ever fire on the exact page one background create opened — not on a
+        /artist/create the user opened themselves while a create was pending;
+      • the name field must actually be filled, i.e. the seed really landed;
+      • it marks the pending record `submitted` BEFORE clicking, so it presses
+        Enter exactly once. If MusicBrainz answers with a duplicate-check or
+        validation page, this stands down and the tab is left for the user —
+        which is the right outcome for anything needing a human decision. */
+  const GT_CREATE_PATH = /^\/(artist|label|place)\/create\/?$/i;
+  (function autoSubmitSeededCreate() {
+    const m = location.pathname.match(GT_CREATE_PATH);
+    if (!m) return;
+    const kind = m[1].toLowerCase();
+    let pending = null;
+    try { pending = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
+    if (!pending || pending.kind !== kind || !pending.token || pending.submitted) return;
+    if (!pending.ts || Date.now() - pending.ts > 10 * 60 * 1000) return;
+    let token = null; try { token = new URLSearchParams(location.search).get('x_gtcreate'); } catch (e) {}
+    if (token !== pending.token) return;
+    const go = () => {
+      const form = document.querySelector(`form.edit-${kind}`);
+      const name = form && form.querySelector(`[name="edit-${kind}.name"]`);
+      const submit = form && form.querySelector('button[type="submit"], input[type="submit"]');
+      if (!form || !name || !name.value.trim() || !submit) return false;
+      try { GM_setValue(GT_PENDING_KEY, JSON.stringify(Object.assign({}, pending, { submitted: true }))); } catch (e) {}
+      try { submit.click(); } catch (e) {}
+      return true;
+    };
+    // MusicBrainz's edit forms bind late (the same reason Falcon waits for its
+    // seeded rows to settle), so clicking the instant the DOM exists can land
+    // before the seed is bound. Retry briefly rather than guessing one delay.
+    let tries = 0;
+    const iv = setInterval(() => { if (go() || ++tries > 40) clearInterval(iv); }, 250);
   })();
   // Self-guard the page: in the String Theory bundle this script runs on EVERY union-matched URL
   // (Apollo's /release/*/edit, /artist/*, …), so its hover-highlight etc. would bleed onto other pages.
