@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.26.192817
+// @version      2026.8.28.193758
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3237,8 +3237,9 @@
 
     const foot = el('div', 'gt-cons-foot');
     const cnt = el('span', 'gt-tp-cnt');
-    const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation ↗'); applyClearBtn.type = 'button';
-    applyClearBtn.title = 'Apply the resolved rows, then open the annotation editor pre-cleared for you to review and submit';
+    // #550: no ↗ any more — nothing opens, the annotation edit is submitted here.
+    const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation'); applyClearBtn.type = 'button';
+    applyClearBtn.title = 'Apply the resolved rows, then clear this release\'s annotation — submitted for you, with its own edit note';
     applyClearBtn.style.display = 'none';
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     // #544 (majkinetor): "Add [freeze pattern] option for matching rows the same
@@ -3769,7 +3770,9 @@
       const shortWhere = scope.kind === 'recording' ? ` to ${targets.length} recording${targets.length > 1 ? 's' : ''}` : '';
       toast(fail ? `Applied ${ok}, ${fail} failed — see console` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''}${shortWhere} — review & save`);
       saveState();
-      return { ok, fail };
+      // #550: `where` is handed back so the annotation edit's note can name the
+      // same scope as the relationship edit's, rather than recomputing it.
+      return { ok, fail, where };
     }
     // #522 follow-up (majkinetor, live): "Apply should close the window."
     async function txpApply() {
@@ -3778,19 +3781,41 @@
     }
     // #522 follow-up (majkinetor): "after loading annotation, add another
     // button - Apply and remove annotation" — applies exactly like Apply,
-    // then opens the release's own annotation editor pre-cleared (a real
-    // page, a real edit type separate from the batched relationship edits
-    // this tool otherwise only stages) so the redundant text can be
-    // reviewed and submitted in one more click rather than typed by hand.
+    // then clears the release's annotation.
+    //
+    // #550 (majkinetor): "Apply and clear annotation should do clearing in the
+    // background. It is weird to double check empty field." It used to open the
+    // annotation editor in a new tab with the text pre-emptied, which left you
+    // reviewing a page whose only content was a field this tool had just
+    // blanked — a confirmation step with nothing to confirm. It is submitted
+    // here instead, with its own edit note.
+    //
     // Only offered once text has actually come FROM the annotation this
     // session — clearing an unrelated annotation because you happened to
     // paste your own credit text would be a real, silent mistake.
     async function txpApplyAndClearAnnotation() {
       const res = await applyResolvedRows();
       if (!res) return;
-      closeTextParser();
-      const url = `/release/${release.gid}/edit_annotation?edit-annotation.text=&returnto=${encodeURIComponent(location.href)}`;
-      window.open(url, '_blank', 'noopener');
+      // Nothing actually dispatched — clearing the annotation now would delete
+      // the text with nothing to show for it. applyResolvedRows has already said
+      // what went wrong.
+      if (!res.ok) return;
+      const label = applyClearBtn.textContent;
+      applyClearBtn.disabled = true; applyBtn.disabled = true;
+      applyClearBtn.textContent = 'Clearing annotation…';
+      try {
+        const out = await txpClearAnnotation(release.gid,
+          txpClearAnnotationNote(res.ok, res.where),
+          'Credits moved to relationships');
+        closeTextParser();
+        toast(out.skipped ? 'Applied — the annotation was already empty' : `Applied, and the annotation was cleared (${out.was} characters)`);
+      } catch (e) {
+        // the relationships ARE applied at this point; only the clear failed.
+        // Leave the window open so it is obvious which half needs attention.
+        applyClearBtn.textContent = label;
+        applyClearBtn.disabled = false; applyBtn.disabled = false;
+        toast(`Applied, but the annotation was not cleared: ${(e && e.message) || e}`);
+      }
     }
 
     // #522 follow-up (majkinetor, live): "When you exit and return to text
@@ -3985,6 +4010,60 @@
   // references it, and that export is wrapped in try/catch — defined inside
   // openTextParser it threw ReferenceError there and silently took the WHOLE
   // test hook down with it.
+  /* #550 (majkinetor): "Apply and clear annotation should do clearing in the
+     background. It is weird to double check empty field. … It should also add
+     appropriate edit note."
+
+     MusicBrainz's annotation editor is a plain server-rendered form with no CSRF
+     token — same shape as /add-alias, which Falcon already posts to directly —
+     so it can be fetched, emptied and submitted without ever showing the user a
+     page whose only content is a field we just blanked. An annotation edit is an
+     auto-edit, so it applies immediately.
+
+     Two things this deliberately does NOT do:
+      • it never submits when the annotation is already empty (there is no edit
+        to make, and MB would reject it anyway) — that case is reported, not faked;
+      • it re-reads the annotation afterwards and only reports success if it is
+        actually gone. A 200 from a form POST proves the request left the browser
+        and nothing more. */
+  const TXP_ANNO_URL = gid => `/release/${gid}/edit_annotation`;
+  function txpClearAnnotationNote(applied, scopeLabel) {
+    return `${editNoteSig()}
+
+Cleared the annotation: its credits were entered as ${applied} relationship${applied === 1 ? '' : 's'}${scopeLabel || ''} instead, so the text was redundant.`;
+  }
+  async function txpFetchAnnotationForm(gid) {
+    const r = await fetch(TXP_ANNO_URL(gid), { credentials: 'same-origin' });
+    if (!r.ok) throw new Error(`could not open the annotation editor (HTTP ${r.status})`);
+    const html = await r.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const ta = doc.querySelector('textarea[name="edit-annotation.text"]');
+    // A logged-out session is redirected to the login page, which is a perfectly
+    // valid 200 with no annotation form on it — say which of the two happened.
+    if (!ta) throw new Error(/\/login/.test(r.url) ? 'you are not logged in to MusicBrainz' : 'MusicBrainz did not return the annotation form');
+    return { doc, ta, text: ta.value || '' };
+  }
+  async function txpClearAnnotation(gid, note, changelog) {
+    const { doc, text } = await txpFetchAnnotationForm(gid);
+    if (!text.trim()) return { skipped: true };
+    const body = new URLSearchParams();
+    // carry every hidden field the form declares rather than naming the ones we
+    // know about — if MusicBrainz adds one, dropping it silently would be a
+    // rejected or malformed edit with no clue why.
+    doc.querySelectorAll('form input[type="hidden"][name]').forEach(i => body.append(i.name, i.value));
+    body.set('edit-annotation.text', '');
+    body.set('edit-annotation.changelog', changelog || '');
+    body.set('edit-annotation.edit_note', note || '');
+    const r = await fetch(TXP_ANNO_URL(gid), {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body,
+    });
+    if (!r.ok) throw new Error(`MusicBrainz rejected the annotation edit (HTTP ${r.status})`);
+    // read it back — the POST returning 200 is not evidence the annotation is gone
+    const after = await txpFetchAnnotationForm(gid);
+    if (after.text.trim()) throw new Error('MusicBrainz accepted the request but the annotation is still there');
+    return { cleared: true, was: text.trim().length };
+  }
   function txpCreateNote(kind) {
     const relUrl = location.href.split(/[?#]/)[0].replace(/\/edit(-relationships)?$/, '');
     return `${editNoteSig()}
@@ -4254,6 +4333,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
       txpTrackRows, txpMatchTracks,   // #539 recording scope
       txpCreateNote,   // #544
+      txpClearAnnotation, txpFetchAnnotationForm, txpClearAnnotationNote,   // #550
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
       txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNarrowByScore, txpInstrumentCandidates,
       txpSplitCompoundCopyrightLines,
