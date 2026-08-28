@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28.150632
+// @version      2026.8.28.202156
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2759,6 +2759,7 @@
       // NEXT time this happens the log itself says which check kept
       // failing instead of needing another live repro to find out.
       let _loadedPollCount = 0;
+      let _sawInterstitial = false;   // #551
       const loaded = await waitFor(() => {
         _loadedPollCount++;
         const w = frameWin(iframe), doc = frameDoc(iframe);
@@ -2768,6 +2769,11 @@
           dbg(tag, `still waiting for edit page — readyState=${doc ? doc.readyState : '(no doc)'}, path=${path}, hasExternalLinkRow=${doc ? !!doc.querySelector('tr.external-link-item') : '?'}, hasAddLinkInput=${doc ? !!findAddLinkInput(doc) : '?'}`);
         };
         if (!w || !doc || doc.readyState === 'loading') { diag(); return null; }
+        // #551: a worker's iframe can be served the same challenge. It solves
+        // itself and navigates on within a moment, so KEEP WAITING — but say so,
+        // because otherwise this is 30 silent seconds that end in a misleading
+        // "edit page never loaded" when the page was never even served.
+        if (isVerifyInterstitial(doc)) { _sawInterstitial = true; if (_loadedPollCount % 20 === 1) dbg(tag, 'MusicBrainz is running its "Verifying your browser" challenge in this worker — waiting for it to clear'); return null; }
         let path = ''; try { path = w.location.pathname; } catch (e) { diag(); return null; }
         if (!path.includes(item.mbid)) { diag(); return null; }   // still about:blank / previous doc
         const ready = doc.querySelector('tr.external-link-item') || findAddLinkInput(doc);
@@ -2775,8 +2781,13 @@
         return ready ? true : null;
       }, 30000);
       if (!loaded) {
-        item.status = 'failed'; item.error = 'edit page never loaded';
-        log('error', `${tag} ${item.mbid}: edit page never loaded (waited 30s)`);
+        // #551: naming the cause matters — "never loaded" reads as a Falcon bug
+        // when MusicBrainz simply never served the page in the first place.
+        item.status = 'failed';
+        item.error = _sawInterstitial
+          ? 'MusicBrainz kept serving its "Verifying your browser" challenge instead of the edit page'
+          : 'edit page never loaded';
+        log('error', `${tag} ${item.mbid}: ${item.error} (waited 30s)`);
         // #495: the cover upload is a plain API call, independent of this
         // iframe — still worth attempting even though the link form never
         // loaded.
@@ -3111,6 +3122,39 @@
   // reads the SAME login link MB's header always shows when logged out —
   // confirmed absent once logged in.
   function isLoggedIn() { return !document.querySelector('a[href^="/login?"], a[href="/login"]'); }
+  /* #551 (chaban-mb): "Sometimes MusicBrainz will present a small proof-of-work
+     challenge instead of the requested page. If that happens the Falcon session
+     from Harmony is briefly run and after being served the requested page the
+     session is 'lost', i.e. the dialog is not shown again."
+
+     The challenge is served AT the requested URL — `?falcon=<token>` and all —
+     solves a SHA-256 puzzle in JavaScript, POSTs to /__meb_verify, and only then
+     hands over the real page. So Falcon booted on that interstitial, read the
+     token, DELETED it (parseUrlParam consumes it deliberately, so a reload
+     cannot queue the same batch twice), mounted a panel nobody ever sees, and
+     was navigated away a moment later. The real page then booted with the token
+     already gone — which is exactly the "session is lost" he describes.
+
+     Recognised by two things that are in the SERVED HTML, and so already parsed
+     by the time a userscript runs at document-idle: the <title>, and the
+     <noscript> sentinel. The <form> and its /__meb_verify action are built by
+     the challenge's own script and are not dependable.
+
+     ⚠ Do NOT test for "/__meb_verify" appearing in an inline script. Ordinary
+     MusicBrainz pages carry a beacon that posts to that same endpoint, so that
+     check matches EVERY page — measured here: it fired on the release page, the
+     edit page and the site root alike, which would have disabled Falcon
+     everywhere. Caught only because the test asserted the absence of false
+     positives as well as the presence of the fix. */
+  const VERIFY_TITLE_RE = /^\s*Verifying your browser\s*$/i;
+  const VERIFY_NOSCRIPT_RE = /JavaScript is required to access this page/i;
+  function isVerifyInterstitial(doc) {
+    const d = doc || document;
+    try {
+      if (VERIFY_TITLE_RE.test(d.title || '')) return true;
+      return [...d.querySelectorAll('noscript')].some(n => VERIFY_NOSCRIPT_RE.test(n.textContent || ''));
+    } catch (e) { return false; }   // cross-origin frame — not our problem to classify
+  }
   // #517 (majkinetor, live: "Revert stagger too, it worked before without
   // it, I am not going to wait 1s between starts") — tried staggering
   // worker starts (350ms, then widened to 1000ms) to reduce main-thread/
@@ -4305,7 +4349,14 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
   /* ── boot ────────────────────────────────────────────────────────────── */
-  if (ON_HARMONY) {
+  // #551: do nothing whatsoever on MusicBrainz's "Verifying your browser"
+  // interstitial. Not merely "don't consume the token" — there is no point
+  // mounting a launcher or opening a session on a page that is about to replace
+  // itself. The real page loads a moment later and everything runs there
+  // untouched, exactly as it does when no challenge is served.
+  if (isVerifyInterstitial()) {
+    try { console.info('[Falcon] MusicBrainz served its "Verifying your browser" challenge instead of the page — standing down. Nothing is consumed; Falcon starts normally on the real page once the challenge clears.'); } catch (e) {}
+  } else if (ON_HARMONY) {
     ensureHarmonyButton();
     // Harmony's actions render client-side after load — rescan until the count
     // settles (3 unchanged reads), then stop polling.
@@ -4378,6 +4429,7 @@
     topUpWorkers, getWorkerCardCount: () => workerCards.length, isRunning: () => running,
     // #512 follow-up
     sessionHasRealWork, extractReleaseName,
+    isVerifyInterstitial,   // #551
     // #546
     setBtnBusy, beginWait, renderQueue,
     // #547
