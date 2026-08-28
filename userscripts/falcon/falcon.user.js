@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.24.161204
+// @version      2026.8.28.145841
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -541,6 +541,10 @@
             const ra = parseInt(res.headers.get('Retry-After'), 10);
             const waitMs = ra > 0 ? ra * 1000 : Math.min(1000 * Math.pow(2, attempt), 30000);
             pauseUntil = Math.max(pauseUntil, Date.now() + waitMs);   // push forward only
+            // #546: this backoff used to be entirely silent, so a run that was
+            // patiently waiting out MusicBrainz looked identical to one that
+            // had hung. Every pause of a second or more is now visible.
+            if (waitMs >= 1000) log('warn', `MusicBrainz returned ${res.status} — backing off ${Math.round(waitMs / 1000)}s, then retrying (attempt ${attempt + 1} of ${item.retries + 1})`);
             continue;
           }
           if (!res.ok) { item.resolve(null); return; }
@@ -753,6 +757,9 @@
       const url = `${MB_ORIGIN}/ws/2/release?release-group=${rgMbid}&limit=100&offset=${offset}&fmt=json`;
       const j = await mbThrottle.fetchJson(url, undefined, true);
       const batch = (j && j.releases) || [];
+      // #546: a group with several hundred releases is several requests deep
+      // with nothing said in between.
+      if (offset > 0 || batch.length >= 100) log('info', `…read ${out.length + batch.length} release(s) so far from this group`);
       for (const r of batch) {
         if (!r.id || seen.has(r.id)) continue;
         seen.add(r.id);
@@ -3258,6 +3265,17 @@
       // visible box at all) for as long as nothing has finished yet — a
       // filter on an invisible box is itself invisible. Moved to the TRACK
       // behind it, which is always full width regardless of progress %.
+      // #546 (majkinetor): "On a release with lots of recordings, it appears
+      // nothing happen when you use 'Add from release' … it takes around 20s
+      // to load all. The only way to tell is that Add from release button is
+      // grayed - nothing else happens, including log." A disabled button reads
+      // as "not available", not as "working" — so a busy toolbar button spins.
+      // The glyph is hidden with font-size:0 rather than replaced, so the
+      // icon-only collapsed state (#419/toolbar rule) keeps its hit area.
+      '@keyframes falcon-spin{to{transform:rotate(360deg)}}',
+      '.falcon-bar button.falcon-busy{opacity:1;cursor:progress}',
+      '.falcon-bar button.falcon-busy .falcon-bi{font-size:0;width:11px;height:11px;box-sizing:border-box;'
+        + 'border:2px solid rgba(27,42,74,.25);border-top-color:#1b2a4a;border-radius:50%;animation:falcon-spin .7s linear infinite}',
       '@keyframes falcon-progress-pulse{0%,100%{background:#eee}50%{background:#b9ddc8}}',
       '#falcon-progress-track.falcon-running{animation:falcon-progress-pulse 1.1s ease-in-out infinite}',
     ].join('\n');
@@ -3489,36 +3507,56 @@
           const want = {};
           menu.querySelectorAll('input[data-w]').forEach(cb => { want[cb.dataset.w] = cb.checked; });
           close();
-          btn.disabled = true;
+          // #546 (majkinetor): "The only way to tell is that Add from release
+          // button is grayed - nothing else happens, including log." Measured
+          // on his own release (e70b4221, 47 tracks): the ONE
+          // /ws/2/release?inc=recordings+artist-credits+labels+release-groups
+          // +media request took 20-45s against production MusicBrainz, while
+          // building the rows from the answer took 4ms and rendering them 15ms.
+          // So the wait is entirely MusicBrainz's, there is no work to split up
+          // or speed up, and the whole fix is to stop being silent about it:
+          // say what is being read BEFORE awaiting it, spin the button while
+          // waiting, keep saying so every 5s, and report how long it took.
+          const WANT_LABEL = { recording: 'recordings', release: rgOnly ? 'releases' : 'the release itself', release_group: 'the release group', artist: 'artists', label: 'labels' };
+          const picked = Object.keys(want).filter(k => want[k]);
+          if (!picked.length) { log('warn', 'nothing selected — tick at least one box'); return; }
+          const label = (rgOnly ? `this release group's ` : `this release's `) + picked.map(k => WANT_LABEL[k] || k).join(' + ');
+          log('info', `reading ${label} from MusicBrainz — one request, and a large release can keep it busy for 20-40s…`);
+          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this page’s entities from MusicBrainz — see the Log tab' });
+          const waiting = beginWait(label);
+          let waitMs = 0;
           try {
             if (rgOnly) {
               const tuples = [];
               if (want.release_group) tuples.push({ entityType: 'release_group', mbid: ctx.mbid, name: null, note: '' });
               if (want.release) {
-                log('info', `reading this group's releases from MusicBrainz…`);
                 const rels = await fetchGroupReleases(ctx.mbid);
                 if (!rels.length) log('warn', 'MusicBrainz listed no releases in this group');
                 tuples.push(...rels);
               }
+              waitMs = waiting.done();
               if (!tuples.length) { log('warn', 'nothing selected — tick Release group or Releases'); return; }
               const res = addToQueue(tuples);
               const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
               log('info', `added ${res.added} row(s) from this release group (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
-                + (res.merged ? ` — ${res.merged} merged into rows already queued` : ''));
+                + (res.merged ? ` — ${res.merged} merged into rows already queued` : '')
+                + ` — ${(waitMs / 1000).toFixed(1)}s, nearly all of it waiting on MusicBrainz`);
             } else {
               const j = await fetchReleaseGraph(ctx.mbid);
+              waitMs = waiting.done();
               if (!j || !j.id) { log('warn', `could not read release ${ctx.mbid} from MusicBrainz — nothing added`); return; }
               const tuples = releaseGraphTuples(j, want, '');
               if (!tuples.length) { log('warn', 'nothing selected, or the release has none of the chosen entities'); return; }
               const res = addToQueue(tuples);
               const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
               log('info', `added ${res.added} row(s) from "${j.title || ctx.mbid}" (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
-                + (res.merged ? ` — ${res.merged} merged into rows already queued` : ''));
+                + (res.merged ? ` — ${res.merged} merged into rows already queued` : '')
+                + ` — ${(waitMs / 1000).toFixed(1)}s, nearly all of it waiting on MusicBrainz`);
             }
             renderQueue();
           } catch (e) {
             log('error', `add from page failed: ${(e && e.message) || e}`);
-          } finally { btn.disabled = false; }
+          } finally { waiting.done(); setBtnBusy(btn, false); }
         };
       };
     })();
@@ -4172,6 +4210,42 @@
     el.textContent = currentLogLines().join('\n');
     el.scrollTop = el.scrollHeight;
   }
+  /* #546: mark a toolbar button as working — spinner, a label saying what it
+     is doing, and disabled so the action cannot be stacked on itself. Kept
+     next to updateRunBtn because it shares that function's constraint: write
+     the .falcon-bt / .falcon-bi spans, never the button's textContent, or the
+     collapse markup is wiped and the button sticks at full width. */
+  function setBtnBusy(btn, on, opts) {
+    if (!btn) return;
+    const o = opts || {};
+    const bt = btn.querySelector('.falcon-bt'), bi = btn.querySelector('.falcon-bi');
+    if (on) {
+      if (btn.dataset.falconIdle == null) btn.dataset.falconIdle = JSON.stringify({ bt: bt ? bt.textContent : '', bi: bi ? bi.textContent : '', title: btn.title });
+      if (bt && o.label) bt.textContent = o.label;
+      if (o.title) btn.title = o.title;
+    } else if (btn.dataset.falconIdle != null) {
+      let was = {}; try { was = JSON.parse(btn.dataset.falconIdle); } catch (e) { /* fall through to defaults */ }
+      if (bt) bt.textContent = was.bt || '';
+      if (bi) bi.textContent = was.bi || '';
+      btn.title = was.title || '';
+      delete btn.dataset.falconIdle;
+    }
+    btn.classList.toggle('falcon-busy', !!on);
+    btn.disabled = !!on;
+    fitBar(btn.closest('.falcon-bar'));
+  }
+  /* #546: MusicBrainz answering slowly is the normal case here, not the
+     exception — this release's own one-request graph fetch was measured at
+     20-45s against production. Nothing can make that faster (it is already a
+     single request), so say so, repeatedly, instead of going silent. */
+  function beginWait(what) {
+    const t0 = Date.now();
+    const iv = setInterval(() => {
+      const s = Math.round((Date.now() - t0) / 1000);
+      log('info', `still waiting on MusicBrainz for ${what} — ${s}s so far. Large releases can take half a minute; nothing is stuck.`);
+    }, 5000);
+    return { done: () => { clearInterval(iv); return Date.now() - t0; } };
+  }
   function updateRunBtn() {
     const b = document.getElementById('falcon-run'); if (!b) return;
     // label/icon spans only — see the expand-all note; textContent would wipe
@@ -4257,5 +4331,7 @@
     // #508 follow-up
     topUpWorkers, getWorkerCardCount: () => workerCards.length, isRunning: () => running,
     // #512 follow-up
-    sessionHasRealWork, extractReleaseName };
+    sessionHasRealWork, extractReleaseName,
+    // #546
+    setBtnBusy, beginWait, renderQueue };
 })();
