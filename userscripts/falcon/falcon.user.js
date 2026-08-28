@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28.145841
+// @version      2026.8.28.150632
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2457,7 +2457,7 @@
   // All of an item's aliases, in order. One failing doesn't stop the rest —
   // same contract as cover[] and urls[].
   async function runAliasItem(item, tag, card) {
-    if (card) updateWorkerLabel(card, item);   // no card when driven directly (tests)
+    if (card) updateWorkerLabel(card, item, 'aliases');   // no card when driven directly (tests)
     let list = (item.aliases || []).filter(a => a && String(a.name || '').trim());
     const errs = [];
     let ok = 0, dupes = 0;
@@ -2488,6 +2488,7 @@
       const a = list[i];
       try {
         log('info', `${tag} ${entityLabel(item)} — adding alias ${i + 1}/${list.length}: "${a.name}"${a.locale ? ` [${a.locale}]` : ''}`);
+        workerPhase(card, `alias ${i + 1} of ${list.length}`);   // #547
         await submitAlias(item, a, tag);
         ok++;
       } catch (e) {
@@ -2577,7 +2578,7 @@
     return lines.join('\n');
   }
   async function runCoverItem(item, tag, card, priorLinks) {
-    updateWorkerLabel(card, item);
+    updateWorkerLabel(card, item, 'cover art');
     const tStart = Date.now();
     // #508 (majkinetor): "Add covers only when there aren't any" — an opt-in
     // safety toggle. checkExistingCoverArt() fires fire-and-forget right
@@ -2672,6 +2673,9 @@
         // where item.timing is set — so the summary showed a blank worker
         // column and dashes for every duration on a run that plainly did work.
         const tNoForm = Date.now();
+        // #547: this path never touches an iframe, so without a phase its card
+        // sat on whatever the previous item left there.
+        updateWorkerLabel(card, item, needsAliases ? 'aliases' : 'cover art');
         let aliasMs = 0;
         if (needsAliases) { const a0 = Date.now(); await runAliasItem(item, tag, card); aliasMs = Date.now() - a0; }
         if (needsCover) await runCoverItem(item, tag, card, aliasPrior(item));
@@ -2701,7 +2705,7 @@
       // and costs him runs.
       const iframe = newIframeIn(card);
       card.dataset.itemId = item.id;   // lets showItemPopup find "the worker that ran this item"
-      updateWorkerLabel(card, item);
+      updateWorkerLabel(card, item, 'loading edit page');
       // #467 (majkinetor): navigate straight to the seed url — MB pre-fills
       // every url as the page renders, so fillAndSubmit has little or nothing
       // left to type. Measured live: ~2-3s vs 10+s for typing simulation.
@@ -2785,6 +2789,7 @@
       }
       const loadMs = Date.now() - tNav;
       dbg(tag, `edit page loaded in ${loadMs}ms`);
+      workerPhase(card, 'waiting for the seeded rows');
       // MB's client JS turns the seed params into rows a moment after load.
       // A seeded url can land in EITHER shape (see findRowsForUrl): a resolved
       // <a href> row, or — when MB couldn't classify it — an editable input
@@ -2802,6 +2807,7 @@
       dbg(tag, `seeded rows settled=${!!settled} after ${Date.now() - tNav}ms total`);
       let r = null;
       try {
+        workerPhase(card, 'filling and submitting the edit');
         r = await fillAndSubmit(iframe, item, { tag, baseline });
         item.urlResults = r.results;
         // per-stage timings, kept on the item so the end-of-run summary table
@@ -2897,10 +2903,16 @@
   // across a Start click, so old state stays inspectable until the panel closes.
   let workerCards = [];
   let _zoomedWorker = null;   // index into workerCards, or null
-  function updateWorkerLabel(card, item) {
+  // #547 (majkinetor): "We should also remove '0 links' from workers and write
+  // there whats it doing instead." A link count is the least interesting thing
+  // about a running worker — and on an alias/disambiguation/cover run it was
+  // always "0 link(s)", which reads as "this worker has nothing to do" while it
+  // is in the middle of doing it. The header carries the live phase instead.
+  function updateWorkerLabel(card, item, phase) {
     if (card.dataset.retired) return;   // don't overwrite a retired card's frozen label
+    card._item = item || null;
     const lbl = card.querySelector('.falcon-worker-lbl');
-    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${item.entityType === 'release' ? 'cover art' : item.urls.length + ' link(s)'}` : 'idle';
+    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${phase || 'starting'}` : 'idle';
     // a freshly-spawned card starts hidden (marked idle at creation, #467's
     // hide-idle-workers), so it must re-render the moment it actually GETS an
     // item too, not just when it goes idle again — re-rendering only on the
@@ -2909,6 +2921,16 @@
     const isIdleNow = !item;
     card.dataset.idle = isIdleNow ? '1' : '';
     if (wasIdle !== isIdleNow) renderWorkerLayout();
+  }
+  /* #547: update only the phase, keeping whichever item the card is already on.
+     Cheap enough to call from anywhere in an item's lifecycle — it touches one
+     text node and never re-renders the layout. Silently does nothing on a
+     retired or idle card, so a late callback from a finished item cannot
+     resurrect a frozen label. */
+  function workerPhase(card, text) {
+    if (!card || card.dataset.retired || !card._item) return;
+    const lbl = card.querySelector('.falcon-worker-lbl');
+    if (lbl) lbl.textContent = `${entityLabel(card._item)} — ${text}`;
   }
   function renderWorkerLayout() {
     let anyVisible = false;
@@ -4026,12 +4048,36 @@
             // `1 link, isrc`" — disambiguation/ISRC/cover only ever got
             // folded into the summary in the zero-links branch below, so a
             // single-link item silently hid whichever of those it also had.
-            const extras = [it.disambiguation ? 'disambiguation' : '', (it.isrcs || []).length ? 'ISRC' : '', (it.cover || []).some(c => c.url) ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : ''].filter(Boolean).join(' + ');
-            if (it.urls.length > 1) return `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.urls.length} links${extras ? ' + ' + esc(extras) : ''}</span>`;
-            if (it.urls.length === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:#666">+ ${esc(extras)}</span>` : ''}</span>`;
+            //
+            // #547 (majkinetor): "Here, we show no links, and do not show
+            // aliases. I think we should be consistent and report only what is
+            // present, without those - placeholders as they are just spam."
+            // So: one list built only from fields that actually carry
+            // something, and a genuinely empty row says nothing at all rather
+            // than "no links — —". Aliases and video were missing from this
+            // entirely — a row could show an alias chip in its own detail and
+            // still summarise itself as "no links".
+            const isrcN = (it.isrcs || []).filter(Boolean).length;
+            const aliasN = (it.aliases || []).filter(a => a && String(a.name || '').trim()).length;
+            const hasCover = (it.cover || []).some(c => c.url || (c.candidates || []).length);
+            const extras = [
+              it.disambiguation ? 'disambiguation' : '',
+              isrcN ? (isrcN === 1 ? 'ISRC' : `${isrcN} ISRCs`) : '',
+              it.video ? 'video' : '',
+              aliasN ? (aliasN === 1 ? 'alias' : `${aliasN} aliases`) : '',
+              hasCover ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : '',
+            ].filter(Boolean).join(' + ');
+            const coverTitle = hasCover && it.coverExistingCount
+              ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : '';
+            if (it.urls.length > 1) return `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${it.urls.length} links${extras ? ' + ' + esc(extras) : ''}</span>`;
+            if (it.urls.length === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:#1b6ec2;text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:#666">+ ${esc(extras)}</span>` : ''}</span>`;
             // #494/#496: release rows never carry a urls[] entry — cover art
             // is their whole payload — so they always land here.
-            return `<span style="color:#999;font-style:italic;flex:1" title="${it.coverExistingCount ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : ''}">no links${extras ? ' — ' + esc(extras) : ' — —'}</span>`;
+            if (extras) return `<span style="color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${esc(extras)}</span>`;
+            // Genuinely empty — an "Add from release" row waiting to be filled
+            // in. The spacer holds the status column where it sits on every
+            // other row; it deliberately says nothing.
+            return '<span style="flex:1"></span>';
           })()}
           <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:#c0392b;cursor:pointer;text-decoration:underline' : 'color:#999'}">${excluded ? 'excluded' : it.status}</span>
           <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:#666;flex:0 0 auto">⇗</button>
@@ -4333,5 +4379,7 @@
     // #512 follow-up
     sessionHasRealWork, extractReleaseName,
     // #546
-    setBtnBusy, beginWait, renderQueue };
+    setBtnBusy, beginWait, renderQueue,
+    // #547
+    updateWorkerLabel, workerPhase, spawnWorkerCard };
 })();
