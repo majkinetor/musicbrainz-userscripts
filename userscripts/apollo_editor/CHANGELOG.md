@@ -1,5 +1,16 @@
 # Apollo Editor Changelog
 
+## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
+
+### Features
+
+1. Paste multiple external links at once ([#543](https://github.com/majkinetor/musicbrainz-userscripts/issues/543))
+1. Matching improvements when same recording is on different positions ([#541](https://github.com/majkinetor/musicbrainz-userscripts/issues/541))
+
+### Fixes
+
+1. Recordings match button isn't grayed out while auto match is in progress ([#545](https://github.com/majkinetor/musicbrainz-userscripts/issues/545))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 ### Features

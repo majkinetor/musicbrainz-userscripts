@@ -1,5 +1,13 @@
 # Group Therapy
 
+## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
+
+### Features
+
+1. Clear annotation in the background ([#550](https://github.com/majkinetor/musicbrainz-userscripts/issues/550))
+1. Text parser UX enhacements ([#544](https://github.com/majkinetor/musicbrainz-userscripts/issues/544))
+1. Text parser recording scope ([#539](https://github.com/majkinetor/musicbrainz-userscripts/issues/539))
+
 ## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
 
 ### Features
