@@ -1,5 +1,23 @@
 # String Theory Changelog
 
+## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Paste multiple external links at once ([#543](https://github.com/majkinetor/musicbrainz-userscripts/issues/543))
+1. Matching improvements when same recording is on different positions ([#541](https://github.com/majkinetor/musicbrainz-userscripts/issues/541))
+1. Recordings match button isn't grayed out while auto match is in progress ([#545](https://github.com/majkinetor/musicbrainz-userscripts/issues/545))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Small improvements
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Clear annotation in the background ([#550](https://github.com/majkinetor/musicbrainz-userscripts/issues/550))
+1. Text parser UX enhacements ([#544](https://github.com/majkinetor/musicbrainz-userscripts/issues/544))
+1. Text parser recording scope ([#539](https://github.com/majkinetor/musicbrainz-userscripts/issues/539))
+
 ## [2026.8.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.23)
 
 ### [Art Station](../art_station/CHANGELOG.md)

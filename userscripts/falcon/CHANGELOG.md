@@ -1,5 +1,18 @@
 # Falcon 
 
+## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
+
+### Features
+
+1. Consistent queue summary ([#547](https://github.com/majkinetor/musicbrainz-userscripts/issues/547))
+1. Alias atribute for all entities ([#535](https://github.com/majkinetor/musicbrainz-userscripts/issues/535))
+
+### Fixes
+
+1. Session lost when encountering proof-of-work challenge ([#551](https://github.com/majkinetor/musicbrainz-userscripts/issues/551))
+1. Indication when adding a release ([#546](https://github.com/majkinetor/musicbrainz-userscripts/issues/546))
+1. ISRC can be wrongly mapped when recordings are partially updated from Harmony ([#540](https://github.com/majkinetor/musicbrainz-userscripts/issues/540))
+
 ## [2026.8.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.23)
 
 ### Features
