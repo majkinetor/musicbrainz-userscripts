@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28.203008
+// @version      2026.8.28.211324
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3842,6 +3842,21 @@
     // aren't JSON-native, so they're flattened to plain arrays here and
     // rebuilt on load (see the `saved` restore below).
     const saveState = () => txpSaveState(release.gid, {
+      // #544 follow-up (majkinetor): "When exiting and returning Text parser,
+      // any freezed patterns are gone. State should be kept completely." The
+      // per-line pattern override IS the freeze — freezeBtn stamps `pattern`
+      // into lines[i].override — and it was the one piece of row state the save
+      // never carried, so reopening rebuilt every line with override:''.
+      // Positional is correct here and nowhere else: `text` is saved in the very
+      // same call, so index i means the same line on the way back in. (Compare
+      // onTextChange, which must DROP position-keyed state, precisely because
+      // there the text has changed underneath it.)
+      overrides: lines.map(l => (l && l.override) || ''),
+      // "State should be kept completely" — the window's own two states reset
+      // on every reopen as well: whether it was maximized, and whether the paste
+      // box was rolled up. Both are one flag each and both are visible.
+      maximized: panel.classList.contains('gt-tp-max'),
+      srcOpen: ta.style.display !== 'none',
       text: ta.value, pattern,
       scopeKind: scope.kind, scopeSpec: scope.spec,
       roleCache: [...roleCache.entries()],
@@ -3885,7 +3900,8 @@
       const split = txpSplitCompoundCopyrightLines(ta.value);
       if (split !== ta.value) { ta.value = split; onTextChange(); }
     }, 0));
-    srcTgl.onclick = () => { const hidden = ta.style.display === 'none'; ta.style.display = hidden ? '' : 'none'; srcTgl.textContent = (hidden ? '▾' : '▸') + ' Paste credit text'; };
+    const setSrcOpen = (open) => { ta.style.display = open ? '' : 'none'; srcTgl.textContent = (open ? '▾' : '▸') + ' Paste credit text'; };
+    srcTgl.onclick = () => { setSrcOpen(ta.style.display === 'none'); saveState(); };
     resolveBtn.onclick = resolveAll;
     // #544 freeze: per LINE, since the override is a line's property — a line
     // that expanded into several rows is frozen once.
@@ -3924,11 +3940,17 @@
     txpEl.addEventListener('mousedown', e => { if (e.target === txpEl) closeTextParser(); });
     document.addEventListener('keydown', onTxpKey, true);
     if (saved) {
-      if (saved.text) { ta.value = saved.text; lines = ta.value.split('\n').map(raw => ({ raw, override: '' })); }
+      if (saved.text) {
+        ta.value = saved.text;
+        const ov = saved.overrides || [];   // #544 follow-up: frozen patterns
+        lines = ta.value.split('\n').map((raw, i) => ({ raw, override: ov[i] || '' }));
+      }
       (saved.roleCache || []).forEach(([k, v]) => roleCache.set(k, v));
       (saved.entityCache || []).forEach(([k, v]) => entityCache.set(k, v));
       (saved.entityOverride || []).forEach(([k, v]) => entityOverride.set(k, v));
       (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
+      if (saved.maximized) maxBtn.onclick();          // same path the button takes, so the saved size handling matches
+      if (saved.srcOpen === false) setSrcOpen(false);
     }
     render();
     refreshScopeUi();   // #539: show what the saved scope selects, before anything is touched
