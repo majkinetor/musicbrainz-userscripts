@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28.211324
+// @version      2026.8.28.213836
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3599,7 +3599,7 @@
           // carried `%3E_token`, and the handler's own check would then never
           // match. Any name not starting with a legacy entity is fine.
           params.set('x_gtcreate', token);
-          let ch = null, timeout = null;
+          let ch = null, timeout = null, tab = null;
           const stop = () => { try { ch && ch.close(); } catch (e) {} clearTimeout(timeout); createBtn.classList.remove('gt-tp-plus-wait'); renderChrome(); };
           try {
             ch = new BroadcastChannel(GT_CREATE_CH);
@@ -3607,6 +3607,16 @@
               const d = ev && ev.data;
               if (!d || d.token !== token || d.kind !== kind || !d.gid) return;
               stop();
+              // #544 follow-up (majkinetor): "It doesn't close the tab after
+              // commit, like CH/Apollo." The created entity's page does call
+              // window.close() on itself, but that is a no-op for a tab opened
+              // by GM_openInTab unless the script grants window.close — so the
+              // OPENER closes it, using the handle GM_openInTab hands back.
+              // Exactly what Credit Hoarder does and for the same reason (#273:
+              // "a GM-opened tab can't always self-close via window.close()").
+              // Closed here, before the entity fetch: the entity exists either
+              // way, so a slow or failed lookup must not leave the tab open.
+              try { if (tab && typeof tab.close === 'function') tab.close(); } catch (e) {}
               const ent = await txpFetchEntity(d.gid, kind);
               if (ent) pick(ent, true); else { q.value = name; runSearch(); }
             };
@@ -3614,7 +3624,7 @@
           // Give up quietly rather than spinning forever if the tab is closed
           // without saving; the name search is still there to fall back on.
           timeout = setTimeout(() => { stop(); try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {} }, 10 * 60 * 1000);
-          GM_openInTab(`/${kind}/create?` + params.toString(), { active: false, insert: true, setParent: true });
+          tab = GM_openInTab(`/${kind}/create?` + params.toString(), { active: false, insert: true, setParent: true });
           return;
         }
         const url = `/${kind}/create?` + params.toString();
@@ -4430,26 +4440,53 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const m = location.pathname.match(GT_CREATE_PATH);
     if (!m) return;
     const kind = m[1].toLowerCase();
+    // This runs unattended in a tab nobody is looking at, so it says what it
+    // decided — without a line here, "it didn't create anything" is
+    // indistinguishable from "it never ran".
+    const say = (msg) => { try { console.log('[Group Therapy] background create: ' + msg); } catch (e) {} };
     let pending = null;
     try { pending = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
-    if (!pending || pending.kind !== kind || !pending.token || pending.submitted) return;
-    if (!pending.ts || Date.now() - pending.ts > 10 * 60 * 1000) return;
+    if (!pending || pending.kind !== kind || !pending.token) { say(`no pending ${kind} create — leaving this form alone`); return; }
+    if (pending.submitted) { say('already pressed Enter once for this create — standing down (MusicBrainz may be asking something)'); return; }
+    if (!pending.ts || Date.now() - pending.ts > 10 * 60 * 1000) { say('the pending create is stale — leaving this form alone'); return; }
     let token = null; try { token = new URLSearchParams(location.search).get('x_gtcreate'); } catch (e) {}
-    if (token !== pending.token) return;
+    if (token !== pending.token) { say('this create page is not the one we opened — leaving it alone'); return; }
     const go = () => {
+      // MusicBrainz's edit form needs its own JavaScript before "Enter edit"
+      // does anything — measured: clicking at document-start left the tab
+      // sitting on a filled-in /create page with nothing submitted, while the
+      // same click after load went straight through to the new artist. A
+      // userscript manager runs this at document-end, but that is not late
+      // enough to rely on, so wait for the document to actually be done.
+      if (document.readyState !== 'complete') return false;
       const form = document.querySelector(`form.edit-${kind}`);
       const name = form && form.querySelector(`[name="edit-${kind}.name"]`);
       const submit = form && form.querySelector('button[type="submit"], input[type="submit"]');
       if (!form || !name || !name.value.trim() || !submit) return false;
-      try { GM_setValue(GT_PENDING_KEY, JSON.stringify(Object.assign({}, pending, { submitted: true }))); } catch (e) {}
-      try { submit.click(); } catch (e) {}
+      // Re-read the record HERE, not just at start-up: `pending` was captured
+      // before the wait, so two instances of this script on one document (or a
+      // second create started meanwhile) could both pass the start-up guard and
+      // both click — two artists from one press. Observed with a doubled
+      // injection in testing; cheap to make impossible for a create action.
+      let now = null;
+      try { now = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
+      if (!now || now.token !== pending.token || now.submitted) { say('another instance already pressed Enter — standing down'); return true; }
+      try { GM_setValue(GT_PENDING_KEY, JSON.stringify(Object.assign({}, now, { submitted: true }))); } catch (e) {}
+      say(`pressing "Enter edit" for “${name.value.trim()}”`);
+      try { submit.click(); } catch (e) { say('the click threw: ' + ((e && e.message) || e)); }
       return true;
     };
     // MusicBrainz's edit forms bind late (the same reason Falcon waits for its
     // seeded rows to settle), so clicking the instant the DOM exists can land
     // before the seed is bound. Retry briefly rather than guessing one delay.
+    say('waiting for the seeded form to be ready');
     let tries = 0;
-    const iv = setInterval(() => { if (go() || ++tries > 40) clearInterval(iv); }, 250);
+    const iv = setInterval(() => {
+      if (go()) { clearInterval(iv); return; }
+      if (++tries > 120) { clearInterval(iv); say('gave up waiting for the form — the tab is left for you to submit by hand'); }
+      else if (tries % 20 === 0) say(`still waiting (readyState=${document.readyState}, form=${!!document.querySelector('form.edit-' + kind)})`);
+    }, 250);   // ~30s
+
   })();
   // Self-guard the page: in the String Theory bundle this script runs on EVERY union-matched URL
   // (Apollo's /release/*/edit, /artist/*, …), so its hover-highlight etc. would bleed onto other pages.
