@@ -10,11 +10,11 @@ A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reor
 
 ![](./screens/screenshot.png)
 
-It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an event's **Event art** tab (`/event/<gid>/event-art`), replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
+It runs on a release's **Cover art** tab and an **Event art** tab, replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
 
 ## Features
 
-- **Gallery** — adjustable thumbnail size, grid or detailed view, group by type, and sort by position / type / dimensions / newest.
+- **Gallery** — adjustable thumbnail size, grid or detailed view, group by [type](https://beta.musicbrainz.org/doc/Cover_Art/Types), and sort by position / type / dimensions / newest.
 - **Reorder** by dragging a single cover or a whole selection together.
 - **Select** with right-click or right-drag.
 - **[Single or bulk actions](#single-or-bulk-actions)** — set type, set comment, remove, download (zip) and reports, on one cover or the whole selection.
