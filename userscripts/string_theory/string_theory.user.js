@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.31.184242
+// @version      2026.8.31.192507
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -79,13 +79,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.31.184242 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.8.28\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.8.31.192507 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.8.28\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31.192453","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31.192453","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1584,7 +1584,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.8.31';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.8.31.192453';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -5582,6 +5582,14 @@ try {
       '.tc-recpop .tc-rpk-isrc{color:#9a8fb5;font-size:11px;font-family:Consolas,monospace}',
       '.tc-recpop .tc-rpk-fdiff{background:#ffecec;color:#b00;border-radius:2px;padding:0 2px}',
       '.tc-recpop .tc-rpk-empty{padding:8px 10px;color:#999;font-style:italic}',
+      // #555 — an IN-PROGRESS placeholder pulses its background, so "still working"
+      // is distinguishable from "finished, nothing found" at a glance instead of
+      // having to read the sentence. Terminal states never get this class.
+      '.tc-recpop .tc-rpk-busy{animation:tc-rpk-pulse 1.15s ease-in-out infinite}',
+      '@keyframes tc-rpk-pulse{0%,100%{background:#fff}50%{background:#ece4fa}}',
+      '.tc-rpk-dots{animation:tc-rpk-dots 1.15s ease-in-out infinite;border-radius:3px;padding:0 3px}',
+      '@keyframes tc-rpk-dots{0%,100%{background:transparent}50%{background:#ece4fa}}',
+      '@media (prefers-reduced-motion:reduce){.tc-recpop .tc-rpk-busy,.tc-rpk-dots{animation:none;background:#f4effd}}',
       // hide the native recording table from the first paint (no flash) and let our table use the
       // full width instead of MB's .half-width column (#119)
       'body.tc-rec-on #track-recording-assignation{display:none!important}',
@@ -6576,13 +6584,13 @@ try {
         // ISRC of the linked recording — makes it obvious when an ISRC drove the
         // selection (#196). Hidden until the async fill finds at least one.
         (curGid ? '<div class="tc-rpk-curisrc" style="display:none">ISRC: <span class="tc-rpk-curisrc-list"></span></div>' : '') +
-        (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list">…</span></div>' : '') +
+        (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list tc-rpk-dots">…</span></div>' : '') +
       '</div>' +
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
       '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" ' + NOPW_ATTRS + ' placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
-      '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions<span class="tc-rpk-suggn"></span> <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
+      '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions<span class="tc-rpk-suggn"></span> <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty tc-rpk-busy">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
@@ -6593,11 +6601,12 @@ try {
         .then(res => {
           const j = res.json; if (!_recPop) return;
           // a failed lookup must not render as "appears on: —" (that reads as "nowhere") — #555
-          if (!j) { const f = pop.querySelector('.tc-rpk-curon-list'); if (f) f.textContent = res.stale ? '…' : '(lookup failed)'; return; }
+          if (!j) { const f = pop.querySelector('.tc-rpk-curon-list'); if (f && !res.stale) { f.classList.remove('tc-rpk-dots'); f.textContent = '(lookup failed)'; } return; }
           const el = pop.querySelector('.tc-rpk-curon-list');
           if (el) {
             const seen = new Set(), rels = [];
             (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
+            el.classList.remove('tc-rpk-dots');   // stop the pulse — this is now a settled answer (#555)
             el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
           }
           // Artist disambiguations in the header: the page (KO) model doesn't carry
@@ -6679,7 +6688,7 @@ try {
       // immediately (same as pasting an MBID in the artist picker). #189
       const gid = mbidFrom(query);
       if (gid) {
-        resBox.innerHTML = '<div class="tc-rpk-empty">resolving recording…</div>';
+        resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">resolving recording…</div>';
         const rec = await fetchRecordingById(gid);
         if (my !== seq || !_recPop) return;
         if (rec) pickRecording(entry, rec);   // links the recording + closes the picker
@@ -6690,7 +6699,7 @@ try {
       // immediately (same as an MBID); several → list them to choose from. #196
       const isrc = isrcFrom(query);
       if (isrc) {
-        resBox.innerHTML = '<div class="tc-rpk-empty">resolving ISRC ' + esc(isrc) + '…</div>';
+        resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">resolving ISRC ' + esc(isrc) + '…</div>';
         const recs = await fetchRecordingsByIsrc(isrc);
         if (my !== seq || !_recPop) return;
         if (recs.length === 1) { pickRecording(entry, recs[0]); return; }   // one hit → link + close
@@ -6698,11 +6707,11 @@ try {
         resBox.innerHTML = '<div class="tc-rpk-empty">no recording with ISRC ' + esc(isrc) + '</div>';
         return;
       }
-      resBox.innerHTML = '<div class="tc-rpk-empty">searching…</div>';
+      resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">searching…</div>';
       // superseded queries are dropped before they cost a request (typing fires one
       // per pause and the WS2 gate is ~1 req/s); a throttled search says so instead
       // of rendering an empty list. #555
-      const sOpts = { stale: () => my !== seq || !_recPop, onThrottle: () => { if (my === seq && _recPop) resBox.innerHTML = '<div class="tc-rpk-empty">MusicBrainz is throttling requests — retrying…</div>'; } };
+      const sOpts = { stale: () => my !== seq || !_recPop, onThrottle: () => { if (my === seq && _recPop) resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">MusicBrainz is throttling requests — retrying…</div>'; } };
       let results = await searchRecordings(query, sOpts);
       if (fallbackTitle && results && !results.length) results = await searchRecordings(u(ko.name) || '', sOpts);   // smart query too tight → broaden
       if (my !== seq || !_recPop) return;
