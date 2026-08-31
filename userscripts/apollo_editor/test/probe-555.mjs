@@ -31,12 +31,14 @@ const page = ctx.pages()[0] || await ctx.newPage();
 page.on('pageerror', e => log('[pageerror]', e.message));
 
 // Only the recording SEARCH endpoint, and only GETs. Everything else untouched.
-let throttled = 0, passed = 0, arming = false;   // armed only once the picker under test is open
+let throttled = 0, passed = 0, arming = false, emptyMode = false;   // armed only once the picker under test is open
 await page.route(url => {
   const s = url.toString();
   return s.includes('/ws/2/recording') && s.includes('query=');
 }, async route => {
   if (route.request().method() !== 'GET') return route.continue();
+  // deterministic "genuinely zero hits" (MB's fuzzy search always finds *something*)
+  if (emptyMode) return route.fulfill({ status: 200, headers: { 'Content-Type': 'application/json' }, body: '{"count":0,"recordings":[]}' });
   if (arming && throttled < THROTTLE_FIRST) {
     throttled++;
     return route.fulfill({
@@ -83,8 +85,15 @@ await page.fill('.tc-recpop .tc-rpk-q', '');
 await page.type('.tc-recpop .tc-rpk-q', 'doh', { delay: 60 });
 
 // snapshot the interim state (should say "throttling … retrying", never "no matches")
+// and confirm it is marked BUSY — an in-progress placeholder pulses its background
+// so "still working" reads at a glance, without parsing the sentence. #555
 await page.waitForTimeout(900);
-const interim = await page.evaluate(() => (document.querySelector('.tc-recpop .tc-rpk-res') || {}).textContent || '');
+const interim = await page.evaluate(() => {
+  const box = document.querySelector('.tc-recpop .tc-rpk-res');
+  const ph = box && box.querySelector('.tc-rpk-empty');
+  return { text: box ? box.textContent : '', busy: !!(ph && ph.classList.contains('tc-rpk-busy')), anim: ph ? getComputedStyle(ph).animationName : '' };
+});
+await page.locator('.tc-recpop').screenshot({ path: resolve(OUT, 'i555-busy.png') }).catch(() => {});
 
 // then let the retry land
 await page.waitForFunction(() => {
@@ -119,8 +128,22 @@ const collapsed = await page.evaluate(() => {
 });
 await page.locator('.tc-recpop').screenshot({ path: resolve(OUT, 'i555-collapsed.png') }).catch(() => {});
 
+// a TERMINAL empty state must NOT pulse — that's the whole distinction being drawn
+emptyMode = true;
+await page.fill('.tc-recpop .tc-rpk-q', '');
+await page.type('.tc-recpop .tc-rpk-q', 'nothing at all', { delay: 10 });
+await page.waitForFunction(() => {
+  const ph = document.querySelector('.tc-recpop .tc-rpk-res .tc-rpk-empty');
+  return ph && /no matches/.test(ph.textContent);
+}, null, { timeout: 30000 }).catch(() => {});
+const terminal = await page.evaluate(() => {
+  const ph = document.querySelector('.tc-recpop .tc-rpk-res .tc-rpk-empty');
+  return { text: ph ? ph.textContent : '(none)', busy: !!(ph && ph.classList.contains('tc-rpk-busy')), anim: ph ? getComputedStyle(ph).animationName : '' };
+});
+
 log('503s injected:', throttled, '| passed through:', passed);
 log('interim result box:', JSON.stringify(interim));
+log('terminal result box:', JSON.stringify(terminal));
 log(JSON.stringify({ rows: out.rows, resText: out.resText, suggLabel: out.suggLabel, suggCountSpan: out.suggCountSpan, suggRows: out.suggRows, collapsed }, null, 2));
 log('--- log lines mentioning search / throttle ---');
 console.log(logText.split('\n').filter(l => /throttl|recording search|superseded/i.test(l)).join('\n'));
@@ -129,6 +152,8 @@ const checks = {
   'injected the throttle':        throttled === THROTTLE_FIRST,
   'retried past it (rows shown)': out.rows > 0,
   'no silent "no matches"':       !/no matches/.test(out.resText),
+  'in-progress state pulses':     interim.busy && interim.anim === 'tc-rpk-pulse',
+  'terminal state does NOT pulse': /no matches/.test(terminal.text) && !terminal.busy && terminal.anim === 'none',
   'throttle is in the log':       /throttled by MusicBrainz/.test(logText),
   'search is logged at all':      /recording search/.test(logText),
   'suggestion count rendered':    out.suggRows <= 0 || /\(\s*\d+\s*\)/.test(out.suggCountSpan),

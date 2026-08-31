@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-08-31 18:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-08-31 19:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -521,11 +521,11 @@ A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reor
 
 ![](../art_station/screens/screenshot.png)
 
-It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an event's **Event art** tab (`/event/<gid>/event-art`), replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
+It runs on a release's **Cover art** tab and an **Event art** tab, replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
 
 ### Features
 
-- **Gallery** — adjustable thumbnail size, grid or detailed view, group by type, and sort by position / type / dimensions / newest.
+- **Gallery** — adjustable thumbnail size, grid or detailed view, group by [type](https://beta.musicbrainz.org/doc/Cover_Art/Types), and sort by position / type / dimensions / newest.
 - **Reorder** by dragging a single cover or a whole selection together.
 - **Select** with right-click or right-drag.
 - **[Single or bulk actions](#single-or-bulk-actions)** — set type, set comment, remove, download (zip) and reports, on one cover or the whole selection.
@@ -728,7 +728,7 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 - **Use works** — a master toggle plus a mode picker (#424):
     - **toggle off** — no work relationship is touched at all: nothing is created *and* nothing is attached to pre-existing works; skipped work-level credits are logged.
     - `create none` (default) — use only works that already exist; never create one. Work-only credits with no existing work are logged and skipped.
-    - `create needed` — also create a work when a composer/lyricist/writer credit needs one. Selecting it shows a **duplicate-works warning** (#421): match recordings to *existing* works first — [Group Therapy](../group_therapy/README.md) makes that fast — or you will create duplicates. The `when missing` mode (a work for *every* recording) was removed for the same reason, and this option was reset to `create none` for everyone once.
+    - `create needed` — also create a work when a composer/lyricist/writer credit needs one. 
 - **Options**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).
