@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28.225534
+// @version      2026.8.31.184242
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -79,13 +79,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.8.28.225534 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.28\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.8.28\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.8.31.184242 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.8.28\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.28","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.28","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -413,10 +413,12 @@ try {
     const key = fold(name); if (!key) return null;
     if (_aliasMatchCache.has(key)) return _aliasMatchCache.get(key);
     const q = String(name).replace(/["\\]/g, ' ').trim(); if (!q) return null;
-    let arr = null;
-    try { arr = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(`alias:"${q}" OR artist:"${q}"`)}&fmt=json&limit=25`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
-    catch (e) { Log.warn('alias search failed:', name, e.message); return null; }   // transient → don't cache, let a later pass retry
-    const arts = (arr && arr.artists) || [];
+    // a throttled lookup must NOT be cached as "no match" — that would freeze a
+    // transient 503 into a permanent auto-match failure for this name (#555)
+    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(`alias:"${q}" OR artist:"${q}"`)}&fmt=json&limit=25`, { label: 'alias search' });
+    if (!res.json) { Log.warn('alias search failed:', name, '— not cached, a later pass retries'); return null; }
+    const arts = res.json.artists || [];
+    Log.debug('alias search:', JSON.stringify(name), '→', arts.length, 'candidate(s)');
     let exact = arts.filter(a => sameName(a.name, name) || (a.aliases || []).some(al => sameName(al.name || al, name)));
     // #445: several case-insensitive matches, but exactly ONE matches WITH case → prefer it
     // (e.g. credit "Kasane Teto" → the artist whose alias is exactly "Kasane Teto", not the one
@@ -532,8 +534,9 @@ try {
   async function fetchAliases(name) {
     const k = fold(name); if (!k) return {}; if (_aliasCache.has(k)) return _aliasCache.get(k);
     const map = {};
-    try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => { map[a.id] = a.aliases || []; cacheAliases(a.id, a.aliases || []); }); }
-    catch (e) { Log.warn('alias fetch failed', name, e.message); }
+    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { label: 'alias fetch' });
+    if (!res.json) { Log.warn('alias fetch failed', name, '— not cached, retried on the next pass'); return map; }   // don't cache a throttled miss (#555)
+    (res.json.artists || []).forEach(a => { map[a.id] = a.aliases || []; cacheAliases(a.id, a.aliases || []); });
     _aliasCache.set(k, map); return map;
   }
   // aliases for already-resolved artists (existing releases / auto-matched) WITHOUT a fetch each —
@@ -542,8 +545,9 @@ try {
     const uniq = [...new Set((gids || []).filter(g => g && !_gidAliases.has(g)))];
     for (let i = 0; i < uniq.length; i += 90) {
       const q = uniq.slice(i, i + 90).map(g => 'arid:' + g).join(' OR ');
-      try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => { cacheAliases(a.id, a.aliases || []); noteDisamb(a.id, a.disambiguation); }); }
-      catch (e) { Log.warn('batch alias fetch failed', e.message); }
+      const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { label: 'batch alias fetch' });
+      if (!res.json) { Log.warn('batch alias fetch failed for', uniq.slice(i, i + 90).length, 'artist(s)'); continue; }
+      (res.json.artists || []).forEach(a => { cacheAliases(a.id, a.aliases || []); noteDisamb(a.id, a.disambiguation); });
     }
   }
   const isEditingNow = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('.tc-medsec') || a.closest('#tc-panel')); };
@@ -599,9 +603,8 @@ try {
   async function fetchSiblings(rgGid) {
     const map = new Map();
     try {
-      const r = await fetch(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { headers: { Accept: 'application/json' } });
-      if (!r.ok) { Log.warn('WS2 sibling fetch', r.status); return map; }
-      const j = await r.json();
+      const res = await wsJson(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { label: 'sibling fetch' });
+      const j = res.json; if (!j) return map;
       (j.releases || []).forEach(rel => (rel.media || []).forEach(med => (med.tracks || []).forEach(t => {
         const title = fold(t.title || (t.recording && t.recording.title));
         const ac = (t['artist-credit'] && t['artist-credit'].length) ? t['artist-credit'] : ((t.recording && t.recording['artist-credit']) || []);
@@ -754,16 +757,56 @@ try {
   // through a gate with a minimum gap so a model full of artists doesn't trip
   // the limiter and get a wall of 503s (#227).
   let _wsGate = Promise.resolve(); let _wsLast = 0; const WS_MIN_GAP = 700;
-  function wsGet(url) {
+  // opts.stale() → true means "this request has been superseded" (the picker types
+  // a new query while an older one still queues). Checked when the turn comes up
+  // AND after the gap wait, so a stale call costs no request and no slot. #555
+  function wsGet(url, opts) {
+    const o = opts || {};
     const run = async () => {
+      if (o.stale && o.stale()) return null;
       const gap = WS_MIN_GAP - (Date.now() - _wsLast);
       if (gap > 0) await _sleep(gap);
+      if (o.stale && o.stale()) return null;
       try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
       finally { _wsLast = Date.now(); }
     };
     const p = _wsGate.then(run, run);
     _wsGate = p.then(() => {}, () => {});   // keep the chain alive regardless of outcome
     return p;
+  }
+  // EVERY /ws/2 read goes through here. MusicBrainz answers a throttled request
+  // with HTTP 503 (or 429) and a body of `{"error":"…"}` — no `recordings` /
+  // `artists` key. Callers that did `fetch(url).then(r => r.json())` therefore
+  // read `undefined`, mapped it to an empty list and rendered "no matches" with
+  // NOTHING logged: the same query worked or didn't at random, depending purely
+  // on how many requests happened to be in flight. So: retry with backoff,
+  // honour Retry-After, and log every attempt. #555
+  const WS_TRIES = 4;
+  async function wsJson(url, opts) {
+    const o = opts || {}, label = o.label || 'ws2';
+    for (let attempt = 1; attempt <= WS_TRIES; attempt++) {
+      let r;
+      try { r = await wsGet(url, o); }
+      catch (e) { Log.warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
+      if (!r) { Log.debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
+      Log.debug(label + ': HTTP', r.status, url);
+      if (r.status === 429 || r.status === 503) {
+        const ra = parseInt(r.headers.get('retry-after') || '', 10);
+        const wait = Math.max(1200, (ra > 0 ? ra : 1) * 1000) * attempt;
+        Log.warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — retrying in ' + wait + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
+        if (o.onThrottle) { try { o.onThrottle(attempt); } catch (e) {} }
+        await _sleep(wait); continue;
+      }
+      if (r.status === 404) { Log.debug(label + ': 404 not found —', url); return { notFound: true }; }
+      if (!r.ok) { Log.warn(label + ': HTTP ' + r.status + ' — retrying (attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
+      let j; try { j = await r.json(); }
+      catch (e) { Log.warn(label + ': unparsable JSON —', e.message, url); return { failed: true }; }
+      // some edges answer 200 with an error envelope — treat it as a failure, never as 0 hits
+      if (j && typeof j.error === 'string') { Log.warn(label + ': web service error —', j.error); return { failed: true }; }
+      return { json: j };
+    }
+    Log.err(label + ': gave up after ' + WS_TRIES + ' attempts —', url);
+    return { failed: true };
   }
   async function resolveByDiscogsUrl(discogsUrl, force) {
     if (!discogsUrl) return [];
@@ -1104,19 +1147,15 @@ try {
       let hits = _credCache.get(ck);
       if (!hits) {
         hits = [];
-        try {
-          const q = `arid:${ctx} AND artistname:${_lucenePhrase(name)}`;
-          const r = await wsGet(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`);
-          if (r && r.ok) {
-            const j = await r.json();
-            for (const rec of (j.recordings || [])) {
-              for (const c of (rec['artist-credit'] || [])) {
-                const a = c.artist; if (!a || !a.id || a.id === ctx) continue;   // the co-credited artist, not the context one
-                if (sameName(c.name, name) || sameName(a.name, name)) hits.push({ gid: a.id, name: a.name });
-              }
-            }
+        const q = `arid:${ctx} AND artistname:${_lucenePhrase(name)}`;
+        const res = await wsJson(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`, { label: 'cred lookup' });
+        if (!res.json) { Log.warn('cred lookup failed for', JSON.stringify(name), 'in', ctx, '— not cached'); continue; }   // a throttled miss must not be cached (#555)
+        for (const rec of (res.json.recordings || [])) {
+          for (const c of (rec['artist-credit'] || [])) {
+            const a = c.artist; if (!a || !a.id || a.id === ctx) continue;   // the co-credited artist, not the context one
+            if (sameName(c.name, name) || sameName(a.name, name)) hits.push({ gid: a.id, name: a.name });
           }
-        } catch (e) { Log.debug('cred lookup failed', e && e.message); }
+        }
         _credCache.set(ck, hits);
       }
       // one vote per distinct context artist (dedupe repeats within its own hits)
@@ -1545,7 +1584,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.8.14';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.8.31';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -3638,8 +3677,8 @@ try {
     if (dom.length) return [...new Set(dom)];
     const gid = (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1];
     if (!gid) return [];
-    try { const j = await fetch(`${ORIGIN}/ws/2/release/${gid}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); return [...new Set((j.relations || []).map(r => r.url && r.url.resource).filter(Boolean))]; }
-    catch (e) { return []; }
+    const res = await wsJson(`${ORIGIN}/ws/2/release/${gid}?inc=url-rels&fmt=json`, { label: 'release url-rels' });
+    return res.json ? [...new Set((res.json.relations || []).map(r => r.url && r.url.resource).filter(Boolean))] : [];
   }
   // #455.2 append the source URL to the release edit note (React-safe native setter).
   function lpNoteSource(url) {
@@ -4931,7 +4970,8 @@ try {
   }
   async function fetchDupTracklist(gid) {
     try {
-      const j = await fetch(`${ORIGIN}/ws/2/release/${gid}?inc=artist-credits+recordings&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      const res = await wsJson(`${ORIGIN}/ws/2/release/${gid}?inc=artist-credits+recordings&fmt=json`, { label: 'dup tracklist' });
+      const j = res.json; if (!j) return null;
       return (j.media || []).map((m, mi) => ({
         position: m.position || mi + 1, format: m.format || '',
         tracks: (m.tracks || []).map(t => {
@@ -5516,6 +5556,7 @@ try {
       '.tc-recpop .tc-rpk-hdby a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-hdby a:hover{text-decoration:underline}',
       '.tc-recpop .tc-rpk-sec{display:flex;align-items:center;justify-content:space-between;padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:#faf8ff}',
       '.tc-recpop .tc-rpk-suggsec{cursor:pointer;user-select:none}.tc-recpop .tc-rpk-suggsec:hover{color:#6f42c1}',
+      '.tc-recpop .tc-rpk-suggn{color:#6f42c1;font-weight:bold}',   // #555 — how many are folded away
       '.tc-recpop .tc-rpk-caret{display:inline-block;font-size:9px;transition:transform .1s}',
       '.tc-recpop.tc-sugg-collapsed .tc-rpk-sugg{display:none}.tc-recpop.tc-sugg-collapsed .tc-rpk-caret{transform:rotate(-90deg)}',
       '.tc-recpop .tc-rpk-relax{text-transform:none;letter-spacing:0;border:1px solid #cfc6e6;background:#fff;color:#6f42c1;border-radius:4px;padding:1px 7px;font:10px Arial;cursor:pointer}',
@@ -6279,7 +6320,8 @@ try {
   async function fetchRgRecordings(rgGid) {
     const out = []; let offset = 0;
     for (let page = 0; page < 12; page++) {
-      let j; try { j = await fetch(`${ORIGIN}/ws/2/recording?query=rgid:${encodeURIComponent(rgGid)}&fmt=json&limit=100&offset=${offset}&inc=artist-credits+releases+release-groups+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json()); } catch (e) { Log.warn('RG recordings fetch failed', e.message); break; }
+      const res = await wsJson(`${ORIGIN}/ws/2/recording?query=rgid:${encodeURIComponent(rgGid)}&fmt=json&limit=100&offset=${offset}&inc=artist-credits+releases+release-groups+isrcs`, { label: 'RG recordings' });
+      const j = res.json; if (!j) { Log.warn('RG recordings: page', page + 1, 'failed — pool may be incomplete'); break; }
       (j.recordings || []).forEach(r => out.push(mapWsRec(r)));
       offset += 100; if (!(j.recordings || []).length || offset >= (j.count || 0)) break;
     }
@@ -6311,10 +6353,9 @@ try {
   // RG editions: one request, every edition's tracklist by position.
   async function fetchRgPositionIndex(rgGid) {
     const idx = new Map();
-    try {
-      const r = await fetch(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { headers: { Accept: 'application/json' } });
-      if (r.ok) { const j = await r.json(); (j.releases || []).forEach(rel => addReleaseToPosIndex(rel, idx, rgGid)); }
-    } catch (e) { Log.warn('RG position index failed', e.message); }
+    const res = await wsJson(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { label: 'RG position index' });
+    if (res.json) (res.json.releases || []).forEach(rel => addReleaseToPosIndex(rel, idx, rgGid));
+    Log.debug('RG position index:', idx.size, 'position(s) from', ((res.json && res.json.releases) || []).length, 'edition(s)');
     return idx;
   }
   // Cross-RG duplicates (#440, majkinetor: "go outside RG too, but consider Similarity").
@@ -6326,8 +6367,8 @@ try {
     if (!title) return into;
     const titleQ = `release:"${String(title).replace(/["\\]/g, '\\$&')}"`;
     const runQuery = async (q) => {
-      try { const r = await fetch(`${ORIGIN}/ws/2/release?query=${encodeURIComponent(q)}&fmt=json&limit=12`, { headers: { Accept: 'application/json' } }); return r.ok ? ((await r.json()).releases || []) : []; }
-      catch (e) { return []; }
+      const res = await wsJson(`${ORIGIN}/ws/2/release?query=${encodeURIComponent(q)}&fmt=json&limit=12`, { label: 'duplicate release search' });
+      return (res.json && res.json.releases) || [];
     };
     try {
       // Try title + release artist first, but fall back to TITLE-ONLY when that's empty:
@@ -6339,9 +6380,10 @@ try {
       if (!releases.length) releases = await runQuery(titleQ);
       const others = releases.filter(rl => !rl['release-group'] || rl['release-group'].id !== rgGid).slice(0, 6);
       for (const rl of others) {
-        try { const full = await fetch(`${ORIGIN}/ws/2/release/${rl.id}?inc=recordings+artist-credits+release-groups&fmt=json`, { headers: { Accept: 'application/json' } }).then(x => x.json()); addReleaseToPosIndex(full, into, rgGid); }
-        catch (e) {}
+        const res = await wsJson(`${ORIGIN}/ws/2/release/${rl.id}?inc=recordings+artist-credits+release-groups&fmt=json`, { label: 'duplicate release detail' });
+        if (res.json) addReleaseToPosIndex(res.json, into, rgGid);
       }
+      Log.debug('duplicate position index:', others.length, 'outside-RG edition(s) folded in →', into.size, 'position(s)');
     } catch (e) { Log.warn('duplicate position index failed', e.message); }
     return into;
   }
@@ -6355,31 +6397,37 @@ try {
     const d = recLev(x, y), m = Math.max(x.length, y.length);
     return m > 0 && (1 - d / m) >= 0.6;
   }
-  async function searchRecordings(q) {
+  // Returns an array of hits, or NULL when the lookup itself failed (throttled /
+  // network / superseded). A failure must never masquerade as "0 results" — that
+  // was #555: an intermittent 503 rendered a silent "no matches".
+  async function searchRecordings(q, opts) {
     q = (q || '').trim(); if (!q) return [];
-    try {
-      const j = await fetch(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+release-groups+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
-      return (j.recordings || []).map(mapWsRec);
-    } catch (e) { Log.warn('recording search failed', e.message); return []; }
+    Log.debug('recording search:', JSON.stringify(q));
+    const url = `${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+release-groups+isrcs`;
+    const res = await wsJson(url, Object.assign({ label: 'recording search' }, opts || {}));
+    if (!res.json) { Log.warn('recording search:', JSON.stringify(q), '→ no result (' + (res.stale ? 'superseded' : 'lookup failed') + ')'); return null; }
+    const out = (res.json.recordings || []).map(mapWsRec);
+    Log.debug('recording search:', JSON.stringify(q), '→', out.length, 'hit(s) of', res.json.count != null ? res.json.count : out.length);
+    return out;
   }
   // direct lookup of one recording by MBID — backs pasting a recording MBID / URL
   // into the picker's search field (mirrors the artist picker). #189
   async function fetchRecordingById(gid) {
-    try {
-      const j = await fetch(`${ORIGIN}/ws/2/recording/${gid}?fmt=json&inc=artist-credits+releases+release-groups+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
-      return j && j.id ? mapWsRec(j) : null;
-    } catch (e) { Log.warn('recording lookup failed', e.message); return null; }
+    const res = await wsJson(`${ORIGIN}/ws/2/recording/${gid}?fmt=json&inc=artist-credits+releases+release-groups+isrcs`, { label: 'recording lookup' });
+    const j = res.json;
+    Log.debug('recording lookup:', gid, '→', j && j.id ? JSON.stringify(j.title || '') : 'none');
+    return j && j.id ? mapWsRec(j) : null;
   }
   // recordings sharing an ISRC — backs pasting an ISRC into the picker's search
   // field (one ISRC can map to several recordings). #196
   async function fetchRecordingsByIsrc(isrc) {
-    try {
-      // NB: the `isrc` resource rejects `release-groups` as an inc param (unlike
-      // the `recording` resource) — including it returns an error object with no
-      // recordings, which is why an existing ISRC came back "not found". #196
-      const j = await fetch(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
-      return ((j && j.recordings) || []).map(mapWsRec);
-    } catch (e) { Log.warn('ISRC lookup failed', e.message); return []; }
+    // NB: the `isrc` resource rejects `release-groups` as an inc param (unlike
+    // the `recording` resource) — including it returns an error object with no
+    // recordings, which is why an existing ISRC came back "not found". #196
+    const res = await wsJson(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, { label: 'ISRC lookup' });
+    const out = ((res.json && res.json.recordings) || []).map(mapWsRec);
+    Log.debug('ISRC lookup:', isrc, '→', out.length, 'recording(s)');
+    return out;
   }
   function recEntityFrom(data) {
     if (data.entity) return data.entity;   // suggestions are already full MB entities
@@ -6534,16 +6582,18 @@ try {
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
       '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" ' + NOPW_ATTRS + ' placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
-      '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
+      '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions<span class="tc-rpk-suggn"></span> <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
     // fill the current recording's full "appears on" (all releases, linkable) — not in the page model, so fetch it
     if (curGid) {
-      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=artist-credits+releases+release-groups+isrcs', { headers: { Accept: 'application/json' } })
-        .then(r => r.json()).then(j => {
-          if (!_recPop) return;
+      wsJson(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=artist-credits+releases+release-groups+isrcs', { label: 'linked recording detail', stale: () => !_recPop })
+        .then(res => {
+          const j = res.json; if (!_recPop) return;
+          // a failed lookup must not render as "appears on: —" (that reads as "nowhere") — #555
+          if (!j) { const f = pop.querySelector('.tc-rpk-curon-list'); if (f) f.textContent = res.stale ? '…' : '(lookup failed)'; return; }
           const el = pop.querySelector('.tc-rpk-curon-list');
           if (el) {
             const seen = new Set(), rels = [];
@@ -6579,6 +6629,10 @@ try {
         : '<div class="tc-rpk-empty">' + (lastResults.length ? 'all matches are shown in suggestions' : 'no matches') + '</div>';
       wire(resBox);
     };
+    // the count next to the section label — the whole point when collapsed, since the
+    // rows themselves are hidden and there's otherwise no hint anything is in there. #555
+    const suggN = pop.querySelector('.tc-rpk-suggn');
+    const setSuggCount = n => { if (suggN) suggN.textContent = n > 0 ? ' (' + n + ')' : ''; };
     // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
     const renderSugg = () => {
       const list = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(suggData);
@@ -6586,6 +6640,8 @@ try {
       if (!list.length) return false;
       suggGids.clear(); list.forEach(s => suggGids.add(s.gid));
       suggBox.innerHTML = list.map(d => recRowHtml(d, ctx)).join(''); wire(suggBox);
+      setSuggCount(list.length);
+      Log.debug('picker suggestions for track', entry.number, '→', list.length);
       if (lastResults.length) paintResults();   // suggestions arrived after a search → drop any now-duplicate rows
       return true;
     };
@@ -6643,9 +6699,14 @@ try {
         return;
       }
       resBox.innerHTML = '<div class="tc-rpk-empty">searching…</div>';
-      let results = await searchRecordings(query);
-      if (fallbackTitle && !results.length) results = await searchRecordings(u(ko.name) || '');   // smart query too tight → broaden
+      // superseded queries are dropped before they cost a request (typing fires one
+      // per pause and the WS2 gate is ~1 req/s); a throttled search says so instead
+      // of rendering an empty list. #555
+      const sOpts = { stale: () => my !== seq || !_recPop, onThrottle: () => { if (my === seq && _recPop) resBox.innerHTML = '<div class="tc-rpk-empty">MusicBrainz is throttling requests — retrying…</div>'; } };
+      let results = await searchRecordings(query, sOpts);
+      if (fallbackTitle && results && !results.length) results = await searchRecordings(u(ko.name) || '', sOpts);   // smart query too tight → broaden
       if (my !== seq || !_recPop) return;
+      if (!results) { resBox.innerHTML = '<div class="tc-rpk-empty">search failed — MusicBrainz is busy, try again (see the log)</div>'; return; }
       results.forEach(rr => { data[rr.gid] = rr; });
       lastResults = results; paintResults();   // paintResults hides any recording already listed under suggestions
     };
@@ -7717,9 +7778,9 @@ try {
     type = type.toLowerCase();
     if (_annoName.has(full)) return _annoName.get(full);
     try {
-      const r = await fetch(`${location.origin}/ws/2/${type}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
-      if (!r.ok) return null;
-      const j = await r.json(); const name = j[ANNO_NAME_FIELD[type] || 'name'];
+      const res = await wsJson(`${location.origin}/ws/2/${type}/${mbid}?fmt=json`, { label: 'annotation entity name' });
+      const j = res.json; if (!j) return null;
+      const name = j[ANNO_NAME_FIELD[type] || 'name'];
       if (name) { _annoName.set(full, name); return name; }
       return null;
     } catch { return null; }
