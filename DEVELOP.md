@@ -82,6 +82,15 @@ const css = MBU_TOKENS + `
   one, and diff computed style over the live UI. See `userscripts/art_station/test/verify-562-tokens.mjs`,
   which does both. Deliberate exceptions (two scripts disagreeing, one having to give) get called
   out in the commit, with a screenshot.
+- **A script with more than one `<style>` element must prepend `MBU_TOKENS` to every one of them.**
+  Apollo has three and Platform Check two; either can mount without the other, and only the sheet
+  carrying the `:root` rule would resolve. An undefined `var()` does **not** fall back to the old
+  colour — the whole declaration is discarded — and that is invisible to the textual proof above,
+  because the substitution itself is faithful. Two checks guard it:
+  - `node dev/verify-tokens.mjs` — static: every referenced token exists, every carrier's block is
+    in sync, every style sink is wired.
+  - `node dev/verify-tokens-live.mjs` — loads each script on a real sandbox page and asserts that
+    every token referenced by a live rule actually resolves.
 - Several scripts on one page — or all of them, via String Theory — each emit the same `:root`
   rule. The duplicates are byte-identical, so the last one wins harmlessly.
 

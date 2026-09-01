@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.1.194500
+// @version      2026.9.1.212000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3416,7 +3416,7 @@
   #as-setup-btn{padding:8px 12px;cursor:pointer;font-size:14px;display:flex;align-items:center;background:none;border:none;border-left:1px solid rgba(255,255,255,.28);color:inherit}
   #as-setup-btn:hover{background:rgba(255,255,255,.13)}
   #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:max-content;min-width:320px;max-width:92vw;background:var(--mbu-bg);border:1px solid #cbbdf0;border-radius:var(--mbu-radius-lg);box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px var(--mbu-font);color:var(--mbu-text)}
-  .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:#563b8f}
+  .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:var(--mbu-accent-hover)}
   .as-setup-ver{font-size:11px;font-weight:normal;color:var(--mbu-text-weak)}
   .as-setup-help{font-size:12px;text-decoration:none;color:var(--mbu-accent);border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
   .as-setup-help:hover{background:#f0ecfa}
@@ -3425,7 +3425,7 @@
   /* #283 activity-log popup */
   /* floating, movable, NON-modal window (no backdrop) */
   #as-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100020;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}
-  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:#563b8f;cursor:move;user-select:none}
+  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:var(--mbu-accent-hover);cursor:move;user-select:none}
   #as-logpop .as-log-m a{color:var(--mbu-accent)}
   .as-logpop-sp{margin-left:auto}
   .as-logpop-copy,.as-logpop-x,.as-logpop-min{font-size:12px;color:var(--mbu-accent);background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
@@ -3744,7 +3744,7 @@
   .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
   .as-cm-h{font-size:16px;font-weight:700;color:var(--mbu-accent-deep);margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .as-cm-h-t{flex:1;min-width:0}
-  .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:#6f42c1;text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid #d9d2ee;border-radius:8px;background:var(--mbu-bg)}
+  .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:var(--mbu-accent);text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid #d9d2ee;border-radius:8px;background:var(--mbu-bg)}
   .as-cm-hist:hover{background:#f4f1fb;border-color:#c3b6e6}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:var(--mbu-text-dim)}
   .as-cm-hint{font-size:11px;color:#9a8ccb;font-weight:400}
