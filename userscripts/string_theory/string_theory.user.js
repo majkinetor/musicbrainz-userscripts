@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.135800
+// @version      2026.9.1.151916
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -79,8 +79,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.135800 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.8.23\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.9.1.151916 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8479,7 +8479,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.23","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.8.23","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -9414,6 +9414,10 @@ try {
     const src = root.querySelector('.as-src');
     if (src) {
       src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
+      // #558: right-click imports from every source at once, skipping the popover
+      // — the common case ("I almost always use import all"). preventDefault so
+      // the browser's own context menu doesn't cover the sourcing slots it starts.
+      src.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); sourceAllFromButton(src); };
       refreshSrcCount();   // show how many import sources are available on the button: "URL (3)"
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
@@ -10561,10 +10565,43 @@ try {
     Promise.all([getProvLinks(), matchedCustomProviders()]).then(([l, m]) => {
       const total = l.length + m.length;
       n.textContent = total ? ` (${total})` : '';
+      // #558: the tooltip has to advertise the right-click shortcut — an invisible
+      // one nobody is told about is one nobody uses.
       src.title = total
         ? `Source ${ENT.noun} — ${total} source${total > 1 ? 's' : ''} (linked platform${l.length === 1 && !m.length ? '' : 's'}, registered providers, or any URL)`
+          + `\nRight-click: import from all ${total} at once, without opening this panel`
         : `Source ${ENT.noun} from a linked platform, a registered provider, or any URL`;
     }).catch(() => {});
+  }
+  // #558 (majkinetor): "Currently I have to open popup and click import all (or
+  // provider). I almost always use import all so it could be run faster with
+  // right click on the button."
+  //
+  // "All" means every source the popover offers — the release's linked platforms
+  // AND the custom providers registered by other scripts (#250) whose match hits
+  // this release. That is also what the button's own "(N)" count has always meant
+  // (refreshSrcCount sums both), whereas the popover's "Import all N sources"
+  // button counted only the linked platforms and quietly skipped the providers.
+  // Both go through here now, so the count, the button and the right click agree.
+  function allSources() {
+    return Promise.all([getProvLinks(), matchedCustomProviders()])
+      .then(([provs, custom]) => ({ provs: provs || [], custom: custom || [], total: (provs || []).length + (custom || []).length }));
+  }
+  function sourceFromAll(all) {
+    all.provs.forEach(p => sourceFromUrl(p.url, { name: p.name, icon: p.icon }));   // one sourcing slot per provider
+    all.custom.forEach(x => sourceFromProvider(x.p, x.urls));
+    asLog.info(`Sourcing from all ${all.total} source(s): ${[...all.provs.map(p => p.name), ...all.custom.map(x => x.p.name)].join(', ')}`);
+  }
+  // right-click the toolbar's URL button — import from everything without opening
+  // the popover. With nothing to import there is nothing to shortcut, so fall back
+  // to opening the popover: "By URL" is still in there, and silently doing nothing
+  // to a deliberate click reads as a broken button. #558
+  function sourceAllFromButton(btn) {
+    allSources().then(all => {
+      if (!all.total) { toast(`No sources found on this ${ENT.kind} — opening the panel`, 3500); openSourcePop(btn); return; }
+      toast(`⬇ Importing from ${all.total} source${all.total > 1 ? 's' : ''}…`);
+      sourceFromAll(all);
+    }).catch(e => { asLog.warn('right-click import all failed: ' + (e && e.message)); openSourcePop(btn); });
   }
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
@@ -10575,6 +10612,7 @@ try {
       + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
+      + `<div class="as-src-allwrap"></div>`   // #558: "Import all" now spans platforms AND registered providers, so it lives below both
       + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
     // #250 custom providers registered by other userscripts — one stacked "Import from …"
@@ -10623,12 +10661,21 @@ try {
         placePop(pop, btn.getBoundingClientRect()); return;
       }
       box.classList.remove('as-pop-note');
-      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('')
-        + (provs.length > 1 ? `<button class="as-btn as-src-all">⬇ Import all ${provs.length} sources</button>` : '');
+      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('');
       box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const p = provs[+b.dataset.i]; pop.remove(); sourceFromUrl(p.url, { name: p.name, icon: p.icon }); });
-      const allBtn = box.querySelector('.as-src-all');
-      if (allBtn) allBtn.onclick = () => { pop.remove(); provs.forEach(p => sourceFromUrl(p.url, { name: p.name, icon: p.icon })); };   // one sourcing slot per provider
       box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
+      placePop(pop, btn.getBoundingClientRect());
+    });
+    // #558: ONE "Import all" covering both lists. It used to live inside the
+    // platforms box and count only those — so a release with 1 platform and 2
+    // registered providers offered no "all" at all, and one with 2 platforms and
+    // a provider offered an "all" that silently skipped the provider. It now
+    // agrees with the toolbar button's "(N)", which always counted both.
+    const allWrap = pop.querySelector('.as-src-allwrap');
+    if (allWrap) allSources().then(all => {
+      if (!allWrap.isConnected || all.total < 2) return;
+      allWrap.innerHTML = `<button class="as-btn as-src-all">⬇ Import all ${all.total} sources</button>`;
+      allWrap.querySelector('.as-src-all').onclick = () => { pop.remove(); sourceFromAll(all); };
       placePop(pop, btn.getBoundingClientRect());
     });
     // detect a missing/disabled ECAU and turn the footer note into a clear warning,
@@ -11997,6 +12044,7 @@ try {
   .as-src-pop::-webkit-scrollbar{display:none}
   .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
   .as-src-custom{display:flex;flex-direction:column;gap:5px}   /* #250 stacked custom-provider buttons */
+  .as-src-allwrap{display:flex;flex-direction:column;gap:5px}   /* #558 "Import all" moved out of .as-src-prov so it can span both lists */
   .as-src-custom:not(:empty){margin:6px 0 2px}
   .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
   .as-src-all{justify-content:center;font-weight:700;color:#fff;background:var(--as-acc);border-color:var(--as-acc);margin-top:3px}
