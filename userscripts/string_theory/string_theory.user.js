@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.151916
+// @version      2026.9.1.154248
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -79,8 +79,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.151916 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.9.1.154248 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -20707,7 +20707,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1.154228","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1.154228","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -23514,7 +23514,8 @@ ${lines}
       // what it is waiting for, and pulses so "still working" is visible at a glance.
       // nowrap + ellipsis: the entity column is narrow and a two-line placeholder
       // pushed every row taller — the name is already trimmed, this is the backstop
-      + '.gt-tp-creating{display:inline-block;max-width:100%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;color:#7a5db8;font-size:11px;font-style:italic;border-radius:3px;padding:0 4px;animation:gt-tp-pulse 1.15s ease-in-out infinite}'
+      + '.gt-tp-creating{display:inline-block;max-width:100%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;color:#7a5db8;font-size:11px;font-style:italic;border:none;background:none;font-family:inherit;cursor:pointer;border-radius:3px;padding:0 4px;animation:gt-tp-pulse 1.15s ease-in-out infinite}'
+      + '.gt-tp-creating:hover{color:#b00;text-decoration:underline}'   // #544: it cancels
       + '@keyframes gt-tp-pulse{0%,100%{background:transparent}50%{background:#ece4fa}}'
       + '@media (prefers-reduced-motion:reduce){.gt-tp-creating{animation:none;background:#f4effd}}';
     document.head.appendChild(s);
@@ -23533,7 +23534,22 @@ ${lines}
     if (document.querySelector('.gt-role-pick') || popEl) return;
     e.stopPropagation(); closeTextParser();
   }
-  function closeTextParser() { if (txpEl) { txpEl.remove(); txpEl = null; document.removeEventListener('keydown', onTxpKey, true); } }
+  // #544 follow-up (majkinetor): "Maximized state is still not remembered."
+  // saveState() was only ever called by the actions that CHANGE row data —
+  // maximizing, or loading the annotation, changed the window and saved nothing,
+  // so whether they survived a close depended entirely on whether some unrelated
+  // save happened to fire afterwards. (That is also why the round-trip test
+  // passed: its freeze click saved right after the maximize.) Saving once on the
+  // way out makes the rule "what you last saw is what comes back", regardless of
+  // which control was touched last. The parser registers its own saver here,
+  // since saveState lives inside openTextParser's closure.
+  let _txpSaveOnClose = null;
+  function closeTextParser() {
+    if (!txpEl) return;
+    try { if (_txpSaveOnClose) _txpSaveOnClose(); } catch (e) {}
+    _txpSaveOnClose = null;
+    txpEl.remove(); txpEl = null; document.removeEventListener('keydown', onTxpKey, true);
+  }
 
   // #522 follow-up: "it would be good to keep window state after closing it
   // on particular release" — remembers the pasted text / pattern per release
@@ -23834,6 +23850,7 @@ ${lines}
     maxBtn.onclick = () => {
       if (panel.classList.toggle('gt-tp-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; maxBtn.textContent = '❐'; maxBtn.title = 'Restore'; }
       else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; maxBtn.textContent = '⛶'; maxBtn.title = 'Maximize'; }
+      saveState();   // #544 follow-up: maximizing changed the window and saved nothing
     };
     hdr.appendChild(maxBtn);
     const xb = el('button', 'gt-cons-x', '✕'); xb.type = 'button'; xb.onclick = closeTextParser; hdr.appendChild(xb);
@@ -24104,9 +24121,13 @@ ${lines}
             // instead of offering "search", and let the row resolve itself when
             // the create tab commits.
             // the kind lives in the tooltip, not the label: this column is narrow
-            // and "creating artist “…”…" wrapped to two lines in every row
-            const c = el('span', 'gt-tp-creating', `creating “${trunc(r.creating.name, 18)}”…`);
-            c.title = `A background tab is creating this ${r.creating.kind}. The row fills in on its own once it commits.`;
+            // and "creating artist “…”…" wrapped to two lines in every row.
+            // #544 follow-up: it is a BUTTON — clicking cancels, so a create that
+            // failed in a way nothing here can see never strands the row.
+            const c = el('button', 'gt-tp-creating', `creating “${trunc(r.creating.name, 16)}”… ✕`);
+            c.type = 'button';
+            c.title = `A background tab is creating this ${r.creating.kind}; the row fills in on its own once it commits.\nClick to stop waiting and get the search back.`;
+            c.onclick = () => { const p = r.creating; if (p && p.cancel) p.cancel('cancelled'); else { pendingCreates.delete((r.entity || '').toLowerCase().trim()); render(); } };
             entTd.appendChild(c);
           } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickEntity(r, ab); entTd.appendChild(ab); }
         }
@@ -24332,11 +24353,28 @@ ${lines}
           // keyed by), not the possibly-edited search box, so the rows showing that
           // text are the ones that light up and the ones that later resolve.
           const pendKey = (r.entity || '').toLowerCase().trim();
-          pendingCreates.set(pendKey, { kind, name });
-          closePopover(); render();
           // Nothing below may touch the popover: it is gone, and `popEl` may by now
           // belong to a DIFFERENT picker the user opened in the meantime.
-          const stop = () => { try { ch && ch.close(); } catch (e) {} clearTimeout(timeout); pendingCreates.delete(pendKey); };
+          let watch = null;
+          const stop = () => { try { ch && ch.close(); } catch (e) {} clearTimeout(timeout); clearInterval(watch); pendingCreates.delete(pendKey); };
+          // #544 follow-up (majkinetor): "The new `creating ...` placeholder stays
+          // forever if there is error/tab closed. I should be able to cancel it
+          // like in CH." Two ways out, because neither alone is enough:
+          //   • the row's placeholder is clickable — the reliable one, since a
+          //     create can fail in ways nothing here can observe (a duplicate-check
+          //     page, a validation error, the tab left open and forgotten);
+          //   • the tab handle is watched, so simply CLOSING the tab clears it.
+          //     GM_openInTab's handle is not guaranteed to report `closed` in every
+          //     manager, which is exactly why it is the backstop and not the fix.
+          const cancel = (why) => {
+            if (!pendingCreates.has(pendKey)) return;
+            stop();
+            try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {}
+            render(); saveState();
+            toast(`Stopped waiting for “${trunc(name, 30)}” — ${why}`);
+          };
+          pendingCreates.set(pendKey, { kind, name, cancel });
+          closePopover(); render();
           try {
             ch = new BroadcastChannel(GT_CREATE_CH);
             ch.onmessage = async (ev) => {
@@ -24362,12 +24400,18 @@ ${lines}
           } catch (e) { /* no BroadcastChannel — falls through to the timeout */ }
           // Give up quietly rather than spinning forever if the tab is closed
           // without saving; the row falls back to "search". #544
-          timeout = setTimeout(() => {
-            stop(); render();
-            try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {}
-            toast(`Gave up waiting for the new ${kind} “${trunc(name, 30)}”`);
-          }, 10 * 60 * 1000);
+          timeout = setTimeout(() => cancel('timed out after 10 minutes'), 10 * 60 * 1000);
           tab = GM_openInTab(`/${kind}/create?` + params.toString(), { active: false, insert: true, setParent: true });
+          // the tab closing without a post-back means the create did not happen —
+          // clear the placeholder instead of leaving it spinning. A short grace
+          // period first, because the SUCCESS path closes the tab too (from the
+          // message handler) and must not be reported as an abandoned create.
+          try { if (tab && 'onclose' in tab) tab.onclose = () => setTimeout(() => cancel('the create tab was closed'), 1500); } catch (e) {}
+          watch = setInterval(() => {
+            let closed = false;
+            try { closed = !!(tab && tab.closed); } catch (e) { closed = false; }
+            if (closed) { clearInterval(watch); watch = null; setTimeout(() => cancel('the create tab was closed'), 1500); }
+          }, 1500);
           return;
         }
         const url = `/${kind}/create?` + params.toString();
@@ -24644,6 +24688,12 @@ ${lines}
       // box was rolled up. Both are one flag each and both are visible.
       maximized: panel.classList.contains('gt-tp-max'),
       srcOpen: ta.style.display !== 'none',
+      // #544 follow-up (majkinetor): 'Button "load and remove annotation" is lost
+      // when exiting / returning.' "Apply & clear annotation" only shows once the
+      // text CAME FROM the annotation, and that flag was a plain local — so
+      // reopening always hid the button even though the annotation text it acts on
+      // was restored right beside it.
+      loadedFromAnnotation,
       text: ta.value, pattern,
       scopeKind: scope.kind, scopeSpec: scope.spec,
       roleCache: [...roleCache.entries()],
@@ -24717,7 +24767,9 @@ ${lines}
       try {
         const text = await txpFetchAnnotation(release.gid);
         if (!text) toast('No annotation found for this release');
-        else { ta.value = txpSplitCompoundCopyrightLines(text); onTextChange(); loadedFromAnnotation = true; render(); }
+        // onTextChange() saves, but it also CLEARS loadedFromAnnotation via the
+        // textarea's own input handler — so the flag is set and saved after it. #544
+        else { ta.value = txpSplitCompoundCopyrightLines(text); onTextChange(); loadedFromAnnotation = true; render(); saveState(); }
       } catch (e) { toast('Failed to load annotation: ' + (e && e.message || e)); }
       annoBtn.disabled = false; annoBtn.textContent = 'Load annotation';
     };
@@ -24736,9 +24788,13 @@ ${lines}
       (saved.entityCache || []).forEach(([k, v]) => entityCache.set(k, v));
       (saved.entityOverride || []).forEach(([k, v]) => entityOverride.set(k, v));
       (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
+      loadedFromAnnotation = !!saved.loadedFromAnnotation;   // #544: brings "Apply & clear annotation" back with its text
       if (saved.maximized) maxBtn.onclick();          // same path the button takes, so the saved size handling matches
       if (saved.srcOpen === false) setSrcOpen(false);
     }
+    // #544 follow-up: whatever was last on screen is what comes back, whichever
+    // control changed it — see closeTextParser.
+    _txpSaveOnClose = saveState;
     render();
     refreshScopeUi();   // #539: show what the saved scope selects, before anything is touched
     setTimeout(() => { try { patIn.focus(); patIn.select(); } catch (e) {} }, 30);
