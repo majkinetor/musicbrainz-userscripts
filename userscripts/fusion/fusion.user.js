@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.8.28
+// @version      2026.9.1.210500
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -410,7 +410,18 @@ function shouldUnion(sig, cutoff) {
     if (sig.isrc || sig.acoustid) return true;
     if (cutoff === 'strict') return false;
     if (cutoff === 'loose') return (sig.title && sig.length) || (sig.title && sig.artist);
-    return sig.title && sig.artist && sig.length;   // 'normal'
+    // 'normal' — identifiers, or title AND artist corroborated by length.
+    // #565 (majkinetor): an UNKNOWN length must not veto. pairSignals already
+    // documents that a missing length "just means we can't tell", but requiring
+    // sig.length here made "can't tell" behave exactly like "they disagree": on a
+    // release-group where one release carries no lengths at all, normal formed
+    // zero groups even for titles that were identical bar their capitalisation,
+    // and the only way to get any match was to drop to loose — which weakens
+    // every OTHER pair in the pool at the same time.
+    //
+    // Two lengths that are both KNOWN and not close still block, which is the
+    // case worth blocking; grossly different ones are already out above.
+    return sig.title && sig.artist && (sig.length || sig.lengthUnknown);
 }
 
 function acName(ac) {
@@ -1044,7 +1055,12 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false, pendingEdit: false, lengthConflict: false };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false };
+    // #565: three states, not two. `length` false meant BOTH "the lengths differ"
+    // and "we have no length to compare", and the normal cutoff required it — so a
+    // release whose recordings carry no length at all could never form a group,
+    // however exactly the titles agreed. Keep them apart.
+    if (a.length == null || b.length == null) sig.lengthUnknown = true;
     if (a.editsPending || b.editsPending) sig.pendingEdit = true;
     // both lengths known and far apart — see shouldUnion. Unknown length never
     // counts as a conflict; it just means we can't tell.
@@ -2835,7 +2851,7 @@ function buildShell() {
     const overlay = el('div', 'fs-overlay'); overlay.id = 'fs-overlay';
     const CUTOFF_HELP = {
         strict: 'Strict — group only on a shared identifier (ISRC or AcoustID). Fewest, safest matches.',
-        normal: 'Normal — a shared identifier, or title AND artist AND a close length together.',
+        normal: 'Normal — a shared identifier, or title AND artist together with a close length. A length that is missing on either side does not block the match (it just can’t corroborate it); two known lengths that disagree do.',
         loose: 'Loose — a shared identifier, or title with either a close length or a matching artist. Most matches, needs the most review.',
     };
     // #529 (majkinetor): "show color in the cutoff combo for reference" — the
