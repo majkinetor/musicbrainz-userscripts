@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28
+// @version      2026.9.1
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2812,7 +2812,18 @@
       + '.gt-tp-apop .gt-tp-hint{color:#8892a0;font-size:10px;margin-bottom:4px}'
       + '.gt-tp-apop .gt-tp-results{max-height:260px;overflow:auto}'
       + '.gt-tp-apop .gt-tp-res{padding:5px 7px;border-radius:5px;cursor:pointer}.gt-tp-apop .gt-tp-res:hover{background:#eef1f6}'
-      + '.gt-tp-apop .gt-tp-restype{color:#8892a0;font-size:10px;text-transform:uppercase;margin-right:5px}';
+      + '.gt-tp-apop .gt-tp-restype{color:#8892a0;font-size:10px;text-transform:uppercase;margin-right:5px}'
+      // #544: disambiguation must not read as part of the name — smaller, grey,
+      // italic, in the results AND in the resolved table cell.
+      + '.gt-tp-disamb{color:#8892a0;font-size:11px;font-style:italic;font-weight:400}'
+      + '.gt-tp-apop .gt-tp-resname{color:#222}'
+      // #544: a background create no longer holds the popover open — the row says
+      // what it is waiting for, and pulses so "still working" is visible at a glance.
+      // nowrap + ellipsis: the entity column is narrow and a two-line placeholder
+      // pushed every row taller — the name is already trimmed, this is the backstop
+      + '.gt-tp-creating{display:inline-block;max-width:100%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;color:#7a5db8;font-size:11px;font-style:italic;border-radius:3px;padding:0 4px;animation:gt-tp-pulse 1.15s ease-in-out infinite}'
+      + '@keyframes gt-tp-pulse{0%,100%{background:transparent}50%{background:#ece4fa}}'
+      + '@media (prefers-reduced-motion:reduce){.gt-tp-creating{animation:none;background:#f4effd}}';
     document.head.appendChild(s);
   }
 
@@ -2907,6 +2918,18 @@
     // right-click still writes into the shared entityCache above,
     // propagating to every row with that exact text like before.
     const entityOverride = new Map();   // row.key (li:pi:si) -> entity
+    // #544 (majkinetor): "After right clicking to create entity in the background,
+    // close search popup. While background tab is active, add info about it
+    // (`creating ...`) that resolves to entity name after tab is closed as usual.
+    // ... The goal is me not waiting for tab to finish or manually closing it, as
+    // I want to continue to other items while this one is being worked on."
+    // Keyed by the same lowercased entity text as entityCache, because a
+    // background create resolves in BULK — so every row showing that text says
+    // "creating…" and every one of them flips to the entity when it lands.
+    // Deliberately NOT persisted by saveState: the BroadcastChannel listener that
+    // completes it dies with the page, so a restored "creating…" could never
+    // resolve. After a reload the row honestly reads "search" again.
+    const pendingCreates = new Map();   // lowercased entity text -> { kind, name }
     const appliedKeys = new Set();   // row position keys (li:pi:si) — "applied" IS about a specific dispatch, stays position-based
     const compiledCache = new Map();
     const compiledFor = pat => {
@@ -3066,8 +3089,9 @@
     }
     function attachResolution(row) {
       row.key = row.li + ':' + row.pi + ':' + row.si;
-      if (!row.matched) { row.roleMatch = null; row.entityMatch = null; row.entityType = null; row.entityForced = null; return row; }
+      if (!row.matched) { row.roleMatch = null; row.entityMatch = null; row.entityType = null; row.entityForced = null; row.creating = null; return row; }
       row.entityMatch = entityOverride.has(row.key) ? entityOverride.get(row.key) : (entityCache.get((row.entity || '').toLowerCase().trim()) || null);
+      row.creating = pendingCreates.get((row.entity || '').toLowerCase().trim()) || null;   // #544 background create in flight
       // #525 follow-up (majkinetor): "Can we just replace role with the
       // other one once the entity is selected? That way it should never
       // happen." A pre-resolution guess (forced-or-auto-detected) can only
@@ -3374,11 +3398,23 @@
         const entTd = el('td', 'gt-tp-c');
         if (r.matched) {
           if (r.entityMatch) {
-            const a = el('a', 'gt-tp-resolved', (r.entityMatch.name || '') + (r.entityMatch.disambiguation ? ` (${r.entityMatch.disambiguation})` : ''));
+            const a = el('a', 'gt-tp-resolved', r.entityMatch.name || '');
+            // #544: the disambiguation is set apart from the name here too, so
+            // the resolved cell and the search results read the same way.
+            if (r.entityMatch.disambiguation) a.appendChild(el('span', 'gt-tp-disamb', ` (${r.entityMatch.disambiguation})`));
             a.href = '/' + r.entityMatch.entityType + '/' + r.entityMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Click to change · right-click to open';
             a.addEventListener('click', e => { e.preventDefault(); txpPickEntity(r, a); });
             a.addEventListener('contextmenu', e => { e.preventDefault(); window.open(a.href, '_blank', 'noopener'); });
             entTd.appendChild(a);
+          } else if (r.creating) {
+            // #544: a background create is in flight for this text — say so
+            // instead of offering "search", and let the row resolve itself when
+            // the create tab commits.
+            // the kind lives in the tooltip, not the label: this column is narrow
+            // and "creating artist “…”…" wrapped to two lines in every row
+            const c = el('span', 'gt-tp-creating', `creating “${trunc(r.creating.name, 18)}”…`);
+            c.title = `A background tab is creating this ${r.creating.kind}. The row fills in on its own once it commits.`;
+            entTd.appendChild(c);
           } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickEntity(r, ab); entTd.appendChild(ab); }
         }
         tr.appendChild(entTd);
@@ -3575,9 +3611,6 @@
         // all. Same shape as Apollo's entityActionNote: signature, then what
         // was being done and where.
         params.set(`edit-${kind}.edit_note`, txpCreateNote(kind));
-        createBtn.classList.add('gt-tp-plus-wait');
-        createBtn.title = `Waiting for the new ${kind}…`;
-
         // ── background: GM_openInTab, and the created page posts the MBID back
         if (background && typeof GM_openInTab === 'function') {
           const token = Math.random().toString(36).slice(2);
@@ -3600,7 +3633,17 @@
           // match. Any name not starting with a legacy entity is fine.
           params.set('x_gtcreate', token);
           let ch = null, timeout = null, tab = null;
-          const stop = () => { try { ch && ch.close(); } catch (e) {} clearTimeout(timeout); createBtn.classList.remove('gt-tp-plus-wait'); renderChrome(); };
+          // #544: the row, not the popover, now carries the "waiting" state — so
+          // the popover closes at once and the next name can be started while this
+          // one is still in its tab. Keyed by the ROW's text (what entityCache is
+          // keyed by), not the possibly-edited search box, so the rows showing that
+          // text are the ones that light up and the ones that later resolve.
+          const pendKey = (r.entity || '').toLowerCase().trim();
+          pendingCreates.set(pendKey, { kind, name });
+          closePopover(); render();
+          // Nothing below may touch the popover: it is gone, and `popEl` may by now
+          // belong to a DIFFERENT picker the user opened in the meantime.
+          const stop = () => { try { ch && ch.close(); } catch (e) {} clearTimeout(timeout); pendingCreates.delete(pendKey); };
           try {
             ch = new BroadcastChannel(GT_CREATE_CH);
             ch.onmessage = async (ev) => {
@@ -3618,18 +3661,30 @@
               // way, so a slow or failed lookup must not leave the tab open.
               try { if (tab && typeof tab.close === 'function') tab.close(); } catch (e) {}
               const ent = await txpFetchEntity(d.gid, kind);
-              if (ent) pick(ent, true); else { q.value = name; runSearch(); }
+              // #544: resolve in BULK, exactly as a left click in the picker does —
+              // every row with this text flips from "creating…" to the new entity.
+              if (ent) { entityCache.set(pendKey, ent); render(); saveState(); toast(`Created ${kind} “${ent.name || name}”`); }
+              else { render(); toast(`Created the ${kind}, but could not read it back — click the row to search for it`); }
             };
           } catch (e) { /* no BroadcastChannel — falls through to the timeout */ }
           // Give up quietly rather than spinning forever if the tab is closed
-          // without saving; the name search is still there to fall back on.
-          timeout = setTimeout(() => { stop(); try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {} }, 10 * 60 * 1000);
+          // without saving; the row falls back to "search". #544
+          timeout = setTimeout(() => {
+            stop(); render();
+            try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {}
+            toast(`Gave up waiting for the new ${kind} “${trunc(name, 30)}”`);
+          }, 10 * 60 * 1000);
           tab = GM_openInTab(`/${kind}/create?` + params.toString(), { active: false, insert: true, setParent: true });
           return;
         }
         const url = `/${kind}/create?` + params.toString();
 
-        // ── foreground: keep the window handle and watch where it lands
+        // ── foreground: keep the window handle and watch where it lands.
+        // Here the popover STAYS open (you are looking at the tab you just
+        // opened), so the spinner belongs on the + button. The background path
+        // above closed the popover and signals on the row instead. #544
+        createBtn.classList.add('gt-tp-plus-wait');
+        createBtn.title = `Waiting for the new ${kind}…`;
         const win = window.open(url, '_blank');
         let done = false;
         const finish = async (gid) => {
@@ -3688,10 +3743,15 @@
         else entityOverride.set(r.key, entity);
         closePopover(); render(); saveState();
       };
-      const resRow = (label, typ) => {
+      // #544 (majkinetor): "Disambiguation in search results should have
+      // different font style than entity name so it isn't confused with the
+      // name" — "Fiona (reggae artist)" read as one name. The comment is its
+      // own span now: smaller, grey, italic.
+      const resRow = (name, disamb, typ) => {
         const row = el('div', 'gt-tp-res');
         row.appendChild(el('span', 'gt-tp-restype', typ));
-        row.appendChild(document.createTextNode(label));
+        row.appendChild(el('span', 'gt-tp-resname', name));
+        if (disamb) row.appendChild(el('span', 'gt-tp-disamb', ` (${disamb})`));
         return row;
       };
       const wirePick = (row, entity) => {
@@ -3716,7 +3776,7 @@
         const cands = (await Promise.all(searches)).flat();
         if (!cands.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
         cands.forEach(c => {
-          const row = resRow((c.name || '') + (c.comment ? ` (${c.comment})` : ''), c._kind);
+          const row = resRow(c.name || '', c.comment || '', c._kind);
           row.addEventListener('click', async () => { const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, true); });                                  // #544: all rows
           row.addEventListener('contextmenu', async e => { e.preventDefault(); const full = await txpFetchEntity(c.gid || c.id, c._kind); if (full) pick(full, false); });   // #544: this row only
           list.appendChild(row);
@@ -3728,21 +3788,45 @@
       // plus a fixed 40px offset, regardless of which row/column was
       // actually clicked. Anchor to the clicked element itself instead,
       // same convention every other popover in this file already uses.
-      const anchorRect = (anchor || txpEl.querySelector('.gt-tp-tbl')).getBoundingClientRect();
+      const anchorEl = anchor || txpEl.querySelector('.gt-tp-tbl');
       // #522 follow-up (majkinetor, live, screenshot): "search popup can be
       // offscreen" — the FIRST clamp ran before any results existed, so it
       // sized against an almost-empty popover; once results/notes filled
       // it back in the popover grew well past that clamp. Re-run it after
       // every search (initial load AND subsequent typing), against the
       // popover's actual current size.
+      //
+      // #544 (majkinetor): "Entity search popup could be position better. It
+      // bothers me it is always on the edge and touches scrollbar." Three
+      // reasons it ended up jammed against the scrollbar, all fixed here:
+      //   • the clamp used window.innerWidth, which INCLUDES the vertical
+      //     scrollbar — so "inside the window" still meant underneath it, and
+      //     the right-hand tab and + button were clipped. clientWidth is the
+      //     scrollbar-free box.
+      //   • the 8px margin left it visually glued to the edge even when it fit.
+      //   • when the anchor sits far right (maximized parser), aligning the
+      //     popover's LEFT edge to it always overflows; align its RIGHT edge to
+      //     the anchor instead, which keeps it next to what was clicked.
+      // Vertically it now flips ABOVE the anchor when there isn't room below,
+      // rather than sliding up to cover the row that opened it.
+      const MARGIN = 16;
       const reposition = () => {
         // a debounced search can still resolve after the popover itself was
         // already closed (closePopover nulls the shared popEl) — nothing to
         // reposition at that point.
         if (!popEl) return;
         const rr = popEl.getBoundingClientRect();
-        popEl.style.left = Math.max(8, Math.min(anchorRect.left, window.innerWidth - rr.width - 8)) + 'px';
-        popEl.style.top = Math.max(8, Math.min(anchorRect.bottom + 4, window.innerHeight - rr.height - 8)) + 'px';
+        // re-measured every time: the anchor moves when the parser window is
+        // maximized or scrolled while the popover is open
+        const ar = anchorEl.getBoundingClientRect();
+        const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+        const maxLeft = vw - rr.width - MARGIN;
+        let left = ar.left;
+        if (left > maxLeft) left = Math.min(maxLeft, ar.right - rr.width);   // right-align to the anchor
+        popEl.style.left = Math.max(MARGIN, Math.min(left, maxLeft)) + 'px';
+        const below = ar.bottom + 4, above = ar.top - rr.height - 4;
+        const top = (below + rr.height + MARGIN <= vh || above < MARGIN) ? below : above;
+        popEl.style.top = Math.max(MARGIN, Math.min(top, vh - rr.height - MARGIN)) + 'px';
       };
       const run = async () => { try { await runSearch(); } finally { reposition(); } };
       reposition();
@@ -4166,8 +4250,12 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (!roles.length) { toast('No relationship types are valid for this pair'); return; }
     const ov = el('div', 'gt-cons-ov'), panel = el('div', 'gt-cons gt-role-pick');
     const hdr = el('div', 'gt-cons-hdr');
-    hdr.appendChild(el('span', null, title));
-    const close = el('button', 'gt-x', '✕'); close.title = 'Cancel'; hdr.appendChild(close);
+    // #544 (majkinetor): "Role close button should be on standard position."
+    // The title span carried no class, so it missed the `flex:1` that pushes
+    // the ✕ to the right in every other dialog here — the button sat glued to
+    // the end of the title text. Same classes as the rest now.
+    hdr.appendChild(el('span', 'gt-cons-title', title));
+    const close = el('button', 'gt-cons-x', '✕'); close.type = 'button'; close.title = 'Cancel'; hdr.appendChild(close);
     panel.appendChild(hdr);
     const search = el('input', 'gt-role-search');
     search.type = 'text'; search.placeholder = 'Type to filter roles…';
