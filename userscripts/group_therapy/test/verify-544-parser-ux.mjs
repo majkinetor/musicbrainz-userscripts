@@ -151,7 +151,7 @@ ck(keyNav.d1 === 1 && keyNav.d2 === 2, '#7: ArrowDown walks the list');
 ck(keyNav.u1 === 1, 'ArrowUp walks back');
 ck(keyNav.end === keyNav.total - 1, 'End jumps to the last role');
 ck(keyNav.wrapped === 0, 'and it wraps rather than sticking at the end');
-await page.evaluate(() => { const b = document.querySelector('.gt-role-pick .gt-x'); if (b) b.click(); });
+await page.evaluate(() => { const b = document.querySelector('.gt-role-pick .gt-cons-x'); if (b) b.click(); });
 await page.waitForTimeout(300);
 
 // ── 4. Freeze matched ───────────────────────────────────────────────────────
@@ -268,7 +268,7 @@ ck(pickGeo.w < pickGeo.vw * 0.6, 'and nowhere near full width on a wide screen')
 ck(pickGeo.sampleLen > 60, 'a long description is present to check (otherwise the next check is vacuous)');
 ck(!pickGeo.truncatedWithEllipsis, 'descriptions are no longer one nowrap ellipsised line');
 ck(pickGeo.fullyVisible, 'and the sampled description fits within its two clamped lines');
-await page.evaluate(() => { const x = document.querySelector('.gt-role-pick .gt-x'); if (x) x.click(); });
+await page.evaluate(() => { const x = document.querySelector('.gt-role-pick .gt-cons-x'); if (x) x.click(); });
 await page.waitForTimeout(300);
 
 // ── #544 follow-up 2: (+) seeds the SEARCH TEXT, and right-click backgrounds ─
