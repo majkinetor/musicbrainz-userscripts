@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.203035
+// @version      2026.9.1.205034
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,13 +78,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.203035 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.194500\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1.204500");
+  console.log('%c String Theory %c v2026.9.1.205034 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.1.212000\n  · Art Station v2026.9.1.212000\n  · Credit Hoarder v2026.9.1.204742\n  · Group Therapy v2026.9.1.212000\n  · ISRC Scout v2026.9.1.212000\n  · Mammoth v2026.9.1.212000\n  · Platform Check v2026.9.1.212000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31.192453","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.8.31.192453","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1622,37 +1622,43 @@ try {
   function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
   const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
-  const css = `
-    .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:#fff;white-space:nowrap}
+  // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
+  // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
+  // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
+  const MBU_TOKENS = ':root{--mbu-bg:#fff;--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:#222;--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:#cfc6e6;--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000}';
+  // </ST-TOKENS>
+
+  const css = MBU_TOKENS + `
+    .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap}
     .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}.tc-badge.disc{background:#0a7a8c}
-    .tc-badge.low{background:#e0a800}.tc-badge.user{background:#6f42c1}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}.tc-badge.alias{background:#1f8a7a}
-    .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}
-    .tc-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}
-    .tc-btn.primary{color:#5f3ec0;font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}
+    .tc-badge.low{background:#e0a800}.tc-badge.user{background:var(--mbu-accent)}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}.tc-badge.alias{background:#1f8a7a}
+    .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px var(--mbu-font);color:#444}
+    .tc-btn:hover{background:linear-gradient(var(--mbu-bg),#eee);border-color:#bbb}
+    .tc-btn.primary{color:var(--mbu-accent);font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,var(--mbu-accent));color:var(--mbu-text-on-accent);border-color:#4f33a3}
     .tc-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}   /* vertical divider before the Match cluster, shared by both toolbars */
     .tc-btn:disabled,.tc-btn:disabled:hover{color:#aaa;background:transparent;border-color:transparent;cursor:default;font-weight:normal}
     .tc-btn.mini{padding:1px 6px;font-size:11px}
     .tc-icon{cursor:pointer;border:none;background:none;font-size:13px;padding:0 2px;color:#666}
     #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
 
-    .tc-mirror{table-layout:fixed;width:100%;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
+    .tc-mirror{table-layout:fixed;width:100%;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:var(--mbu-bg)}
     /* clean "normal" look, shared with the Recordings table: light header, no column fill/borders, soft row rule */
     .tc-mirror th{position:relative;background:transparent;border-bottom:1px solid #ccc;text-align:left;padding:4px 7px;font-size:11px;font-weight:bold;color:#777;overflow:hidden}
     .tc-mirror th:last-child{border-right:none}
-    .tc-mirror td{padding:4px 7px;vertical-align:middle;overflow:hidden;background:#fff}
+    .tc-mirror td{padding:4px 7px;vertical-align:middle;overflow:hidden;background:var(--mbu-bg)}
     .tc-mirror.gridrows td{border-bottom:1px solid #e0e0e0}   /* row line BETWEEN tracks (a track is one row, never between its artists) */
     .tc-mirror td.c-art{vertical-align:top;padding-top:0;padding-bottom:0}   /* green matched boxes touch row-to-row (no white gap) */
     .tc-mirror td.c-badge{vertical-align:top}
     .tc-mirror td.c-badge{position:relative;padding:0;text-align:center}
     .tc-mirror .tc-resizer{position:absolute;right:-1px;top:0;height:100%;width:9px;cursor:col-resize;border-right:2px solid transparent}
-    .tc-mirror th:hover .tc-resizer,.tc-mirror .tc-resizer:hover{border-right-color:#5f3ec0}
+    .tc-mirror th:hover .tc-resizer,.tc-mirror .tc-resizer:hover{border-right-color:var(--mbu-accent)}
     .tc-mirror .c-num{color:#888;font-variant-numeric:tabular-nums;text-align:center}
     .tc-mirror th.c-len{text-align:right}
     .tc-mirror .c-mv{white-space:nowrap;text-align:center}
-    .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
+    .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px var(--mbu-font);padding:3px 2px}
     .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:#666}
     .tc-mirror input.t-num{text-align:center}
-    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
+    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:var(--mbu-bg)}
     .tc-mirror input.t-len[readonly]{color:#b3b3b3;cursor:default}   /* #329: TOC-fixed length — not editable */
     .tc-mirror input.t-len[readonly]:hover,.tc-mirror input.t-len[readonly]:focus{border-color:transparent;background:transparent}
     .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px;position:relative}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
@@ -1667,9 +1673,9 @@ try {
     /* #203: rich title display — read-only styled text (confusable chars enlarged) shown
        when the title isn't being edited; clicking/tabbing into it shows the native input.
        Mirrors the input's diff/gcpreview/hasfeat backgrounds so the cell looks unchanged. */
-    .tc-mirror .t-title-disp{flex:1;min-width:0;min-height:1.55em;box-sizing:border-box;border:1px solid transparent;border-radius:3px;background:transparent;font:13px Arial;padding:3px 2px;white-space:pre;overflow:hidden;cursor:text;display:flex;align-items:center}
+    .tc-mirror .t-title-disp{flex:1;min-width:0;min-height:1.55em;box-sizing:border-box;border:1px solid transparent;border-radius:3px;background:transparent;font:13px var(--mbu-font);padding:3px 2px;white-space:pre;overflow:hidden;cursor:text;display:flex;align-items:center}
     .tc-mirror .t-title-ph{color:#b7b7b7;font-style:italic}   /* #357: empty-title placeholder in the rich display */
-    .tc-mirror .t-title-disp:hover{border-color:#bbb;background:#fff}
+    .tc-mirror .t-title-disp:hover{border-color:#bbb;background:var(--mbu-bg)}
     .tc-mirror .t-title-disp.diff{background:#fff6da;border-color:#e7ce8a}
     .tc-mirror .t-title-disp.gcpreview{background:#e3f6e3;border-color:#86c686}
     .tc-mirror .t-title-disp.hasfeat{background:#eaf1fb;border-color:#9bbbe0}
@@ -1681,7 +1687,7 @@ try {
     .tc-mirror.compact .t-title-disp{padding:0 2px;font-size:12px}
     .tc-mirror input.t-title.tc-eml:not(.tc-editing){position:absolute;width:1px;height:1px;min-width:0;padding:0;margin:0;border:0;opacity:0;pointer-events:none}
     /* MB medium-format select made to read as plain text — click still opens the native dropdown */
-    select.tc-fmt-flat{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:1px solid transparent;background:transparent;font:bold 15px Arial;color:#222;padding:2px 5px;cursor:pointer}
+    select.tc-fmt-flat{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:1px solid transparent;background:transparent;font:bold 15px var(--mbu-font);color:var(--mbu-text);padding:2px 5px;cursor:pointer}
     select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
     /* #154: theme the native medium header (legend · collapse · format · "Medium title" · move/remove)
        to match Apollo while the tracklist takeover is on. Scoped to body.tc-tl-on so the original look
@@ -1690,7 +1696,7 @@ try {
        remove-item / guesscase-title are generic classes that also exist on the Release-information tab
        (external-link ✕, title Aa). Without the medium scope they leaked their glyphs onto that tab (#160). */
     body.tc-tl-on fieldset.advanced-medium{border:1px solid #e7e0f5;border-radius:8px;background:#fbfaff;margin:0 0 12px;padding:3px 12px 6px}
-    body.tc-tl-on fieldset.advanced-medium > legend{font:700 12px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0!important;padding:0 6px;margin-left:2px}
+    body.tc-tl-on fieldset.advanced-medium > legend{font:700 12px var(--mbu-font);letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent)!important;padding:0 6px;margin-left:2px}
     body.tc-tl-on table.advanced-format{width:100%;border-collapse:collapse;margin:0}
     body.tc-tl-on table.advanced-format > tbody > tr > td{padding:3px 5px;vertical-align:middle;border:none}
     body.tc-tl-on table.advanced-format td.format{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -1702,30 +1708,30 @@ try {
     body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium::before,body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium::before,
     body.tc-tl-on fieldset.advanced-medium button.icon.medium-up::before,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down::before{font-size:21px}
     body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium:hover,body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium:hover,
-    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up:hover,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down:hover{background:#efeaf9;color:#5f3ec0}
+    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up:hover,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down:hover{background:#efeaf9;color:var(--mbu-accent)}
     body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium::before{content:'▸'}
     body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium::before{content:'▾'}
     body.tc-tl-on fieldset.advanced-medium button.icon.medium-up::before{content:'▴'}
     body.tc-tl-on fieldset.advanced-medium button.icon.medium-down::before{content:'▾'}
     body.tc-tl-on fieldset.advanced-medium button.icon.remove-item{color:#cc6699;margin-left:14px!important}
     body.tc-tl-on fieldset.advanced-medium button.icon.remove-item::before{content:'✕';font-weight:bold}
-    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item:hover{background:#fbe9f1;color:#c0392b}
+    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item:hover{background:#fbe9f1;color:var(--mbu-error)}
     /* "Medium title:" label + input + the Aa guess-case button */
-    body.tc-tl-on table.advanced-format td.format > label[for^="medium-title"]{font:12px Arial;color:#8a7bb8;margin-left:6px}
-    body.tc-tl-on input[id^="medium-title-"]{flex:1 1 220px;min-width:200px;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial;background:#fff;box-shadow:none}
+    body.tc-tl-on table.advanced-format td.format > label[for^="medium-title"]{font:12px var(--mbu-font);color:#8a7bb8;margin-left:6px}
+    body.tc-tl-on input[id^="medium-title-"]{flex:1 1 220px;min-width:200px;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px var(--mbu-font);background:var(--mbu-bg);box-shadow:none}
     body.tc-tl-on input[id^="medium-title-"]:focus{border-color:#8a72c8;outline:none}
-    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title{background:none!important;border:1px solid #d6cdec;border-radius:4px;width:auto;height:auto;min-width:0;padding:2px 7px;margin:0;cursor:pointer;color:#6f42c1;font:bold 11px Arial;line-height:1.4}
+    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title{background:none!important;border:1px solid #d6cdec;border-radius:4px;width:auto;height:auto;min-width:0;padding:2px 7px;margin:0;cursor:pointer;color:var(--mbu-accent);font:bold 11px var(--mbu-font);line-height:1.4}
     body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title::before{content:'Aa'}
-    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title:hover{background:#efeaf9;border-color:#bcaae6;color:#5f3ec0}
-    .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:#ffefb8}
+    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title:hover{background:#efeaf9;border-color:#bcaae6;color:var(--mbu-accent)}
+    .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px var(--mbu-font);border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror tr:hover .t-gc{visibility:visible}
     .tc-mirror input.t-title.hasfeat{background:#eaf1fb;border-color:#9bbbe0;border-radius:3px}
-    .tc-mirror .t-feat{flex:none;cursor:pointer;border:1px solid #9bbbe0;background:#eaf1fb;color:#2c5d9b;font:bold 12px Arial;border-radius:3px;padding:0 4px;line-height:16px;visibility:hidden}.tc-mirror .t-feat:hover{background:#d6e4f7}
+    .tc-mirror .t-feat{flex:none;cursor:pointer;border:1px solid #9bbbe0;background:#eaf1fb;color:#2c5d9b;font:bold 12px var(--mbu-font);border-radius:3px;padding:0 4px;line-height:16px;visibility:hidden}.tc-mirror .t-feat:hover{background:#d6e4f7}
     .tc-mirror tr:hover .t-feat{visibility:visible}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     /* drag-to-reorder: ⠿ handle + drop indicators (a purple line at the row edge you'll drop against) */
     .tc-mirror .tc-drag{cursor:grab;color:#b3a3dd;font-size:15px;line-height:1;padding:0 3px;user-select:none}
-    .tc-mirror .tc-drag:hover{color:#5f3ec0}.tc-mirror .tc-drag:active{cursor:grabbing}
+    .tc-mirror .tc-drag:hover{color:var(--mbu-accent)}.tc-mirror .tc-drag:active{cursor:grabbing}
     .tc-mirror tr.tc-dragging td{opacity:.45}
     .tc-mirror tr.tc-drop-before td{box-shadow:inset 0 2px 0 #5f3ec0}
     .tc-mirror tr.tc-drop-after td{box-shadow:inset 0 -2px 0 #5f3ec0}
@@ -1745,32 +1751,32 @@ try {
     .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.93)}
     .tc-mirror tr:hover .tc-trackacts{display:flex}
     .tc-trackacts button{cursor:pointer;border:none;background:none;font-size:16px;line-height:1}
-    .tc-trackacts .trev{color:#9a8fc0}.tc-trackacts .trev:hover{color:#5f3ec0}
-    .tc-trackacts .rm{color:#c0392b;font-weight:bold}.tc-trackacts .rm:hover{color:#a02519}
+    .tc-trackacts .trev{color:#9a8fc0}.tc-trackacts .trev:hover{color:var(--mbu-accent)}
+    .tc-trackacts .rm{color:var(--mbu-error);font-weight:bold}.tc-trackacts .rm:hover{color:#a02519}
     .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}   /* a track that differs from its page-load state */
     /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
-    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px 1px 15px;transition:color .12s}
+    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px var(--mbu-font);color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px 1px 15px;transition:color .12s}
     .tc-cred::placeholder{color:#cfcfcf}
     .tc-credwrap{position:relative;flex:none;display:inline-flex;align-items:center}
     .tc-cred-clr{position:absolute;left:2px;top:50%;transform:translateY(-50%);z-index:2;display:none;border:none;background:none;color:#bbb;cursor:pointer;font-size:12px;line-height:1;padding:0}
     .tc-aslot.tc-has-cred:hover .tc-cred-clr{display:block}
-    .tc-cred-clr:hover{color:#c0392b}
-    .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
+    .tc-cred-clr:hover{color:var(--mbu-error)}
+    .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:var(--mbu-bg);color:#333}
     .tc-aslot.tc-can-split .tc-cred{background:#fff3cf;border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
     .tc-aslot.tc-can-split .tc-cred::placeholder{color:#caa64e}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
     .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer;background:#d6eff3;border-radius:4px}.tc-tic.discogs-add:hover{color:#075e6b;background:#bfe6ed}
-    .tc-tic.discogs-conflict{color:#c0392b;cursor:pointer;background:#fbe3e0;border-radius:4px}.tc-tic.discogs-conflict:hover{color:#96271c;background:#f6cfc9}
+    .tc-tic.discogs-conflict{color:var(--mbu-error);cursor:pointer;background:#fbe3e0;border-radius:4px}.tc-tic.discogs-conflict:hover{color:#96271c;background:#f6cfc9}
     .tc-tic.discogs-mismatch{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-mismatch:hover{color:#915700;background:#fbe0a8}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
-    .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden;transition:box-shadow .12s}   /* unmatched = plain white; the green fill marks a match. transition: fade the #284 hover-highlight ring in/out */
+    .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:var(--mbu-bg);padding:0 6px;overflow:hidden;transition:box-shadow .12s}   /* unmatched = plain white; the green fill marks a match. transition: fade the #284 hover-highlight ring in/out */
     .tc-nm-clr{flex:none;display:none;align-items:center;border:none;background:none;color:#bbb;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;visibility:hidden}   /* a little bigger */
     .tc-search.tc-has-nm .tc-nm-clr{display:inline-flex}              /* a filled slot always reserves the × slot (invisible) → hover doesn't shift the text */
     .tc-search.tc-has-nm:hover .tc-nm-clr{visibility:visible}
     .tc-search.tc-has-nm .nm:not(:focus){flex:0 1 auto}              /* when not editing, size the input to the name (its size attr) so the × sits right after it. Focused stays full-width for comfortable typing */
-    .tc-nm-clr:hover{color:#c0392b}
+    .tc-nm-clr:hover{color:var(--mbu-error)}
     .tc-search:focus-within{box-shadow:inset 0 0 0 1px #b9a4e0}
     .tc-search.matched{background:#e3f4e7}
     /* #284: hover-highlight every instance of the same artist (ring keeps the underlying matched/unmatched colour) */
@@ -1794,59 +1800,59 @@ try {
     @keyframes tcflash{0%{box-shadow:0 0 0 3px #e0a800}70%{box-shadow:0 0 0 3px #e0a800}100%{box-shadow:0 0 0 0 rgba(224,168,0,0)}}
     .tc-search.tc-flash{animation:tcflash 1.5s ease-out}
     .tc-search.tc-marked{border:2px solid #e0a800}   /* persists when a pick changed several tracks */
-    .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
+    .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px var(--mbu-font);padding:3px 0;outline:none}
     .tc-search .tc-bar-aka{flex:0 1 auto;min-width:0;max-width:55%;margin-left:2px;color:#9bb8a8;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-    .tc-search .tc-bar-disamb{flex:0 1 auto;min-width:0;max-width:55%;margin-left:4px;color:#999;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}   /* artist disambiguation, grey like native #195 */
+    .tc-search .tc-bar-disamb{flex:0 1 auto;min-width:0;max-width:55%;margin-left:4px;color:var(--mbu-text-weak);font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}   /* artist disambiguation, grey like native #195 */
     .tc-search .mk{flex:none;order:9;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}   /* order:9 keeps ＋ pinned at the far right, past the join-phrase */
     /* push ＋ to the right edge only when there's NO join-phrase; with a join, .tc-joinwrap's margin-left:auto already pushes the right-group and ＋ (order:9) follows it (two auto-margins would split the gap). #298 follow-up */
     .tc-search:not(:has(.tc-joinwrap)) .mk{margin-left:auto}
     .tc-joinwrap{flex:none;margin-left:auto;display:flex;align-items:center;gap:0}
-    .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px Arial;padding:1px 2px;border-radius:3px}
-    .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
+    .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px var(--mbu-font);padding:1px 2px;border-radius:3px}
+    .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:var(--mbu-bg);color:#444}
     /* #419: the caret needs a REAL hit target (padding-grown), not a bare 10px glyph */
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:12px;padding:3px 5px;margin:-3px 0;line-height:1;border-radius:3px}
-    .tc-joinarrow:hover{color:#5f3ec0;background:#ede9f6}
+    .tc-joinarrow:hover{color:var(--mbu-accent);background:#ede9f6}
     /* #208 join-phrase spacing flags: ␣ where a space is missing, ␣?␣ when the phrase is missing entirely */
     .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:#fff0f0;color:#b00}
-    .tc-jp-nolead::before,.tc-jp-notrail::after,.tc-jp-nophrase::before{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font:700 11px Arial;line-height:1}
+    .tc-jp-nolead::before,.tc-jp-notrail::after,.tc-jp-nophrase::before{background:var(--tc-hl,#e53935);color:var(--mbu-text-on-accent);border-radius:2px;padding:0 1px;font:700 11px var(--mbu-font);line-height:1}
     .tc-jp-nolead::before{content:'␣'}
     .tc-jp-notrail::after{content:'␣'}
     .tc-jp-nophrase::before{content:'␣?␣'}
-    .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
+    .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:var(--mbu-text-weak)}
     .tc-acts{flex:none;width:76px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
     .tc-enter,.tc-slotx,.tc-splitb,.tc-slotgrab{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
-    .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:#5f3ec0}
-    .tc-splitb{color:#7d6bc0;font-size:16px;font-weight:bold}.tc-splitb:hover{color:#5f3ec0}
+    .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:var(--mbu-accent)}
+    .tc-splitb{color:#7d6bc0;font-size:16px;font-weight:bold}.tc-splitb:hover{color:var(--mbu-accent)}
     .tc-aslot:not(.tc-can-split) .tc-splitb{display:none}
-    .tc-slotgrab{cursor:grab;color:#9a8fb5;font-size:13px;user-select:none}.tc-slotgrab:hover{color:#5f3ec0}.tc-slotgrab:active{cursor:grabbing}   /* #150: drag to reorder this artist within the credit */
+    .tc-slotgrab{cursor:grab;color:#9a8fb5;font-size:13px;user-select:none}.tc-slotgrab:hover{color:var(--mbu-accent)}.tc-slotgrab:active{cursor:grabbing}   /* #150: drag to reorder this artist within the credit */
     .tc-aslot.tc-slotdragging{opacity:.45}
     .tc-aslot.tc-slotdrop-before{box-shadow:inset 0 2px 0 #5f3ec0}.tc-aslot.tc-slotdrop-after{box-shadow:inset 0 -2px 0 #5f3ec0}
-    .tc-slotx{color:#cc6699;font-size:13px}.tc-slotx:hover{color:#c0392b}
+    .tc-slotx{color:#cc6699;font-size:13px}.tc-slotx:hover{color:var(--mbu-error)}
     .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb,.tc-mirror tr:hover .tc-slotgrab{visibility:visible}
-    .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
+    .tc-acpop{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px var(--mbu-font);min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
     .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0}
-    .tc-acrow .nm{font-weight:600;color:#222}.tc-acrow .cmt{color:#888;font-size:11px}
+    .tc-acrow .nm{font-weight:600;color:var(--mbu-text)}.tc-acrow .cmt{color:#888;font-size:11px}
     .tc-acrow .tc-aka{color:#9bb8a8;font-size:11px;font-style:italic}
     .tc-acrow.none{color:#888;font-style:italic;cursor:default}
     .tc-acmore{justify-content:center;font-style:italic;color:#6f54c0;border-top:1px solid #e3dcf2;position:sticky;bottom:0;background:#faf8ff}
     .tc-acrow.exact{background:#dff3e5}.tc-acrow.exact .nm{color:#136b39}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:#cfeed9}
-    .tc-toolbar{padding:5px 4px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px}
-    .tc-toolbar select{font:12px Arial;padding:1px}
+    .tc-toolbar{padding:5px 4px;font-size:12px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:6px}
+    .tc-toolbar select{font:12px var(--mbu-font);padding:1px}
     .tc-medhdr{background:#dfd7f0;font-weight:bold;color:#4b3a82;padding:4px 8px}
 
-    #tc-panel{position:fixed;top:90px;right:18px;width:720px;max-width:96vw;max-height:84vh;background:#fff;
-      border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 34px rgba(40,20,80,.32);z-index:99999;
+    #tc-panel{position:fixed;top:90px;right:18px;width:720px;max-width:96vw;max-height:84vh;background:var(--mbu-bg);
+      border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 8px 34px rgba(40,20,80,.32);z-index:99999;
       display:flex;flex-direction:column;font:13px/1.4 Arial,Helvetica,sans-serif;color:#1c1c1c}
     #tc-hdr{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#ede9f6;border-bottom:1px solid #d7ccef;border-radius:6px 6px 0 0;cursor:move;user-select:none}
-    #tc-hdr b{flex:1;color:#563b8f;font-size:14px}#tc-hdr .meta{font-size:12px;color:#6b6b6b}
+    #tc-hdr b{flex:1;color:var(--mbu-accent-hover);font-size:14px}#tc-hdr .meta{font-size:12px;color:#6b6b6b}
     #tc-body{flex:1;overflow:auto}
     #tc-foot{display:flex;align-items:center;gap:8px;padding:8px 11px;border-top:1px solid #d7ccef;background:#f6f4fb;border-radius:0 0 6px 6px}
     #tc-foot .sp{flex:1}
 
     /* the global toolbar stays pinned at the top while scrolling the tracklist */
-    #tc-mirror-wrap{margin:4px 0 6px;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}
+    #tc-mirror-wrap{margin:4px 0 6px;position:sticky;top:0;z-index:50;background:var(--mbu-bg);border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}
     /* #412: MusicBrainz can take a while to save a big edit — pulse the pinned Apollo bar the user
        actually presses Enter-edit on (the compact nav bar), so it's obvious the save is in flight.
        inset box-shadow tints without disturbing the bar's own background. Also covers the tracklist /
@@ -1855,23 +1861,23 @@ try {
     body.tc-saving #tc-nav-bar,body.tc-saving #tc-bar,body.tc-saving #tc-recwrap .tc-recbar{animation:tc-saving-pulse 1.1s ease-in-out infinite;border-radius:5px}
     .tc-medsec{margin:2px 0 14px}
     #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:nowrap;min-width:0}   /* #280: never wrap → toast / "added link" text can't push the toolbar taller */
-    #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1 1 0;min-width:0}
+    #tc-bar b{color:var(--mbu-accent-hover)}#tc-bar .sp{flex:1 1 0;min-width:0}
     #tc-bar > .tc-btn{flex:none;white-space:nowrap}   /* #280: Match / ▾ never shrink → never wrap to 2 lines when toast text appears */
-    .tc-toast{flex:0 1 auto;min-width:0;color:#5f3ec0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}   /* #280: shrink (ellipsis) instead of forcing a wrap */
-    .tc-globalstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
-    .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555;white-space:nowrap}.tc-am-lbl select{font:12px Arial;padding:1px 3px}
-    .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 8px;border-radius:9px}
+    .tc-toast{flex:0 1 auto;min-width:0;color:var(--mbu-accent);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}   /* #280: shrink (ellipsis) instead of forcing a wrap */
+    .tc-globalstat{flex:none;font-size:12px;color:var(--mbu-text-weak);font-style:italic;white-space:nowrap}
+    .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}.tc-am-lbl select{font:12px var(--mbu-font);padding:1px 3px}
+    .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#d6342c;padding:1px 8px;border-radius:9px}
     /* #227: persistent "N missing Discogs links" badge (teal, like the DISC match badge) */
-    .tc-disc-msg{flex:0 1 auto;min-width:0;font-size:12px;font-weight:600;color:#5f3ec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px}
-    .tc-discstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
-    .tc-discstat.tc-disc-badge{font-style:normal;font-weight:bold;color:#fff;background:#0a7a8c;padding:1px 8px;border-radius:9px}
+    .tc-disc-msg{flex:0 1 auto;min-width:0;font-size:12px;font-weight:600;color:var(--mbu-accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px}
+    .tc-discstat{flex:none;font-size:12px;color:var(--mbu-text-weak);font-style:italic;white-space:nowrap}
+    .tc-discstat.tc-disc-badge{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#0a7a8c;padding:1px 8px;border-radius:9px}
     .tc-discstat.tc-disc-ok{font-style:normal;font-weight:bold;color:#1a7a3c}
-    .tc-discstat.tc-disc-pend{font-style:normal;font-weight:bold;color:#fff;background:#c98a00;padding:1px 8px;border-radius:9px}
+    .tc-discstat.tc-disc-pend{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#c98a00;padding:1px 8px;border-radius:9px}
     .tc-tablewrap{overflow-x:auto}
-    .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
-    .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
-    .tc-addbtn{width:22px;height:22px;border-radius:50%;border:1px solid #d6cdec;background:transparent;color:#9a8fc0;font:bold 15px/1 Arial;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-    .tc-addbtn:hover{background:#f0ecfa;color:#6f42c1;border-color:#b9a4e0}
+    .tc-addrow{padding:8px 4px;font-size:13px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:6px}
+    .tc-addrow input.tc-addn{width:54px;font:13px var(--mbu-font);padding:2px 4px;border:1px solid #bbb;border-radius:3px}
+    .tc-addbtn{width:22px;height:22px;border-radius:50%;border:1px solid #d6cdec;background:transparent;color:#9a8fc0;font:bold 15px/1 var(--mbu-font);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .tc-addbtn:hover{background:#f0ecfa;color:var(--mbu-accent);border-color:#b9a4e0}
     /* #330: pregap/data-track toggles + row markers */
     .tc-medopts{display:inline-flex;align-items:center;gap:12px;margin-left:14px}
     .tc-medopt{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:#666;cursor:pointer;white-space:nowrap}
@@ -1879,35 +1885,35 @@ try {
     .tc-trkkind{flex:none;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#5a7a45;background:#eef6e8;border:1px solid #cfe3bf;border-radius:8px;padding:0 5px;margin-right:5px}
     .tc-mirror tr.tc-row-pregap td,.tc-mirror tr.tc-row-data td{background:#f7f5fb}
     .tc-mirror tr.tc-datadiv td{background:#efeaf9;color:#5b4a86;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 8px}
-    .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
-    .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
+    .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:var(--mbu-text-weak);margin-left:12px;font-size:11px}
+    .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
     .tc-tools{display:flex;align-items:center;gap:6px 8px;flex:1 1 auto;min-width:0;flex-wrap:wrap}   /* #280: label + tools wrap together; wrapped rows start at the left (under the label) */
-    .tc-toolslabel{flex:none;font:800 11px Arial;letter-spacing:.03em;text-transform:uppercase;color:#6f42c1;cursor:pointer;white-space:nowrap;border-bottom:1px dotted #b9a4e0;line-height:1.5}
+    .tc-toolslabel{flex:none;font:800 11px var(--mbu-font);letter-spacing:.03em;text-transform:uppercase;color:var(--mbu-accent);cursor:pointer;white-space:nowrap;border-bottom:1px dotted #b9a4e0;line-height:1.5}
     .tc-toolslabel:hover{color:#4b2e83}
     .tc-toolbtns{display:contents}   /* #280: its buttons/groups are direct flex items of .tc-tools so they wrap to the left edge */
-    .tc-toolbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8d0ec;background:linear-gradient(#fff,#f4f1fb);border-radius:5px;padding:4px 9px;font:13px Arial;color:#4a4a4a;cursor:pointer;white-space:nowrap;flex:none}
-    .tc-toolbtn:hover{border-color:#bcaae6;background:#f3eefe}
-    .tc-toolbtn.active{background:#5f3ec0;border-color:#4f33a3;color:#fff;font-weight:600}
+    .tc-toolbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8d0ec;background:linear-gradient(var(--mbu-bg),#f4f1fb);border-radius:5px;padding:4px 9px;font:13px var(--mbu-font);color:#4a4a4a;cursor:pointer;white-space:nowrap;flex:none}
+    .tc-toolbtn:hover{border-color:#bcaae6;background:var(--mbu-bg-hover)}
+    .tc-toolbtn.active{background:var(--mbu-accent);border-color:#4f33a3;color:var(--mbu-text-on-accent);font-weight:600}
     .tc-toolbtn .tc-tbic{font-size:13px;line-height:1}
     .tc-icimg{height:14px;width:auto;vertical-align:-2px;display:inline-block}   /* image-based tool icon (bridged tools can ship their own) */
     .tc-mi-ic .tc-icimg{height:15px}
     .tc-tc-ic .tc-icimg{height:16px}
     .tc-tc-seg.cb-icon .tc-icimg{height:13px}
     .tc-toolbtn.instant .tc-tbic{color:#2e9b57}
-    .tc-toolbtn.active .tc-tbic{color:#fff}
+    .tc-toolbtn.active .tc-tbic{color:var(--mbu-text-on-accent)}
     .tc-toolbtn.tc-more{font-weight:bold;color:#7a68b8;border-style:dashed}
     .tc-toolopts{display:flex;align-items:center;gap:6px;min-width:0}
     .tc-gco,.tc-sro,.tc-colso,.tc-medo{display:flex;align-items:center;gap:8px}
     .tc-colso{gap:4px}
-    .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
+    .tc-colbtn{font:12px var(--mbu-font);padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:var(--mbu-bg);cursor:pointer;color:#333}
     /* #455 track length parser panel — centred, draggable, textarea+chooser | list */
-    .tc-lppop{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:832px;height:64vh;min-width:520px;min-height:300px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
+    .tc-lppop{position:fixed;z-index:100003;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px var(--mbu-font);color:#1c1c1c;width:832px;height:64vh;min-width:520px;min-height:300px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
     .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
-    .tc-lp-back{cursor:pointer;border:1px solid #cbb9ec;background:#faf8fe;color:#5f3ec0;font:600 11px Arial;border-radius:5px;padding:3px 9px;white-space:nowrap}.tc-lp-back:hover{background:#f1ebfb;border-color:#a98fe0}
-    .tc-lp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
-    .tc-lp-err{font:bold 11px Arial;color:#fff;background:#e53935;border-radius:10px;padding:2px 9px;white-space:nowrap;box-shadow:0 1px 3px rgba(197,48,48,.4)}   /* #455.3 header invalid badge */
-    .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444;cursor:default}
+    .tc-lp-back{cursor:pointer;border:1px solid #cbb9ec;background:#faf8fe;color:var(--mbu-accent);font:600 11px var(--mbu-font);border-radius:5px;padding:3px 9px;white-space:nowrap}.tc-lp-back:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-lp-t{font:700 11px var(--mbu-font);letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent);flex:1}
+    .tc-lp-err{font:bold 11px var(--mbu-font);color:var(--mbu-text-on-accent);background:#e53935;border-radius:var(--mbu-radius-lg);padding:2px 9px;white-space:nowrap;box-shadow:0 1px 3px rgba(197,48,48,.4)}   /* #455.3 header invalid badge */
+    .tc-lp-med,.tc-lp-med1{font:12px var(--mbu-font);color:#444;cursor:default}
     .tc-lp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-lp-x:hover{color:#333}
     /* body: left (textarea + chooser overlay) | list */
     .tc-lp-body{flex:1;min-height:0;display:flex;gap:8px;padding:8px 10px}
@@ -1916,13 +1922,13 @@ try {
     /* chooser — overlaid on the empty textarea (#455 round 3) */
     .tc-lp-choose{position:absolute;inset:0;background:#faf8fe;border:1px solid #cbb9ec;border-radius:5px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:16px}
     .tc-lp-crow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-    .tc-lp-cbtn{cursor:pointer;border:1px solid #c3aef0;background:#fff;color:#3d2a70;font:600 13px Arial;border-radius:7px;padding:11px 16px}.tc-lp-cbtn:hover{background:#f1ebfb;border-color:#a98fe0}
-    .tc-lp-clbl{font:600 12px Arial;color:#8a7fae;margin-top:6px}
+    .tc-lp-cbtn{cursor:pointer;border:1px solid #c3aef0;background:var(--mbu-bg);color:#3d2a70;font:600 13px var(--mbu-font);border-radius:7px;padding:11px 16px}.tc-lp-cbtn:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-lp-clbl{font:600 12px var(--mbu-font);color:#8a7fae;margin-top:6px}
     .tc-lp-favs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:34px}
-    .tc-lp-fav{width:32px;height:32px;cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:4px;background:#fff}.tc-lp-fav:hover{border-color:#a98fe0;background:#f1ebfb;transform:scale(1.08)}
-    .tc-lp-favtxt{cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:6px 9px;background:#fff;font:600 11px Arial;color:#3d2a70;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tc-lp-favtxt:hover{border-color:#a98fe0;background:#f1ebfb}
-    .tc-lp-favload,.tc-lp-nofav{font:12px Arial;color:#aaa;font-style:italic}
-    .tc-lp-list{flex:1;min-width:0;overflow:auto;border:1px solid #eee;border-radius:5px;padding:3px}
+    .tc-lp-fav{width:32px;height:32px;cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:4px;background:var(--mbu-bg)}.tc-lp-fav:hover{border-color:#a98fe0;background:#f1ebfb;transform:scale(1.08)}
+    .tc-lp-favtxt{cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:6px 9px;background:var(--mbu-bg);font:600 11px var(--mbu-font);color:#3d2a70;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tc-lp-favtxt:hover{border-color:#a98fe0;background:#f1ebfb}
+    .tc-lp-favload,.tc-lp-nofav{font:12px var(--mbu-font);color:#aaa;font-style:italic}
+    .tc-lp-list{flex:1;min-width:0;overflow:auto;border:1px solid var(--mbu-divider);border-radius:5px;padding:3px}
     .tc-lp-row{display:flex;align-items:center;gap:6px;padding:2px 3px;border-radius:3px}.tc-lp-row:hover{background:#faf8fe}
     .tc-lp-tk{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:12px}
     .tc-lp-tk.none{color:#aaa;font-style:italic}
@@ -1930,94 +1936,94 @@ try {
     .tc-lp-val.bad{border-color:#e53935;background:#fff2f2;color:#c62828}
     .tc-lp-add,.tc-lp-del{border:1px solid transparent;background:none;cursor:pointer;font-size:13px;line-height:1;border-radius:4px;padding:2px 5px}
     .tc-lp-add{color:#2e7d32}.tc-lp-add:hover{background:#eef8ee;border-color:#cdeccd}
-    .tc-lp-del{color:#c0392b}.tc-lp-del:hover{background:#fdecea;border-color:#f3c6c1}
-    .tc-lp-addend{display:block;width:calc(100% - 6px);margin:4px 3px 2px;border:1px dashed #cdbff0;background:#faf8fe;color:#5f3ec0;cursor:pointer;font:12px Arial;border-radius:5px;padding:5px}.tc-lp-addend:hover{background:#f1ebfb}
+    .tc-lp-del{color:var(--mbu-error)}.tc-lp-del:hover{background:#fdecea;border-color:#f3c6c1}
+    .tc-lp-addend{display:block;width:calc(100% - 6px);margin:4px 3px 2px;border:1px dashed #cdbff0;background:#faf8fe;color:var(--mbu-accent);cursor:pointer;font:12px var(--mbu-font);border-radius:5px;padding:5px}.tc-lp-addend:hover{background:#f1ebfb}
     .tc-lp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
-    .tc-lp-cnt{flex:1;font:11px Arial;color:#777}
+    .tc-lp-cnt{flex:1;font:11px var(--mbu-font);color:#777}
     .tc-lp-cnt.ok{color:#2e7d32}.tc-lp-cnt.warn{color:#b26a00}.tc-lp-cnt.bad{color:#c62828;font-weight:bold}
     .tc-lp-acts{display:flex;gap:8px}
-    .tc-lp-cancel{cursor:pointer;border:1px solid #ccc;background:#fff;font:12px Arial;border-radius:4px;padding:4px 12px}
-    .tc-lp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:4px 12px}.tc-lp-ok:hover:not(:disabled){background:#e6f6e6}.tc-lp-ok:disabled{opacity:.5;cursor:not-allowed}
+    .tc-lp-cancel{cursor:pointer;border:1px solid #ccc;background:var(--mbu-bg);font:12px var(--mbu-font);border-radius:4px;padding:4px 12px}
+    .tc-lp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px var(--mbu-font);border-radius:4px;padding:4px 12px}.tc-lp-ok:hover:not(:disabled){background:#e6f6e6}.tc-lp-ok:disabled{opacity:.5;cursor:not-allowed}
     /* #456 pattern Track parser */
-    .tc-tpppop{position:fixed;top:9vh;left:50%;transform:translateX(-50%);z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:920px;height:70vh;min-width:640px;min-height:340px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
+    .tc-tpppop{position:fixed;top:9vh;left:50%;transform:translateX(-50%);z-index:100003;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px var(--mbu-font);color:#1c1c1c;width:920px;height:70vh;min-width:640px;min-height:340px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
     .tc-tpp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
-    .tc-tpp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;flex:1}
-    .tc-tpp-med,.tc-tpp-med1{font:12px Arial;color:#444}
-    .tc-tpp-max{border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0 2px}.tc-tpp-max:hover{color:#5f3ec0}
+    .tc-tpp-t{font:700 11px var(--mbu-font);letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent);flex:1}
+    .tc-tpp-med,.tc-tpp-med1{font:12px var(--mbu-font);color:#444}
+    .tc-tpp-max{border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0 2px}.tc-tpp-max:hover{color:var(--mbu-accent)}
     .tc-tpp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-tpp-x:hover{color:#333}
     .tc-tpp-pat{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ebfa;flex-wrap:wrap}
-    .tc-tpp-plbl{font:700 11px Arial;color:#8a7fae}
+    .tc-tpp-plbl{font:700 11px var(--mbu-font);color:#8a7fae}
     .tc-tpp-piwrap{flex:1;min-width:160px;position:relative;display:flex}
     .tc-tpp-pi{flex:1;min-width:0;font:13px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:5px 24px 5px 8px;color:#3d2a70}
-    .tc-tpp-piclr{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#b3a6d6;font-size:12px;line-height:1;padding:2px}.tc-tpp-piclr:hover{color:#c0392b}
+    .tc-tpp-piclr{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#b3a6d6;font-size:12px;line-height:1;padding:2px}.tc-tpp-piclr:hover{color:var(--mbu-error)}
     .tc-tpp-piwrap.has .tc-tpp-piclr{display:block}
     .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
-    .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
-    .tc-tpp-split{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#8a7fae;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:#f1ebfb;border-color:#a98fe0}.tc-tpp-split b{color:#5f3ec0}
-    .tc-tpp-freeze{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-freeze:hover{background:#f1ebfb;border-color:#a98fe0}
-    .tc-tpp-chipbar{position:fixed;z-index:100005;display:flex;gap:2px;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 4px 16px rgba(40,20,80,.32);padding:3px}
-    .tc-tpp-chipbar button{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#5f3ec0;font:bold 12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 8px;min-width:22px}.tc-tpp-chipbar button:hover{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
-    .tc-tpp-chipbar button[data-clr]{color:#c0392b}.tc-tpp-chipbar button[data-clr]:hover{background:#c0392b;color:#fff;border-color:#c0392b}
+    .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:var(--mbu-accent);font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-tpp-split{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#8a7fae;font:11px var(--mbu-font);border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:#f1ebfb;border-color:#a98fe0}.tc-tpp-split b{color:var(--mbu-accent)}
+    .tc-tpp-freeze{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:var(--mbu-accent);font:11px var(--mbu-font);border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-freeze:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-tpp-chipbar{position:fixed;z-index:100005;display:flex;gap:2px;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 4px 16px rgba(40,20,80,.32);padding:3px}
+    .tc-tpp-chipbar button{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:var(--mbu-accent);font:bold 12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 8px;min-width:22px}.tc-tpp-chipbar button:hover{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
+    .tc-tpp-chipbar button[data-clr]{color:var(--mbu-error)}.tc-tpp-chipbar button[data-clr]:hover{background:#c0392b;color:var(--mbu-text-on-accent);border-color:#c0392b}
     .tc-tpp-body{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 10px}
     .tc-tpp-src{flex:0 0 auto;display:flex;flex-direction:column;gap:4px}
-    .tc-tpp-srctgl{align-self:flex-start;cursor:pointer;border:none;background:none;color:#5f3ec0;font:600 11px Arial;padding:2px}.tc-tpp-srctgl:hover{color:#3d2a70;text-decoration:underline}
+    .tc-tpp-srctgl{align-self:flex-start;cursor:pointer;border:none;background:none;color:var(--mbu-accent);font:600 11px var(--mbu-font);padding:2px}.tc-tpp-srctgl:hover{color:#3d2a70;text-decoration:underline}
     .tc-tpp-src.tc-collapsed .tc-tpp-ta{display:none}
     .tc-tpp-ta{height:15vh;min-height:44px;resize:vertical;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
-    .tc-tpp-tblwrap{flex:1;min-height:0;overflow:auto;border:1px solid #eee;border-radius:5px}
+    .tc-tpp-tblwrap{flex:1;min-height:0;overflow:auto;border:1px solid var(--mbu-divider);border-radius:5px}
     .tc-tpp-tbl{width:100%;border-collapse:collapse;font-size:12px}
-    .tc-tpp-tbl th{position:sticky;top:0;background:#f7f4fc;text-align:left;font:600 10px Arial;letter-spacing:.03em;text-transform:uppercase;color:#8a7fae;padding:4px 6px;border-bottom:1px solid #e6ddf6}
+    .tc-tpp-tbl th{position:sticky;top:0;background:#f7f4fc;text-align:left;font:600 10px var(--mbu-font);letter-spacing:.03em;text-transform:uppercase;color:#8a7fae;padding:4px 6px;border-bottom:1px solid #e6ddf6}
     .tc-tpp-tbl td{padding:2px 6px;border-bottom:1px solid #f3f0fa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
     .tc-tpp-tr.notrk{opacity:.5}
     .tc-tpp-dot{width:14px;padding-left:8px!important}.tc-tpp-dot span{display:inline-block;width:8px;height:8px;border-radius:50%}
     .tc-tpp-pcell{width:120px}
     .tc-tpp-ovwrap{position:relative;display:inline-flex;width:112px}
-    .tc-tpp-ov{width:100%;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 16px 2px 5px;color:#5f3ec0;background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
-    .tc-tpp-ovclr{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#c9bde6;font-size:10px;line-height:1;padding:1px}.tc-tpp-ovclr:hover{color:#c0392b}
+    .tc-tpp-ov{width:100%;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 16px 2px 5px;color:var(--mbu-accent);background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
+    .tc-tpp-ovclr{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#c9bde6;font-size:10px;line-height:1;padding:1px}.tc-tpp-ovclr:hover{color:var(--mbu-error)}
     .tc-tpp-ovwrap.has .tc-tpp-ovclr{display:block}
     /* #456: raw stays fully visible/selectable — no ellipsis clipping (you select spans here to bind fields).
        The td.tc-tpp-raw specificity beats the generic .tc-tpp-tbl td ellipsis rule above. */
     .tc-tpp-tbl td.tc-tpp-raw{color:#666;font:11px ui-monospace,Consolas,monospace;max-width:320px;cursor:text;user-select:text;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
     .tc-tpp-empty{color:#ccc;font-style:italic}
-    .tc-tpp-c{color:#222}
+    .tc-tpp-c{color:var(--mbu-text)}
     .tc-tpp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
-    .tc-tpp-cnt{flex:1;font:11px Arial;color:#777}.tc-tpp-cnt.ok{color:#2e7d32}.tc-tpp-cnt.warn{color:#b26a00}
+    .tc-tpp-cnt{flex:1;font:11px var(--mbu-font);color:#777}.tc-tpp-cnt.ok{color:#2e7d32}.tc-tpp-cnt.warn{color:#b26a00}
     .tc-tpp-acts{display:flex;gap:0;position:relative}
-    .tc-tpp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px 0 0 4px;padding:4px 12px}.tc-tpp-ok:hover:not(:disabled){background:#e6f6e6}.tc-tpp-ok:disabled{opacity:.5;cursor:not-allowed}
-    .tc-tpp-menu{cursor:pointer;border:1px solid #a9dca9;border-left:none;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:0 4px 4px 0;padding:4px 7px}.tc-tpp-menu:hover:not(:disabled){background:#e6f6e6}.tc-tpp-menu:disabled{opacity:.5;cursor:not-allowed}
-    .tc-tpp-mpop{position:absolute;bottom:calc(100% + 4px);right:0;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;min-width:200px;z-index:5}
-    .tc-tpp-mi{display:block;width:100%;text-align:left;border:none;background:none;cursor:pointer;font:12px Arial;color:#333;padding:6px 12px}.tc-tpp-mi:hover{background:#f1ebfb;color:#5f3ec0}
+    .tc-tpp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px var(--mbu-font);border-radius:4px 0 0 4px;padding:4px 12px}.tc-tpp-ok:hover:not(:disabled){background:#e6f6e6}.tc-tpp-ok:disabled{opacity:.5;cursor:not-allowed}
+    .tc-tpp-menu{cursor:pointer;border:1px solid #a9dca9;border-left:none;background:#f2fbf2;color:#2e7d32;font:bold 12px var(--mbu-font);border-radius:0 4px 4px 0;padding:4px 7px}.tc-tpp-menu:hover:not(:disabled){background:#e6f6e6}.tc-tpp-menu:disabled{opacity:.5;cursor:not-allowed}
+    .tc-tpp-mpop{position:absolute;bottom:calc(100% + 4px);right:0;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;min-width:200px;z-index:5}
+    .tc-tpp-mi{display:block;width:100%;text-align:left;border:none;background:none;cursor:pointer;font:12px var(--mbu-font);color:#333;padding:6px 12px}.tc-tpp-mi:hover{background:#f1ebfb;color:var(--mbu-accent)}
     .tc-tpp-mhr{height:1px;background:#eee;margin:4px 0}
     .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
     /* #152/#375: Search & Replace — RE toggle, search caret, invalid-regex flag, Saved & History popup */
-    .tc-srbtn{cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#6f42c1;font:bold 11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}
+    .tc-srbtn{cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg);color:var(--mbu-accent);font:bold 11px var(--mbu-font);border-radius:4px;padding:3px 8px;white-space:nowrap}
     .tc-srbtn:hover{background:#efeaf9;border-color:#bcaae6}
-    .tc-srbtn.on{background:#6f42c1;color:#fff;border-color:#5f3ec0}
+    .tc-srbtn.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
     .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:#fff1f0}
     /* #409 chain mode — the read-only chain chip replaces the search/replace inputs */
     .tc-sro-chain .tc-sr-find,.tc-sro-chain .tc-sr-rep,.tc-sro-chain .tc-sr-re{display:none}
-    .tc-sr-chainchip{display:none;align-items:center;gap:6px;border:1px solid #c9b8ee;background:#f6f2fe;border-radius:4px;padding:3px 6px 3px 9px;color:#5f3ec0;font:bold 12px Arial;white-space:nowrap}
+    .tc-sr-chainchip{display:none;align-items:center;gap:6px;border:1px solid #c9b8ee;background:#f6f2fe;border-radius:4px;padding:3px 6px 3px 9px;color:var(--mbu-accent);font:bold 12px var(--mbu-font);white-space:nowrap}
     .tc-sro-chain .tc-sr-chainchip{display:inline-flex}
     .tc-sr-chainx{border:none;background:none;color:#9a7fd0;cursor:pointer;font-size:12px;line-height:1;padding:0 2px}
-    .tc-sr-chainx:hover{color:#c0392b}
+    .tc-sr-chainx:hover{color:var(--mbu-error)}
     .tc-sr-star{color:#e0a800;font-size:13px;line-height:1;padding:3px 8px}   /* #375 fav-star button opens Saved & History */
     .tc-sr-star:hover{color:#c69500;background:#fff8e6;border-color:#e6cf8a}
-    .tc-srtpl{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
-    .tc-srtpl-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:#fff;z-index:1}
-    .tc-srtpl-hdt{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0}
-    .tc-srtpl-savebtn{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
+    .tc-srtpl{position:fixed;z-index:100003;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px var(--mbu-font);color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
+    .tc-srtpl-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:var(--mbu-bg);z-index:1}
+    .tc-srtpl-hdt{font:700 11px var(--mbu-font);letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent)}
+    .tc-srtpl-savebtn{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px var(--mbu-font);border-radius:4px;padding:3px 9px;white-space:nowrap}
     .tc-srtpl-savebtn:hover{background:#e6f6e6;border-color:#a9dca9}
     .tc-srtpl-savewrap{display:flex;align-items:center;gap:6px;flex:1}
-    .tc-srtpl-saveok{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:2px 8px}
+    .tc-srtpl-saveok{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 12px var(--mbu-font);border-radius:4px;padding:2px 8px}
     .tc-srtpl-saveok:hover{background:#e6f6e6}
     /* #409 redesign: Import/Export button pinned right; JSON textarea; section headers right-aligned */
-    .tc-srtpl-iobtn{margin-left:auto;cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#5f3ec0;font:600 11px Arial;border-radius:4px;padding:3px 10px;white-space:nowrap}
+    .tc-srtpl-iobtn{margin-left:auto;cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg);color:var(--mbu-accent);font:600 11px var(--mbu-font);border-radius:4px;padding:3px 10px;white-space:nowrap}
     .tc-srtpl-iobtn:hover{background:#f0ebfb;border-color:#bcaae6}
     .tc-srtpl-impok{margin-left:auto}
     .tc-srtpl-io{width:calc(100% - 24px);margin:10px 12px;min-height:260px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:8px;font:12px ui-monospace,Consolas,Menlo,monospace;color:#333;resize:vertical}
     .tc-srtpl-io:focus{outline:none;border-color:#8a72c8}
-    .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
-    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa;text-align:right}
-    .tc-srtpl-sectog:hover{color:#6f42c1;background:#f3eefb}
+    .tc-srtpl-empty{padding:12px;color:var(--mbu-text-weak);font-style:italic}
+    .tc-srtpl-sec{font:700 10px var(--mbu-font);letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa;text-align:right}
+    .tc-srtpl-sectog:hover{color:var(--mbu-accent);background:#f3eefb}
     .tc-srtpl-caret{display:inline-block;color:#b9a4e0;font-size:9px}
     .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 24px 82px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
     .tc-srtpl-defrow{background:#fffaef}
@@ -2026,34 +2032,34 @@ try {
     .tc-srtpl-def.on{visibility:visible;color:#e8a800}
     .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:#f0ebfb}
     .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
-    .tc-srtpl-re{font:bold 10px Arial;color:#6f42c1;text-align:center}
+    .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
+    .tc-srtpl-re{font:bold 10px var(--mbu-font);color:var(--mbu-accent);text-align:center}
     .tc-srtpl-tail{display:inline-flex;gap:5px;align-items:center;justify-content:flex-end}
     .tc-srtpl-x{visibility:hidden;border:none;background:none;color:#cc6699;cursor:pointer;font-size:12px;padding:0;line-height:1}
-    .tc-srtpl-row:hover .tc-srtpl-x,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-x{visibility:visible}.tc-srtpl-x:hover{color:#c0392b}
+    .tc-srtpl-row:hover .tc-srtpl-x,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-x{visibility:visible}.tc-srtpl-x:hover{color:var(--mbu-error)}
     /* #409 chains */
     .tc-srtpl-chainadd{visibility:hidden;border:none;background:none;color:#7d4fd0;cursor:pointer;font-size:12px;padding:0;line-height:1}
-    .tc-srtpl-row:hover .tc-srtpl-chainadd,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-chainadd{visibility:visible}.tc-srtpl-chainadd:hover{color:#5f3ec0}
+    .tc-srtpl-row:hover .tc-srtpl-chainadd,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-chainadd{visibility:visible}.tc-srtpl-chainadd:hover{color:var(--mbu-accent)}
     .tc-srtpl-rename{visibility:hidden;border:none;background:none;color:#7d4fd0;cursor:pointer;font-size:12px;padding:0;line-height:1}
-    .tc-srtpl-row:hover .tc-srtpl-rename,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-rename{visibility:visible}.tc-srtpl-rename:hover{color:#5f3ec0}
-    .tc-srtpl-renameinp{width:100%;box-sizing:border-box;border:1px solid #8a72c8;border-radius:3px;padding:1px 5px;font:600 12px Arial;color:#4b3a82}
-    .tc-srtpl-renameinp:focus{outline:none;border-color:#6f42c1}
-    .tc-srtpl-chnm{color:#5f3ec0}
+    .tc-srtpl-row:hover .tc-srtpl-rename,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-rename{visibility:visible}.tc-srtpl-rename:hover{color:var(--mbu-accent)}
+    .tc-srtpl-renameinp{width:100%;box-sizing:border-box;border:1px solid #8a72c8;border-radius:3px;padding:1px 5px;font:600 12px var(--mbu-font);color:#4b3a82}
+    .tc-srtpl-renameinp:focus{outline:none;border-color:var(--mbu-accent)}
+    .tc-srtpl-chnm{color:var(--mbu-accent)}
     .tc-srtpl-chm{font-family:Arial !important;color:#8a7bb0 !important;font-style:italic}
-    .tc-srtpl-cpick{position:absolute;z-index:5;background:#fff;border:1px solid #c9b8ee;border-radius:6px;box-shadow:0 6px 18px rgba(40,20,80,.22);padding:4px;min-width:130px}
+    .tc-srtpl-cpick{position:absolute;z-index:5;background:var(--mbu-bg);border:1px solid #c9b8ee;border-radius:var(--mbu-radius);box-shadow:0 6px 18px rgba(40,20,80,.22);padding:4px;min-width:130px}
     .tc-srtpl-cpick-row{padding:4px 9px;cursor:pointer;border-radius:4px;color:#4b3a82;white-space:nowrap}
     .tc-srtpl-cpick-row:hover{background:#f0ebfb}
-    .tc-srtpl-cpick-empty{padding:6px 9px;color:#999;font-style:italic;white-space:nowrap}
-    .tc-srtpl-name{flex:1;min-width:120px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial}
+    .tc-srtpl-cpick-empty{padding:6px 9px;color:var(--mbu-text-weak);font-style:italic;white-space:nowrap}
+    .tc-srtpl-name{flex:1;min-width:120px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px var(--mbu-font)}
     .tc-srtpl-name:focus{border-color:#8a72c8;outline:none}
-    .tc-toolopts label,.tc-opt label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
-    .tc-toolopts input[type=text],.tc-opt input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
+    .tc-toolopts label,.tc-opt label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text-dim)}
+    .tc-toolopts input[type=text],.tc-opt input[type=text]{font:12px var(--mbu-font);padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
     .tc-toolopts input[type=text]::placeholder,.tc-opt input[type=text]::placeholder{color:#c2c2c2}
-    .tc-toolopts select,.tc-opt select{font:12px Arial;padding:1px}
+    .tc-toolopts select,.tc-opt select{font:12px var(--mbu-font);padding:1px}
     /* #280 — pinned tools' params on the 2nd toolbar row (scrolls if they overflow) */
     .tc-bar2{display:flex;align-items:center;gap:10px;padding:2px 4px 7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
     .tc-opt{display:inline-flex;align-items:center;gap:7px;background:#faf8fe;border:1px solid #ece5f8;border-radius:7px;padding:3px 9px;flex:none}
-    .tc-optname{font:700 12px Arial;color:#5f3ec0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+    .tc-optname{font:700 12px var(--mbu-font);color:var(--mbu-accent);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
     .tc-opttrig{cursor:pointer;border-radius:5px;padding:2px 5px;border:1px solid transparent}
     .tc-opttrig:hover{background:#efe7fb;border-color:#dccff5}
     .tc-opt .tc-tbic{font-size:13px}
@@ -2062,10 +2068,10 @@ try {
     .tc-opt.tc-collapsed > .tc-optname{border-bottom:1px dotted #b6a3e6}
     /* flyout TOUCHES the name (top:100% over the group's padding-bottom) so the hover
        area is contiguous — no dead gap that would drop :hover before you reach it */
-    .tc-opt.tc-collapsed > :not(.tc-optname){display:none;position:absolute;top:100%;left:-1px;z-index:100000;background:#fff;border:1px solid #b9a4e0;border-radius:0 7px 7px 7px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:7px 10px}
+    .tc-opt.tc-collapsed > :not(.tc-optname){display:none;position:absolute;top:100%;left:-1px;z-index:100000;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:0 7px 7px 7px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:7px 10px}
     .tc-opt.tc-collapsed:hover > :not(.tc-optname),.tc-opt.tc-collapsed:focus-within > :not(.tc-optname){display:flex}
     /* #280 — Customize tools popover */
-    .tc-toolcfg{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:9px;box-shadow:0 10px 30px rgba(40,20,80,.32);padding:8px 0 4px;font:13px Arial;width:340px}
+    .tc-toolcfg{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:9px;box-shadow:0 10px 30px rgba(40,20,80,.32);padding:8px 0 4px;font:13px var(--mbu-font);width:340px}
     .tc-tc-h{font-weight:800;color:#4b2e83;padding:3px 14px 8px}
     .tc-tc-list{max-height:62vh;overflow:auto}
     .tc-tc-row{display:flex;align-items:center;gap:8px;padding:5px 12px}
@@ -2075,46 +2081,46 @@ try {
     .tc-tc-row.over-top{box-shadow:inset 0 2px 0 #8a72c8}
     .tc-tc-row.drag{opacity:.4}
     .tc-tc-grab{color:#b3a3dd;cursor:grab;font-size:15px;line-height:1;flex:none;user-select:none}   /* same ⠿ grip as the tracklist drag handle (.tc-drag) */
-    .tc-tc-grab:hover{color:#5f3ec0}.tc-tc-grab:active{cursor:grabbing}
+    .tc-tc-grab:hover{color:var(--mbu-accent)}.tc-tc-grab:active{cursor:grabbing}
     .tc-tc-ic{width:26px;text-align:center;color:#7a68b8;flex:none}
     .tc-tc-lab{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tc-tc-onbar{display:inline-flex;flex:none}.tc-tc-onbar input{accent-color:#6f42c1}
     .tc-tc-dens{display:inline-flex;flex:none;border:1px solid #d6cdec;border-radius:5px;overflow:hidden}
-    .tc-tc-seg{flex:none;width:30px;box-sizing:border-box;border:none;border-left:1px solid #e6ddf3;background:#fff;color:#a99fc4;font:bold 12px Arial;height:22px;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}   /* #280: fixed width → the [icon|T] groups line up across rows */
+    .tc-tc-seg{flex:none;width:30px;box-sizing:border-box;border:none;border-left:1px solid #e6ddf3;background:var(--mbu-bg);color:#a99fc4;font:bold 12px var(--mbu-font);height:22px;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}   /* #280: fixed width → the [icon|T] groups line up across rows */
     .tc-tc-seg:first-child{border-left:none}
-    .tc-tc-seg:hover{background:#f3eefe}
-    .tc-tc-seg.on{background:#6f42c1;color:#fff}
-    .tc-tc-seg.on:hover{background:#5f3ec0}
+    .tc-tc-seg:hover{background:var(--mbu-bg-hover)}
+    .tc-tc-seg.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+    .tc-tc-seg.on:hover{background:var(--mbu-accent)}
     .tc-tc-pin{flex:none;box-sizing:border-box;width:22px;text-align:center;border:none;background:none;cursor:pointer;font-size:13px;line-height:1;filter:grayscale(1);opacity:.35;padding:1px 0;display:inline-flex;align-items:center;justify-content:center}   /* fixed width so the column aligns even when a tool has no pin */
     .tc-tc-pin.on{filter:none;opacity:1}
     .tc-tc-pin.none{visibility:hidden}
-    .tc-tc-hint{font-size:11px;color:#999;padding:8px 14px 2px;border-top:1px solid #f0ebfa;margin-top:5px}
+    .tc-tc-hint{font-size:11px;color:var(--mbu-text-weak);padding:8px 14px 2px;border-top:1px solid #f0ebfa;margin-top:5px}
     .tc-mi-ic{flex:0 0 auto;display:inline-flex;justify-content:center;min-width:18px;text-align:center;color:#7a68b8;margin-right:8px;white-space:nowrap}
-    .tc-menu{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;font:13px Arial;min-width:170px}
+    .tc-menu{position:fixed;z-index:100001;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;font:13px var(--mbu-font);min-width:170px}
     .tc-menu.tc-mini{width:max-content;max-width:260px}.tc-menu.tc-mini .tc-mi{white-space:nowrap}
     .tc-menu .tc-mi{display:flex;align-items:center;padding:6px 15px;cursor:pointer;color:#333;font-weight:bold}.tc-menu .tc-mi:hover{background:#ede9f6;color:#4b2e83}
     .tc-menu .tc-sep{border-top:1px solid #e6e0f2;margin:4px 0}
     .tc-settings label{display:flex;gap:8px;align-items:center;margin:7px 0;color:#333}.tc-settings label.opt{font-size:12px}
-    .tc-settings input[type=text],.tc-settings #tc-sr-find,.tc-settings #tc-sr-rep{font:13px Arial;padding:3px 5px;border:1px solid #bbb;border-radius:3px}
+    .tc-settings input[type=text],.tc-settings #tc-sr-find,.tc-settings #tc-sr-rep{font:13px var(--mbu-font);padding:3px 5px;border:1px solid #bbb;border-radius:3px}
     .tc-settings .srrow{display:flex;align-items:center;gap:8px;margin-top:8px}.tc-settings .srrow span{flex:1;color:#777;font-size:12px}
     @keyframes tctitleflash{0%{background:#fff3b0}100%{background:transparent}}
     .tc-mirror input.t-title.srflash{animation:tctitleflash 1.8s ease-out}
 
-    #tc-settings{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:#222;width:340px}
-    #tc-settings h4{display:flex;align-items:center;gap:6px;margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #e3dcf2;color:#563b8f;font-size:13px}
-    #tc-settings h4 .tc-ver{font-size:11px;font-weight:normal;color:#999}
+    #tc-settings{position:fixed;z-index:100001;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px var(--mbu-font);color:var(--mbu-text);width:340px}
+    #tc-settings h4{display:flex;align-items:center;gap:6px;margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #e3dcf2;color:var(--mbu-accent-hover);font-size:13px}
+    #tc-settings h4 .tc-ver{font-size:11px;font-weight:normal;color:var(--mbu-text-weak)}
     #tc-settings h4{flex-wrap:wrap}
-    #tc-settings h4 .tc-help{margin-left:8px;flex:none;white-space:nowrap;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
+    #tc-settings h4 .tc-help{margin-left:8px;flex:none;white-space:nowrap;font-size:12px;font-weight:normal;text-decoration:none;color:var(--mbu-accent);border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
     #tc-settings h4 .tc-help:hover{background:#f0ecfa}
-    #tc-settings h4 .tc-logbtn{margin-left:auto;flex:none;font:normal 12px Arial;color:#5f3ec0;background:none;border:1px solid transparent;border-radius:4px;padding:1px 8px;cursor:pointer}
+    #tc-settings h4 .tc-logbtn{margin-left:auto;flex:none;font:normal 12px var(--mbu-font);color:var(--mbu-accent);background:none;border:1px solid transparent;border-radius:4px;padding:1px 8px;cursor:pointer}
     #tc-settings h4 .tc-logbtn:hover{background:#f3eefb;border-color:#c9b8ee}
     /* #283 activity-log popup */
     /* floating, movable, NON-modal window (no backdrop) */
-    #tc-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100002;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:#fff;border:1px solid #b9a4e0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
-    #tc-logpop .tc-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e3dcf2;color:#563b8f;cursor:move;user-select:none}
-    #tc-logpop .tc-log-m a{color:#5f3ec0}
+    #tc-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100002;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}
+    #tc-logpop .tc-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e3dcf2;color:var(--mbu-accent-hover);cursor:move;user-select:none}
+    #tc-logpop .tc-log-m a{color:var(--mbu-accent)}
     #tc-logpop .tc-logpop-sp{margin-left:auto}
-    #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x,#tc-logpop .tc-logpop-min{font:12px Arial;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
+    #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x,#tc-logpop .tc-logpop-min{font:12px var(--mbu-font);color:var(--mbu-accent);background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
     #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover,#tc-logpop .tc-logpop-min:hover{background:#e9e0f8}
     #tc-logpop.min .tc-log-list,#tc-logpop.min .tc-logpop-copy,#tc-logpop.min .tc-logpop-x{display:none}
     #tc-logpop.min{max-height:none;width:auto}
@@ -2141,18 +2147,18 @@ try {
     #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:#333}
     #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer}
     #tc-settings .tc-s-row input[type=radio]{margin:0}
-    #tc-settings #tc-s-lentol,#tc-settings #tc-s-titletol,#tc-settings #tc-s-punctsize{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
+    #tc-settings #tc-s-lentol,#tc-settings #tc-s-titletol,#tc-settings #tc-s-punctsize{width:48px;font:13px var(--mbu-font);padding:2px 5px;border:1px solid #bbb;border-radius:3px}
     #tc-settings #tc-s-hlcolor{width:34px;height:22px;padding:0;border:1px solid #bbb;border-radius:3px;cursor:pointer;background:none}
     /* #294 tabbed config: one short pane at a time instead of one tall column */
     #tc-settings .tc-tabs{display:flex;gap:2px;margin:0 0 8px;border-bottom:1px solid #e3dcf2}
-    #tc-settings .tc-tab-btn{flex:1;font:600 12px Arial;color:#888;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:5px 4px 7px;cursor:pointer}
-    #tc-settings .tc-tab-btn:hover{color:#5f3ec0}
-    #tc-settings .tc-tab-btn.active{color:#563b8f;border-bottom-color:#7d4fd0}
+    #tc-settings .tc-tab-btn{flex:1;font:600 12px var(--mbu-font);color:#888;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:5px 4px 7px;cursor:pointer}
+    #tc-settings .tc-tab-btn:hover{color:var(--mbu-accent)}
+    #tc-settings .tc-tab-btn.active{color:var(--mbu-accent-hover);border-bottom-color:#7d4fd0}
     #tc-settings .tc-tab-pane{display:flow-root}   /* #407: contain child margins so the pinned height captures the full box (constant dialog height across tabs) */
     #tc-settings .tc-tab-pane[hidden]{display:none}
     #tc-settings .tc-tab-pane .tc-s-top{margin-top:0}
     #tc-settings .tc-s-row.lentol{gap:7px}
-    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:#5f3ec0;color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
+    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);display:inline-flex;align-items:stretch;background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-radius:20px;font:bold 13px var(--mbu-font);box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
     #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
     #tc-launch .tc-launch-lbl:hover{background:rgba(255,255,255,.13)}
     #tc-launch .tc-launch-gear{padding:8px 11px;cursor:pointer;font-size:14px;display:flex;align-items:center;border-left:1px solid rgba(255,255,255,.28)}
@@ -6807,21 +6813,21 @@ try {
   let _navStyled = false;
   function navStyle() {
     if (_navStyled) return; _navStyled = true;
-    const css = `
+    const css = MBU_TOKENS + `
     .tc-nav-vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0!important}
-    .tc-nav-steps{display:inline-flex;align-items:stretch;border:1px solid #c9bce0;border-radius:7px;overflow:hidden;background:#fff;font-family:Arial,Helvetica,sans-serif}
-    .tc-nav-step{font:600 13px Arial;padding:5px 14px;border:none;border-right:1px solid #e6def5;background:#fff;color:#5a3e94;cursor:pointer;line-height:1.5;white-space:nowrap}
+    .tc-nav-steps{display:inline-flex;align-items:stretch;border:1px solid #c9bce0;border-radius:7px;overflow:hidden;background:var(--mbu-bg);font-family:Arial,Helvetica,sans-serif}
+    .tc-nav-step{font:600 13px var(--mbu-font);padding:5px 14px;border:none;border-right:1px solid #e6def5;background:var(--mbu-bg);color:#5a3e94;cursor:pointer;line-height:1.5;white-space:nowrap}
     .tc-nav-step:last-child{border-right:none}
     .tc-nav-step:hover{background:#f3f0fb}
-    .tc-nav-step.active{background:#6a4d9a;color:#fff}
+    .tc-nav-step.active{background:#6a4d9a;color:var(--mbu-text-on-accent)}
     .tc-nav-step.tc-nav-diff{display:flex;align-items:center;padding:5px 10px}
     .tc-nav-step.tc-nav-diff svg{width:15px;height:15px;display:block}
     /* mirror MB's native tab states: disabled (e.g. Recordings until the tracklist is complete) + error-tab (validation warnings) */
-    .tc-nav-step:disabled,.tc-nav-step.tc-nav-disabled{opacity:.45;cursor:not-allowed;color:#9a8fb5;background:#fff}
-    .tc-nav-step.tc-nav-warn{background:#fde3e3;color:#c0392b}
+    .tc-nav-step:disabled,.tc-nav-step.tc-nav-disabled{opacity:.45;cursor:not-allowed;color:#9a8fb5;background:var(--mbu-bg)}
+    .tc-nav-step.tc-nav-warn{background:#fde3e3;color:var(--mbu-error)}
     .tc-nav-step.tc-nav-warn.active{background:#f3c4c4;color:#992318}
     .tc-nav-step.tc-nav-warn::before{content:"⚠";margin-right:5px}
-    .tabs.tc-nav-sticky{position:sticky;top:0;background:#fff;z-index:20}   /* freeze the nav row when scrolling */
+    .tabs.tc-nav-sticky{position:sticky;top:0;background:var(--mbu-bg);z-index:20}   /* freeze the nav row when scrolling */
     /* MB's green TAGGER badge (Picard) sits at the header's top-right and collides with the frozen nav — lift it
        clear above the nav row, and keep the sticky nav above it so it's never covered */
     body:has(.tabs.tc-nav-sticky) .releaseheader span.tagger-icon{position:relative;z-index:1;transform:translateY(-16px)}
@@ -6831,19 +6837,19 @@ try {
     #tc-nav-steps-wrap{position:absolute;right:0;bottom:6px;z-index:5}
     #tc-nav-right{display:flex;align-items:center;gap:10px}
     #tc-nav-wiz{display:inline-flex;align-items:center;gap:2px}
-    .tc-nav-wbtn{font:13px Arial;padding:3px 9px;border:1px solid transparent;background:none;border-radius:5px;cursor:pointer;color:#555;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+    .tc-nav-wbtn{font:13px var(--mbu-font);padding:3px 9px;border:1px solid transparent;background:none;border-radius:5px;cursor:pointer;color:var(--mbu-text-dim);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
     .tc-nav-wbtn:not(:disabled):hover{background:#f4f4f4;border-color:#d2d2d2}
-    .tc-nav-wbtn:disabled{opacity:.4;cursor:default;font-weight:normal;color:#999;background:none;border-color:transparent}
+    .tc-nav-wbtn:disabled{opacity:.4;cursor:default;font-weight:normal;color:var(--mbu-text-weak);background:none;border-color:transparent}
     .tc-nav-wbtn.tc-wiz-finish,.tc-nav-wbtn.tc-wiz-enter{color:#2f7a45;font-weight:600}
     .tc-nav-wbtn.tc-wiz-finish:hover,.tc-nav-wbtn.tc-wiz-enter:hover{background:#e6f3ea;border-color:#a9d2b6}
-    .tc-addmed{font:13px Arial;padding:4px 12px;border:1px solid #d6cdec;background:#fff;color:#6a4d9a;border-radius:5px;cursor:pointer;margin-left:auto}
+    .tc-addmed{font:13px var(--mbu-font);padding:4px 12px;border:1px solid #d6cdec;background:var(--mbu-bg);color:#6a4d9a;border-radius:5px;cursor:pointer;margin-left:auto}
     .tc-addmed:hover{background:#f3f0fb}
     /* #140 — full-width nav bar: step switcher + Finish on the left, Cancel/Prev/Next paginators on the right */
-    #tc-nav-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:#fff;padding:5px 2px 6px;border-bottom:1px solid #e6def5;margin-bottom:6px}
+    #tc-nav-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:var(--mbu-bg);padding:5px 2px 6px;border-bottom:1px solid #e6def5;margin-bottom:6px}
     #tc-nav-left{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
     #tc-nav-pager{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
-    .tc-nav-wbtn.tc-wiz-cancel{color:#c0392b}
-    .tc-nav-wbtn.tc-wiz-cancel:not(:disabled):hover{background:#fdecec;border-color:#e6b3b3}
+    .tc-nav-wbtn.tc-wiz-cancel{color:var(--mbu-error)}
+    .tc-nav-wbtn.tc-wiz-cancel:not(:disabled):hover{background:var(--mbu-error-bg);border-color:#e6b3b3}
     .tc-nav-wbtn.tc-wiz-prev,.tc-nav-wbtn.tc-wiz-next{color:#5a3e94;font-weight:600;border-color:#d6cdec;background:#f6f3fc}
     .tc-nav-wbtn.tc-wiz-prev:not(:disabled):hover,.tc-nav-wbtn.tc-wiz-next:not(:disabled):hover{background:#ece5f8;border-color:#b9a4e0}
     /* #141 Zen editing — the nav-bar release title (shown only in zen) + hiding the page chrome */
@@ -6851,15 +6857,15 @@ try {
     /* two lines (album / artist + versions), centred, tight so they fit the nav button height (#141) */
     body.tc-zen-on #tc-nav-title{display:flex;flex-direction:column;justify-content:center;flex:1 1 0;min-width:0;text-align:center;line-height:1.15;padding:0 14px}
     #tc-nav-title a{color:inherit;text-decoration:none}#tc-nav-title a:hover{text-decoration:underline}
-    #tc-nav-title .tc-nav-title-album{font:600 14px Arial;color:#5a3e94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #tc-nav-title .tc-nav-title-album{font:600 14px var(--mbu-font);color:#5a3e94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     /* #290: mirror MB's native "modification pending" mark (span.mp, #ffdd99) on the
        release name — the native header that carries it is hidden by zen. Inline span
        so it hugs the text; same gold as native. */
     #tc-nav-title .tc-nav-title-name{border-radius:3px;padding:0 1px}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name{background:#ffdd99;padding:0 5px}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name a{color:#33291a}
-    #tc-nav-title .tc-nav-title-artist{font:12px Arial;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    #tc-nav-title .tc-nav-title-ver{color:#999}
+    #tc-nav-title .tc-nav-title-artist{font:12px var(--mbu-font);color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #tc-nav-title .tc-nav-title-ver{color:var(--mbu-text-weak)}
     body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
     /* zen: drop the page's top spacing so the sticky nav bar pins flush to the top and doesn't drift on scroll (#141) */
     body.tc-zen-on #page{padding-top:0!important;margin-top:0!important}
@@ -7067,7 +7073,7 @@ try {
   let _riExtFs = null;          // the External-links <fieldset>, remembered so we can move it back
   function riStyle() {
     if (_riStyled) return; _riStyled = true;
-    const css = `
+    const css = MBU_TOKENS + `
     body.tc-ri-on .tc-ri-helphidden{display:none!important}
     /* hide the inline "?" help / info icons + guidance across the whole Release-information panel */
     body.tc-ri-on #information .tooltip-wrapper,
@@ -7094,7 +7100,7 @@ try {
     body.tc-ri-on #information > div.half-width{flex:0 1 620px;min-width:0;width:auto}   /* form keeps its natural width */
     /* ---- #143: compact, low-noise Release-info form, matching Apollo's purple ---- */
     body.tc-ri-on #information > div.half-width fieldset{border:none;margin:0 0 12px;padding:0}        /* drop the boxy fieldset frames */
-    body.tc-ri-on #information > div.half-width legend{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 4px;border-bottom:1px solid #ece7f6;width:100%;box-sizing:border-box}
+    body.tc-ri-on #information > div.half-width legend{font:600 11px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 4px;border-bottom:1px solid #ece7f6;width:100%;box-sizing:border-box}
     body.tc-ri-on #information table.row-form{border-collapse:collapse;width:100%}
     body.tc-ri-on #information table.row-form > tbody > tr > td{padding:2px 6px;vertical-align:middle}   /* tighter rows */
     body.tc-ri-on #information table.row-form label{font-size:12px;color:#6a6a6a;font-weight:normal}
@@ -7127,30 +7133,30 @@ try {
        *selected* entity ("You selected <a>…</a>"); we surface that next to the focused field instead of
        the removed help column — without bringing back the verbose style-guide noise. (unscoped: the
        element lives on <body>; visibility is gated by the .on class, only added while Apollo is on.) */
-    #tc-ri-help{position:fixed;z-index:9999;display:none;max-width:360px;width:max-content;background:#fff;border:1px solid #d6cdec;border-radius:7px;box-shadow:0 6px 22px rgba(60,40,110,.20);padding:9px 12px;font-size:12px;line-height:1.45;color:#444}
+    #tc-ri-help{position:fixed;z-index:9999;display:none;max-width:360px;width:max-content;background:var(--mbu-bg);border:1px solid #d6cdec;border-radius:7px;box-shadow:0 6px 22px rgba(60,40,110,.20);padding:9px 12px;font-size:12px;line-height:1.45;color:#444}
     #tc-ri-help.on{display:block}
     #tc-ri-help p{margin:0 0 5px}
     #tc-ri-help p:last-child{margin-bottom:0}
-    #tc-ri-help a{color:#5f3ec0;text-decoration:none}
+    #tc-ri-help a{color:var(--mbu-accent);text-decoration:none}
     #tc-ri-help a:hover{text-decoration:underline}
     #tc-ri-help .comment,#tc-ri-help .name-variation a[title]{color:#8a8a8a}
     body.tc-ri-on #tc-ri-rightcol{flex:1 1 340px;min-width:300px;max-width:100%;box-sizing:border-box}  /* links take the remaining width, but wrap below the form when there isn't room for both; never wider than the row */
     /* External links matches the form sections: no boxy border, same compact purple header (#143) */
     body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;min-width:0;box-sizing:border-box;border:none;padding:0}
-    body.tc-ri-on #tc-ri-rightcol > fieldset > legend{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 4px;border-bottom:1px solid #ece7f6;width:100%;box-sizing:border-box}
+    body.tc-ri-on #tc-ri-rightcol > fieldset > legend{font:600 11px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 4px;border-bottom:1px solid #ece7f6;width:100%;box-sizing:border-box}
     body.tc-ri-on #tc-ri-rightcol #external-links-editor{max-width:100%;box-sizing:border-box}
     /* #297: front cover thumbnail under the external-links section (display only) */
     #tc-ri-cover{margin:14px 0 0}
-    #tc-ri-cover .tc-ri-cover-h{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 6px;border-bottom:1px solid #ece7f6}
+    #tc-ri-cover .tc-ri-cover-h{font:600 11px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 6px;border-bottom:1px solid #ece7f6}
     #tc-ri-cover a{display:inline-block;line-height:0}   /* shrink-wrap the image so only the cover itself is the link, not the empty space beside it */
-    #tc-ri-cover img{display:block;width:180px;max-width:100%;height:auto;border:1px solid #e0d9f0;border-radius:6px;box-shadow:0 1px 5px rgba(40,20,80,.14)}
+    #tc-ri-cover img{display:block;width:180px;max-width:100%;height:auto;border:1px solid #e0d9f0;border-radius:var(--mbu-radius);box-shadow:0 1px 5px rgba(40,20,80,.14)}
 
     /* ---- external links as a grid: the URL row spans every column, the link's type combos flow into aligned
        columns beneath it, and "Add another relationship" (the [+]) lands in the last cell. ---- */
     body.tc-ri-on #external-links-editor{display:block}
     body.tc-ri-on #external-links-editor > tbody{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(185px,100%),1fr));column-gap:14px;row-gap:2px;padding-left:45px;align-items:center;box-sizing:border-box}
     /* URL line spans all columns; pulled back so the favicon sits at the column's left edge */
-    body.tc-ri-on #external-links-editor tr.external-link-item{grid-column:1 / -1;display:flex;align-items:center;gap:9px;padding:7px 6px 1px;margin-left:-45px;border-radius:6px;position:relative}
+    body.tc-ri-on #external-links-editor tr.external-link-item{grid-column:1 / -1;display:flex;align-items:center;gap:9px;padding:7px 6px 1px;margin-left:-45px;border-radius:var(--mbu-radius);position:relative}
     body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
     body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none}
     body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;top:4px}   /* larger favicon → right-click to edit URL */
@@ -7200,8 +7206,8 @@ try {
     body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container label{font-size:0;display:inline-flex;align-items:center;cursor:pointer}
     body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input{margin:0}
     /* error → a compact "!" badge (full text on hover via title) so it doesn't reflow the combos when it appears */
-    body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error{grid-column:3;justify-self:start;font-size:0;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#fdecec;border:1px solid #f0c4c4;margin:0;cursor:help}
-    body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error::before{content:"!";font:bold 11px/1 Arial;color:#d33}
+    body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error{grid-column:3;justify-self:start;font-size:0;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--mbu-error-bg);border:1px solid #f0c4c4;margin:0;cursor:help}
+    body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error::before{content:"!";font:bold 11px/1 var(--mbu-font);color:#d33}
     /* #169: MB flags a relationship/URL with pending edits via a small <img class="info"
        alt="This relationship has open edits."> that the compact type cell clips away. Rather
        than re-fit the icon (alignment is fragile here), surface it with COLOUR — an amber type
@@ -7221,9 +7227,9 @@ try {
     body.tc-ri-on #external-links-editor tr.add-relationship td.add-item{display:inline-grid}   /* size the cell to the [+] button */
     /* the [+] is a touch smaller than the per-type [x] remove */
     body.tc-ri-on #external-links-editor tr.add-relationship button.add-item{font-size:0;width:13px;height:13px;border-radius:50%;border:1px solid #d6cdec;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;line-height:1}
-    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item::before{content:"＋";font:bold 9px/1 Arial;color:#9a8fc0}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item::before{content:"＋";font:bold 9px/1 var(--mbu-font);color:#9a8fc0}
     body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover{background:#f0ecfa;border-color:#b9a4e0}
-    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover::before{color:#6f42c1}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover::before{color:var(--mbu-accent)}
     /* the "add another link" input row */
     body.tc-ri-on #external-links-editor tr.external-link-item .value.with-button input{width:100%}
     /* collapse the "Add another link" field into a [+] button that expands to a full input on click/focus */
@@ -7234,13 +7240,13 @@ try {
     body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown{box-sizing:border-box;width:22px;min-width:0;height:22px;padding:0;margin:2px 0;border:1px solid #d6cdec;border-radius:50%;background-color:transparent;color:transparent;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='11'%20height='11'%20viewBox='0%200%2011%2011'%3E%3Cpath%20d='M5.5%201v9M1%205.5h9'%20stroke='%239a8fc0'%20stroke-width='1.6'%20stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;transition:width .12s ease}
     body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:hover{background-color:#f0ecfa;border-color:#b9a4e0}
     body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown::placeholder{color:transparent}   /* hide the hint text inside the collapsed [+] — it is shown on focus */
-    body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:focus{width:100%;height:auto;padding:4px 7px;border:1px solid #999;border-radius:4px;background-color:#fff;background-image:none;color:#333;cursor:text}
-    body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:focus::placeholder{color:#999}
+    body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:focus{width:100%;height:auto;padding:4px 7px;border:1px solid #999;border-radius:4px;background-color:var(--mbu-bg);background-image:none;color:#333;cursor:text}
+    body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:focus::placeholder{color:var(--mbu-text-weak)}
     /* ---- dead-link checker ---- */
     #tc-ri-toolbar{position:absolute;right:10px;bottom:8px;display:flex;align-items:center;gap:8px;z-index:3}
     /* the add-link field expands to full width on focus and would sit under the Check-links button — hide it while editing */
     body.tc-ri-on #tc-ri-rightcol > fieldset:has(#external-links-editor input[type=url]:placeholder-shown:focus) > #tc-ri-toolbar{display:none}
-    #tc-ri-check{font:12px Arial;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #d6cdec;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
+    #tc-ri-check{font:12px var(--mbu-font);display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #d6cdec;border-radius:var(--mbu-radius);background:#f6f3fc;color:#5a3e94;cursor:pointer}
     #tc-ri-check:hover{background:#ece5f8;border-color:#b9a4e0}
     #tc-ri-check:disabled{opacity:.6;cursor:default}
     /* #545 (majkinetor): "Auto match should be visible while working, currently
@@ -7248,23 +7254,23 @@ try {
        Same busy idiom as the link checker below — spinner in the button, the
        button disabled so a second run cannot be started on top of the first
        (the _autoMatching guard silently swallowed that click). */
-    #tc-recwrap .tc-rec-am .tc-spin{width:11px;height:11px;border:2px solid #cdb8ec;border-top-color:#6f42c1;border-radius:50%;animation:tc-spin .7s linear infinite;display:none;margin-right:5px;vertical-align:-1px}
+    #tc-recwrap .tc-rec-am .tc-spin{width:11px;height:11px;border:2px solid #cdb8ec;border-top-color:var(--mbu-accent);border-radius:50%;animation:tc-spin .7s linear infinite;display:none;margin-right:5px;vertical-align:-1px}
     #tc-recwrap .tc-rec-am.busy .tc-spin{display:inline-block}
     #tc-recwrap .tc-rec-am[disabled]{opacity:.6;cursor:progress}
-    #tc-recwrap .tc-rec-amstatus.busy{color:#6f42c1;font-weight:600}
-    #tc-ri-check .tc-spin{width:12px;height:12px;border:2px solid #cdb8ec;border-top-color:#6f42c1;border-radius:50%;animation:tc-spin .7s linear infinite;display:none}
+    #tc-recwrap .tc-rec-amstatus.busy{color:var(--mbu-accent);font-weight:600}
+    #tc-ri-check .tc-spin{width:12px;height:12px;border:2px solid #cdb8ec;border-top-color:var(--mbu-accent);border-radius:50%;animation:tc-spin .7s linear infinite;display:none}
     #tc-ri-check.busy .tc-spin{display:inline-block}
     @keyframes tc-spin{to{transform:rotate(360deg)}}
-    #tc-ri-check-status{font:12px Arial;color:#777}
+    #tc-ri-check-status{font:12px var(--mbu-font);color:#777}
     /* a dead link (4xx/5xx/unreachable): faded favicon + struck URL, like Platform Check's not-found state */
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead .favicon{filter:grayscale(1);opacity:.45}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url{text-decoration:line-through;opacity:.55}
-    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url::after{content:" ✖ " attr(data-tc-deadcode);color:#c0392b;font-size:11px;text-decoration:none;opacity:.9}
+    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url::after{content:" ✖ " attr(data-tc-deadcode);color:var(--mbu-error);font-size:11px;text-decoration:none;opacity:.9}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}
     /* annotation editor: a bordered box wrapping the toolbar + (bigger) textarea + in-place preview */
-    body.tc-ri-on #tc-anno-wrap{border:1px solid #d6cdec;border-radius:7px;background:#fff;overflow:hidden;box-sizing:border-box}
+    body.tc-ri-on #tc-anno-wrap{border:1px solid #d6cdec;border-radius:7px;background:var(--mbu-bg);overflow:hidden;box-sizing:border-box}
     #tc-anno-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;background:#f6f3fc;border-bottom:1px solid #e7defa}
-    #tc-anno-bar button{font:12px Arial;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #d6cdec;border-radius:6px;background:#fff;color:#5a3e94;cursor:pointer}
+    #tc-anno-bar button{font:12px var(--mbu-font);display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #d6cdec;border-radius:var(--mbu-radius);background:var(--mbu-bg);color:#5a3e94;cursor:pointer}
     #tc-anno-bar button:hover{background:#ece5f8;border-color:#b9a4e0}
     #tc-anno-bar button:disabled{opacity:.6;cursor:default}
     #tc-anno-bar button.tc-anno-icon{padding:4px 8px;font-size:13px;line-height:1;font-weight:700}
@@ -7279,10 +7285,10 @@ try {
     body.tc-ri-on #tc-anno-wrap.tc-anno-max textarea,#tc-anno-wrap.tc-anno-max #tc-anno-preview{min-height:0;height:auto}
     #tc-anno-wrap.tc-anno-max #tc-anno-history{flex:1 1 auto;min-height:0;max-height:none}
     #tc-anno-bar #tc-anno-help{width:25px;justify-content:center;color:#7a5fc0}
-    #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
-    #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
+    #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
+    #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
     #tc-anno-bar.tc-anno-hist-on button:not(#tc-anno-history-btn):not(#tc-anno-max){opacity:.4;pointer-events:none}   /* History active → only History + maximize stay usable */
-    #tc-anno-status{font:italic 11px Arial;font-weight:normal;color:#8a7bb8;letter-spacing:0;text-transform:none}   /* shown next to the Annotation: label */
+    #tc-anno-status{font:italic 11px var(--mbu-font);font-weight:normal;color:#8a7bb8;letter-spacing:0;text-transform:none}   /* shown next to the Annotation: label */
     /* three toolbar groups: [Preview Clear]  [markup ?]      [History] (the 1:3 spacers place markup/? left-of-centre) */
     #tc-anno-bar .tc-anno-sp1{flex:1 1 0;min-width:14px}
     #tc-anno-bar .tc-anno-sp2{flex:3 1 0;min-width:14px}
@@ -7292,7 +7298,7 @@ try {
     body.tc-ri-on #tc-anno-wrap textarea{display:block;width:100%!important;max-width:none!important;min-height:240px;flex:1 1 auto;border:none!important;border-radius:0;padding:9px 11px;resize:vertical;box-shadow:none;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.55;tab-size:4}
     /* standalone Edit annotation page: Changelog + Annotation rows stacked full-width with the label above */
     body.tc-anno-page #content > form > .row:not(.no-label){display:block;margin:0 0 16px;max-width:1100px}
-    body.tc-anno-page #content > form > .row:not(.no-label) > label{display:block;width:auto;text-align:left;float:none;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a;margin:0 0 5px}
+    body.tc-anno-page #content > form > .row:not(.no-label) > label{display:block;width:auto;text-align:left;float:none;font:600 12px var(--mbu-font);letter-spacing:.02em;color:#6a6a6a;margin:0 0 5px}
     body.tc-anno-page #content > form > .row > input[type=text]{width:100%;max-width:680px;box-sizing:border-box;padding:5px 8px;border:1px solid #d6cdec;border-radius:5px}
     body.tc-anno-page #content > form > fieldset.editnote{max-width:1100px}
     /* fill the remaining viewport height (height is set per-resize in JS) */
@@ -7303,10 +7309,10 @@ try {
     body.tc-anno-page #content > form > .row.tc-cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
     body.tc-anno-page #content > form > .row.tc-cl-row > label{flex:1 1 100%;margin-bottom:4px}
     body.tc-anno-page #content > form > .row.tc-cl-row > input[type=text]{flex:1 1 auto;width:auto;max-width:600px}
-    body.tc-anno-page #tc-anno-submit{flex:0 0 auto;font:600 13px Arial;padding:7px 18px;border:1px solid #2c7a45;border-radius:6px;background:#3aa55f;color:#fff;cursor:pointer}
+    body.tc-anno-page #tc-anno-submit{flex:0 0 auto;font:600 13px var(--mbu-font);padding:7px 18px;border:1px solid #2c7a45;border-radius:var(--mbu-radius);background:#3aa55f;color:var(--mbu-text-on-accent);cursor:pointer}
     body.tc-anno-page #tc-anno-submit:hover{background:#2c8a4d}
-    #tc-anno-preview{flex:1 1 0;min-width:0;min-height:240px;padding:10px 13px;background:#fff;border-left:1px solid #e7defa;font-size:13px;line-height:1.5;color:#333;overflow:auto;word-break:break-word;box-sizing:border-box}
-    #tc-anno-preview .tc-anno-empty{color:#999;font-style:italic}
+    #tc-anno-preview{flex:1 1 0;min-width:0;min-height:240px;padding:10px 13px;background:var(--mbu-bg);border-left:1px solid #e7defa;font-size:13px;line-height:1.5;color:#333;overflow:auto;word-break:break-word;box-sizing:border-box}
+    #tc-anno-preview .tc-anno-empty{color:var(--mbu-text-weak);font-style:italic}
     #tc-anno-preview p{margin:0 0 8px}
     #tc-anno-preview .tc-anno-h{margin:10px 0 6px;color:#3d2470;font-weight:700;line-height:1.25}
     #tc-anno-preview h1.tc-anno-h{font-size:18px}
@@ -7315,16 +7321,16 @@ try {
     #tc-anno-preview .tc-anno-ul{margin:0 0 8px;padding-left:22px}
     #tc-anno-preview .tc-anno-pre{margin:0 0 8px;padding:8px 10px;background:#f0ecf8;border-radius:4px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap}
     #tc-anno-preview hr{border:none;border-top:1px solid #cdbce8;margin:10px 0}
-    #tc-anno-preview a{color:#5f3ec0;text-decoration:none}
+    #tc-anno-preview a{color:var(--mbu-accent);text-decoration:none}
     #tc-anno-preview a:hover{text-decoration:underline}
     /* syntax help popover (hover the ? button) */
-    #tc-anno-help-pop{position:fixed;z-index:10000;display:none;width:370px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow-y:auto;background:#fff;border:1px solid #d6cdec;border-radius:8px;box-shadow:0 8px 26px rgba(60,40,110,.22);padding:10px 13px;font:12px Arial;color:#444;line-height:1.5}
+    #tc-anno-help-pop{position:fixed;z-index:10000;display:none;width:370px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow-y:auto;background:var(--mbu-bg);border:1px solid #d6cdec;border-radius:8px;box-shadow:0 8px 26px rgba(60,40,110,.22);padding:10px 13px;font:12px var(--mbu-font);color:#444;line-height:1.5}
     #tc-anno-help-pop.on{display:block}
     #tc-anno-help-pop table{border-collapse:collapse;margin:6px 0;width:100%}
     #tc-anno-help-pop td{padding:2px 7px 2px 0;vertical-align:top}
     #tc-anno-help-pop td:last-child{color:#777}
     #tc-anno-help-pop code{background:#f0ecf8;border-radius:3px;padding:0 4px;font-family:Consolas,monospace;color:#5a3e94}
-    #tc-anno-help-pop .tc-help-dim{color:#999}
+    #tc-anno-help-pop .tc-help-dim{color:var(--mbu-text-weak)}
     /* Disambiguation + Annotation span the full column with their label stacked ABOVE (not the 150px label
        column). :has targets exactly those two rows, so the relocated External-links table is untouched. */
     body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment),
@@ -7334,7 +7340,7 @@ try {
     body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td:first-child,
     body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child{text-align:left!important;padding:0 0 4px}
     body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td:first-child label,
-    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child label{display:block;width:auto;float:none;text-align:left!important;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a}
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child label{display:block;width:auto;float:none;text-align:left!important;font:600 12px var(--mbu-font);letter-spacing:.02em;color:#6a6a6a}
     body.tc-ri-on #information fieldset.information input#comment{width:100%!important;max-width:none!important;box-sizing:border-box}
     /* annotation History: the selected version rendered on the LEFT, user cards on the RIGHT */
     #tc-anno-history{display:flex;min-height:240px;max-height:520px;overflow:hidden;box-sizing:border-box}
@@ -7344,27 +7350,27 @@ try {
     #tc-anno-history .tc-hist-card:hover{background:#f0ebfb}
     #tc-anno-history .tc-hist-card.on{background:#ece5f8;box-shadow:inset -3px 0 0 #5f3ec0}
     #tc-anno-history .tc-hist-av{width:30px;height:30px;border-radius:50%;flex:0 0 auto;object-fit:cover;background:#e7defa;border:1px solid #ddd}
-    #tc-anno-history .tc-hist-meta{display:flex;flex-direction:column;min-width:0;flex:1 1 auto;font:12px Arial}
+    #tc-anno-history .tc-hist-meta{display:flex;flex-direction:column;min-width:0;flex:1 1 auto;font:12px var(--mbu-font)}
     #tc-anno-history .tc-hist-editor{font-weight:600;color:#3d2470}
     #tc-anno-history .tc-hist-date{color:#777;font-size:11px}
     #tc-anno-history .tc-hist-cl{color:#8a8a8a;font-style:italic;font-size:11px;margin-top:2px}
     #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
     #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    #tc-anno-history .tc-hist-revert{align-self:center;flex:0 0 auto;width:26px;height:26px;border:1px solid #d6cdec;border-radius:5px;background:#fff;color:#5a3e94;font-size:15px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s}
+    #tc-anno-history .tc-hist-revert{align-self:center;flex:0 0 auto;width:26px;height:26px;border:1px solid #d6cdec;border-radius:5px;background:var(--mbu-bg);color:#5a3e94;font-size:15px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s}
     #tc-anno-history .tc-hist-card.on .tc-hist-revert,#tc-anno-history .tc-hist-card:hover .tc-hist-revert{opacity:1}   /* visible on the selected card, or any card on hover */
     #tc-anno-history .tc-hist-revert:hover{background:#ece5f8;border-color:#b9a4e0}
     #tc-anno-history .tc-hist-revert:disabled{opacity:.5;cursor:default}
-    #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
+    #tc-anno-history .tc-hist-msg{color:var(--mbu-text-weak);font-style:italic;font-size:12px;padding:6px 2px}
     #tc-anno-history .tc-hist-bar{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
-    #tc-anno-history .tc-hist-use{font:12px Arial;padding:4px 11px;border:1px solid #b9a4e0;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
+    #tc-anno-history .tc-hist-use{font:12px var(--mbu-font);padding:4px 11px;border:1px solid #b9a4e0;border-radius:var(--mbu-radius);background:#f6f3fc;color:#5a3e94;cursor:pointer}
     #tc-anno-history .tc-hist-use:hover{background:#ece5f8}
-    #tc-anno-history .tc-hist-vmeta{font:11px Arial;color:#888}
+    #tc-anno-history .tc-hist-vmeta{font:11px var(--mbu-font);color:#888}
     #tc-anno-history .tc-anno-rendered h1{font-size:18px;margin:8px 0 6px;color:#3d2470}
     #tc-anno-history .tc-anno-rendered h2{font-size:16px;margin:8px 0 6px;color:#3d2470}
     #tc-anno-history .tc-anno-rendered h3{font-size:14px;margin:8px 0 6px;color:#3d2470}
     #tc-anno-history .tc-anno-rendered p{margin:0 0 8px}
     #tc-anno-history .tc-anno-rendered ul{margin:0 0 8px;padding-left:22px}
-    #tc-anno-history .tc-anno-rendered a{color:#5f3ec0;text-decoration:none}
+    #tc-anno-history .tc-anno-rendered a{color:var(--mbu-accent);text-decoration:none}
     #tc-anno-history .tc-anno-rendered a:hover{text-decoration:underline}
     #tc-anno-history .tc-anno-rendered .annotation-details,#tc-anno-history .tc-anno-rendered h2.annotation{display:none}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
@@ -8478,7 +8484,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1.194500","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1.194500","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11880,7 +11886,7 @@ try {
   #as-setup-btn{padding:8px 12px;cursor:pointer;font-size:14px;display:flex;align-items:center;background:none;border:none;border-left:1px solid rgba(255,255,255,.28);color:inherit}
   #as-setup-btn:hover{background:rgba(255,255,255,.13)}
   #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:max-content;min-width:320px;max-width:92vw;background:var(--mbu-bg);border:1px solid #cbbdf0;border-radius:var(--mbu-radius-lg);box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px var(--mbu-font);color:var(--mbu-text)}
-  .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:#563b8f}
+  .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:var(--mbu-accent-hover)}
   .as-setup-ver{font-size:11px;font-weight:normal;color:var(--mbu-text-weak)}
   .as-setup-help{font-size:12px;text-decoration:none;color:var(--mbu-accent);border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
   .as-setup-help:hover{background:#f0ecfa}
@@ -11889,7 +11895,7 @@ try {
   /* #283 activity-log popup */
   /* floating, movable, NON-modal window (no backdrop) */
   #as-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100020;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}
-  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:#563b8f;cursor:move;user-select:none}
+  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:var(--mbu-accent-hover);cursor:move;user-select:none}
   #as-logpop .as-log-m a{color:var(--mbu-accent)}
   .as-logpop-sp{margin-left:auto}
   .as-logpop-copy,.as-logpop-x,.as-logpop-min{font-size:12px;color:var(--mbu-accent);background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
@@ -12208,7 +12214,7 @@ try {
   .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
   .as-cm-h{font-size:16px;font-weight:700;color:var(--mbu-accent-deep);margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .as-cm-h-t{flex:1;min-width:0}
-  .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:#6f42c1;text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid #d9d2ee;border-radius:8px;background:var(--mbu-bg)}
+  .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:var(--mbu-accent);text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid #d9d2ee;border-radius:8px;background:var(--mbu-bg)}
   .as-cm-hist:hover{background:#f4f1fb;border-color:#c3b6e6}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:var(--mbu-text-dim)}
   .as-cm-hint{font-size:11px;color:#9a8ccb;font-weight:400}
@@ -12389,7 +12395,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.28","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.8.28","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.1.204742","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.1.204742","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -18851,11 +18857,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
   function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
+    const MBU_TOKENS = ":root{--mbu-bg:#fff;--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:#222;--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:#cfc6e6;--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000}";
     const style = document.createElement("style");
-    style.innerText = `
+    style.innerText = MBU_TOKENS + `
         .discogs-bar {
             font-family: inherit;
-            background: #fff;
+            background: var(--mbu-bg);
             border: 1px solid #e0c88a;
             border-left: 4px solid #e8771d;
             border-radius: 0.35rem;
@@ -18874,36 +18881,36 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         /* inline options strip in the single bar (#139) */
         .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
-        .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
-        .discogs-opts-btn { font-size: 0.8rem; color: #555; background: #fffdf7; border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: var(--mbu-text-weak); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: #fffdf7; border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
         .discogs-opts-btn:hover { border-color: #e8771d; color: #333; }
-        .discogs-opts-caret { color: #999; font-size: 0.7rem; }
+        .discogs-opts-caret { color: var(--mbu-text-weak); font-size: 0.7rem; }
         /* "Options \u25BE" popover (Dedup toggles) */
-        .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: #fff; border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
+        .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: var(--mbu-bg); border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
         .discogs-opts-panel.open { display: flex; }
-        .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; font-weight: 600; }
+        .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mbu-text-weak); font-weight: 600; }
         /* "Log" header toggle \u2014 a split button (#142, #217): "Log" toggles, the
            \u25BE half (its own clickable target) opens the copy menu. */
         .discogs-log-split { display: inline-flex; align-items: stretch; }
-        .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
-        .discogs-log-caret-btn { font-size: 0.78rem; color: #777; background: #fff; border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
+        .discogs-logtoggle-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
+        .discogs-log-caret-btn { font-size: 0.78rem; color: #777; background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
         .discogs-logtoggle-btn:hover, .discogs-log-caret-btn:hover { border-color: #999; }
         .discogs-log-caret-btn:hover { background: #f6f3fc; }
         .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
         /* "Log \u25BE" dropdown menu (#118): show/hide + the three copy actions. */
-        .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
+        .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
         .discogs-log-menu.open { display: flex; }
         .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: #444; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
         .discogs-log-menu button:hover { background: #f0ecfa; color: #333; }
         /* log panel toolbar: severity filter + copy buttons */
         .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
         .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
-        .discogs-log-filterbtn { font-size: 0.75rem; color: #666; background: #fff; border: none; border-right: 1px solid #eee; padding: 0.15rem 0.55rem; cursor: pointer; }
+        .discogs-log-filterbtn { font-size: 0.75rem; color: #666; background: var(--mbu-bg); border: none; border-right: 1px solid var(--mbu-divider); padding: 0.15rem 0.55rem; cursor: pointer; }
         .discogs-log-filterbtn:last-child { border-right: none; }
         .discogs-log-filterbtn:hover { background: #f6f3fc; }
-        .discogs-log-filterbtn.active { background: #5f3ec0; color: #fff; }
+        .discogs-log-filterbtn.active { background: var(--mbu-accent); color: var(--mbu-text-on-accent); }
         .discogs-log-copyslot { display: inline-flex; gap: 0.4rem; margin-left: auto; }
-        .discogs-log-copybtn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-log-copybtn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
         .discogs-log-copybtn:hover { border-color: #999; }
         .discogs-bar img.discogs-logo {
             height: 20px;
@@ -18917,7 +18924,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             flex: 0 1 auto;
             max-width: 20rem;
             font-size: 0.82rem;
-            color: #555;
+            color: var(--mbu-text-dim);
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -19038,7 +19045,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-src-ico {
             display: inline-flex; align-items: center; justify-content: center;
             width: 2rem; height: 2rem; padding: 0; cursor: pointer;
-            border: 1px solid #d6d6d6; border-radius: 0.3rem; background: #fff; color: #555;
+            border: 1px solid #d6d6d6; border-radius: 0.3rem; background: var(--mbu-bg); color: var(--mbu-text-dim);
         }
         .discogs-src-ico:hover { background: #fff3e8; border-color: #e8771d; color: #e8771d; }
         .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
@@ -19059,14 +19066,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
            return-to-source. Green to read as the positive/submit action (matches MB). */
         .discogs-enter-edit {
             flex-shrink: 0; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap;
-            color: #fff; background: #4b8f29; border: 1px solid #3d7a1f; border-radius: 0.25rem;
+            color: var(--mbu-text-on-accent); background: #4b8f29; border: 1px solid #3d7a1f; border-radius: 0.25rem;
             padding: 0.14rem 0.6rem;
         }
         .discogs-enter-edit:hover { background: #57a230; }
         .discogs-bar.is-saving .discogs-enter-edit { opacity: 0.6; pointer-events: none; }
         /* #408 "Import all" \u2014 wider pill with a glyph + label, brand-orange so it reads as the primary action */
         .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
-        .discogs-src-all:hover { background: #e8771d; color: #fff; border-color: #e8771d; }
+        .discogs-src-all:hover { background: #e8771d; color: var(--mbu-text-on-accent); border-color: #e8771d; }
         .discogs-src-all .discogs-all-glyph { font-size: 1rem; line-height: 1; }
         .discogs-bar-badge, .discogs-src-badge svg { width: 15px; height: 15px; }
         .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
@@ -19079,7 +19086,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         .discogs-bar-row2 .discogs-opts-label {
             font-size: 0.75rem;
-            color: #999;
+            color: var(--mbu-text-weak);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-right: 0.2rem;
@@ -19097,17 +19104,17 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             background: transparent;
             cursor: pointer;
             font-size: 0.8rem;
-            color: #555;
+            color: var(--mbu-text-dim);
             user-select: none;
             transition: color 0.12s;
         }
-        .discogs-toggle:hover { color: #222; }
+        .discogs-toggle:hover { color: var(--mbu-text); }
         .discogs-toggle input[type=checkbox] { display: none; }
         .discogs-toggle .discogs-toggle-dot {
             width: 14px; height: 14px;
             border-radius: 50%;
             border: 2px solid #bbb;
-            background: #fff;
+            background: var(--mbu-bg);
             flex-shrink: 0;
             transition: border-color 0.12s, background 0.12s;
         }
@@ -19120,7 +19127,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
         .discogs-output.empty { display: none; }   /* no log yet \u2192 hide the whole section (#142) */
-        .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: #555; }
+        .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: var(--mbu-text-dim); }
         .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
         /* log panel hides behind the header "Log \u25BE" button (#142); the review
            panel sits in .discogs-review-slot OUTSIDE the panel, always visible. */
@@ -19205,7 +19212,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             display: none;
             position: fixed;
             background: #333;
-            color: #fff;
+            color: var(--mbu-text-on-accent);
             font-size: 0.78rem;
             line-height: 1.45;
             padding: 0.45rem 0.65rem;
@@ -20755,7 +20762,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1.154228","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1.154228","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1.212000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.1.212000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -21117,9 +21124,14 @@ ${lines}
   // ── styles ────────────────────────────────────────────────────────────────
   function injectStyle() {
     const s = el('style');
-    s.textContent = `
-      .gt-menu{position:fixed;z-index:2147483647;min-width:260px;max-width:600px;max-height:74vh;overflow-y:auto;background:#fff;border:1px solid #cfd4da;border-radius:7px;
-        box-shadow:0 8px 26px rgba(0,0,0,.18);padding:4px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222;user-select:none}
+  // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
+  // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
+  // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
+  const MBU_TOKENS = ':root{--mbu-bg:#fff;--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:#222;--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:#cfc6e6;--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000}';
+  // </ST-TOKENS>
+    s.textContent = MBU_TOKENS + `
+      .gt-menu{position:fixed;z-index:2147483647;min-width:260px;max-width:600px;max-height:74vh;overflow-y:auto;background:var(--mbu-bg);border:1px solid #cfd4da;border-radius:7px;
+        box-shadow:0 8px 26px rgba(0,0,0,.18);padding:4px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text);user-select:none}
       .gt-mi .gt-mi-lines{margin:3px 0 1px 4px}
       .gt-mi .gt-mi-ln{display:flex;gap:6px;font-size:11px;color:#5a6472;line-height:1.4}
       .gt-mi .gt-mi-pos{flex:none;color:#9aa3b0;min-width:24px}
@@ -21134,7 +21146,7 @@ ${lines}
       /* #377 per-row [A]/[R] select-by-artist/role buttons, shown on row hover */
       .gt-menu .gt-ck-acts{margin-left:auto;display:none;gap:3px;flex:none;align-self:center}
       .gt-menu .gt-ck:hover .gt-ck-acts{display:inline-flex}
-      .gt-menu .gt-ck-act{font:bold 10px Arial;color:#2e6da4;background:#eef4fb;border:1px solid #cfe0f0;border-radius:3px;padding:1px 6px;cursor:pointer;line-height:1.4}
+      .gt-menu .gt-ck-act{font:bold 10px var(--mbu-font);color:#2e6da4;background:var(--mbu-info-bg);border:1px solid #cfe0f0;border-radius:3px;padding:1px 6px;cursor:pointer;line-height:1.4}
       .gt-menu .gt-ck-act:hover{background:#dce9f7;border-color:#a9cbe8}
       .gt-menu .gt-ck-cb{margin:1px 0 0;flex:none;accent-color:#2e9e5b;cursor:pointer}
       .gt-menu .gt-ck-pos{flex:none;color:#9aa3b0}
@@ -21147,8 +21159,8 @@ ${lines}
       .gt-mi .gt-mi-d{font-size:11px;color:#8892a0;margin-top:2px}
       .gt-mi .gt-mi-s{flex:none;min-width:20px;text-align:center;font-weight:700;font-size:11px;color:#556;background:#eef1f6;border-radius:9px;padding:1px 7px}
       .gt-mi.gt-danger:hover{background:#fbe3e0}
-      .gt-mi.gt-danger .gt-mi-s{color:#fff;background:#c0392b}
-      ::highlight(gt-hl-existing){background:#1f6feb;color:#fff}
+      .gt-mi.gt-danger .gt-mi-s{color:var(--mbu-text-on-accent);background:#c0392b}
+      ::highlight(gt-hl-existing){background:#1f6feb;color:var(--mbu-text-on-accent)}
       ::highlight(gt-hl-new){background:#1f6feb;color:#ffe066}
       .gt-tip{position:fixed;z-index:2147483647;pointer-events:none;background:#1b2430;color:#eef2f7;
         font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:4px 9px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
@@ -21158,7 +21170,7 @@ ${lines}
         pointer-events:none;transition:opacity .18s,transform .18s;background:#1b2430;color:#eef2f7;
         font:13px -apple-system,Segoe UI,Arial,sans-serif;padding:8px 14px;border-radius:7px;box-shadow:0 6px 22px rgba(0,0,0,.3)}
       .gt-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-      .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#2e6da4;background:#eef4fb;
+      .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#2e6da4;background:var(--mbu-info-bg);
         border:1px solid #cfe0f0;border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
       .gt-clone-btn:hover{background:#e2edf8}
       .gt-cfg-btn{float:right;margin-left:8px;font-size:15px;line-height:1.4;color:#8892a0;background:none;border:none;cursor:pointer;padding:2px 7px;border-radius:5px}
@@ -21174,15 +21186,15 @@ ${lines}
       .gt-toolbar .gt-cfg-btn{float:none;margin-left:auto}
       /* #372 config window (⚙): standard header (icon + name + version + Help) + options body */
       .gt-cfg-pop{min-width:270px;padding:0}
-      .gt-cfg-hd{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #ecebf3;background:#faf9fe;border-radius:8px 8px 0 0}
+      .gt-cfg-hd{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #ecebf3;background:var(--mbu-bg-raised);border-radius:8px 8px 0 0}
       .gt-cfg-ic{flex:none;border-radius:4px}
       .gt-cfg-name{font-weight:700;color:#3a2f66}
       .gt-cfg-ver{color:#9a92ad;font-size:12px}
-      .gt-cfg-help{margin-left:auto;font-size:12px;color:#2e6da4;text-decoration:none;border:1px solid #cfe0f0;background:#eef4fb;border-radius:5px;padding:1px 8px}.gt-cfg-help:hover{background:#e2edf8}
+      .gt-cfg-help{margin-left:auto;font-size:12px;color:#2e6da4;text-decoration:none;border:1px solid #cfe0f0;background:var(--mbu-info-bg);border-radius:5px;padding:1px 8px}.gt-cfg-help:hover{background:#e2edf8}
       .gt-cfg-body{padding:9px 12px;display:flex;flex-direction:column;gap:8px}
       .gt-cfg-opt{display:flex;align-items:center;gap:8px;font-size:13px;color:#333;cursor:pointer}.gt-cfg-opt input{margin:0}
-      .gt-pop{position:fixed;z-index:2147483647;min-width:300px;max-width:460px;background:#fff;border:1px solid #cfd4da;border-radius:8px;
-        box-shadow:0 10px 30px rgba(0,0,0,.2);padding:6px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
+      .gt-pop{position:fixed;z-index:2147483647;min-width:300px;max-width:460px;background:var(--mbu-bg);border:1px solid #cfd4da;border-radius:8px;
+        box-shadow:0 10px 30px rgba(0,0,0,.2);padding:6px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text)}
       .gt-pop .gt-pop-hdr{padding:4px 8px 6px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
       .gt-pop .gt-pop-list{max-height:44vh;overflow-y:auto}
       .gt-pop .gt-pop-note{padding:8px;color:#8892a0;font-size:12px}
@@ -21215,36 +21227,36 @@ ${lines}
       .gt-role-name{font-weight:600;font-size:13px}
       .gt-role-recent{font-weight:400;font-size:10px;color:#6b8fb5;margin-left:6px}
       .gt-role-desc{font-size:11px;color:#666;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}   /* #544: was one nowrap line + ellipsis, which cut every description; two wrapped lines instead */
-      .gt-cons{background:#fff;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.35);width:min(920px,94vw);max-height:88vh;display:flex;flex-direction:column;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
+      .gt-cons{background:var(--mbu-bg);border-radius:var(--mbu-radius-lg);box-shadow:0 18px 50px rgba(0,0,0,.35);width:min(920px,94vw);max-height:88vh;display:flex;flex-direction:column;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text)}
       .gt-cons-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid #e7e9ee}
       .gt-cons-title{font-weight:700;font-size:14px;flex:1}
       .gt-cons-x{background:none;border:none;font-size:16px;color:#8892a0;cursor:pointer;padding:2px 8px;border-radius:5px}
       .gt-cons-x:hover{background:#eef1f6;color:#556}
       .gt-cons-body{padding:10px 14px;overflow:auto}
       .gt-cons-leg{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:10px;font-size:12px;color:#556}
-      .gt-cons-legi b{display:inline-block;min-width:16px;text-align:center;background:#eef4fb;border:1px solid #cfe0f0;border-radius:4px;color:#2e6da4;margin-right:2px}
-      .gt-cons-legi.gt-cur b{background:#2e6da4;color:#fff}
+      .gt-cons-legi b{display:inline-block;min-width:16px;text-align:center;background:var(--mbu-info-bg);border:1px solid #cfe0f0;border-radius:4px;color:#2e6da4;margin-right:2px}
+      .gt-cons-legi.gt-cur b{background:#2e6da4;color:var(--mbu-text-on-accent)}
       .gt-cons-legt{color:inherit;text-decoration:none}
       .gt-cons-legt:hover{text-decoration:underline;color:#2e6da4}
       .gt-cons-leglabel{font-size:11px;color:#8892a0;text-transform:uppercase;letter-spacing:.02em;margin-bottom:5px}
       .gt-cons-leg{gap:5px 6px}
-      .gt-cons-selitem{cursor:pointer;border:1px solid transparent;border-radius:6px;padding:2px 7px;display:inline-flex;align-items:center}
-      .gt-cons-selitem.gt-on{background:#eef4fb;border-color:#cfe0f0}
+      .gt-cons-selitem{cursor:pointer;border:1px solid transparent;border-radius:var(--mbu-radius);padding:2px 7px;display:inline-flex;align-items:center}
+      .gt-cons-selitem.gt-on{background:var(--mbu-info-bg);border-color:#cfe0f0}
       .gt-cons-selitem:not(.gt-on){opacity:.5}
       .gt-cons-selitem:not(.gt-on):hover{opacity:.85;background:#f2f4f7}
       .gt-cons-legopen{text-decoration:none;color:#8892a0;margin-left:5px}
       .gt-cons-legopen:hover{color:#2e6da4}
       .gt-cons-legyr{color:#8892a0;margin-left:5px}
-      .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:12px inherit;color:#222;outline:none}
+      .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:12px inherit;color:var(--mbu-text);outline:none}
       .gt-cons-paste:focus{border-color:#4a90d9}
       .gt-cons-tbl{border-collapse:collapse;width:100%}
       .gt-cons-tbl th{font-size:11px;color:#6a7482;text-transform:uppercase;letter-spacing:.02em;text-align:left;padding:4px 8px;border-bottom:1px solid #ccc}
       .gt-cons-tbl th.gt-cons-col{text-align:center;width:30px}
       .gt-cons-tbl th.gt-cons-colsel{cursor:pointer;color:#2e6da4}
-      .gt-cons-tbl th.gt-cons-colsel:hover{background:#eef4fb;border-radius:4px}
+      .gt-cons-tbl th.gt-cons-colsel:hover{background:var(--mbu-info-bg);border-radius:4px}
       .gt-cons-coll{font-weight:700}
       .gt-fmt{display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px}
-      .gt-fmt-b{display:inline-block;min-width:13px;box-sizing:border-box;padding:0 3px;border-radius:3px;font:700 9px/14px -apple-system,Segoe UI,Arial,sans-serif;color:#fff;text-align:center;letter-spacing:.02em}
+      .gt-fmt-b{display:inline-block;min-width:13px;box-sizing:border-box;padding:0 3px;border-radius:3px;font:700 9px/14px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text-on-accent);text-align:center;letter-spacing:.02em}
       .gt-cons-col .gt-fmt{margin:2px 0 0;justify-content:center}
       .gt-cons-tbl td{padding:4px 8px;border-bottom:1px solid #eef0f3;vertical-align:top}
       .gt-cons-role{color:#556;white-space:nowrap}
@@ -21254,9 +21266,9 @@ ${lines}
       .gt-cons-cell.gt-prop{color:#2e6da4;outline:1px dashed #9cc2e6;outline-offset:-3px;border-radius:4px}
       .gt-cons-cell.gt-none{color:#cdd3da}
       .gt-cons-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #e7e9ee}
-      .gt-cons-btn{font:600 13px inherit;padding:5px 14px;border-radius:6px;border:1px solid #cfe0f0;background:#eef4fb;color:#2e6da4;cursor:pointer}
+      .gt-cons-btn{font:600 13px inherit;padding:5px 14px;border-radius:var(--mbu-radius);border:1px solid #cfe0f0;background:var(--mbu-info-bg);color:#2e6da4;cursor:pointer}
       .gt-cons-btn:hover{background:#e2edf8}
-      .gt-cons-apply{margin-left:auto;background:#2e9e5b;border-color:#2e9e5b;color:#fff}
+      .gt-cons-apply{margin-left:auto;background:#2e9e5b;border-color:#2e9e5b;color:var(--mbu-text-on-accent)}
       .gt-cons-apply:hover{background:#278a4f}
       .gt-cons-apply:disabled{background:#c9ced4;border-color:#c9ced4;cursor:default}
       .gt-cons-plan{color:#556;font-size:12px}
@@ -21272,7 +21284,7 @@ ${lines}
       .gt-dp-ended{display:inline-flex;align-items:center;gap:4px;margin-left:6px;color:#556;cursor:pointer}
       .gt-dp-roles{gap:5px}
       .gt-dp-hint{color:#9aa0a6;font-style:italic}
-      .gt-dp-chip{display:inline-flex;align-items:center;gap:4px;background:#eef4fb;border:1px solid #cfe0f0;color:#2e6da4;border-radius:12px;padding:2px 8px;font-size:12px;cursor:pointer}
+      .gt-dp-chip{display:inline-flex;align-items:center;gap:4px;background:var(--mbu-info-bg);border:1px solid #cfe0f0;color:#2e6da4;border-radius:12px;padding:2px 8px;font-size:12px;cursor:pointer}
       .gt-dp-chip:hover{background:#e2edf8}
       .gt-dp-chipx{color:#8aa8c8;font-weight:700}
       .gt-dp-chip:hover .gt-dp-chipx{color:#e5534b}
@@ -21286,7 +21298,7 @@ ${lines}
       .gt-dp-crow:hover{background:#f4f7fa}
       .gt-dp-role{color:#556;white-space:nowrap}
       .gt-dp-role:hover{color:#2e6da4;text-decoration:underline dotted}
-      .gt-dp-cname{color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+      .gt-dp-cname{color:var(--mbu-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
       .gt-dp-dated .gt-dp-role,.gt-dp-dated .gt-dp-cname{color:#9aa0a6}
       .gt-dp-has{color:#b0863a;font-size:11px;white-space:nowrap;background:#faf3e6;border:1px solid #ecdcc0;border-radius:4px;padding:0 5px}
     `;
@@ -25385,7 +25397,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.17","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.8.17","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -25783,14 +25795,19 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
      STYLES
   ═══════════════════════════════════════════════════════════════════════ */
   const style = document.createElement('style');
-  style.textContent = `
+  // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
+  // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
+  // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
+  const MBU_TOKENS = ':root{--mbu-bg:#fff;--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:#222;--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:#cfc6e6;--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000}';
+  // </ST-TOKENS>
+  style.textContent = MBU_TOKENS + `
     /* button on the release page */
     #ii-btn {
       display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
-      margin-left: 12px; font-size: 12px; font-weight: 600; color: #fff !important;
-      background: #6f42c1; border: none; border-radius: 4px; cursor: pointer;
+      margin-left: 12px; font-size: 12px; font-weight: 600; color: var(--mbu-text-on-accent) !important;
+      background: var(--mbu-accent); border: none; border-radius: 4px; cursor: pointer;
       vertical-align: middle; white-space: nowrap; transition: background .15s; }
-    #ii-btn:hover { background: #5a32a3; }
+    #ii-btn:hover { background: var(--mbu-accent-hover); }
     #ii-btn.has-missing { background: #d63384; animation: ii-pulse 1.6s ease-in-out infinite; }
     #ii-btn.has-missing:hover { background: #a0225e; }
     #ii-btn .ii-status { font-size: 10px; font-weight: 600; opacity: .9; }
@@ -25807,8 +25824,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
          stays put. #471 ("movable, resizable, maximize button"): dropped !important
          from height so the corner resize handle and the maximize toggle can both
          change it — nothing else on an MB page has fought for it since. */
-      height: 92vh; max-height: 92vh; min-width: 480px; min-height: 320px; background: #fff;
-      border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,.3); z-index: 999999;
+      height: 92vh; max-height: 92vh; min-width: 480px; min-height: 320px; background: var(--mbu-bg);
+      border-radius: var(--mbu-radius-lg); box-shadow: 0 12px 48px rgba(0,0,0,.3); z-index: 999999;
       display: none; flex-direction: column; font-family: system-ui, sans-serif;
       color: #212529; overflow: hidden !important; resize: both; }
     #ii-modal.open { display: flex; }
@@ -25825,13 +25842,13 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-zen-s { font: 10.5px system-ui; color: #c3c8ce; }
     .ii-hicons { display: flex; gap: 6px; justify-self: end; padding-bottom: 5px; }
     .ii-hico { width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
-      border: 1px solid #e3e3e8; border-radius: 6px; background: #fff; color: #6c757d; font-size: 14px; cursor: pointer; }
-    .ii-hico:hover { background: #f1f3f5; color: #6f42c1; border-color: #d6c7ee; }
-    .ii-hico.on { background: #efe9fb; color: #6f42c1; border-color: #d6c7ee; }
+      border: 1px solid #e3e3e8; border-radius: var(--mbu-radius); background: var(--mbu-bg); color: #6c757d; font-size: 14px; cursor: pointer; }
+    .ii-hico:hover { background: #f1f3f5; color: var(--mbu-accent); border-color: #d6c7ee; }
+    .ii-hico.on { background: #efe9fb; color: var(--mbu-accent); border-color: #d6c7ee; }
     /* #471: plain status text where the ISRCs/Links tabs used to be — no columns
        to gate anymore, so nothing is hidden by it; just counts. */
     .ii-hdr-status { font: 600 12px system-ui; color: #868e96; white-space: nowrap; padding-bottom: 7px; }
-    .ii-hdr-status b { color: #6f42c1; }
+    .ii-hdr-status b { color: var(--mbu-accent); }
     /* the Clear menu — a small dropdown anchored under its header button */
     .ii-clear-wrap { position: relative; }
     /* #471 review: Clear is caret-only (no label) and sits rightmost, after Find
@@ -25839,27 +25856,27 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
        it's the first of the two right-pinned toolbar items. #419: a caret still
        needs a real hit area, not a bare glyph — same min footprint as .ii-hico. */
     .ii-clear-toggle { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 26px;
-      border: 1px solid #dee2e6; border-radius: 5px; background: #fff; color: #495057; font-size: 11px; cursor: pointer; }
-    .ii-clear-toggle:hover, .ii-clear-toggle[aria-expanded="true"] { background: #f3eefc; color: #6f42c1; border-color: #c9b6ee; }
+      border: 1px solid #dee2e6; border-radius: 5px; background: var(--mbu-bg); color: #495057; font-size: 11px; cursor: pointer; }
+    .ii-clear-toggle:hover, .ii-clear-toggle[aria-expanded="true"] { background: #f3eefc; color: var(--mbu-accent); border-color: #c9b6ee; }
     .ii-clear-menu { display: none; position: absolute; top: 100%; right: 0; z-index: 60; flex-direction: column;
-      min-width: 128px; margin-top: 4px; background: #fff; border: 1px solid #d8dce1; border-radius: 6px;
+      min-width: 128px; margin-top: 4px; background: var(--mbu-bg); border: 1px solid #d8dce1; border-radius: var(--mbu-radius);
       box-shadow: 0 6px 18px rgba(0,0,0,.14); padding: 4px; }
     .ii-clear-menu.open { display: flex; }
     .ii-clear-menu button { background: none; border: none; text-align: left; padding: 6px 10px; font-size: 12px;
       border-radius: 4px; cursor: pointer; color: #212529; }
-    .ii-clear-menu button:hover { background: #f3eefc; color: #6f42c1; }
+    .ii-clear-menu button:hover { background: #f3eefc; color: var(--mbu-accent); }
 
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-      padding: 8px 16px; border-bottom: 1px solid #eee; flex-shrink: 0; background: #fbfbfd; }
+      padding: 8px 16px; border-bottom: 1px solid var(--mbu-divider); flex-shrink: 0; background: #fbfbfd; }
     #ii-tools #ii-links-btn { margin-left: auto; }   /* pins Find links + the Clear caret to the toolbar's right edge */
     .ii-tbtn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px;
       font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; text-decoration: none;
-      border: 1px solid #dee2e6; background: #fff; color: #343a40; white-space: nowrap; }
+      border: 1px solid #dee2e6; background: var(--mbu-bg); color: #343a40; white-space: nowrap; }
     a.ii-tbtn:hover { text-decoration: none; }
     .ii-tbtn:hover { background: #f1f3f5; }
     .ii-tbtn:disabled { opacity: .5; cursor: default; }
-    .ii-tbtn.sx  { color: #6f42c1; border-color: #d6c7ee; }
+    .ii-tbtn.sx  { color: var(--mbu-accent); border-color: #d6c7ee; }
     .ii-tbtn.dz  { color: #ef5466; border-color: #f5c2c8; }
     .ii-tbtn.sp  { color: #1db954; border-color: #b6e5c6; }
     .ii-tbtn.bp  { color: #0a8754; border-color: #9fe0c2; }
@@ -25874,7 +25891,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-blabel { display: none; }
     #ii-tools.ii-show-icons .ii-bico { display: inline-flex; align-items: center; }
     #ii-tools.ii-show-text .ii-blabel { display: inline; }
-    .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
+    .ii-tbtn.primary { background: #198754; color: var(--mbu-text-on-accent); border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     /* #406: a collection is running — fade the whole button in/out so it's clearly in progress */
     #ii-submit.ii-collecting { animation: ii-btn-pulse 1.1s ease-in-out infinite; }
@@ -25884,7 +25901,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
        release in the group (not this release). Same dot on RG-sourced add candidates. */
     .ii-tbtn.ii-rg, .ii-tl.ii-rg { position: relative; }
     .ii-tbtn.ii-rg::after, .ii-tl.ii-rg::after { content: ''; position: absolute; top: -3px; right: -3px;
-      width: 7px; height: 7px; border-radius: 50%; background: #6f42c1; border: 1.5px solid #fff; }
+      width: 7px; height: 7px; border-radius: 50%; background: var(--mbu-accent); border: 1.5px solid #fff; }
     /* In-MB marker (#180): a provider button gets a ring around its icon + a
        brand tint when the release already has that platform's URL in MB; an
        un-tinted/un-ringed button means the link was found by Platform Check. */
@@ -25898,18 +25915,18 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-urladd.open { flex: 1 1 auto; min-width: 120px; }   /* expanded input fills the row (#180) */
     .ii-urladd-btn { display: inline-flex; align-items: center; justify-content: center;
       flex: 0 0 auto; width: 26px; height: 26px; padding: 0; border: 1px solid #ced4da; border-radius: 50%;
-      background: #fff; color: #6c757d; cursor: pointer; font-size: 16px; line-height: 1; }
+      background: var(--mbu-bg); color: #6c757d; cursor: pointer; font-size: 16px; line-height: 1; }
     .ii-urladd-btn:hover { background: #f1f3f5; border-color: #adb5bd; }
     .ii-urladd-btn svg { display: block; }
     .ii-urladd-input { display: none; padding: 4px 9px;
       border: 1px solid #ced4da; border-radius: 5px; font-size: 12px; }
-    .ii-urladd-input:focus { outline: none; border-color: #6f42c1; }
+    .ii-urladd-input:focus { outline: none; border-color: var(--mbu-accent); }
     .ii-urladd.open .ii-urladd-input { display: inline-block; flex: 1 1 auto; width: auto; min-width: 0; }
     .ii-urladd.open .ii-urladd-btn { border-radius: 5px; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
     .ii-prog.err { color: #dc3545; font-weight: 700; }
-    .ii-prog.continue { color: #6f42c1; font-weight: 700; cursor: pointer; text-decoration: underline dotted; }
-    .ii-prog.continue:hover { color: #5a32a3; }
+    .ii-prog.continue { color: var(--mbu-accent); font-weight: 700; cursor: pointer; text-decoration: underline dotted; }
+    .ii-prog.continue:hover { color: var(--mbu-accent-hover); }
 
     /* table */
     /* min-height:0 → the track list scrolls instead of pushing the footer out of
@@ -25931,14 +25948,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     /* a persistent line so the handle is discoverable, not just a hover surprise (#471 review) */
     .ii-col-resize::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 3px; width: 1px; background: #ced0d4; }
     .ii-col-resize:hover, .ii-col-resize.dragging { background: rgba(111,66,193,.35); }
-    .ii-col-resize:hover::after, .ii-col-resize.dragging::after { background: #6f42c1; width: 2px; }
+    .ii-col-resize:hover::after, .ii-col-resize.dragging::after { background: var(--mbu-accent); width: 2px; }
     .ii-medrow td { background: #eef0f3; font-weight: 700; font-size: 11.5px; color: #495057;
       padding: 5px 10px; border-top: 1px solid #dee2e6; }
     #ii-table td { padding: 6px 10px; border-bottom: 1px solid #f1f3f5; vertical-align: top; }
     .ii-pos { color: #adb5bd; font-variant-numeric: tabular-nums; width: 34px; white-space: nowrap; }
     .ii-track-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
     .ii-track-title a { color: inherit; text-decoration: none; }
-    .ii-track-title a:hover { color: #6f42c1; text-decoration: underline; }
+    .ii-track-title a:hover { color: var(--mbu-accent); text-decoration: underline; }
     .ii-track-artist { color: #6c757d; font-size: 11.5px; }
     .ii-track-dur { color: #adb5bd; font-size: 11px; font-family: 'Courier New', monospace; }
     /* #219/#301 — provider link icons live in the LINKED / ADD columns. Grey
@@ -25992,7 +26009,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-input-box { position: relative; flex-shrink: 0; width: 150px; }
     .ii-input { width: 100%; box-sizing: border-box; padding: 4px 22px 4px 7px; border: 1px solid #ced4da; border-radius: 4px;
       font-family: 'Courier New', monospace; font-size: 12.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
-    .ii-input:focus { outline: none; border-color: #6f42c1; }
+    .ii-input:focus { outline: none; border-color: var(--mbu-accent); }
     .ii-input.bad   { border-color: #dc3545; background: #fff0f1; }
     .ii-input.dup   { border-color: #fd7e14; background: #fff6ed; }
     .ii-input.dupother { border-color: #d63384; background: #ffe3ef; }
@@ -26016,7 +26033,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
        instead of starting flush left under the hover icon. */
     .ii-cands { margin-top: 4px; margin-left: 25px; display: flex; flex-direction: column; gap: 3px; width: auto; }
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
-      border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
+      border-radius: 4px; cursor: pointer; font-size: 11px; background: var(--mbu-bg); }
     .ii-cand:hover { background: #f0f6ff; border-color: #9ec5fe; }
     .ii-cands.ii-collapsed .ii-cand:not(.chosen) { display: none; }
     .ii-cand.chosen { box-shadow: inset 3px 0 0 #198754; }
@@ -26047,19 +26064,19 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       border: 1px solid #a3cfbb; border-radius: 11px; vertical-align: middle; letter-spacing: .3px; }
 
     /* sub-panels (setup / bulk) */
-    .ii-pane { display: none; padding: 14px 16px; border-bottom: 1px solid #eee; background: #fcfcfe; flex-shrink: 0; }
+    .ii-pane { display: none; padding: 14px 16px; border-bottom: 1px solid var(--mbu-divider); background: #fcfcfe; flex-shrink: 0; }
     /* an open pane scrolls internally past 45vh so it can never push the footer off */
     .ii-pane.open { display: block; max-height: 45vh; overflow-y: auto; overscroll-behavior: contain; }
     .ii-pane h3 { margin: 0 0 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
     .ii-pane-x { flex-shrink: 0; width: 19px; height: 19px; line-height: 1; padding: 0; font-size: 13px;
-      color: #6c757d; background: #fff; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; }
+      color: #6c757d; background: var(--mbu-bg); border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; }
     .ii-pane-x:hover { background: #f1f3f5; color: #212529; border-color: #adb5bd; }
     /* #301 standard config-window header: icon · name · version · Log · ? Help */
     .ii-cfg-hdr { margin: -2px 0 4px !important; padding-bottom: 9px; border-bottom: 1px solid #e9ecef; font-size: 14px !important; }
     .ii-cfg-hdr .ii-logo { vertical-align: -4px; }
-    .ii-cfg-name { font-weight: 700; color: #6f42c1; }
+    .ii-cfg-name { font-weight: 700; color: var(--mbu-accent); }
     .ii-cfg-ver { font: 400 11px system-ui; color: #adb5bd; }
-    .ii-cfg-lnk { font: 600 12px system-ui; color: #6f42c1; text-decoration: none; cursor: pointer;
+    .ii-cfg-lnk { font: 600 12px system-ui; color: var(--mbu-accent); text-decoration: none; cursor: pointer;
       background: none; border: none; padding: 2px 4px; }
     .ii-cfg-lnk:hover { text-decoration: underline; }
     .ii-cfg-grp { font: 700 10.5px system-ui; text-transform: uppercase; letter-spacing: .3px; color: #adb5bd; margin: 4px 0 6px; }
@@ -26071,14 +26088,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-pane .row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
     .ii-pane .row > div { flex: 1; min-width: 200px; }
     .ii-help { font-size: 11px; color: #6c757d; margin-top: 6px; line-height: 1.5; }
-    .ii-help a { color: #6f42c1; }
+    .ii-help a { color: var(--mbu-accent); }
     .ii-authstate { font-size: 11.5px; padding: 4px 0; }
     .ii-authstate.ok  { color: #198754; }
     .ii-authstate.no  { color: #dc3545; }
 
     /* toast */
     #ii-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
-      background: #212529; color: #fff; padding: 10px 18px; border-radius: 6px; font-size: 13px;
+      background: #212529; color: var(--mbu-text-on-accent); padding: 10px 18px; border-radius: var(--mbu-radius); font-size: 13px;
       font-family: system-ui, sans-serif; z-index: 1000000; opacity: 0; pointer-events: none; max-width: 80vw; }
     #ii-toast.ii-toast-show { animation: ii-toast-life 4.4s ease forwards; }
     #ii-toast.err { background: #b02a37; }
@@ -26105,31 +26122,31 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       border-top-right-radius: 5px; border-bottom-right-radius: 5px; cursor: pointer; }
     .ii-sxprov:hover { background: #dde8f7; color: #1b3f6e; }
     .ii-prov-menu { display: none; position: absolute; z-index: 60; flex-direction: column; min-width: 178px;
-      padding: 4px; background: #fff; border: 1px solid #d6c7ee; border-radius: 7px; box-shadow: 0 6px 22px rgba(40,20,80,.18); }
+      padding: 4px; background: var(--mbu-bg); border: 1px solid #d6c7ee; border-radius: 7px; box-shadow: 0 6px 22px rgba(40,20,80,.18); }
     .ii-prov-menu.open { display: flex; }
     .ii-prov-item { display: flex; align-items: center; gap: 8px; padding: 6px 9px; font-size: 12px; font-weight: 600;
       color: inherit; background: none; border: 0; border-radius: 5px; cursor: pointer; text-align: left; }
     .ii-prov-item:hover { background: #f3eefc; }
     .ii-prov-item.active { background: #ece4fb; }
-    .ii-prov-item.active::after { content: '✓'; margin-left: auto; color: #6f42c1; font-weight: 700; }
+    .ii-prov-item.active::after { content: '✓'; margin-left: auto; color: var(--mbu-accent); font-weight: 700; }
     .ii-prov-ico { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex-shrink: 0; }
     .ii-prov-ico svg { width: 16px; height: 16px; }
-    .ii-prov-sx { font-size: 10px; font-weight: 800; color: #6f42c1; }
+    .ii-prov-sx { font-size: 10px; font-weight: 800; color: var(--mbu-accent); }
     .ii-prov-name { color: #343a40; }
     /* per-track button shows the chosen provider's icon */
     .ii-sx svg { width: 13px; height: 13px; display: block; }
     /* collapsible "exact" toggle — collapsed by default so the toolbar stays compact */
     .ii-exact-toggle { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; font-size: 11px;
-      font-weight: 600; color: #8a7bb0; background: #fff; border: 1px solid #e0d7f2; border-radius: 5px; cursor: pointer; }
-    .ii-exact-toggle:hover { background: #f3eefc; color: #6f42c1; }
+      font-weight: 600; color: #8a7bb0; background: var(--mbu-bg); border: 1px solid #e0d7f2; border-radius: 5px; cursor: pointer; }
+    .ii-exact-toggle:hover { background: #f3eefc; color: var(--mbu-accent); }
     .ii-exact-toggle .ii-exact-car { font-size: 9px; transition: transform .15s; }
     /* NB: the state class is namespaced (ii-collapsed) on purpose — MB's common.css paints a
        20px absolute ::after fade overlay on ANY bare .collapsed, which blanketed the toolbar
        and swallowed clicks on the bottom half of every button (#414). */
     .ii-sx-group:not(.ii-collapsed) .ii-exact-toggle .ii-exact-car { transform: rotate(180deg); }
     /* a filled dot on the toggle when any exact option is active while collapsed */
-    .ii-exact-toggle.on { color: #6f42c1; border-color: #c9b6ee; background: #f3eefc; }
-    .ii-exact-toggle.on::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #6f42c1; }
+    .ii-exact-toggle.on { color: var(--mbu-accent); border-color: #c9b6ee; background: #f3eefc; }
+    .ii-exact-toggle.on::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--mbu-accent); }
     .ii-sx-group.ii-collapsed .ii-exact-set { display: none; }
     .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
     .ii-ex-all-lbl { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
@@ -26152,7 +26169,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       padding: 2px 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
     #ii-suspect-badge:hover { background: #ffe9cc; }
     .ii-lookup.pending:hover { color: #343a40; }
-    .ii-cand-refine { font-size: 10.5px; color: #6f42c1; cursor: pointer; padding: 2px 7px;
+    .ii-cand-refine { font-size: 10.5px; color: var(--mbu-accent); cursor: pointer; padding: 2px 7px;
       border: 1px dashed #d6c7ee; border-radius: 4px; background: #faf8fe; width: max-content; }
     .ii-cand-refine:hover { background: #f0e9fb; text-decoration: underline; }
     .ii-cand-pending { font-size: 10.5px; color: #6c757d; cursor: pointer; padding: 3px 8px;
@@ -26161,37 +26178,37 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
     /* SoundExchange refine panel */
     #ii-sxpanel { position: fixed; top: 9vh; right: 4vw; width: 560px; max-width: 92vw; max-height: 78vh;
-      background: #fff; border: 1px solid #cdb8ee; border-radius: 10px; box-shadow: 0 14px 44px rgba(0,0,0,.32);
+      background: var(--mbu-bg); border: 1px solid #cdb8ee; border-radius: var(--mbu-radius-lg); box-shadow: 0 14px 44px rgba(0,0,0,.32);
       z-index: 1000001; display: none; flex-direction: column; overflow: hidden; font-family: system-ui, sans-serif; }
     #ii-sxpanel.open { display: flex; }
     .ii-sxp-hdr { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: #f7f3fe;
       border-bottom: 1px solid #e6dcf7; cursor: move; user-select: none; }
     .ii-sxp-hdr .t { flex: 1; font-size: 13px; font-weight: 700; color: #4b2e83; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ii-sxp-hdr .t b { color: #6f42c1; }
+    .ii-sxp-hdr .t b { color: var(--mbu-accent); }
     #ii-sxp-close { background: none; border: none; font-size: 17px; color: #6c757d; cursor: pointer; line-height: 1; }
     #ii-sxp-close:hover { color: #212529; }
     .ii-sxp-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; padding: 10px 13px 10px; align-items: start; }
     .ii-sxp-field { position: relative; display: flex; align-items: center; }
     #ii-sxp-f-title { grid-column: 1; } #ii-sxp-f-artist { grid-column: 2; }
     #ii-sxp-f-release { grid-column: 1 / 3; }
-    .ii-sxp-inp { width: 100%; padding: 6px 31px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
-    .ii-sxp-inp:focus { outline: none; border-color: #6f42c1; }
+    .ii-sxp-inp { width: 100%; padding: 6px 31px; border: 1px solid #ced4da; border-radius: var(--mbu-radius); font-size: 13px; box-sizing: border-box; }
+    .ii-sxp-inp:focus { outline: none; border-color: var(--mbu-accent); }
     .ii-sxp-field.off .ii-sxp-inp { color: #adb5bd; background: #f8f9fa; }
     .ii-sxp-en { position: absolute; left: 8px; width: 15px; height: 15px; margin: 0; cursor: pointer; z-index: 1; flex-shrink: 0; }
     .ii-sxp-E { position: absolute; right: 5px; width: 23px; height: 23px; padding: 0; display: inline-flex; align-items: center;
-      justify-content: center; font-size: 12px; font-weight: 700; color: #adb5bd; background: #fff; border: 1px solid #e9ecef;
+      justify-content: center; font-size: 12px; font-weight: 700; color: #adb5bd; background: var(--mbu-bg); border: 1px solid #e9ecef;
       border-radius: 4px; cursor: pointer; }
-    .ii-sxp-E:hover { color: #6f42c1; border-color: #d6c7ee; }
+    .ii-sxp-E:hover { color: var(--mbu-accent); border-color: #d6c7ee; }
     .ii-sxp-E.on { color: #212529; border-color: #212529; }
     .ii-sxp-field.off .ii-sxp-E { opacity: .4; pointer-events: none; }
     #ii-sxp-search { grid-column: 3; grid-row: 1 / 3; align-self: stretch; padding: 0 18px; border: none;
-      border-radius: 6px; background: #6f42c1; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
-    #ii-sxp-search:hover { background: #5a32a3; } #ii-sxp-search:disabled { background: #adb5bd; }
+      border-radius: var(--mbu-radius); background: var(--mbu-accent); color: var(--mbu-text-on-accent); font-size: 13px; font-weight: 700; cursor: pointer; }
+    #ii-sxp-search:hover { background: var(--mbu-accent-hover); } #ii-sxp-search:disabled { background: #adb5bd; }
     .ii-sxp-status { padding: 2px 13px; font-size: 11px; color: #6c757d; min-height: 14px; }
     .ii-sxp-status.err { color: #dc3545; }
     .ii-sxp-results { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 4px 13px 12px; display: flex; flex-direction: column; gap: 4px; }
     .ii-sxp-row { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid #e9ecef;
-      border-radius: 6px; cursor: pointer; overflow: hidden; flex-shrink: 0; }
+      border-radius: var(--mbu-radius); cursor: pointer; overflow: hidden; flex-shrink: 0; }
     .ii-sxp-row:hover { background: #f0f6ff; border-color: #9ec5fe; }
     .ii-sxp-row.best { border-color: #6ea8fe; background: #d4e6ff; }
     .ii-sxp-row.warn { border-color: #ffe08a; background: #fff3cd; }
@@ -26203,8 +26220,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-sxp-meta .a { display: block; font-size: 12px; color: #212529; white-space: normal; word-break: break-word; line-height: 1.35; }
     .ii-sxp-meta .b { display: block; font-size: 10.5px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-sxp-inmb { font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
-    .ii-sxp-foot { padding: 8px 13px; border-top: 1px solid #eee; background: #fbfbfd; flex-shrink: 0; }
-    .ii-sxp-foot a { font-size: 11.5px; font-weight: 600; color: #6f42c1; text-decoration: none; }
+    .ii-sxp-foot { padding: 8px 13px; border-top: 1px solid var(--mbu-divider); background: #fbfbfd; flex-shrink: 0; }
+    .ii-sxp-foot a { font-size: 11.5px; font-weight: 600; color: var(--mbu-accent); text-decoration: none; }
     .ii-sxp-foot a:hover { text-decoration: underline; }
 
     /* ──────────────────────────────────────────────────────────────────
@@ -30510,7 +30527,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.23","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.7.23","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.1.212000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -30738,7 +30755,12 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   }, true);
 
   // ── styles ───────────────────────────────────────────────────────────────────
-  const css = `
+  // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
+  // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
+  // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
+  const MBU_TOKENS = ':root{--mbu-bg:#fff;--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:#222;--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:#cfc6e6;--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000}';
+  // </ST-TOKENS>
+  const css = MBU_TOKENS + `
   fieldset.editnote, .editnote { max-width:100% !important; }
   /* On the release editor the edit note sits in a 540px .half-width column whose
      only sibling is the changes warning (not a guidelines column), so give that
@@ -30840,7 +30862,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-cf-cnt { min-width:18px; text-align:center; font:700 10px/16px -apple-system,Segoe UI,Arial,sans-serif; color:#1f7a44; background:#e7f4ec; border-radius:9px; padding:0 5px; }
   .mmth-cf-cnt:empty { background:none; }
   .mmth-cf-cnt.mmth-cf-zero { color:#8a968f; background:#eef1ef; }
-  .mmth-cf-cnt.mmth-cf-bad { color:#fff; background:#c0392b; }
+  .mmth-cf-cnt.mmth-cf-bad { color:var(--mbu-text-on-accent); background:#c0392b; }
   .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; visibility:hidden; }
   .mmth-cf-row:hover .mmth-cf-del { visibility:visible; }
   .mmth-cf-del:hover { background:#f0d9d9; }
@@ -30851,20 +30873,20 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-cf-row.mmth-cf-off { background:#fafbfa; }
   .mmth-cf-row.mmth-cf-off .mmth-cf-in, .mmth-cf-row.mmth-cf-off .mmth-cf-cnt, .mmth-cf-row.mmth-cf-off .mmth-cf-sub { opacity:.4; }
   .mmth-cf-row.mmth-cf-off .mmth-cf-tog { color:#9aa6a0; }
-  .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
   .mmth-cf-add:hover { background:#eef5f0; }
   .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
   .mmth-cf-reset { margin-left:6px; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
   .mmth-cf-reset:hover { background:#eef5f0; border-color:#5aa67e; }
   .mmth-cf-mode { border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
   .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
-  .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:6px; padding:7px; resize:vertical; }
+  .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:var(--mbu-radius); padding:7px; resize:vertical; }
   .mmth-cf-json:focus { outline:none; border-color:#5aa67e; }
   .mmth-cf-jsonrow { display:flex; align-items:center; gap:9px; margin-top:6px; }
-  .mmth-cf-jsonapply { border:1px dashed #b9c6be; background:#f7faf8; border-radius:6px; padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-jsonapply { border:1px dashed #b9c6be; background:#f7faf8; border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
   .mmth-cf-jsonapply:hover { background:#eef5f0; }
   .mmth-cf-jsonmsg { font-size:11px; color:#8a968f; }
-  .mmth-cf-jsonmsg.mmth-cf-bad { color:#c0392b; }
+  .mmth-cf-jsonmsg.mmth-cf-bad { color:var(--mbu-error); }
   /* #304: import/export pane (the pane IS the flex column — no inner .mmth-io wrapper) */
   .mmth-cfgpane[data-pane="io"] { display:flex; flex-direction:column; gap:8px; }
   .mmth-io-modes { display:flex; flex-flow:row wrap; gap:6px 18px; font-size:12px; align-items:center; }
@@ -30872,7 +30894,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   /* width/height !important to beat MB's #content textarea form CSS (#304) */
   .mmth-io-ta { width:100% !important; box-sizing:border-box; height:160px !important; min-height:120px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:6px 8px; font:13px/1.55 -apple-system,Segoe UI,Arial,sans-serif; }
   .mmth-io-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:#fff; border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
+  .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:var(--mbu-bg); border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
   .mmth-io-btn:hover { background:#eaf5ee; border-color:#5aa67e; }
   .mmth-io-msg { font-size:11px; color:#8a978f; }
   .mmth-list { flex:1 1 auto; overflow-y:auto; scrollbar-width:none; }
@@ -30893,8 +30915,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-ra { cursor:pointer; border:none; background:none; color:#7d8a82; font-size:11px; line-height:1; padding:1px 2px; border-radius:3px; }
   .mmth-ra:hover { background:#cfe9d8; color:#1f5c3d; }
   .mmth-empty { padding:12px 8px; color:#9aa6a0; font-style:italic; text-align:center; }
-  .mmth-pop { position:fixed; z-index:2147483647; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);   /* max — the config/syntax popup must clear any host modal (GT/ISRC live near max) */
-              padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:280px; }
+  .mmth-pop { position:fixed; z-index:2147483647; background:var(--mbu-bg); border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);   /* max — the config/syntax popup must clear any host modal (GT/ISRC live near max) */
+              padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:var(--mbu-text); width:280px; }
   .mmth-cfg { width:360px; max-height:90vh; overflow:hidden; }   /* #304 wider config window; cap height — the Babies list scrolls internally */
   .mmth-cfg.mmth-cfg-wide { width:min(660px,94vw); }   /* Fields tab: roomier so each custom-field row fits one line */
   .mmth-pop h4 { margin:-10px -12px 8px; padding:6px 10px; font-size:13px; display:flex; align-items:center; gap:6px; background:#f1f6f3; border-bottom:1px solid #e7eee9; border-radius:8px 8px 0 0; }
@@ -30909,7 +30931,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-pop code { background:#f1f4f2; border-radius:3px; padding:0 3px; font-size:12px; }
   .mmth-pop .mmth-syn { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:4px 0; }
   .mmth-pop .mmth-sub { font-weight:600; font-size:12px; margin:8px 0 2px; }
-  .mmth-toast { position:fixed; z-index:100000; background:#2c3a33; color:#fff; padding:6px 12px; border-radius:6px; font:13px sans-serif; box-shadow:0 4px 14px rgba(0,0,0,.25); left:50%; top:14px; transform:translateX(-50%); }
+  .mmth-toast { position:fixed; z-index:100000; background:#2c3a33; color:var(--mbu-text-on-accent); padding:6px 12px; border-radius:var(--mbu-radius); font:13px sans-serif; box-shadow:0 4px 14px rgba(0,0,0,.25); left:50%; top:14px; transform:translateX(-50%); }
   /* While an MB dialog/popover is open, hide Mammoth's panel (incl. the minimized
      badge) and its popovers — MB's dialogs carry no z-index, so our UI would float
      on top of them. visibility keeps the docked panel's layout (no jump). #313
@@ -32116,7 +32138,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.204500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.204500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.212000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.212000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -32740,8 +32762,15 @@ const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0 0 30 
 function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = size || 16; return i.svg.replace(/<svg\b([^>]*)>/, function (m, a) { a = a.replace(/\s(?:width|height)="[^"]*"/g, ''); var ns = /\bxmlns=/.test(a) ? '' : ' xmlns="http://www.w3.org/2000/svg"'; return '<svg' + a + ns + ' width="' + size + '" height="' + size + '">'; }); }
 function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
 // </ST-ICONS>
+// The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
+// inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
+// <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
+const MBU_TOKENS = ':root{--mbu-bg:#fff;--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:#222;--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:#cfc6e6;--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000}';
+// </ST-TOKENS>
+
 container.innerHTML = `
 <style>
+${MBU_TOKENS}
   /* MB's site CSS marks any outbound link with a red external-link ::after icon
    * via selectors that beat our specificity unless we anchor on #sidebar. The
    * ID-prefixed selector (specificity 1,2,2) beats anything class-only. */
@@ -32749,7 +32778,7 @@ container.innerHTML = `
   #sidebar .online-search-box a::after { content: none !important; display: none !important; background: none !important; background-image: none !important; }
   #sidebar .online-search-box a img.external,
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
-  .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: #222; }
+  .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: var(--mbu-text); }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
    * clean match · GRAY icon+name = found but track-count mismatch · faint = not found. Match vs mismatch is
@@ -32764,7 +32793,7 @@ container.innerHTML = `
   #mb-pc-panel.pc-icons-mode.pc-mark-glow   .pc-inmb .pc-plat-ico { background: radial-gradient(circle, rgba(59,130,196,.6), rgba(59,130,196,0) 70%); }
   /* presence — fades/grays the icon + name regardless of in-MB */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
-  #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
+  #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: var(--mbu-text-weak) !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
   /* Compact unmatched providers (#355): when on, every provider starts compact — a
      strip of dimmed brand icons — and rises into its full row when it matches; the
@@ -32798,7 +32827,7 @@ container.innerHTML = `
      "Use format for link confidence" option is on. Stacks beside the amber
      barcode bar when a row is both. */
   /* setup panel (#188): section headers + nav-button hovers */
-  #mb-provider-modal-card .pc-setup-sec { font-weight: 700; color: #444; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; margin: 14px 0 4px; padding-bottom: 3px; border-bottom: 1px solid #EEE; }
+  #mb-provider-modal-card .pc-setup-sec { font-weight: 700; color: #444; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; margin: 14px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider); }
   #mb-provider-modal-card .pc-setup-nav:hover { background: #ECECF1; }
   #mb-provider-modal-card .pc-setup-back:hover { text-decoration: underline; }
   #mb-pc-panel .pc-row.pc-format-diff { box-shadow: inset 3px 0 0 #7e57c2; }
@@ -32836,7 +32865,7 @@ container.innerHTML = `
   .pc-cell-name { color: inherit; text-decoration: none; font-weight: 600; font-size: var(--pc-name-size, 12px);
                   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pc-cell-year, .pc-cell-format, .pc-cell-label {
-                  font-size: 10px; color: #999; font-family: sans-serif; white-space: nowrap; overflow: hidden; }
+                  font-size: 10px; color: var(--mbu-text-weak); font-family: sans-serif; white-space: nowrap; overflow: hidden; }
   .pc-cell-label { text-overflow: ellipsis; min-width: 0; }
   /* format-family quadrant marker (#350) — vertically centered against the meta text */
   .pc-cell-format .pc-fmt { vertical-align: -2px; }
@@ -32869,11 +32898,11 @@ container.innerHTML = `
   #mb-pc-panel.pc-layout-1row .pc-cell-label  { grid-column: 5; min-width: 0; }   /* fills + truncates */
   #mb-pc-panel.pc-layout-1row .pc-cell-master { grid-column: 6; text-align: center; }
   #mb-pc-panel.pc-layout-1row .pc-cell-val    { grid-column: 7; }
-  #mb-pc-panel.pc-layout-1row .pc-rows-sep    { grid-column: 1 / -1; border-bottom: 1px solid #EEE; }
+  #mb-pc-panel.pc-layout-1row .pc-rows-sep    { grid-column: 1 / -1; border-bottom: 1px solid var(--mbu-divider); }
 
   /* 2-row — legacy stacked look: name line, then a meta line below */
   #mb-pc-panel.pc-layout-2row .pc-rows { display: flex; flex-direction: column; gap: var(--pc-row-gap, 5px); }
-  #mb-pc-panel.pc-layout-2row .pc-rows-sep { border-bottom: 1px solid #EEE; }
+  #mb-pc-panel.pc-layout-2row .pc-rows-sep { border-bottom: 1px solid var(--mbu-divider); }
   #mb-pc-panel.pc-layout-2row .pc-row {
     display: grid; align-items: center; column-gap: 4px;
     grid-template-columns: 22px minmax(0,1fr) auto 24px;
@@ -32884,7 +32913,7 @@ container.innerHTML = `
   #mb-pc-panel.pc-layout-2row .pc-cell-val    { grid-area: 1 / 4; }
   #mb-pc-panel.pc-layout-2row .pc-meta {
     grid-column: 2 / -1; grid-row: 2; line-height: 1.2; padding-top: 0.3rem;
-    font-size: 10px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+    font-size: 10px; color: var(--mbu-text-weak); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
   }
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-year,
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-format,
@@ -32963,6 +32992,7 @@ const LOG_SOURCE_COLORS = {
 };
 logModal.innerHTML = `
 <style>
+${MBU_TOKENS}
   .pc-log-chip { display: inline-block; padding: 3px 9px; margin-right: 4px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid #444; }
   .pc-log-chip.off { opacity: 0.35; background: transparent !important; color: #AAA !important; }
   ${LOG_SOURCES.map(s => `#mb-finder-log-panel.pc-hide-${s.toLowerCase()} [data-platform="${s.toLowerCase()}"] { display: none; }`).join('\n  ')}
