@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.195145
+// @version      2026.9.1.201724
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.195145 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.174534\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1.201500");
+  console.log('%c String Theory %c v2026.9.1.201724 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.174534\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1.204500");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -32103,7 +32103,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.201500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.201500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.204500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.204500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -32293,7 +32293,7 @@ async function runInjectHelper(entityType) {
         const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
         if (tab) tab.click();
         await pcWait(200);
-        await injectInto(urls, key);
+        const result = await injectInto(urls, key) || { injected: 0 };
         // #464: right-click "add in background" — auto-submit once the URLs are in,
         // and mark this tab so the redirect back to the clean /release/<mbid> page
         // (only that landing page is @match'd; release-group has no such page) can
@@ -32302,7 +32302,19 @@ async function runInjectHelper(entityType) {
         // master URL. Its form is NOT the release wizard, so the button differs —
         // see findSubmit below.
         const autoCommit = /pc-autocommit/.test(location.hash);
-        if (autoCommit) {
+        // #556 (majkinetor): NEVER submit a run that added nothing. This used to
+        // fire unconditionally, and the release editor's submit is enabled by ANY
+        // pending change — so with Apollo's auto search-and-replace configured, its
+        // edit made the form dirty, Platform Check submitted it as if the links had
+        // gone in (edit 152603580: an S&R edit, no link), then closed the tab and
+        // reloaded the opener. The user got an edit they did not ask for at that
+        // moment, and every diagnostic went with the closed tab. Failing here means
+        // the tab stays open with its banner and console intact, and the queued
+        // links survive for a retry — which is what actually worked on his 2nd try.
+        if (autoCommit && !result.injected) {
+            try { console.warn('[Platform Check] background add: nothing landed — NOT submitting. The tab is left open and the links stay queued; press ↻ or the + again to retry.'); } catch (e) {}
+            showInjectBanner('Platform Check: no link could be added — not submitting. The links are still queued, so you can retry; this tab is left open on purpose.', [], { fail: true });
+        } else if (autoCommit) {
             // #465 (chaban-mb): the release editor is the multi-step wizard, not the
             // simple artist/label/place form — its submit button is #enter-edit. Same
             // finder Apollo's compact nav bar already uses for this exact form.
@@ -32401,21 +32413,24 @@ async function injectInto(urls, storageKey) {
         // MutationObserver-backed wait — resolves the moment MB renders an
         // empty "Add another link" input, regardless of how long the page
         // takes to mount the External Links section.
-        const input = await pcWaitFor(findAddLinkInput, 10000);
-        if (!input) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared' }); break; }
+        const input0 = await pcWaitFor(findAddLinkInput, 10000);
+        if (!input0) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared' }); break; }
 
-        input.focus();
-        setVal.call(input, url);
-        input.dispatchEvent(new Event('input',  { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
-        input.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Enter', code: 'Enter', bubbles: true }));
-        input.blur();
-        // ⚠ #556: `injected` is NOT bumped here. It gates whether the pending
-        // payload is deleted below, and counting a dispatched keystroke rather
-        // than a confirmed row meant a run where nothing landed still consumed
-        // the queue — so the failure could not retry and did not self-heal.
-        // It is incremented once the row is actually confirmed, further down.
+        // ⚠ #556: `injected` is NOT bumped for a dispatched keystroke. It gates
+        // whether the pending payload is consumed below, and counting the
+        // keystroke rather than a confirmed row meant a run where nothing landed
+        // still ate the queue — so the failure could not retry and did not
+        // self-heal. It is incremented once the row is actually confirmed.
+        const typeAndEnter = (el) => {
+            el.focus();
+            setVal.call(el, url);
+            el.dispatchEvent(new Event('input',  { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+            el.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Enter', code: 'Enter', bubbles: true }));
+            el.blur();
+        };
+        typeAndEnter(input0);
 
         // Wait for the URL row + type row to materialise.
         const appleId = url.match(/music\.apple\.com\/[^/]+\/album\/(?:[^/?#]+\/)?(\d+)\b/)?.[1];
@@ -32430,8 +32445,22 @@ async function injectInto(urls, storageKey) {
             const h = a?.getAttribute('href') || '';
             return h === url || pcSameUrl(h, url) || (appleId && new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(h));
         };
-        const urlRow = await pcWaitFor(() => [...document.querySelectorAll('tr.external-link-item')].find(matchRowByUrl), 5000);
-        if (!urlRow) { reports.push({ url, ok: false, miss: 'URL row never appeared after Enter' }); continue; }
+        const findRow = () => [...document.querySelectorAll('tr.external-link-item')].find(matchRowByUrl);
+        // #556 (majkinetor): "tab opened, nothing in tab […] I repeated it and it
+        // worked" — the same URL that fails once succeeds on a plain retry, which
+        // is the signature of losing the keystroke to a React re-render rather
+        // than of MusicBrainz rejecting the link. So retry it here instead of
+        // making the user do it: re-query the input (the old node is often gone by
+        // now) and type again. Three attempts, ~4s each.
+        let urlRow = await pcWaitFor(findRow, 4000);
+        for (let attempt = 2; !urlRow && attempt <= 3; attempt++) {
+            const again = findAddLinkInput();
+            if (!again) break;
+            try { console.warn(`[Platform Check] inject: no row for ${url} yet — retry ${attempt}/3`); } catch (e) {}
+            typeAndEnter(again);
+            urlRow = await pcWaitFor(findRow, 4000);
+        }
+        if (!urlRow) { reports.push({ url, ok: false, miss: 'URL row never appeared after Enter (3 attempts)' }); continue; }
         injected++;   // #556: a CONFIRMED row — see the note where Enter is dispatched
 
         // Type-force if applicable.  The Type chooser lives in the NEXT
@@ -32503,18 +32532,39 @@ async function injectInto(urls, storageKey) {
     // nothing and said nothing" was most of what made this hard to diagnose.
     // Leave a trace in the tab's own console either way, naming each URL and what
     // became of it, so a failing run in the wild can actually be read back.
+    const okUrls = reports.filter(r => r.ok).map(r => r.url);
     try {
-        const okN = reports.filter(r => r.ok).length;
-        console.info(`[Platform Check] inject: ${okN}/${reports.length} link(s) landed on ${storageKey}`);
+        console.info(`[Platform Check] inject: ${okUrls.length}/${reports.length} link(s) landed on ${storageKey}`);
         reports.filter(r => !r.ok).forEach(r => console.warn(`[Platform Check] inject FAILED: ${r.url} — ${r.miss}`));
         if (!injected) console.warn('[Platform Check] inject: nothing was confirmed — the queued links are kept for a retry');
     } catch (e) {}
-    if (injected > 0) localStorage.removeItem(storageKey);
+
+    // #556 (majkinetor): consume ONLY what actually landed. `injected > 0` used to
+    // drop the whole payload, so a partial run silently lost every URL that had
+    // failed — the 2-of-3 case, unrecoverable in exactly the same way the 0-of-3
+    // case was. What's left stays queued and the next attempt picks it up.
+    try {
+        const raw = localStorage.getItem(storageKey);
+        const pend = raw ? JSON.parse(raw) : null;
+        if (pend && typeof pend === 'object') {
+            const left = {};
+            for (const [k, v] of Object.entries(pend)) {
+                if (v && !okUrls.some(u => pcSameUrl(u, v) || u === v)) left[k] = v;
+            }
+            if (Object.keys(left).length) localStorage.setItem(storageKey, JSON.stringify(left));
+            else localStorage.removeItem(storageKey);
+        } else if (injected > 0) {
+            localStorage.removeItem(storageKey);
+        }
+    } catch (e) {
+        if (injected > 0) { try { localStorage.removeItem(storageKey); } catch (_) {} }
+    }
+
     // Set the edit note (as the script used to), and report the result quietly
     // inline next to the External links heading instead of a centred popup.
-    const okUrls = reports.filter(r => r.ok).map(r => r.url);
     if (okUrls.length) setEditNote(pcEditNote(okUrls));
     showInlineSummary(reports);
+    return { injected, reports, okUrls };
 }
 
 // Build the edit note: a header line (name/version/author/homepage from GM_info,
