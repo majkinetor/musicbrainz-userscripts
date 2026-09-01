@@ -46,6 +46,7 @@ Works on one cover or the whole selection:
 - **File drop** — choose local files and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see [File names ⇄ types](#file-names--types)).
 - **Folder upload** (#359) — drop a **folder** on the gallery, or **Shift-click** the drop zone to browse one. It stages the folder's image/PDF files recursively, but bounded: **one level of subfolders deep** and up to **100 files** (a stray huge tree can't flood the gallery).
 - **URL link** — uses [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch covers from Discogs, Apple, Spotify, Bandcamp…
+  The **`URL (N)`** toolbar button opens a panel listing every source this release offers — its linked platforms plus any [registered providers](#plugin-api) — with one **⬇ Import from …** per source and an **⬇ Import all N sources** below them. **Right-click the button** to run *Import all* straight away without opening the panel ([#558](https://github.com/majkinetor/musicbrainz-userscripts/issues/558)); with nothing to import it opens the panel instead, where **By URL** still is.
 - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover.
 - **Reverse-image search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](./as_picker/README.md) companion installed, click the better copy on the results (or any site reachable from there) and it's sent straight back into the gallery.
 - Fresh covers shown faster than the native UI.
@@ -158,6 +159,7 @@ window.ArtStation?.registerProvider({
 
 | Gesture | Action |
 |---|---|
+| **right-click the `URL (N)` button** | import from all N sources at once, skipping the panel ([#558](https://github.com/majkinetor/musicbrainz-userscripts/issues/558)) |
 | right-click / right-drag | select / paint-select covers |
 | scroll wheel over the size slider | resize thumbnails |
 | **hold right-click + scroll wheel** (anywhere in the gallery) | resize thumbnails |
