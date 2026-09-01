@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.174555
+// @version      2026.9.1.192334
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.174555 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.174534\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1");
+  console.log('%c String Theory %c v2026.9.1.192334 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.174534\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1.192309");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -32103,7 +32103,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.192309","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.192309","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -32250,8 +32250,28 @@ function pcWaitFor(predicate, timeoutMs = 10000) {
     });
 }
 
+// #556: MusicBrainz sometimes serves a "Verifying your browser" challenge instead
+// of the page. The URL is unchanged, so the inject helper would run against the
+// challenge, find no "Add another link" input, and burn the queued payload. Falcon
+// hit exactly this and had to add the same guard (#551). Detected the same way.
+const PC_VERIFY_TITLE_RE = /^\s*Verifying your browser\s*$/i;
+const PC_VERIFY_NOSCRIPT_RE = /JavaScript is required to access this page/i;
+function pcIsVerifyInterstitial(doc) {
+    const d = doc || document;
+    try {
+        if (PC_VERIFY_TITLE_RE.test(d.title || '')) return true;
+        return [...d.querySelectorAll('noscript')].some(n => PC_VERIFY_NOSCRIPT_RE.test(n.textContent || ''));
+    } catch (e) { return false; }
+}
+
 async function runInjectHelper(entityType) {
     try {
+        // Stand down entirely on the browser-check page: the real page loads a
+        // moment later and this runs again there, with the payload still intact. #556
+        if (pcIsVerifyInterstitial()) {
+            try { console.info('[Platform Check] MusicBrainz served its "Verifying your browser" challenge instead of the editor — standing down, the queued links are untouched.'); } catch (e) {}
+            return;
+        }
         const re   = new RegExp(`/${entityType}/([0-9a-f-]{36})`);
         const mbid = (window.location.pathname.match(re) || [])[1];
         if (!mbid) return;
@@ -32382,17 +32402,28 @@ async function injectInto(urls, storageKey) {
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
         input.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Enter', code: 'Enter', bubbles: true }));
         input.blur();
-        injected++;
+        // ⚠ #556: `injected` is NOT bumped here. It gates whether the pending
+        // payload is deleted below, and counting a dispatched keystroke rather
+        // than a confirmed row meant a run where nothing landed still consumed
+        // the queue — so the failure could not retry and did not self-heal.
+        // It is incremented once the row is actually confirmed, further down.
 
         // Wait for the URL row + type row to materialise.
         const appleId = url.match(/music\.apple\.com\/[^/]+\/album\/(?:[^/?#]+\/)?(\d+)\b/)?.[1];
+        // #556: MusicBrainz REWRITES the URL as it creates the row (locale segment,
+        // www., trailing slash, stripped query). An exact `h === url` therefore
+        // missed rows that had been created perfectly well, reported them as "URL
+        // row never appeared", and — because the payload was consumed regardless —
+        // left the tab open with nothing retryable. Compare on resource identity.
+        // The appleId clause is kept as a belt-and-braces fallback.
         const matchRowByUrl = r => {
             const a = r.querySelector('a[href]');
             const h = a?.getAttribute('href') || '';
-            return h === url || (appleId && new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(h));
+            return h === url || pcSameUrl(h, url) || (appleId && new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(h));
         };
         const urlRow = await pcWaitFor(() => [...document.querySelectorAll('tr.external-link-item')].find(matchRowByUrl), 5000);
         if (!urlRow) { reports.push({ url, ok: false, miss: 'URL row never appeared after Enter' }); continue; }
+        injected++;   // #556: a CONFIRMED row — see the note where Enter is dispatched
 
         // Type-force if applicable.  The Type chooser lives in the NEXT
         // sibling <tr.relationship-item> (verified live on MB).
@@ -32456,6 +32487,16 @@ async function injectInto(urls, storageKey) {
         }
     }
 
+    // #556: a background add tab has no panel and therefore no log — "it did
+    // nothing and said nothing" was most of what made this hard to diagnose.
+    // Leave a trace in the tab's own console either way, naming each URL and what
+    // became of it, so a failing run in the wild can actually be read back.
+    try {
+        const okN = reports.filter(r => r.ok).length;
+        console.info(`[Platform Check] inject: ${okN}/${reports.length} link(s) landed on ${storageKey}`);
+        reports.filter(r => !r.ok).forEach(r => console.warn(`[Platform Check] inject FAILED: ${r.url} — ${r.miss}`));
+        if (!injected) console.warn('[Platform Check] inject: nothing was confirmed — the queued links are kept for a retry');
+    } catch (e) {}
     if (injected > 0) localStorage.removeItem(storageKey);
     // Set the edit note (as the script used to), and report the result quietly
     // inline next to the External links heading instead of a centred popup.
@@ -34174,6 +34215,44 @@ async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label
 // isrc_scout's Beatport OAuth handoff), so localStorage is the right layer:
 // it's still shared across every musicbrainz.org tab, just not swept into a
 // script-manager sync/backup the way a real setting should be.
+// #556: "the same album" identity for two URL strings.
+//
+// MusicBrainz stores whatever URL the editor was given, and the provider
+// searches here produce a different spelling of the same page all the time —
+// `open.spotify.com/intl-de/album/X` vs `/album/X`, `music.apple.com/us/album/
+// slug/123` vs `/album/123`, `qobuz.com/us-en/album/…`, `listen.tidal.com` vs
+// `tidal.com/browse/album/…`. The `existing` map above already anticipates every
+// one of those variants; the comparison that consumed it did not, and used
+// `===`. A missed match leaves a link that IS on the release looking un-added,
+// so the panel re-queues it and the editor no-ops on a duplicate.
+//
+// Compare on a provider id where there is one (they are stable and unambiguous),
+// otherwise on a host+path normalised for the noise MB and the providers add.
+const PC_URL_ID = [
+    [/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/([a-z0-9]+)/i,        'spotify'],
+    [/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(\d+)/i,     'apple'],
+    [/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/i,               'deezer'],
+    [/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i,               'tidal'],
+    [/(?:www\.)?discogs\.com\/(?:[a-z-]+\/)?release\/(\d+)/i,             'discogs'],
+    [/(?:www\.)?discogs\.com\/(?:[a-z-]+\/)?master\/(\d+)/i,              'discogsmaster'],
+    [/(?:www\.)?beatport\.com\/release\/[^/]+\/(\d+)/i,                   'beatport'],
+];
+function pcUrlKey(u) {
+    const s = String(u || '').trim();
+    if (!s) return '';
+    for (const [re, name] of PC_URL_ID) { const m = s.match(re); if (m) return name + ':' + m[1].toLowerCase(); }
+    // no stable id (bandcamp, qobuz, volumo, hdtracks, soundcloud) — normalise the
+    // spelling instead: scheme, common host prefixes, locale segment, query and
+    // fragment, trailing slash.
+    try {
+        const url = new URL(s);
+        const host = url.hostname.toLowerCase().replace(/^(?:www|m|listen|play|open)\./, '');
+        let path = url.pathname.replace(/\/+$/, '');
+        path = path.replace(/^\/(?:[a-z]{2}-[a-z]{2}|[a-z]{2}|intl-[a-z-]+|browse)(?=\/)/i, '');
+        return host + path.toLowerCase();
+    } catch (e) { return s.toLowerCase().replace(/[?#].*$/, '').replace(/\/+$/, ''); }
+}
+function pcSameUrl(a, b) { return !!a && !!b && pcUrlKey(a) === pcUrlKey(b); }
 function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
 function cacheGet(mbid, platform) {
     const raw = localStorage.getItem(cacheKey(mbid, platform));
@@ -36217,10 +36296,13 @@ async function runScansInner() {
     for (const p of ALL_PROVIDERS) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
-        if (existing[p] === cached.url && cached.source !== 'MB rels') {
+        // #556: pcSameUrl, not === . MB rewrites URLs on insert, so an exact
+        // comparison missed links that ARE on the release — the row stayed an
+        // un-circled ✓ and the + button kept re-queueing a duplicate.
+        if (pcSameUrl(existing[p], cached.url) && cached.source !== 'MB rels') {
             cacheSet(mbid, p, { ...cached, source: 'MB rels' });
-            appendLog('MusicBrainz', `Cache upgrade: ${p} URL now in MB rels — source bumped to "MB rels"`, 'ok');
-        } else if (existing[p] !== cached.url && cached.source === 'MB rels') {
+            appendLog('MusicBrainz', `Cache upgrade: ${p} URL now in MB rels — source bumped to "MB rels"${existing[p] === cached.url ? '' : ` (MB spells it ${existing[p]})`}`, 'ok');
+        } else if (!pcSameUrl(existing[p], cached.url) && cached.source === 'MB rels') {
             cacheSet(mbid, p, { ...cached, source: 'search' });
             appendLog('MusicBrainz', `Cache downgrade: ${p} URL no longer in MB rels (stale 'MB rels' tag) — source bumped to "search"`, 'warn');
         }
@@ -36454,6 +36536,9 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
 // tab-open decision + background-commit channel without driving the full row UI
 // (which would mean faking a live ✓ match render for no added coverage).
 window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
+// #556 test hook — URL identity + the inject helper, so the cache-staleness and
+// payload-preservation paths can be driven without a live ✓ match render.
+window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
 function addSingleUrl(platform, background) {
     const cached = cacheGet(mbid, platform);
@@ -36502,11 +36587,22 @@ async function runInjectBtn(e, background) {
     const pendingRelease = {};
     let barcodeBlocked = 0;
     let formatBlocked = 0;
+    let alreadyInMb = 0;
+    // #556: the live rels parsed from THIS page load are the authority on what the
+    // release already carries — the cached `source` is only a hint, and a stale one
+    // after a previous add. Queueing a link MusicBrainz already has is a no-op in
+    // the editor that leaves the tab sitting open with nothing to submit.
+    const liveExisting = (mbDataGet(mbid) || {}).existing || {};
     for (const p of PROVIDER_ORDER) {
         if (!providerEnabled(p)) continue;   // #255 disabled in Settings — never queue its (possibly stale) cache
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (cached.source === 'MB rels') continue;
+        if (pcSameUrl(liveExisting[p], cached.url)) {
+            alreadyInMb++;
+            appendLog('System', `Inject: ${p} is already on the release (MB has ${liveExisting[p]}) — skipped`, 'warn');
+            continue;
+        }
         const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
         if (icoText !== '✓') continue;
         if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} ${cached.barcode ? 'barcode differs from MB' : 'barcode not confirmed'} — skipped (barcode-confidence on)`, 'warn'); continue; }
@@ -36553,14 +36649,18 @@ async function runInjectBtn(e, background) {
             if (!providerEnabled(p)) continue;   // #255 disabled providers don't factor into "why nothing queued"
             const c = cacheGet(mbid, p);
             if (!c?.url) continue;
-            if (c.source === 'MB rels') inMb++; else unmatched++;   // not in MB but not queued ⇒ not a ✓ match
+            // #556: count a link the page already carries as "in MB" even when the
+            // cached source still says 'search' — otherwise the explanation read
+            // "no new links found" for a release whose links were all added a
+            // moment ago, which is the opposite of what happened.
+            if (c.source === 'MB rels' || pcSameUrl(liveExisting[p], c.url)) inMb++; else unmatched++;
         }
         const msg = unmatched > 0
             ? `Inject: nothing to add — ${unmatched} found link(s) aren't a confirmed match (✓) for this release (track count / format differs)${inMb ? `; ${inMb} already in MB` : ''}`
             : inMb > 0
                 ? `Inject: nothing to add — all confirmed links are already in MB`
                 : `Inject: nothing to add — no new links found`;
-        const blockedNote = [barcodeBlocked > 0 ? `${barcodeBlocked} blocked by barcode mismatch` : '', formatBlocked > 0 ? `${formatBlocked} blocked by format mismatch` : ''].filter(Boolean).join('; ');
+        const blockedNote = [barcodeBlocked > 0 ? `${barcodeBlocked} blocked by barcode mismatch` : '', formatBlocked > 0 ? `${formatBlocked} blocked by format mismatch` : '', alreadyInMb > 0 ? `${alreadyInMb} already on the release` : ''].filter(Boolean).join('; ');
         appendLog('System', blockedNote ? msg + `; ${blockedNote}` : msg, 'warn');
         flashInfo(triggerBtn, barcodeBlocked > 0 ? `${barcodeBlocked} blocked — different barcode` : formatBlocked > 0 ? `${formatBlocked} blocked — format mismatch` : unmatched > 0 ? "Found links don't match" : inMb > 0 ? 'Already in MB' : 'Nothing to add');
         return;
