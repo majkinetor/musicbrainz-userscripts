@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.154248
+// @version      2026.9.1.173847
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -63,8 +63,7 @@
 // @connect      a-v2.sndcdn.com
 // @connect      open.spotify.com
 // @match        https://*.musicbrainz.org/*
-// @match        https://*.musicbrainz.org/release-group/*/edit
-// @match        https://*.musicbrainz.org/release-group/*/edit-relationships
+// @match        https://*.musicbrainz.org/release-group/*
 // @connect      query.wikidata.org
 // @connect      search.brave.com
 // @connect      html.duckduckgo.com
@@ -79,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.154248 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.8.22");
+  console.log('%c String Theory %c v2026.9.1.173847 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -32068,7 +32067,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.22","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.8.22","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -32134,6 +32133,35 @@ if (/^\/release\/[0-9a-f-]{36}\/?(?:[?#]|$)/.test(window.location.pathname)) {
         return;
     }
 }
+// #559 (majkinetor): "Discogs master link should be also added in the background
+// and tab auto closed when right click is issued on [+] button." The master goes
+// onto the release GROUP, and the background flow above never covered it — a
+// right-click add opened the release-group editor in a normal, focused tab and
+// left it there. Same three-part shape as the release flow: the edit tab marks
+// itself, submits, and this landing branch (MB redirects here after a successful
+// release-group edit) posts "committed" back and closes the tab.
+//
+// ⚠ This is why the @match now covers /release-group/* and not just its two edit
+// forms — the landing page has to run the script for the tab to close itself.
+// Nothing else changes on a release-group page: the guard below stops the
+// dashboard mounting anywhere but a release.
+if (/^\/release-group\/[0-9a-f-]{36}\/?(?:[?#]|$)/.test(window.location.pathname)) {
+    let closeRg = null;
+    try { closeRg = sessionStorage.getItem('pc:autocommit-close-rg'); } catch (e) {}
+    if (closeRg) {
+        try { sessionStorage.removeItem('pc:autocommit-close-rg'); } catch (e) {}
+        if (PC_CHANNEL) { try { PC_CHANNEL.postMessage({ type: 'pc-rg-edit-committed', mbid: closeRg }); } catch (e) {} }
+        setTimeout(() => { try { window.close(); } catch (e) {} }, 80);
+        return;
+    }
+}
+// The dashboard belongs on a release page and nowhere else. Every branch above is
+// a helper for the other pages the @match list covers (the edit forms and the
+// post-commit landing pages) and each returns on its own — but the panel below is
+// built at top level, and `mbid` is read positionally from the path, so a
+// release-group MBID would have sailed straight through and mounted a dashboard
+// there. Making the assumption explicit rather than implicit in the @match. #559
+if (!/^\/release\/[0-9a-f-]{36}/.test(window.location.pathname)) return;
 
 // Safe setTimeout wrapper.  Firefox throws NS_ERROR_NOT_INITIALIZED from
 // setTimeout when the script context is being torn down — the Promise
@@ -32214,18 +32242,26 @@ async function runInjectHelper(entityType) {
         // and mark this tab so the redirect back to the clean /release/<mbid> page
         // (only that landing page is @match'd; release-group has no such page) can
         // post "committed" + close itself. Only the release flow supports this.
-        const autoCommit = entityType === 'release' && /pc-autocommit/.test(location.hash);
+        // #559: the release-group editor takes the same route now, for the Discogs
+        // master URL. Its form is NOT the release wizard, so the button differs —
+        // see findSubmit below.
+        const autoCommit = /pc-autocommit/.test(location.hash);
         if (autoCommit) {
             // #465 (chaban-mb): the release editor is the multi-step wizard, not the
             // simple artist/label/place form — its submit button is #enter-edit. Same
-            // finder Apollo's compact nav bar already uses for this exact form. This
-            // autoCommit branch only ever runs on that wizard (entityType === 'release'),
-            // so no button.submit.positive fallback here — it would never match.
-            const findSubmit = () => document.querySelector('#enter-edit')
-                || [...document.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''));
+            // finder Apollo's compact nav bar already uses for this exact form.
+            // #559: the release-GROUP editor is the plain entity form and has no
+            // #enter-edit at all (measured on a live page: `#enter-edit` absent,
+            // `button.submit.positive` reading "Enter edit" present), so each entity
+            // type gets the finder that actually matches its own form.
+            const findSubmit = entityType === 'release-group'
+                ? () => document.querySelector('button.submit.positive')
+                    || [...document.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''))
+                : () => document.querySelector('#enter-edit')
+                    || [...document.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''));
             const btn = await pcWaitFor(findSubmit, 5000);
             if (btn && !btn.disabled) {
-                try { sessionStorage.setItem('pc:autocommit-close', mbid); } catch (e) {}
+                try { sessionStorage.setItem(entityType === 'release-group' ? 'pc:autocommit-close-rg' : 'pc:autocommit-close', mbid); } catch (e) {}
                 btn.click();
             } else {
                 showInjectBanner('Platform Check: background add — no submit button found, review manually', [], { fail: true });
@@ -36350,10 +36386,38 @@ function openReleaseEditTab(mbid_, { background = false } = {}) {
         location.href = url;
     }
 }
+// #559: the same three steps for the release-GROUP editor, which is where the
+// Discogs master URL goes. Kept as its own function rather than a parameter on
+// openReleaseEditTab: the entity path, the channel message and the "open in this
+// tab instead" rule all differ, and folding them together made every line a
+// conditional.
+function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = {}) {
+    const url = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
+    if (background) {
+        if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
+            appendLog('System', `Background master add needs GM_openInTab — opening in a normal tab instead`, 'warn');
+            window.open(url, '_blank');
+            return;
+        }
+        const bgTab = GM_openInTab(`${url}#pc-autocommit`, { active: false, insert: true });
+        const onCommitted = (e) => {
+            if (!e.data || e.data.type !== 'pc-rg-edit-committed' || e.data.mbid !== rgMbid) return;
+            PC_CHANNEL.removeEventListener('message', onCommitted);
+            try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
+            appendLog('System', `Background master add committed for release-group ${rgMbid}`, 'ok');
+        };
+        PC_CHANNEL.addEventListener('message', onCommitted);
+        return;
+    }
+    // Same-tab navigation only when this is the ONLY tab being opened by this
+    // click — the release bucket may already be claiming the current tab.
+    if (sameTabAllowed && !GM_getValue('pc:open-new-tab', true)) location.href = url;
+    else window.open(url, '_blank');
+}
 // Test hook only (#464) — no behavior change; lets verify-464.mjs exercise the
 // tab-open decision + background-commit channel without driving the full row UI
 // (which would mean faking a live ✓ match render for no added coverage).
-window.__pcTest464 = { openReleaseEditTab, PC_CHANNEL };
+window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
 
 function addSingleUrl(platform, background) {
     const cached = cacheGet(mbid, platform);
@@ -36389,9 +36453,11 @@ function addMasterUrl(masterUrl) {
     }
     localStorage.setItem(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
     appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
-    const url = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
-    if (GM_getValue('pc:open-new-tab', true)) window.open(url, '_blank');
-    else location.href = url;
+    // #559: same opener as the + button's release-group bucket, so there is one
+    // place that knows how to reach the release-group editor. Behaviour here is
+    // unchanged — this path is a plain click on the master icon, never background,
+    // and it is always the only tab being opened.
+    openRgEditTab(rgMbid, { background: false, sameTabAllowed: true });
 }
 
 async function runInjectBtn(e, background) {
@@ -36471,14 +36537,11 @@ async function runInjectBtn(e, background) {
     }
     if (rgCount > 0 && rgMbid) {
         localStorage.setItem(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
-        appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
-        // No background variant for release-group (no plain landing page to detect commit on).
-        // Same-tab navigation only applies when it's the ONLY tab being opened this
-        // click — the release bucket above may already be claiming the current tab.
-        const rgUrl = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
-        if (background) appendLog('System', `Background add doesn't cover the release-group master URL — opening it in a normal tab`, 'warn');
-        if (!background && releaseCount === 0 && !GM_getValue('pc:open-new-tab', true)) location.href = rgUrl;
-        else window.open(rgUrl, '_blank');
+        // #559: the master now takes the background route too, instead of the
+        // "background add doesn't cover the release-group master URL" tab it used
+        // to leave open and focused.
+        appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
+        openRgEditTab(rgMbid, { background, sameTabAllowed: releaseCount === 0 });
     }
 }
 document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, false));
