@@ -44,6 +44,8 @@ Matched links that are not already associated (colored & not circled) can be **i
 
 The `+`/icon add opens a **new tab** by default so the panel stays put; setup option **"Add links in a new tab"** turns that off, so it navigates the current tab instead (#464). Either way, **right-click** always adds in the background regardless of that setting.
 
+A right-click `+` can have **two** edits in flight, because they land on different entities: the platform links go onto the **release**, and the **Discogs master** goes onto the **release group**. Both are backgrounded and both close themselves when they commit ([#559](https://github.com/majkinetor/musicbrainz-userscripts/issues/559)) — previously only the release half was, and the release-group editor was left open in a focused tab. That is why the script also runs on `/release-group/*` pages: the tab has to be able to close itself after MusicBrainz redirects there. Nothing else happens on a release-group page — the dashboard only ever mounts on a release.
+
 Setup option **Compact unmatched providers** keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search, exactly like clicking its row. Rows rise with a subtle fade so the panel doesn't jump as results stream in. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
 
 ### Barcode matching
