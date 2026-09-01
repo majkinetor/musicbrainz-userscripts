@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-01 17:38 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-01 17:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -612,6 +612,7 @@ Every change is staged. **Enter edit** opens a panel that lists the pending oper
 - Edits, removes and uploads all run in **parallel** (upload + register per image); a single **reorder** edit runs **last** and sets the final order, so register order doesn't matter. If a run has failures, **Repeat** re-runs just the failed ops — and re-runs the reorder too, so a retried upload still lands in place.
 - A shared **edit note** and **make votable** apply to every edit.
 - While a run is in progress the dialog can't be dismissed by clicking outside, and leaving the page warns first — so edits are never silently cut off. Use **Cancel** to abort.
+- **Upload timeout** (⚙ setup, default **10 minutes**, max 120) — how long one file may take to reach the Internet Archive before Art Station gives up. It used to be a fixed 5 minutes, which a 50–100MB PDF booklet could outlast when the Archive was slow, failing here while MusicBrainz's own uploader (which sets no timeout at all) got through ([#560](https://github.com/majkinetor/musicbrainz-userscripts/issues/560)). Raise it if you upload large booklets. The failure message names the limit it hit, so it's clear when this is what happened.
 
 ### Plugin API
 
