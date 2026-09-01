@@ -203,10 +203,28 @@ Click the ⚙ tab to open it.
 
 1. **Hide Falcon icon** - the floating corner launcher becomes optional; **Ctrl+Alt+F** still opens the panel either way
 2. **Add covers only when there aren't any** - skip a release's cover upload instead of adding it blind when the release already has cover art
-3. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
-4. **Open from Harmony in new tab** (on by default) - off navigates the current Harmony tab to MusicBrainz instead of opening a new one
-5. **Workers** - how many entities are processed at once (default is 5)
-6. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
+3. **Auto send** (off by default) - press *Send to Falcon* for you once a Harmony import has finished and its action list has settled. See [Hands-free import](#hands-free-import)
+4. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
+5. **Open from Harmony in new tab** (on by default) - off navigates the current Harmony tab to MusicBrainz instead of opening a new one
+6. **Workers** - how many entities are processed at once (default is 5)
+7. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
+
+#### Hands-free import
+
+**Auto send** and **Auto start Harmony import** are the two halves of the same trip, and turning both on carries a finished Harmony import through to a finished Falcon run without a click ([#557](https://github.com/majkinetor/musicbrainz-userscripts/issues/557)):
+
+| | where it runs | what it does |
+|---|---|---|
+| **Auto send** | on the Harmony page | presses *Send to Falcon* |
+| **Auto start Harmony import** | on the MusicBrainz page | presses *Start* on the seeded queue |
+
+Auto send holds back deliberately in three cases, since an unattended send that guesses wrong is worse than no send:
+
+- **the page isn't a completed import.** It requires a `release_mbid` in the URL — the MBID Harmony assigns once the release actually exists in MusicBrainz. No MBID means the import didn't finish, so there is nothing to send
+- **Harmony hasn't finished rendering.** Its actions arrive client-side; the send waits for the same "count stopped changing" signal the *Send N to Falcon* label already waits for, so it can't ship half a batch
+- **there is nothing to send.** A re-run over an already-complete release stands down quietly rather than opening an empty queue
+
+It also **counts down on the button first** (`Auto-sending 42 in 4… (click to cancel)`). With *Open from Harmony in new tab* off, a send navigates the tab away from Harmony, and that should never happen without a beat in which to stop it. Clicking the button cancels, and it will not re-arm on that page.
 
 ### Reporting a problem
 
