@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.8.28
+// @version      2026.9.1
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -12,6 +12,7 @@
 // @grant        GM_setValue
 // @grant        GM_deleteValue
 // @grant        GM_xmlhttpRequest
+// @grant        GM_openInTab
 // @connect      *
 // @noframes
 // ==/UserScript==
@@ -96,6 +97,17 @@
     // #508 follow-up (majkinetor): "Auto start Harmony import (off by default)".
     get autoStartHarmonyImport() { return GM_getValue('falcon:autoStartHarmonyImport', false) === true; },
     set autoStartHarmonyImport(v) { GM_setValue('falcon:autoStartHarmonyImport', !!v); },
+    // #557 (majkinetor): "Current auto start works on MB side. Let's have another
+    // option 'Auto send' in Harmony category. Having both enabled would
+    // automatically finish everything after successful Harmony import." This is
+    // the HARMONY half — it presses "Send to Falcon" for you; autoStartHarmonyImport
+    // above is the MB half that then starts the queue.
+    get autoSendFromHarmony() { return GM_getValue('falcon:autoSendFromHarmony', false) === true; },
+    set autoSendFromHarmony(v) { GM_setValue('falcon:autoSendFromHarmony', !!v); },
+    // How long the cancel window lasts before an auto-send fires. Not exposed in
+    // the options UI — it exists so the send is interruptible, not to be tuned.
+    get autoSendDelayMs() { const n = Number(GM_getValue('falcon:autoSendDelayMs', 4000)); return Math.max(0, Math.min(30000, isFinite(n) ? n : 4000)); },
+    set autoSendDelayMs(v) { GM_setValue('falcon:autoSendDelayMs', Math.max(0, Math.min(30000, Number(v) || 0))); },
     // #512 (majkinetor): "keep configurable number of last runs in local
     // storage so those can be selected and loaded by datetime".
     get logHistoryCount() { const n = Number(GM_getValue('falcon:logHistoryCount', 20)); return Math.max(1, Math.min(100, isFinite(n) ? n : 20)); },
@@ -1261,11 +1273,97 @@
   // from inside the relationship editor — matching what MB's native
   // post-creation redirect already does without Harmony's "Redirect to
   // Release Actions" setting turned on).
+  // The MBID Harmony assigns once the release actually exists in MusicBrainz —
+  // i.e. the marker of a COMPLETED import, which is what #557's auto send gates on.
+  //
+  // ⚠ It is not always a bare MBID. On a real actions page the parameter holds the
+  // whole release URL:
+  //   ?release_mbid=https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-…
+  // and MBID_RE is anchored, so that form always failed the test and the send fell
+  // back to seeding musicbrainz.org's HOME page instead of the release (measured on
+  // the shipped build: it opened `https://musicbrainz.org/?falcon=<token>`). Accept
+  // either shape — a bare MBID, or an MBID embedded in a /release/<mbid> URL.
   function harmonyReleaseMbid() {
     const v = new URLSearchParams(location.search).get('release_mbid');
-    return v && MBID_RE.test(v) ? v.toLowerCase() : null;
+    if (!v) return null;
+    if (MBID_RE.test(v)) return v.toLowerCase();
+    const m = v.match(/\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    return m ? m[1].toLowerCase() : null;
   }
   let harmonyBtn = null;
+  // #557: the body of the button's click, lifted out so the auto-send can take
+  // exactly the same path — one implementation, no drift between "you clicked
+  // it" and "Falcon clicked it for you".
+  async function sendToFalcon(auto) {
+    let found = scrapeHarmonyActions();
+    if (found.some(t => !t.name)) {
+      // #509 follow-up (majkinetor, live: a saved copy of the exact page
+      // scraped 75/75 tuples WITH names when replayed offline — proving the
+      // scraper itself is correct — but his real click got 0/12 named).
+      // Harmony renders each row's icon+name pill via its OWN async
+      // per-entity MB-match lookup, separate from (and slower than) the
+      // action list itself — on a small batch it's usually done by the time
+      // anyone clicks; on a 76-item release it visibly wasn't. Rather than
+      // hope the user waits, give Harmony's own resolution a bounded second
+      // chance right at click time if the FIRST scrape came back with any
+      // gaps — cheap compared to the MB fallback lookups it avoids.
+      const lbl = document.getElementById('falcon-harmony-lbl');
+      const prevLbl = lbl ? lbl.textContent : '';
+      if (lbl) lbl.textContent = 'Resolving names…';
+      const deadline = Date.now() + 5000;
+      while (Date.now() < deadline && found.some(t => !t.name)) {
+        await wait(400);
+        found = scrapeHarmonyActions();
+      }
+      if (lbl) lbl.textContent = prevLbl;
+    }
+    // #537: nothing to send, and nothing to count on the button either.
+    const foundCover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
+    const foundIsrcFallback = harmonyIsrcFallback();   // #540: always, see scrapeHarmonyActions
+    if (!found.length && !foundCover && !foundIsrcFallback) {
+      // #557: an auto-send must never raise a modal on a page nobody asked it
+      // to act on — it just stands down. A real click still gets told why.
+      if (auto) { harmonyLog('auto send: nothing to send on this page — standing down'); return false; }
+      alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`);
+      return false;
+    }
+    const token = makePendingToken();
+    const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined }));
+    // #536 follow-up (majkinetor): "edit note should probably show that it
+    // was from harmony page". Nothing downstream knew where a batch came
+    // from, so the cover note could name the image's provider but not the
+    // page that proposed it. Harmony's Release Actions url IS that page.
+    if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates, source: location.href });
+    if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
+    GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
+    const relMbid = harmonyReleaseMbid();
+    const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}` : `${MB_TARGET}/?falcon=${token}`;
+    harmonyLog(`${auto ? 'auto ' : ''}send: ${payload.length} item(s) → ${target}`);
+    if (cfg.openHarmonyInNewTab) openMbTab(target, auto);
+    else location.href = target;
+    return true;
+  }
+  // #557: an AUTO send happens outside a user gesture, and every browser popup
+  // blocker rejects window.open there — the batch would be written to GM storage
+  // and then silently go nowhere. GM_openInTab is not subject to the blocker, so
+  // prefer it; fall back to window.open (fine for a real click), and if that is
+  // blocked too, navigate this tab rather than lose the send.
+  function openMbTab(target, auto) {
+    if (typeof GM_openInTab === 'function') {
+      try { GM_openInTab(target, { active: true, insert: true, setParent: true }); return; }
+      catch (e) { harmonyLog('GM_openInTab failed (' + e.message + ') — falling back to window.open'); }
+    }
+    let w = null;
+    try { w = window.open(target, '_blank'); } catch (e) { w = null; }
+    if (w) return;
+    harmonyLog(auto
+      ? 'the popup blocker refused a new tab for an automatic send — navigating this tab instead'
+      : 'window.open was blocked — navigating this tab instead');
+    location.href = target;
+  }
+  // Falcon's panel (and its log) live on the MusicBrainz side; on Harmony there
+  // is nothing but this button, so say it where it can actually be seen. #557
+  function harmonyLog(msg) { try { console.info(`[${NAME}] ${msg}`); } catch (e) {} }
   function ensureHarmonyButton() {
     const items = scrapeHarmonyActions();
     const cover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();   // #537
@@ -1280,53 +1378,69 @@
       harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
       harmonyBtn.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;background:#1b2a4a;color:#fff;font:bold 13px Arial;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;transition:opacity .15s';
       harmonyBtn.innerHTML = `<span style="display:flex;color:#ff9d5c">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
-      // #509 follow-up (majkinetor, live: a saved copy of the exact page
-      // scraped 75/75 tuples WITH names when replayed offline — proving the
-      // scraper itself is correct — but his real click got 0/12 named).
-      // Harmony renders each row's icon+name pill via its OWN async
-      // per-entity MB-match lookup, separate from (and slower than) the
-      // action list itself — on a small batch it's usually done by the time
-      // anyone clicks; on a 76-item release it visibly wasn't. Rather than
-      // hope the user waits, give Harmony's own resolution a bounded second
-      // chance right at click time if the FIRST scrape came back with any
-      // gaps — cheap compared to the MB fallback lookups it avoids.
-      harmonyBtn.onclick = async () => {
-        let found = scrapeHarmonyActions();
-        if (found.some(t => !t.name)) {
-          const lbl = document.getElementById('falcon-harmony-lbl');
-          const prevLbl = lbl.textContent;
-          lbl.textContent = 'Resolving names…';
-          const deadline = Date.now() + 5000;
-          while (Date.now() < deadline && found.some(t => !t.name)) {
-            await wait(400);
-            found = scrapeHarmonyActions();
-          }
-          lbl.textContent = prevLbl;
-        }
-        // #537: nothing to send, and nothing to count on the button either.
-        const foundCover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
-        const foundIsrcFallback = harmonyIsrcFallback();   // #540: always, see scrapeHarmonyActions
-        if (!found.length && !foundCover && !foundIsrcFallback) { alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`); return; }
-        const token = makePendingToken();
-        const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined }));
-        // #536 follow-up (majkinetor): "edit note should probably show that it
-        // was from harmony page". Nothing downstream knew where a batch came
-        // from, so the cover note could name the image's provider but not the
-        // page that proposed it. Harmony's Release Actions url IS that page.
-        if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates, source: location.href });
-        if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
-        GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
-        const relMbid = harmonyReleaseMbid();
-        const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}` : `${MB_TARGET}/?falcon=${token}`;
-        if (cfg.openHarmonyInNewTab) window.open(target, '_blank');
-        else location.href = target;
-      };
+      // While an auto-send is counting down the button is the CANCEL — clicking
+      // it stops the countdown and leaves you exactly where you were, rather
+      // than sending twice. Otherwise it is the ordinary manual send. #557
+      harmonyBtn.onclick = () => { if (cancelAutoSend('cancelled — you clicked the button')) return; sendToFalcon(false); };
       document.body.appendChild(harmonyBtn);
     }
     const lbl = document.getElementById('falcon-harmony-lbl');
+    if (_autoSendTimer) return;   // the countdown owns the label while it runs
     lbl.textContent = total ? `Send ${total} to Falcon` : 'No Falcon actions found yet…';
     harmonyBtn.style.opacity = total ? '1' : '.6';
     harmonyBtn.title = total ? `Opens MusicBrainz with ${total} item(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
+  }
+  /* ── #557: auto send ─────────────────────────────────────────────────────
+   * "Let's have another option 'Auto send' in Harmony category. Having both
+   * enabled would automatically finish everything after successful Harmony
+   * import." So: press "Send to Falcon" without being asked, and let the MB
+   * side's existing "Auto start import" carry it the rest of the way.
+   *
+   * Three things it deliberately will NOT do:
+   *   • fire on any Harmony page that isn't a completed import. A release_mbid
+   *     in the query string is exactly that signal — it is the MBID Harmony
+   *     assigns once the release is actually in MusicBrainz, so no MBID means
+   *     no successful import and nothing to send anywhere.
+   *   • fire before the action list has settled. Harmony renders its actions
+   *     client-side, so an early send would ship a partial batch — the boot
+   *     poller already waits for three unchanged reads, and this hangs off it.
+   *   • fire more than once per page load.
+   * And it counts down visibly first, because with "Open in new tab" OFF a
+   * send NAVIGATES this tab away from Harmony — that should never happen
+   * without a beat in which to stop it. Clicking the button cancels.
+   */
+  let _autoSendTimer = null, _autoSendDone = false;
+  function cancelAutoSend(why) {
+    if (!_autoSendTimer) return false;
+    clearInterval(_autoSendTimer); _autoSendTimer = null;
+    harmonyLog('auto send ' + why);
+    ensureHarmonyButton();   // repaint the ordinary label
+    return true;
+  }
+  function maybeAutoSend() {
+    if (_autoSendDone || _autoSendTimer) return;
+    if (!cfg.autoSendFromHarmony) return;
+    if (!harmonyReleaseMbid()) { harmonyLog('auto send: no release_mbid on this page — not a completed import, standing down'); _autoSendDone = true; return; }
+    const items = scrapeHarmonyActions();
+    const cover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
+    const isrcFallback = harmonyIsrcFallback();
+    const total = items.length + (cover ? 1 : 0) + (isrcFallback ? isrcFallback.isrcs.filter(Boolean).length : 0);
+    if (!total) { harmonyLog('auto send: the import succeeded but there is nothing left to send'); _autoSendDone = true; return; }
+    _autoSendDone = true;
+    let left = Math.ceil(cfg.autoSendDelayMs / 1000);
+    const lbl = document.getElementById('falcon-harmony-lbl');
+    const paint = () => {
+      if (lbl) lbl.textContent = `Auto-sending ${total} in ${left}… (click to cancel)`;
+      if (harmonyBtn) { harmonyBtn.style.opacity = '1'; harmonyBtn.title = 'Falcon will send this batch automatically — click to cancel'; }
+    };
+    harmonyLog(`auto send: ${total} item(s) in ${left}s — click the button to cancel`);
+    paint();
+    _autoSendTimer = setInterval(() => {
+      if (--left > 0) return paint();
+      clearInterval(_autoSendTimer); _autoSendTimer = null;
+      sendToFalcon(true);
+    }, 1000);
+    if (left <= 0) { clearInterval(_autoSendTimer); _autoSendTimer = null; sendToFalcon(true); }
   }
 
   /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
@@ -3234,7 +3348,7 @@
     // Add covers only when there aren't any enabled here") — a log dump
     // alone doesn't say which toggles were active, which matters for
     // reading a run's behavior back later (this exact bug report needed it).
-    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}`);
+    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-send-harmony=${cfg.autoSendFromHarmony ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}`);
     suspendNameLookups();   // cosmetic lookups must not eat the workers' rate-limit budget
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
@@ -3452,6 +3566,9 @@
           </legend>
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. The URL Harmony gives is whatever the provider's API returns, which is often not the largest that provider will serve, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
             <input type="checkbox" id="falcon-opt-skip-harmony-covers" /> <span>Ignore cover art</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Press 'Send to Falcon' for you once a Harmony import finishes and its actions have settled, instead of waiting for you to click it. A short countdown shows on the button first — click it to cancel. With 'Auto start import' below also on, a finished Harmony import carries straight through to a finished Falcon run.">
+            <input type="checkbox" id="falcon-opt-auto-send-harmony" /> <span>Auto send</span>
           </label>
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
             <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start import</span>
@@ -3796,6 +3913,9 @@
     const skipCoversCb = document.getElementById('falcon-opt-skip-harmony-covers');
     skipCoversCb.checked = cfg.skipHarmonyCovers;
     skipCoversCb.onchange = () => { cfg.skipHarmonyCovers = skipCoversCb.checked; };
+    const autoSendCb = document.getElementById('falcon-opt-auto-send-harmony');   // #557
+    autoSendCb.checked = cfg.autoSendFromHarmony;
+    autoSendCb.onchange = () => { cfg.autoSendFromHarmony = autoSendCb.checked; };
     const autoStartCb = document.getElementById('falcon-opt-auto-start-harmony');
     autoStartCb.checked = cfg.autoStartHarmonyImport;
     autoStartCb.onchange = () => { cfg.autoStartHarmonyImport = autoStartCb.checked; };
@@ -4364,7 +4484,11 @@
     const iv = setInterval(() => {
       const n = scrapeHarmonyActions().length;
       ensureHarmonyButton();
-      if (n === lastN) { if (++stableCount >= 3) clearInterval(iv); } else { stableCount = 0; lastN = n; }
+      if (n === lastN) {
+        // #557: the auto-send hangs off the SAME settle signal the polling
+        // already computes — sending earlier would ship a partial batch.
+        if (++stableCount >= 3) { clearInterval(iv); maybeAutoSend(); }
+      } else { stableCount = 0; lastN = n; }
     }, 1000);
   } else {
     const seeded = parseUrlParam();
@@ -4433,5 +4557,8 @@
     // #546
     setBtnBusy, beginWait, renderQueue,
     // #547
-    updateWorkerLabel, workerPhase, spawnWorkerCard };
+    updateWorkerLabel, workerPhase, spawnWorkerCard,
+    // #557
+    sendToFalcon, maybeAutoSend, cancelAutoSend, openMbTab, harmonyReleaseMbid,
+    autoSendPending: () => !!_autoSendTimer, autoSendFired: () => _autoSendDone };
 })();

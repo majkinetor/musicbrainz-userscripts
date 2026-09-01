@@ -1,0 +1,5 @@
+node_modules/
+# screenshots + captures written by the test/verify-* probes — local only
+test/logs/
+# local-only test seeds extracted from captured pages — never commit
+*.local.json
