@@ -159,17 +159,40 @@ ck(!guard.real, 'and a real release page is not mistaken for it');
 // Driven through the REAL path rather than the test hook: the edit page returns
 // early (into runInjectHelper) before the hook is defined, so seeding the payload
 // and loading the editor is both the only way in and the more honest test.
-// The URL is unresolvable, so MusicBrainz creates no row.
-await page.goto(`https://musicbrainz.org/release/${REL}`, { waitUntil: 'domcontentloaded' });
-await page.evaluate((rel) => localStorage.setItem(`pc:pending:${rel}`, JSON.stringify({ bogus: 'https://example.invalid/not-a-provider-url' })), REL);
-await page.goto(`https://musicbrainz.org/release/${REL}/edit`, { waitUntil: 'domcontentloaded' });
+//
+// The fixture is "MusicBrainz never gives us an add-link input" — which is the
+// failure injectInto's `break` exists for. It used to be "a URL MB can't
+// resolve", on the assumption that MB would then create no row; it does create
+// one (for any URL at all, then asks for a link type), so that fixture was only
+// passing because of a crash — the PC_URL_ID temporal-dead-zone ReferenceError
+// fixed alongside this, which aborted the run before it could touch the payload.
+// A test that passes because of the bug it is meant to be blind to is worse than
+// no test, so it is now the input that is withheld, not the URL that is bogus.
+//
+// On the SANDBOX, because this one actually drives MB's editor into creating
+// rows. Nothing is submitted either way (every POST is aborted, asserted below),
+// but a run that types into the production editor has no business doing so.
+const SANDBOX = 'https://test.musicbrainz.org/release/3a37a35f-1e06-457f-9b2a-46155c5c03ce';
+await page.goto(SANDBOX, { waitUntil: 'domcontentloaded' });
+const SREL = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
+await page.evaluate((rel) => localStorage.setItem(`pc:pending:${rel}`, JSON.stringify({ bogus: 'https://example.invalid/not-a-provider-url' })), SREL);
+await page.goto(`${SANDBOX}/edit`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(2000);
+// keep the "Add another link" input out of reach for the whole run
+await page.evaluate(() => {
+  const RE = /^(?:add (?:another )?link|add another url)$/i;
+  const strip = () => document.querySelectorAll('input').forEach(i => {
+    if (RE.test((i.placeholder || '').trim())) i.setAttribute('placeholder', 'withheld by the test');
+  });
+  new MutationObserver(strip).observe(document.documentElement, { childList: true, subtree: true });
+  strip();
+});
 await page.addScriptTag({ content: code });
 await page.waitForTimeout(16000);   // past injectInto's 10s input wait + 5s row wait
-const preserved = await page.evaluate((rel) => ({ still: localStorage.getItem(`pc:pending:${rel}`) }), REL);
+const preserved = await page.evaluate((rel) => ({ still: localStorage.getItem(`pc:pending:${rel}`), rows: document.querySelectorAll('tr.external-link-item a[href]').length }), SREL);
 console.log('after a landing-nothing run: ' + JSON.stringify(preserved));
 ck(!!preserved.still, '#556: the pending payload survives a run where no row was confirmed — so it can retry');
-await page.evaluate((rel) => localStorage.removeItem(`pc:pending:${rel}`), REL);
+await page.evaluate((rel) => localStorage.removeItem(`pc:pending:${rel}`), SREL);
 
 console.log('POSTs seen (all aborted): ' + JSON.stringify([...new Set(postUrls.map(u => u.replace(/\?.*/, '')))]));
 ck(posts === 0, `no edit was submitted (${posts} edit POSTs out of ${postUrls.length}, all aborted)`);

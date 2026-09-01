@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.1.192309
+// @version      2026.9.1.201500
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -259,7 +259,10 @@ async function runInjectHelper(entityType) {
         }
     } catch (e) {
         // Last-resort surface so the user sees *something* on the page when
-        // a Firefox-specific exception kills the inject path silently.
+        // a Firefox-specific exception kills the inject path silently. A banner
+        // is no use in a BACKGROUND add tab, which nobody looks at — so say it
+        // in the console too, where it survives for a bug report.
+        try { console.error('[Platform Check] inject helper crashed —', e); } catch (_) {}
         try {
             showInjectBanner(`Platform Check: inject helper crashed — ${e.name || 'Error'}: ${e.message || e}`, [], { fail: true });
         } catch (_) { /* nothing else we can do here */ }
@@ -323,6 +326,12 @@ async function injectInto(urls, storageKey) {
     let injected = 0;
 
     for (const url of urls) {
+      // One URL must never be able to end the run. Before this, anything thrown
+      // mid-loop (a TDZ ReferenceError, a DOM shape MB changed) aborted every
+      // remaining URL and surfaced only as a banner — invisible in a background
+      // add tab, which is where this flow actually lives. Now a URL that blows
+      // up is reported like any other failure and the next one still gets a go.
+      try {
         // MutationObserver-backed wait — resolves the moment MB renders an
         // empty "Add another link" input, regardless of how long the page
         // takes to mount the External Links section.
@@ -419,6 +428,9 @@ async function injectInto(urls, storageKey) {
                 if (!ok2) report.note = 'digital release detected but the second rel (purchase for download) could not be added';
             }
         }
+      } catch (e) {
+        reports.push({ url, ok: false, miss: `threw — ${e && e.name || 'Error'}: ${e && e.message || e}` });
+      }
     }
 
     // #556: a background add tab has no panel and therefore no log — "it did
@@ -2162,19 +2174,28 @@ async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label
 //
 // Compare on a provider id where there is one (they are stable and unambiguous),
 // otherwise on a host+path normalised for the noise MB and the providers add.
-const PC_URL_ID = [
-    [/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/([a-z0-9]+)/i,        'spotify'],
-    [/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(\d+)/i,     'apple'],
-    [/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/i,               'deezer'],
-    [/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i,               'tidal'],
-    [/(?:www\.)?discogs\.com\/(?:[a-z-]+\/)?release\/(\d+)/i,             'discogs'],
-    [/(?:www\.)?discogs\.com\/(?:[a-z-]+\/)?master\/(\d+)/i,              'discogsmaster'],
-    [/(?:www\.)?beatport\.com\/release\/[^/]+\/(\d+)/i,                   'beatport'],
-];
+// ⚠ The provider table lives INSIDE pcUrlKey, memoised on the function object,
+// and must stay there. As a module-level `const` it sat below the IIFE's
+// early-return for /release/<mbid>/edit, so injectInto — which runs on exactly
+// that path — hit it in the temporal dead zone: `ReferenceError: Cannot access
+// 'PC_URL_ID' before initialization`, thrown out of the whole inject run.
+// It only fired for a URL MusicBrainz had rewritten, because matchRowByUrl
+// short-circuits on `h === url` first, so identically-spelled links (Deezer,
+// Tidal) landed and the run then died on the first rewritten one (Qobuz) —
+// taking every remaining URL with it. Same hazard TYPE_FORCE is inlined for.
 function pcUrlKey(u) {
+    const ID = pcUrlKey._id || (pcUrlKey._id = [
+        [/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/([a-z0-9]+)/i,        'spotify'],
+        [/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(\d+)/i,     'apple'],
+        [/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/i,               'deezer'],
+        [/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i,               'tidal'],
+        [/(?:www\.)?discogs\.com\/(?:[a-z-]+\/)?release\/(\d+)/i,             'discogs'],
+        [/(?:www\.)?discogs\.com\/(?:[a-z-]+\/)?master\/(\d+)/i,              'discogsmaster'],
+        [/(?:www\.)?beatport\.com\/release\/[^/]+\/(\d+)/i,                   'beatport'],
+    ]);
     const s = String(u || '').trim();
     if (!s) return '';
-    for (const [re, name] of PC_URL_ID) { const m = s.match(re); if (m) return name + ':' + m[1].toLowerCase(); }
+    for (const [re, name] of ID) { const m = s.match(re); if (m) return name + ':' + m[1].toLowerCase(); }
     // no stable id (bandcamp, qobuz, volumo, hdtracks, soundcloud) — normalise the
     // spelling instead: scheme, common host prefixes, locale segment, query and
     // fragment, trailing slash.
