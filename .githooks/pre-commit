@@ -29,6 +29,17 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/platform-icons\.mjs$'; then
     STAGED=$(git diff --cached --name-only)
 fi
 
+# design tokens (#562) — same deal: the shared token set is the single place the
+# look is configured, so when it changes, re-inline it into every script carrying
+# a `// <ST-TOKENS>` marker. Also FIRST, for the same reason as the icons above.
+if printf '%s\n' "$STAGED" | grep -qE '^dev/(design-tokens|sync-tokens)\.mjs$'; then
+    echo "[pre-commit] syncing shared design tokens…"
+    node dev/sync-tokens.mjs >/dev/null
+    TOKEN_FILES=$(grep -rl '// <ST-TOKENS>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$TOKEN_FILES" ] && git add $TOKEN_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # discogs_credits — esbuild bundle
 if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\.mjs)'; then
     echo "[pre-commit] rebuilding userscripts/discogs_credits/dist/…"
