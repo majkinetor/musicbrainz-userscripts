@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.173847
+// @version      2026.9.1.174555
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.173847 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1");
+  console.log('%c String Theory %c v2026.9.1.174555 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.174534\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8478,7 +8478,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1.174534","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.1.174534","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -8715,8 +8715,24 @@ try {
     } catch (e) { asLog.debug('archive.org: metadata unavailable — ' + ((e && e.message) || e)); }   // size is a nicety — never block the gallery
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true }; try { return Object.assign(d, JSON.parse(gmLoad('artstation:settings') || '{}')); } catch (e) { return d; } }
+  // #560 (majkinetor): "Uploading PDF booklet of 50-100MB fails in AS due to
+  // timeout (currently visible as IA is slow) while it passes in native uploader.
+  // Let's make timeout configurable in minutes, and make default double the
+  // current value." Was a hardcoded 5 minutes; the default is 10 now.
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10 }; try { return Object.assign(d, JSON.parse(gmLoad('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { gmSave('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
+  // ⚠ Raising the default alone does nothing for anyone who already has settings
+  // stored — Object.assign above lets a persisted 5 shadow it. There is no stored
+  // value to migrate here (the old timeout was hardcoded, never a setting), so an
+  // existing install simply has no `uploadTimeoutMin` key and picks up the 10.
+  // Clamped rather than trusted: a 0 would abort every upload instantly, and the
+  // value is written straight into xhr.timeout.
+  const UPLOAD_TIMEOUT_MIN_DEFAULT = 10, UPLOAD_TIMEOUT_MIN_MAX = 120;
+  function uploadTimeoutMs() {
+    const n = Number(SETTINGS.uploadTimeoutMin);
+    const min = (isFinite(n) && n > 0) ? Math.min(n, UPLOAD_TIMEOUT_MIN_MAX) : UPLOAD_TIMEOUT_MIN_DEFAULT;
+    return Math.round(min * 60000);
+  }
 
   // ── data ───────────────────────────────────────────────────────────────────
   // MB's page (its DB) is the source of truth for the cover list — it includes images
@@ -8972,6 +8988,10 @@ try {
       + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-clearsel"${SETTINGS.clearSelAfterOp ? ' checked' : ''}> Clear the selection after a batch action (type, comment, download, report)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-followpan"${SETTINGS.followPan ? ' checked' : ''}> Full-screen: pan a zoomed image by moving the mouse (no dragging)</label>`
+      // #560 — a big PDF booklet against a slow Internet Archive needs more than
+      // the old fixed 5 minutes; the native uploader sets no timeout at all.
+      + `<div class="as-setup-opt as-setup-num" title="How long a single file may take to upload to the Internet Archive before Art Station gives up. Raise it for large PDF booklets, or when the Archive is slow. Max ${UPLOAD_TIMEOUT_MIN_MAX}.">`
+      + `<label class="as-setup-optlbl">Upload timeout <input type="number" class="as-setup-uptimeout" min="1" max="${UPLOAD_TIMEOUT_MIN_MAX}" step="1" value="${esc(String(Math.round(uploadTimeoutMs() / 60000)))}"> minutes</label></div>`
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
@@ -8981,6 +9001,15 @@ try {
     panel.querySelector('.as-setup-autofront-mode').onchange = e => { SETTINGS.autoFrontMode = e.target.value; save(); };
     panel.querySelector('.as-setup-clearsel').onchange = e => { SETTINGS.clearSelAfterOp = e.target.checked; save(); };
     panel.querySelector('.as-setup-followpan').onchange = e => { SETTINGS.followPan = e.target.checked; save(); const img = document.querySelector('.as-lb-img'); if (img) applyZoom(img); };
+    // #560 — clamp on the way in as well as on the way out: an empty or silly box
+    // must not persist a value that would abort every upload instantly.
+    panel.querySelector('.as-setup-uptimeout').onchange = e => {
+      const n = Math.round(Number(e.target.value));
+      SETTINGS.uploadTimeoutMin = (isFinite(n) && n > 0) ? Math.min(n, UPLOAD_TIMEOUT_MIN_MAX) : UPLOAD_TIMEOUT_MIN_DEFAULT;
+      save();
+      e.target.value = String(SETTINGS.uploadTimeoutMin);
+      asLog.info(`Upload timeout set to ${SETTINGS.uploadTimeoutMin} min`);
+    };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
@@ -11001,13 +11030,18 @@ try {
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', signed.action);
-      xhr.timeout = 300000;   // 5 min ceiling for large covers
+      // #560: configurable, because a 50–100MB PDF booklet against a slow
+      // Internet Archive outlasted the old hardcoded 5 minutes and failed here
+      // while the native uploader (which sets no timeout at all) got through.
+      xhr.timeout = uploadTimeoutMs();
       if (ctl) ctl.xhrs.add(xhr);
       const done = () => { if (ctl) ctl.xhrs.delete(xhr); };
       xhr.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); };
       xhr.onload = () => { done(); (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('IA upload ' + xhr.status)); };
       xhr.onerror = () => { done(); reject(new Error('IA upload network error')); };
-      xhr.ontimeout = () => { done(); reject(new Error('IA upload timed out')); };
+      // #560: name the limit and where to change it — "timed out" alone gave no
+      // hint that this is a setting, and the fix (a bigger number) is one click away.
+      xhr.ontimeout = () => { done(); reject(new Error(`IA upload timed out after ${Math.round(uploadTimeoutMs() / 60000)} min — raise "Upload timeout" in setup (⚙︎) if the Internet Archive is slow`)); };
       xhr.onabort = () => { done(); reject(new Error('cancelled')); };
       xhr.send(fd);
     });
@@ -11869,6 +11903,8 @@ try {
   .as-setup-opt input{margin:0}
   .as-setup-optlbl{display:inline-flex;gap:8px;align-items:center;cursor:pointer}   /* #262 label wraps only checkbox+text so the mode select stays independent */
   .as-setup-autofront-mode{font-size:12px;padding:1px 3px}
+  .as-setup-num{cursor:default}   /* #560 a number box, not a clickable checkbox row */
+  .as-setup-uptimeout{width:52px;font:13px inherit;border:1px solid #cfc6e6;border-radius:5px;padding:2px 5px;text-align:right}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
