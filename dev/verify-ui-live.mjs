@@ -287,6 +287,25 @@ for (const [name, path, url, hasToast] of CASES) {
         ck(inter.esc === 1, `${name}: Esc closes it too`);
     }
 
+    // ── placeholders must not read as typed text (#563) ────────────────────
+    const ph = await page.evaluate(() => {
+      const host = document.createElement('div');
+      host.className = 'mbu-ui';                       // the opt-in container hook
+      host.innerHTML = '<input class="p" placeholder="hint"><input class="v" value="typed">';
+      document.body.appendChild(host);
+      const pe = getComputedStyle(host.querySelector('.p'), '::placeholder');
+      const ve = getComputedStyle(host.querySelector('.v'));
+      const out = { phColor: pe.color, phStyle: pe.fontStyle, phOpacity: pe.opacity, valColor: ve.color, valStyle: ve.fontStyle };
+      host.remove();
+      const mb = document.querySelector('input[placeholder]:not([class*=mbu-])');
+      out.mbStyle = mb ? getComputedStyle(mb, '::placeholder').fontStyle : null;
+      return out;
+    });
+    ck(ph.phStyle === 'italic' && ph.valStyle !== 'italic', `${name}: a placeholder is italic where typed text is not (${ph.phStyle} vs ${ph.valStyle})`);
+    ck(ph.phColor !== ph.valColor, `${name}: and a different colour (${ph.phColor} vs ${ph.valColor})`);
+    ck(ph.phOpacity === '1', `${name}: opacity pinned, so Firefox cannot dim it further (${ph.phOpacity})`);
+    ck(ph.mbStyle === null || ph.mbStyle !== 'italic', `${name}: MusicBrainz's own inputs are left alone (${ph.mbStyle})`);
+
     ck(errs.length === 0, `${name}: no page errors${errs.length ? ' — ' + JSON.stringify(errs.slice(0, 2)) : ''}`);
     await page.close();
 }
