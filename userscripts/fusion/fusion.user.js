@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.2.140000
+// @version      2026.9.2.145000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -92,38 +92,38 @@ function saveLogWinState(patch) { try { GM_setValue(LOGWIN_KEY, JSON.stringify(O
 // window, minimize/restore docking to the bottom-left, an entry-count + warn/err
 // badge, clickable URLs, per-severity colouring, Escape to close, and
 // open/minimized/position all remembered across sessions.
-// NB the container needs BOTH the id and the .fs-logpop class — its CSS is a
+// NB the container needs BOTH the id and the .mbu-logpop class — its CSS is a
 // class rule, and setting only the id once left it entirely unstyled (invisible
 // behind the modal) while still passing an existence check.
 function openLog() {
-    document.getElementById('fs-logpop')?.remove();
+    document.getElementById('mbu-logpop')?.remove();
     fsStyle();
     saveLogWinState({ open: true });
     const st = loadLogWinState();
-    const pop = el('div', 'fs-logpop'); pop.id = 'fs-logpop';
-    pop.innerHTML = '<div class="fs-logpop-h"><b>Fusion — activity log</b> <span class="fs-log-badge"></span><span class="fs-logpop-sp"></span>'
-        + '<button class="fs-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-        + '<button class="fs-logpop-min" type="button" title="Minimize">–</button>'
-        + '<button class="fs-logpop-x" type="button" title="Close">✕</button></div>'
-        + '<div class="fs-log-list"></div>';
+    const pop = el('div', 'mbu-logpop'); pop.id = 'mbu-logpop';
+    pop.innerHTML = '<div class="mbu-logpop-h"><b>Fusion — activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+        + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+        + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+        + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+        + '<div class="mbu-log-list"></div>';
     document.body.appendChild(pop);
     if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
     pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-    const list = pop.querySelector('.fs-log-list');
+    const list = pop.querySelector('.mbu-log-list');
     const render = () => {
         list.innerHTML = _logBuf.length
-            ? _logBuf.map(r => '<div class="fs-log-li fs-log-' + r.kind + '"><span class="fs-log-t">' + _logTs(new Date(r.t)) + '</span><span class="fs-log-m">' + _logLinkify(r.line) + '</span></div>').join('')
-            : '<div class="fs-log-empty">No activity yet.</div>';
+            ? _logBuf.map(r => '<div class="mbu-log-li mbu-log-' + r.kind + '"><span class="mbu-log-t">' + _logTs(new Date(r.t)) + '</span><span class="mbu-log-m">' + _logLinkify(r.line) + '</span></div>').join('')
+            : '<div class="mbu-log-empty">No activity yet.</div>';
         const c = _logCounts();
-        pop.querySelector('.fs-log-badge').textContent = '(' + _logBuf.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
+        pop.querySelector('.mbu-log-badge').textContent = '(' + _logBuf.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
         list.scrollTop = list.scrollHeight;
     };
     render();
     _logListeners.add(render);
     const onKey = e => { if (e.key === 'Escape') close(); };
     const close = () => { saveLogWinState({ open: false }); _logListeners.delete(render); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.fs-logpop-copy').onclick = () => copyLog(pop.querySelector('.fs-logpop-copy'));
-    const minBtn = pop.querySelector('.fs-logpop-min');
+    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
+    const minBtn = pop.querySelector('.mbu-logpop-min');
     const setMin = m => {
         minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
         if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }
@@ -131,8 +131,8 @@ function openLog() {
     };
     minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWinState({ min: m }); };
     if (st.min) { pop.classList.add('min'); setMin(true); }
-    pop.querySelector('.fs-logpop-x').onclick = close;
-    pop.querySelector('.fs-logpop-h').addEventListener('mousedown', e => {
+    pop.querySelector('.mbu-logpop-x').onclick = close;
+    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', e => {
         if (e.target.closest('button')) return;
         e.preventDefault();
         const r = pop.getBoundingClientRect();
@@ -1472,7 +1472,7 @@ function fsStyle() {
     // The shared UI components (#563). Definitions live in dev/ui-components.mjs
     // and are inlined here by dev/sync-ui.mjs — edit them THERE, never here.
     // <ST-UI> — generated by dev/sync-ui.mjs from dev/ui-components.mjs — DO NOT EDIT
-    const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;white-space:nowrap;line-height:1.6;background:var(--mbu-bg)}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}';
+    const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;white-space:nowrap;line-height:1.6;background:var(--mbu-bg)}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.72}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}.mbu-compact .mbu-bt{display:none}';
     // Help link markup. Every script's help link is this, pointing at its own README.
     // `name` is the userscript folder, e.g. mbuHelpHref('art_station').
     function mbuHelpHref(name) {
@@ -1563,6 +1563,79 @@ function fsStyle() {
         return html + '</div>';
     }
 
+    // Dismiss-on-outside-click, with the trailing click SWALLOWED.
+    //
+    //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
+    //
+    // #305: a popover torn down on mousedown removes what was under the cursor, so
+    // the click that follows lands on whatever the page reflowed into that spot and
+    // activates it. Tearing down on click instead just moves the problem. So: close
+    // on outside mousedown, then eat exactly one click in the capture phase. This is
+    // the single most repeated interaction bug in these scripts and it belongs in
+    // one place — it is why #563 says interaction is part of the contract.
+    //
+    // Esc closes too, innermost first: the handler is registered in capture and stops
+    // propagation, so a popover inside a modal does not close the modal as well.
+    function mbuDismissOn(el, close, opts) {
+        opts = opts || {};
+        var closed = false;
+        var onDown = function (e) {
+            if (closed || !el || el.contains(e.target)) return;
+            if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
+            finish();
+            // swallow the click this mousedown will produce, once
+            var eat = function (ev) { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', eat, true); };
+            document.addEventListener('click', eat, true);
+            setTimeout(function () { document.removeEventListener('click', eat, true); }, 400);
+        };
+        var onKey = function (e) {
+            if (closed || e.key !== 'Escape') return;
+            e.stopPropagation();
+            finish();
+        };
+        function finish() {
+            if (closed) return;
+            closed = true;
+            document.removeEventListener('mousedown', onDown, true);
+            document.removeEventListener('keydown', onKey, true);
+            try { close(); } catch (err) { /* a throwing closer must not leave listeners behind */ }
+        }
+        document.addEventListener('mousedown', onDown, true);
+        document.addEventListener('keydown', onKey, true);
+        return finish;
+    }
+
+    // Collapse a toolbar to icon-only when its buttons would wrap.
+    //
+    //   mbuFitToolbar(barEl)            // call on build, and on resize
+    //
+    // Measured by SUMMING child widths rather than reading scrollWidth or comparing
+    // offsetTop: a bar with flex:1 spacers never overflows its own scroll box, so
+    // both of those report "fits" right up until it visibly wraps. Art Station
+    // learned that the hard way (#234) and it is the only reason this is a helper
+    // rather than one CSS rule.
+    //
+    // opts.gap    inter-item gap in px (default 11)
+    // opts.pad    horizontal padding to leave (default 24)
+    // opts.spacer selector for flexible spacers, which must not count (default .mbu-sp)
+    function mbuFitToolbar(bar, opts) {
+        if (!bar) return false;
+        opts = opts || {};
+        var gap = opts.gap == null ? 11 : opts.gap;
+        var pad = opts.pad == null ? 24 : opts.pad;
+        var spacer = opts.spacer || '.mbu-sp';
+        bar.classList.remove('mbu-compact');            // measure at full labels
+        var kids = [].slice.call(bar.children);
+        var need = gap * Math.max(0, kids.length - 1);
+        for (var i = 0; i < kids.length; i++) {
+            if (kids[i].matches && kids[i].matches(spacer)) continue;
+            need += kids[i].offsetWidth;
+        }
+        var compact = need > bar.clientWidth - pad;
+        bar.classList.toggle('mbu-compact', compact);
+        return compact;
+    }
+
     // Publish the components on a shared namespace. Three reasons, in order:
     //
     //  1. it is the cross-userscript contract #563 is about — another script (or a
@@ -1583,6 +1656,8 @@ function fsStyle() {
         if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
         if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
         if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
+        if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
+        if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
     } catch (e) { /* a locked-down page must not stop the script loading */ }
     // </ST-UI>
     s.textContent = MBU_TOKENS + MBU_UI_CSS
@@ -1598,7 +1673,7 @@ function fsStyle() {
           + 'opacity:.55;transition:background .15s,transform .1s,opacity .15s}'
         + '.fs-launch-i{font-size:21px;line-height:1}'
         + '.fs-launch:hover{opacity:1;transform:scale(1.08)}'
-        + '.fs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:2147483000;display:flex;align-items:center;justify-content:center}'
+        + '.fs-overlay{position:fixed;inset:0;background:rgba(15,12,28,.45);z-index:var(--mbu-z-modal);display:flex;align-items:center;justify-content:center}'
         // Light palette (#529: "make UI white") — every colour in the window is
         // driven from these tokens, so the theme is this one line plus the log
         // panel below. #562: those tokens are now aliases onto the repo-wide set
@@ -1854,24 +1929,6 @@ function fsStyle() {
         + '.fs-opt textarea{width:100%;box-sizing:border-box;margin-top:4px;font:12px inherit}'
         // log viewer — ported from apollo_editor's #283 window (wider, centred,
         // minimize/restore, badge, per-severity colouring), in Fusion's light palette.
-        + '.fs-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:2147483002;display:flex;flex-direction:column;width:min(1240px,94vw);max-height:78vh;background:var(--mbu-bg);border:1px solid #cfc4ee;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.28);font:13px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text);overflow:hidden}'
-        + '.fs-logpop .fs-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e7e1f5;color:var(--mbu-accent-hover);cursor:move;user-select:none}'
-        + '.fs-logpop .fs-logpop-sp{margin-left:auto}'
-        + '.fs-logpop .fs-log-badge{color:#9a8cba;font-size:11px}'
-        + '.fs-logpop .fs-logpop-copy,.fs-logpop .fs-logpop-x,.fs-logpop .fs-logpop-min{font:12px var(--mbu-font);color:var(--mbu-accent);background:#f5f1fc;border:1px solid #cec0ef;border-radius:5px;padding:2px 9px;cursor:pointer}'
-        + '.fs-logpop .fs-logpop-copy:hover,.fs-logpop .fs-logpop-x:hover,.fs-logpop .fs-logpop-min:hover{background:#ebe3f9}'
-        + '.fs-logpop.min .fs-log-list,.fs-logpop.min .fs-logpop-copy{display:none}'
-        + '.fs-logpop.min{max-height:none;width:auto}'
-        + '.fs-logpop.min .fs-logpop-sp{display:none}'
-        + '.fs-logpop .fs-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#fbfaff;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}'
-        + '.fs-logpop .fs-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}'
-        + '.fs-logpop .fs-log-t{color:#a99fc2;flex:0 0 auto}'
-        + '.fs-logpop .fs-log-m{flex:1 1 auto;color:#444}'
-        + '.fs-logpop .fs-log-m a{color:var(--mbu-accent)}'
-        + '.fs-logpop .fs-log-ok .fs-log-m{color:#2e7d4f}'
-        + '.fs-logpop .fs-log-warn .fs-log-m{color:#b06a00}'
-        + '.fs-logpop .fs-log-error .fs-log-m{color:#c0344d}'
-        + '.fs-logpop .fs-log-empty{color:#9a8cba}';
     document.head.appendChild(s);
 }
 
@@ -2968,7 +3025,7 @@ let FUSION_OPEN = false;
 // otherwise one keypress tore down everything at once.
 function _fsEscHandler(e) {
     if (e.key !== 'Escape') return;
-    if (document.getElementById('fs-logpop') || document.getElementById('fs-settings')) return;
+    if (document.getElementById('mbu-logpop') || document.getElementById('fs-settings')) return;
     closeFusion();
 }
 function buildShell() {

@@ -54,7 +54,22 @@ for (const [name, path, url, hasToast] of CASES) {
     if (page.url().includes('/login')) { console.log('  NOT LOGGED IN — skipped'); await page.close(); continue; }
     await page.waitForTimeout(1500);
     await page.addScriptTag({ content: code });
-    await page.waitForTimeout(3000);
+    // Wait for the script to actually mount rather than sleeping a fixed 3s. The
+    // sandbox is intermittently slow, and a fixed sleep turned that into failing
+    // assertions about "wrong colours" that were really "no stylesheet yet" —
+    // which cost me a bogus regression hunt. If it never mounts, say so plainly
+    // instead of asserting against an empty page.
+    const mounted = await page.waitForFunction(() => !!window.MBU, null, { timeout: 20000 })
+        .then(() => true).catch(() => false);
+    if (!mounted) { ck(false, `${name}: the script never mounted (window.MBU absent after 20s) — nothing was verified`); await page.close(); continue; }
+    await page.waitForTimeout(800);
+    // the three scripts with a floating log open it from the shared Log button
+    const hasLog = await page.evaluate(() => {
+        const b = document.querySelector('.mbu-cfg-log, .tc-logbtn, .as-setup-logbtn, .fs-logbtn');
+        if (b) { b.click(); return true; }
+        return false;
+    });
+    if (hasLog) await page.waitForTimeout(700);
 
     // ── help link: same href shape, same attributes, same look ──────────────
     const help = await page.evaluate(n => {
@@ -168,6 +183,108 @@ for (const [name, path, url, hasToast] of CASES) {
         ck(t.seen.length === 3, `${name}: every toast mirrored into the log (${t.seen.length}/3)`);
         ck(t.seen.some(l => l.startsWith('warn:')) && t.seen.some(l => l.startsWith('ok:')), `${name}: with the right severity — ${JSON.stringify(t.seen)}`);
         ck(t.seen.every(l => !/[⚠✓]/.test(l)), `${name}: and the glyph stripped from the logged text — ${JSON.stringify(t.seen)}`);
+    }
+
+    // ── activity log: one floating window, shared severity colours ─────────
+    if (hasLog) {
+        const lg = await page.evaluate(() => {
+            const pop = document.getElementById('mbu-logpop');
+            if (!pop) return { missing: true };
+            const cs = getComputedStyle(pop);
+            const q = s => pop.querySelector(s);
+            const li = document.createElement('div');
+            // probe each severity through the shared classes
+            li.innerHTML = ['ok', 'warn', 'error', 'debug'].map(k =>
+                '<div class="mbu-log-li mbu-log-' + k + '"><span class="mbu-log-t">0:00</span><span class="mbu-log-m">x</span></div>').join('');
+            (q('.mbu-log-list') || pop).appendChild(li);
+            const sev = {};
+            for (const k of ['ok', 'warn', 'error', 'debug']) {
+                const m = li.querySelector('.mbu-log-' + k + ' .mbu-log-m');
+                sev[k] = m ? getComputedStyle(m).color : null;
+            }
+            const out = {
+                pos: cs.position, dir: cs.flexDirection,
+                header: !!q('.mbu-logpop-h'), drag: q('.mbu-logpop-h') && getComputedStyle(q('.mbu-logpop-h')).cursor,
+                copy: !!q('.mbu-logpop-copy'), min: !!q('.mbu-logpop-min'), close: !!q('.mbu-logpop-x'),
+                list: !!q('.mbu-log-list'), sev,
+            };
+            li.remove();
+            return out;
+        });
+        ck(!lg.missing, `${name}: the log window is the shared #mbu-logpop`);
+        if (!lg.missing) {
+            ck(lg.pos === 'fixed' && lg.dir === 'column', `${name}: shared floating column layout (${lg.pos}/${lg.dir})`);
+            ck(lg.header && lg.drag === 'move', `${name}: draggable by its header (cursor ${lg.drag})`);
+            ck(lg.copy && lg.min && lg.close, `${name}: Copy / minimise / close all present`);
+            ck(lg.list, `${name}: has the shared entry list`);
+            ck(lg.sev.ok === 'rgb(31, 157, 107)' && lg.sev.warn === 'rgb(160, 90, 0)' && lg.sev.error === 'rgb(192, 57, 43)',
+                `${name}: severity colours come from the tokens — ${JSON.stringify(lg.sev)}`);
+            ck(lg.sev.debug !== lg.sev.ok, `${name}: debug is distinct from ok`);
+        }
+    }
+
+    // ── overlay + popover dismissal: the interaction half of the contract ──
+    const inter = await page.evaluate(async () => {
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const MBU = window.MBU;
+        if (!MBU || typeof MBU.dismissOn !== 'function') return { missing: true };
+
+        // backdrop: one colour, one stacking level
+        const ov = document.createElement('div');
+        ov.className = 'mbu-ov';
+        ov.innerHTML = '<div class="mbu-ov-panel"><div class="mbu-ov-h"><span class="mbu-ov-title">t</span>'
+            + '<button class="mbu-ov-x">✕</button></div><div class="mbu-ov-body">b</div></div>';
+        document.body.appendChild(ov);
+        const ovCs = getComputedStyle(ov);
+        const x = ov.querySelector('.mbu-ov-x');
+        const xBox = x.getBoundingClientRect();
+        const ovOut = { bg: ovCs.backgroundColor, z: ovCs.zIndex, pos: ovCs.position,
+            xW: Math.round(xBox.width), xH: Math.round(xBox.height) };
+        ov.remove();
+
+        // #305: dismissing on outside mousedown must swallow the trailing click,
+        // or it activates whatever is underneath.
+        const under = document.createElement('button');
+        under.textContent = 'under';
+        under.style.cssText = 'position:fixed;left:40px;top:40px;width:120px;height:40px;z-index:2147483000';
+        let underClicks = 0;
+        under.addEventListener('click', () => underClicks++);
+        document.body.appendChild(under);
+
+        const pop = document.createElement('div');
+        pop.style.cssText = 'position:fixed;right:10px;top:10px;width:50px;height:20px';
+        document.body.appendChild(pop);
+        let closed = 0;
+        MBU.dismissOn(pop, () => { closed++; pop.remove(); });
+
+        // a real mousedown+click on the element underneath the popover
+        const at = { clientX: 80, clientY: 60, bubbles: true, cancelable: true };
+        under.dispatchEvent(new MouseEvent('mousedown', at));
+        under.dispatchEvent(new MouseEvent('mouseup', at));
+        under.dispatchEvent(new MouseEvent('click', at));
+        await wait(50);
+        const swallow = { closed, underClicks };
+
+        // and Esc closes
+        const pop2 = document.createElement('div');
+        document.body.appendChild(pop2);
+        let closed2 = 0;
+        MBU.dismissOn(pop2, () => { closed2++; pop2.remove(); });
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        await wait(30);
+        under.remove();
+        return { ov: ovOut, swallow, esc: closed2 };
+    });
+    ck(!inter.missing, `${name}: mbuDismissOn is available`);
+    if (!inter.missing) {
+        ck(inter.ov.pos === 'fixed' && inter.ov.bg === 'rgba(15, 12, 28, 0.45)',
+            `${name}: one shared backdrop (${inter.ov.bg})`);
+        ck(inter.ov.z === '2147483000', `${name}: at the shared modal level (z ${inter.ov.z})`);
+        ck(inter.ov.xW >= 24 && inter.ov.xH >= 24, `${name}: the close control has a real hit area, not a bare glyph (${inter.ov.xW}x${inter.ov.xH})`);
+        ck(inter.swallow.closed === 1, `${name}: an outside mousedown dismisses the popover`);
+        ck(inter.swallow.underClicks === 0,
+            `${name}: #305 — and the trailing click is SWALLOWED, so it does not activate what was underneath (${inter.swallow.underClicks} stray click(s))`);
+        ck(inter.esc === 1, `${name}: Esc closes it too`);
     }
 
     ck(errs.length === 0, `${name}: no page errors${errs.length ? ' — ' + JSON.stringify(errs.slice(0, 2)) : ''}`);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.2.140000
+// @version      2026.9.2.145000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -555,33 +555,33 @@
   const saveLogWin = (patch) => { try { gmSave(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
   // #283 the Log button opens this popup: the full session log + a Copy control.
   function openLog() {
-    document.getElementById('as-logpop')?.remove();
+    document.getElementById('mbu-logpop')?.remove();
     saveLogWin({ open: true });
     const st = loadLogWin();
-    const pop = document.createElement('div'); pop.id = 'as-logpop';
-    pop.innerHTML = `<div class="as-logpop-h"><b>Activity log</b> <span class="as-log-badge"></span><span class="as-logpop-sp"></span>`
-      + `<button class="as-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
-      + `<button class="as-logpop-min" type="button" title="Minimize">–</button>`
-      + `<button class="as-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="as-log-list"></div>`;
+    const pop = document.createElement('div'); pop.id = 'mbu-logpop';
+    pop.innerHTML = `<div class="mbu-logpop-h"><b>Activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>`
+      + `<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
+      + `<button class="mbu-logpop-min" type="button" title="Minimize">–</button>`
+      + `<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>`
+      + `<div class="mbu-log-list"></div>`;
     document.body.appendChild(pop);
     if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
     pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
     const renderList = () => {
-      const list = pop.querySelector('.as-log-list');
+      const list = pop.querySelector('.mbu-log-list');
       list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="as-log-li as-log-${e.sev}"><span class="as-log-t">${_ts(e.t)}</span><span class="as-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
-        : '<div class="as-log-empty">No activity yet.</div>';
+        ? LOG.map(e => `<div class="mbu-log-li mbu-log-${e.sev}"><span class="mbu-log-t">${_ts(e.t)}</span><span class="mbu-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
+        : '<div class="mbu-log-empty">No activity yet.</div>';
       const c = logCounts();
-      pop.querySelector('.as-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
+      pop.querySelector('.mbu-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
       list.scrollTop = list.scrollHeight;
     };
     renderList();
     _logListeners.add(renderList);
     const onKey = e => { if (e.key === 'Escape') close(); };
     const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.as-logpop-copy').onclick = () => copyLog(pop.querySelector('.as-logpop-copy'));
-    const minBtn = pop.querySelector('.as-logpop-min');
+    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
+    const minBtn = pop.querySelector('.mbu-logpop-min');
     const setMin = (m) => {
       minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
       if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
@@ -589,9 +589,9 @@
     };
     minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
     if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
-    pop.querySelector('.as-logpop-x').onclick = close;
+    pop.querySelector('.mbu-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
-    pop.querySelector('.as-logpop-h').addEventListener('mousedown', (e) => {
+    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', (e) => {
       if (e.target.closest('button')) return;
       e.preventDefault();
       const r = pop.getBoundingClientRect();
@@ -699,17 +699,17 @@
 
   function bar(n) {
     return `<div class="as-bar">
-      <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
+      <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="mbu-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
-      <button class="as-btn as-src" title="Source ${ENT.noun} from a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="as-bt">URL</span><span class="as-src-n"></span></button>
-      <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size — scroll the wheel over the slider, or hold right-click and scroll the wheel anywhere in the gallery"></span>
+      <button class="as-btn as-src" title="Source ${ENT.noun} from a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span></button>
+      <span class="as-ctl"><span class="mbu-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size — scroll the wheel over the slider, or hold right-click and scroll the wheel anywhere in the gallery"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
       <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits — right-click to skip the &quot;Run&quot; click and start immediately"${n?'':' disabled'}>${commitInner(n)}</button>
     </div>`;
   }
-  const commitInner = n => `<span class="as-bi">✓</span><span class="as-bt">Enter edit</span>${n ? ` <span class="as-cnt2">(${n})</span>` : ''}`;
+  const commitInner = n => `<span class="as-bi">✓</span><span class="mbu-bt">Enter edit</span>${n ? ` <span class="as-cnt2">(${n})</span>` : ''}`;
   // #234: the selection cluster lives in the center of the main toolbar (the old
   // bottom bulk bar is gone). syncSel() rebuilds just this span in place so
   // right-click paint-select never reflows the grid.
@@ -719,10 +719,10 @@
       <button class="as-ic as-selall" title="Select all ${ITEMS}">✳</button>
       <button class="as-ic as-selclr" title="Clear selection"${sel.length ? '' : ' disabled'}>✕</button>
       ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
-      <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
-      <button class="as-btn as-bk-dl" title="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
-      <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="as-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" title="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="as-bt">Delete</span></button>` : ''}`;
+      <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
+      <button class="as-btn as-bk-dl" title="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
+      <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
+      <button class="as-btn as-bk-rm" title="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="mbu-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? ('All ' + ITEMS) : type;
@@ -1057,7 +1057,7 @@
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
       const sel = MODEL.filter(it => it._sel && !it._del && !it._sourcing); if (!sel.length) return;   // include NEW covers (download their local blob)
       if (sel.length === 1) { dlOne(sel[0]); maybeClearSel(); return; }   // single → save the image directly
-      const b = e.currentTarget, lbl = b.querySelector('.as-bt'), old = lbl ? lbl.textContent : '';
+      const b = e.currentTarget, lbl = b.querySelector('.mbu-bt'), old = lbl ? lbl.textContent : '';
       b.disabled = true; if (lbl) lbl.style.display = 'inline';   // show progress even in compact mode
       const prog = (d, t) => { if (lbl) lbl.textContent = `Zipping ${d}/${t}…`; };
       prog(0, sel.length);
@@ -1200,11 +1200,9 @@
   // widths (the flex:1 spacers defeat scrollWidth/offsetTop-based detection).
   function fitToolbar() {
     const bar = root.querySelector('.as-bar'); if (!bar) return;
-    bar.classList.remove('as-compact');           // measure at full labels
-    const kids = [...bar.children];
-    let need = 11 * Math.max(0, kids.length - 1); // inter-item gaps
-    kids.forEach(el => { if (!el.classList.contains('as-sp')) need += el.offsetWidth; });
-    bar.classList.toggle('as-compact', need > bar.clientWidth - 24);   // minus h-padding
+    // #563: the shared collapse. Art Station's own measurement was the reference,
+    // so this is the same arithmetic, now named once for every script.
+    mbuFitToolbar(bar, { spacer: '.as-sp' });
   }
   // the list of pending MB operations behind "N staged changes"
   function pendingOps() {
@@ -3386,7 +3384,7 @@
   // The shared UI components (#563). Definitions live in dev/ui-components.mjs
   // and are inlined here by dev/sync-ui.mjs — edit them THERE, never here.
   // <ST-UI> — generated by dev/sync-ui.mjs from dev/ui-components.mjs — DO NOT EDIT
-  const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;white-space:nowrap;line-height:1.6;background:var(--mbu-bg)}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}';
+  const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;white-space:nowrap;line-height:1.6;background:var(--mbu-bg)}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.72}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}.mbu-compact .mbu-bt{display:none}';
   // Help link markup. Every script's help link is this, pointing at its own README.
   // `name` is the userscript folder, e.g. mbuHelpHref('art_station').
   function mbuHelpHref(name) {
@@ -3477,6 +3475,79 @@
       return html + '</div>';
   }
 
+  // Dismiss-on-outside-click, with the trailing click SWALLOWED.
+  //
+  //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
+  //
+  // #305: a popover torn down on mousedown removes what was under the cursor, so
+  // the click that follows lands on whatever the page reflowed into that spot and
+  // activates it. Tearing down on click instead just moves the problem. So: close
+  // on outside mousedown, then eat exactly one click in the capture phase. This is
+  // the single most repeated interaction bug in these scripts and it belongs in
+  // one place — it is why #563 says interaction is part of the contract.
+  //
+  // Esc closes too, innermost first: the handler is registered in capture and stops
+  // propagation, so a popover inside a modal does not close the modal as well.
+  function mbuDismissOn(el, close, opts) {
+      opts = opts || {};
+      var closed = false;
+      var onDown = function (e) {
+          if (closed || !el || el.contains(e.target)) return;
+          if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
+          finish();
+          // swallow the click this mousedown will produce, once
+          var eat = function (ev) { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', eat, true); };
+          document.addEventListener('click', eat, true);
+          setTimeout(function () { document.removeEventListener('click', eat, true); }, 400);
+      };
+      var onKey = function (e) {
+          if (closed || e.key !== 'Escape') return;
+          e.stopPropagation();
+          finish();
+      };
+      function finish() {
+          if (closed) return;
+          closed = true;
+          document.removeEventListener('mousedown', onDown, true);
+          document.removeEventListener('keydown', onKey, true);
+          try { close(); } catch (err) { /* a throwing closer must not leave listeners behind */ }
+      }
+      document.addEventListener('mousedown', onDown, true);
+      document.addEventListener('keydown', onKey, true);
+      return finish;
+  }
+
+  // Collapse a toolbar to icon-only when its buttons would wrap.
+  //
+  //   mbuFitToolbar(barEl)            // call on build, and on resize
+  //
+  // Measured by SUMMING child widths rather than reading scrollWidth or comparing
+  // offsetTop: a bar with flex:1 spacers never overflows its own scroll box, so
+  // both of those report "fits" right up until it visibly wraps. Art Station
+  // learned that the hard way (#234) and it is the only reason this is a helper
+  // rather than one CSS rule.
+  //
+  // opts.gap    inter-item gap in px (default 11)
+  // opts.pad    horizontal padding to leave (default 24)
+  // opts.spacer selector for flexible spacers, which must not count (default .mbu-sp)
+  function mbuFitToolbar(bar, opts) {
+      if (!bar) return false;
+      opts = opts || {};
+      var gap = opts.gap == null ? 11 : opts.gap;
+      var pad = opts.pad == null ? 24 : opts.pad;
+      var spacer = opts.spacer || '.mbu-sp';
+      bar.classList.remove('mbu-compact');            // measure at full labels
+      var kids = [].slice.call(bar.children);
+      var need = gap * Math.max(0, kids.length - 1);
+      for (var i = 0; i < kids.length; i++) {
+          if (kids[i].matches && kids[i].matches(spacer)) continue;
+          need += kids[i].offsetWidth;
+      }
+      var compact = need > bar.clientWidth - pad;
+      bar.classList.toggle('mbu-compact', compact);
+      return compact;
+  }
+
   // Publish the components on a shared namespace. Three reasons, in order:
   //
   //  1. it is the cross-userscript contract #563 is about — another script (or a
@@ -3497,6 +3568,8 @@
       if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
       if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
       if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
+      if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
+      if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
   } catch (e) { /* a locked-down page must not stop the script loading */ }
   // </ST-UI>
 
@@ -3528,26 +3601,6 @@
   #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:max-content;min-width:320px;max-width:92vw;background:var(--mbu-bg);border:1px solid #cbbdf0;border-radius:var(--mbu-radius-lg);box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px var(--mbu-font);color:var(--mbu-text)}
   /* #283 activity-log popup */
   /* floating, movable, NON-modal window (no backdrop) */
-  #as-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100020;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}
-  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:var(--mbu-accent-hover);cursor:move;user-select:none}
-  #as-logpop .as-log-m a{color:var(--mbu-accent)}
-  .as-logpop-sp{margin-left:auto}
-  .as-logpop-copy,.as-logpop-x,.as-logpop-min{font-size:12px;color:var(--mbu-accent);background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
-  .as-logpop-copy:hover,.as-logpop-x:hover,.as-logpop-min:hover{background:#e9e0f8}
-  #as-logpop.min .as-log-list,#as-logpop.min .as-logpop-copy,#as-logpop.min .as-logpop-x{display:none}
-  #as-logpop.min{max-height:none;width:auto}
-  #as-logpop.min .as-logpop-sp{display:none}
-  .as-log-badge{color:#9a8cba;font-size:11px}
-  .as-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
-  .as-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
-  .as-log-t{color:#a99fc2;flex:0 0 auto}
-  .as-log-m{flex:1 1 auto;color:#444}
-  .as-log-ok .as-log-m{color:#2e7d4f}
-  .as-log-warn .as-log-m{color:#b06a00}
-  .as-log-error .as-log-m{color:#c0344d}
-  .as-log-debug{opacity:.72}
-  .as-log-debug .as-log-m{color:#7a7a7a}
-  .as-log-empty{color:#9a8cba}
   .as-setup-x{border:none;background:none;color:var(--mbu-text-weak);font-size:14px;cursor:pointer;padding:0 2px}
   .as-setup-x:hover{color:var(--mbu-text-dim)}
   .as-setup-body{padding:11px 12px;display:flex;flex-direction:column;gap:11px}   /* #262 a bit more breathing room between options */
@@ -3563,7 +3616,7 @@
   #as-root select,.as-btn{font:13px inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
   .as-btn{display:inline-flex;align-items:center;gap:5px}
   /* #234: compact toolbar — hide button labels (keep icons + tooltips) when it would otherwise wrap */
-  .as-bar.as-compact .as-bt{display:none}
+  
   /* #493: :not(:disabled) — a disabled .as-commit (white text, unconditional) hovered with
      the plain rule below got a pale lavender background under its own white text, unreadable */
   .as-btn:hover:not(:disabled){background:#f6f3fd}
@@ -3833,7 +3886,7 @@
     .as-lb-dlmenu button{padding:12px 14px}
   }
   /* commit panel */
-  #as-commit,#as-report{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
+  #as-commit,#as-report{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}
   .as-rp-opts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
   .as-rp-opts label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mbu-text-dim)}
   .as-rp-out{font:12px/1.45 ui-monospace,Consolas,monospace;border:1px solid var(--mbu-border);border-radius:7px;padding:9px 11px;resize:vertical;background:var(--mbu-bg-raised);color:#333;white-space:pre;overflow:auto}

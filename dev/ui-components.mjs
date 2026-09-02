@@ -60,6 +60,64 @@ const CSS = [
     '.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;',
     'background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}',
     '.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}',
+
+    // Activity log — floating, draggable by its header, minimisable, with a
+    // Copy that yields the Markdown <details> block for an issue. Art Station is
+    // the reference the issue names; Apollo and Fusion had already grown the
+    // identical structure under their own prefixes (tc-, as-, fs-), which is the
+    // clearest possible argument for naming it once.
+    '#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);',
+    'display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);',
+    'border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);',
+    'font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}',
+    '.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;',
+    'border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}',
+    '.mbu-logpop-sp{margin-left:auto}',
+    '.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);',
+    'background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;',
+    'padding:2px 9px;cursor:pointer;font-family:inherit}',
+    '.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}',
+    // minimised: just the header bar, so it can sit out of the way mid-run
+    '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}',
+    '#mbu-logpop.min{max-height:none;width:auto}',
+    '#mbu-logpop.min .mbu-logpop-sp{display:none}',
+    '.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}',
+    '.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;',
+    'display:flex;flex-direction:column;gap:3px}',
+    '.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}',
+    '.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}',
+    '.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}',
+    '#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}',
+    // severity, on the message only — the timestamp stays quiet
+    '.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}',
+    '.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}',
+    '.mbu-log-error .mbu-log-m{color:var(--mbu-error)}',
+    '.mbu-log-debug{opacity:.72}',
+    '.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}',
+    '.mbu-log-empty{color:var(--mbu-text-weak)}',
+
+    // Modal overlay — one backdrop, one stacking level. There were four:
+    // rgba(0,0,0,.42) at z 999998, rgba(20,24,30,.44) at 2147483646,
+    // rgba(15,12,28,.55) at 9998 and rgba(0,0,0,.35) at 2147483000. None of
+    // those differences meant anything; they just happened at different times.
+    '.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);',
+    'display:flex;align-items:center;justify-content:center;padding:24px}',
+    '.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);',
+    'box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}',
+    // the title row flexes so the close button pins right without a spacer div
+    '.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;',
+    'border-bottom:1px solid var(--mbu-border-soft);font-weight:700}',
+    '.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}',
+    // #419: a dismiss control gets a real hit area, never a bare glyph
+    '.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;',
+    'font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}',
+    '.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}',
+    '.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}',
+
+    // Collapsing toolbar — icon+label buttons drop their labels when the bar
+    // would otherwise wrap; the icon plus its tooltip carries the meaning.
+    // Art Station is the reference implementation the issue names.
+    '.mbu-compact .mbu-bt{display:none}',
 ].join('');
 
 // ── JS ──────────────────────────────────────────────────────────────────────
@@ -156,6 +214,79 @@ function mbuCfgHeader(o) {
     return html + '</div>';
 }
 
+// Dismiss-on-outside-click, with the trailing click SWALLOWED.
+//
+//   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
+//
+// #305: a popover torn down on mousedown removes what was under the cursor, so
+// the click that follows lands on whatever the page reflowed into that spot and
+// activates it. Tearing down on click instead just moves the problem. So: close
+// on outside mousedown, then eat exactly one click in the capture phase. This is
+// the single most repeated interaction bug in these scripts and it belongs in
+// one place — it is why #563 says interaction is part of the contract.
+//
+// Esc closes too, innermost first: the handler is registered in capture and stops
+// propagation, so a popover inside a modal does not close the modal as well.
+function mbuDismissOn(el, close, opts) {
+    opts = opts || {};
+    var closed = false;
+    var onDown = function (e) {
+        if (closed || !el || el.contains(e.target)) return;
+        if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
+        finish();
+        // swallow the click this mousedown will produce, once
+        var eat = function (ev) { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', eat, true); };
+        document.addEventListener('click', eat, true);
+        setTimeout(function () { document.removeEventListener('click', eat, true); }, 400);
+    };
+    var onKey = function (e) {
+        if (closed || e.key !== 'Escape') return;
+        e.stopPropagation();
+        finish();
+    };
+    function finish() {
+        if (closed) return;
+        closed = true;
+        document.removeEventListener('mousedown', onDown, true);
+        document.removeEventListener('keydown', onKey, true);
+        try { close(); } catch (err) { /* a throwing closer must not leave listeners behind */ }
+    }
+    document.addEventListener('mousedown', onDown, true);
+    document.addEventListener('keydown', onKey, true);
+    return finish;
+}
+
+// Collapse a toolbar to icon-only when its buttons would wrap.
+//
+//   mbuFitToolbar(barEl)            // call on build, and on resize
+//
+// Measured by SUMMING child widths rather than reading scrollWidth or comparing
+// offsetTop: a bar with flex:1 spacers never overflows its own scroll box, so
+// both of those report "fits" right up until it visibly wraps. Art Station
+// learned that the hard way (#234) and it is the only reason this is a helper
+// rather than one CSS rule.
+//
+// opts.gap    inter-item gap in px (default 11)
+// opts.pad    horizontal padding to leave (default 24)
+// opts.spacer selector for flexible spacers, which must not count (default .mbu-sp)
+function mbuFitToolbar(bar, opts) {
+    if (!bar) return false;
+    opts = opts || {};
+    var gap = opts.gap == null ? 11 : opts.gap;
+    var pad = opts.pad == null ? 24 : opts.pad;
+    var spacer = opts.spacer || '.mbu-sp';
+    bar.classList.remove('mbu-compact');            // measure at full labels
+    var kids = [].slice.call(bar.children);
+    var need = gap * Math.max(0, kids.length - 1);
+    for (var i = 0; i < kids.length; i++) {
+        if (kids[i].matches && kids[i].matches(spacer)) continue;
+        need += kids[i].offsetWidth;
+    }
+    var compact = need > bar.clientWidth - pad;
+    bar.classList.toggle('mbu-compact', compact);
+    return compact;
+}
+
 // Publish the components on a shared namespace. Three reasons, in order:
 //
 //  1. it is the cross-userscript contract #563 is about — another script (or a
@@ -176,6 +307,8 @@ try {
     if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
     if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
     if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
+    if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
+    if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
 } catch (e) { /* a locked-down page must not stop the script loading */ }
 `.trim();
 
