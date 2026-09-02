@@ -43,6 +43,23 @@ const CSS = [
     '#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}',
     '#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}',
     '#mbu-toast.mbu-toast-error{background:var(--mbu-error)}',
+
+    // Config-window title bar — icon · name · version · [spacer] · Log · ? Help.
+    // #563: those five live HERE and only here, never in a script main header.
+    // Apollo's settings <h4> is the reference; the others were the same idea
+    // spelled seven ways (an <h4>, an <h3>, two plain divs, and one inline-styled
+    // block with an orange <h2> and no icon at all).
+    '.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;',
+    'border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}',
+    '.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}',
+    '.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}',
+    '.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}',
+    // the version is deliberately quiet — it is reference information, not a heading
+    '.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}',
+    '.mbu-cfg-sp{flex:1 1 auto;min-width:8px}',
+    '.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;',
+    'background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}',
+    '.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}',
 ].join('');
 
 // ── JS ──────────────────────────────────────────────────────────────────────
@@ -108,6 +125,37 @@ function mbuToast(msg, opts) {
     return el;
 }
 
+// Config-window title bar.
+//
+//   mbuCfgHeader({ script:'art_station', name:'Art Station', version:'2026.9.2',
+//                  icon:'<svg…>' | '<img…>', log:true, logClass:'as-setup-logbtn' })
+//
+// Returns the markup for the whole bar. 'log' adds the Log button; a script with
+// no log window leaves it out rather than shipping a dead control. logClass /
+// logId are carried through IN ADDITION to the shared class so a script's
+// existing click handler keeps working — adopting the component must not mean
+// rewiring every listener at the same time.
+function mbuCfgHeader(o) {
+    o = o || {};
+    var esc = function (s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    };
+    var html = '<div class="mbu-cfg-h">';
+    if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
+    html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
+    if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+    html += '<span class="mbu-cfg-sp"></span>';
+    if (o.log) {
+        html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
+            + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
+            + ' title="Open the activity log">Log</button>';
+    }
+    html += mbuHelpHtml(o.script);
+    return html + '</div>';
+}
+
 // Publish the components on a shared namespace. Three reasons, in order:
 //
 //  1. it is the cross-userscript contract #563 is about — another script (or a
@@ -127,6 +175,7 @@ try {
     if (!_mbuNs.MBU.helpHtml) _mbuNs.MBU.helpHtml = mbuHelpHtml;
     if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
     if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
+    if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
 } catch (e) { /* a locked-down page must not stop the script loading */ }
 `.trim();
 
