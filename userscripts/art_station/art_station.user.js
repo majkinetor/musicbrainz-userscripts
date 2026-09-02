@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.1.174534
+// @version      2026.9.2.174500
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -255,7 +255,7 @@
   // timeout (currently visible as IA is slow) while it passes in native uploader.
   // Let's make timeout configurable in minutes, and make default double the
   // current value." Was a hardcoded 5 minutes; the default is 10 now.
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10 }; try { return Object.assign(d, JSON.parse(gmLoad('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: false, autoRepeatMin: 20, autoRepeatTimes: 20, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10 }; try { return Object.assign(d, JSON.parse(gmLoad('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { gmSave('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
   // ⚠ Raising the default alone does nothing for anyone who already has settings
   // stored — Object.assign above lets a persisted 5 shadow it. There is no stored
@@ -264,6 +264,25 @@
   // Clamped rather than trusted: a 0 would abort every upload instantly, and the
   // value is written straight into xhr.timeout.
   const UPLOAD_TIMEOUT_MIN_DEFAULT = 10, UPLOAD_TIMEOUT_MIN_MAX = 120;
+  // #566 (majkinetor): "It could happen that covers fail to upload to Internet
+  // Archive (IA), especially in latest weeks. Repeating failed until commit
+  // passes is one option to deal with it." Off by default, N = M = 20, and it
+  // stops at whichever of the two limits is reached first.
+  //
+  // Deliberately bounded on BOTH axes: a count alone would hammer a struggling
+  // server as fast as it can refuse, and a duration alone would keep a tab busy
+  // for hours if each attempt fails instantly. The gap between attempts is the
+  // budget spread over the allowance (20 min / 20 tries = 1 min), clamped so it
+  // can be neither a hot loop nor a wait longer than the whole budget.
+  const AR_MIN_DEFAULT = 20, AR_TIMES_DEFAULT = 20, AR_MIN_MAX = 240, AR_TIMES_MAX = 200;
+  const arNum = (v, def, max) => { const n = Math.round(Number(v)); return (isFinite(n) && n > 0) ? Math.min(n, max) : def; };
+  const arMinutes = () => arNum(SETTINGS.autoRepeatMin, AR_MIN_DEFAULT, AR_MIN_MAX);
+  const arTimes = () => arNum(SETTINGS.autoRepeatTimes, AR_TIMES_DEFAULT, AR_TIMES_MAX);
+  function arDelayMs() {
+    const spread = (arMinutes() * 60000) / Math.max(1, arTimes());
+    return Math.round(Math.min(Math.max(spread, 10000), arMinutes() * 60000));
+  }
+  const fmtDur = ms => { const s2 = Math.max(0, Math.round(ms / 1000)); const m = Math.floor(s2 / 60); return m ? `${m}m${String(s2 % 60).padStart(2, '0')}s` : `${s2}s`; };
   function uploadTimeoutMs() {
     const n = Number(SETTINGS.uploadTimeoutMin);
     const min = (isFinite(n) && n > 0) ? Math.min(n, UPLOAD_TIMEOUT_MIN_MAX) : UPLOAD_TIMEOUT_MIN_DEFAULT;
@@ -528,6 +547,10 @@
       // the old fixed 5 minutes; the native uploader sets no timeout at all.
       + `<div class="as-setup-opt as-setup-num" title="How long a single file may take to upload to the Internet Archive before Art Station gives up. Raise it for large PDF booklets, or when the Archive is slow. Max ${UPLOAD_TIMEOUT_MIN_MAX}.">`
       + `<label class="as-setup-optlbl">Upload timeout <input type="number" class="as-setup-uptimeout" min="1" max="${UPLOAD_TIMEOUT_MIN_MAX}" step="1" value="${esc(String(Math.round(uploadTimeoutMs() / 60000)))}"> minutes</label></div>`
+      + `<div class="as-setup-opt as-setup-num" title="When a commit finishes with failures, re-run just the failed operations by itself until they succeed or the allowance runs out. Off by default. Stops at whichever limit comes first; progress is shown in the commit window's footer.">`
+      + `<label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autorepeat"${SETTINGS.autoRepeat ? ' checked' : ''}> Automatically repeat failures up to`
+      + ` <input type="number" class="as-setup-ar-min" min="1" max="${AR_MIN_MAX}" step="1" value="${esc(String(arMinutes()))}"> minutes or`
+      + ` <input type="number" class="as-setup-ar-times" min="1" max="${AR_TIMES_MAX}" step="1" value="${esc(String(arTimes()))}"> times</label></div>`
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
@@ -545,6 +568,22 @@
       save();
       e.target.value = String(SETTINGS.uploadTimeoutMin);
       asLog.info(`Upload timeout set to ${SETTINGS.uploadTimeoutMin} min`);
+    };
+    // #566 — same clamping discipline as the timeout above: an empty or zero box
+    // must not persist a value that turns the feature into a hot loop.
+    panel.querySelector('.as-setup-autorepeat').onchange = e => {
+      SETTINGS.autoRepeat = e.target.checked; save();
+      asLog.info(`Auto-repeat failures ${SETTINGS.autoRepeat ? `ON — up to ${arMinutes()} min or ${arTimes()} times` : 'OFF'}`);
+    };
+    panel.querySelector('.as-setup-ar-min').onchange = e => {
+      SETTINGS.autoRepeatMin = arNum(e.target.value, AR_MIN_DEFAULT, AR_MIN_MAX); save();
+      e.target.value = String(arMinutes());
+      asLog.info(`Auto-repeat window set to ${arMinutes()} min (retry every ${Math.round(arDelayMs() / 1000)}s)`);
+    };
+    panel.querySelector('.as-setup-ar-times').onchange = e => {
+      SETTINGS.autoRepeatTimes = arNum(e.target.value, AR_TIMES_DEFAULT, AR_TIMES_MAX); save();
+      e.target.value = String(arTimes());
+      asLog.info(`Auto-repeat limit set to ${arTimes()} attempts (retry every ${Math.round(arDelayMs() / 1000)}s)`);
     };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
@@ -2672,15 +2711,15 @@
       <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div><div class="as-cm-payload"></div></div>`).join('')}</div>
       <textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
-      <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
+      <div class="as-cm-f"><span class="as-cm-ar" hidden></span><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
     document.body.appendChild(ov);
     if (_seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
     // backdrop click closes — but NOT while a live run is in flight (#269): that
     // path bypassed the abort, orphaning the in-flight edits. During a run the only
     // exits are Cancel (aborts) or Close (after it finishes).
-    ov.onclick = e => { if (e.target === ov && !ov._running) ov.remove(); };
-    ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
+    ov.onclick = e => { if (e.target === ov && !ov._running) { arStop(ov); ov.remove(); } };
+    ov.querySelector('.as-cm-cancel').onclick = () => { arStop(ov); ov.remove(); };
     const dryEl = ov.querySelector('.as-cm-dryrun');
     const goBtn = ov.querySelector('.as-cm-go');
     const setGoLabel = () => goBtn.textContent = dryEl.checked ? 'Dry run' : 'Submit edits';
@@ -2836,7 +2875,7 @@
     }
     cancelBtn.disabled = false;
     cancelBtn.textContent = 'Close';
-    cancelBtn.onclick = () => ov.remove();
+    cancelBtn.onclick = () => { arStop(ov); ov.remove(); };
     if (ctl.aborted) {   // mark any not-yet-started ops as cancelled, leave the modal up
       ov.querySelectorAll('.as-cm-op').forEach(r => { const s = r.querySelector('.as-cm-st'); if (s.textContent === '○' || s.textContent === '⏳') { s.textContent = '⛔'; setRowBar(r, 100, 'cancel'); } });
       tickOverall();
@@ -2863,10 +2902,64 @@
         // signal the error state.
         b.textContent = `Repeat (${errs} failed)`; b.disabled = false;
         b.classList.add('as-cm-repeat');
-        b.onclick = () => runPlan(ov, plan, meta, plan.filter(o => o._err));
+        const again = () => runPlan(ov, plan, meta, plan.filter(o => o._err));
+        b.onclick = () => { arStop(ov); again(); };   // a manual press cancels the countdown and goes now
+        // #566: do it by itself when asked to. State lives on the overlay so it
+        // survives the recursion through runPlan, and the countdown is torn down
+        // by arStop from Cancel/Close as well as from a manual Repeat.
+        if (SETTINGS.autoRepeat) arSchedule(ov, errs, again);
       }
     }
     else ov.querySelector('.as-cm-go').disabled = false;
+  }
+
+  // ── #566 auto-repeat of failed operations ────────────────────────────────────
+  // The state hangs off the overlay because runPlan recurses into itself for a
+  // repeat: a module-level counter would be shared by two commit windows and
+  // would not reset when one is closed.
+  function arStop(ov) {
+    if (!ov || !ov._ar) return;
+    clearTimeout(ov._ar.timer); clearInterval(ov._ar.tick);
+    ov._ar.stopped = true;
+    const el = ov.querySelector('.as-cm-ar');
+    if (el) { el.hidden = true; el.textContent = ''; }
+  }
+  function arNote(ov, text, cls) {
+    const el = ov.querySelector('.as-cm-ar'); if (!el) return;
+    el.hidden = false;
+    el.className = 'as-cm-ar' + (cls ? ' ' + cls : '');
+    el.textContent = text;
+  }
+  function arSchedule(ov, errs, again) {
+    const st = ov._ar || (ov._ar = { n: 0, t0: Date.now(), stopped: false, timer: null, tick: null });
+    if (st.stopped) return;
+    const budgetMs = arMinutes() * 60000, maxTries = arTimes();
+    const usedMs = Date.now() - st.t0;
+    // Both limits, whichever comes first — and the NEXT attempt has to fit inside
+    // the window, otherwise it is scheduled only to be cut off mid-flight.
+    if (st.n >= maxTries || usedMs >= budgetMs) {
+      const why = st.n >= maxTries ? `${st.n} attempt${st.n === 1 ? '' : 's'}` : `${fmtDur(usedMs)} of ${arMinutes()}m`;
+      arNote(ov, `Auto-repeat gave up after ${why} — ${errs} still failing. Press Repeat to keep trying.`, 'as-cm-ar-done');
+      asLog.warn(`Commit: auto-repeat gave up after ${why} — ${errs} still failing`);
+      return;
+    }
+    const delay = arDelayMs();
+    st.n++;
+    const at = Date.now() + delay;
+    const render = () => {
+      const left = Math.max(0, at - Date.now());
+      arNote(ov, `Auto-repeat: attempt ${st.n}/${maxTries} in ${fmtDur(left)} · ${fmtDur(Date.now() - st.t0)} of ${arMinutes()}m used · ${errs} failing`);
+    };
+    render();
+    clearInterval(st.tick); st.tick = setInterval(render, 1000);
+    clearTimeout(st.timer);
+    st.timer = setTimeout(() => {
+      clearInterval(st.tick);
+      if (st.stopped || !document.body.contains(ov)) return;
+      arNote(ov, `Auto-repeat: attempt ${st.n}/${maxTries} running…`);
+      asLog.info(`Commit: auto-repeat attempt ${st.n}/${maxTries} (${fmtDur(Date.now() - st.t0)} of ${arMinutes()}m used) — retrying ${errs} failed op(s)`);
+      again();
+    }, delay);
   }
 
   // ── lightbox (#230: click image → popup, ←→↑↓ navigate) ───────────────────────
@@ -3776,6 +3869,8 @@
   .as-cm-id{color:#a99fc4;font-size:12px;font-variant-numeric:tabular-nums;flex:none}
   .as-cm-go{background:var(--as-acc);color:#fff;border-color:var(--as-acc);font-weight:600}
   .as-cm-go:disabled{opacity:.5}
+  .as-cm-ar{font-size:11.5px;color:#a05a00;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .as-cm-ar-done{color:#c0392b}
   .as-cm-note2{font-size:11px;color:#9a8ccb;margin-top:8px;text-align:center}
   `;
   const st = document.createElement('style'); st.textContent = css; appendEl(st);
