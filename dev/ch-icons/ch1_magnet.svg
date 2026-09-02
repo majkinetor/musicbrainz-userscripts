@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- credit chips being pulled in -->
+  <g fill="#6cc08a">
+    <rect x="18" y="12" width="30" height="14" rx="7"/>
+    <rect x="80" y="12" width="30" height="14" rx="7"/>
+  </g>
+  <g stroke="#bfe3cd" stroke-width="4.5" stroke-linecap="round">
+    <line x1="40" y1="34" x2="46" y2="42"/>
+    <line x1="88" y1="34" x2="82" y2="42"/>
+  </g>
+  <!-- horseshoe magnet, opening up -->
+  <path d="M38 52 V86 a26 26 0 0 0 52 0 V52" fill="none" stroke="#2e9e5b" stroke-width="16" stroke-linecap="butt"/>
+  <!-- pole tips -->
+  <g stroke="#2f6f54" stroke-width="16">
+    <line x1="38" y1="53" x2="38" y2="63"/>
+    <line x1="90" y1="53" x2="90" y2="63"/>
+  </g>
+</svg>

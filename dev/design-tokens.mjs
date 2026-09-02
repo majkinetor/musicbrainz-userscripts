@@ -88,6 +88,12 @@ export const TOKENS = {
     'z-panel': '30',
     'z-pop': '99998',
     'z-modal': '2147483000',
+    // A backdrop and its panel are a PAIR. When the panel is a CHILD of the
+    // backdrop, DOM order handles it; when they are SIBLINGS (ISRC Scout's modal
+    // is), the panel needs its own level or the backdrop covers it — the window
+    // then looks faded and every click lands on the backdrop and dismisses it.
+    // Changing one of the pair without the other is exactly how that happened.
+    'z-modal-panel': '2147483001',
 };
 
 /** The `:root{…}` rule as a single CSS string. */

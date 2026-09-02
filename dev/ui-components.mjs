@@ -27,7 +27,7 @@ const CSS = [
     // Fusion already agreed on this shape; Art Station said "Help ↗" and Mammoth
     // carried no class at all. Apollo/Fusion win on numbers.
     '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);',
-    'border-radius:var(--mbu-radius);padding:2px 8px;white-space:nowrap;line-height:1.6;background:var(--mbu-bg)}',
+    'border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}',
     '.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}',
     // config headers are flex rows: the help link is the last thing on the line
     'h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}',
@@ -57,9 +57,13 @@ const CSS = [
     // the version is deliberately quiet — it is reference information, not a heading
     '.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}',
     '.mbu-cfg-sp{flex:1 1 auto;min-width:8px}',
+    // Log is a plain text link, NOT a button — that is how every script had it
+    // (background:none, border:1px solid transparent, the border appearing only
+    // on hover). I made it a bordered control and majkinetor rightly called it
+    // out: the border is a hover affordance here, not chrome.
     '.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;',
-    'background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}',
-    '.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}',
+    'background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}',
+    '.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}',
 
     // Activity log — floating, draggable by its header, minimisable, with a
     // Copy that yields the Markdown <details> block for an issue. Art Station is

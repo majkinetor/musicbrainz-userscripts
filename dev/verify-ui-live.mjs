@@ -129,7 +129,7 @@ for (const [name, path, url, hasToast] of CASES) {
             verText: ver && ver.textContent,
             verTitle: ver && ver.getAttribute('title'),
             logText: logBtn && logBtn.textContent,
-            logBordered: logBtn && getComputedStyle(logBtn).borderTopWidth,
+            logBorderColor: logBtn && getComputedStyle(logBtn).borderTopColor,
             helpLast: h.lastElementChild === help,
             nameColor: getComputedStyle(h.querySelector('.mbu-cfg-name')).color,
             // no Log button when a script has no log window
@@ -145,7 +145,7 @@ for (const [name, path, url, hasToast] of CASES) {
         ck(JSON.stringify(cfg.order) === JSON.stringify(['mbu-cfg-ic', 'mbu-cfg-name', 'mbu-cfg-ver', 'mbu-cfg-sp', 'mbu-cfg-log', 'mbu-help']),
             `${name}: icon · name · version · spacer · Log · Help, in that order — ${JSON.stringify(cfg.order)}`);
         ck(cfg.verText === 'v1.2.3' && !!cfg.verTitle, `${name}: version is prefixed and titled (${cfg.verText}, ${JSON.stringify(cfg.verTitle)})`);
-        ck(cfg.logText === 'Log' && cfg.logBordered !== '0px', `${name}: the Log button is the shared bordered control (border ${cfg.logBordered})`);
+        ck(cfg.logText === 'Log' && cfg.logBorderColor === 'rgba(0, 0, 0, 0)', `${name}: Log is a plain text link at rest — the border is a hover affordance, not chrome (${cfg.logBorderColor})`);
         ck(cfg.helpLast, `${name}: the help link is last on the line`);
         ck(cfg.nameColor === 'rgb(95, 62, 192)', `${name}: the script name is the shared accent (${cfg.nameColor})`);
         ck(cfg.noLog, `${name}: a script with no log window gets no Log button rather than a dead control`);
