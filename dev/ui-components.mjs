@@ -118,6 +118,19 @@ const CSS = [
     '.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}',
     '.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}',
 
+
+    // Placeholders — muted AND italic, so a hint can never be mistaken for typed
+    // text. That confusion is the actual report (#563): a column-pattern hint in
+    // Group Therapy's text parser read as a filled value. Colour alone was not
+    // enough — the browser default is already a grey — so the slant carries it too,
+    // and opacity is pinned because Firefox dims ::placeholder by default on top of
+    // whatever colour you set.
+    //
+    // Scoped to our own containers by an explicit list rather than a bare
+    // `::placeholder`: a global rule would restyle MusicBrainz's own inputs, and
+    // this is not our page to restyle. `.mbu-ui` is the opt-in hook for any
+    // container not named here, so a new window never needs this list edited.
+    '#as-root ::placeholder,#tc-settings ::placeholder,#mbu-logpop ::placeholder,#ii-modal ::placeholder,#mb-pc-panel ::placeholder,#mb-provider-modal-card ::placeholder,.gt-cons ::placeholder,.gt-menu ::placeholder,.gt-pop ::placeholder,.fs-cons ::placeholder,.mmth-pop ::placeholder,.mbu-ov ::placeholder,.mbu-ui ::placeholder,.discogs-bar ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}',
     // Collapsing toolbar — icon+label buttons drop their labels when the bar
     // would otherwise wrap; the icon plus its tooltip carries the meaning.
     // Art Station is the reference implementation the issue names.
