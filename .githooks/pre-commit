@@ -40,6 +40,16 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/(design-tokens|sync-tokens)\.mjs$'; 
     STAGED=$(git diff --cached --name-only)
 fi
 
+# UI components (#563) — the shared widgets. Same deal as the tokens above.
+if printf '%s
+' "$STAGED" | grep -qE '^dev/(ui-components|sync-ui)\.mjs$'; then
+    echo "[pre-commit] syncing shared UI components…"
+    node dev/sync-ui.mjs >/dev/null
+    UI_FILES=$(grep -rl '// <ST-UI>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$UI_FILES" ] && git add $UI_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # discogs_credits — esbuild bundle
 if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\.mjs)'; then
     echo "[pre-commit] rebuilding userscripts/discogs_credits/dist/…"
