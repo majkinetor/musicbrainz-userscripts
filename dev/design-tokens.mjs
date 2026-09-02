@@ -26,19 +26,30 @@
 
 export const TOKENS = {
     // ── surface ──────────────────────────────────────────────────────────────
-    'bg': '#fff',                 // panels, popovers, the gallery ground
+    // #564 option 1 (majkinetor: "Do option 1"): the three surface tokens read a
+    // userstyle's variables first and fall back to our own value. kellnerd's
+    // userstyles set --background / --text / --border on :root, so an installed
+    // theme now drives every script without the user knowing our names — and with
+    // no userstyle the fallback is the exact value that was here before, so
+    // nothing changes for anyone who has not installed one.
+    //
+    // NB this is a BRIDGE, not a dark theme. A dark --background will still give a
+    // mixed result until the meaning-carrying colours (confidence tiers, row
+    // shading, diff highlighting) are re-derived — that is the remaining #564 work
+    // he has deferred, and the reason I had held this back.
+    'bg': 'var(--background, #fff)',        // panels, popovers, the gallery ground
     'bg-raised': '#faf9fe',       // a card/popover sitting on top of --mbu-bg
     'bg-sunken': '#f4f2f9',       // inset strips: headers, footers, toolbars
     'bg-hover': '#f3eefe',        // row/button hover wash
 
     // ── text ─────────────────────────────────────────────────────────────────
-    'text': '#222',
+    'text': 'var(--text, #222)',
     'text-dim': '#555',           // secondary copy, still readable
     'text-weak': '#999',          // placeholders, disabled, timestamps
     'text-on-accent': '#fff',
 
     // ── lines ────────────────────────────────────────────────────────────────
-    'border': '#cfc6e6',          // the default 1px edge
+    'border': 'var(--border, #cfc6e6)',   // the default 1px edge
     'border-soft': '#e2dcef',     // a quieter edge (large panels)
     'border-strong': '#9a8ccb',   // focus/active edge
     'divider': '#eee',            // neutral hairline between rows
