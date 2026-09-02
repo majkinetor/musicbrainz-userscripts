@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.2.173859
+// @version      2026.9.2.185431
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.2.173859 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.2.174500\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.2.153000");
+  console.log('%c String Theory %c v2026.9.2.185431 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.2.190000\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.2.153000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8478,7 +8478,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.174500","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.174500","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.190000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.190000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -8742,9 +8742,18 @@ try {
   const arNum = (v, def, max) => { const n = Math.round(Number(v)); return (isFinite(n) && n > 0) ? Math.min(n, max) : def; };
   const arMinutes = () => arNum(SETTINGS.autoRepeatMin, AR_MIN_DEFAULT, AR_MIN_MAX);
   const arTimes = () => arNum(SETTINGS.autoRepeatTimes, AR_TIMES_DEFAULT, AR_TIMES_MAX);
-  function arDelayMs() {
+  // The gap grows as attempts pile up — a server that has refused ten times in a
+  // row is not helped by an eleventh at the same cadence. Same shape as
+  // Anakunda's MB Auto-retry on upload to CAA error (x2 from the 10th attempt,
+  // x3 from the 100th), which chaban-mb pointed at on #566; it serves
+  // majkinetor's own "not good idea to spam overworked server" better than the
+  // flat interval I had. Still bounded by the same two limits, so backing off
+  // cannot make a run outlast its window.
+  function arDelayMs(attempt) {
     const spread = (arMinutes() * 60000) / Math.max(1, arTimes());
-    return Math.round(Math.min(Math.max(spread, 10000), arMinutes() * 60000));
+    const n = Math.max(1, attempt || 1);
+    const step = 1 + Math.floor(Math.log10(n));           // 1 for 1-9, 2 for 10-99, 3 for 100+
+    return Math.round(Math.min(Math.max(spread * step, 10000), arMinutes() * 60000));
   }
   const fmtDur = ms => { const s2 = Math.max(0, Math.round(ms / 1000)); const m = Math.floor(s2 / 60); return m ? `${m}m${String(s2 % 60).padStart(2, '0')}s` : `${s2}s`; };
   function uploadTimeoutMs() {
@@ -9042,12 +9051,12 @@ try {
     panel.querySelector('.as-setup-ar-min').onchange = e => {
       SETTINGS.autoRepeatMin = arNum(e.target.value, AR_MIN_DEFAULT, AR_MIN_MAX); save();
       e.target.value = String(arMinutes());
-      asLog.info(`Auto-repeat window set to ${arMinutes()} min (retry every ${Math.round(arDelayMs() / 1000)}s)`);
+      asLog.info(`Auto-repeat window set to ${arMinutes()} min (first retry after ${Math.round(arDelayMs(1) / 1000)}s, backing off as attempts pile up)`);
     };
     panel.querySelector('.as-setup-ar-times').onchange = e => {
       SETTINGS.autoRepeatTimes = arNum(e.target.value, AR_TIMES_DEFAULT, AR_TIMES_MAX); save();
       e.target.value = String(arTimes());
-      asLog.info(`Auto-repeat limit set to ${arTimes()} attempts (retry every ${Math.round(arDelayMs() / 1000)}s)`);
+      asLog.info(`Auto-repeat limit set to ${arTimes()} attempts (first retry after ${Math.round(arDelayMs(1) / 1000)}s, backing off as attempts pile up)`);
     };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
@@ -11407,8 +11416,8 @@ try {
       asLog.warn(`Commit: auto-repeat gave up after ${why} — ${errs} still failing`);
       return;
     }
-    const delay = arDelayMs();
     st.n++;
+    const delay = arDelayMs(st.n);
     const at = Date.now() + delay;
     const render = () => {
       const left = Math.max(0, at - Date.now());
