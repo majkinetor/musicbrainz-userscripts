@@ -61,6 +61,33 @@ for (const f of files) {
     ck(src.includes('// <ST-TOKENS>'), `${rel}: uses tokens, so it must carry the // <ST-TOKENS> block`);
     ck(src.includes(expected), `${rel}: its inlined block is in sync with dev/design-tokens.mjs (run: node dev/sync-tokens.mjs)`);
 
+    // 2b. THE BLOCKS MUST BE AT MODULE SCOPE. The generated helpers are function
+    // declarations, so a block that lands inside `function foo() {…}` defines them
+    // only there — every call site elsewhere throws ReferenceError. This bit Fusion
+    // (options window would not open) and then Group Therapy (Apply and Options
+    // dead, because every handler calls toast()). Both shipped, and both were found
+    // by majkinetor rather than by this suite, which reaches the components through
+    // window.MBU — populated from inside that very function — while the scripts use
+    // the bare names.
+    //
+    // Decided by brace balance, not indentation: sync-ui.mjs preserves the marker's
+    // own indent, so a nested block can sit at the same column as its enclosing
+    // function and look top-level.
+    {
+        const ls = src.split(/\r?\n/);
+        const blk = ls.findIndex(l => l.includes('// <ST-UI>'));
+        let enclosing = null;
+        for (let i = 0; blk >= 0 && i < blk; i++) {
+            if (!/^\s*(async\s+)?function\s+\w+\s*\(/.test(ls[i])) continue;
+            let depth = 0, closedAt = -1;
+            for (let j = i; j < ls.length; j++) {
+                for (const ch of ls[j].replace(/\/\/.*$/, '')) { if (ch === '{') depth++; else if (ch === '}') depth--; }
+                if (depth === 0 && j > i) { closedAt = j; break; }
+            }
+            if (closedAt > blk) enclosing = ls[i].trim().slice(0, 48);
+        }
+        ck(!enclosing, `${rel}: the generated blocks are at module scope${enclosing ? ` (INSIDE ${JSON.stringify(enclosing)} — its helpers are invisible everywhere else)` : ''}`);
+    }
     // 3. every stylesheet-producing site that uses a token must also emit the block.
     // A script with several <style> elements (Apollo has three, Platform Check two)
     // can mount one without the other, and only the one carrying :root would work.
