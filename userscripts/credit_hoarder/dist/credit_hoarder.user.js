@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.2.193540
+// @version      2026.9.2.203526
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -6492,7 +6492,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
   function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
-    const MBU_TOKENS = ":root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}";
+    const MBU_TOKENS = ":root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-text:color-mix(in srgb, var(--mbu-accent) 68%, var(--mbu-text));--mbu-accent-deep-text:#3b2c70;--mbu-accent-deep-text:color-mix(in srgb, var(--mbu-accent-deep) 55%, var(--mbu-text));--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}";
     const MBU_UI_CSS = ".mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.72}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}#as-root ::placeholder,#tc-settings ::placeholder,#mbu-logpop ::placeholder,#ii-modal ::placeholder,#mb-pc-panel ::placeholder,#mb-provider-modal-card ::placeholder,.gt-cons ::placeholder,.gt-menu ::placeholder,.gt-pop ::placeholder,.fs-cons ::placeholder,.mmth-pop ::placeholder,.mbu-ov ::placeholder,.mbu-ui ::placeholder,.discogs-bar ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}.mbu-compact .mbu-bt{display:none}";
     function mbuHelpHref(name) {
       return "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/" + name + "/README.md";
@@ -6653,7 +6653,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: var(--mbu-text-weak); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
         .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
-        .discogs-opts-btn:hover { border-color: #e8771d; color: #333; }
+        .discogs-opts-btn:hover { border-color: #e8771d; color: var(--mbu-text); }
         .discogs-opts-caret { color: var(--mbu-text-weak); font-size: 0.7rem; }
         /* "Options \u25BE" popover (Dedup toggles) */
         .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: var(--mbu-bg); border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
@@ -6663,19 +6663,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
            \u25BE half (its own clickable target) opens the copy menu. */
         .discogs-log-split { display: inline-flex; align-items: stretch; }
         .discogs-logtoggle-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
-        .discogs-log-caret-btn { font-size: 0.78rem; color: #777; background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
+        .discogs-log-caret-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
         .discogs-logtoggle-btn:hover, .discogs-log-caret-btn:hover { border-color: #999; }
         .discogs-log-caret-btn:hover { background: var(--mbu-bg-raised); }
-        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: var(--mbu-bg-hover); border-color: #b9a4e0; color: #5a3e94; }
+        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: var(--mbu-bg-hover); border-color: #b9a4e0; color: var(--mbu-accent-deep-text); }
         /* "Log \u25BE" dropdown menu (#118): show/hide + the three copy actions. */
         .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
         .discogs-log-menu.open { display: flex; }
-        .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: #444; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
-        .discogs-log-menu button:hover { background: var(--mbu-bg-hover); color: #333; }
+        .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: var(--mbu-text); background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-log-menu button:hover { background: var(--mbu-bg-hover); color: var(--mbu-text); }
         /* log panel toolbar: severity filter + copy buttons */
         .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
         .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
-        .discogs-log-filterbtn { font-size: 0.75rem; color: #666; background: var(--mbu-bg); border: none; border-right: 1px solid var(--mbu-divider); padding: 0.15rem 0.55rem; cursor: pointer; }
+        .discogs-log-filterbtn { font-size: 0.75rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: none; border-right: 1px solid var(--mbu-divider); padding: 0.15rem 0.55rem; cursor: pointer; }
         .discogs-log-filterbtn:last-child { border-right: none; }
         .discogs-log-filterbtn:hover { background: var(--mbu-bg-raised); }
         .discogs-log-filterbtn.active { background: var(--mbu-accent); color: var(--mbu-text-on-accent); }
@@ -6737,7 +6737,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
            and only ellipsises when it genuinely doesn't fit (flex-shrink + min-width:0). */
         .discogs-bar-status {
             font-size: 0.8rem;
-            color: #888;
+            color: var(--mbu-text-weak);
             flex: 0 1 auto;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -6746,7 +6746,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         /* #216: persistent end-of-run message (e.g. "No importable credits found") */
         .discogs-bar-status-final {
-            color: #b26a00;
+            color: var(--mbu-warn);
             font-weight: 600;
         }
         /* Count badges. Buttons so they can focus/open the log; styled as pills.
@@ -6762,11 +6762,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             cursor: pointer;
             white-space: nowrap;
         }
-        .discogs-badge-warn      { color: #8a4b00; background: var(--mbu-warn-bg); }
+        .discogs-badge-warn      { color: var(--mbu-warn); background: var(--mbu-warn-bg); }
         .discogs-badge-warn:hover{ background: var(--mbu-warn-bg); }
-        .discogs-badge-err       { color: #9c1b1b; background: var(--mbu-error-bg); }
+        .discogs-badge-err       { color: var(--mbu-error); background: var(--mbu-error-bg); }
         .discogs-badge-err:hover { background: var(--mbu-error-bg); }
-        .discogs-badge-unresolved{ color: #6a4a86; background: var(--mbu-bg-hover); }
+        .discogs-badge-unresolved{ color: var(--mbu-accent-deep-text); background: var(--mbu-bg-hover); }
         .discogs-badge-unresolved:hover { background: var(--mbu-bg-hover); }
         /* Discogs logo + Help + Log \u2014 pinned to the right edge (the msgs slot's
            margin-left:auto does the pushing). */
@@ -6784,7 +6784,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-bar.is-reviewing #discogs-progress-pct { display: none !important; }   /* !important: the % span carries an inline display set by JS */
         .discogs-bar-action .discogs-issue-note {
             font-size: 0.85rem;
-            color: #7a5c00;
+            color: var(--mbu-warn);
             min-width: 7.5rem;   /* reserve space so the bar doesn't reflow as the count appears / changes (#139) */
             overflow: hidden;
             text-overflow: ellipsis;
@@ -6794,19 +6794,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             cursor: pointer;
             text-decoration: underline dotted;
         }
-        .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
+        .discogs-bar-action .discogs-issue-note.clickable:hover { color: var(--mbu-warn); }
         /* "N links" badge \u2014 orange, short, clickable to cycle through the rows
            whose source URL still needs linking. No wide min-width reservation. */
-        .discogs-bar-action .discogs-links-note { min-width: 0; color: #e8771d; }
-        .discogs-bar-action .discogs-links-note.clickable:hover { color: #c25e0a; }
+        .discogs-bar-action .discogs-links-note { min-width: 0; color: var(--mbu-warn); }
+        .discogs-bar-action .discogs-links-note.clickable:hover { color: var(--mbu-warn); }
         .discogs-bar .discogs-source a {
-            color: #e8771d;
+            color: var(--mbu-warn);
             text-decoration: none;
             font-weight: bold;
         }
         .discogs-bar .discogs-source a:hover { text-decoration: underline; }
         /* #272: "Import credits:" label + a row of clickable source icons */
-        .discogs-import-label { flex-shrink: 0; font-size: 0.88rem; font-weight: bold; color: #444; letter-spacing: 0.01em; }
+        .discogs-import-label { flex-shrink: 0; font-size: 0.88rem; font-weight: bold; color: var(--mbu-text); letter-spacing: 0.01em; }
         /* #272: drop the "Import credits:" label once a run is underway \u2014 only the
            active source icon + progress/Start-import matter then. */
         .discogs-bar.is-importing .discogs-import-label,
@@ -6817,7 +6817,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             width: 2rem; height: 2rem; padding: 0; cursor: pointer;
             border: 1px solid #d6d6d6; border-radius: 0.3rem; background: var(--mbu-bg); color: var(--mbu-text-dim);
         }
-        .discogs-src-ico:hover { background: var(--mbu-bg-raised); border-color: #e8771d; color: #e8771d; }
+        .discogs-src-ico:hover { background: var(--mbu-bg-raised); border-color: #e8771d; color: var(--mbu-warn); }
         .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
         .discogs-src-ico svg { width: 18px; height: 18px; }
         .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
@@ -6830,7 +6830,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-bar.is-saving { border-left-color: #1c6fd6; }
         .discogs-bar.is-saving .discogs-bar-row1 { animation: discogs-bar-saving 1.1s ease-in-out infinite; border-bottom-color: #1c6fd6; }
         @keyframes discogs-bar-saving { 0%,100% { background: var(--mbu-bg-raised); } 50% { background: var(--mbu-info-bg); } }
-        .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; font-weight: 600; }
+        .discogs-bar.is-saving .discogs-bar-status-final { color: var(--mbu-info); font-weight: 600; }
         /* #412: a toolbar "Enter edit" that fires MB's native submit, so you don't have to
            scroll to the bottom after an import. Shown once an import finishes, removed on
            return-to-source. Green to read as the positive/submit action (matches MB). */
@@ -6842,7 +6842,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-enter-edit:hover { background: #57a230; }
         .discogs-bar.is-saving .discogs-enter-edit { opacity: 0.6; pointer-events: none; }
         /* #408 "Import all" \u2014 wider pill with a glyph + label, brand-orange so it reads as the primary action */
-        .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: #e8771d; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
+        .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: var(--mbu-warn); font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
         .discogs-src-all:hover { background: #e8771d; color: var(--mbu-text-on-accent); border-color: #e8771d; }
         .discogs-src-all .discogs-all-glyph { font-size: 1rem; line-height: 1; }
         .discogs-bar-badge, .discogs-src-badge svg { width: 15px; height: 15px; }
@@ -6889,7 +6889,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             transition: border-color 0.12s, background 0.12s;
         }
         .discogs-toggle.active {
-            color: #333;
+            color: var(--mbu-text);
         }
         .discogs-toggle.active .discogs-toggle-dot {
             border-color: #e8771d;
@@ -6953,14 +6953,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         .discogs-progress-status {
             font-size: 0.8rem;
-            color: #7a5000;
+            color: var(--mbu-warn);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .discogs-recent-logs {
             font-size: 0.78rem;
-            color: #888;
+            color: var(--mbu-text-weak);
             max-height: 3.2rem;
             overflow: hidden;
             line-height: 1.4;
@@ -7076,7 +7076,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (meta.sourceProbeFailed && !importSources.length) {
       const warn = document.createElement("span");
       warn.className = "discogs-src-probe-failed";
-      warn.style.cssText = "font-size:0.8rem;color:#9a5b00;";
+      warn.style.cssText = "font-size:0.8rem;color:var(--mbu-warn);";
       warn.textContent = "could not read this release\u2019s links from MusicBrainz \u2014 reload to retry";
       warn.title = "The /ws/js/release lookup failed (MusicBrainz was busy or unreachable), so the linked import sources are unknown.";
       srcIcons.appendChild(warn);
@@ -7113,7 +7113,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     bar._addTitlesSource = addTitlesSource;
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
-    progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
+    progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:var(--mbu-warn); font-weight:bold; min-width:3.5rem;";
     row1.appendChild(importLabel);
     row1.appendChild(srcIcons);
     row1.appendChild(progressPct);
@@ -7169,7 +7169,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     docsLink.rel = "noopener noreferrer nofollow";
     docsLink.textContent = "? Help";
     docsLink.title = "Open the script's README in a new tab";
-    docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:var(--mbu-bg-raised);";
+    docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:var(--mbu-warn);text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:var(--mbu-bg-raised);";
     const enterEditBtn = document.createElement("button");
     enterEditBtn.type = "button";
     enterEditBtn.className = "discogs-enter-edit";
@@ -7262,12 +7262,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     function makeSelect(labelText, initialValue, options, tooltipText) {
       const wrap = document.createElement("span");
       wrap.className = "discogs-select-wrap";
-      wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:#555;padding:0.15rem 0.2rem;border:none;background:transparent;";
+      wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:var(--mbu-text-dim);padding:0.15rem 0.2rem;border:none;background:transparent;";
       const lbl = document.createElement("span");
       lbl.textContent = labelText + ":";
       wrap.appendChild(lbl);
       const sel = document.createElement("select");
-      sel.style.cssText = "font-size:0.8rem;padding:0.05rem 0.2rem;border:none;background:transparent;cursor:pointer;color:#333;font-weight:600;";
+      sel.style.cssText = "font-size:0.8rem;padding:0.05rem 0.2rem;border:none;background:transparent;cursor:pointer;color:var(--mbu-text);font-weight:600;";
       options.forEach((opt) => {
         const o = document.createElement("option");
         o.value = opt.value;
@@ -7357,8 +7357,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       ov.className = "discogs-cw-warn-ov";
       ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;";
       const box = document.createElement("div");
-      box.style.cssText = "max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;";
-      box.innerHTML = '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
+      box.style.cssText = "max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:var(--mbu-text);";
+      box.innerHTML = '<div style="font-weight:800;color:var(--mbu-error);font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
       const close = () => ov.remove();
       box.querySelector("button").addEventListener("click", close);
       ov.addEventListener("mousedown", (e) => {
