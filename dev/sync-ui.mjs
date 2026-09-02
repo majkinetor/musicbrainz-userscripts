@@ -22,6 +22,10 @@ const ROOT = resolve(HERE, '..');
 const START = '// <ST-UI>';
 const END = '// </ST-UI>';
 
+// NB a raw backtick inside the JS template literal in ui-components.mjs — a
+// comment counts — ends the string early. There is deliberately no check for it
+// here: Node fails to parse that module on import, before this file runs, and
+// its error names the exact line. A guard here could never fire.
 if (/['\\\n]/.test(UI_CSS)) {
     console.error('✗ UI_CSS contains a quote, backslash or newline — it is emitted as a single-quoted string. Fix dev/ui-components.mjs');
     process.exit(1);

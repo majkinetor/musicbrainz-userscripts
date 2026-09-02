@@ -90,6 +90,52 @@ for (const [name, path, url, hasToast] of CASES) {
         ck(help.radius === '6px', `${name}: shared radius (${help.radius})`);
     }
 
+    // ── config title bar: icon · name · version · spacer · Log · ? Help ────
+    // Asserted through the component rather than by opening each script's panel:
+    // several open from a gear glyph with no stable handle, and what is under test
+    // is the contract, not each script's opener. Two panels (Art Station, ISRC
+    // Scout) are additionally screenshotted in situ.
+    const cfg = await page.evaluate(n => {
+        const MBU = window.MBU;
+        if (!MBU || typeof MBU.cfgHeader !== 'function') return { missing: true };
+        const host = document.createElement('div');
+        host.innerHTML = MBU.cfgHeader({ script: n, name: 'Probe', version: '1.2.3', icon: '<svg viewBox="0 0 8 8"></svg>', log: true });
+        document.body.appendChild(host);
+        const h = host.firstElementChild;
+        const cs = getComputedStyle(h);
+        const kids = [...h.children].map(e => e.className);
+        const ver = h.querySelector('.mbu-cfg-ver');
+        const logBtn = h.querySelector('.mbu-cfg-log');
+        const help = h.querySelector('.mbu-help');
+        const out = {
+            cls: h.className,
+            order: kids,
+            display: cs.display,
+            verText: ver && ver.textContent,
+            verTitle: ver && ver.getAttribute('title'),
+            logText: logBtn && logBtn.textContent,
+            logBordered: logBtn && getComputedStyle(logBtn).borderTopWidth,
+            helpLast: h.lastElementChild === help,
+            nameColor: getComputedStyle(h.querySelector('.mbu-cfg-name')).color,
+            // no Log button when a script has no log window
+            noLog: !/mbu-cfg-log/.test(MBU.cfgHeader({ script: n, name: 'x' })),
+        };
+        host.remove();
+        return out;
+    }, name);
+    ck(!cfg.missing, `${name}: mbuCfgHeader is available`);
+    if (!cfg.missing) {
+        ck(cfg.cls === 'mbu-cfg-h', `${name}: the bar uses the shared class`);
+        ck(cfg.display === 'flex', `${name}: it is the shared flex row (${cfg.display})`);
+        ck(JSON.stringify(cfg.order) === JSON.stringify(['mbu-cfg-ic', 'mbu-cfg-name', 'mbu-cfg-ver', 'mbu-cfg-sp', 'mbu-cfg-log', 'mbu-help']),
+            `${name}: icon · name · version · spacer · Log · Help, in that order — ${JSON.stringify(cfg.order)}`);
+        ck(cfg.verText === 'v1.2.3' && !!cfg.verTitle, `${name}: version is prefixed and titled (${cfg.verText}, ${JSON.stringify(cfg.verTitle)})`);
+        ck(cfg.logText === 'Log' && cfg.logBordered !== '0px', `${name}: the Log button is the shared bordered control (border ${cfg.logBordered})`);
+        ck(cfg.helpLast, `${name}: the help link is last on the line`);
+        ck(cfg.nameColor === 'rgb(95, 62, 192)', `${name}: the script name is the shared accent (${cfg.nameColor})`);
+        ck(cfg.noLog, `${name}: a script with no log window gets no Log button rather than a dead control`);
+    }
+
     // ── toast: one element, severity classes, auto-dismiss, log mirroring ───
     if (hasToast) {
         const t = await page.evaluate(async () => {
