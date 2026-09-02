@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.2.114500
+// @version      2026.9.2.133000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -171,14 +171,38 @@ function pcWaitFor(predicate, timeoutMs = 10000) {
             });
             obs.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
         } catch (_) { /* observer broken — rely on RAF poll below */ }
-        const start = Date.now();
+        // #556 (majkinetor): "It never happens when not invoked as background task"
+        // and "when it fails, the links are NEVER added". Both are true of this loop
+        // and of nothing else in the flow.
+        //
+        // It polled with requestAnimationFrame. A background-add tab is opened with
+        // GM_openInTab(..., { active:false }), i.e. HIDDEN — and browsers suspend rAF
+        // outright in hidden tabs (measured here at 14x throttling even for a merely
+        // unfocused one). So the poll stops running while the deadline, being wall
+        // clock, keeps advancing. The tab is then either stuck with nothing settled,
+        // or — the moment it is looked at — resumes, finds the elapsed time already
+        // past the timeout, and gives up on its very first tick. That is exactly an
+        // all-or-nothing failure that cannot happen in the foreground.
+        //
+        // So: poll on a timer (clamped to ~1s while hidden, but it RUNS), and count
+        // only the time the tab was actually visible towards the deadline. A hidden
+        // tab is not a slow tab; it is a stopped one, and it must not be charged for
+        // the wait. The absolute cap keeps a never-focused tab from hanging forever.
+        const HARD_CAP_MS = Math.max(timeoutMs * 12, 300000);
+        const started = Date.now();
+        let visibleMs = 0, last = Date.now();
         const poll = () => {
             if (done) return;
+            const now = Date.now();
+            let hidden = false;
+            try { hidden = !!document.hidden; } catch (_) { /* treat as visible */ }
+            if (!hidden) visibleMs += now - last;
+            last = now;
             const r = predicate();
             if (r) return finish(r);
-            if (Date.now() - start >= timeoutMs) return finish(null);
-            try { requestAnimationFrame(poll); }
-            catch (_) { try { setTimeout(poll, 100); } catch (_) { finish(null); } }
+            if (visibleMs >= timeoutMs) return finish(null);
+            if (now - started >= HARD_CAP_MS) return finish(null);
+            try { setTimeout(poll, 100); } catch (_) { finish(null); }
         };
         poll();
     });
@@ -224,8 +248,17 @@ async function runInjectHelper(entityType) {
         }
         const urls = Object.values(pending || {}).filter(Boolean);
         if (urls.length === 0) return;
-        const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
-        if (tab) tab.click();
+        // #556: this lookup used to run ONCE, immediately, and was a no-op besides.
+        // Measured live on the release editor: there is no "External links" TAB at
+        // all — the wizard's steps are Release information / Tracklist / Recordings
+        // / Edit note, and External links is a <legend> inside the first of them.
+        // So this never matched anything and the click never happened; the input was
+        // reachable only because its step is the default one.
+        //
+        // It is kept (bounded, and now actually awaited) because the release-GROUP
+        // editor is a different form and the label may exist there — but it is NOT
+        // what fixed his failure. That was the input wait below. See the note there.
+        await pcWaitFor(pcOpenExternalLinks, 4000);
         await pcWait(200);
         const result = await injectInto(urls, key) || { injected: 0 };
         // #464: right-click "add in background" — auto-submit once the URLs are in,
@@ -279,6 +312,17 @@ async function runInjectHelper(entityType) {
             showInjectBanner(`Platform Check: inject helper crashed — ${e.name || 'Error'}: ${e.message || e}`, [], { fail: true });
         } catch (_) { /* nothing else we can do here */ }
     }
+}
+
+// #556: open the release editor's "External links" step. Returns the tab element
+// once it exists (so it can be awaited with pcWaitFor), null while it does not.
+// Clicking an already-active step is a no-op, so this is safe to call repeatedly.
+function pcOpenExternalLinks() {
+    const tab = [...document.querySelectorAll('a, button, li')]
+        .find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
+    if (!tab) return null;
+    try { tab.click(); } catch (e) { /* not clickable yet — the caller keeps polling */ }
+    return tab;
 }
 
 function findAddLinkInput() {
@@ -347,8 +391,28 @@ async function injectInto(urls, storageKey) {
         // MutationObserver-backed wait — resolves the moment MB renders an
         // empty "Add another link" input, regardless of how long the page
         // takes to mount the External Links section.
-        const input0 = await pcWaitFor(findAddLinkInput, 10000);
-        if (!input0) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared' }); break; }
+        // #556 (majkinetor, from the console log the new diagnostics produced):
+        //   inject FAILED: <beatport url> — no "Add another link" input ever appeared
+        //
+        // The 10s budget was simply too short. The External links fieldset is part
+        // of the release editor's own async boot, and his page had plenty to get
+        // through first: Apollo's log has the editor still loading tracks 6s in, a
+        // /ws/2 request timing out outright, and String Theory running seven scripts
+        // on the same main thread alongside two other userscripts. Nothing was
+        // broken — Platform Check just gave up before MusicBrainz finished.
+        //
+        // 25s, and the step is re-asserted between polls in case the editor
+        // re-renders back to a different one. Throttled so repeated clicking cannot
+        // fight the editor's own rendering.
+        let _lastOpen = 0;
+        const input0 = await pcWaitFor(() => {
+            const el = findAddLinkInput();
+            if (el) return el;
+            const now = Date.now();
+            if (now - _lastOpen > 700) { _lastOpen = now; pcOpenExternalLinks(); }
+            return null;
+        }, 25000);
+        if (!input0) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared (25s, External links step never rendered)' }); break; }
 
         // ⚠ #556: `injected` is NOT bumped for a dispatched keystroke. It gates
         // whether the pending payload is consumed below, and counting the
