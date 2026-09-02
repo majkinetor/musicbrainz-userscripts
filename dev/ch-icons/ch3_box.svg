@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- chips dropping into a collecting box (import into MB) -->
+  <g fill="#6cc08a">
+    <rect x="30" y="10" width="30" height="13" rx="6.5"/>
+    <rect x="70" y="22" width="26" height="13" rx="6.5"/>
+  </g>
+  <!-- down chevron -->
+  <path d="M52 44 L64 56 L76 44" fill="none" stroke="#5bb985" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- open box -->
+  <path d="M22 70 L64 84 L106 70" fill="none" stroke="#2f6f54" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M24 70 V104 a4 4 0 0 0 3 4 L64 120 L101 108 a4 4 0 0 0 3 -4 V70" fill="none" stroke="#2e9e5b" stroke-width="9" stroke-linejoin="round"/>
+  <line x1="64" y1="84" x2="64" y2="120" stroke="#2f6f54" stroke-width="6"/>
+</svg>

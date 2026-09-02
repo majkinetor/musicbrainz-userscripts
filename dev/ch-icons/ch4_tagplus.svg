@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- one bold credit tag + an "add" badge (conservative, close to today's identity) -->
+  <path d="M20 30 L46 10 H96 a12 12 0 0 1 12 12 V72 a12 12 0 0 1 -12 12 H46 L20 64 a14 14 0 0 1 0 -34 Z" fill="#2e9e5b"/>
+  <circle cx="42" cy="47" r="7" fill="#fff"/>
+  <circle cx="94" cy="94" r="24" fill="#2f6f54"/>
+  <g stroke="#fff" stroke-width="7" stroke-linecap="round">
+    <line x1="94" y1="82" x2="94" y2="106"/>
+    <line x1="82" y1="94" x2="106" y2="94"/>
+  </g>
+</svg>
