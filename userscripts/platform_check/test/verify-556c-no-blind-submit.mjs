@@ -71,7 +71,10 @@ const run = async ({ pending, withhold }) => {
     strip();
   });
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(withhold ? 20000 : 26000);
+  // The withhold path now has to outlast injectInto's 25s input wait (raised from
+  // 10s for #556's slow-boot failure), or this reads the banner before the run
+  // has even given up — which reads as "it said nothing".
+  await page.waitForTimeout(withhold ? 34000 : 26000);
   const out = await page.evaluate((mbid) => ({
     submits: window.__submits,
     closeMarker: (() => { try { return sessionStorage.getItem('pc:autocommit-close'); } catch (e) { return 'ERR'; } })(),
