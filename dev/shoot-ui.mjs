@@ -144,6 +144,18 @@ for (const mode of MODES) {
 }
 
 // A readable index, so a number can be looked up without opening every file.
+//
+// A FILTERED run must not touch it. `--only fusion` knows about three surfaces,
+// and rewriting the index from that list silently deletes the other thirty-five
+// rows — the shots are still on disk, but the table that gives them their
+// numbers is gone. Only a full run may rewrite the full index.
+if (ONLY || MODES.length < 2) {
+    console.log(`\n${index.length} shot(s) -> dev/screens/ui/  (index left alone: partial run)`);
+    for (const m of index.filter(r => r.note)) console.log(`  ${m.file}: ${m.note}`);
+    await ctx.close();
+    process.exit(0);
+}
+
 const rows = index.filter(r => r.mode === 'light').sort((a, b) => a.n - b.n).map(r => {
     const dark = index.find(d => d.n === r.n && d.mode === 'dark');
     const cell = (x) => x ? (x.note ? `⚠ ${x.file}` : `[${x.file}](./${x.file})`) : '—';

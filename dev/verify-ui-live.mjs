@@ -43,7 +43,11 @@ await ctx.addInitScript(() => {
     window.GM_registerMenuCommand = () => {};
 });
 
-for (const [name, path, url, hasToast] of CASES) {
+// `--only <script>` narrows a run to one script — seven live pages is a slow
+// loop when you are iterating on one of them.
+const ONLY = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
+
+for (const [name, path, url, hasToast] of CASES.filter(c => !ONLY || c[0] === ONLY)) {
     console.log('\n=== ' + name);
     const code = await readFile('C:/Work/mb-userscripts/' + path, 'utf8');
     const page = await ctx.newPage();
@@ -63,6 +67,80 @@ for (const [name, path, url, hasToast] of CASES) {
         .then(() => true).catch(() => false);
     if (!mounted) { ck(false, `${name}: the script never mounted (window.MBU absent after 20s) — nothing was verified`); await page.close(); continue; }
     await page.waitForTimeout(800);
+
+    // ── the stylesheet parsed as written ────────────────────────────────────
+    // #564: Group Therapy's toolbar buttons rendered as bare UA buttons because a
+    // stale two-line fragment (the tail of a rule whose selector I had deleted)
+    // sat at top level. CSS error recovery swallows the garbage AND the rule that
+    // follows it, silently — the script runs, the sheet loads, and one rule has
+    // simply ceased to exist. No assertion in this suite could see that, because
+    // every one of them asks about a component that was still fine.
+    //
+    // So: read back what the browser parsed and compare it with what the script
+    // wrote. Anything the parser dropped is named.
+    const css = await page.evaluate(() => {
+        const out = [];
+        for (const sheet of document.styleSheets) {
+            // ours are inline <style> nodes; MB's are cross-origin and unreadable
+            if (sheet.href || !sheet.ownerNode || !sheet.ownerNode.textContent) continue;
+            let rules; try { rules = [...(sheet.cssRules || [])]; } catch (_) { continue; }
+            const text = sheet.ownerNode.textContent;
+
+            // Walk the source at brace depth, skipping comments and strings, and
+            // collect every top-level prelude. A `;` at depth 0 that is not part
+            // of an at-rule is an orphaned declaration — the exact bug above.
+            const preludes = [], orphans = [];
+            let depth = 0, buf = '', i = 0;
+            while (i < text.length) {
+                const c = text[i];
+                if (c === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); i = e < 0 ? text.length : e + 2; continue; }
+                if (c === '"' || c === "'") {
+                    const q = c; buf += c; i++;
+                    while (i < text.length && text[i] !== q) { if (text[i] === '\\') { buf += text[i++]; } buf += text[i++]; }
+                    buf += text[i++] || ''; continue;
+                }
+                if (c === '{') { if (depth === 0) preludes.push(buf.trim()); depth++; buf = ''; i++; continue; }
+                if (c === '}') { depth = Math.max(0, depth - 1); if (!depth) buf = ''; i++; continue; }
+                if (c === ';' && depth === 0) {
+                    const frag = buf.trim();
+                    if (frag && !frag.startsWith('@')) orphans.push(frag.slice(0, 60));
+                    buf = ''; i++; continue;
+                }
+                buf += c; i++;
+            }
+            // Chromium re-prints selectorText in its own canonical form: spaces
+            // around combinators, quotes added inside attribute selectors,
+            // nth-child(even) rewritten as 2n. None of that means anything here,
+            // so normalise it away before comparing — otherwise ordinary
+            // selectors look "dropped" and a real one hides in the noise.
+            const norm = s => s.replace(/\s+/g, ' ').replace(/\s*([>+~,])\s*/g, '$1')
+                .replace(/(\[[^\]]*?=)["']([^"'\]]*)["']/g, '$1$2')
+                .replace(/\(\s*even\s*\)/g, '(2n)').replace(/\(\s*odd\s*\)/g, '(2n+1)')
+                .trim();
+            const parsed = rules.map(r => norm(r.selectorText || ('@' + (r.name || r.conditionText || r.cssText.slice(0, 24)))));
+            const missing = [];
+            const pool = parsed.slice();
+            for (const p of preludes.map(norm)) {
+                if (!p) continue;
+                const at = pool.findIndex(x => x === p || (p.startsWith('@') && x.startsWith('@')));
+                if (at >= 0) pool.splice(at, 1); else missing.push(p.slice(0, 70));
+            }
+            out.push({ blocks: preludes.length, rules: rules.length, missing, orphans });
+        }
+        return out;
+    });
+    for (const s of css) {
+        ck(!s.orphans.length, `${name}: no orphaned declarations at top level of the stylesheet${s.orphans.length ? ' — ' + JSON.stringify(s.orphans) : ''}`);
+        // The COUNT is the assertion: a rule the parser threw away cannot be in
+        // cssRules, so blocks-written must equal rules-parsed. The name list is
+        // only a diagnostic printed when that fails — matching selector text
+        // across two spellings is best-effort, and it must never be the thing
+        // that decides whether this passes.
+        const lost = s.missing.filter(m => !/-moz-|-ms-|-webkit-/.test(m));
+        ck(s.rules === s.blocks,
+            `${name}: every rule the script wrote survived parsing (${s.rules}/${s.blocks})${s.rules !== s.blocks && lost.length ? ' — DROPPED: ' + JSON.stringify(lost) : ''}`);
+    }
+
     // the three scripts with a floating log open it from the shared Log button
     const hasLog = await page.evaluate(() => {
         const b = document.querySelector('.mbu-cfg-log, .tc-logbtn, .as-setup-logbtn, .fs-logbtn');

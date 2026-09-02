@@ -21,6 +21,46 @@
 //    optional hooks (e.g. a toast with no log sink still shows).
 
 // ── CSS ─────────────────────────────────────────────────────────────────────
+// The containers our windows live in. Some rules below have to reach plain
+// elements (`input`, `select`) rather than our own classes, and a bare `input`
+// rule would restyle MusicBrainz's forms — which are not ours to restyle. So
+// those rules are scoped to this list. `.mbu-ui` is the opt-in hook for any
+// container not named here, so a new window never needs this list edited.
+//
+// One list, used by every scoped rule: two copies drift, and a container missing
+// from one of them is a window whose inputs are themed but whose placeholders
+// are not.
+const ROOTS = [
+    // shared
+    '.mbu-ov', '.mbu-ui', '#mbu-logpop', '.discogs-bar',
+    // art_station
+    '#as-root', '#as-setup', '.as-pop',
+    // apollo_editor
+    '#tc-bar', '#tc-settings', '#tc-anno-wrap', '.tc-panel', '.tc-toolcfg', '.tc-acpop',
+    '.tc-recpop', '.tc-lppop', '.tc-tpppop', '.tc-tpp-mpop', '.tc-anno-help-pop',
+    // group_therapy
+    '.gt-toolbar', '.gt-cons', '.gt-menu', '.gt-pop', '.gt-cfg-pop', '.gt-wm-pop',
+    // isrc_scout
+    '#ii-modal', '#ii-sxpanel',
+    // platform_check
+    '#mb-pc-panel', '#mb-provider-modal-card',
+    // fusion
+    '.fs-cons', '#fs-settings', '.fs-overlay',
+    // mammoth
+    '.mmth-pop', '.mmth-cfg',
+];
+// `:where()` contributes NOTHING to specificity, so everything below lands as a
+// DEFAULT: any existing per-script rule, however weakly selected, still wins.
+// Written the obvious way (`#as-root input`) an id would outrank every class
+// rule in every script and silently repaint controls that were already styled.
+// Both halves are wrapped, so the whole thing weighs 0 and one selector covers
+// the cross product instead of ROOTS.length selectors per rule.
+const scoped = (inner) => `:where(${ROOTS.join(',')}) :where(${inner})`;
+// …except for a pseudo-ELEMENT, which is not a valid argument to :where(). The
+// list is forgiving, so it does not error — it silently drops the argument and
+// leaves a rule that matches nothing at all. Those get the left side scoped only.
+const scopedEl = (inner) => `:where(${ROOTS.join(',')}) ${inner}`;
+
 // Single-quoted at generation time, so: no single quotes, no newlines.
 const CSS = [
     // Help link — `? Help` opening the script's README in a new tab. Apollo and
@@ -126,11 +166,44 @@ const CSS = [
     // and opacity is pinned because Firefox dims ::placeholder by default on top of
     // whatever colour you set.
     //
-    // Scoped to our own containers by an explicit list rather than a bare
-    // `::placeholder`: a global rule would restyle MusicBrainz's own inputs, and
-    // this is not our page to restyle. `.mbu-ui` is the opt-in hook for any
-    // container not named here, so a new window never needs this list edited.
-    '#as-root ::placeholder,#tc-settings ::placeholder,#mbu-logpop ::placeholder,#ii-modal ::placeholder,#mb-pc-panel ::placeholder,#mb-provider-modal-card ::placeholder,.gt-cons ::placeholder,.gt-menu ::placeholder,.gt-pop ::placeholder,.fs-cons ::placeholder,.mmth-pop ::placeholder,.mbu-ov ::placeholder,.mbu-ui ::placeholder,.discogs-bar ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}',
+    // Scoped to our own containers (see ROOTS) rather than a bare `::placeholder`.
+    scopedEl('::placeholder') + '{color:var(--mbu-text-weak);opacity:1;font-style:italic}',
+
+    // Form controls — the theme has to reach INSIDE the windows too. #564:
+    // "Some edit boxes do not follow theme (white rectangles)". A control with no
+    // background of its own takes the UA default, which is white in every theme,
+    // so a dark window grew white rectangles wherever a script had left an input
+    // unstyled. There is no per-script fix for that: an unstyled control is
+    // exactly the case nobody remembered, so the default itself has to be ours.
+    //
+    // Deliberately NOT checkbox/radio/range/color: those paint their own widget
+    // from the UA theme and a background here squares them off. They get
+    // accent-color instead, which is the supported way to tint them.
+    // The weight here is deliberate and load-bearing. MusicBrainz's own sheet
+    // carries `input{background:#fff}` — specificity 0,0,1 — so a rule of 0,0,0
+    // loses to it and the field stays white however dark the panel is (that is
+    // what the first version of this did). So the element part is left OUTSIDE
+    // :where() to weigh its natural 0,0,1, and the type exclusions go INSIDE a
+    // :where() so they add nothing. 0,0,1 ties MusicBrainz and wins on order —
+    // our stylesheet is injected after theirs — while still losing to every
+    // per-script rule, which is the point: this is a default, not an override.
+    scopedEl('input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),'),
+    scopedEl('textarea,') + scopedEl('select'),
+    '{background:var(--mbu-bg-sunken);color:var(--mbu-text);',
+    // border-color only — width and style stay whatever the control had, so a
+    // script that drew a deliberate 2px ring keeps it.
+    'border-color:var(--mbu-border)}',
+    scopedEl('input:focus-visible,') + scopedEl('textarea:focus-visible,') + scopedEl('select:focus-visible'),
+    '{outline:2px solid var(--mbu-accent);outline-offset:1px}',
+    // Widgets that paint themselves: tint rather than repaint.
+    scoped('input[type=checkbox],input[type=radio],input[type=range]'),
+    '{accent-color:var(--mbu-accent)}',
+    // A button nobody styled is the same failure as an input nobody styled: the
+    // UA paints it light grey with black text, which is invisible-adjacent on a
+    // dark panel. Colours only, no border/radius shorthand — a script that drew a
+    // borderless button keeps it borderless, and nothing here moves a pixel.
+    scopedEl('button'),
+    '{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}',
     // Collapsing toolbar — icon+label buttons drop their labels when the bar
     // would otherwise wrap; the icon plus its tooltip carries the meaning.
     // Art Station is the reference implementation the issue names.
