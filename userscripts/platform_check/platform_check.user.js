@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.2.200000
+// @version      2026.9.2.203000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -4529,6 +4529,37 @@ async function runScansInner() {
     // Persist DOM- and API-sourced records to the long-term cache so a later
     // MB 503 can still render. Don't re-persist when we're already inside the
     // cache-fallback branch.
+    // #567 (majkinetor): "The Discogs master checkmark is always circled only on
+    // Overview page and it mostly isn't on other tabs." His logs are decisive:
+    //
+    //   overview    Existing RG master: https://www.discogs.com/master/284062
+    //   cover art   Existing RG master: none
+    //
+    // The release-group's Discogs master is read out of the page DOM, and only the
+    // Overview tab renders it early enough (it appears twice there — once in the
+    // body, once in the sidebar; every other tab has the sidebar copy alone). So on
+    // the other tabs the parse can run before it exists, records null, and CACHES
+    // that null — which is why pressing the refresh button does not help either.
+    //
+    // The release group is the authority on its own links, so ask it rather than
+    // hoping the page has rendered. One cheap request, only when the DOM came up
+    // empty, and never on the Overview path where the DOM already answered.
+    if (!mbData.existing?.discogsMaster && mbData.releaseGroupMbid) {
+        try {
+            const rgRes = await gmGet(`${MB_ORIGIN}/ws/2/release-group/${mbData.releaseGroupMbid}?inc=url-rels&fmt=json`);
+            const rgJson = rgRes && rgRes.status === 200 ? JSON.parse(rgRes.responseText) : null;
+            const found = (rgJson?.relations || [])
+                .map(r => r?.url?.resource)
+                .find(u => u && /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u));
+            if (found) {
+                mbData.existing = { ...(mbData.existing || {}), discogsMaster: found };
+                appendLog('MusicBrainz', `RG Discogs master resolved from the API (the page DOM had none): ${found}`);
+            }
+        } catch (e) {
+            appendLog('MusicBrainz', `RG master lookup failed — ${(e && e.message) || e}`, 'warn');
+        }
+    }
+
     if (dataSource !== 'cache') mbDataSet(mbid, mbData);
 
     // 2nd-line under the MusicBrainz source-info log: clickable link straight
