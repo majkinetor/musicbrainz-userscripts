@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.1.201724
+// @version      2026.9.2.122428
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.1.201724 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.174534\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.1.204500");
+  console.log('%c String Theory %c v2026.9.2.122428 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.8.31.192453\n  · Art Station v2026.9.1.174534\n  · Credit Hoarder v2026.8.28\n  · Group Therapy v2026.9.1.154228\n  · ISRC Scout v2026.8.17\n  · Mammoth v2026.7.23\n  · Platform Check v2026.9.2.121500");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -32103,7 +32103,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.204500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.1.204500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.2.121500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.2.121500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -32290,8 +32290,17 @@ async function runInjectHelper(entityType) {
         }
         const urls = Object.values(pending || {}).filter(Boolean);
         if (urls.length === 0) return;
-        const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
-        if (tab) tab.click();
+        // #556: this lookup used to run ONCE, immediately, and was a no-op besides.
+        // Measured live on the release editor: there is no "External links" TAB at
+        // all — the wizard's steps are Release information / Tracklist / Recordings
+        // / Edit note, and External links is a <legend> inside the first of them.
+        // So this never matched anything and the click never happened; the input was
+        // reachable only because its step is the default one.
+        //
+        // It is kept (bounded, and now actually awaited) because the release-GROUP
+        // editor is a different form and the label may exist there — but it is NOT
+        // what fixed his failure. That was the input wait below. See the note there.
+        await pcWaitFor(pcOpenExternalLinks, 4000);
         await pcWait(200);
         const result = await injectInto(urls, key) || { injected: 0 };
         // #464: right-click "add in background" — auto-submit once the URLs are in,
@@ -32345,6 +32354,17 @@ async function runInjectHelper(entityType) {
             showInjectBanner(`Platform Check: inject helper crashed — ${e.name || 'Error'}: ${e.message || e}`, [], { fail: true });
         } catch (_) { /* nothing else we can do here */ }
     }
+}
+
+// #556: open the release editor's "External links" step. Returns the tab element
+// once it exists (so it can be awaited with pcWaitFor), null while it does not.
+// Clicking an already-active step is a no-op, so this is safe to call repeatedly.
+function pcOpenExternalLinks() {
+    const tab = [...document.querySelectorAll('a, button, li')]
+        .find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
+    if (!tab) return null;
+    try { tab.click(); } catch (e) { /* not clickable yet — the caller keeps polling */ }
+    return tab;
 }
 
 function findAddLinkInput() {
@@ -32413,8 +32433,28 @@ async function injectInto(urls, storageKey) {
         // MutationObserver-backed wait — resolves the moment MB renders an
         // empty "Add another link" input, regardless of how long the page
         // takes to mount the External Links section.
-        const input0 = await pcWaitFor(findAddLinkInput, 10000);
-        if (!input0) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared' }); break; }
+        // #556 (majkinetor, from the console log the new diagnostics produced):
+        //   inject FAILED: <beatport url> — no "Add another link" input ever appeared
+        //
+        // The 10s budget was simply too short. The External links fieldset is part
+        // of the release editor's own async boot, and his page had plenty to get
+        // through first: Apollo's log has the editor still loading tracks 6s in, a
+        // /ws/2 request timing out outright, and String Theory running seven scripts
+        // on the same main thread alongside two other userscripts. Nothing was
+        // broken — Platform Check just gave up before MusicBrainz finished.
+        //
+        // 25s, and the step is re-asserted between polls in case the editor
+        // re-renders back to a different one. Throttled so repeated clicking cannot
+        // fight the editor's own rendering.
+        let _lastOpen = 0;
+        const input0 = await pcWaitFor(() => {
+            const el = findAddLinkInput();
+            if (el) return el;
+            const now = Date.now();
+            if (now - _lastOpen > 700) { _lastOpen = now; pcOpenExternalLinks(); }
+            return null;
+        }, 25000);
+        if (!input0) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared (25s, External links step never rendered)' }); break; }
 
         // ⚠ #556: `injected` is NOT bumped for a dispatched keystroke. It gates
         // whether the pending payload is consumed below, and counting the
