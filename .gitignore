@@ -34,3 +34,7 @@ dev/notif-channel/node_modules/
 /.pw-profile/
 userscripts/falcon/test/_535-aliases.json
 userscripts/credit_hoarder/_rp.mjs
+dev/_*.png
+dev/i2*.png
+userscripts/*/test/*.png
+userscripts/*/test/logs/
