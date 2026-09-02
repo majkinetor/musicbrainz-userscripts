@@ -57,6 +57,15 @@ if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\
     git add userscripts/discogs_credits/dist/discogs_credits.user.js
 fi
 
+# credit_hoarder — esbuild bundle, same shape as discogs_credits above. It was
+# missing here, so a shared-component sync (which rewrites src/ui-bar.js) left
+# the committed dist/ — the file people actually install — one build behind.
+if printf '%s\n' "$STAGED" | grep -qE '^userscripts/credit_hoarder/(src/|build\.mjs)'; then
+    echo "[pre-commit] rebuilding userscripts/credit_hoarder/dist/…"
+    (cd userscripts/credit_hoarder && pnpm run build >/dev/null)
+    git add userscripts/credit_hoarder/dist/credit_hoarder.user.js
+fi
+
 # string_theory — unified bundle. Rebuild when any listed constituent's userscript
 # changes, or when the bundler / icon / members list itself changes. A member's
 # README.md change also triggers it — build.mjs regenerates the unified DOCS.md
