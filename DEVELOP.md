@@ -94,6 +94,26 @@ const css = MBU_TOKENS + `
 - Several scripts on one page — or all of them, via String Theory — each emit the same `:root`
   rule. The duplicates are byte-identical, so the last one wins harmlessly.
 
+### Shared UI components — `dev/ui-components.mjs`
+
+**The standard widgets — help link, toast, and the rest as they land — are defined once in
+`dev/ui-components.mjs`, not per script** (#563). Companion to the design tokens: tokens say what
+things look like, this says what they *are*.
+
+A script opts in with a `// <ST-UI>` marker pair, which `dev/sync-ui.mjs` fills in with
+`MBU_UI_CSS` plus the component helpers. Concatenate `MBU_UI_CSS` into the same sheets as
+`MBU_TOKENS`, and reach the helpers directly (`mbuHelpEl`, `mbuToast`) or via `window.MBU`.
+
+- **One class prefix — `mbu-`.** A userstyle targets a component once instead of once per script.
+- **Interaction is part of the contract**, not just appearance. "Looks the same but `Esc` doesn't
+  work" is the drift this exists to stop, so keyboard/mouse behaviour lives in the component too.
+- **Delete the per-script rule you're replacing.** A leftover with higher specificity silently wins
+  and the script never actually adopts the component.
+- **Adopting a component may change how a script looks** — that's the point when it was the odd one
+  out (Fusion's help link was Spotify green). Say which one won, and why, in the commit.
+- `node dev/verify-ui-live.mjs` drives each component in every adopting script on a real page and
+  asserts the contract — markup, computed style, and behaviour.
+
 ### Settings storage
 
 **User-facing settings/preferences use `GM_setValue`/`GM_getValue`, never `localStorage`.**
