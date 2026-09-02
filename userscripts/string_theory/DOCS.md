@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-02 18:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-02 19:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -613,7 +613,7 @@ Every change is staged. **Enter edit** opens a panel that lists the pending oper
 - A shared **edit note** and **make votable** apply to every edit.
 - While a run is in progress the dialog can't be dismissed by clicking outside, and leaving the page warns first — so edits are never silently cut off. Use **Cancel** to abort.
 - **Automatically repeat failures** (⚙ setup, **off** by default, up to **20 minutes or 20 times**) — when a commit finishes with failures, Art Station re-runs *just the failed operations* by itself until they succeed or the allowance runs out ([#566](https://github.com/majkinetor/musicbrainz-userscripts/issues/566)). Uploads to the Internet Archive have been unreliable, and a failed booklet is expensive to redo by hand.
-    - It stops at whichever limit comes first, and the gap between attempts is the window spread over the allowance (20 min / 20 tries = one attempt a minute), so it can't become a hot loop against a struggling server.
+    - It stops at whichever limit comes first. The gap between attempts starts as the window spread over the allowance (20 min / 20 tries = one a minute) and **backs off as attempts pile up** — doubling from the 10th, tripling from the 100th — so a server that has already refused ten times isn't asked again at the same cadence. (Backoff shape borrowed from [Anakunda's MB Auto-retry on upload to CAA error](https://greasyfork.org/en/scripts/475225-mb-auto-retry-on-upload-to-caa-error), via chaban-mb.)
     - The commit window's footer shows the attempt, the countdown, how much of the window is gone and how many operations are still failing. **Repeat** still works and goes immediately; **Close** stops the countdown.
 - **Upload timeout** (⚙ setup, default **10 minutes**, max 120) — how long one file may take to reach the Internet Archive before Art Station gives up. It used to be a fixed 5 minutes, which a 50–100MB PDF booklet could outlast when the Archive was slow, failing here while MusicBrainz's own uploader (which sets no timeout at all) got through ([#560](https://github.com/majkinetor/musicbrainz-userscripts/issues/560)). Raise it if you upload large booklets. The failure message names the limit it hit, so it's clear when this is what happened.
 
