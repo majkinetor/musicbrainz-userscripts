@@ -44,15 +44,15 @@ export const TOKENS = {
 
     // ── text ─────────────────────────────────────────────────────────────────
     'text': 'var(--text, #222)',
-    'text-dim': '#555',           // secondary copy, still readable
-    'text-weak': '#999',          // placeholders, disabled, timestamps
+    'text-dim': ['#555', 'color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg))'],
+    'text-weak': ['#999', 'color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg))'],
     'text-on-accent': '#fff',
 
     // ── lines ────────────────────────────────────────────────────────────────
     'border': 'var(--border, #cfc6e6)',   // the default 1px edge
     'border-soft': '#e2dcef',     // a quieter edge (large panels)
-    'border-strong': '#9a8ccb',   // focus/active edge
-    'divider': '#eee',            // neutral hairline between rows
+    'border-strong': ['#9a8ccb', 'color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text))'],
+    'divider': ['#eee', 'color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text))'],
 
     // ── accent ───────────────────────────────────────────────────────────────
     // #5f3ec0 across art_station/apollo/group_therapy/isrc_scout/scribe; the
@@ -63,18 +63,23 @@ export const TOKENS = {
     'accent-deep': '#3b2c70',     // pressed / on-accent-surface text
     'accent-soft': ['#ece4ff', 'color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent))'],
     'accent-fg': '#fff',          // text on top of --mbu-accent
+    // The accent used AS TEXT. Mixing toward --mbu-text lightens it on a dark
+    // ground and deepens it slightly on a light one, so it stays legible either
+    // way; --mbu-accent itself is left alone because it is the button fill.
+    'accent-text': ['#5f3ec0', 'color-mix(in srgb, var(--mbu-accent) 68%, var(--mbu-text))'],
+    'accent-deep-text': ['#3b2c70', 'color-mix(in srgb, var(--mbu-accent-deep) 55%, var(--mbu-text))'],
 
     // ── status ───────────────────────────────────────────────────────────────
-    'ok': '#1f9d6b',
+    'ok': ['#1f9d6b', 'color-mix(in srgb, #1f9d6b 78%, var(--mbu-text))'],
     'ok-bg': ['#eef7f1', 'color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok))'],
     'ok-border': '#9bd3b6',
-    'warn': '#a05a00',
+    'warn': ['#a05a00', 'color-mix(in srgb, #b4791f 78%, var(--mbu-text))'],
     'warn-bg': ['#fff7e6', 'color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn))'],
     'warn-border': '#f0c877',
-    'error': '#c0392b',
+    'error': ['#c0392b', 'color-mix(in srgb, #d0473a 78%, var(--mbu-text))'],
     'error-bg': ['#fdecec', 'color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error))'],
     'error-border': '#e2a1a1',
-    'info': '#2f7fbf',
+    'info': ['#2f7fbf', 'color-mix(in srgb, #3f8fd0 78%, var(--mbu-text))'],
     'info-bg': ['#eef4fb', 'color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info))'],
     'info-border': '#a9c8e6',
 
