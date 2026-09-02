@@ -20,6 +20,14 @@ import { execFileSync } from 'node:child_process';
 
 const ME = 'claude-ai-milic';
 const HIM = 'majkinetor';
+<<<<<<< HEAD
+=======
+// Everyone who is not me is worth reading. Only majkinetor's word is an
+// INSTRUCTION — others are input to weigh, not orders to follow — but chaban-mb
+// files real bug reports and posts references, and a tool watching one account
+// would hide those exactly the way the notification feed hid majkinetor's.
+// Authorship is labelled so the distinction stays visible in the output.
+>>>>>>> main
 const REPO = 'majkinetor/musicbrainz-userscripts';
 const ALL = process.argv.includes('--all');
 
@@ -42,7 +50,11 @@ let pending = 0;
 for (const iss of unique.sort((a, b) => a.number - b.number)) {
     const comments = gh(['api', `repos/${REPO}/issues/${iss.number}/comments`, '--paginate']);
     const mine = comments.filter(c => c.user.login === ME).map(c => c.created_at).sort().pop() || '';
+<<<<<<< HEAD
     const his = comments.filter(c => c.user.login === HIM);
+=======
+    const his = comments.filter(c => c.user.login !== ME && !/\[bot\]$/.test(c.user.login));
+>>>>>>> main
     const unanswered = his.filter(c => c.created_at > mine);
     if (!unanswered.length && !ALL) continue;
 
