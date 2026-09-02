@@ -35,8 +35,14 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
 
 // Lift pcWaitFor out of the userscript rather than reimplementing it, so the
 // thing under test is the shipped source.
-const src = code.slice(code.indexOf('function pcWaitFor'));
-const fnSrc = src.slice(0, src.indexOf('\n}\n') + 3);
+// Line-ending agnostic: the working tree is CRLF while git's blobs are LF, and
+// an '\n}\n' terminator silently matches neither in the first case.
+const cut = (text) => {
+    const s = text.slice(text.indexOf('function pcWaitFor'));
+    const m = s.match(/\r?\n\}\r?\n/);
+    return m ? s.slice(0, m.index + m[0].length) : '';
+};
+const fnSrc = cut(code);
 if (!/function pcWaitFor/.test(fnSrc)) { console.log('could not extract pcWaitFor'); process.exit(2); }
 
 const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', { headless: true });
@@ -74,29 +80,31 @@ ck(r.got === 'FOUND', `#556: the wait still resolves in a hidden tab (got ${JSON
 ck(r.ms < 3000, `and resolves when the element appears, not at the deadline (${r.ms}ms)`);
 ck(r.rafCalls === 0, 'and does not depend on requestAnimationFrame at all — it never fires while hidden');
 
-// ── the deadline must not be charged for time the tab was hidden ────────────
+// ── the deadline stays wall-clock, deliberately ─────────────────────────────
+// An earlier version of this file asserted the opposite: that hidden time was
+// NOT charged against the budget. That behaviour shipped and was wrong — a wait
+// which legitimately never succeeds then runs to its absolute cap every time,
+// and majkinetor got multi-minute hangs out of it in both foreground and
+// background. The exemption is gone; what remains is the part that was actually
+// broken, which is polling on rAF.
 const budget = await page.evaluate(async (fn) => {
     const realRaf = window.requestAnimationFrame;
     window.requestAnimationFrame = () => 0;
-    let hidden = true;
-    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
     // eslint-disable-next-line no-new-func
     const pcWaitFor = new Function(fn + '; return pcWaitFor;')();
-    // Hidden for 2.5s with a 1s budget — under a wall-clock deadline this is
-    // already spent. Then the tab is shown and the element turns up 400ms later.
-    let ready = false;
-    setTimeout(() => { hidden = false; }, 2500);
-    setTimeout(() => { ready = true; document.body.appendChild(document.createElement('hr')); }, 2900);
+    // A hidden tab where the element never turns up must still give up on time,
+    // and near the stated budget — not minutes later.
     const t0 = Date.now();
-    const got = await pcWaitFor(() => (ready ? 'FOUND' : null), 1000);
+    const got = await pcWaitFor(() => null, 1200);
     const ms = Date.now() - t0;
     delete document.hidden;
     window.requestAnimationFrame = realRaf;
     return { got, ms };
 }, fnSrc);
-console.log('hidden-then-shown: ' + JSON.stringify(budget));
-ck(budget.got === 'FOUND', `#556: hidden time is not charged against the budget — the wait survives being backgrounded (got ${JSON.stringify(budget.got)})`);
-ck(budget.ms > 2500, `and it really did wait through the hidden period (${budget.ms}ms)`);
+console.log('hidden, nothing appears: ' + JSON.stringify(budget));
+ck(budget.got === null, '#556: a hidden tab still gives up rather than hanging');
+ck(budget.ms >= 1200 && budget.ms < 6000, `and does so at roughly the stated budget, not minutes later (${budget.ms}ms for 1200ms)`);
 
 // ── it must still time out when the tab IS visible and nothing turns up ─────
 const times = await page.evaluate(async (fn) => {
@@ -114,8 +122,7 @@ ck(times.ms >= 800 && times.ms < 4000, `and times out on schedule (${times.ms}ms
 const PREV = process.env.PC_PREV;
 if (PREV) {
     const prevCode = await readFile(PREV, 'utf8');
-    const psrc = prevCode.slice(prevCode.indexOf('function pcWaitFor'));
-    const pfn = psrc.slice(0, psrc.indexOf('\n}\n') + 3);
+    const pfn = cut(prevCode);
     // The discriminating case is hidden-THEN-SHOWN, which is majkinetor's
     // "returning a bit later". While hidden, the old loop's rAF poll is frozen
     // but its wall-clock deadline is not. The moment the tab is looked at, rAF

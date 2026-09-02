@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.2.145000
+// @version      2026.9.2.153000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -184,24 +184,23 @@ function pcWaitFor(predicate, timeoutMs = 10000) {
         // past the timeout, and gives up on its very first tick. That is exactly an
         // all-or-nothing failure that cannot happen in the foreground.
         //
-        // So: poll on a timer (clamped to ~1s while hidden, but it RUNS), and count
-        // only the time the tab was actually visible towards the deadline. A hidden
-        // tab is not a slow tab; it is a stopped one, and it must not be charged for
-        // the wait. The absolute cap keeps a never-focused tab from hanging forever.
-        const HARD_CAP_MS = Math.max(timeoutMs * 12, 300000);
+        // So: poll on a TIMER instead. setTimeout is clamped to ~1s in a hidden tab
+        // but it still runs, so the wait observes the element appearing either way.
+        // That one change is the whole fix.
+        //
+        // What is deliberately NOT here, having been tried and reverted: excusing a
+        // hidden tab from the deadline (accumulating only "visible" time, with an
+        // absolute cap as a backstop). It sounds right — a hidden tab is stopped,
+        // not slow — but a wait that legitimately never succeeds then runs to the
+        // cap every time, and with the cap at minutes that is far worse than giving
+        // up. majkinetor got multi-minute hangs in BOTH foreground and background
+        // out of it. The deadline is plain wall clock, as it was.
         const started = Date.now();
-        let visibleMs = 0, last = Date.now();
         const poll = () => {
             if (done) return;
-            const now = Date.now();
-            let hidden = false;
-            try { hidden = !!document.hidden; } catch (_) { /* treat as visible */ }
-            if (!hidden) visibleMs += now - last;
-            last = now;
             const r = predicate();
             if (r) return finish(r);
-            if (visibleMs >= timeoutMs) return finish(null);
-            if (now - started >= HARD_CAP_MS) return finish(null);
+            if (Date.now() - started >= timeoutMs) return finish(null);
             try { setTimeout(poll, 100); } catch (_) { finish(null); }
         };
         poll();
@@ -255,10 +254,11 @@ async function runInjectHelper(entityType) {
         // So this never matched anything and the click never happened; the input was
         // reachable only because its step is the default one.
         //
-        // It is kept (bounded, and now actually awaited) because the release-GROUP
-        // editor is a different form and the label may exist there — but it is NOT
-        // what fixed his failure. That was the input wait below. See the note there.
-        await pcWaitFor(pcOpenExternalLinks, 4000);
+        // It is called once, NOT awaited. Awaiting it was a mistake of mine: on the
+        // release editor the tab does not exist, so the wait could only ever run to
+        // its full timeout before injectInto even started — pure dead time added to
+        // every single background add.
+        pcOpenExternalLinks();
         await pcWait(200);
         const result = await injectInto(urls, key) || { injected: 0 };
         // #464: right-click "add in background" — auto-submit once the URLs are in,
@@ -404,12 +404,22 @@ async function injectInto(urls, storageKey) {
         // 25s, and the step is re-asserted between polls in case the editor
         // re-renders back to a different one. Throttled so repeated clicking cannot
         // fight the editor's own rendering.
-        let _lastOpen = 0;
+        let _lastOpen = 0, _t0 = Date.now(), _said = 0;
         const input0 = await pcWaitFor(() => {
             const el = findAddLinkInput();
             if (el) return el;
             const now = Date.now();
             if (now - _lastOpen > 700) { _lastOpen = now; pcOpenExternalLinks(); }
+            // #556: say so while still waiting. Without this the console is silent
+            // until the end, so "gave up at 25s" and "hung for minutes" look the
+            // same in a bug report — and I could not tell them apart in his.
+            const secs = Math.round((now - _t0) / 1000);
+            if (secs >= 10 && secs - _said >= 10) {
+                _said = secs;
+                try {
+                    console.info(`[Platform Check] inject: still waiting for MusicBrainz to render the External links field (${secs}s, hidden=${!!document.hidden})`);
+                } catch (e) {}
+            }
             return null;
         }, 25000);
         if (!input0) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared (25s, External links step never rendered)' }); break; }
