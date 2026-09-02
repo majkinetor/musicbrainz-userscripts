@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.2.140000
+// @version      2026.9.2.145000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -107,35 +107,35 @@
   const saveLogWin = (patch) => { try { gmSave(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
   // the Log button opens this popup: the full session log + a Copy control.
   function openLog() {
-    document.getElementById('tc-logpop')?.remove();
+    document.getElementById('mbu-logpop')?.remove();
     style();   // ensure the popup CSS is injected (e.g. on auto-open before settings is opened)
     saveLogWin({ open: true });
     const st = loadLogWin();
-    const pop = document.createElement('div'); pop.id = 'tc-logpop';
-    pop.innerHTML = `<div class="tc-logpop-h"><b>Activity log</b> <span class="tc-log-badge"></span><span class="tc-logpop-sp"></span>`
-      + `<button class="tc-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
-      + `<button class="tc-logpop-min" type="button" title="Minimize">–</button>`
-      + `<button class="tc-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="tc-log-list"></div>`;
+    const pop = document.createElement('div'); pop.id = 'mbu-logpop';
+    pop.innerHTML = `<div class="mbu-logpop-h"><b>Activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>`
+      + `<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
+      + `<button class="mbu-logpop-min" type="button" title="Minimize">–</button>`
+      + `<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>`
+      + `<div class="mbu-log-list"></div>`;
     document.body.appendChild(pop);
     // restore saved open position (used when not minimized, and remembered for restore)
     if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
     pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
     const renderList = () => {
-      const list = pop.querySelector('.tc-log-list');
+      const list = pop.querySelector('.mbu-log-list');
       list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="tc-log-li tc-log-${e.sev}"><span class="tc-log-t">${_logTs(e.t)}</span><span class="tc-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
-        : '<div class="tc-log-empty">No activity yet.</div>';
+        ? LOG.map(e => `<div class="mbu-log-li mbu-log-${e.sev}"><span class="mbu-log-t">${_logTs(e.t)}</span><span class="mbu-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
+        : '<div class="mbu-log-empty">No activity yet.</div>';
       const c = _logCounts();
-      pop.querySelector('.tc-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
+      pop.querySelector('.mbu-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
       list.scrollTop = list.scrollHeight;
     };
     renderList();
     _logListeners.add(renderList);
     const onKey = e => { if (e.key === 'Escape') close(); };
     const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.tc-logpop-copy').onclick = () => copyLog(pop.querySelector('.tc-logpop-copy'));
-    const minBtn = pop.querySelector('.tc-logpop-min');
+    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
+    const minBtn = pop.querySelector('.mbu-logpop-min');
     const setMin = (m) => {
       minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
       if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
@@ -143,9 +143,9 @@
     };
     minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
     if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
-    pop.querySelector('.tc-logpop-x').onclick = close;
+    pop.querySelector('.mbu-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
-    pop.querySelector('.tc-logpop-h').addEventListener('mousedown', (e) => {
+    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', (e) => {
       if (e.target.closest('button')) return;
       e.preventDefault();
       const r = pop.getBoundingClientRect();
@@ -1563,7 +1563,7 @@
   // The shared UI components (#563). Definitions live in dev/ui-components.mjs
   // and are inlined here by dev/sync-ui.mjs — edit them THERE, never here.
   // <ST-UI> — generated by dev/sync-ui.mjs from dev/ui-components.mjs — DO NOT EDIT
-  const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;white-space:nowrap;line-height:1.6;background:var(--mbu-bg)}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}';
+  const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;white-space:nowrap;line-height:1.6;background:var(--mbu-bg)}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.72}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}.mbu-compact .mbu-bt{display:none}';
   // Help link markup. Every script's help link is this, pointing at its own README.
   // `name` is the userscript folder, e.g. mbuHelpHref('art_station').
   function mbuHelpHref(name) {
@@ -1654,6 +1654,79 @@
       return html + '</div>';
   }
 
+  // Dismiss-on-outside-click, with the trailing click SWALLOWED.
+  //
+  //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
+  //
+  // #305: a popover torn down on mousedown removes what was under the cursor, so
+  // the click that follows lands on whatever the page reflowed into that spot and
+  // activates it. Tearing down on click instead just moves the problem. So: close
+  // on outside mousedown, then eat exactly one click in the capture phase. This is
+  // the single most repeated interaction bug in these scripts and it belongs in
+  // one place — it is why #563 says interaction is part of the contract.
+  //
+  // Esc closes too, innermost first: the handler is registered in capture and stops
+  // propagation, so a popover inside a modal does not close the modal as well.
+  function mbuDismissOn(el, close, opts) {
+      opts = opts || {};
+      var closed = false;
+      var onDown = function (e) {
+          if (closed || !el || el.contains(e.target)) return;
+          if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
+          finish();
+          // swallow the click this mousedown will produce, once
+          var eat = function (ev) { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', eat, true); };
+          document.addEventListener('click', eat, true);
+          setTimeout(function () { document.removeEventListener('click', eat, true); }, 400);
+      };
+      var onKey = function (e) {
+          if (closed || e.key !== 'Escape') return;
+          e.stopPropagation();
+          finish();
+      };
+      function finish() {
+          if (closed) return;
+          closed = true;
+          document.removeEventListener('mousedown', onDown, true);
+          document.removeEventListener('keydown', onKey, true);
+          try { close(); } catch (err) { /* a throwing closer must not leave listeners behind */ }
+      }
+      document.addEventListener('mousedown', onDown, true);
+      document.addEventListener('keydown', onKey, true);
+      return finish;
+  }
+
+  // Collapse a toolbar to icon-only when its buttons would wrap.
+  //
+  //   mbuFitToolbar(barEl)            // call on build, and on resize
+  //
+  // Measured by SUMMING child widths rather than reading scrollWidth or comparing
+  // offsetTop: a bar with flex:1 spacers never overflows its own scroll box, so
+  // both of those report "fits" right up until it visibly wraps. Art Station
+  // learned that the hard way (#234) and it is the only reason this is a helper
+  // rather than one CSS rule.
+  //
+  // opts.gap    inter-item gap in px (default 11)
+  // opts.pad    horizontal padding to leave (default 24)
+  // opts.spacer selector for flexible spacers, which must not count (default .mbu-sp)
+  function mbuFitToolbar(bar, opts) {
+      if (!bar) return false;
+      opts = opts || {};
+      var gap = opts.gap == null ? 11 : opts.gap;
+      var pad = opts.pad == null ? 24 : opts.pad;
+      var spacer = opts.spacer || '.mbu-sp';
+      bar.classList.remove('mbu-compact');            // measure at full labels
+      var kids = [].slice.call(bar.children);
+      var need = gap * Math.max(0, kids.length - 1);
+      for (var i = 0; i < kids.length; i++) {
+          if (kids[i].matches && kids[i].matches(spacer)) continue;
+          need += kids[i].offsetWidth;
+      }
+      var compact = need > bar.clientWidth - pad;
+      bar.classList.toggle('mbu-compact', compact);
+      return compact;
+  }
+
   // Publish the components on a shared namespace. Three reasons, in order:
   //
   //  1. it is the cross-userscript contract #563 is about — another script (or a
@@ -1674,6 +1747,8 @@
       if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
       if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
       if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
+      if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
+      if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
   } catch (e) { /* a locked-down page must not stop the script loading */ }
   // </ST-UI>
 
@@ -2158,26 +2233,6 @@
     #tc-settings{position:fixed;z-index:100001;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px var(--mbu-font);color:var(--mbu-text);width:340px}
     /* #283 activity-log popup */
     /* floating, movable, NON-modal window (no backdrop) */
-    #tc-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100002;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}
-    #tc-logpop .tc-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e3dcf2;color:var(--mbu-accent-hover);cursor:move;user-select:none}
-    #tc-logpop .tc-log-m a{color:var(--mbu-accent)}
-    #tc-logpop .tc-logpop-sp{margin-left:auto}
-    #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x,#tc-logpop .tc-logpop-min{font:12px var(--mbu-font);color:var(--mbu-accent);background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
-    #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover,#tc-logpop .tc-logpop-min:hover{background:#e9e0f8}
-    #tc-logpop.min .tc-log-list,#tc-logpop.min .tc-logpop-copy,#tc-logpop.min .tc-logpop-x{display:none}
-    #tc-logpop.min{max-height:none;width:auto}
-    #tc-logpop.min .tc-logpop-sp{display:none}
-    #tc-logpop .tc-log-badge{color:#9a8cba;font-size:11px}
-    #tc-logpop .tc-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
-    #tc-logpop .tc-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
-    #tc-logpop .tc-log-t{color:#a99fc2;flex:0 0 auto}
-    #tc-logpop .tc-log-m{flex:1 1 auto;color:#444}
-    #tc-logpop .tc-log-ok .tc-log-m{color:#2e7d4f}
-    #tc-logpop .tc-log-warn .tc-log-m{color:#b06a00}
-    #tc-logpop .tc-log-error .tc-log-m{color:#c0344d}
-    #tc-logpop .tc-log-debug{opacity:.72}
-    #tc-logpop .tc-log-debug .tc-log-m{color:#7a7a7a}
-    #tc-logpop .tc-log-empty{color:#9a8cba}
     #tc-settings label{display:flex;gap:8px;align-items:center;margin:7px 0;color:#333}
     #tc-settings label input[type=checkbox]{margin:0;flex:none}
     #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
