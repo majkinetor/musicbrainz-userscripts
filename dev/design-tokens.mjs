@@ -38,9 +38,9 @@ export const TOKENS = {
     // shading, diff highlighting) are re-derived — that is the remaining #564 work
     // he has deferred, and the reason I had held this back.
     'bg': 'var(--background, #fff)',        // panels, popovers, the gallery ground
-    'bg-raised': '#faf9fe',       // a card/popover sitting on top of --mbu-bg
-    'bg-sunken': '#f4f2f9',       // inset strips: headers, footers, toolbars
-    'bg-hover': '#f3eefe',        // row/button hover wash
+    'bg-raised': ['#faf9fe', 'color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent))'],
+    'bg-sunken': ['#f4f2f9', 'color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text))'],
+    'bg-hover': ['#f3eefe', 'color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent))'],
 
     // ── text ─────────────────────────────────────────────────────────────────
     'text': 'var(--text, #222)',
@@ -61,21 +61,21 @@ export const TOKENS = {
     'accent': '#5f3ec0',
     'accent-hover': '#4e329f',
     'accent-deep': '#3b2c70',     // pressed / on-accent-surface text
-    'accent-soft': '#ece4ff',     // accent tint used as a background
+    'accent-soft': ['#ece4ff', 'color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent))'],
     'accent-fg': '#fff',          // text on top of --mbu-accent
 
     // ── status ───────────────────────────────────────────────────────────────
     'ok': '#1f9d6b',
-    'ok-bg': '#eef7f1',
+    'ok-bg': ['#eef7f1', 'color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok))'],
     'ok-border': '#9bd3b6',
     'warn': '#a05a00',
-    'warn-bg': '#fff7e6',
+    'warn-bg': ['#fff7e6', 'color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn))'],
     'warn-border': '#f0c877',
     'error': '#c0392b',
-    'error-bg': '#fdecec',
+    'error-bg': ['#fdecec', 'color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error))'],
     'error-border': '#e2a1a1',
     'info': '#2f7fbf',
-    'info-bg': '#eef4fb',
+    'info-bg': ['#eef4fb', 'color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info))'],
     'info-border': '#a9c8e6',
 
     // ── type ─────────────────────────────────────────────────────────────────
@@ -109,6 +109,11 @@ export const TOKENS = {
 
 /** The `:root{…}` rule as a single CSS string. */
 export function tokensCss() {
-    const decls = Object.entries(TOKENS).map(([k, v]) => `--mbu-${k}:${v}`).join(';');
+    // An array value emits TWO declarations for the same name: the literal
+    // first as a fallback, then the derived form. A browser that cannot parse
+    // color-mix() drops the second and keeps the first, so nothing is lost.
+    const decls = Object.entries(TOKENS)
+        .flatMap(([k, v]) => (Array.isArray(v) ? v : [v]).map(one => `--mbu-${k}:${one}`))
+        .join(';');
     return `:root{${decls}}`;
 }

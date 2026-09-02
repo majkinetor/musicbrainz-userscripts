@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.2.192232
+// @version      2026.9.2.193540
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,13 +78,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.2.192232 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.2.193000\n  · Art Station v2026.9.2.193000\n  · Credit Hoarder v2026.9.2.192217\n  · Group Therapy v2026.9.2.193000\n  · ISRC Scout v2026.9.2.193000\n  · Mammoth v2026.9.2.193000\n  · Platform Check v2026.9.2.193000");
+  console.log('%c String Theory %c v2026.9.2.193540 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.2.200000\n  · Art Station v2026.9.2.200000\n  · Credit Hoarder v2026.9.2.193540\n  · Group Therapy v2026.9.2.200000\n  · ISRC Scout v2026.9.2.200000\n  · Mammoth v2026.9.2.200000\n  · Platform Check v2026.9.2.200000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1625,7 +1625,7 @@ try {
   // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
   // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
   // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui-components.mjs
@@ -1827,7 +1827,7 @@ try {
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}
     .tc-btn:hover{background:linear-gradient(var(--mbu-bg),#eee);border-color:#bbb}
     .tc-btn.primary{color:var(--mbu-accent);font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,var(--mbu-accent));color:var(--mbu-text-on-accent);border-color:#4f33a3}
-    .tc-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}   /* vertical divider before the Match cluster, shared by both toolbars */
+    .tc-tbsep{width:1px;height:18px;background:var(--mbu-bg-sunken);flex:none;margin:0 2px}   /* vertical divider before the Match cluster, shared by both toolbars */
     .tc-btn:disabled,.tc-btn:disabled:hover{color:#aaa;background:transparent;border-color:transparent;cursor:default;font-weight:normal}
     .tc-btn.mini{padding:1px 6px;font-size:11px}
     .tc-icon{cursor:pointer;border:none;background:none;font-size:13px;padding:0 2px;color:#666}
@@ -1860,34 +1860,34 @@ try {
        clips long titles. #153 */
     .tc-mirror .t-actions{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:3px;pointer-events:none}
     .tc-mirror .t-actions>*{pointer-events:auto}
-    .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
-    .tc-mirror input.t-title.gcpreview{background:#e3f6e3;border-color:#86c686;border-radius:3px}
+    .tc-mirror input.t-title.diff{background:var(--mbu-warn-bg);border-color:#e7ce8a;border-radius:3px}
+    .tc-mirror input.t-title.gcpreview{background:var(--mbu-ok-bg);border-color:#86c686;border-radius:3px}
     /* #203: rich title display — read-only styled text (confusable chars enlarged) shown
        when the title isn't being edited; clicking/tabbing into it shows the native input.
        Mirrors the input's diff/gcpreview/hasfeat backgrounds so the cell looks unchanged. */
     .tc-mirror .t-title-disp{flex:1;min-width:0;min-height:1.55em;box-sizing:border-box;border:1px solid transparent;border-radius:3px;background:transparent;font:13px Arial;padding:3px 2px;white-space:pre;overflow:hidden;cursor:text;display:flex;align-items:center}
     .tc-mirror .t-title-ph{color:#b7b7b7;font-style:italic}   /* #357: empty-title placeholder in the rich display */
     .tc-mirror .t-title-disp:hover{border-color:#bbb;background:var(--mbu-bg)}
-    .tc-mirror .t-title-disp.diff{background:#fff6da;border-color:#e7ce8a}
-    .tc-mirror .t-title-disp.gcpreview{background:#e3f6e3;border-color:#86c686}
-    .tc-mirror .t-title-disp.hasfeat{background:#eaf1fb;border-color:#9bbbe0}
+    .tc-mirror .t-title-disp.diff{background:var(--mbu-warn-bg);border-color:#e7ce8a}
+    .tc-mirror .t-title-disp.gcpreview{background:var(--mbu-ok-bg);border-color:#86c686}
+    .tc-mirror .t-title-disp.hasfeat{background:var(--mbu-bg-raised);border-color:#9bbbe0}
     .tc-mirror .t-title-disp.tc-hidden{display:none}
     /* #376 mirror MB's native gold "modification pending" mark — color ONLY the pending field
        (the title for a recording edit, the artist for an artist edit), not the whole row */
-    .tc-mirror tr.tc-rec-pending td.c-title .t-title-disp,.tc-mirror tr.tc-rec-pending td.c-title input.t-title{background:#ffdd99;border-color:#e5b544}
-    .tc-mirror td.c-art .tc-search.tc-slot-pending{background:#ffdd99!important;border-color:#e5b544}   /* #376 per-slot: only a selected artist with pending edits golds, never a free-text slot */
+    .tc-mirror tr.tc-rec-pending td.c-title .t-title-disp,.tc-mirror tr.tc-rec-pending td.c-title input.t-title{background:var(--mbu-warn-bg);border-color:#e5b544}
+    .tc-mirror td.c-art .tc-search.tc-slot-pending{background:var(--mbu-warn-bg)!important;border-color:#e5b544}   /* #376 per-slot: only a selected artist with pending edits golds, never a free-text slot */
     .tc-mirror.compact .t-title-disp{padding:0 2px;font-size:12px}
     .tc-mirror input.t-title.tc-eml:not(.tc-editing){position:absolute;width:1px;height:1px;min-width:0;padding:0;margin:0;border:0;opacity:0;pointer-events:none}
     /* MB medium-format select made to read as plain text — click still opens the native dropdown */
     select.tc-fmt-flat{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:1px solid transparent;background:transparent;font:bold 15px Arial;color:var(--mbu-text);padding:2px 5px;cursor:pointer}
-    select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
+    select.tc-fmt-flat:hover{background:var(--mbu-bg-hover);border-color:#d7ccef;border-radius:3px}
     /* #154: theme the native medium header (legend · collapse · format · "Medium title" · move/remove)
        to match Apollo while the tracklist takeover is on. Scoped to body.tc-tl-on so the original look
        returns the instant you switch back to the native editor — AND every button rule is further scoped to
        fieldset.advanced-medium, because tc-tl-on lives on <body> (stays on while you visit other tabs) and
        remove-item / guesscase-title are generic classes that also exist on the Release-information tab
        (external-link ✕, title Aa). Without the medium scope they leaked their glyphs onto that tab (#160). */
-    body.tc-tl-on fieldset.advanced-medium{border:1px solid #e7e0f5;border-radius:8px;background:#fbfaff;margin:0 0 12px;padding:3px 12px 6px}
+    body.tc-tl-on fieldset.advanced-medium{border:1px solid #e7e0f5;border-radius:8px;background:var(--mbu-bg-raised);margin:0 0 12px;padding:3px 12px 6px}
     body.tc-tl-on fieldset.advanced-medium > legend{font:700 12px Arial;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent)!important;padding:0 6px;margin-left:2px}
     body.tc-tl-on table.advanced-format{width:100%;border-collapse:collapse;margin:0}
     body.tc-tl-on table.advanced-format > tbody > tr > td{padding:3px 5px;vertical-align:middle;border:none}
@@ -1900,25 +1900,25 @@ try {
     body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium::before,body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium::before,
     body.tc-tl-on fieldset.advanced-medium button.icon.medium-up::before,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down::before{font-size:21px}
     body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium:hover,body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium:hover,
-    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up:hover,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down:hover{background:#efeaf9;color:var(--mbu-accent)}
+    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up:hover,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent)}
     body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium::before{content:'▸'}
     body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium::before{content:'▾'}
     body.tc-tl-on fieldset.advanced-medium button.icon.medium-up::before{content:'▴'}
     body.tc-tl-on fieldset.advanced-medium button.icon.medium-down::before{content:'▾'}
     body.tc-tl-on fieldset.advanced-medium button.icon.remove-item{color:#cc6699;margin-left:14px!important}
     body.tc-tl-on fieldset.advanced-medium button.icon.remove-item::before{content:'✕';font-weight:bold}
-    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item:hover{background:#fbe9f1;color:var(--mbu-error)}
+    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item:hover{background:var(--mbu-error-bg);color:var(--mbu-error)}
     /* "Medium title:" label + input + the Aa guess-case button */
     body.tc-tl-on table.advanced-format td.format > label[for^="medium-title"]{font:12px Arial;color:#8a7bb8;margin-left:6px}
     body.tc-tl-on input[id^="medium-title-"]{flex:1 1 220px;min-width:200px;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial;background:var(--mbu-bg);box-shadow:none}
     body.tc-tl-on input[id^="medium-title-"]:focus{border-color:#8a72c8;outline:none}
     body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title{background:none!important;border:1px solid #d6cdec;border-radius:4px;width:auto;height:auto;min-width:0;padding:2px 7px;margin:0;cursor:pointer;color:var(--mbu-accent);font:bold 11px Arial;line-height:1.4}
     body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title::before{content:'Aa'}
-    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title:hover{background:#efeaf9;border-color:#bcaae6;color:var(--mbu-accent)}
-    .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:#ffefb8}
+    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title:hover{background:var(--mbu-bg-hover);border-color:#bcaae6;color:var(--mbu-accent)}
+    .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:var(--mbu-warn-bg);color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:var(--mbu-warn-bg)}
     .tc-mirror tr:hover .t-gc{visibility:visible}
-    .tc-mirror input.t-title.hasfeat{background:#eaf1fb;border-color:#9bbbe0;border-radius:3px}
-    .tc-mirror .t-feat{flex:none;cursor:pointer;border:1px solid #9bbbe0;background:#eaf1fb;color:#2c5d9b;font:bold 12px Arial;border-radius:3px;padding:0 4px;line-height:16px;visibility:hidden}.tc-mirror .t-feat:hover{background:#d6e4f7}
+    .tc-mirror input.t-title.hasfeat{background:var(--mbu-bg-raised);border-color:#9bbbe0;border-radius:3px}
+    .tc-mirror .t-feat{flex:none;cursor:pointer;border:1px solid #9bbbe0;background:var(--mbu-bg-raised);color:#2c5d9b;font:bold 12px Arial;border-radius:3px;padding:0 4px;line-height:16px;visibility:hidden}.tc-mirror .t-feat:hover{background:var(--mbu-info-bg)}
     .tc-mirror tr:hover .t-feat{visibility:visible}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     /* drag-to-reorder: ⠿ handle + drop indicators (a purple line at the row edge you'll drop against) */
@@ -1928,7 +1928,7 @@ try {
     .tc-mirror tr.tc-drop-before td{box-shadow:inset 0 2px 0 #5f3ec0}
     .tc-mirror tr.tc-drop-after td{box-shadow:inset 0 -2px 0 #5f3ec0}
     /* alternate row colors / grid (toggled in ⚙) */
-    .tc-mirror.alt tbody tr:nth-child(even) td{background:#f6f4fb}
+    .tc-mirror.alt tbody tr:nth-child(even) td{background:var(--mbu-bg-raised)}
     .tc-mirror.gridcols td{border-right:1px solid #ededed}.tc-mirror.gridcols td:last-child{border-right:none}
     /* density layouts: compact (tight) · normal (default, shared with Recordings) · cozy (airy) */
     .tc-mirror.cozy th{padding:7px 7px}.tc-mirror.cozy td{padding:8px 7px}
@@ -1955,13 +1955,13 @@ try {
     .tc-aslot.tc-has-cred:hover .tc-cred-clr{display:block}
     .tc-cred-clr:hover{color:var(--mbu-error)}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:var(--mbu-bg);color:#333}
-    .tc-aslot.tc-can-split .tc-cred{background:#fff3cf;border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
+    .tc-aslot.tc-can-split .tc-cred{background:var(--mbu-warn-bg);border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
     .tc-aslot.tc-can-split .tc-cred::placeholder{color:#caa64e}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
-    .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer;background:#d6eff3;border-radius:4px}.tc-tic.discogs-add:hover{color:#075e6b;background:#bfe6ed}
-    .tc-tic.discogs-conflict{color:var(--mbu-error);cursor:pointer;background:#fbe3e0;border-radius:4px}.tc-tic.discogs-conflict:hover{color:#96271c;background:#f6cfc9}
-    .tc-tic.discogs-mismatch{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-mismatch:hover{color:#915700;background:#fbe0a8}
+    .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer;background:var(--mbu-info-bg);border-radius:4px}.tc-tic.discogs-add:hover{color:#075e6b;background:var(--mbu-info-bg)}
+    .tc-tic.discogs-conflict{color:var(--mbu-error);cursor:pointer;background:var(--mbu-error-bg);border-radius:4px}.tc-tic.discogs-conflict:hover{color:#96271c;background:var(--mbu-error-bg)}
+    .tc-tic.discogs-mismatch{color:#b26a00;cursor:pointer;background:var(--mbu-warn-bg);border-radius:4px}.tc-tic.discogs-mismatch:hover{color:#915700;background:var(--mbu-warn-bg)}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
     .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:var(--mbu-bg);padding:0 6px;overflow:hidden;transition:box-shadow .12s}   /* unmatched = plain white; the green fill marks a match. transition: fade the #284 hover-highlight ring in/out */
     .tc-nm-clr{flex:none;display:none;align-items:center;border:none;background:none;color:#bbb;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;visibility:hidden}   /* a little bigger */
@@ -1970,7 +1970,7 @@ try {
     .tc-search.tc-has-nm .nm:not(:focus){flex:0 1 auto}              /* when not editing, size the input to the name (its size attr) so the × sits right after it. Focused stays full-width for comfortable typing */
     .tc-nm-clr:hover{color:var(--mbu-error)}
     .tc-search:focus-within{box-shadow:inset 0 0 0 1px #b9a4e0}
-    .tc-search.matched{background:#e3f4e7}
+    .tc-search.matched{background:var(--mbu-ok-bg)}
     /* #284: hover-highlight every instance of the same artist (ring keeps the underlying matched/unmatched colour) */
     /* #284 hover-highlight: a soft 1px ring + faint inset wash (box-shadow, so it doesn't
        disturb the matched-green BACKGROUND), and no bold (which reflowed → the "jump").
@@ -1979,7 +1979,7 @@ try {
     .tc-aslot.tc-arthl .tc-cred{color:#6a4fb0}
     /* "Alternate row colors": tint the matched box a touch deeper on every other track (per row, so a
        multi-artist group stays one shade) — the only way the banding shows through the green fill */
-    .tc-mirror.alt tbody tr:nth-child(even) .tc-search.matched{background:#d6ecdd}
+    .tc-mirror.alt tbody tr:nth-child(even) .tc-search.matched{background:var(--mbu-ok-bg)}
     /* group ALL of a track's artist boxes under ONE border: collapse adjacent boxes, round only the outer
        corners; the inner borders become subtle dividers between the individual artists. #119 */
     .tc-mirror td.c-art .tc-aslot .tc-search{border-radius:0}
@@ -2003,9 +2003,9 @@ try {
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:var(--mbu-bg);color:#444}
     /* #419: the caret needs a REAL hit target (padding-grown), not a bare 10px glyph */
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:12px;padding:3px 5px;margin:-3px 0;line-height:1;border-radius:3px}
-    .tc-joinarrow:hover{color:var(--mbu-accent);background:#ede9f6}
+    .tc-joinarrow:hover{color:var(--mbu-accent);background:var(--mbu-bg-hover)}
     /* #208 join-phrase spacing flags: ␣ where a space is missing, ␣?␣ when the phrase is missing entirely */
-    .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:#fff0f0;color:#b00}
+    .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:var(--mbu-bg-raised);color:#b00}
     .tc-jp-nolead::before,.tc-jp-notrail::after,.tc-jp-nophrase::before{background:var(--tc-hl,#e53935);color:var(--mbu-text-on-accent);border-radius:2px;padding:0 1px;font:700 11px Arial;line-height:1}
     .tc-jp-nolead::before{content:'␣'}
     .tc-jp-notrail::after{content:'␣'}
@@ -2023,24 +2023,24 @@ try {
     .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb,.tc-mirror tr:hover .tc-slotgrab{visibility:visible}
     .tc-acpop{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
-    .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
+    .tc-acrow:hover,.tc-acrow.hi{background:var(--mbu-bg-hover)}
     .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0}
     .tc-acrow .nm{font-weight:600;color:var(--mbu-text)}.tc-acrow .cmt{color:#888;font-size:11px}
     .tc-acrow .tc-aka{color:#9bb8a8;font-size:11px;font-style:italic}
     .tc-acrow.none{color:#888;font-style:italic;cursor:default}
-    .tc-acmore{justify-content:center;font-style:italic;color:#6f54c0;border-top:1px solid #e3dcf2;position:sticky;bottom:0;background:#faf8ff}
-    .tc-acrow.exact{background:#dff3e5}.tc-acrow.exact .nm{color:#136b39}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:#cfeed9}
+    .tc-acmore{justify-content:center;font-style:italic;color:#6f54c0;border-top:1px solid #e3dcf2;position:sticky;bottom:0;background:var(--mbu-bg-raised)}
+    .tc-acrow.exact{background:var(--mbu-ok-bg)}.tc-acrow.exact .nm{color:#136b39}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:var(--mbu-ok-bg)}
     .tc-toolbar{padding:5px 4px;font-size:12px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:6px}
     .tc-toolbar select{font:12px Arial;padding:1px}
-    .tc-medhdr{background:#dfd7f0;font-weight:bold;color:#4b3a82;padding:4px 8px}
+    .tc-medhdr{background:var(--mbu-bg-hover);font-weight:bold;color:#4b3a82;padding:4px 8px}
 
     #tc-panel{position:fixed;top:90px;right:18px;width:720px;max-width:96vw;max-height:84vh;background:var(--mbu-bg);
       border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 8px 34px rgba(40,20,80,.32);z-index:99999;
       display:flex;flex-direction:column;font:13px/1.4 Arial,Helvetica,sans-serif;color:#1c1c1c}
-    #tc-hdr{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#ede9f6;border-bottom:1px solid #d7ccef;border-radius:6px 6px 0 0;cursor:move;user-select:none}
+    #tc-hdr{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--mbu-bg-hover);border-bottom:1px solid #d7ccef;border-radius:6px 6px 0 0;cursor:move;user-select:none}
     #tc-hdr b{flex:1;color:var(--mbu-accent-hover);font-size:14px}#tc-hdr .meta{font-size:12px;color:#6b6b6b}
     #tc-body{flex:1;overflow:auto}
-    #tc-foot{display:flex;align-items:center;gap:8px;padding:8px 11px;border-top:1px solid #d7ccef;background:#f6f4fb;border-radius:0 0 6px 6px}
+    #tc-foot{display:flex;align-items:center;gap:8px;padding:8px 11px;border-top:1px solid #d7ccef;background:var(--mbu-bg-raised);border-radius:0 0 6px 6px}
     #tc-foot .sp{flex:1}
 
     /* the global toolbar stays pinned at the top while scrolling the tracklist */
@@ -2069,14 +2069,14 @@ try {
     .tc-addrow{padding:8px 4px;font-size:13px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:6px}
     .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
     .tc-addbtn{width:22px;height:22px;border-radius:50%;border:1px solid #d6cdec;background:transparent;color:#9a8fc0;font:bold 15px/1 Arial;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-    .tc-addbtn:hover{background:#f0ecfa;color:var(--mbu-accent);border-color:#b9a4e0}
+    .tc-addbtn:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent);border-color:#b9a4e0}
     /* #330: pregap/data-track toggles + row markers */
     .tc-medopts{display:inline-flex;align-items:center;gap:12px;margin-left:14px}
     .tc-medopt{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:#666;cursor:pointer;white-space:nowrap}
     .tc-medopt:has(input:disabled){color:#b0b0b0;cursor:default}   /* #330: disc-ID medium — toggle shown but locked */
-    .tc-trkkind{flex:none;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#5a7a45;background:#eef6e8;border:1px solid #cfe3bf;border-radius:8px;padding:0 5px;margin-right:5px}
-    .tc-mirror tr.tc-row-pregap td,.tc-mirror tr.tc-row-data td{background:#f7f5fb}
-    .tc-mirror tr.tc-datadiv td{background:#efeaf9;color:#5b4a86;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 8px}
+    .tc-trkkind{flex:none;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#5a7a45;background:var(--mbu-ok-bg);border:1px solid #cfe3bf;border-radius:8px;padding:0 5px;margin-right:5px}
+    .tc-mirror tr.tc-row-pregap td,.tc-mirror tr.tc-row-data td{background:var(--mbu-bg-raised)}
+    .tc-mirror tr.tc-datadiv td{background:var(--mbu-bg-hover);color:#5b4a86;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 8px}
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:var(--mbu-text-weak);margin-left:12px;font-size:11px}
     .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
@@ -2102,9 +2102,9 @@ try {
     /* #455 track length parser panel — centred, draggable, textarea+chooser | list */
     .tc-lppop{position:fixed;z-index:100003;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:832px;height:64vh;min-width:520px;min-height:300px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
     .tc-lp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
-    .tc-lp-back{cursor:pointer;border:1px solid #cbb9ec;background:#faf8fe;color:var(--mbu-accent);font:600 11px Arial;border-radius:5px;padding:3px 9px;white-space:nowrap}.tc-lp-back:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-lp-back{cursor:pointer;border:1px solid #cbb9ec;background:var(--mbu-bg-raised);color:var(--mbu-accent);font:600 11px Arial;border-radius:5px;padding:3px 9px;white-space:nowrap}.tc-lp-back:hover{background:var(--mbu-bg-hover);border-color:#a98fe0}
     .tc-lp-t{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent);flex:1}
-    .tc-lp-err{font:bold 11px Arial;color:var(--mbu-text-on-accent);background:#e53935;border-radius:var(--mbu-radius-lg);padding:2px 9px;white-space:nowrap;box-shadow:0 1px 3px rgba(197,48,48,.4)}   /* #455.3 header invalid badge */
+    .tc-lp-err{font:bold 11px Arial;color:var(--mbu-text-on-accent);background:var(--mbu-error-bg);border-radius:var(--mbu-radius-lg);padding:2px 9px;white-space:nowrap;box-shadow:0 1px 3px rgba(197,48,48,.4)}   /* #455.3 header invalid badge */
     .tc-lp-med,.tc-lp-med1{font:12px Arial;color:#444;cursor:default}
     .tc-lp-x{border:none;background:none;cursor:pointer;font-size:14px;color:#888;padding:0 2px}.tc-lp-x:hover{color:#333}
     /* body: left (textarea + chooser overlay) | list */
@@ -2112,30 +2112,30 @@ try {
     .tc-lp-left{flex:0 0 45%;position:relative;display:flex}
     .tc-lp-ta{flex:1;resize:none;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
     /* chooser — overlaid on the empty textarea (#455 round 3) */
-    .tc-lp-choose{position:absolute;inset:0;background:#faf8fe;border:1px solid #cbb9ec;border-radius:5px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:16px}
+    .tc-lp-choose{position:absolute;inset:0;background:var(--mbu-bg-raised);border:1px solid #cbb9ec;border-radius:5px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:16px}
     .tc-lp-crow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-    .tc-lp-cbtn{cursor:pointer;border:1px solid #c3aef0;background:var(--mbu-bg);color:#3d2a70;font:600 13px Arial;border-radius:7px;padding:11px 16px}.tc-lp-cbtn:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-lp-cbtn{cursor:pointer;border:1px solid #c3aef0;background:var(--mbu-bg);color:#3d2a70;font:600 13px Arial;border-radius:7px;padding:11px 16px}.tc-lp-cbtn:hover{background:var(--mbu-bg-hover);border-color:#a98fe0}
     .tc-lp-clbl{font:600 12px Arial;color:#8a7fae;margin-top:6px}
     .tc-lp-favs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:34px}
-    .tc-lp-fav{width:32px;height:32px;cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:4px;background:var(--mbu-bg)}.tc-lp-fav:hover{border-color:#a98fe0;background:#f1ebfb;transform:scale(1.08)}
-    .tc-lp-favtxt{cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:6px 9px;background:var(--mbu-bg);font:600 11px Arial;color:#3d2a70;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tc-lp-favtxt:hover{border-color:#a98fe0;background:#f1ebfb}
+    .tc-lp-fav{width:32px;height:32px;cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:4px;background:var(--mbu-bg)}.tc-lp-fav:hover{border-color:#a98fe0;background:var(--mbu-bg-hover);transform:scale(1.08)}
+    .tc-lp-favtxt{cursor:pointer;border:1px solid #d8cdf0;border-radius:7px;padding:6px 9px;background:var(--mbu-bg);font:600 11px Arial;color:#3d2a70;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tc-lp-favtxt:hover{border-color:#a98fe0;background:var(--mbu-bg-hover)}
     .tc-lp-favload,.tc-lp-nofav{font:12px Arial;color:#aaa;font-style:italic}
     .tc-lp-list{flex:1;min-width:0;overflow:auto;border:1px solid var(--mbu-divider);border-radius:5px;padding:3px}
-    .tc-lp-row{display:flex;align-items:center;gap:6px;padding:2px 3px;border-radius:3px}.tc-lp-row:hover{background:#faf8fe}
+    .tc-lp-row{display:flex;align-items:center;gap:6px;padding:2px 3px;border-radius:3px}.tc-lp-row:hover{background:var(--mbu-bg-raised)}
     .tc-lp-tk{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:12px}
     .tc-lp-tk.none{color:#aaa;font-style:italic}
     .tc-lp-val{width:80px;font:12px ui-monospace,Consolas,monospace;text-align:right;border:1px solid #ccc;border-radius:4px;padding:2px 5px}
-    .tc-lp-val.bad{border-color:#e53935;background:#fff2f2;color:#c62828}
+    .tc-lp-val.bad{border-color:#e53935;background:var(--mbu-bg-raised);color:#c62828}
     .tc-lp-add,.tc-lp-del{border:1px solid transparent;background:none;cursor:pointer;font-size:13px;line-height:1;border-radius:4px;padding:2px 5px}
-    .tc-lp-add{color:#2e7d32}.tc-lp-add:hover{background:#eef8ee;border-color:#cdeccd}
-    .tc-lp-del{color:var(--mbu-error)}.tc-lp-del:hover{background:#fdecea;border-color:#f3c6c1}
-    .tc-lp-addend{display:block;width:calc(100% - 6px);margin:4px 3px 2px;border:1px dashed #cdbff0;background:#faf8fe;color:var(--mbu-accent);cursor:pointer;font:12px Arial;border-radius:5px;padding:5px}.tc-lp-addend:hover{background:#f1ebfb}
+    .tc-lp-add{color:#2e7d32}.tc-lp-add:hover{background:var(--mbu-bg-raised);border-color:#cdeccd}
+    .tc-lp-del{color:var(--mbu-error)}.tc-lp-del:hover{background:var(--mbu-bg-hover);border-color:#f3c6c1}
+    .tc-lp-addend{display:block;width:calc(100% - 6px);margin:4px 3px 2px;border:1px dashed #cdbff0;background:var(--mbu-bg-raised);color:var(--mbu-accent);cursor:pointer;font:12px Arial;border-radius:5px;padding:5px}.tc-lp-addend:hover{background:var(--mbu-bg-hover)}
     .tc-lp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
     .tc-lp-cnt{flex:1;font:11px Arial;color:#777}
     .tc-lp-cnt.ok{color:#2e7d32}.tc-lp-cnt.warn{color:#b26a00}.tc-lp-cnt.bad{color:#c62828;font-weight:bold}
     .tc-lp-acts{display:flex;gap:8px}
     .tc-lp-cancel{cursor:pointer;border:1px solid #ccc;background:var(--mbu-bg);font:12px Arial;border-radius:4px;padding:4px 12px}
-    .tc-lp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:4px 12px}.tc-lp-ok:hover:not(:disabled){background:#e6f6e6}.tc-lp-ok:disabled{opacity:.5;cursor:not-allowed}
+    .tc-lp-ok{cursor:pointer;border:1px solid #a9dca9;background:var(--mbu-bg-raised);color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:4px 12px}.tc-lp-ok:hover:not(:disabled){background:var(--mbu-ok-bg)}.tc-lp-ok:disabled{opacity:.5;cursor:not-allowed}
     /* #456 pattern Track parser */
     .tc-tpppop{position:fixed;top:9vh;left:50%;transform:translateX(-50%);z-index:100003;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;width:920px;height:70vh;min-width:640px;min-height:340px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;resize:both;overflow:hidden}
     .tc-tpp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;cursor:move;user-select:none}
@@ -2150,11 +2150,11 @@ try {
     .tc-tpp-piclr{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#b3a6d6;font-size:12px;line-height:1;padding:2px}.tc-tpp-piclr:hover{color:var(--mbu-error)}
     .tc-tpp-piwrap.has .tc-tpp-piclr{display:block}
     .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
-    .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:var(--mbu-accent);font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:#f1ebfb;border-color:#a98fe0}
-    .tc-tpp-split{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:#8a7fae;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:#f1ebfb;border-color:#a98fe0}.tc-tpp-split b{color:var(--mbu-accent)}
-    .tc-tpp-freeze{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:var(--mbu-accent);font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-freeze:hover{background:#f1ebfb;border-color:#a98fe0}
+    .tc-tpp-chip{cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg-raised);color:var(--mbu-accent);font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:var(--mbu-bg-hover);border-color:#a98fe0}
+    .tc-tpp-split{cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg-raised);color:#8a7fae;font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:var(--mbu-bg-hover);border-color:#a98fe0}.tc-tpp-split b{color:var(--mbu-accent)}
+    .tc-tpp-freeze{cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg-raised);color:var(--mbu-accent);font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-freeze:hover{background:var(--mbu-bg-hover);border-color:#a98fe0}
     .tc-tpp-chipbar{position:fixed;z-index:100005;display:flex;gap:2px;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 4px 16px rgba(40,20,80,.32);padding:3px}
-    .tc-tpp-chipbar button{cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;color:var(--mbu-accent);font:bold 12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 8px;min-width:22px}.tc-tpp-chipbar button:hover{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
+    .tc-tpp-chipbar button{cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg-raised);color:var(--mbu-accent);font:bold 12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 8px;min-width:22px}.tc-tpp-chipbar button:hover{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
     .tc-tpp-chipbar button[data-clr]{color:var(--mbu-error)}.tc-tpp-chipbar button[data-clr]:hover{background:#c0392b;color:var(--mbu-text-on-accent);border-color:#c0392b}
     .tc-tpp-body{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 10px}
     .tc-tpp-src{flex:0 0 auto;display:flex;flex-direction:column;gap:4px}
@@ -2163,13 +2163,13 @@ try {
     .tc-tpp-ta{height:15vh;min-height:44px;resize:vertical;font:12px ui-monospace,Consolas,monospace;border:1px solid #cbb9ec;border-radius:5px;padding:6px 8px}
     .tc-tpp-tblwrap{flex:1;min-height:0;overflow:auto;border:1px solid var(--mbu-divider);border-radius:5px}
     .tc-tpp-tbl{width:100%;border-collapse:collapse;font-size:12px}
-    .tc-tpp-tbl th{position:sticky;top:0;background:#f7f4fc;text-align:left;font:600 10px Arial;letter-spacing:.03em;text-transform:uppercase;color:#8a7fae;padding:4px 6px;border-bottom:1px solid #e6ddf6}
+    .tc-tpp-tbl th{position:sticky;top:0;background:var(--mbu-bg-raised);text-align:left;font:600 10px Arial;letter-spacing:.03em;text-transform:uppercase;color:#8a7fae;padding:4px 6px;border-bottom:1px solid #e6ddf6}
     .tc-tpp-tbl td{padding:2px 6px;border-bottom:1px solid #f3f0fa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
     .tc-tpp-tr.notrk{opacity:.5}
     .tc-tpp-dot{width:14px;padding-left:8px!important}.tc-tpp-dot span{display:inline-block;width:8px;height:8px;border-radius:50%}
     .tc-tpp-pcell{width:120px}
     .tc-tpp-ovwrap{position:relative;display:inline-flex;width:112px}
-    .tc-tpp-ov{width:100%;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 16px 2px 5px;color:var(--mbu-accent);background:#fdfcff}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
+    .tc-tpp-ov{width:100%;font:11px ui-monospace,Consolas,monospace;border:1px solid #e0d8f0;border-radius:4px;padding:2px 16px 2px 5px;color:var(--mbu-accent);background:var(--mbu-bg-raised)}.tc-tpp-ov:placeholder-shown{color:#bbb;border-style:dashed}
     .tc-tpp-ovclr{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:#c9bde6;font-size:10px;line-height:1;padding:1px}.tc-tpp-ovclr:hover{color:var(--mbu-error)}
     .tc-tpp-ovwrap.has .tc-tpp-ovclr{display:block}
     /* #456: raw stays fully visible/selectable — no ellipsis clipping (you select spans here to bind fields).
@@ -2180,49 +2180,49 @@ try {
     .tc-tpp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid #ece7f6}
     .tc-tpp-cnt{flex:1;font:11px Arial;color:#777}.tc-tpp-cnt.ok{color:#2e7d32}.tc-tpp-cnt.warn{color:#b26a00}
     .tc-tpp-acts{display:flex;gap:0;position:relative}
-    .tc-tpp-ok{cursor:pointer;border:1px solid #a9dca9;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px 0 0 4px;padding:4px 12px}.tc-tpp-ok:hover:not(:disabled){background:#e6f6e6}.tc-tpp-ok:disabled{opacity:.5;cursor:not-allowed}
-    .tc-tpp-menu{cursor:pointer;border:1px solid #a9dca9;border-left:none;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:0 4px 4px 0;padding:4px 7px}.tc-tpp-menu:hover:not(:disabled){background:#e6f6e6}.tc-tpp-menu:disabled{opacity:.5;cursor:not-allowed}
+    .tc-tpp-ok{cursor:pointer;border:1px solid #a9dca9;background:var(--mbu-bg-raised);color:#2e7d32;font:bold 12px Arial;border-radius:4px 0 0 4px;padding:4px 12px}.tc-tpp-ok:hover:not(:disabled){background:var(--mbu-ok-bg)}.tc-tpp-ok:disabled{opacity:.5;cursor:not-allowed}
+    .tc-tpp-menu{cursor:pointer;border:1px solid #a9dca9;border-left:none;background:var(--mbu-bg-raised);color:#2e7d32;font:bold 12px Arial;border-radius:0 4px 4px 0;padding:4px 7px}.tc-tpp-menu:hover:not(:disabled){background:var(--mbu-ok-bg)}.tc-tpp-menu:disabled{opacity:.5;cursor:not-allowed}
     .tc-tpp-mpop{position:absolute;bottom:calc(100% + 4px);right:0;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;min-width:200px;z-index:5}
-    .tc-tpp-mi{display:block;width:100%;text-align:left;border:none;background:none;cursor:pointer;font:12px Arial;color:#333;padding:6px 12px}.tc-tpp-mi:hover{background:#f1ebfb;color:var(--mbu-accent)}
-    .tc-tpp-mhr{height:1px;background:#eee;margin:4px 0}
-    .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
+    .tc-tpp-mi{display:block;width:100%;text-align:left;border:none;background:none;cursor:pointer;font:12px Arial;color:#333;padding:6px 12px}.tc-tpp-mi:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent)}
+    .tc-tpp-mhr{height:1px;background:var(--mbu-bg-sunken);margin:4px 0}
+    .tc-colbtn:hover{background:var(--mbu-bg-hover);border-color:#a98fe0}
     /* #152/#375: Search & Replace — RE toggle, search caret, invalid-regex flag, Saved & History popup */
     .tc-srbtn{cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg);color:var(--mbu-accent);font:bold 11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}
-    .tc-srbtn:hover{background:#efeaf9;border-color:#bcaae6}
+    .tc-srbtn:hover{background:var(--mbu-bg-hover);border-color:#bcaae6}
     .tc-srbtn.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
-    .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:#fff1f0}
+    .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:var(--mbu-bg-raised)}
     /* #409 chain mode — the read-only chain chip replaces the search/replace inputs */
     .tc-sro-chain .tc-sr-find,.tc-sro-chain .tc-sr-rep,.tc-sro-chain .tc-sr-re{display:none}
-    .tc-sr-chainchip{display:none;align-items:center;gap:6px;border:1px solid #c9b8ee;background:#f6f2fe;border-radius:4px;padding:3px 6px 3px 9px;color:var(--mbu-accent);font:bold 12px Arial;white-space:nowrap}
+    .tc-sr-chainchip{display:none;align-items:center;gap:6px;border:1px solid #c9b8ee;background:var(--mbu-bg-raised);border-radius:4px;padding:3px 6px 3px 9px;color:var(--mbu-accent);font:bold 12px Arial;white-space:nowrap}
     .tc-sro-chain .tc-sr-chainchip{display:inline-flex}
     .tc-sr-chainx{border:none;background:none;color:#9a7fd0;cursor:pointer;font-size:12px;line-height:1;padding:0 2px}
     .tc-sr-chainx:hover{color:var(--mbu-error)}
     .tc-sr-star{color:#e0a800;font-size:13px;line-height:1;padding:3px 8px}   /* #375 fav-star button opens Saved & History */
-    .tc-sr-star:hover{color:#c69500;background:#fff8e6;border-color:#e6cf8a}
+    .tc-sr-star:hover{color:#c69500;background:var(--mbu-bg-raised);border-color:#e6cf8a}
     .tc-srtpl{position:fixed;z-index:100003;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
     .tc-srtpl-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:var(--mbu-bg);z-index:1}
     .tc-srtpl-hdt{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent)}
-    .tc-srtpl-savebtn{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
-    .tc-srtpl-savebtn:hover{background:#e6f6e6;border-color:#a9dca9}
+    .tc-srtpl-savebtn{cursor:pointer;border:1px solid #cdeccd;background:var(--mbu-bg-raised);color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
+    .tc-srtpl-savebtn:hover{background:var(--mbu-ok-bg);border-color:#a9dca9}
     .tc-srtpl-savewrap{display:flex;align-items:center;gap:6px;flex:1}
-    .tc-srtpl-saveok{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:2px 8px}
-    .tc-srtpl-saveok:hover{background:#e6f6e6}
+    .tc-srtpl-saveok{cursor:pointer;border:1px solid #cdeccd;background:var(--mbu-bg-raised);color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:2px 8px}
+    .tc-srtpl-saveok:hover{background:var(--mbu-ok-bg)}
     /* #409 redesign: Import/Export button pinned right; JSON textarea; section headers right-aligned */
     .tc-srtpl-iobtn{margin-left:auto;cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg);color:var(--mbu-accent);font:600 11px Arial;border-radius:4px;padding:3px 10px;white-space:nowrap}
-    .tc-srtpl-iobtn:hover{background:#f0ebfb;border-color:#bcaae6}
+    .tc-srtpl-iobtn:hover{background:var(--mbu-bg-hover);border-color:#bcaae6}
     .tc-srtpl-impok{margin-left:auto}
     .tc-srtpl-io{width:calc(100% - 24px);margin:10px 12px;min-height:260px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:8px;font:12px ui-monospace,Consolas,Menlo,monospace;color:#333;resize:vertical}
     .tc-srtpl-io:focus{outline:none;border-color:#8a72c8}
     .tc-srtpl-empty{padding:12px;color:var(--mbu-text-weak);font-style:italic}
-    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa;text-align:right}
-    .tc-srtpl-sectog:hover{color:var(--mbu-accent);background:#f3eefb}
+    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:var(--mbu-bg-raised);padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa;text-align:right}
+    .tc-srtpl-sectog:hover{color:var(--mbu-accent);background:var(--mbu-bg-raised)}
     .tc-srtpl-caret{display:inline-block;color:#b9a4e0;font-size:9px}
     .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 24px 82px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
-    .tc-srtpl-defrow{background:#fffaef}
+    .tc-srtpl-defrow{background:var(--mbu-bg-raised)}
     .tc-srtpl-def{visibility:hidden;border:none;background:none;color:#c9bde6;cursor:pointer;font-size:12px;padding:0;line-height:1}
     .tc-srtpl-row:hover .tc-srtpl-def,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-def{visibility:visible}.tc-srtpl-def:hover{color:#e8a800}
     .tc-srtpl-def.on{visibility:visible;color:#e8a800}
-    .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:#f0ebfb}
+    .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:var(--mbu-bg-hover)}
     .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
     .tc-srtpl-re{font:bold 10px Arial;color:var(--mbu-accent);text-align:center}
@@ -2240,7 +2240,7 @@ try {
     .tc-srtpl-chm{font-family:Arial !important;color:#8a7bb0 !important;font-style:italic}
     .tc-srtpl-cpick{position:absolute;z-index:5;background:var(--mbu-bg);border:1px solid #c9b8ee;border-radius:var(--mbu-radius);box-shadow:0 6px 18px rgba(40,20,80,.22);padding:4px;min-width:130px}
     .tc-srtpl-cpick-row{padding:4px 9px;cursor:pointer;border-radius:4px;color:#4b3a82;white-space:nowrap}
-    .tc-srtpl-cpick-row:hover{background:#f0ebfb}
+    .tc-srtpl-cpick-row:hover{background:var(--mbu-bg-hover)}
     .tc-srtpl-cpick-empty{padding:6px 9px;color:var(--mbu-text-weak);font-style:italic;white-space:nowrap}
     .tc-srtpl-name{flex:1;min-width:120px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial}
     .tc-srtpl-name:focus{border-color:#8a72c8;outline:none}
@@ -2250,10 +2250,10 @@ try {
     .tc-toolopts select,.tc-opt select{font:12px Arial;padding:1px}
     /* #280 — pinned tools' params on the 2nd toolbar row (scrolls if they overflow) */
     .tc-bar2{display:flex;align-items:center;gap:10px;padding:2px 4px 7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
-    .tc-opt{display:inline-flex;align-items:center;gap:7px;background:#faf8fe;border:1px solid #ece5f8;border-radius:7px;padding:3px 9px;flex:none}
+    .tc-opt{display:inline-flex;align-items:center;gap:7px;background:var(--mbu-bg-raised);border:1px solid #ece5f8;border-radius:7px;padding:3px 9px;flex:none}
     .tc-optname{font:700 12px Arial;color:var(--mbu-accent);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
     .tc-opttrig{cursor:pointer;border-radius:5px;padding:2px 5px;border:1px solid transparent}
-    .tc-opttrig:hover{background:#efe7fb;border-color:#dccff5}
+    .tc-opttrig:hover{background:var(--mbu-bg-hover);border-color:#dccff5}
     .tc-opt .tc-tbic{font-size:13px}
     /* #280 — right-click a tool name to collapse its params; they flyout on hover/focus */
     .tc-opt.tc-collapsed{position:relative}
@@ -2267,7 +2267,7 @@ try {
     .tc-tc-h{font-weight:800;color:#4b2e83;padding:3px 14px 8px}
     .tc-tc-list{max-height:62vh;overflow:auto}
     .tc-tc-row{display:flex;align-items:center;gap:8px;padding:5px 12px}
-    .tc-tc-row:hover{background:#f6f2fd}
+    .tc-tc-row:hover{background:var(--mbu-bg-raised)}
     .tc-tc-row.off{opacity:.6}
     .tc-tc-row.over-bottom{box-shadow:inset 0 -2px 0 #8a72c8}
     .tc-tc-row.over-top{box-shadow:inset 0 2px 0 #8a72c8}
@@ -2290,12 +2290,12 @@ try {
     .tc-mi-ic{flex:0 0 auto;display:inline-flex;justify-content:center;min-width:18px;text-align:center;color:#7a68b8;margin-right:8px;white-space:nowrap}
     .tc-menu{position:fixed;z-index:100001;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;font:13px Arial;min-width:170px}
     .tc-menu.tc-mini{width:max-content;max-width:260px}.tc-menu.tc-mini .tc-mi{white-space:nowrap}
-    .tc-menu .tc-mi{display:flex;align-items:center;padding:6px 15px;cursor:pointer;color:#333;font-weight:bold}.tc-menu .tc-mi:hover{background:#ede9f6;color:#4b2e83}
+    .tc-menu .tc-mi{display:flex;align-items:center;padding:6px 15px;cursor:pointer;color:#333;font-weight:bold}.tc-menu .tc-mi:hover{background:var(--mbu-bg-hover);color:#4b2e83}
     .tc-menu .tc-sep{border-top:1px solid #e6e0f2;margin:4px 0}
     .tc-settings label{display:flex;gap:8px;align-items:center;margin:7px 0;color:#333}.tc-settings label.opt{font-size:12px}
     .tc-settings input[type=text],.tc-settings #tc-sr-find,.tc-settings #tc-sr-rep{font:13px Arial;padding:3px 5px;border:1px solid #bbb;border-radius:3px}
     .tc-settings .srrow{display:flex;align-items:center;gap:8px;margin-top:8px}.tc-settings .srrow span{flex:1;color:#777;font-size:12px}
-    @keyframes tctitleflash{0%{background:#fff3b0}100%{background:transparent}}
+    @keyframes tctitleflash{0%{background:var(--mbu-warn-bg)}100%{background:transparent}}
     .tc-mirror input.t-title.srflash{animation:tctitleflash 1.8s ease-out}
 
     #tc-settings{position:fixed;z-index:100001;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:var(--mbu-radius);box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:var(--mbu-text);width:340px}
@@ -2367,7 +2367,7 @@ try {
       .tc-mirror > tbody > tr:has(.tc-medhdr){display:block;padding:0}
       .tc-mirror td.tc-medhdr{display:block}
       /* zebra + changed-marker move to the row (cells are transparent now) */
-      .tc-mirror.alt > tbody > tr:nth-child(even){background:#f6f4fb}
+      .tc-mirror.alt > tbody > tr:nth-child(even){background:var(--mbu-bg-raised)}
       .tc-mirror > tbody > tr.tc-changed{box-shadow:inset 3px 0 0 #5f3ec0}
       .tc-mirror > tbody > tr.tc-changed td:first-child{box-shadow:none}
       /* trim the fixed credited-as + actions so the search box gets the width */
@@ -5249,15 +5249,15 @@ try {
     const s = document.createElement('style'); s.id = 'tc-dup-style';
     s.textContent = `
       #duplicates-tab .tc-dup-sim.tc-dd-open { outline: 2px solid #2a8f2a; outline-offset: -2px; }
-      #duplicates-tab tr.tc-dup-detail > td { padding: 0; background: #f3fbf3; border-bottom: 2px solid #cfe6cf; }
+      #duplicates-tab tr.tc-dup-detail > td { padding: 0; background: var(--mbu-bg-raised); border-bottom: 2px solid #cfe6cf; }
       .tc-dd-tbl { width: 100%; border-collapse: collapse; font: 12px Arial, sans-serif; }
       .tc-dd-tbl th { text-align: left; font-weight: 600; color: #4a6a4a; border-bottom: 1px solid #cfe6cf; padding: 3px 10px; }
       .tc-dd-tbl td { padding: 2px 10px; vertical-align: top; }
-      .tc-dd-tbl .tc-dd-medhdr td { font-weight: 700; background: #dff0df; color: #2a5a2a; }
+      .tc-dd-tbl .tc-dd-medhdr td { font-weight: 700; background: var(--mbu-ok-bg); color: #2a5a2a; }
       .tc-dd-tbl .tc-dd-pos { color: #888; text-align: right; width: 34px; }
       .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
       .tc-dd-tbl .tc-dd-x { color: #c00; }
-      .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }
+      .tc-dd-tbl .tc-dh { background: var(--mbu-error-bg); color: #a00000; border-radius: 2px; }
       .tc-dd-tbl a { color: inherit; text-decoration: underline; text-decoration-color: rgba(0,0,0,.28); text-underline-offset: 2px; }   /* #358: left-artist links, readable on normal + mismatch cells */
       .tc-dd-tbl a:hover { text-decoration-color: currentColor; }
       .tc-dd-tbl .tc-cf { display: inline-block; padding: 0 .5px; }
@@ -5629,7 +5629,7 @@ try {
       '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}#tc-recwrap .tc-recwarn:hover{text-decoration:underline;cursor:pointer}',
       // consistent with the Tracklist tab toolbar (#tc-bar / .tc-btn): same bar spacing, button look, inputs.
       // sticky at the top while the table scrolls (mirrors #tc-mirror-wrap) so it stays reachable on big releases.
-      '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:wrap;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}',
+      '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:wrap;position:sticky;top:0;z-index:50;background:var(--mbu-bg);border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}',
       '#tc-recwrap .tc-rec-tb .sp{flex:1}',   // flex spacer: Clear hugs the left, the Match cluster hugs the right (mirrors #tc-bar)
       // flat buttons that match the Tracklist tab's .tc-btn (transparent until hover); Match keeps the bold-purple primary look
       '#tc-recwrap .tc-rec-tb button{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}#tc-recwrap .tc-rec-tb button:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}',
@@ -5637,18 +5637,18 @@ try {
       '#tc-recwrap .tc-rec-tb button.primary{color:#5f3ec0;font-weight:bold}#tc-recwrap .tc-rec-tb button.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}',
       '#tc-recwrap .tc-rec-tbl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555;font-family:"Bitstream Vera Sans",Verdana,Arial,sans-serif}',
       '#tc-recwrap .tc-rec-tbl b{color:#563b8f}',   // bold label word in MB purple, matching #tc-bar b on the Tracklist toolbar
-      '#tc-recwrap .tc-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfcfcf;border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:#fff;user-select:none}',
+      '#tc-recwrap .tc-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfcfcf;border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:var(--mbu-bg);user-select:none}',
       '#tc-recwrap .tc-cutoff:hover{border-color:#b3b3b3}',
       '.tc-cutoff-dot,.tc-cutoff-menu .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18);flex:none}',
       '#tc-recwrap .tc-cutoff-caret{color:#999;font-size:10px}',
-      '.tc-cutoff-menu{position:fixed;z-index:100002;background:#fff;border:1px solid #ccc;border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}',
+      '.tc-cutoff-menu{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid #ccc;border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}',
       '.tc-cutoff-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:#333}',
-      '.tc-cutoff-menu .mi:hover,.tc-cutoff-menu .mi.sel{background:#f0ecfa}',
+      '.tc-cutoff-menu .mi:hover,.tc-cutoff-menu .mi.sel{background:var(--mbu-bg-hover)}',
       '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}',
       '.tc-rectbl .tc-recname{position:relative}',
-      '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
-      '.tc-rectbl tr.tc-recrow:hover .tc-rec-rev{visibility:visible}.tc-rectbl .tc-rec-rev:hover{color:#5f3ec0;background:#ede9f6}',
-      'table.tc-rectbl{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed}',
+      '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:var(--mbu-bg);cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
+      '.tc-rectbl tr.tc-recrow:hover .tc-rec-rev{visibility:visible}.tc-rectbl .tc-rec-rev:hover{color:#5f3ec0;background:var(--mbu-bg-hover)}',
+      'table.tc-rectbl{border-collapse:collapse;width:100%;background:var(--mbu-bg);table-layout:fixed}',
       '.tc-rectbl td{overflow-wrap:anywhere}',
       '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}',
       '.tc-rectbl td{padding:4px 7px;vertical-align:top}',
@@ -5658,15 +5658,15 @@ try {
       '.tc-rectbl.cozy th{padding:7px 7px}.tc-rectbl.cozy td{padding:8px 7px}',
       // grid option: column separators on both tables
       '.tc-rectbl.gridcols td,.tc-rectbl.gridcols th{border-right:1px solid #ededed}.tc-rectbl.gridcols td:last-child,.tc-rectbl.gridcols th:last-child{border-right:none}',
-      '.tc-rectbl.alt tbody tr.tc-recrow:nth-of-type(even) td:not(.tc-diff):not(.tc-copy){background:#f6f4fb}',   // zebra skips highlighted cells so their colour always shows',
+      '.tc-rectbl.alt tbody tr.tc-recrow:nth-of-type(even) td:not(.tc-diff):not(.tc-copy){background:var(--mbu-bg-raised)}',   // zebra skips highlighted cells so their colour always shows',
       // #376 pending-edit recordings — gold tint + gold title (!important to beat the higher-specificity zebra)
-      '.tc-rectbl tr.tc-recrow.tc-rec-pending td:nth-child(2){background:#ffdd99!important;border-radius:3px}',   // #376 title pending
-      '.tc-rectbl tr.tc-recrow.tc-art-pending td:nth-child(3){background:#ffdd99!important;border-radius:3px}',   // #376 artist pending
-      '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
+      '.tc-rectbl tr.tc-recrow.tc-rec-pending td:nth-child(2){background:var(--mbu-warn-bg)!important;border-radius:3px}',   // #376 title pending
+      '.tc-rectbl tr.tc-recrow.tc-art-pending td:nth-child(3){background:var(--mbu-warn-bg)!important;border-radius:3px}',   // #376 artist pending
+      '.tc-rectbl tr.tc-recmed td{background:var(--mbu-bg-raised);font-weight:600;color:#4b2e83}',
       // collapsed-medium expand control (#149)
       '.tc-rectbl tr.tc-recmed-coll td{padding:0}',
-      '.tc-rectbl .tc-recmed-exp{width:100%;text-align:left;border:none;background:#f3f0fa;color:#4b2e83;font:600 13px Arial;padding:7px 10px;cursor:pointer}',
-      '.tc-rectbl .tc-recmed-exp:hover{background:#ece5f7;color:#5f3ec0}',
+      '.tc-rectbl .tc-recmed-exp{width:100%;text-align:left;border:none;background:var(--mbu-bg-raised);color:#4b2e83;font:600 13px Arial;padding:7px 10px;cursor:pointer}',
+      '.tc-rectbl .tc-recmed-exp:hover{background:var(--mbu-bg-hover);color:#5f3ec0}',
       '.tc-rectbl .tc-recmed-exp.loading{cursor:default;opacity:.7}',
       '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}',   // changed-row marker, like the Tracklist tab',
       '.tc-rectbl .c-n{color:#999;text-align:right;width:34px;min-width:34px;white-space:nowrap}',
@@ -5674,20 +5674,20 @@ try {
       // group header (Track | Recording) + a vertical divider down the middle so the two halves read clearly
       '.tc-rectbl .tc-grouphd th{padding:5px 7px 3px;border-bottom:none;font-size:11px;font-weight:700;letter-spacing:.04em}',
       '.tc-rectbl .tc-grp{text-align:center;border-radius:5px 5px 0 0}',
-      '.tc-rectbl .tc-grp-l{background:#eef3fb;color:#2c5d9b}',
-      '.tc-rectbl .tc-grp-r{background:#f1ecf9;color:#5b3fa0}',
+      '.tc-rectbl .tc-grp-l{background:var(--mbu-bg-raised);color:#2c5d9b}',
+      '.tc-rectbl .tc-grp-r{background:var(--mbu-bg-hover);color:#5b3fa0}',
       '.tc-rectbl th.c-sep,.tc-rectbl td.c-sep{border-left:1px solid #e6e0f2;border-right:1px solid #e6e0f2}',
       '.tc-rectbl .c-len{color:#555;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;width:48px}',
       '.tc-rectbl .c-sugg{color:#6f42c1;text-align:center;width:34px}',
       '.tc-rectbl .tc-tkt{font-weight:600}',
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
-      '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
+      '.tc-rectbl td.tc-diff{background:var(--mbu-bg-raised);color:#b00}',
       '.tc-rectbl .tc-dh{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — colour configurable (Matching → highlight colour)
       '.tc-cf{display:inline-block;padding:0 .5px}',   // #203 confusable/invisible changed char — enlarged inline (Appearance) + hover tooltip names the codepoint
       '.tc-cf-inv{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #443 invisible/whitespace char — always visible (glyph + wash), even at 0px enlargement
       '.tc-jp{display:inline-block;background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font-weight:700}',   // #208 missing space (␣) / missing join phrase (␣?␣) around a join phrase',
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
-      '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
+      '.tc-rectbl td.tc-copy{background:var(--mbu-ok-bg);color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl .tc-rec-disamb{color:#999;font-weight:400}',   // recording disambiguation, grey like native #144
       '.tc-rec-video{display:inline-flex;vertical-align:-2px;color:#6f42c1;margin-left:1px}',   // recording video marker (table + picker) #303
@@ -5697,7 +5697,7 @@ try {
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
       '.tc-rectbl td a{color:#2c5d9b;text-decoration:none}.tc-rectbl td a:hover{text-decoration:underline}',
       '.tc-rectbl .tc-recname{font-weight:600}',
-      '.tc-recpop .tc-rpk-copy{padding:5px 10px;border-bottom:1px solid #eee;display:flex;flex-direction:column;gap:3px;background:#fbfaff}',
+      '.tc-recpop .tc-rpk-copy{padding:5px 10px;border-bottom:1px solid #eee;display:flex;flex-direction:column;gap:3px;background:var(--mbu-bg-raised)}',
       '.tc-recpop .tc-rpk-copy label{cursor:pointer;color:#444;font-size:11px;display:flex;align-items:center;gap:5px}',
       '.tc-recpop .tc-rpk-row{border-left:3px solid transparent}',
       '.tc-recpop .tc-rpk-row.tc-conf-exact{border-left-color:#2f6fd6}',
@@ -5706,12 +5706,12 @@ try {
       '.tc-recpop .tc-rpk-row.tc-conf-low{border-left-color:#ffb74d}',
       '.tc-recpop .tc-rpk-row.tc-conf-vlow{border-left-color:#d32f2f}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
-      '.tc-rectbl tr.tc-recrow:hover td:not(.tc-diff):not(.tc-copy){background:#fafaff}',
-      '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid #d6cdec;background:#f6f3fc;color:#6f42c1;border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
-      '.tc-rectbl .tc-recpick:hover{background:#ece5f8}',
-      '.tc-recpop{position:fixed;z-index:100003;width:410px;overflow:auto;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
+      '.tc-rectbl tr.tc-recrow:hover td:not(.tc-diff):not(.tc-copy){background:var(--mbu-bg)}',
+      '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg-raised);color:#6f42c1;border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
+      '.tc-rectbl .tc-recpick:hover{background:var(--mbu-bg-hover)}',
+      '.tc-recpop{position:fixed;z-index:100003;width:410px;overflow:auto;background:var(--mbu-bg);border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
       '.tc-recpop .tc-rpk-hd{position:sticky;top:0;z-index:1}',
-      '.tc-recpop .tc-rpk-hd{padding:7px 10px;background:#f3f0fa;border-bottom:1px solid #e3def2;border-radius:6px 6px 0 0;display:flex;align-items:baseline;gap:8px}',   // #144: title - artist … sec (sec right)
+      '.tc-recpop .tc-rpk-hd{padding:7px 10px;background:var(--mbu-bg-raised);border-bottom:1px solid #e3def2;border-radius:6px 6px 0 0;display:flex;align-items:baseline;gap:8px}',   // #144: title - artist … sec (sec right)
       '.tc-recpop .tc-rpk-hdmain{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.tc-recpop .tc-rpk-curwrap{border-bottom:1px solid #eee}',   // one separator under the whole current-recording group
       '.tc-recpop .tc-rpk-cur{padding:6px 10px 3px;color:#444;display:flex;align-items:baseline;gap:6px}',
@@ -5719,20 +5719,20 @@ try {
       '.tc-recpop .tc-rpk-curactions{display:flex;padding:2px 10px 7px}',   // "+ new recording" sits below appears-on, right-aligned
       '.tc-recpop .tc-rpk-curlbl{color:#999;font-size:11px}.tc-recpop .tc-rpk-curlen{color:#888;font-variant-numeric:tabular-nums;margin-left:auto;flex:none}',
       '.tc-recpop .tc-rpk-curnone{color:#c0392b}.tc-recpop .tc-rpk-newcur{color:#2c7a51}',
-      '.tc-recpop .tc-rpk-newbtn{margin-left:auto;cursor:pointer;border:1px solid #bcdcc6;background:#eef7f0;color:#1f7a44;border-radius:4px;padding:2px 7px;font:11px Arial}.tc-recpop .tc-rpk-newbtn:hover{background:#e0f0e6}',
+      '.tc-recpop .tc-rpk-newbtn{margin-left:auto;cursor:pointer;border:1px solid #bcdcc6;background:var(--mbu-bg-raised);color:#1f7a44;border-radius:4px;padding:2px 7px;font:11px Arial}.tc-recpop .tc-rpk-newbtn:hover{background:var(--mbu-ok-bg)}',
       '.tc-recpop .tc-rpk-qwrap{display:flex;align-items:stretch;gap:6px;margin:8px}',
       '.tc-recpop .tc-rpk-q{flex:1;min-width:0;padding:5px 7px;border:1px solid #c9c2dd;border-radius:4px;font:12px Arial;box-sizing:border-box}',
-      '.tc-recpop .tc-rpk-qnew{flex:none;cursor:pointer;border:1px solid #bcdcc6;background:#eef7f0;color:#1f7a44;border-radius:4px;font:bold 16px Arial;line-height:1;padding:0 10px}.tc-recpop .tc-rpk-qnew:hover{background:#e0f0e6}',
+      '.tc-recpop .tc-rpk-qnew{flex:none;cursor:pointer;border:1px solid #bcdcc6;background:var(--mbu-bg-raised);color:#1f7a44;border-radius:4px;font:bold 16px Arial;line-height:1;padding:0 10px}.tc-recpop .tc-rpk-qnew:hover{background:var(--mbu-ok-bg)}',
       '.tc-recpop .tc-rpk-hdby a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-hdby a:hover{text-decoration:underline}',
-      '.tc-recpop .tc-rpk-sec{display:flex;align-items:center;justify-content:space-between;padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:#faf8ff}',
+      '.tc-recpop .tc-rpk-sec{display:flex;align-items:center;justify-content:space-between;padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:var(--mbu-bg-raised)}',
       '.tc-recpop .tc-rpk-suggsec{cursor:pointer;user-select:none}.tc-recpop .tc-rpk-suggsec:hover{color:#6f42c1}',
       '.tc-recpop .tc-rpk-suggn{color:#6f42c1;font-weight:bold}',   // #555 — how many are folded away
       '.tc-recpop .tc-rpk-caret{display:inline-block;font-size:9px;transition:transform .1s}',
       '.tc-recpop.tc-sugg-collapsed .tc-rpk-sugg{display:none}.tc-recpop.tc-sugg-collapsed .tc-rpk-caret{transform:rotate(-90deg)}',
-      '.tc-recpop .tc-rpk-relax{text-transform:none;letter-spacing:0;border:1px solid #cfc6e6;background:#fff;color:#6f42c1;border-radius:4px;padding:1px 7px;font:10px Arial;cursor:pointer}',
-      '.tc-recpop .tc-rpk-relax:hover{background:#f1ecfa}.tc-recpop .tc-rpk-relax.on{background:#6f42c1;color:#fff;border-color:#6f42c1}',
+      '.tc-recpop .tc-rpk-relax{text-transform:none;letter-spacing:0;border:1px solid #cfc6e6;background:var(--mbu-bg);color:#6f42c1;border-radius:4px;padding:1px 7px;font:10px Arial;cursor:pointer}',
+      '.tc-recpop .tc-rpk-relax:hover{background:var(--mbu-bg-hover)}.tc-recpop .tc-rpk-relax.on{background:#6f42c1;color:#fff;border-color:#6f42c1}',
       '.tc-recpop .tc-rpk-row{padding:5px 10px;cursor:pointer;border-bottom:1px solid #f1edf9}',
-      '.tc-recpop .tc-rpk-row:hover{background:#ede9f6}',
+      '.tc-recpop .tc-rpk-row:hover{background:var(--mbu-bg-hover)}',
       '.tc-recpop .tc-rpk-main{display:flex;align-items:baseline;gap:6px}',
       '.tc-recpop .tc-rpk-name{font-weight:600;color:#222}',
       '.tc-recpop .tc-rpk-cmt{color:#888;font-size:11px}',
@@ -5750,16 +5750,16 @@ try {
       '.tc-recpop .tc-rpk-curby{color:#555;font-size:12px}',
       '.tc-recpop .tc-rpk-curon{padding:0 10px 4px;color:#777;font-size:11px}',
       '.tc-recpop .tc-rpk-isrc{color:#9a8fb5;font-size:11px;font-family:Consolas,monospace}',
-      '.tc-recpop .tc-rpk-fdiff{background:#ffecec;color:#b00;border-radius:2px;padding:0 2px}',
+      '.tc-recpop .tc-rpk-fdiff{background:var(--mbu-bg-raised);color:#b00;border-radius:2px;padding:0 2px}',
       '.tc-recpop .tc-rpk-empty{padding:8px 10px;color:#999;font-style:italic}',
       // #555 — an IN-PROGRESS placeholder pulses its background, so "still working"
       // is distinguishable from "finished, nothing found" at a glance instead of
       // having to read the sentence. Terminal states never get this class.
       '.tc-recpop .tc-rpk-busy{animation:tc-rpk-pulse 1.15s ease-in-out infinite}',
-      '@keyframes tc-rpk-pulse{0%,100%{background:#fff}50%{background:#ece4fa}}',
+      '@keyframes tc-rpk-pulse{0%,100%{background:var(--mbu-bg)}50%{background:var(--mbu-bg-hover)}}',
       '.tc-rpk-dots{animation:tc-rpk-dots 1.15s ease-in-out infinite;border-radius:3px;padding:0 3px}',
-      '@keyframes tc-rpk-dots{0%,100%{background:transparent}50%{background:#ece4fa}}',
-      '@media (prefers-reduced-motion:reduce){.tc-recpop .tc-rpk-busy,.tc-rpk-dots{animation:none;background:#f4effd}}',
+      '@keyframes tc-rpk-dots{0%,100%{background:transparent}50%{background:var(--mbu-bg-hover)}}',
+      '@media (prefers-reduced-motion:reduce){.tc-recpop .tc-rpk-busy,.tc-rpk-dots{animation:none;background:var(--mbu-bg-raised)}}',
       // hide the native recording table from the first paint (no flash) and let our table use the
       // full width instead of MB's .half-width column (#119)
       'body.tc-rec-on #track-recording-assignation{display:none!important}',
@@ -6983,14 +6983,14 @@ try {
     .tc-nav-steps{display:inline-flex;align-items:stretch;border:1px solid #c9bce0;border-radius:7px;overflow:hidden;background:var(--mbu-bg);font-family:Arial,Helvetica,sans-serif}
     .tc-nav-step{font:600 13px Arial;padding:5px 14px;border:none;border-right:1px solid #e6def5;background:var(--mbu-bg);color:#5a3e94;cursor:pointer;line-height:1.5;white-space:nowrap}
     .tc-nav-step:last-child{border-right:none}
-    .tc-nav-step:hover{background:#f3f0fb}
+    .tc-nav-step:hover{background:var(--mbu-bg-raised)}
     .tc-nav-step.active{background:#6a4d9a;color:var(--mbu-text-on-accent)}
     .tc-nav-step.tc-nav-diff{display:flex;align-items:center;padding:5px 10px}
     .tc-nav-step.tc-nav-diff svg{width:15px;height:15px;display:block}
     /* mirror MB's native tab states: disabled (e.g. Recordings until the tracklist is complete) + error-tab (validation warnings) */
     .tc-nav-step:disabled,.tc-nav-step.tc-nav-disabled{opacity:.45;cursor:not-allowed;color:#9a8fb5;background:var(--mbu-bg)}
-    .tc-nav-step.tc-nav-warn{background:#fde3e3;color:var(--mbu-error)}
-    .tc-nav-step.tc-nav-warn.active{background:#f3c4c4;color:#992318}
+    .tc-nav-step.tc-nav-warn{background:var(--mbu-error-bg);color:var(--mbu-error)}
+    .tc-nav-step.tc-nav-warn.active{background:var(--mbu-error-bg);color:#992318}
     .tc-nav-step.tc-nav-warn::before{content:"⚠";margin-right:5px}
     .tabs.tc-nav-sticky{position:sticky;top:0;background:var(--mbu-bg);z-index:20}   /* freeze the nav row when scrolling */
     /* MB's green TAGGER badge (Picard) sits at the header's top-right and collides with the frozen nav — lift it
@@ -7003,20 +7003,20 @@ try {
     #tc-nav-right{display:flex;align-items:center;gap:10px}
     #tc-nav-wiz{display:inline-flex;align-items:center;gap:2px}
     .tc-nav-wbtn{font:13px Arial;padding:3px 9px;border:1px solid transparent;background:none;border-radius:5px;cursor:pointer;color:var(--mbu-text-dim);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
-    .tc-nav-wbtn:not(:disabled):hover{background:#f4f4f4;border-color:#d2d2d2}
+    .tc-nav-wbtn:not(:disabled):hover{background:var(--mbu-bg-raised);border-color:#d2d2d2}
     .tc-nav-wbtn:disabled{opacity:.4;cursor:default;font-weight:normal;color:var(--mbu-text-weak);background:none;border-color:transparent}
     .tc-nav-wbtn.tc-wiz-finish,.tc-nav-wbtn.tc-wiz-enter{color:#2f7a45;font-weight:600}
-    .tc-nav-wbtn.tc-wiz-finish:hover,.tc-nav-wbtn.tc-wiz-enter:hover{background:#e6f3ea;border-color:#a9d2b6}
+    .tc-nav-wbtn.tc-wiz-finish:hover,.tc-nav-wbtn.tc-wiz-enter:hover{background:var(--mbu-ok-bg);border-color:#a9d2b6}
     .tc-addmed{font:13px Arial;padding:4px 12px;border:1px solid #d6cdec;background:var(--mbu-bg);color:#6a4d9a;border-radius:5px;cursor:pointer;margin-left:auto}
-    .tc-addmed:hover{background:#f3f0fb}
+    .tc-addmed:hover{background:var(--mbu-bg-raised)}
     /* #140 — full-width nav bar: step switcher + Finish on the left, Cancel/Prev/Next paginators on the right */
     #tc-nav-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:var(--mbu-bg);padding:5px 2px 6px;border-bottom:1px solid #e6def5;margin-bottom:6px}
     #tc-nav-left{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
     #tc-nav-pager{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
     .tc-nav-wbtn.tc-wiz-cancel{color:var(--mbu-error)}
     .tc-nav-wbtn.tc-wiz-cancel:not(:disabled):hover{background:var(--mbu-error-bg);border-color:#e6b3b3}
-    .tc-nav-wbtn.tc-wiz-prev,.tc-nav-wbtn.tc-wiz-next{color:#5a3e94;font-weight:600;border-color:#d6cdec;background:#f6f3fc}
-    .tc-nav-wbtn.tc-wiz-prev:not(:disabled):hover,.tc-nav-wbtn.tc-wiz-next:not(:disabled):hover{background:#ece5f8;border-color:#b9a4e0}
+    .tc-nav-wbtn.tc-wiz-prev,.tc-nav-wbtn.tc-wiz-next{color:#5a3e94;font-weight:600;border-color:#d6cdec;background:var(--mbu-bg-raised)}
+    .tc-nav-wbtn.tc-wiz-prev:not(:disabled):hover,.tc-nav-wbtn.tc-wiz-next:not(:disabled):hover{background:var(--mbu-bg-hover);border-color:#b9a4e0}
     /* #141 Zen editing — the nav-bar release title (shown only in zen) + hiding the page chrome */
     #tc-nav-title{display:none}
     /* two lines (album / artist + versions), centred, tight so they fit the nav button height (#141) */
@@ -7027,7 +7027,7 @@ try {
        release name — the native header that carries it is hidden by zen. Inline span
        so it hugs the text; same gold as native. */
     #tc-nav-title .tc-nav-title-name{border-radius:3px;padding:0 1px}
-    #tc-nav-title.tc-nav-title-pending .tc-nav-title-name{background:#ffdd99;padding:0 5px}
+    #tc-nav-title.tc-nav-title-pending .tc-nav-title-name{background:var(--mbu-warn-bg);padding:0 5px}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name a{color:#33291a}
     #tc-nav-title .tc-nav-title-artist{font:12px Arial;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #tc-nav-title .tc-nav-title-ver{color:var(--mbu-text-weak)}
@@ -7292,7 +7292,7 @@ try {
     body.tc-ri-on #information fieldset.information textarea#annotation,
     body.tc-ri-on #information fieldset.information input#comment{width:100%!important;max-width:none!important;box-sizing:border-box}   /* MB pins the annotation textarea to 354px via an !important rule in its (cross-origin) stylesheet — override it so the field fills the column like the input */
     body.tc-ri-on #information .buttons button,body.tc-ri-on #information button.styled-button{font-size:12px}
-    body.tc-ri-on #information .lookup-performed{background-color:#eef8ec!important}   /* soften MB's bright auto-fill green to a pale tint (#143) */
+    body.tc-ri-on #information .lookup-performed{background-color:var(--mbu-ok-bg)!important}   /* soften MB's bright auto-fill green to a pale tint (#143) */
     body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
     /* #143: on-demand help popover. The native field bubbles still carry the clickable link to the
        *selected* entity ("You selected <a>…</a>"); we surface that next to the focused field instead of
@@ -7322,7 +7322,7 @@ try {
     body.tc-ri-on #external-links-editor > tbody{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(185px,100%),1fr));column-gap:14px;row-gap:2px;padding-left:45px;align-items:center;box-sizing:border-box}
     /* URL line spans all columns; pulled back so the favicon sits at the column's left edge */
     body.tc-ri-on #external-links-editor tr.external-link-item{grid-column:1 / -1;display:flex;align-items:center;gap:9px;padding:7px 6px 1px;margin-left:-45px;border-radius:var(--mbu-radius);position:relative}
-    body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
+    body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:var(--mbu-bg-raised)}
     body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none}
     body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;top:4px}   /* larger favicon → right-click to edit URL */
     body.tc-ri-on #external-links-editor .favicon{transform:scale(1.45);transform-origin:center;margin-right:0}   /* master's size; drop MB's 4px margin-right that pushed the scaled icon off-centre and clipped it (#143) */
@@ -7393,7 +7393,7 @@ try {
     /* the [+] is a touch smaller than the per-type [x] remove */
     body.tc-ri-on #external-links-editor tr.add-relationship button.add-item{font-size:0;width:13px;height:13px;border-radius:50%;border:1px solid #d6cdec;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;line-height:1}
     body.tc-ri-on #external-links-editor tr.add-relationship button.add-item::before{content:"＋";font:bold 9px/1 Arial;color:#9a8fc0}
-    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover{background:#f0ecfa;border-color:#b9a4e0}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover{background:var(--mbu-bg-hover);border-color:#b9a4e0}
     body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover::before{color:var(--mbu-accent)}
     /* the "add another link" input row */
     body.tc-ri-on #external-links-editor tr.external-link-item .value.with-button input{width:100%}
@@ -7403,7 +7403,7 @@ try {
        silently un-matched every rule below: the row stopped collapsing to [+]
        and drew over the Check-links button. */
     body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown{box-sizing:border-box;width:22px;min-width:0;height:22px;padding:0;margin:2px 0;border:1px solid #d6cdec;border-radius:50%;background-color:transparent;color:transparent;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='11'%20height='11'%20viewBox='0%200%2011%2011'%3E%3Cpath%20d='M5.5%201v9M1%205.5h9'%20stroke='%239a8fc0'%20stroke-width='1.6'%20stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;transition:width .12s ease}
-    body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:hover{background-color:#f0ecfa;border-color:#b9a4e0}
+    body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:hover{background-color:var(--mbu-bg-hover);border-color:#b9a4e0}
     body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown::placeholder{color:transparent}   /* hide the hint text inside the collapsed [+] — it is shown on focus */
     body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:focus{width:100%;height:auto;padding:4px 7px;border:1px solid #999;border-radius:4px;background-color:var(--mbu-bg);background-image:none;color:#333;cursor:text}
     body.tc-ri-on #external-links-editor input[type=url]:placeholder-shown:focus::placeholder{color:var(--mbu-text-weak)}
@@ -7411,8 +7411,8 @@ try {
     #tc-ri-toolbar{position:absolute;right:10px;bottom:8px;display:flex;align-items:center;gap:8px;z-index:3}
     /* the add-link field expands to full width on focus and would sit under the Check-links button — hide it while editing */
     body.tc-ri-on #tc-ri-rightcol > fieldset:has(#external-links-editor input[type=url]:placeholder-shown:focus) > #tc-ri-toolbar{display:none}
-    #tc-ri-check{font:12px Arial;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #d6cdec;border-radius:var(--mbu-radius);background:#f6f3fc;color:#5a3e94;cursor:pointer}
-    #tc-ri-check:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-ri-check{font:12px Arial;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #d6cdec;border-radius:var(--mbu-radius);background:var(--mbu-bg-raised);color:#5a3e94;cursor:pointer}
+    #tc-ri-check:hover{background:var(--mbu-bg-hover);border-color:#b9a4e0}
     #tc-ri-check:disabled{opacity:.6;cursor:default}
     /* #545 (majkinetor): "Auto match should be visible while working, currently
        it isn't so slow MB response make it look like nothing is happening."
@@ -7434,9 +7434,9 @@ try {
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}
     /* annotation editor: a bordered box wrapping the toolbar + (bigger) textarea + in-place preview */
     body.tc-ri-on #tc-anno-wrap{border:1px solid #d6cdec;border-radius:7px;background:var(--mbu-bg);overflow:hidden;box-sizing:border-box}
-    #tc-anno-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;background:#f6f3fc;border-bottom:1px solid #e7defa}
+    #tc-anno-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid #e7defa}
     #tc-anno-bar button{font:12px Arial;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #d6cdec;border-radius:var(--mbu-radius);background:var(--mbu-bg);color:#5a3e94;cursor:pointer}
-    #tc-anno-bar button:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-anno-bar button:hover{background:var(--mbu-bg-hover);border-color:#b9a4e0}
     #tc-anno-bar button:disabled{opacity:.6;cursor:default}
     #tc-anno-bar button.tc-anno-icon{padding:4px 8px;font-size:13px;line-height:1;font-weight:700}
     #tc-anno-bar .tc-mk-ico{width:22px;height:14px;display:block}
@@ -7484,7 +7484,7 @@ try {
     #tc-anno-preview h2.tc-anno-h{font-size:16px}
     #tc-anno-preview h3.tc-anno-h,#tc-anno-preview h4.tc-anno-h,#tc-anno-preview h5.tc-anno-h,#tc-anno-preview h6.tc-anno-h{font-size:14px}
     #tc-anno-preview .tc-anno-ul{margin:0 0 8px;padding-left:22px}
-    #tc-anno-preview .tc-anno-pre{margin:0 0 8px;padding:8px 10px;background:#f0ecf8;border-radius:4px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap}
+    #tc-anno-preview .tc-anno-pre{margin:0 0 8px;padding:8px 10px;background:var(--mbu-bg-hover);border-radius:4px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap}
     #tc-anno-preview hr{border:none;border-top:1px solid #cdbce8;margin:10px 0}
     #tc-anno-preview a{color:var(--mbu-accent);text-decoration:none}
     #tc-anno-preview a:hover{text-decoration:underline}
@@ -7494,7 +7494,7 @@ try {
     #tc-anno-help-pop table{border-collapse:collapse;margin:6px 0;width:100%}
     #tc-anno-help-pop td{padding:2px 7px 2px 0;vertical-align:top}
     #tc-anno-help-pop td:last-child{color:#777}
-    #tc-anno-help-pop code{background:#f0ecf8;border-radius:3px;padding:0 4px;font-family:Consolas,monospace;color:#5a3e94}
+    #tc-anno-help-pop code{background:var(--mbu-bg-hover);border-radius:3px;padding:0 4px;font-family:Consolas,monospace;color:#5a3e94}
     #tc-anno-help-pop .tc-help-dim{color:var(--mbu-text-weak)}
     /* Disambiguation + Annotation span the full column with their label stacked ABOVE (not the 150px label
        column). :has targets exactly those two rows, so the relocated External-links table is untouched. */
@@ -7510,11 +7510,11 @@ try {
     /* annotation History: the selected version rendered on the LEFT, user cards on the RIGHT */
     #tc-anno-history{display:flex;min-height:240px;max-height:520px;overflow:hidden;box-sizing:border-box}
     #tc-anno-history .tc-hist-view{flex:1 1 auto;order:1;overflow:auto;padding:11px 14px;font-size:13px;line-height:1.5;color:#333;word-break:break-word}
-    #tc-anno-history .tc-hist-list{flex:0 0 250px;order:2;overflow-y:auto;overflow-x:hidden;background:#faf8ff;border-left:1px solid #e7defa}
+    #tc-anno-history .tc-hist-list{flex:0 0 250px;order:2;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg-raised);border-left:1px solid #e7defa}
     #tc-anno-history .tc-hist-card{display:flex;gap:9px;align-items:flex-start;width:100%;box-sizing:border-box;text-align:left;border:none;border-bottom:1px solid #efeafb;background:none;cursor:pointer;padding:9px 11px}
-    #tc-anno-history .tc-hist-card:hover{background:#f0ebfb}
-    #tc-anno-history .tc-hist-card.on{background:#ece5f8;box-shadow:inset -3px 0 0 #5f3ec0}
-    #tc-anno-history .tc-hist-av{width:30px;height:30px;border-radius:50%;flex:0 0 auto;object-fit:cover;background:#e7defa;border:1px solid #ddd}
+    #tc-anno-history .tc-hist-card:hover{background:var(--mbu-bg-hover)}
+    #tc-anno-history .tc-hist-card.on{background:var(--mbu-bg-hover);box-shadow:inset -3px 0 0 #5f3ec0}
+    #tc-anno-history .tc-hist-av{width:30px;height:30px;border-radius:50%;flex:0 0 auto;object-fit:cover;background:var(--mbu-bg-hover);border:1px solid #ddd}
     #tc-anno-history .tc-hist-meta{display:flex;flex-direction:column;min-width:0;flex:1 1 auto;font:12px Arial}
     #tc-anno-history .tc-hist-editor{font-weight:600;color:#3d2470}
     #tc-anno-history .tc-hist-date{color:#777;font-size:11px}
@@ -7523,12 +7523,12 @@ try {
     #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #tc-anno-history .tc-hist-revert{align-self:center;flex:0 0 auto;width:26px;height:26px;border:1px solid #d6cdec;border-radius:5px;background:var(--mbu-bg);color:#5a3e94;font-size:15px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s}
     #tc-anno-history .tc-hist-card.on .tc-hist-revert,#tc-anno-history .tc-hist-card:hover .tc-hist-revert{opacity:1}   /* visible on the selected card, or any card on hover */
-    #tc-anno-history .tc-hist-revert:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-anno-history .tc-hist-revert:hover{background:var(--mbu-bg-hover);border-color:#b9a4e0}
     #tc-anno-history .tc-hist-revert:disabled{opacity:.5;cursor:default}
     #tc-anno-history .tc-hist-msg{color:var(--mbu-text-weak);font-style:italic;font-size:12px;padding:6px 2px}
     #tc-anno-history .tc-hist-bar{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
-    #tc-anno-history .tc-hist-use{font:12px Arial;padding:4px 11px;border:1px solid #b9a4e0;border-radius:var(--mbu-radius);background:#f6f3fc;color:#5a3e94;cursor:pointer}
-    #tc-anno-history .tc-hist-use:hover{background:#ece5f8}
+    #tc-anno-history .tc-hist-use{font:12px Arial;padding:4px 11px;border:1px solid #b9a4e0;border-radius:var(--mbu-radius);background:var(--mbu-bg-raised);color:#5a3e94;cursor:pointer}
+    #tc-anno-history .tc-hist-use:hover{background:var(--mbu-bg-hover)}
     #tc-anno-history .tc-hist-vmeta{font:11px Arial;color:#888}
     #tc-anno-history .tc-anno-rendered h1{font-size:18px;margin:8px 0 6px;color:#3d2470}
     #tc-anno-history .tc-anno-rendered h2{font-size:16px;margin:8px 0 6px;color:#3d2470}
@@ -8649,7 +8649,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -12115,7 +12115,7 @@ try {
   // run on one page (or all of them do, via String Theory) the duplicates are
   // identical and the last one simply wins.
   // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui-components.mjs
@@ -12356,7 +12356,7 @@ try {
   
   /* #493: :not(:disabled) — a disabled .as-commit (white text, unconditional) hovered with
      the plain rule below got a pale lavender background under its own white text, unreadable */
-  .as-btn:hover:not(:disabled){background:#f6f3fd}
+  .as-btn:hover:not(:disabled){background:var(--mbu-bg-raised)}
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:var(--mbu-accent-hover);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent-hover)}
   /* #275: the Repeat (failed) button is red to signal the error state */
@@ -12369,12 +12369,12 @@ try {
   .as-dl{border-color:#bcd;color:#2a6}
   .as-sp{flex:1 1 auto}
   .as-commit{margin-left:auto}   /* push Enter edit to the far right of the toolbar */
-  .as-staged{font-size:12px;color:var(--mbu-warn);background:#fff3d6;border-color:#ecd9a0;white-space:nowrap}
-  .as-staged:hover{background:#ffeec0}
+  .as-staged{font-size:12px;color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:#ecd9a0;white-space:nowrap}
+  .as-staged:hover{background:var(--mbu-warn-bg)}
   .as-op{padding:4px 8px;border-radius:5px;font-size:12.5px;color:#333;white-space:nowrap}
   .as-op:hover{background:var(--mbu-bg-hover)}
   .as-staged-pop{min-width:230px;max-width:420px}
-  .as-dropzone{border:2px dashed #b7a4ee;border-radius:11px;background:#f7f4ff;padding:24px;text-align:center;cursor:pointer;margin-bottom:12px;transition:.1s}
+  .as-dropzone{border:2px dashed #b7a4ee;border-radius:11px;background:var(--mbu-bg-raised);padding:24px;text-align:center;cursor:pointer;margin-bottom:12px;transition:.1s}
   .as-dropzone.over{background:var(--mbu-accent-soft);border-color:var(--as-acc)}
   .as-dz-in{font-weight:600;font-size:15px;color:#6a5b95;display:flex;flex-direction:column;gap:4px}
   .as-dz-in span{font-weight:400;font-size:12px;color:#9a8ccb}
@@ -12384,14 +12384,14 @@ try {
   .as-sec h3{margin:0;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6a5b95}
   .as-sec-del h3{color:var(--as-warn)}
   .as-cnt{font-size:12px;color:#9b8fc0}
-  .as-line{flex:1;height:1px;background:#e2dcef}
+  .as-line{flex:1;height:1px;background:var(--mbu-bg-hover)}
   .as-grid{display:flex;flex-wrap:wrap;gap:24px 14px}
   /* #238 Detailed view: list rows — image + id on the left, all types & full comment on the right */
   .as-dlist{display:flex;flex-direction:column;gap:10px}
   .as-drow{display:flex;gap:16px;align-items:flex-start;border:1px solid var(--mbu-border-soft);border-radius:9px;padding:10px 12px;background:var(--mbu-bg);position:relative}
   .as-drow.new{background:repeating-linear-gradient(45deg,var(--mbu-ok-bg),var(--mbu-ok-bg) 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:var(--mbu-ok-border);border-style:dashed}
-  .as-drow.pending{background:#fdf3d0;border-color:#e6cf86}
-  .as-drow.sel{outline:2px solid var(--as-acc);outline-offset:-1px;background:#f1ecff;box-shadow:inset 4px 0 0 var(--as-acc)}
+  .as-drow.pending{background:var(--mbu-warn-bg);border-color:#e6cf86}
+  .as-drow.sel{outline:2px solid var(--as-acc);outline-offset:-1px;background:var(--mbu-bg-raised);box-shadow:inset 4px 0 0 var(--as-acc)}
   .as-dsel{flex:0 0 auto;width:18px;height:18px;margin:4px 2px 0 2px;accent-color:var(--as-acc);cursor:pointer}
   .as-dleft{flex:0 0 auto;width:128px;text-align:center}
   .as-dthumb{position:relative;width:128px;height:128px;border-radius:7px;overflow:hidden;background:var(--mbu-bg-sunken);cursor:zoom-in;display:block}
@@ -12404,7 +12404,7 @@ try {
   .as-dmeta{flex:1 1 auto;min-width:0}
   .as-dlbl{font-weight:700;color:#6a5b95;font-size:12px;margin:0 0 4px}
   /* a marked-for-removal detail row: greyed image + a "keep" (undo) button, no editing */
-  .as-drow.del{opacity:.75;background:#fdf6f5;border-color:#eccfca}
+  .as-drow.del{opacity:.75;background:var(--mbu-bg-raised);border-color:#eccfca}
   .as-drow.del .as-dthumb img{filter:grayscale(1) brightness(.85)}
   .as-dsel-x{flex:0 0 auto;width:18px;text-align:center;color:var(--mbu-error);font-weight:700;margin-top:2px}
   .as-dmeta-del{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -12430,7 +12430,7 @@ try {
   .as-card.del{opacity:.7}
   .as-sec-new h3{color:var(--mbu-ok)}
   .as-card.new{background:repeating-linear-gradient(45deg,var(--mbu-ok-bg),var(--mbu-ok-bg) 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:var(--mbu-ok-border);border-style:dashed}
-  .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
+  .as-card.pending{background:var(--mbu-warn-bg);border-color:#e6cf86}
   .as-card.as-sourcing{border-style:dashed}
   .as-srcing-thumb{width:100%;aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;color:#3b8f6b}
   .as-spinner{width:30px;height:30px;border:3px solid #c7e7d6;border-top-color:#1f9d6b;border-radius:50%;animation:as-spin .8s linear infinite}
@@ -12464,15 +12464,15 @@ try {
   .as-cmt-text:hover{color:var(--as-acc)}
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
-  .as-tline{flex:1;height:1px;background:#e7e1f2}
-  .as-type{font-size:11px;font-weight:700;color:var(--mbu-accent-deep);background:#f2f2f2;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .as-type:hover{background:#e7dffb}
+  .as-tline{flex:1;height:1px;background:var(--mbu-bg-hover)}
+  .as-type{font-size:11px;font-weight:700;color:var(--mbu-accent-deep);background:var(--mbu-bg-sunken);border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-type:hover{background:var(--mbu-bg-hover)}
   .as-type-add{color:#8a7fb8;background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}
   .as-card:hover .as-type-add{opacity:1}
   .as-cmt{font:11px inherit;border:1px solid var(--mbu-border-soft);border-radius:var(--mbu-radius);padding:2px 6px;color:#444;background:var(--mbu-bg-raised);width:100%}
   .as-pencil{font:11px inherit;border:1px dashed #d8ccf5;background:var(--mbu-bg);color:#8a7fb8;border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
-  .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
+  .as-pencil:hover{background:var(--mbu-bg-raised);color:var(--as-acc)}
   /* flat reverse-image-search magnifier — in the comment row, after the comment/pencil,
      revealed on card hover. The dim's nowrap (above) keeps the resolution from wrapping. */
   .as-fsearch{display:inline-flex;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:0 2px;flex:none;line-height:0;opacity:0;transition:opacity .1s}
@@ -12491,12 +12491,12 @@ try {
   .as-selcnt{font-size:13px;font-weight:700;color:var(--as-acc);white-space:nowrap}
   .as-selcnt.none{font-weight:400;color:#b3a9cc}
   .as-ic{font:14px/1 inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:3px 9px;color:#5a4b8a;cursor:pointer}
-  .as-ic:hover{background:#f1ecff}
+  .as-ic:hover{background:var(--mbu-bg-raised)}
   .as-ic:disabled{opacity:.4;cursor:default}
   .as-selall{color:#2a7d50}
   .as-bk-rm{border-color:#e6b8b2;color:var(--as-warn)}
   .as-view{font-weight:600}
-  .as-dragwarn{font-size:13px;color:#b06a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:var(--mbu-radius);padding:3px 7px;line-height:1;cursor:help}
+  .as-dragwarn{font-size:13px;color:#b06a00;background:var(--mbu-warn-bg);border:1px solid #ecd9a0;border-radius:var(--mbu-radius);padding:3px 7px;line-height:1;cursor:help}
   .as-pop-note{color:#9a8ccb;font-size:11px}
   .as-pop{position:absolute;z-index:10001;background:var(--mbu-bg);border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}   /* z above the lightbox (9999) so the type picker shows over it */
   .as-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
@@ -12584,7 +12584,7 @@ try {
   .as-lb-dlmenu{position:absolute;bottom:40px;left:0;min-width:130px;background:var(--mbu-bg);border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:5px;display:none;flex-direction:column}
   .as-lb-dlmenu.open{display:flex}
   .as-lb-dlmenu button{text-align:left;background:none;border:none;color:#333;font:13px Arial;padding:7px 10px;border-radius:var(--mbu-radius);cursor:pointer}
-  .as-lb-dlmenu button:hover{background:#f0ecfa;color:var(--as-acc)}
+  .as-lb-dlmenu button:hover{background:var(--mbu-bg-hover);color:var(--as-acc)}
   /* z-index:2 keeps the footer above a ZOOMED image — the image's transform makes a
      stacking context that would otherwise paint over the bar (it sits below in flow). */
   .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2}
@@ -12638,7 +12638,7 @@ try {
   .as-cm-h{font-size:16px;font-weight:700;color:var(--mbu-accent-deep);margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .as-cm-h-t{flex:1;min-width:0}
   .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:var(--mbu-accent);text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid #d9d2ee;border-radius:8px;background:var(--mbu-bg)}
-  .as-cm-hist:hover{background:#f4f1fb;border-color:#c3b6e6}
+  .as-cm-hist:hover{background:var(--mbu-bg-raised);border-color:#c3b6e6}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:var(--mbu-text-dim)}
   .as-cm-hint{font-size:11px;color:#9a8ccb;font-weight:400}
   .as-cm-note{font:13px inherit;border:1px solid var(--mbu-border);border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
@@ -12654,28 +12654,28 @@ try {
   .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
   .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:#444}
   .as-cm-dry{color:var(--mbu-warn);display:flex;align-items:center;gap:6px;cursor:pointer}
-  .as-cm-list{overflow:auto;border:1px solid var(--mbu-divider);border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa;flex:1 1 auto;min-height:0}   /* #263 flex so the note + buttons below stay pinned and the list scrolls */
+  .as-cm-list{overflow:auto;border:1px solid var(--mbu-divider);border-radius:8px;padding:6px;margin:4px 0 12px;background:var(--mbu-bg-raised);flex:1 1 auto;min-height:0}   /* #263 flex so the note + buttons below stay pinned and the list scrolls */
   .as-cm-op{padding:5px 6px;border-radius:var(--mbu-radius);font-size:13px}
-  .as-cm-op.dry{background:var(--mbu-bg-hover)}.as-cm-op.err{background:#fdecea}
+  .as-cm-op.dry{background:var(--mbu-bg-hover)}.as-cm-op.err{background:var(--mbu-bg-hover)}
   .as-cm-line{display:flex;align-items:center;gap:6px}   /* #278: keep the row on one flex line so the bar can pin right */
   .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center;flex:none}
   .as-cm-lb{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .as-cm-skip{font-size:11px;color:var(--mbu-text-weak);margin-left:6px;background:#eee;border-radius:var(--mbu-radius-lg);padding:1px 7px;flex:none}
+  .as-cm-skip{font-size:11px;color:var(--mbu-text-weak);margin-left:6px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius-lg);padding:1px 7px;flex:none}
   .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:var(--mbu-text-dim);margin:4px 0 2px 18px;display:none}
   .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
   /* #278 per-row progress bar (right side, was empty) */
-  .as-cm-bar{flex:0 0 110px;margin-left:auto;height:7px;border-radius:5px;background:#e9e4f3;overflow:hidden;position:relative;display:none}
+  .as-cm-bar{flex:0 0 110px;margin-left:auto;height:7px;border-radius:5px;background:var(--mbu-bg-hover);overflow:hidden;position:relative;display:none}
   .as-cm-bar.on{display:block}
   .as-cm-bfill{display:block;height:100%;width:0;background:var(--as-acc);border-radius:5px;transition:width .15s linear}
   .as-cm-bar.done .as-cm-bfill{background:#2e9b57}
-  .as-cm-bar.dry .as-cm-bfill{background:#b9a4e0}
+  .as-cm-bar.dry .as-cm-bfill{background:var(--mbu-bg-hover)}
   .as-cm-bar.err .as-cm-bfill{background:var(--as-warn)}
-  .as-cm-bar.cancel .as-cm-bfill{background:#bbb}
+  .as-cm-bar.cancel .as-cm-bfill{background:var(--mbu-bg-sunken)}
   .as-cm-bar.busy .as-cm-bfill{position:absolute;width:40%;left:0;animation:as-cm-ind 1.1s ease-in-out infinite}
   @keyframes as-cm-ind{0%{left:-40%}100%{left:100%}}
   /* #278 overall progress (header) */
   .as-cm-prog{display:flex;align-items:center;gap:10px;margin:-2px 0 12px}
-  .as-cm-prog-track{flex:1 1 auto;height:8px;border-radius:var(--mbu-radius);background:#e9e4f3;overflow:hidden}
+  .as-cm-prog-track{flex:1 1 auto;height:8px;border-radius:var(--mbu-radius);background:var(--mbu-bg-hover);overflow:hidden}
   .as-cm-prog-fill{height:100%;width:0;background:var(--as-acc);border-radius:var(--mbu-radius);transition:width .2s linear}
   .as-cm-prog-txt{flex:none;font-size:12px;font-weight:600;color:var(--mbu-accent);font-variant-numeric:tabular-nums;white-space:nowrap}
   .as-cm-f{display:flex;align-items:center;gap:8px}
@@ -12820,7 +12820,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.2.192217","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.2.192217","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.2.193540","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.2.193540","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -19282,7 +19282,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
   function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
-    const MBU_TOKENS = ":root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}";
+    const MBU_TOKENS = ":root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}";
     const MBU_UI_CSS = ".mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.72}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}#as-root ::placeholder,#tc-settings ::placeholder,#mbu-logpop ::placeholder,#ii-modal ::placeholder,#mb-pc-panel ::placeholder,#mb-provider-modal-card ::placeholder,.gt-cons ::placeholder,.gt-menu ::placeholder,.gt-pop ::placeholder,.fs-cons ::placeholder,.mmth-pop ::placeholder,.mbu-ov ::placeholder,.mbu-ui ::placeholder,.discogs-bar ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}.mbu-compact .mbu-bt{display:none}";
     function mbuHelpHref(name) {
       return "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/" + name + "/README.md";
@@ -19436,13 +19436,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             row-gap: 0.4rem;
             flex-wrap: wrap;
             padding: 0.5rem 0.75rem;
-            background: #fdf8f0;
+            background: var(--mbu-bg-raised);
             border-bottom: 1px solid #eeddb0;
         }
         /* inline options strip in the single bar (#139) */
         .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: var(--mbu-text-weak); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
-        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: #fffdf7; border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
         .discogs-opts-btn:hover { border-color: #e8771d; color: #333; }
         .discogs-opts-caret { color: var(--mbu-text-weak); font-size: 0.7rem; }
         /* "Options \u25BE" popover (Dedup toggles) */
@@ -19455,19 +19455,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-logtoggle-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
         .discogs-log-caret-btn { font-size: 0.78rem; color: #777; background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
         .discogs-logtoggle-btn:hover, .discogs-log-caret-btn:hover { border-color: #999; }
-        .discogs-log-caret-btn:hover { background: #f6f3fc; }
-        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
+        .discogs-log-caret-btn:hover { background: var(--mbu-bg-raised); }
+        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: var(--mbu-bg-hover); border-color: #b9a4e0; color: #5a3e94; }
         /* "Log \u25BE" dropdown menu (#118): show/hide + the three copy actions. */
         .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
         .discogs-log-menu.open { display: flex; }
         .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: #444; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
-        .discogs-log-menu button:hover { background: #f0ecfa; color: #333; }
+        .discogs-log-menu button:hover { background: var(--mbu-bg-hover); color: #333; }
         /* log panel toolbar: severity filter + copy buttons */
         .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
         .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
         .discogs-log-filterbtn { font-size: 0.75rem; color: #666; background: var(--mbu-bg); border: none; border-right: 1px solid var(--mbu-divider); padding: 0.15rem 0.55rem; cursor: pointer; }
         .discogs-log-filterbtn:last-child { border-right: none; }
-        .discogs-log-filterbtn:hover { background: #f6f3fc; }
+        .discogs-log-filterbtn:hover { background: var(--mbu-bg-raised); }
         .discogs-log-filterbtn.active { background: var(--mbu-accent); color: var(--mbu-text-on-accent); }
         .discogs-log-copyslot { display: inline-flex; gap: 0.4rem; margin-left: auto; }
         .discogs-log-copybtn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
@@ -19552,12 +19552,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             cursor: pointer;
             white-space: nowrap;
         }
-        .discogs-badge-warn      { color: #8a4b00; background: #ffe1a8; }
-        .discogs-badge-warn:hover{ background: #ffd68a; }
-        .discogs-badge-err       { color: #9c1b1b; background: #f9c9c9; }
-        .discogs-badge-err:hover { background: #f5b4b4; }
-        .discogs-badge-unresolved{ color: #6a4a86; background: #e3d8f5; }
-        .discogs-badge-unresolved:hover { background: #d6c6f0; }
+        .discogs-badge-warn      { color: #8a4b00; background: var(--mbu-warn-bg); }
+        .discogs-badge-warn:hover{ background: var(--mbu-warn-bg); }
+        .discogs-badge-err       { color: #9c1b1b; background: var(--mbu-error-bg); }
+        .discogs-badge-err:hover { background: var(--mbu-error-bg); }
+        .discogs-badge-unresolved{ color: #6a4a86; background: var(--mbu-bg-hover); }
+        .discogs-badge-unresolved:hover { background: var(--mbu-bg-hover); }
         /* Discogs logo + Help + Log \u2014 pinned to the right edge (the msgs slot's
            margin-left:auto does the pushing). */
         .discogs-bar-right {
@@ -19607,11 +19607,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             width: 2rem; height: 2rem; padding: 0; cursor: pointer;
             border: 1px solid #d6d6d6; border-radius: 0.3rem; background: var(--mbu-bg); color: var(--mbu-text-dim);
         }
-        .discogs-src-ico:hover { background: #fff3e8; border-color: #e8771d; color: #e8771d; }
+        .discogs-src-ico:hover { background: var(--mbu-bg-raised); border-color: #e8771d; color: #e8771d; }
         .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
         .discogs-src-ico svg { width: 18px; height: 18px; }
         .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
-        .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
+        .discogs-src-ico.importing { background: var(--mbu-bg-raised); border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
         /* #412: while MusicBrainz is submitting the staged edits (can be slow for hundreds),
            pulse the toolbar blue. Target ROW1 \u2014 that's the strip pinned (position:fixed) at
@@ -19619,7 +19619,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
            the part actually on screen. The outer container is usually scrolled out of view. */
         .discogs-bar.is-saving { border-left-color: #1c6fd6; }
         .discogs-bar.is-saving .discogs-bar-row1 { animation: discogs-bar-saving 1.1s ease-in-out infinite; border-bottom-color: #1c6fd6; }
-        @keyframes discogs-bar-saving { 0%,100% { background: #fdf8f0; } 50% { background: #d6e6fe; } }
+        @keyframes discogs-bar-saving { 0%,100% { background: var(--mbu-bg-raised); } 50% { background: var(--mbu-info-bg); } }
         .discogs-bar.is-saving .discogs-bar-status-final { color: #1451a3; font-weight: 600; }
         /* #412: a toolbar "Enter edit" that fires MB's native submit, so you don't have to
            scroll to the bottom after an import. Shown once an import finishes, removed on
@@ -19711,7 +19711,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 9000;
-            background: #fdf8f0;
+            background: var(--mbu-bg-raised);
             border-bottom: 1px solid #eeddb0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
@@ -19722,7 +19722,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-bar.is-pinned .discogs-sticky-spacer { display: block; }
         .discogs-progress-track {
             height: 5px;
-            background: #eeddb0;
+            background: var(--mbu-warn-bg);
             border-radius: 3px;
             overflow: hidden;
         }
@@ -19959,7 +19959,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     docsLink.rel = "noopener noreferrer nofollow";
     docsLink.textContent = "? Help";
     docsLink.title = "Open the script's README in a new tab";
-    docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
+    docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:var(--mbu-bg-raised);";
     const enterEditBtn = document.createElement("button");
     enterEditBtn.type = "button";
     enterEditBtn.className = "discogs-enter-edit";
@@ -20147,7 +20147,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       ov.className = "discogs-cw-warn-ov";
       ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;";
       const box = document.createElement("div");
-      box.style.cssText = "max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;";
+      box.style.cssText = "max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;";
       box.innerHTML = '<div style="font-weight:800;color:#c0392b;font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
       const close = () => ov.remove();
       box.querySelector("button").addEventListener("click", close);
@@ -20627,7 +20627,7 @@ ${lines}
         const summary = `${json.title || ""}${json.year ? " \xB7 " + json.year : ""} \xB7 ${trackCount} tracks`;
         const li = document.createElement("li");
         const pre = document.createElement("pre");
-        pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+        pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
         pre.textContent = JSON.stringify(json, null, 2);
         li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${summary} \u2014 raw Discogs JSON</strong></summary></details>`;
         li.querySelector("details").appendChild(pre);
@@ -20681,7 +20681,7 @@ ${lines}
       if (!harvest.ok) throw new Error(`Tidal harvest failed: ${harvest.error || "unknown error"}`);
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(harvest, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${harvest.tracks.length} tracks \u2014 raw Tidal harvest</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
@@ -20725,7 +20725,7 @@ ${lines}
       if (!harvest.ok) throw new Error(`Metal Archives harvest failed: ${harvest.error || "unknown error"}`);
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(harvest, null, 2);
       const nCredited = (harvest.band?.length || 0) + (harvest.guest?.length || 0) + (harvest.misc?.length || 0);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${(harvest.tracks || []).length} tracks, ${nCredited} credited \u2014 raw Metal Archives harvest</strong></summary></details>`;
@@ -20774,7 +20774,7 @@ ${lines}
       _qobuzJson = { via, source: via === "API" ? `album/get (${parsed.id})` : parsed.pageUrl, album: albumInfo, tracks };
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(_qobuzJson, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Qobuz album"} \xB7 ${tracks.length} tracks \u2014 parsed Qobuz credits (${via === "API" ? "API" : "page"})</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
@@ -20825,7 +20825,7 @@ ${lines}
       _deezerJson = { source: parsed.pageUrl, album: albumInfo, tracks };
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(_deezerJson, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Deezer album"} \xB7 ${tracks.length} tracks \u2014 parsed Deezer credits (page)</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
@@ -20861,7 +20861,7 @@ ${lines}
       _appleJson = { source: appleUrl, album, tracks };
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(_appleJson, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${album || "Apple album"} \xB7 ${tracks.length} tracks \u2014 parsed Apple credits (API)</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
@@ -21322,7 +21322,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.2.193000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.2.193000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.2.200000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.2.200000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -21685,7 +21685,7 @@ ${lines}
   // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
   // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
   // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui-components.mjs
@@ -21890,28 +21890,28 @@ ${lines}
       .gt-mi .gt-mi-pos{flex:none;color:#9aa3b0;min-width:24px}
       .gt-mi .gt-mi-tx{flex:1;white-space:normal;word-break:break-word}
       .gt-mi .gt-mi-more{color:#9aa3b0;font-style:italic}
-      .gt-menu .gt-sep{height:1px;background:#e7e9ee;margin:4px 2px}
+      .gt-menu .gt-sep{height:1px;background:var(--mbu-bg-sunken);margin:4px 2px}
       .gt-menu .gt-hdr{padding:5px 9px 4px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
       .gt-menu .gt-note{padding:0 9px 6px;font-size:11px;color:#8892a0;white-space:normal;word-break:break-word}
       .gt-menu .gt-ck-list{margin:2px 0 3px}
       .gt-menu .gt-ck{display:flex;align-items:flex-start;gap:7px;padding:3px 9px;font-size:11px;color:#5a6472;line-height:1.4;cursor:pointer;user-select:none}
-      .gt-menu .gt-ck:hover{background:#eef1f6}
+      .gt-menu .gt-ck:hover{background:var(--mbu-info-bg)}
       /* #377 per-row [A]/[R] select-by-artist/role buttons, shown on row hover */
       .gt-menu .gt-ck-acts{margin-left:auto;display:none;gap:3px;flex:none;align-self:center}
       .gt-menu .gt-ck:hover .gt-ck-acts{display:inline-flex}
       .gt-menu .gt-ck-act{font:bold 10px Arial;color:#2e6da4;background:var(--mbu-info-bg);border:1px solid #cfe0f0;border-radius:3px;padding:1px 6px;cursor:pointer;line-height:1.4}
-      .gt-menu .gt-ck-act:hover{background:#dce9f7;border-color:#a9cbe8}
+      .gt-menu .gt-ck-act:hover{background:var(--mbu-info-bg);border-color:#a9cbe8}
       .gt-menu .gt-ck-cb{margin:1px 0 0;flex:none;accent-color:#2e9e5b;cursor:pointer}
       .gt-menu .gt-ck-pos{flex:none;color:#9aa3b0}
       .gt-menu .gt-ck-tx{flex:1;white-space:normal;word-break:break-word}
       .gt-mi{display:block;width:100%;box-sizing:border-box;background:none;border:none;text-align:left;
         padding:6px 9px;border-radius:5px;cursor:pointer;color:inherit;font:inherit}
-      .gt-mi:hover{background:#eef1f6}
+      .gt-mi:hover{background:var(--mbu-info-bg)}
       .gt-mi .gt-mi-top{display:flex;align-items:center;gap:10px}
       .gt-mi .gt-mi-l{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .gt-mi .gt-mi-d{font-size:11px;color:#8892a0;margin-top:2px}
-      .gt-mi .gt-mi-s{flex:none;min-width:20px;text-align:center;font-weight:700;font-size:11px;color:#556;background:#eef1f6;border-radius:9px;padding:1px 7px}
-      .gt-mi.gt-danger:hover{background:#fbe3e0}
+      .gt-mi .gt-mi-s{flex:none;min-width:20px;text-align:center;font-weight:700;font-size:11px;color:#556;background:var(--mbu-info-bg);border-radius:9px;padding:1px 7px}
+      .gt-mi.gt-danger:hover{background:var(--mbu-error-bg)}
       .gt-mi.gt-danger .gt-mi-s{color:var(--mbu-text-on-accent);background:#c0392b}
       ::highlight(gt-hl-existing){background:#1f6feb;color:var(--mbu-text-on-accent)}
       ::highlight(gt-hl-new){background:#1f6feb;color:#ffe066}
@@ -21923,11 +21923,11 @@ ${lines}
         font:13px -apple-system,Segoe UI,Arial,sans-serif;padding:8px 14px;border-radius:7px;box-shadow:0 6px 22px rgba(0,0,0,.3)}
       .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#2e6da4;background:var(--mbu-info-bg);
         border:1px solid #cfe0f0;border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
-      .gt-clone-btn:hover{background:#e2edf8}
+      .gt-clone-btn:hover{background:var(--mbu-info-bg)}
       .gt-cfg-btn{float:right;margin-left:8px;font-size:15px;line-height:1.4;color:#8892a0;background:none;border:none;cursor:pointer;padding:2px 7px;border-radius:5px}
-      .gt-cfg-btn:hover{background:#eef1f6;color:#556}
+      .gt-cfg-btn:hover{background:var(--mbu-info-bg);color:#556}
       /* #372 top toolbar (moved off the "Release relationships" heading to the top of the tab) */
-      .gt-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 14px;padding:8px 10px;background:#f7f9fc;border:1px solid #e5ebf3;border-radius:7px}
+      .gt-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 14px;padding:8px 10px;background:var(--mbu-bg);border:1px solid #e5ebf3;border-radius:7px}
       .gt-toolbar .gt-clone-btn{margin-left:0}
       /* #365 "Vertical:" section — label + two icon-only up/down buttons */
       .gt-vert{display:inline-flex;align-items:center;gap:5px}
@@ -21945,15 +21945,15 @@ ${lines}
       .gt-pop .gt-pop-list{max-height:44vh;overflow-y:auto}
       .gt-pop .gt-pop-note{padding:8px;color:#8892a0;font-size:12px}
       .gt-pop .gt-pop-rel{display:flex;align-items:center;gap:4px;border-radius:5px}
-      .gt-pop .gt-pop-rel:hover{background:#eef1f6}
+      .gt-pop .gt-pop-rel:hover{background:var(--mbu-info-bg)}
       .gt-pop .gt-pop-rel-info{flex:1;min-width:0;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:inherit;font:inherit}
       .gt-pop .gt-pop-rel-t{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .gt-pop .gt-pop-rel-m{display:block;font-size:11px;color:#8892a0;margin-top:1px}
       .gt-pop .gt-pop-rel-open{flex:none;text-decoration:none;color:#8892a0;font-size:14px;line-height:1;padding:6px 9px;border-radius:5px}
-      .gt-pop .gt-pop-rel-open:hover{background:#dfe4ea;color:#2e6da4}
+      .gt-pop .gt-pop-rel-open:hover{background:var(--mbu-info-bg);color:#2e6da4}
       .gt-pop .gt-pop-add{padding:4px 6px 6px}
       .gt-pop .gt-pop-add-btn{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:#2e6da4;font:inherit}
-      .gt-pop .gt-pop-add-btn:hover{background:#eef1f6}
+      .gt-pop .gt-pop-add-btn:hover{background:var(--mbu-info-bg)}
       .gt-pop .gt-pop-tf{display:block;width:100%;box-sizing:border-box;min-width:0;padding:6px 8px;border:1px solid #4a90d9;border-radius:5px;font:inherit;outline:none}
       .gt-pop .gt-hidden{display:none}
       /* subtle discoverability: the controls Group Therapy adds a right-click menu to (recording/work
@@ -21968,8 +21968,8 @@ ${lines}
       .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font:13px inherit;border:1px solid #c9ccd2;border-radius:4px}
       .gt-role-list{overflow:auto;flex:1;padding:0 4px 8px}
       .gt-role-row{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
-      .gt-role-row.gt-role-active{background:#efeaff;box-shadow:inset 2px 0 0 #5f3ec0}   /* #544 keyboard cursor */
-      .gt-role-row:hover{background:#eef3fb}
+      .gt-role-row.gt-role-active{background:var(--mbu-bg-raised);box-shadow:inset 2px 0 0 #5f3ec0}   /* #544 keyboard cursor */
+      .gt-role-row:hover{background:var(--mbu-bg-raised)}
       .gt-role-name{font-weight:600;font-size:13px}
       .gt-role-recent{font-weight:400;font-size:10px;color:#6b8fb5;margin-left:6px}
       .gt-role-desc{font-size:11px;color:#666;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}   /* #544: was one nowrap line + ellipsis, which cut every description; two wrapped lines instead */
@@ -21977,7 +21977,7 @@ ${lines}
       .gt-cons-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid #e7e9ee}
       .gt-cons-title{font-weight:700;font-size:14px;flex:1}
       .gt-cons-x{background:none;border:none;font-size:16px;color:#8892a0;cursor:pointer;padding:2px 8px;border-radius:5px}
-      .gt-cons-x:hover{background:#eef1f6;color:#556}
+      .gt-cons-x:hover{background:var(--mbu-info-bg);color:#556}
       .gt-cons-body{padding:10px 14px;overflow:auto}
       .gt-cons-leg{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:10px;font-size:12px;color:#556}
       .gt-cons-legi b{display:inline-block;min-width:16px;text-align:center;background:var(--mbu-info-bg);border:1px solid #cfe0f0;border-radius:4px;color:#2e6da4;margin-right:2px}
@@ -21989,7 +21989,7 @@ ${lines}
       .gt-cons-selitem{cursor:pointer;border:1px solid transparent;border-radius:var(--mbu-radius);padding:2px 7px;display:inline-flex;align-items:center}
       .gt-cons-selitem.gt-on{background:var(--mbu-info-bg);border-color:#cfe0f0}
       .gt-cons-selitem:not(.gt-on){opacity:.5}
-      .gt-cons-selitem:not(.gt-on):hover{opacity:.85;background:#f2f4f7}
+      .gt-cons-selitem:not(.gt-on):hover{opacity:.85;background:var(--mbu-bg-raised)}
       .gt-cons-legopen{text-decoration:none;color:#8892a0;margin-left:5px}
       .gt-cons-legopen:hover{color:#2e6da4}
       .gt-cons-legyr{color:#8892a0;margin-left:5px}
@@ -22013,10 +22013,10 @@ ${lines}
       .gt-cons-cell.gt-none{color:#cdd3da}
       .gt-cons-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #e7e9ee}
       .gt-cons-btn{font:600 13px inherit;padding:5px 14px;border-radius:var(--mbu-radius);border:1px solid #cfe0f0;background:var(--mbu-info-bg);color:#2e6da4;cursor:pointer}
-      .gt-cons-btn:hover{background:#e2edf8}
+      .gt-cons-btn:hover{background:var(--mbu-info-bg)}
       .gt-cons-apply{margin-left:auto;background:#2e9e5b;border-color:#2e9e5b;color:var(--mbu-text-on-accent)}
       .gt-cons-apply:hover{background:#278a4f}
-      .gt-cons-apply:disabled{background:#c9ced4;border-color:#c9ced4;cursor:default}
+      .gt-cons-apply:disabled{background:var(--mbu-bg-sunken);border-color:#c9ced4;cursor:default}
       .gt-cons-plan{color:#556;font-size:12px}
       /* Date picker (#398) */
       .gt-dp{width:min(560px,94vw)}
@@ -22025,13 +22025,13 @@ ${lines}
       .gt-dp-lbl{font-size:11px;font-weight:700;color:#6a7482;text-transform:uppercase;letter-spacing:.02em;min-width:42px}
       .gt-dp-date{width:112px;box-sizing:border-box;padding:4px 7px;border:1px solid #cfd4da;border-radius:5px;font:13px inherit;outline:none}
       .gt-dp-date:focus{border-color:#4a90d9}
-      .gt-dp-date.gt-dp-bad{border-color:#e5534b;background:#fdf3f2}
+      .gt-dp-date.gt-dp-bad{border-color:#e5534b;background:var(--mbu-bg-raised)}
       .gt-dp-dash{color:#8892a0}
       .gt-dp-ended{display:inline-flex;align-items:center;gap:4px;margin-left:6px;color:#556;cursor:pointer}
       .gt-dp-roles{gap:5px}
       .gt-dp-hint{color:#9aa0a6;font-style:italic}
       .gt-dp-chip{display:inline-flex;align-items:center;gap:4px;background:var(--mbu-info-bg);border:1px solid #cfe0f0;color:#2e6da4;border-radius:12px;padding:2px 8px;font-size:12px;cursor:pointer}
-      .gt-dp-chip:hover{background:#e2edf8}
+      .gt-dp-chip:hover{background:var(--mbu-info-bg)}
       .gt-dp-chipx{color:#8aa8c8;font-weight:700}
       .gt-dp-chip:hover .gt-dp-chipx{color:#e5534b}
       .gt-dp-body{padding:6px 10px}
@@ -22041,12 +22041,12 @@ ${lines}
       .gt-dp-ttitle{color:#333;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .gt-dp-clist{margin:2px 0 4px 26px;display:flex;flex-direction:column;gap:1px}
       .gt-dp-crow{display:flex;align-items:center;gap:7px;padding:2px 4px;border-radius:5px;cursor:pointer}
-      .gt-dp-crow:hover{background:#f4f7fa}
+      .gt-dp-crow:hover{background:var(--mbu-bg-raised)}
       .gt-dp-role{color:#556;white-space:nowrap}
       .gt-dp-role:hover{color:#2e6da4;text-decoration:underline dotted}
       .gt-dp-cname{color:var(--mbu-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
       .gt-dp-dated .gt-dp-role,.gt-dp-dated .gt-dp-cname{color:#9aa0a6}
-      .gt-dp-has{color:#b0863a;font-size:11px;white-space:nowrap;background:#faf3e6;border:1px solid #ecdcc0;border-radius:4px;padding:0 5px}
+      .gt-dp-has{color:#b0863a;font-size:11px;white-space:nowrap;background:var(--mbu-warn-bg);border:1px solid #ecdcc0;border-radius:4px;padding:0 5px}
     `;
     document.head.appendChild(s);
   }
@@ -23346,28 +23346,28 @@ ${lines}
       + '.gt-cons.gt-wm{resize:both;overflow:hidden;max-width:98vw;max-height:94vh;min-width:620px;min-height:320px}'
       // #381 maximize toggle → near-fullscreen
       + '.gt-cons.gt-wm.gt-wm-max{position:fixed;left:10px;right:10px;top:10px;bottom:10px;width:auto;height:auto;max-width:none;max-height:none;margin:0}'
-      + '.gt-wm-tb{display:flex;align-items:center;gap:8px;padding:9px 14px;flex-wrap:wrap;position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid #ecebf3;margin:0 -14px 8px}'
+      + '.gt-wm-tb{display:flex;align-items:center;gap:8px;padding:9px 14px;flex-wrap:wrap;position:sticky;top:0;z-index:6;background:var(--mbu-bg);border-bottom:1px solid #ecebf3;margin:0 -14px 8px}'
       + '.gt-wm-tb .gt-wm-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}'
       + '.gt-wm-tbl2{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555}.gt-wm-tbl2 b{color:#563b8f}'
       + '.gt-wm-warn{color:#b00;font-weight:600;font-size:12px}.gt-wm-warn.click{cursor:pointer}.gt-wm-warn.click:hover{text-decoration:underline}'
-      + '.gt-wm-cancel{font:12px Arial;color:#b00;background:#fff;border:1px solid #e3aeae;border-radius:12px;padding:1px 9px;cursor:pointer;flex:none}.gt-wm-cancel:hover{background:#fdecec}'
-      + '.gt-wm-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}'
+      + '.gt-wm-cancel{font:12px Arial;color:#b00;background:var(--mbu-bg);border:1px solid #e3aeae;border-radius:12px;padding:1px 9px;cursor:pointer;flex:none}.gt-wm-cancel:hover{background:var(--mbu-bg-raised)}'
+      + '.gt-wm-tbsep{width:1px;height:18px;background:var(--mbu-bg-sunken);flex:none;margin:0 2px}'
       + '.gt-wm-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}.gt-wm-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}'
       + '.gt-wm-btn:disabled,.gt-wm-caret:disabled{opacity:.45;cursor:default;pointer-events:none}'
       + '.gt-wm-btn.primary{color:#5f3ec0;font-weight:bold}.gt-wm-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
-      + '.gt-wm-caret{padding:4px 7px;color:#7d6bc0;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial}.gt-wm-caret:hover{background:#f0ecfa}'
+      + '.gt-wm-caret{padding:4px 7px;color:#7d6bc0;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial}.gt-wm-caret:hover{background:var(--mbu-bg-hover)}'
       // cutoff chip (clone of .tc-cutoff)
-      + '.gt-wm-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfcfcf;border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:#fff;user-select:none}.gt-wm-cutoff:hover{border-color:#b3b3b3}'
+      + '.gt-wm-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfcfcf;border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:var(--mbu-bg);user-select:none}.gt-wm-cutoff:hover{border-color:#b3b3b3}'
       + '.gt-wm-cutoff-dot,.gt-wm-menu .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18);flex:none}.gt-wm-cutoff-caret{color:#999;font-size:10px}'
-      + '.gt-wm-menu{position:fixed;z-index:2147483647;background:#fff;border:1px solid #ccc;border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}'
-      + '.gt-wm-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:#333}.gt-wm-menu .mi:hover,.gt-wm-menu .mi.sel{background:#f0ecfa}'
+      + '.gt-wm-menu{position:fixed;z-index:2147483647;background:var(--mbu-bg);border:1px solid #ccc;border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}'
+      + '.gt-wm-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:#333}.gt-wm-menu .mi:hover,.gt-wm-menu .mi.sel{background:var(--mbu-bg-hover)}'
       // table (clone of .tc-rectbl)
-      + '.gt-wm-tbl{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed}'
+      + '.gt-wm-tbl{border-collapse:collapse;width:100%;background:var(--mbu-bg);table-layout:fixed}'
       + '.gt-wm-tbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}'
       + '.gt-wm-tbl td{padding:4px 7px;vertical-align:top;font-size:13px}'
       + '.gt-wm-tbl .c-n{color:#999;text-align:right;width:38px;white-space:nowrap}'
       + '.gt-wm-tbl .c-sep{width:20px;text-align:center;border-left:1px solid #e6e0f2;border-right:1px solid #e6e0f2}'
-      + '.gt-wm-tbl .tc-grp-l{background:#eef3fb;color:#2c5d9b}.gt-wm-tbl .tc-grp-r{background:#f1ecf9;color:#5b3fa0}'
+      + '.gt-wm-tbl .tc-grp-l{background:var(--mbu-bg-raised);color:#2c5d9b}.gt-wm-tbl .tc-grp-r{background:var(--mbu-bg-hover);color:#5b3fa0}'
       + '.gt-wm-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}'
       + '.gt-wm-tkt{font-weight:600}.gt-wm-tka{color:#555}'
       + '.gt-wm-wk{position:relative}.gt-wm-wa{color:#2c5d9b;font-weight:600;text-decoration:none;cursor:pointer}.gt-wm-wa:hover{text-decoration:underline}'
@@ -23375,31 +23375,31 @@ ${lines}
       + '.gt-wm-disamb{color:#999;font-weight:400}.gt-wm-authors{color:#777;font-size:12px}.gt-wm-dim{color:#999;font-style:italic}.gt-wm-linked{color:#2c7a51}'
       + '.gt-wm-wwr{color:#777}.gt-wm-wart{display:block;color:#8a8f98;font-size:11px;margin-top:1px}'
       + '.gt-wm-acts{position:absolute;right:2px;top:2px;display:none;gap:2px}.gt-wm-row:hover .gt-wm-acts{display:inline-flex}'
-      + '.gt-wm-act{border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:13px;line-height:1;padding:1px 5px;border-radius:3px}.gt-wm-act:hover{background:#f0ecfa}'
+      + '.gt-wm-act{border:none;background:var(--mbu-bg);cursor:pointer;color:#7d6bc0;font-size:13px;line-height:1;padding:1px 5px;border-radius:3px}.gt-wm-act:hover{background:var(--mbu-bg-hover)}'
       // picker (kept)
-      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:#fff;color:#222;border:1px solid #d4d9e0;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:8px;min-width:360px;max-width:480px;font:13px -apple-system,Segoe UI,Arial,sans-serif}'
+      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:var(--mbu-bg);color:#222;border:1px solid #d4d9e0;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:8px;min-width:360px;max-width:480px;font:13px -apple-system,Segoe UI,Arial,sans-serif}'
       + '.gt-wm-qrow{display:flex;align-items:stretch;gap:6px;margin:4px 0 6px}'
       + '.gt-wm-q{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
-      + '.gt-wm-newplus{flex:none;width:40px;font-size:17px;line-height:1;color:#2c7a51;background:#eaf6ee;border:1px solid #bfe0c8;border-radius:5px;cursor:pointer}.gt-wm-newplus:hover{background:#daeee1}'
-      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:#eef1f6}.gt-wm-rt{font-size:13px}'
+      + '.gt-wm-newplus{flex:none;width:40px;font-size:17px;line-height:1;color:#2c7a51;background:var(--mbu-ok-bg);border:1px solid #bfe0c8;border-radius:5px;cursor:pointer}.gt-wm-newplus:hover{background:var(--mbu-ok-bg)}'
+      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:var(--mbu-info-bg)}.gt-wm-rt{font-size:13px}'
       + '.gt-wm-rw{color:#777;font-size:12px;margin-left:4px}.gt-wm-sub{color:#6b7280;font-size:11px;margin:-2px 0 5px 2px}'
       + '.gt-wm-open{margin-left:6px;color:#2c5d9b;text-decoration:none;font-size:12px}.gt-wm-open:hover{text-decoration:underline}'
-      + '.gt-wm-cur{margin:2px 0 6px;padding:4px 7px;background:#f6f3fc;border-radius:5px;font-size:12px}.gt-wm-cur-l{color:#777}'
+      + '.gt-wm-cur{margin:2px 0 6px;padding:4px 7px;background:var(--mbu-bg-raised);border-radius:5px;font-size:12px}.gt-wm-cur-l{color:#777}'
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}'
       // #363 New-work params (Type + searchable lyrics-language combo) in the footer
       + '.gt-wm-nwp{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#555}'
       + '.gt-wm-ro-sum{display:inline-flex;align-items:center;gap:3px;flex-wrap:wrap;max-width:340px}'
-    + '.gt-wm-nwp-more.on{border-color:#6f42c1;background:#efeaf9;font-weight:700}'
-    + '.gt-wm-nwp-more{padding:2px 6px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;color:#6f42c1;cursor:pointer;font:13px Arial;line-height:1}.gt-wm-nwp-more:hover{background:#f0ecfa}'
-      + '.gt-wm-nwp-type{font:12px Arial;padding:2px 4px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;max-width:130px}'
-      + '.gt-wm-nwp-lang{position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:3px;min-width:120px;max-width:240px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;padding:2px 4px}'
-      + '.gt-wm-nwp-chip{display:inline-flex;align-items:center;gap:3px;background:#efeaf9;color:#5b4a86;border-radius:9px;padding:1px 4px 1px 7px;font-size:11px;white-space:nowrap}'
+    + '.gt-wm-nwp-more.on{border-color:#6f42c1;background:var(--mbu-bg-hover);font-weight:700}'
+    + '.gt-wm-nwp-more{padding:2px 6px;border:1px solid #cfcfcf;border-radius:4px;background:var(--mbu-bg);color:#6f42c1;cursor:pointer;font:13px Arial;line-height:1}.gt-wm-nwp-more:hover{background:var(--mbu-bg-hover)}'
+      + '.gt-wm-nwp-type{font:12px Arial;padding:2px 4px;border:1px solid #cfcfcf;border-radius:4px;background:var(--mbu-bg);max-width:130px}'
+      + '.gt-wm-nwp-lang{position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:3px;min-width:120px;max-width:240px;border:1px solid #cfcfcf;border-radius:4px;background:var(--mbu-bg);padding:2px 4px}'
+      + '.gt-wm-nwp-chip{display:inline-flex;align-items:center;gap:3px;background:var(--mbu-bg-hover);color:#5b4a86;border-radius:9px;padding:1px 4px 1px 7px;font-size:11px;white-space:nowrap}'
       + '.gt-wm-nwp-x{cursor:pointer;color:#8a7fb0;font-weight:700;line-height:1}.gt-wm-nwp-x:hover{color:#c0392b}'
       + '.gt-wm-nwp-inp{border:none;outline:none;background:transparent;font:12px Arial;min-width:60px;flex:1 1 60px}'
-      + '.gt-wm-nwp-drop{position:absolute;left:0;top:100%;z-index:5;margin-top:2px;max-height:220px;overflow:auto;min-width:160px;background:#fff;border:1px solid #cfcfcf;border-radius:5px;box-shadow:0 4px 14px rgba(0,0,0,.15)}'
-      + '.gt-wm-nwp-opt{padding:4px 9px;cursor:pointer;font-size:12px;white-space:nowrap}.gt-wm-nwp-opt:hover{background:#f0ecfa}'
+      + '.gt-wm-nwp-drop{position:absolute;left:0;top:100%;z-index:5;margin-top:2px;max-height:220px;overflow:auto;min-width:160px;background:var(--mbu-bg);border:1px solid #cfcfcf;border-radius:5px;box-shadow:0 4px 14px rgba(0,0,0,.15)}'
+      + '.gt-wm-nwp-opt{padding:4px 9px;cursor:pointer;font-size:12px;white-space:nowrap}.gt-wm-nwp-opt:hover{background:var(--mbu-bg-hover)}'
       // #363 recording-of relationship options popover
-      + '.gt-wm-relopts{position:fixed;z-index:2147483647;background:#fff;border:1px solid #cbb9ea;border-radius:6px;box-shadow:0 6px 20px rgba(40,20,80,.22);padding:8px 12px;font-size:13px;color:#333;min-width:190px}'
+      + '.gt-wm-relopts{position:fixed;z-index:2147483647;background:var(--mbu-bg);border:1px solid #cbb9ea;border-radius:6px;box-shadow:0 6px 20px rgba(40,20,80,.22);padding:8px 12px;font-size:13px;color:#333;min-width:190px}'
       + '.gt-wm-ro-hd{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8a8496;margin-bottom:5px}'
       + '.gt-wm-ro-cb{display:flex;align-items:center;gap:6px;padding:2px 0;cursor:pointer}.gt-wm-ro-cb input{margin:0}'
       + '.gt-wm-ro-date{display:flex;align-items:center;gap:3px;margin-top:5px}'
@@ -24228,13 +24228,13 @@ ${lines}
       + '.gt-tp-pat:focus{border-color:#4a90d9}'
       + '.gt-tp-clr{background:none;border:none;color:#8892a0;cursor:pointer;padding:2px 4px}.gt-tp-clr:hover{color:#556}'
       + '.gt-tp-presets{display:flex;gap:4px;flex-wrap:wrap}'
-      + '.gt-tp-chip{font:11px monospace;background:#f3f4f7;border:1px solid #dde1e7;border-radius:11px;padding:2px 9px;cursor:pointer;color:#444}.gt-tp-chip:hover{background:#eef4fb;border-color:#cfe0f0}'
-      + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#6b7280;background:#f3f4f7;border-radius:11px;padding:3px 10px;min-width:0}'
+      + '.gt-tp-chip{font:11px monospace;background:var(--mbu-bg-raised);border:1px solid #dde1e7;border-radius:11px;padding:2px 9px;cursor:pointer;color:#444}.gt-tp-chip:hover{background:var(--mbu-bg-raised);border-color:#cfe0f0}'
+      + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#6b7280;background:var(--mbu-bg-raised);border-radius:11px;padding:3px 10px;min-width:0}'
       + '.gt-tp-scope-lbl{color:#8892a0}'
-      + '.gt-tp-scope-sel{font:inherit;font-size:11px;border:1px solid #dcdfe6;border-radius:5px;background:#fff;padding:1px 3px}'
+      + '.gt-tp-scope-sel{font:inherit;font-size:11px;border:1px solid #dcdfe6;border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid #dcdfe6;border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
-      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid #cfd4da;border-radius:5px;background:#fff;cursor:pointer;font:12px inherit;color:#444}.gt-cons-hdr .gt-tp-anno:hover{background:#f2f4f7}'
+      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid #cfd4da;border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:12px inherit;color:#444}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
       + '.gt-tp-src{padding:0 14px}'
       + '.gt-tp-srctgl{display:block;background:none;border:none;color:#2e6da4;cursor:pointer;font:12px inherit;padding:6px 0}'
       + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid #cfd4da;border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:#4a90d9}'
@@ -24257,8 +24257,8 @@ ${lines}
       // th's own overflow:hidden (for its text-overflow ellipsis) doesn't
       // clip either of them.
       + '.gt-tp-colresize{position:absolute;top:0;right:0;width:7px;height:100%;cursor:col-resize;z-index:2}'
-      + '.gt-tp-colresize::after{content:"";position:absolute;top:0;bottom:0;right:3px;width:1px;background:#d8dbe0}'
-      + '.gt-tp-colresize:hover::after{background:#4a90d9}'
+      + '.gt-tp-colresize::after{content:"";position:absolute;top:0;bottom:0;right:3px;width:1px;background:var(--mbu-bg-sunken)}'
+      + '.gt-tp-colresize:hover::after{background:var(--mbu-info-bg)}'
       + '.gt-tp-row.gt-tp-nomatch{opacity:.55}'
       // #522 sixth round (majkinetor, live): "We still don't have
       // non-intrusive raw background color (like in CH)" — Credit
@@ -24266,13 +24266,13 @@ ${lines}
       // yellow for "needs a look", soft red for "needs attention", white
       // once clean), not just a small dot; same idea here, keyed off the
       // same status the dot already uses.
-      + '.gt-tp-row.gt-tp-st-amber{background:#fff8e1}'
-      + '.gt-tp-row.gt-tp-st-red{background:#ffe0e0}'
+      + '.gt-tp-row.gt-tp-st-amber{background:var(--mbu-warn-bg)}'
+      + '.gt-tp-row.gt-tp-st-red{background:var(--mbu-error-bg)}'
       + '.gt-tp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-top:3px}'
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
       + '.gt-tp-ov{box-sizing:border-box;width:100%;min-width:0;padding:3px 6px;border:1px solid #dde1e7;border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:#4a90d9}'   /* #544: track the column instead of a fixed 110px, so a narrow column cannot clip the caret */
       + '.gt-tp-rawwrap{display:flex;align-items:center;gap:4px;width:100%}'
-      + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:#556;font:11px inherit;outline:none}.gt-tp-raw:hover{border-color:#dde1e7}.gt-tp-raw:focus{border-color:#4a90d9;background:#fff}'
+      + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:#556;font:11px inherit;outline:none}.gt-tp-raw:hover{border-color:#dde1e7}.gt-tp-raw:focus{border-color:#4a90d9;background:var(--mbu-bg)}'
       + '.gt-tp-rowdel{flex:none;background:none;border:none;color:#c2c8d0;cursor:pointer;padding:2px 4px;font-size:12px}.gt-tp-rowdel:hover{color:#c0392b}'
       + '.gt-tp-txt{color:#333}'
       // #522 follow-up (majkinetor, live): "Tidy up artist / role column -
@@ -24291,8 +24291,8 @@ ${lines}
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
-      + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid #d6cdec;background:#faf8fe;border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
-      + '.gt-tp-freeze:hover{background:#f1ebfb;border-color:#a98fe0}'
+      + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid #d6cdec;background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
+      + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:#a98fe0}'
       + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font:13px inherit;color:#5f3ec0;font-weight:bold}'
       + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
       + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
@@ -24302,15 +24302,15 @@ ${lines}
       // FORCED (see canToggle in txpPickEntity): copyright/phonographic/
       // licensor holders, and ordinary roles MB allows on both sides.
       + '.gt-tp-apop .gt-tp-tabs{display:flex;gap:4px;margin-bottom:6px}'
-      + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid #cfd4da;border-radius:5px;background:#f6f7f9;cursor:pointer;font:12px inherit;color:#666}'
-      + '.gt-tp-apop .gt-tp-tab:hover{background:#eef4fb}'
+      + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid #cfd4da;border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:12px inherit;color:#666}'
+      + '.gt-tp-apop .gt-tp-tab:hover{background:var(--mbu-bg-raised)}'
       + '.gt-tp-apop .gt-tp-tab-on{background:#2e6da4;border-color:#2e6da4;color:#fff}'
       + '.gt-tp-apop .gt-tp-qwrap{display:flex;gap:5px;margin-bottom:6px}'
       + '.gt-tp-apop .gt-tp-q{flex:1;min-width:0;box-sizing:border-box;padding:5px 7px;border:1px solid #cfd4da;border-radius:5px;font:13px inherit;outline:none}'
-      + '.gt-tp-apop .gt-tp-plus{flex:0 0 auto;width:28px;box-sizing:border-box;border:1px solid #cfd4da;border-radius:5px;background:#f6f7f9;cursor:pointer;font:15px monospace;color:#2e6da4;line-height:1}.gt-tp-apop .gt-tp-plus:hover{background:#eef4fb;border-color:#cfe0f0}'
+      + '.gt-tp-apop .gt-tp-plus{flex:0 0 auto;width:28px;box-sizing:border-box;border:1px solid #cfd4da;border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:15px monospace;color:#2e6da4;line-height:1}.gt-tp-apop .gt-tp-plus:hover{background:var(--mbu-bg-raised);border-color:#cfe0f0}'
       + '.gt-tp-apop .gt-tp-hint{color:#8892a0;font-size:10px;margin-bottom:4px}'
       + '.gt-tp-apop .gt-tp-results{max-height:260px;overflow:auto}'
-      + '.gt-tp-apop .gt-tp-res{padding:5px 7px;border-radius:5px;cursor:pointer}.gt-tp-apop .gt-tp-res:hover{background:#eef1f6}'
+      + '.gt-tp-apop .gt-tp-res{padding:5px 7px;border-radius:5px;cursor:pointer}.gt-tp-apop .gt-tp-res:hover{background:var(--mbu-info-bg)}'
       + '.gt-tp-apop .gt-tp-restype{color:#8892a0;font-size:10px;text-transform:uppercase;margin-right:5px}'
       // #544: disambiguation must not read as part of the name — smaller, grey,
       // italic, in the results AND in the resolved table cell.
@@ -24322,8 +24322,8 @@ ${lines}
       // pushed every row taller — the name is already trimmed, this is the backstop
       + '.gt-tp-creating{display:inline-block;max-width:100%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;color:#7a5db8;font-size:11px;font-style:italic;border:none;background:none;font-family:inherit;cursor:pointer;border-radius:3px;padding:0 4px;animation:gt-tp-pulse 1.15s ease-in-out infinite}'
       + '.gt-tp-creating:hover{color:#b00;text-decoration:underline}'   // #544: it cancels
-      + '@keyframes gt-tp-pulse{0%,100%{background:transparent}50%{background:#ece4fa}}'
-      + '@media (prefers-reduced-motion:reduce){.gt-tp-creating{animation:none;background:#f4effd}}';
+      + '@keyframes gt-tp-pulse{0%,100%{background:transparent}50%{background:var(--mbu-bg-hover)}}'
+      + '@media (prefers-reduced-motion:reduce){.gt-tp-creating{animation:none;background:var(--mbu-bg-raised)}}';
     document.head.appendChild(s);
   }
 
@@ -26143,7 +26143,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -26533,7 +26533,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
   // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
   // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui-components.mjs
@@ -26761,7 +26761,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
        ISRCs/Links tabs were removed (both columns are always visible now), so
        this row carries less weight than it used to. */
     #ii-hdr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-      padding: 4px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0;
+      padding: 4px 14px 0; background: var(--mbu-bg); border-bottom: 1px solid #dee2e6; flex-shrink: 0;
       cursor: move; }   /* #471: drag anywhere on the header (not its buttons) to move the window */
     #ii-hdr button, #ii-hdr input, #ii-hdr a { cursor: pointer; }
     .ii-zen { text-align: center; padding-bottom: 7px; min-width: 0; }
@@ -26770,8 +26770,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-hicons { display: flex; gap: 6px; justify-self: end; padding-bottom: 5px; }
     .ii-hico { width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
       border: 1px solid #e3e3e8; border-radius: var(--mbu-radius); background: var(--mbu-bg); color: #6c757d; font-size: 14px; cursor: pointer; }
-    .ii-hico:hover { background: #f1f3f5; color: var(--mbu-accent); border-color: #d6c7ee; }
-    .ii-hico.on { background: #efe9fb; color: var(--mbu-accent); border-color: #d6c7ee; }
+    .ii-hico:hover { background: var(--mbu-bg-raised); color: var(--mbu-accent); border-color: #d6c7ee; }
+    .ii-hico.on { background: var(--mbu-bg-hover); color: var(--mbu-accent); border-color: #d6c7ee; }
     /* #471: plain status text where the ISRCs/Links tabs used to be — no columns
        to gate anymore, so nothing is hidden by it; just counts. */
     .ii-hdr-status { font: 600 12px system-ui; color: #868e96; white-space: nowrap; padding-bottom: 7px; }
@@ -26784,24 +26784,24 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
        needs a real hit area, not a bare glyph — same min footprint as .ii-hico. */
     .ii-clear-toggle { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 26px;
       border: 1px solid #dee2e6; border-radius: 5px; background: var(--mbu-bg); color: #495057; font-size: 11px; cursor: pointer; }
-    .ii-clear-toggle:hover, .ii-clear-toggle[aria-expanded="true"] { background: #f3eefc; color: var(--mbu-accent); border-color: #c9b6ee; }
+    .ii-clear-toggle:hover, .ii-clear-toggle[aria-expanded="true"] { background: var(--mbu-bg-raised); color: var(--mbu-accent); border-color: #c9b6ee; }
     .ii-clear-menu { display: none; position: absolute; top: 100%; right: 0; z-index: 60; flex-direction: column;
       min-width: 128px; margin-top: 4px; background: var(--mbu-bg); border: 1px solid #d8dce1; border-radius: var(--mbu-radius);
       box-shadow: 0 6px 18px rgba(0,0,0,.14); padding: 4px; }
     .ii-clear-menu.open { display: flex; }
     .ii-clear-menu button { background: none; border: none; text-align: left; padding: 6px 10px; font-size: 12px;
       border-radius: 4px; cursor: pointer; color: #212529; }
-    .ii-clear-menu button:hover { background: #f3eefc; color: var(--mbu-accent); }
+    .ii-clear-menu button:hover { background: var(--mbu-bg-raised); color: var(--mbu-accent); }
 
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-      padding: 8px 16px; border-bottom: 1px solid var(--mbu-divider); flex-shrink: 0; background: #fbfbfd; }
+      padding: 8px 16px; border-bottom: 1px solid var(--mbu-divider); flex-shrink: 0; background: var(--mbu-bg); }
     #ii-tools #ii-links-btn { margin-left: auto; }   /* pins Find links + the Clear caret to the toolbar's right edge */
     .ii-tbtn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px;
       font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; text-decoration: none;
       border: 1px solid #dee2e6; background: var(--mbu-bg); color: #343a40; white-space: nowrap; }
     a.ii-tbtn:hover { text-decoration: none; }
-    .ii-tbtn:hover { background: #f1f3f5; }
+    .ii-tbtn:hover { background: var(--mbu-bg-raised); }
     .ii-tbtn:disabled { opacity: .5; cursor: default; }
     .ii-tbtn.sx  { color: var(--mbu-accent); border-color: #d6c7ee; }
     .ii-tbtn.dz  { color: #ef5466; border-color: #f5c2c8; }
@@ -26835,7 +26835,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     /* MB-linked: a strong brand ring on the WHITE button (#404) — the shared icons are
        now full-colour, so a brand FILL would hide them (e.g. green Spotify on green). */
     .ii-tbtn.ii-mb { border-color: currentColor; box-shadow: 0 0 0 1px currentColor; }
-    .ii-tbtn.ii-mb:hover { background: #f1f3f5; }
+    .ii-tbtn.ii-mb:hover { background: var(--mbu-bg-raised); }
     /* Unified "paste a URL" control (#180), apollo "+"-unroll style: a small
        round button that expands to an input on click; auto-detects the platform. */
     .ii-urladd { display: inline-flex; align-items: center; gap: 5px; }
@@ -26843,7 +26843,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-urladd-btn { display: inline-flex; align-items: center; justify-content: center;
       flex: 0 0 auto; width: 26px; height: 26px; padding: 0; border: 1px solid #ced4da; border-radius: 50%;
       background: var(--mbu-bg); color: #6c757d; cursor: pointer; font-size: 16px; line-height: 1; }
-    .ii-urladd-btn:hover { background: #f1f3f5; border-color: #adb5bd; }
+    .ii-urladd-btn:hover { background: var(--mbu-bg-raised); border-color: #adb5bd; }
     .ii-urladd-btn svg { display: block; }
     .ii-urladd-input { display: none; padding: 4px 9px;
       border: 1px solid #ced4da; border-radius: 5px; font-size: 12px; }
@@ -26862,7 +26862,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       overscroll-behavior: contain;   /* scrolling to either end stays in the modal, never scrolls the page behind */
       padding: 0 0 56px 0; }   /* 56px bottom = room for the absolutely-pinned footer */
     #ii-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-    #ii-table thead th { position: sticky; top: 0; z-index: 2; background: #f1f3f5;
+    #ii-table thead th { position: sticky; top: 0; z-index: 2; background: var(--mbu-bg-raised);
       text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .3px; color: #6c757d; padding: 7px 10px; border-bottom: 1px solid #dee2e6; }
     /* #471: resizable columns — a thin drag handle on the right edge of each
@@ -26873,10 +26873,10 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
        the handle. */
     .ii-col-resize { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 3; }
     /* a persistent line so the handle is discoverable, not just a hover surprise (#471 review) */
-    .ii-col-resize::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 3px; width: 1px; background: #ced0d4; }
+    .ii-col-resize::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 3px; width: 1px; background: var(--mbu-bg-sunken); }
     .ii-col-resize:hover, .ii-col-resize.dragging { background: rgba(111,66,193,.35); }
     .ii-col-resize:hover::after, .ii-col-resize.dragging::after { background: var(--mbu-accent); width: 2px; }
-    .ii-medrow td { background: #eef0f3; font-weight: 700; font-size: 11.5px; color: #495057;
+    .ii-medrow td { background: var(--mbu-bg-raised); font-weight: 700; font-size: 11.5px; color: #495057;
       padding: 5px 10px; border-top: 1px solid #dee2e6; }
     #ii-table td { padding: 6px 10px; border-bottom: 1px solid #f1f3f5; vertical-align: top; }
     .ii-pos { color: #adb5bd; font-variant-numeric: tabular-nums; width: 34px; white-space: nowrap; }
@@ -26906,10 +26906,10 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     @keyframes ii-tl-pulse { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
     .ii-existing { width: 150px; }
     .ii-existing samp { display: block; font-size: 11px; font-weight: 700; color: #198754; font-family: 'Courier New', monospace; }
-    .ii-existing samp.dup { color: #d63384; background: #ffe3ef; border-radius: 3px; padding: 0 3px; }
+    .ii-existing samp.dup { color: #d63384; background: var(--mbu-error-bg); border-radius: 3px; padding: 0 3px; }
     .ii-existing .none { color: #ced4da; font-style: italic; font-size: 11px; }
     /* #159: highlight rows that still have no ISRC (no existing + nothing entered yet) */
-    .ii-row-missing > td { background: #fff7e8; }
+    .ii-row-missing > td { background: var(--mbu-bg-raised); }
     .ii-row-missing > td:first-child { box-shadow: inset 3px 0 0 #f0ad4e; }
     .ii-row-missing .ii-existing .none { color: #d39e00; font-style: normal; font-weight: 600; }
     .ii-ex-item { display: flex; align-items: center; gap: 5px; cursor: pointer; }
@@ -26918,7 +26918,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     /* pending Remove-ISRC edit — highlighted like MusicBrainz marks entities with
        an open edit (orange/peach), with a strike-through to show it's a removal */
     .ii-ex-pending { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #8a5a00;
-      background: #fde6c8; border: 1px solid #f1c690; border-radius: 3px; padding: 0 4px; }
+      background: var(--mbu-warn-bg); border: 1px solid #f1c690; border-radius: 3px; padding: 0 4px; }
     .ii-ex-pending samp { color: #8a5a00; text-decoration: line-through; }
     .ii-inwrap { display: flex; align-items: center; gap: 5px; }
     /* #490: the initial "search SoundExchange by title/artist" entry point used to be a
@@ -26937,36 +26937,36 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-input { width: 100%; box-sizing: border-box; padding: 4px 22px 4px 7px; border: 1px solid #ced4da; border-radius: 4px;
       font-family: 'Courier New', monospace; font-size: 12.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
     .ii-input:focus { outline: none; border-color: var(--mbu-accent); }
-    .ii-input.bad   { border-color: #dc3545; background: #fff0f1; }
-    .ii-input.dup   { border-color: #fd7e14; background: #fff6ed; }
-    .ii-input.dupother { border-color: #d63384; background: #ffe3ef; }
+    .ii-input.bad   { border-color: #dc3545; background: var(--mbu-bg-raised); }
+    .ii-input.dup   { border-color: #fd7e14; background: var(--mbu-bg-raised); }
+    .ii-input.dupother { border-color: #d63384; background: var(--mbu-error-bg); }
     .ii-input.ok    { border-color: #198754; }
     .ii-clear { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px;
       padding: 0; border: none; border-radius: 3px; background: transparent; color: #adb5bd; font-size: 13px;
       line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .ii-clear:hover { background: #fdeaec; color: #dc3545; }
+    .ii-clear:hover { background: var(--mbu-bg-hover); color: #dc3545; }
     .ii-plus { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 7px; border: 1px solid #dee2e6;
-      border-radius: 4px; background: #f8f9fa; cursor: pointer; color: #6c757d; font-family: monospace; }
-    .ii-plus:hover { background: #e9ecef; color: #212529; }
+      border-radius: 4px; background: var(--mbu-bg); cursor: pointer; color: #6c757d; font-family: monospace; }
+    .ii-plus:hover { background: var(--mbu-bg-sunken); color: #212529; }
     .ii-plus-hidden { visibility: hidden; }   /* reserve the slot on the first row so SX text still aligns */
     /* explicit per-track SoundExchange trigger (#157), sits next to +1 */
     .ii-sx { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 7px; border: 1px solid #cfd8e3;
-      border-radius: 4px; background: #eef3fb; cursor: pointer; color: #2c5d9b; font-family: monospace; }
-    .ii-sx:hover { background: #dde8f7; color: #1b3f6e; }
+      border-radius: 4px; background: var(--mbu-bg-raised); cursor: pointer; color: #2c5d9b; font-family: monospace; }
+    .ii-sx:hover { background: var(--mbu-info-bg); color: #1b3f6e; }
     .ii-sx:disabled { opacity: .4; cursor: default; }
-    .ii-sx:disabled:hover { background: #eef3fb; color: #2c5d9b; }
+    .ii-sx:disabled:hover { background: var(--mbu-bg-raised); color: #2c5d9b; }
     /* #490: margin-left matches .ii-sx-hover's width (20px) + .ii-inwrap's gap (5px), so the
        candidate list — a sibling of .ii-inwrap, not a child — lines up with the input box
        instead of starting flush left under the hover icon. */
     .ii-cands { margin-top: 4px; margin-left: 25px; display: flex; flex-direction: column; gap: 3px; width: auto; }
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: var(--mbu-bg); }
-    .ii-cand:hover { background: #f0f6ff; border-color: #9ec5fe; }
+    .ii-cand:hover { background: var(--mbu-bg); border-color: #9ec5fe; }
     .ii-cands.ii-collapsed .ii-cand:not(.chosen) { display: none; }
     .ii-cand.chosen { box-shadow: inset 3px 0 0 #198754; }
-    .ii-cand.best { border-color: #6ea8fe; background: #d4e6ff; }
-    .ii-cand.warn { border-color: #ffe08a; background: #fff3cd; }
-    .ii-cand.bad  { border-color: #f3c6cb; background: #fdf2f3; }
+    .ii-cand.best { border-color: #6ea8fe; background: var(--mbu-info-bg); }
+    .ii-cand.warn { border-color: #ffe08a; background: var(--mbu-warn-bg); }
+    .ii-cand.bad  { border-color: #f3c6cb; background: var(--mbu-bg-raised); }
     .ii-cand-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; padding-top: 1px; }
     .ii-cand-meta { flex: 1; min-width: 0; color: #495057; white-space: normal; word-break: break-word; line-height: 1.35; }
     .ii-bad { color: #dc3545; font-weight: 600; text-decoration: underline wavy rgba(220,53,69,.55); text-underline-offset: 2px; }
@@ -26981,23 +26981,23 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
        bottom padding for it. #ii-modal is position:fixed → it's the containing block. */
     #ii-foot { position: absolute !important; left: 0; right: 0; bottom: 0; z-index: 2;
       display: flex; align-items: center; gap: 10px; padding: 9px 16px; height: 56px; box-sizing: border-box;
-      border-top: 1px solid #dee2e6; background: #f8f9fa; }
+      border-top: 1px solid #dee2e6; background: var(--mbu-bg); }
     #ii-foot .ii-summary { font-size: 12px; color: #495057; min-width: 0; }
     #ii-foot #ii-summary { flex: 1; }   /* #471: both summaries show together — only the first grows */
     #ii-foot .ii-summary b { color: #212529; }
     #ii-foot #ii-summary-links:not(:empty)::before { content: ' · '; color: #ced4da; }
     .ii-seq-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 9px;
-      font-size: 11px; font-weight: 700; font-family: 'Courier New', monospace; color: #0f5132; background: #d1e7dd;
+      font-size: 11px; font-weight: 700; font-family: 'Courier New', monospace; color: #0f5132; background: var(--mbu-ok-bg);
       border: 1px solid #a3cfbb; border-radius: 11px; vertical-align: middle; letter-spacing: .3px; }
 
     /* sub-panels (setup / bulk) */
-    .ii-pane { display: none; padding: 14px 16px; border-bottom: 1px solid var(--mbu-divider); background: #fcfcfe; flex-shrink: 0; }
+    .ii-pane { display: none; padding: 14px 16px; border-bottom: 1px solid var(--mbu-divider); background: var(--mbu-bg); flex-shrink: 0; }
     /* an open pane scrolls internally past 45vh so it can never push the footer off */
     .ii-pane.open { display: block; max-height: 45vh; overflow-y: auto; overscroll-behavior: contain; }
     .ii-pane h3 { margin: 0 0 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
     .ii-pane-x { flex-shrink: 0; width: 19px; height: 19px; line-height: 1; padding: 0; font-size: 13px;
       color: #6c757d; background: var(--mbu-bg); border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; }
-    .ii-pane-x:hover { background: #f1f3f5; color: #212529; border-color: #adb5bd; }
+    .ii-pane-x:hover { background: var(--mbu-bg-raised); color: #212529; border-color: #adb5bd; }
     /* #301 standard config-window header: icon · name · version · Log · ? Help */
     .ii-cfg-lnk { font: 600 12px system-ui; color: var(--mbu-accent); text-decoration: none; cursor: pointer;
       background: none; border: none; padding: 2px 4px; }
@@ -27022,21 +27022,21 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       padding: 8px 10px; border-radius: 5px; max-height: 240px; overflow: auto; margin: 0; }
     #ii-log-pane h3 { display: flex; align-items: center; gap: 8px; }
     .ii-sx-group { display: inline-flex; align-items: center; gap: 7px; padding: 3px 8px 3px 4px;
-      border: 1px solid #e0d7f2; background: #faf8fe; border-radius: 7px; }
+      border: 1px solid #e0d7f2; background: var(--mbu-bg-raised); border-radius: 7px; }
     /* per-track ISRC-provider selector (#181): a split [icon|▾] on each row's button */
     .ii-sxsplit { display: inline-flex; align-items: stretch; flex-shrink: 0; }
     .ii-sxsplit .ii-sx { border-top-right-radius: 0; border-bottom-right-radius: 0; }
     .ii-sxprov { display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; margin-left: -1px;
-      font-size: 9px; color: #6c757d; background: #eef3fb; border: 1px solid #cfd8e3; border-left-color: #b9c6d8;
+      font-size: 9px; color: #6c757d; background: var(--mbu-bg-raised); border: 1px solid #cfd8e3; border-left-color: #b9c6d8;
       border-top-right-radius: 5px; border-bottom-right-radius: 5px; cursor: pointer; }
-    .ii-sxprov:hover { background: #dde8f7; color: #1b3f6e; }
+    .ii-sxprov:hover { background: var(--mbu-info-bg); color: #1b3f6e; }
     .ii-prov-menu { display: none; position: absolute; z-index: 60; flex-direction: column; min-width: 178px;
       padding: 4px; background: var(--mbu-bg); border: 1px solid #d6c7ee; border-radius: 7px; box-shadow: 0 6px 22px rgba(40,20,80,.18); }
     .ii-prov-menu.open { display: flex; }
     .ii-prov-item { display: flex; align-items: center; gap: 8px; padding: 6px 9px; font-size: 12px; font-weight: 600;
       color: inherit; background: none; border: 0; border-radius: 5px; cursor: pointer; text-align: left; }
-    .ii-prov-item:hover { background: #f3eefc; }
-    .ii-prov-item.active { background: #ece4fb; }
+    .ii-prov-item:hover { background: var(--mbu-bg-raised); }
+    .ii-prov-item.active { background: var(--mbu-bg-hover); }
     .ii-prov-item.active::after { content: '✓'; margin-left: auto; color: var(--mbu-accent); font-weight: 700; }
     .ii-prov-ico { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex-shrink: 0; }
     .ii-prov-ico svg { width: 16px; height: 16px; }
@@ -27047,14 +27047,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     /* collapsible "exact" toggle — collapsed by default so the toolbar stays compact */
     .ii-exact-toggle { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; font-size: 11px;
       font-weight: 600; color: #8a7bb0; background: var(--mbu-bg); border: 1px solid #e0d7f2; border-radius: 5px; cursor: pointer; }
-    .ii-exact-toggle:hover { background: #f3eefc; color: var(--mbu-accent); }
+    .ii-exact-toggle:hover { background: var(--mbu-bg-raised); color: var(--mbu-accent); }
     .ii-exact-toggle .ii-exact-car { font-size: 9px; transition: transform .15s; }
     /* NB: the state class is namespaced (ii-collapsed) on purpose — MB's common.css paints a
        20px absolute ::after fade overlay on ANY bare .collapsed, which blanketed the toolbar
        and swallowed clicks on the bottom half of every button (#414). */
     .ii-sx-group:not(.ii-collapsed) .ii-exact-toggle .ii-exact-car { transform: rotate(180deg); }
     /* a filled dot on the toggle when any exact option is active while collapsed */
-    .ii-exact-toggle.on { color: var(--mbu-accent); border-color: #c9b6ee; background: #f3eefc; }
+    .ii-exact-toggle.on { color: var(--mbu-accent); border-color: #c9b6ee; background: var(--mbu-bg-raised); }
     .ii-exact-toggle.on::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--mbu-accent); }
     .ii-sx-group.ii-collapsed .ii-exact-set { display: none; }
     .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
@@ -27073,24 +27073,24 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-lookup-rel { color: #6c757d; }
     .ii-lookup.pending { color: #6c757d; cursor: pointer; text-decoration: underline dotted #adb5bd; text-underline-offset: 2px; }
     /* #431: a position-matched fill whose length/title doesn't fit the MB track */
-    input.ii-in-suspect { border-color: #e0892a !important; background: #fff6ea !important; box-shadow: 0 0 0 2px rgba(224,137,42,.28); }
-    #ii-suspect-badge { color: #b45309; background: #fff3e0; border: 1px solid #e0a05a; border-radius: 5px;
+    input.ii-in-suspect { border-color: #e0892a !important; background: var(--mbu-bg-raised) !important; box-shadow: 0 0 0 2px rgba(224,137,42,.28); }
+    #ii-suspect-badge { color: #b45309; background: var(--mbu-warn-bg); border: 1px solid #e0a05a; border-radius: 5px;
       padding: 2px 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
-    #ii-suspect-badge:hover { background: #ffe9cc; }
+    #ii-suspect-badge:hover { background: var(--mbu-warn-bg); }
     .ii-lookup.pending:hover { color: #343a40; }
     .ii-cand-refine { font-size: 10.5px; color: var(--mbu-accent); cursor: pointer; padding: 2px 7px;
-      border: 1px dashed #d6c7ee; border-radius: 4px; background: #faf8fe; width: max-content; }
-    .ii-cand-refine:hover { background: #f0e9fb; text-decoration: underline; }
+      border: 1px dashed #d6c7ee; border-radius: 4px; background: var(--mbu-bg-raised); width: max-content; }
+    .ii-cand-refine:hover { background: var(--mbu-bg-hover); text-decoration: underline; }
     .ii-cand-pending { font-size: 10.5px; color: #6c757d; cursor: pointer; padding: 3px 8px;
-      border: 1px dashed #ced4da; border-radius: 4px; background: #f8f9fa; width: max-content; }
-    .ii-cand-pending:hover { background: #eceef0; color: #343a40; border-color: #adb5bd; }
+      border: 1px dashed #ced4da; border-radius: 4px; background: var(--mbu-bg); width: max-content; }
+    .ii-cand-pending:hover { background: var(--mbu-bg-raised); color: #343a40; border-color: #adb5bd; }
 
     /* SoundExchange refine panel */
     #ii-sxpanel { position: fixed; top: 9vh; right: 4vw; width: 560px; max-width: 92vw; max-height: 78vh;
       background: var(--mbu-bg); border: 1px solid #cdb8ee; border-radius: var(--mbu-radius-lg); box-shadow: 0 14px 44px rgba(0,0,0,.32);
       z-index: 1000001; display: none; flex-direction: column; overflow: hidden; font-family: system-ui, sans-serif; }
     #ii-sxpanel.open { display: flex; }
-    .ii-sxp-hdr { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: #f7f3fe;
+    .ii-sxp-hdr { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: var(--mbu-bg-raised);
       border-bottom: 1px solid #e6dcf7; cursor: move; user-select: none; }
     .ii-sxp-hdr .t { flex: 1; font-size: 13px; font-weight: 700; color: #4b2e83; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-sxp-hdr .t b { color: var(--mbu-accent); }
@@ -27102,7 +27102,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     #ii-sxp-f-release { grid-column: 1 / 3; }
     .ii-sxp-inp { width: 100%; padding: 6px 31px; border: 1px solid #ced4da; border-radius: var(--mbu-radius); font-size: 13px; box-sizing: border-box; }
     .ii-sxp-inp:focus { outline: none; border-color: var(--mbu-accent); }
-    .ii-sxp-field.off .ii-sxp-inp { color: #adb5bd; background: #f8f9fa; }
+    .ii-sxp-field.off .ii-sxp-inp { color: #adb5bd; background: var(--mbu-bg); }
     .ii-sxp-en { position: absolute; left: 8px; width: 15px; height: 15px; margin: 0; cursor: pointer; z-index: 1; flex-shrink: 0; }
     .ii-sxp-E { position: absolute; right: 5px; width: 23px; height: 23px; padding: 0; display: inline-flex; align-items: center;
       justify-content: center; font-size: 12px; font-weight: 700; color: #adb5bd; background: var(--mbu-bg); border: 1px solid #e9ecef;
@@ -27112,24 +27112,24 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-sxp-field.off .ii-sxp-E { opacity: .4; pointer-events: none; }
     #ii-sxp-search { grid-column: 3; grid-row: 1 / 3; align-self: stretch; padding: 0 18px; border: none;
       border-radius: var(--mbu-radius); background: var(--mbu-accent); color: var(--mbu-text-on-accent); font-size: 13px; font-weight: 700; cursor: pointer; }
-    #ii-sxp-search:hover { background: var(--mbu-accent-hover); } #ii-sxp-search:disabled { background: #adb5bd; }
+    #ii-sxp-search:hover { background: var(--mbu-accent-hover); } #ii-sxp-search:disabled { background: var(--mbu-bg-sunken); }
     .ii-sxp-status { padding: 2px 13px; font-size: 11px; color: #6c757d; min-height: 14px; }
     .ii-sxp-status.err { color: #dc3545; }
     .ii-sxp-results { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 4px 13px 12px; display: flex; flex-direction: column; gap: 4px; }
     .ii-sxp-row { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid #e9ecef;
       border-radius: var(--mbu-radius); cursor: pointer; overflow: hidden; flex-shrink: 0; }
-    .ii-sxp-row:hover { background: #f0f6ff; border-color: #9ec5fe; }
-    .ii-sxp-row.best { border-color: #6ea8fe; background: #d4e6ff; }
-    .ii-sxp-row.warn { border-color: #ffe08a; background: #fff3cd; }
-    .ii-sxp-row.bad  { border-color: #f3c6cb; background: #fdf2f3; }
-    .ii-sxp-row.cur  { border-color: #198754; background: #d1e7dd; }
+    .ii-sxp-row:hover { background: var(--mbu-bg); border-color: #9ec5fe; }
+    .ii-sxp-row.best { border-color: #6ea8fe; background: var(--mbu-info-bg); }
+    .ii-sxp-row.warn { border-color: #ffe08a; background: var(--mbu-warn-bg); }
+    .ii-sxp-row.bad  { border-color: #f3c6cb; background: var(--mbu-bg-raised); }
+    .ii-sxp-row.cur  { border-color: #198754; background: var(--mbu-ok-bg); }
     .ii-sxp-row { align-items: flex-start; }
     .ii-sxp-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; font-size: 12px; padding-top: 1px; }
     .ii-sxp-meta { flex: 1; min-width: 0; }
     .ii-sxp-meta .a { display: block; font-size: 12px; color: #212529; white-space: normal; word-break: break-word; line-height: 1.35; }
     .ii-sxp-meta .b { display: block; font-size: 10.5px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-sxp-inmb { font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
-    .ii-sxp-foot { padding: 8px 13px; border-top: 1px solid var(--mbu-divider); background: #fbfbfd; flex-shrink: 0; }
+    .ii-sxp-foot { padding: 8px 13px; border-top: 1px solid var(--mbu-divider); background: var(--mbu-bg); flex-shrink: 0; }
     .ii-sxp-foot a { font-size: 11.5px; font-weight: 600; color: var(--mbu-accent); text-decoration: none; }
     .ii-sxp-foot a:hover { text-decoration: underline; }
 
@@ -27196,7 +27196,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       #ii-table tr.ii-medrow { display: block; }
       #ii-table tr.ii-medrow td { display: block; }
       /* paint the whole card (not just cells, which would leave striped gaps) */
-      #ii-table tr.ii-row-missing { background: #fff7e8; box-shadow: inset 3px 0 0 #f0ad4e; }
+      #ii-table tr.ii-row-missing { background: var(--mbu-bg-raised); box-shadow: inset 3px 0 0 #f0ad4e; }
       #ii-table tr.ii-row-missing > td { background: transparent; box-shadow: none; }
       /* let the New-ISRC input grow to the card width; candidates span it */
       .ii-input-box { flex: 1 1 auto; width: auto; min-width: 0; }
@@ -31160,12 +31160,12 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       const ov = document.createElement('div');
       ov.style.cssText = 'position:fixed;inset:0;z-index:2147483400;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;';
       const box = document.createElement('div');
-      box.style.cssText = 'max-width:460px;margin:16px;background:#fff;border-radius:8px;border-top:4px solid #e0892a;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;font-family:inherit;';
+      box.style.cssText = 'max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid #e0892a;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:#333;font-family:inherit;';
       box.innerHTML =
         '<div style="font-weight:800;color:#b45309;font-size:15px;margin-bottom:8px;">⚠ ' + n + ' implausible ISRC fill' + (n === 1 ? '' : 's') + '</div>' +
         '<p style="margin:0 0 12px;">The amber-flagged entries differ from the MB track in <strong>length or title</strong> — they may belong to a <strong>different recording</strong> (wrong provider link or edition). Submitted ISRCs are rarely re-checked, so verify those rows first.</p>' +
         '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
-        '<button type="button" data-a="review" style="padding:5px 14px;font-size:13px;font-weight:600;color:#333;background:#f1f3f5;border:1px solid #ced4da;border-radius:5px;cursor:pointer;">Review first</button>' +
+        '<button type="button" data-a="review" style="padding:5px 14px;font-size:13px;font-weight:600;color:#333;background:var(--mbu-bg-raised);border:1px solid #ced4da;border-radius:5px;cursor:pointer;">Review first</button>' +
         '<button type="button" data-a="go" style="padding:5px 14px;font-size:13px;font-weight:600;color:#fff;background:#e0892a;border:none;border-radius:5px;cursor:pointer;">Submit anyway</button>' +
         '</div>';
       const done = ok => {
@@ -31434,7 +31434,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.2.193000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.2.200000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -31665,7 +31665,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
   // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
   // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui-components.mjs
@@ -31898,27 +31898,27 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-min > .mmth-side.mmth-open { display:flex; }
   .mmth-badge { display:none; position:absolute; top:4px; right:5px; z-index:61; width:25px; height:25px;
                 align-items:center; justify-content:center; cursor:pointer; border:1px solid #cfd9d3;
-                border-radius:7px; background:#fbfdfc; box-shadow:0 1px 3px rgba(0,0,0,.12);
+                border-radius:7px; background:var(--mbu-bg); box-shadow:0 1px 3px rgba(0,0,0,.12);
                 font-size:15px; line-height:1; user-select:none; }
-  .mmth-badge:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-badge:hover { background:var(--mbu-ok-bg); border-color:#5aa67e; }
   .mmth-min > .mmth-badge { display:flex; }
   .mmth-vsep { flex:none; width:9px; align-self:flex-start; cursor:col-resize; position:relative; }   /* #304: height synced to the field (not the field+pinbar column) */
-  .mmth-vsep::before { content:''; position:absolute; left:4px; top:0; bottom:0; width:1px; background:#d7e0db; }
+  .mmth-vsep::before { content:''; position:absolute; left:4px; top:0; bottom:0; width:1px; background:var(--mbu-bg-sunken); }
   .mmth-vsep:hover::before, .mmth-vsep.mmth-dragv::before { background:#5aa67e; width:3px; left:3px; }
   .mmth-hidehelp > p { display:none !important; }
   .mmth-side { flex:0 0 300px; max-width:300px; display:flex; flex-direction:column; border:1px solid #cfd9d3;
-               border-radius:8px; background:#fbfdfc; font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; overflow:hidden; }
-  .mmth-ft { display:flex; align-items:center; gap:2px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f1f6f3; }
+               border-radius:8px; background:var(--mbu-bg); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; overflow:hidden; }
+  .mmth-ft { display:flex; align-items:center; gap:2px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:var(--mbu-bg-raised); }
   .mmth-fb { cursor:pointer; border:none; background:none; font-size:13px; line-height:1; padding:3px 6px; border-radius:5px; color:#566; }
-  .mmth-fb:hover { background:#dcefe2; }
-  .mmth-fb.on { background:#cfe9d8; color:#1f5c3d; }
+  .mmth-fb:hover { background:var(--mbu-ok-bg); }
+  .mmth-fb.on { background:var(--mbu-ok-bg); color:#1f5c3d; }
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
   .mmth-fb.mmth-grp { margin-left:10px; }
   /* #309: per-type scope indicator (release / artist / recording / …) */
-  .mmth-scope { align-self:center; flex:none; font-size:10px; color:#6f7d75; background:#eef3f0; border:1px solid #dde7e1; border-radius:9px; padding:1px 7px; margin-right:4px; white-space:nowrap; max-width:72px; overflow:hidden; text-overflow:ellipsis; }
+  .mmth-scope { align-self:center; flex:none; font-size:10px; color:#6f7d75; background:var(--mbu-bg-raised); border:1px solid #dde7e1; border-radius:9px; padding:1px 7px; margin-right:4px; white-space:nowrap; max-width:72px; overflow:hidden; text-overflow:ellipsis; }
   .mmth-ft { flex-wrap:wrap; }   /* #304: never clip toolbar buttons — wrap as a last resort below the min width */
   /* #304: opt-in search row (search box + count) between the toolbar and the list */
-  .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
+  .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:var(--mbu-bg); }
   /* width:auto !important defends against MB's form CSS (#content input), which
      otherwise forces a fixed width and squashes the flex layout (#304) */
   /* display:block !important beats MB's ".add-edit-note input { display:none }" (which
@@ -31929,8 +31929,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-count { flex:none; font-size:11px; color:#8a978f; white-space:nowrap; }
   /* #304: pinned saved notes as quick-insert buttons BELOW the field (like baby-field bars) */
   .mmth-pinbar { display:flex; flex-wrap:wrap; gap:5px; margin:5px 0 2px; }
-  .mmth-segb { border:1px solid #cfd9d3 !important; background:#fbfdfc; border-radius:7px; padding:3px 10px !important; font:12px/1.2 -apple-system,Segoe UI,Arial,sans-serif !important; color:#27483a; cursor:pointer; max-width:200px; height:auto !important; min-height:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
-  .mmth-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-segb { border:1px solid #cfd9d3 !important; background:var(--mbu-bg); border-radius:7px; padding:3px 10px !important; font:12px/1.2 -apple-system,Segoe UI,Arial,sans-serif !important; color:#27483a; cursor:pointer; max-width:200px; height:auto !important; min-height:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  .mmth-segb:hover { background:var(--mbu-ok-bg); border-color:#5aa67e; }
   .mmth-row.mmth-pinned .mmth-txt::before { content:'★'; color:#c2a93e; margin-right:4px; font-size:10px; vertical-align:1px; }
   /* #304: tabbed config window (Settings / Import-Export) */
   .mmth-cfgtabs { display:flex; gap:4px; margin:0 0 8px; border-bottom:1px solid #e7eee9; }
@@ -31947,9 +31947,9 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-cf-total .mmth-cf-off-n { color:#b06a2c; }
   .mmth-cf-list { display:flex; flex-direction:column; gap:0; margin:0 0 4px; max-height:46vh; overflow-y:auto; overflow-x:hidden; }
   .mmth-cf-list::-webkit-scrollbar { width:8px; }
-  .mmth-cf-list::-webkit-scrollbar-thumb { background:#d7e0db; border-radius:4px; }
+  .mmth-cf-list::-webkit-scrollbar-thumb { background:var(--mbu-bg-sunken); border-radius:4px; }
   .mmth-cf-row { display:flex; align-items:center; gap:5px; flex-wrap:nowrap; padding:0 3px; border-radius:5px; }
-  .mmth-cf-row:hover { background:#f4f7f5; }
+  .mmth-cf-row:hover { background:var(--mbu-bg-raised); }
   .mmth-cf-in { border:none; border-bottom:1px solid #e2e8e4; border-radius:0; background:transparent; padding:2px 3px; font:11.5px -apple-system,Segoe UI,Arial,sans-serif; box-sizing:border-box; min-width:0; }
   .mmth-cf-in:focus { outline:none; border-bottom-color:#5aa67e; }
   .mmth-cf-in::placeholder { color:#b7c2bb; }
@@ -31958,32 +31958,32 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-cf-in[type=number]::-webkit-inner-spin-button, .mmth-cf-in[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
   .mmth-cf-sub { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:#8a968f; white-space:nowrap; cursor:pointer; }
   /* matches count — a compact green pill; grey when 0, red when the selector is invalid */
-  .mmth-cf-cnt { min-width:18px; text-align:center; font:700 10px/16px -apple-system,Segoe UI,Arial,sans-serif; color:#1f7a44; background:#e7f4ec; border-radius:9px; padding:0 5px; }
+  .mmth-cf-cnt { min-width:18px; text-align:center; font:700 10px/16px -apple-system,Segoe UI,Arial,sans-serif; color:#1f7a44; background:var(--mbu-ok-bg); border-radius:9px; padding:0 5px; }
   .mmth-cf-cnt:empty { background:none; }
-  .mmth-cf-cnt.mmth-cf-zero { color:#8a968f; background:#eef1ef; }
+  .mmth-cf-cnt.mmth-cf-zero { color:#8a968f; background:var(--mbu-bg-raised); }
   .mmth-cf-cnt.mmth-cf-bad { color:var(--mbu-text-on-accent); background:#c0392b; }
   .mmth-cf-del { border:none; background:none; cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; visibility:hidden; }
   .mmth-cf-row:hover .mmth-cf-del { visibility:visible; }
-  .mmth-cf-del:hover { background:#f0d9d9; }
+  .mmth-cf-del:hover { background:var(--mbu-error-bg); }
   /* enable/disable toggle — shown on row hover, and always on a disabled row so it can be switched back */
   .mmth-cf-tog { border:none; background:none; cursor:pointer; font-size:11px; line-height:1; padding:2px 3px; border-radius:4px; color:#2e9e5b; visibility:hidden; }
-  .mmth-cf-tog:hover { background:#e7f4ec; }
+  .mmth-cf-tog:hover { background:var(--mbu-ok-bg); }
   .mmth-cf-row:hover .mmth-cf-tog, .mmth-cf-row.mmth-cf-off .mmth-cf-tog { visibility:visible; }
-  .mmth-cf-row.mmth-cf-off { background:#fafbfa; }
+  .mmth-cf-row.mmth-cf-off { background:var(--mbu-bg); }
   .mmth-cf-row.mmth-cf-off .mmth-cf-in, .mmth-cf-row.mmth-cf-off .mmth-cf-cnt, .mmth-cf-row.mmth-cf-off .mmth-cf-sub { opacity:.4; }
   .mmth-cf-row.mmth-cf-off .mmth-cf-tog { color:#9aa6a0; }
-  .mmth-cf-add { border:1px dashed #b9c6be; background:#f7faf8; border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
-  .mmth-cf-add:hover { background:#eef5f0; }
+  .mmth-cf-add { border:1px dashed #b9c6be; background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-add:hover { background:var(--mbu-ok-bg); }
   .mmth-cf-empty { color:#9aa6a0; font-style:italic; font-size:12px; padding:2px 0; }
-  .mmth-cf-reset { margin-left:6px; border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
-  .mmth-cf-reset:hover { background:#eef5f0; border-color:#5aa67e; }
-  .mmth-cf-mode { border:1px solid #cfd9d3; background:#f7faf8; border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
-  .mmth-cf-mode:hover { background:#eef5f0; border-color:#5aa67e; }
+  .mmth-cf-reset { margin-left:6px; border:1px solid #cfd9d3; background:var(--mbu-bg); border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-reset:hover { background:var(--mbu-ok-bg); border-color:#5aa67e; }
+  .mmth-cf-mode { border:1px solid #cfd9d3; background:var(--mbu-bg); border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:#2e6b4a; cursor:pointer; text-transform:none; letter-spacing:normal; }
+  .mmth-cf-mode:hover { background:var(--mbu-ok-bg); border-color:#5aa67e; }
   .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid #d7e0db; border-radius:var(--mbu-radius); padding:7px; resize:vertical; }
   .mmth-cf-json:focus { outline:none; border-color:#5aa67e; }
   .mmth-cf-jsonrow { display:flex; align-items:center; gap:9px; margin-top:6px; }
-  .mmth-cf-jsonapply { border:1px dashed #b9c6be; background:#f7faf8; border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
-  .mmth-cf-jsonapply:hover { background:#eef5f0; }
+  .mmth-cf-jsonapply { border:1px dashed #b9c6be; background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:#2e6b4a; font:12px inherit; }
+  .mmth-cf-jsonapply:hover { background:var(--mbu-ok-bg); }
   .mmth-cf-jsonmsg { font-size:11px; color:#8a968f; }
   .mmth-cf-jsonmsg.mmth-cf-bad { color:var(--mbu-error); }
   /* #304: import/export pane (the pane IS the flex column — no inner .mmth-io wrapper) */
@@ -31994,14 +31994,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-io-ta { width:100% !important; box-sizing:border-box; height:160px !important; min-height:120px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:6px 8px; font:13px/1.55 -apple-system,Segoe UI,Arial,sans-serif; }
   .mmth-io-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
   .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:var(--mbu-bg); border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
-  .mmth-io-btn:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-io-btn:hover { background:var(--mbu-ok-bg); border-color:#5aa67e; }
   .mmth-io-msg { font-size:11px; color:#8a978f; }
   .mmth-list { flex:1 1 auto; overflow-y:auto; scrollbar-width:none; }
   .mmth-list::-webkit-scrollbar { width:0; height:0; }
   .mmth-row { display:flex; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid #f0f4f2; cursor:pointer; }
   .mmth-row:first-child { border-top:none; }
-  .mmth-row:hover { background:#eaf5ee; }
-  .mmth-row.mmth-cyc { background:#d9efe1; }
+  .mmth-row:hover { background:var(--mbu-ok-bg); }
+  .mmth-row.mmth-cyc { background:var(--mbu-ok-bg); }
   .mmth-row.mmth-drop-before { box-shadow:inset 0 2px 0 #2c7a51; }
   .mmth-row.mmth-drop-after { box-shadow:inset 0 -2px 0 #2c7a51; }
   .mmth-row.mmth-dragging { opacity:.45; }
@@ -32012,13 +32012,13 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-rowacts { flex:none; display:flex; gap:1px; opacity:0; }
   .mmth-row:hover .mmth-rowacts { opacity:1; }
   .mmth-ra { cursor:pointer; border:none; background:none; color:#7d8a82; font-size:11px; line-height:1; padding:1px 2px; border-radius:3px; }
-  .mmth-ra:hover { background:#cfe9d8; color:#1f5c3d; }
+  .mmth-ra:hover { background:var(--mbu-ok-bg); color:#1f5c3d; }
   .mmth-empty { padding:12px 8px; color:#9aa6a0; font-style:italic; text-align:center; }
   .mmth-pop { position:fixed; z-index:2147483647; background:var(--mbu-bg); border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);   /* max — the config/syntax popup must clear any host modal (GT/ISRC live near max) */
               padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:var(--mbu-text); width:280px; }
   .mmth-cfg { width:360px; max-height:90vh; overflow:hidden; }   /* #304 wider config window; cap height — the Babies list scrolls internally */
   .mmth-cfg.mmth-cfg-wide { width:min(660px,94vw); }   /* Fields tab: roomier so each custom-field row fits one line */
-  .mmth-pop h4 { margin:-10px -12px 8px; padding:6px 10px; font-size:13px; display:flex; align-items:center; gap:6px; background:#f1f6f3; border-bottom:1px solid #e7eee9; border-radius:8px 8px 0 0; }
+  .mmth-pop h4 { margin:-10px -12px 8px; padding:6px 10px; font-size:13px; display:flex; align-items:center; gap:6px; background:var(--mbu-bg-raised); border-bottom:1px solid #e7eee9; border-radius:8px 8px 0 0; }
   .mmth-tip { color:#8a978f; font-size:11px; margin:0 0 4px 22px; }
   .mmth-pop h4 .mmth-ver { color:#8a978f; font-weight:400; font-size:11px; }
   .mmth-pop h4 a { margin-left:auto; font-size:11px; color:#2c7a51; text-decoration:none; font-weight:600; }
@@ -32027,7 +32027,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-pop label { display:flex; align-items:center; gap:6px; margin:5px 0; cursor:pointer; }
   .mmth-pop input[type="number"]:not(.mmth-cf-in) { width:46px; border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
   .mmth-pop select:not(.mmth-cf-in) { border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
-  .mmth-pop code { background:#f1f4f2; border-radius:3px; padding:0 3px; font-size:12px; }
+  .mmth-pop code { background:var(--mbu-bg-raised); border-radius:3px; padding:0 3px; font-size:12px; }
   .mmth-pop .mmth-syn { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:4px 0; }
   .mmth-pop .mmth-sub { font-weight:600; font-size:12px; margin:8px 0 2px; }
   /* While an MB dialog/popover is open, hide Mammoth's panel (incl. the minimized
@@ -32891,31 +32891,31 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       .mmthf-bar.mmthf-bar-inflow { position:static !important; z-index:auto; max-width:none !important; margin:5px 0 3px; }
       /* #304: individual rounded "tag" buttons that wrap to new rows — matches the main edit-note pins */
       .mmthf-seg { display:flex; flex-wrap:wrap; gap:5px; max-width:100%; }
-      .mmthf-segb { border:1px solid #cfd9d3 !important; background:#fbfdfc !important; border-radius:7px !important; padding:3px 10px !important; font:12px/1.2 -apple-system,Segoe UI,Arial,sans-serif !important; color:#27483a !important; cursor:pointer; max-width:200px; height:auto !important; min-height:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
-      .mmthf-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
-      .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; max-width:calc(100vw - 12px); overflow:hidden; }
-      .mmthf-ft { display:flex; align-items:center; gap:1px; padding:3px 5px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
+      .mmthf-segb { border:1px solid #cfd9d3 !important; background:var(--mbu-bg) !important; border-radius:7px !important; padding:3px 10px !important; font:12px/1.2 -apple-system,Segoe UI,Arial,sans-serif !important; color:#27483a !important; cursor:pointer; max-width:200px; height:auto !important; min-height:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+      .mmthf-segb:hover { background:var(--mbu-ok-bg); border-color:#5aa67e; }
+      .mmthf-pop { position:fixed; z-index:9999; background:var(--mbu-bg); border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; max-width:calc(100vw - 12px); overflow:hidden; }
+      .mmthf-ft { display:flex; align-items:center; gap:1px; padding:3px 5px; background:var(--mbu-bg-raised); border-bottom:1px solid #e7eee9; }
       .mmthf-fb { cursor:pointer; border:none; background:none; font-size:14px; line-height:1; padding:3px 7px; border-radius:5px; color:#566; }
-      .mmthf-fb:hover { background:#dcefe2; }
+      .mmthf-fb:hover { background:var(--mbu-ok-bg); }
       .mmthf-fb[aria-disabled="true"] { color:#b7c2bb; cursor:default; background:none; }
       .mmthf-ft-title { flex:1 1 auto; min-width:0; text-align:center; font-weight:700; font-size:13px; color:#293330; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px; }
-      .mmthf-filterrow { padding:5px 6px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
+      .mmthf-filterrow { padding:5px 6px; border-bottom:1px solid #e7eee9; background:var(--mbu-bg); }
       .mmthf-filter { display:block; width:100%; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:3px 7px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
       .mmthf-filter:focus { outline:none; border-color:#5aa67e; }
-      .mmthf-row.mmthf-sel { background:#e7f2ea; }
+      .mmthf-row.mmthf-sel { background:var(--mbu-ok-bg); }
       .mmthf-list { max-height:240px; overflow-y:auto; }
       .mmthf-row { position:relative; display:flex; align-items:center; gap:6px; padding:5px 10px; border-top:1px solid #f0f4f2; cursor:pointer; }
       .mmthf-row:first-child { border-top:none; }
-      .mmthf-row:hover { background:#eaf5ee; }
+      .mmthf-row:hover { background:var(--mbu-ok-bg); }
       .mmthf-rtxt { flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:42px; }
       /* stationary indicators at the right edge (★ rightmost so it stays aligned; ◉ when default). Non-interactive — no reserved hover slots. */
       .mmthf-ind { position:absolute; right:10px; top:0; height:100%; display:flex; align-items:center; gap:5px; font-size:12px; color:#2c7a51; pointer-events:none; }
       /* the full action toolbar OVERLAYS the right on hover — reserves no space when idle */
-      .mmthf-acts { position:absolute; right:5px; top:2px; bottom:2px; display:none; align-items:center; gap:1px; padding:0 3px 0 12px; border-radius:5px; background:#eaf5ee; }
+      .mmthf-acts { position:absolute; right:5px; top:2px; bottom:2px; display:none; align-items:center; gap:1px; padding:0 3px 0 12px; border-radius:5px; background:var(--mbu-ok-bg); }
       .mmthf-row:hover .mmthf-acts { display:flex; }
       .mmthf-row:hover .mmthf-ind { display:none; }
       .mmthf-ra { width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; }
-      .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; }
+      .mmthf-ra:hover { background:var(--mbu-ok-bg); color:#1f5c3d; }
       .mmthf-edit-in { flex:1 1 auto; min-width:0; box-sizing:border-box; border:1px solid #5aa67e; border-radius:4px; padding:1px 5px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
       .mmthf-edit-in:focus { outline:none; }
       .mmthf-row.mmthf-editing .mmthf-acts, .mmthf-row.mmthf-editing .mmthf-ind { display:none !important; }
@@ -33230,7 +33230,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.2.193000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.2.193000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.2.200000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.2.200000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -33885,7 +33885,7 @@ container.id = 'mb-pc-panel';
 container.className = 'online-search-box';
 // min-width:0 + max-width + overflow:hidden so a long, no-wrap meta line (e.g. an
 // Apple Music licence string) can't stretch the panel — and the whole sidebar — wide.
-container.style.cssText = 'margin-bottom: 12px; padding: 8px 6px; background: #FAF9F6; border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05); min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;';
+container.style.cssText = 'margin-bottom: 12px; padding: 8px 6px; background: var(--mbu-bg); border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05); min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;';
 // MB's site CSS adds an external-link icon to every `target="_blank"` anchor
 // (`a[rel~="external"]::after` / similar). On the dark-themed sidebar it
 // renders as a missing-image red square next to each platform name. Suppress
@@ -33931,7 +33931,7 @@ function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; 
 // The shared design tokens (#562). Values live in dev/design-tokens.mjs and are
 // inlined here by dev/sync-tokens.mjs — edit them THERE, never in this block.
 // <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
-const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-sunken:#f4f2f9;--mbu-bg-hover:#f3eefe;--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
+const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-weak:#999;--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-divider:#eee;--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-ok:#1f9d6b;--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}';
 // </ST-TOKENS>
 
 // The shared UI components (#563). Definitions live in dev/ui-components.mjs
@@ -34136,7 +34136,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #sidebar .online-search-box a::after { content: none !important; display: none !important; background: none !important; background-image: none !important; }
   #sidebar .online-search-box a img.external,
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
-  .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: var(--mbu-text); }
+  .online-search-box .pc-icon-btn:hover { background: var(--mbu-bg-sunken); color: var(--mbu-text); }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
    * clean match · GRAY icon+name = found but track-count mismatch · faint = not found. Match vs mismatch is
@@ -34186,7 +34186,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
      barcode bar when a row is both. */
   /* setup panel (#188): section headers + nav-button hovers */
   #mb-provider-modal-card .pc-setup-sec { font-weight: 700; color: #444; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; margin: 14px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider); }
-  #mb-provider-modal-card .pc-setup-nav:hover { background: #ECECF1; }
+  #mb-provider-modal-card .pc-setup-nav:hover { background: var(--mbu-bg-raised); }
   #mb-provider-modal-card .pc-setup-back:hover { text-decoration: underline; }
   #mb-pc-panel .pc-row.pc-format-diff { box-shadow: inset 3px 0 0 #7e57c2; }
   #mb-pc-panel .pc-row.pc-format-diff.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a, inset 6px 0 0 #7e57c2; }
@@ -34387,15 +34387,15 @@ const providerModal = document.createElement('div');
 providerModal.id = 'mb-provider-modal-overlay';
 providerModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 100000; font-family: sans-serif;';
 providerModal.innerHTML = `
-<div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 20px 22px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD; font-size: 13px; color: #333;">
+<div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: var(--mbu-bg); padding: 20px 22px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD; font-size: 13px; color: #333;">
     ${mbuCfgHeader({ script: 'platform_check', name: 'Platform Check',
       version: (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?' })}
 
   <!-- ───────── MAIN view ───────── -->
   <div id="mb-setup-main">
     <div style="display: flex; gap: 8px; margin: 14px 0 4px;">
-      <button class="pc-setup-nav" id="mb-view-order" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">⋮⋮ <b>Platforms</b><span style="margin-left: auto; color: #999;">›</span></button>
-      <button class="pc-setup-nav" id="mb-view-auth" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">🔑 <b>Authentication</b><span id="mb-auth-badge" style="margin-left: auto; color: #999;">›</span></button>
+      <button class="pc-setup-nav" id="mb-view-order" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: var(--mbu-bg-raised); border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">⋮⋮ <b>Platforms</b><span style="margin-left: auto; color: #999;">›</span></button>
+      <button class="pc-setup-nav" id="mb-view-auth" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: var(--mbu-bg-raised); border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">🔑 <b>Authentication</b><span id="mb-auth-badge" style="margin-left: auto; color: #999;">›</span></button>
     </div>
 
     <div class="pc-setup-sec">Link confidence</div>
@@ -34474,7 +34474,7 @@ providerModal.innerHTML = `
     <p style="font-size: 12px; color: #888; margin: 4px 0 10px;">Drag to reorder; uncheck to skip a service. All results come from public endpoints.</p>
     <div id="mb-provider-list">
     ${PROVIDER_ORDER.map(p => `
-      <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 2px; font-size: 13px; padding: 4px 8px; border-radius: 4px; background: #FAFAFA; border: 1px solid transparent; cursor: grab; user-select: none;">
+      <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 2px; font-size: 13px; padding: 4px 8px; border-radius: 4px; background: var(--mbu-bg-raised); border: 1px solid transparent; cursor: grab; user-select: none;">
         <span class="pc-prov-grip" style="color: #BBB; font-size: 14px; margin-right: 8px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
         <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px 0 0; width: 15px; height: 15px;">
         <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
@@ -34496,7 +34496,7 @@ providerModal.innerHTML = `
         <input id="mb-bp-pass" type="password" placeholder="password" autocomplete="off" style="flex: 1 1 100px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
         <button id="mb-bp-login" style="padding: 6px 12px; background: #0a8754; border: none; border-radius: 4px; color: #FFF; font-size: 12px; cursor: pointer;">Log in</button>
       </div>
-      <button id="mb-bp-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
+      <button id="mb-bp-logout" style="display: none; padding: 5px 12px; background: var(--mbu-bg-sunken); border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
     </div>
     <div id="mb-qb-acct" style="padding: 4px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
       <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333;">
@@ -34509,7 +34509,7 @@ providerModal.innerHTML = `
         <input id="mb-qb-pass" type="password" placeholder="password" autocomplete="off" style="flex: 1 1 100px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
         <button id="mb-qb-login" style="padding: 6px 12px; background: #0070ef; border: none; border-radius: 4px; color: #FFF; font-size: 12px; cursor: pointer;">Log in</button>
       </div>
-      <button id="mb-qb-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
+      <button id="mb-qb-logout" style="display: none; padding: 5px 12px; background: var(--mbu-bg-sunken); border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
     </div>
   </div>
 </div>`;
