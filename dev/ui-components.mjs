@@ -52,6 +52,9 @@ const ROOTS = [
     // mammoth — .mmth-side is the note panel itself. NOT .mmth-wrap: that one
     // wraps MusicBrainz's own edit-note textarea, which belongs to the page.
     '.mmth-pop', '.mmth-cfg', '.mmth-side',
+    // falcon
+    '#falcon-panel', '#falcon-launcher', '#falcon-item-popup', '#falcon-add-page',
+    '.falcon-bar', '.falcon-addmenu',
 ];
 // `:where()` contributes NOTHING to specificity, so everything below lands as a
 // DEFAULT: any existing per-script rule, however weakly selected, still wins.

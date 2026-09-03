@@ -53,7 +53,12 @@ for (const [name, path, url, hasToast] of CASES.filter(c => !ONLY || c[0] === ON
     const page = await ctx.newPage();
     const errs = [];
     page.on('pageerror', e => errs.push(e.message));
-    await page.route(() => true, r => r.request().method() === 'POST' ? r.abort() : r.continue());
+    // Abort POSTs, hand everything else back to the browser untouched.
+    // route.continue() RE-ISSUES the request from Playwright, which production
+    // MusicBrainz does not survive — every navigation landed on "/" with an empty
+    // document, so credit_hoarder "mounted nothing" on a page that had never
+    // loaded. fallback() lets the default handling do the work.
+    await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     if (page.url().includes('/login')) { console.log('  NOT LOGGED IN — skipped'); await page.close(); continue; }
     await page.waitForTimeout(1500);

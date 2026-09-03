@@ -106,6 +106,15 @@ const SHOTS = [
     // none, so the entry could only ever be a permanent MISS. Its colours were
     // swept with the same passes as everything else and want a live look.
 
+    { n: 90, script: 'falcon', name: 'panel', page: `/release/${REL}`, sel: '#falcon-panel', settle: 4000,
+        open: () => document.getElementById('falcon-launcher')?.click() },
+    { n: 91, script: 'falcon', name: 'add-to-queue', page: `/release/${REL}`, sel: '.falcon-addmenu', settle: 4000,
+        open: () => {
+            document.getElementById('falcon-launcher')?.click();
+            setTimeout(() => [...document.querySelectorAll('#falcon-panel button')]
+                .find(e => /add from release/i.test(e.textContent || ''))?.click(), 900);
+        } },
+
     { n: 70, script: 'shared', name: 'toast', page: `/release/${REL}/cover-art`, sel: '#mbu-toast',
         open: () => window.MBU?.toast('Shared toast — this is what a message looks like', { ms: 60000 }) },
 ];
@@ -139,7 +148,12 @@ for (const mode of MODES) {
     for (const shot of list) {
         const tag = `${String(shot.n).padStart(2, '0')}-${shot.script}-${shot.name}${mode === 'dark' ? '-dark' : ''}`;
         const page = await ctx.newPage();
-        await page.route(() => true, r => r.request().method() === 'POST' ? r.abort() : r.continue());
+        // Abort POSTs, hand everything else back to the browser untouched.
+    // route.continue() RE-ISSUES the request from Playwright, which production
+    // MusicBrainz does not survive — every navigation landed on "/" with an empty
+    // document, so credit_hoarder "mounted nothing" on a page that had never
+    // loaded. fallback() lets the default handling do the work.
+    await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
         let note = '';
         try {
             await page.goto(B + shot.page, { waitUntil: 'domcontentloaded' });
