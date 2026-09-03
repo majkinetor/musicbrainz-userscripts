@@ -46,6 +46,23 @@ ck(carriers.length > 0, 'at least one script has adopted the tokens');
 const expected = `const MBU_TOKENS = '${tokensCss()}';`;
 const usedGlobally = new Set();
 
+// A bundled script (credit_hoarder, discogs_credits) is many source files that
+// become ONE userscript, so "carries the token block" and "wires a style sink"
+// are properties of the bundle, not of each module. Checking them per file
+// demands a copy of the block in every module, which is exactly what the bundle
+// exists to avoid. Group by the userscript directory and assert once per unit.
+const unitOf = (f) => {
+    const rel = relative(ROOT, f).replace(/\\/g, '/');
+    const m = /^userscripts\/([^/]+)\//.exec(rel);
+    return m ? m[1] : rel;
+};
+const units = new Map();
+for (const f of files) {
+    const u = unitOf(f);
+    if (!units.has(u)) units.set(u, []);
+    units.get(u).push(f);
+}
+
 for (const f of files) {
     const src = readFileSync(f, 'utf8');
     const rel = relative(ROOT, f).replace(/\\/g, '/');
@@ -57,9 +74,12 @@ for (const f of files) {
     const unknown = uses.filter(n => !(n in TOKENS));
     ck(unknown.length === 0, `${rel}: every referenced token is defined (${uses.length} used${unknown.length ? ', UNKNOWN: ' + unknown.join(', ') : ''})`);
 
-    // 2. the file must carry the block, and it must be current
-    ck(src.includes('// <ST-TOKENS>'), `${rel}: uses tokens, so it must carry the // <ST-TOKENS> block`);
-    ck(src.includes(expected), `${rel}: its inlined block is in sync with dev/design-tokens.mjs (run: node dev/sync-tokens.mjs)`);
+    // 2. the UNIT must carry the block, and it must be current
+    const unit = units.get(unitOf(f)).map(x => readFileSync(x, 'utf8'));
+    const unitHas = (needle) => unit.some(s => s.includes(needle));
+    if (!src.includes('// <ST-TOKENS>') && unitHas('// <ST-TOKENS>')) continue;   // a sibling module carries it
+    ck(unitHas('// <ST-TOKENS>'), `${rel}: uses tokens, so it must carry the // <ST-TOKENS> block`);
+    ck(unitHas(expected), `${rel}: its inlined block is in sync with dev/design-tokens.mjs (run: node dev/sync-tokens.mjs)`);
 
     // 2b. THE BLOCKS MUST BE AT MODULE SCOPE. The generated helpers are function
     // declarations, so a block that lands inside `function foo() {…}` defines them

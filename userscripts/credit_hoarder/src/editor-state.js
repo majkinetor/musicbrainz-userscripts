@@ -70,7 +70,7 @@ export function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID,
             if (parts.length) attrDesc = ` [${parts.join(', ')}]`;
         } catch(e) {}
     }
-    const posLabel = (trackPos != null && trackPos !== '') ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : '';
+    const posLabel = (trackPos != null && trackPos !== '') ? ` <span style="color:var(--mbu-text-weak);font-size:0.85em">#${trackPos}</span>` : '';
     log.info(`→ <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} ↔ ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ''}`);
     re.dispatch({
         type: 'update-relationship-state',

@@ -95,7 +95,7 @@ function _emit(html, plainText, sev) {
     // Real space character after the timestamp span — `margin-right` on the span
     // renders fine in the browser but disappears when log content is copied as
     // text (CSS spacing isn't part of textContent).
-    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${html}`;
+    li.innerHTML = `<span style="color:var(--mbu-text-weak);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${html}`;
     _logs.insertAdjacentElement('beforeend', li);
     // Feed progress ticker (strip HTML tags for plain-text display)
     const bar = document.querySelector('.discogs-bar');
@@ -125,7 +125,7 @@ export const log = {
     // OUT of the WARN tally — these are surfaced by the separate "N unresolved"
     // badge, and the maintainer asked not to lump them with real warnings. Still
     // rendered (muted amber) so the log shows exactly which roles were dropped.
-    skip:  msg => _emit(`<span style="color:#8a6d3b">SKIP ${msg}</span>`, `SKIP ${msg}`, 'skip'),
+    skip:  msg => _emit(`<span style="color:var(--mbu-warn)">SKIP ${msg}</span>`, `SKIP ${msg}`, 'skip'),
 };
 
 // ── Debug log (issue #87) ───────────────────────────────────────────────────
@@ -151,13 +151,13 @@ function _ensureDebugUl() {
     details.style.cssText = 'margin:0.3rem 0;';
     const summary = document.createElement('summary');
     summary.textContent = 'Preflight diagnostics';
-    summary.style.cssText = 'cursor:pointer;font-size:0.8rem;color:#888;user-select:none;';
+    summary.style.cssText = 'cursor:pointer;font-size:0.8rem;color:var(--mbu-text-weak);user-select:none;';
     details.appendChild(summary);
     const ul = document.createElement('ul');
     ul.style.cssText = 'list-style:none;margin:0.3rem 0;padding:0.4rem 0.6rem;'
-                     + 'background:#f7f7f7;border-radius:0.25rem;'
+                     + 'background:var(--mbu-bg-raised);border-radius:0.25rem;'
                      + 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.72rem;'
-                     + 'color:#444;max-height:24rem;overflow-y:auto;';
+                     + 'color:var(--mbu-text);max-height:24rem;overflow-y:auto;';
     details.appendChild(ul);
     const li = document.createElement('li');
     li.style.listStyle = 'none';

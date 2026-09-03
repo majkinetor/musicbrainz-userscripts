@@ -38,6 +38,9 @@ const ROOTS = [
     // apollo_editor
     '#tc-bar', '#tc-settings', '#tc-anno-wrap', '.tc-panel', '.tc-toolcfg', '.tc-acpop',
     '.tc-recpop', '.tc-lppop', '.tc-tpppop', '.tc-tpp-mpop', '.tc-anno-help-pop',
+    // …and the parts of Apollo that live ON MusicBrainz's page rather than in a
+    // window of its own: the tracklist mirror and the two toolbars around it.
+    '.tc-mirror', '.tc-addrow', '.tc-medopts', '.tc-tools', '#tc-recwrap',
     // group_therapy
     '.gt-toolbar', '.gt-cons', '.gt-menu', '.gt-pop', '.gt-cfg-pop', '.gt-wm-pop',
     // isrc_scout
@@ -46,8 +49,9 @@ const ROOTS = [
     '#mb-pc-panel', '#mb-provider-modal-card',
     // fusion
     '.fs-cons', '#fs-settings', '.fs-overlay',
-    // mammoth
-    '.mmth-pop', '.mmth-cfg',
+    // mammoth — .mmth-side is the note panel itself. NOT .mmth-wrap: that one
+    // wraps MusicBrainz's own edit-note textarea, which belongs to the page.
+    '.mmth-pop', '.mmth-cfg', '.mmth-side',
 ];
 // `:where()` contributes NOTHING to specificity, so everything below lands as a
 // DEFAULT: any existing per-script rule, however weakly selected, still wins.
@@ -66,7 +70,7 @@ const CSS = [
     // Help link — `? Help` opening the script's README in a new tab. Apollo and
     // Fusion already agreed on this shape; Art Station said "Help ↗" and Mammoth
     // carried no class at all. Apollo/Fusion win on numbers.
-    '.mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);',
+    '.mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);',
     'border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}',
     '.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}',
     // config headers are flex rows: the help link is the last thing on the line
@@ -93,7 +97,7 @@ const CSS = [
     'border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}',
     '.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}',
     '.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}',
-    '.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}',
+    '.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent-text)}',
     // the version is deliberately quiet — it is reference information, not a heading
     '.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}',
     '.mbu-cfg-sp{flex:1 1 auto;min-width:8px}',
@@ -101,7 +105,7 @@ const CSS = [
     // (background:none, border:1px solid transparent, the border appearing only
     // on hover). I made it a bordered control and majkinetor rightly called it
     // out: the border is a hover affordance here, not chrome.
-    '.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;',
+    '.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;',
     'background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}',
     '.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}',
 
@@ -115,9 +119,9 @@ const CSS = [
     'border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);',
     'font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}',
     '.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;',
-    'border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}',
+    'border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}',
     '.mbu-logpop-sp{margin-left:auto}',
-    '.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);',
+    '.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent-text);',
     'background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;',
     'padding:2px 9px;cursor:pointer;font-family:inherit}',
     '.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}',
@@ -131,7 +135,7 @@ const CSS = [
     '.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}',
     '.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}',
     '.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}',
-    '#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}',
+    '#mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}',
     // severity, on the message only — the timestamp stays quiet
     '.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}',
     '.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}',
@@ -198,6 +202,13 @@ const CSS = [
     // Widgets that paint themselves: tint rather than repaint.
     scoped('input[type=checkbox],input[type=radio],input[type=range]'),
     '{accent-color:var(--mbu-accent)}',
+    // …and tell the UA which way round the world is, which is the ONE thing a
+    // custom property cannot do. accent-color tints the checked state; the empty
+    // box is still painted by the browser, white in Chrome and black in Firefox
+    // (#564), and only color-scheme moves it. Scoped to our own containers and
+    // gated on the detected theme, so MusicBrainz's own controls are untouched.
+    ':root[data-mbu-theme=dark] ' + ':where(' + ROOTS.join(',') + ')',
+    '{color-scheme:dark}',
     // A button nobody styled is the same failure as an input nobody styled: the
     // UA paints it light grey with black text, which is invisible-adjacent on a
     // dark panel. Colours only, no border/radius shorthand — a script that drew a
@@ -389,9 +400,70 @@ function mbuFitToolbar(bar, opts) {
 //
 // Guarded per key, never clobbering: a script that loaded first keeps its copy,
 // and a page that defines an unrelated window.MBU is left alone.
+// Theme recognition. #564: "we don't have to conform to Stylus vars, we could
+// probably use them as a recognition signal to enable our own dark theme."
+//
+// That is the right way round. Reading --background/--text and hoping every
+// derived colour lands somewhere readable is guesswork that fails one token at a
+// time; knowing WHICH theme we are in lets the token set say so outright, and
+// lets us hand the browser the one thing CSS variables cannot express —
+// color-scheme, which is what actually paints a checkbox dark instead of leaving
+// a white (Firefox: black) box on a dark panel.
+//
+// The signal is the rendered page, not a particular userstyle's variable names:
+// whatever painted the body, we measure its luminance. So this works for Stylus,
+// for a browser extension, for MusicBrainz shipping its own dark mode one day,
+// and for a user who just set --background by hand.
+//
+//   · an explicit --mbu-theme (light|dark) always wins — the escape hatch;
+//   · otherwise the page background decides;
+//   · re-checked when stylesheets arrive, because Stylus often lands after us.
+function mbuThemeOf(bg) {
+    var m = /rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*([\\d.]+))?/.exec(bg || '');
+    if (!m) return null;
+    if (m[4] !== undefined && +m[4] < 0.5) return null;      // transparent tells us nothing
+    var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
+    return L < 0.35 ? 'dark' : 'light';
+}
+function mbuTheme() {
+    var root = document.documentElement;
+    try {
+        var cs = getComputedStyle(root);
+        var forced = (cs.getPropertyValue('--mbu-theme') || '').trim();
+        var t = (forced === 'dark' || forced === 'light') ? forced
+            : (mbuThemeOf(getComputedStyle(document.body).backgroundColor)
+                || mbuThemeOf(cs.backgroundColor)
+                || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
+                || 'light');
+        if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+        return t;
+    } catch (e) { return 'light'; }
+}
+try {
+    mbuTheme();
+    // Stylus and friends inject after us often enough that a one-shot read is
+    // wrong about half the time. Watch for stylesheets ARRIVING — head childList
+    // plus the root's own attributes — and never the whole subtree: this runs on
+    // the release editor, where a subtree observer calling getComputedStyle is a
+    // layout thrash on every keystroke.
+    var _mbuThemeT = 0;
+    var _mbuThemeSoon = function () {
+        clearTimeout(_mbuThemeT);
+        _mbuThemeT = setTimeout(mbuTheme, 150);
+    };
+    var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+    _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
+    if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+    if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+    setTimeout(mbuTheme, 400);
+    setTimeout(mbuTheme, 2000);
+} catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+
 try {
     var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
     if (!_mbuNs.MBU) _mbuNs.MBU = {};
+    if (!_mbuNs.MBU.theme) _mbuNs.MBU.theme = mbuTheme;
     if (!_mbuNs.MBU.helpHref) _mbuNs.MBU.helpHref = mbuHelpHref;
     if (!_mbuNs.MBU.helpHtml) _mbuNs.MBU.helpHtml = mbuHelpHtml;
     if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.2.231335
+// @version      2026.9.3.183738
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -137,7 +137,7 @@
     const d = /* @__PURE__ */ new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${html}`;
+    li.innerHTML = `<span style="color:var(--mbu-text-weak);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${html}`;
     _logs.insertAdjacentElement("beforeend", li);
     const bar = document.querySelector(".discogs-bar");
     if (bar?._setProgress) {
@@ -152,7 +152,7 @@
     // OUT of the WARN tally — these are surfaced by the separate "N unresolved"
     // badge, and the maintainer asked not to lump them with real warnings. Still
     // rendered (muted amber) so the log shows exactly which roles were dropped.
-    skip: (msg) => _emit(`<span style="color:#8a6d3b">SKIP ${msg}</span>`, `SKIP ${msg}`, "skip")
+    skip: (msg) => _emit(`<span style="color:var(--mbu-warn)">SKIP ${msg}</span>`, `SKIP ${msg}`, "skip")
   };
   var _debugUl = null;
   var _debugStartT = null;
@@ -163,10 +163,10 @@
     details.style.cssText = "margin:0.3rem 0;";
     const summary = document.createElement("summary");
     summary.textContent = "Preflight diagnostics";
-    summary.style.cssText = "cursor:pointer;font-size:0.8rem;color:#888;user-select:none;";
+    summary.style.cssText = "cursor:pointer;font-size:0.8rem;color:var(--mbu-text-weak);user-select:none;";
     details.appendChild(summary);
     const ul = document.createElement("ul");
-    ul.style.cssText = "list-style:none;margin:0.3rem 0;padding:0.4rem 0.6rem;background:#f7f7f7;border-radius:0.25rem;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.72rem;color:#444;max-height:24rem;overflow-y:auto;";
+    ul.style.cssText = "list-style:none;margin:0.3rem 0;padding:0.4rem 0.6rem;background:var(--mbu-bg-raised);border-radius:0.25rem;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.72rem;color:var(--mbu-text);max-height:24rem;overflow-y:auto;";
     details.appendChild(ul);
     const li = document.createElement("li");
     li.style.listStyle = "none";
@@ -502,7 +502,7 @@
     if (!pb) {
       pb = document.createElement("div");
       pb.id = "discogs-pb";
-      pb.style.cssText = "position:fixed;left:0;right:0;height:5px;z-index:99999;background:#ddd;overflow:hidden;";
+      pb.style.cssText = "position:fixed;left:0;right:0;height:5px;z-index:99999;background:var(--mbu-bg-sunken);overflow:hidden;";
       const fill = document.createElement("div");
       fill.id = "discogs-pb-fill";
       fill.style.cssText = "position:absolute;top:0;height:100%;width:40%;background:#e8771d;transition:width 0.2s linear;";
@@ -3873,7 +3873,7 @@ ${ourBlock}` : ourBlock;
         const span = document.createElement("span");
         span.textContent = cfg.text;
         span.title = fromCache && via !== "cache" ? `Resolved via ${via}, served from cache` : `Resolved via ${via}`;
-        span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
+        span.style.cssText = `font-size:0.68rem;background:var(--mbu-bg-raised);color:${cfg.color};padding:0 0.35rem;border-radius:8px;border:1px solid var(--mbu-border);flex-shrink:0;`;
         return span;
       }
       const creditOverrides = /* @__PURE__ */ new Map();
@@ -3950,7 +3950,7 @@ ${ourBlock}` : ourBlock;
         return out;
       }
       const panel = document.createElement("div");
-      panel.style.cssText = "border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;";
+      panel.style.cssText = "border:2px solid var(--mbu-warn);border-radius:0.5rem;background:var(--mbu-bg);padding:1rem 1.5rem;margin:0.5rem 0;";
       {
         const _pb = document.getElementById("discogs-progress-bar");
         if (_pb) _pb.style.display = "none";
@@ -3962,12 +3962,12 @@ ${ourBlock}` : ourBlock;
         if (_r2) _r2.style.marginTop = "";
       }
       const heading = document.createElement("div");
-      heading.style.cssText = "display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:#f5e8a0;border:1px solid #d4b800;";
+      heading.style.cssText = "display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);";
       if (onRefresh) {
         const refreshBtn = document.createElement("button");
         refreshBtn.textContent = "\u{1F504} Refresh from MB";
         refreshBtn.title = "Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache";
-        refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;flex-shrink:0;";
+        refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid var(--mbu-warn);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-warn);flex-shrink:0;";
         refreshBtn.addEventListener("click", () => {
           refreshBtn.disabled = true;
           refreshBtn.textContent = "\u{1F504} Refreshing\u2026";
@@ -3980,13 +3980,13 @@ ${ourBlock}` : ourBlock;
         heading.appendChild(refreshBtn);
       }
       const headingText = document.createElement("span");
-      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#5a4000;flex:1;";
+      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:var(--mbu-warn);flex:1;";
       headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
       heading.appendChild(headingText);
       panel.appendChild(heading);
       const intro = document.createElement("p");
-      intro.style.cssText = "margin:0 0 0.75rem;font-size:0.85rem;color:#666;";
-      intro.innerHTML = 'Review all artist matches before importing. <span style="background:#ffe0e0;padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. <span style="background:#fff8e1;padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch \u2014 verify. Green rows are confirmed. Use the search or create buttons to resolve outstanding issues.';
+      intro.style.cssText = "margin:0 0 0.75rem;font-size:0.85rem;color:var(--mbu-text-dim);";
+      intro.innerHTML = 'Review all artist matches before importing. <span style="background:var(--mbu-error-bg);padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. <span style="background:var(--mbu-warn-bg);padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch \u2014 verify. Green rows are confirmed. Use the search or create buttons to resolve outstanding issues.';
       panel.appendChild(intro);
       const table = document.createElement("table");
       table.style.cssText = "border-collapse:collapse;width:100%;font-size:0.85rem;";
@@ -3995,7 +3995,7 @@ ${ourBlock}` : ourBlock;
       hr.style.background = "#f5e8a0";
       [...entitySources ? ["Source"] : [], importSourceName + " entity", "MB match / search"].forEach((col) => {
         const th = document.createElement("th");
-        th.style.cssText = "text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;";
+        th.style.cssText = "text-align:left;padding:0.3rem 0.5rem;border:1px solid var(--mbu-warn);white-space:nowrap;";
         th.textContent = col;
         hr.appendChild(th);
       });
@@ -4036,7 +4036,7 @@ ${ourBlock}` : ourBlock;
           const names = entitySources.get(_entityKey) || [];
           const srcUrls = (r._mergeUrls || (discogsHref ? [discogsHref] : [])).filter((u) => !isSyntheticProviderUrl(u));
           if (!names.length) {
-            tdSrc.innerHTML = '<span style="color:#bbb;">\u2014</span>';
+            tdSrc.innerHTML = '<span style="color:var(--mbu-text-weak);">\u2014</span>';
           } else names.forEach((nm) => {
             const url = srcUrls.find((u) => sourceNameForUrl(u) === nm) || null;
             const span = document.createElement("span");
@@ -4058,7 +4058,7 @@ ${ourBlock}` : ourBlock;
         if (entityType !== "artist") {
           const badge = document.createElement("span");
           badge.textContent = entityType;
-          badge.style.cssText = "font-size:0.7rem;background:#e0e0e0;border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:#555;vertical-align:middle;";
+          badge.style.cssText = "font-size:0.7rem;background:var(--mbu-bg-sunken);border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:var(--mbu-text-dim);vertical-align:middle;";
           nameWrap.appendChild(badge);
         }
         const placeholderUrl = /\/_company\//.test(discogsHref) || /\/_company\//.test(r.entity?.resource_url || "");
@@ -4077,14 +4077,14 @@ ${ourBlock}` : ourBlock;
           const noUrl = document.createElement("span");
           noUrl.textContent = "no profile";
           noUrl.title = `No ${srcName} artist page \u2014 name lookup unavailable, search MB manually`;
-          noUrl.style.cssText = BADGE_BASE + "background:#fde0e0;color:#a02020;border:1px solid #d44040;";
+          noUrl.style.cssText = BADGE_BASE + "background:var(--mbu-error-bg);color:var(--mbu-error);border:1px solid var(--mbu-error);";
           nameWrap.appendChild(noUrl);
         }
         if (nameMismatch) {
           const w = document.createElement("span");
           w.textContent = "name differs";
           w.title = "MB entity name differs from the Discogs display name \u2014 double-check this is the right match";
-          w.style.cssText = BADGE_BASE + "background:#fff1c4;color:#7a5800;border:1px solid #d4ad3a;";
+          w.style.cssText = BADGE_BASE + "background:var(--mbu-warn-bg);color:var(--mbu-warn);border:1px solid var(--mbu-warn);";
           nameWrap.appendChild(w);
         }
         nameRow.appendChild(nameWrap);
@@ -4121,7 +4121,7 @@ ${ourBlock}` : ourBlock;
             return { roleKey, displayText: roleKey + (pos ? " " + pos : "") };
           });
           const rolesLine = document.createElement("div");
-          rolesLine.style.cssText = "font-size:0.75rem;color:#888;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
+          rolesLine.style.cssText = "font-size:0.75rem;color:var(--mbu-text-weak);margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
           rolesLine.title = chips.map((c) => c.displayText).join(", ");
           chips.forEach((chip, i) => {
             if (i > 0) rolesLine.appendChild(document.createTextNode(", "));
@@ -4137,12 +4137,12 @@ ${ourBlock}` : ourBlock;
         credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:1rem;padding-top:0.25rem;max-width:280px;";
         const credLabel = document.createElement("label");
         credLabel.textContent = "Credited as:";
-        credLabel.style.cssText = "font-size:0.72rem;color:#888;flex-shrink:0;";
+        credLabel.style.cssText = "font-size:0.72rem;color:var(--mbu-text-weak);flex-shrink:0;";
         const credInput = noPasswordManagers(document.createElement("input"));
         credInput.type = "text";
         const CRED_BG_SAME = "#fff";
         const CRED_BG_DIFFERENT = "#fff4d0";
-        credInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:" + CRED_BG_SAME + ";";
+        credInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid var(--mbu-border);border-radius:3px;background:" + CRED_BG_SAME + ";";
         credInput.placeholder = displayName;
         credInput.title = `Override the credited name dispatched with every rel for this entity.
 Leave empty to use the default (${srcName} name, or MB's most-frequent existing credit when known).`;
@@ -4182,7 +4182,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         });
         credInput._activeMbUrl = r.mbUrl;
         if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);
-        const CRED_BTN_STYLE = "flex-shrink:0;padding:0.05rem 0.35rem;font-size:0.7rem;line-height:1;cursor:pointer;border:1px solid #c8a000;border-radius:3px;background:#fffbe6;color:#7a5000;";
+        const CRED_BTN_STYLE = "flex-shrink:0;padding:0.05rem 0.35rem;font-size:0.7rem;line-height:1;cursor:pointer;border:1px solid var(--mbu-warn);border-radius:3px;background:var(--mbu-bg-raised);color:var(--mbu-warn);";
         const mbBtn = document.createElement("button");
         mbBtn.type = "button";
         mbBtn.textContent = "MB";
@@ -4230,13 +4230,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         const searchInput = noPasswordManagers(document.createElement("input"));
         searchInput.type = "text";
         searchInput.value = displayName;
-        searchInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;";
+        searchInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid var(--mbu-border);border-radius:3px;";
         rowSearchInputs.set(_entityKey, searchInput);
         const searchBtn = document.createElement("button");
         searchBtn.type = "button";
         searchBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>';
         searchBtn.title = "Search MusicBrainz";
-        searchBtn.style.cssText = "display:inline-flex;align-items:center;justify-content:center;padding:0 0.45rem;cursor:pointer;color:#666;background:#fff;border:1px solid #bbb;border-radius:3px;";
+        searchBtn.style.cssText = "display:inline-flex;align-items:center;justify-content:center;padding:0 0.45rem;cursor:pointer;color:var(--mbu-text-dim);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:3px;";
         searchRow.appendChild(searchBtn);
         searchRow.appendChild(searchInput);
         tdMb.appendChild(candidateList);
@@ -4251,7 +4251,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const trigger = document.createElement("a");
           trigger.href = "#";
           trigger.textContent = "MB roles \u25BE";
-          trigger.style.cssText = "color:#7a7a9a;text-decoration:none;cursor:pointer;white-space:nowrap;";
+          trigger.style.cssText = "color:var(--mbu-info);text-decoration:none;cursor:pointer;white-space:nowrap;";
           trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
           trigger.addEventListener("click", async (ev) => {
             ev.preventDefault();
@@ -4294,7 +4294,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             types.forEach((t) => {
               const c = document.createElement("span");
               c.textContent = t;
-              c.style.cssText = "background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;";
+              c.style.cssText = "background:var(--mbu-info-bg);border:1px solid var(--mbu-border);border-radius:0.7rem;padding:0 0.4rem;color:var(--mbu-info);white-space:nowrap;";
               chipsBox.appendChild(c);
             });
           });
@@ -4318,7 +4318,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           searchBtn.disabled = true;
           const ph = document.createElement("div");
           ph.className = "ch-creating";
-          ph.style.cssText = "padding:0.15rem 0.4rem;border:1px dashed #8a8ad0;border-radius:3px;background:#f4f4ff;display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#55557a;font-style:italic;margin-bottom:0.3rem;";
+          ph.style.cssText = "padding:0.15rem 0.4rem;border:1px dashed var(--mbu-info);border-radius:3px;background:var(--mbu-bg);display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--mbu-info);font-style:italic;margin-bottom:0.3rem;";
           const spin = document.createElement("span");
           spin.textContent = "\u27F3";
           spin.style.cssText = "display:inline-block;animation:ch-creating-spin 0.9s linear infinite;";
@@ -4329,7 +4329,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const x = document.createElement("button");
           x.textContent = "\u2715";
           x.title = "Cancel \u2014 stop waiting and restore the row";
-          x.style.cssText = "margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:#55557a;padding:0 0.2rem;";
+          x.style.cssText = "margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:var(--mbu-info);padding:0 0.2rem;";
           x.addEventListener("click", () => cancelCreating());
           ph.appendChild(x);
           tdMb.insertBefore(ph, candidateList);
@@ -4399,7 +4399,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           searchBtn.disabled = true;
           candidateList.innerHTML = "";
           const selRow = document.createElement("div");
-          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;";
+          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid var(--mbu-ok);border-radius:3px;background:var(--mbu-ok-bg);display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;";
           const selA = document.createElement("a");
           selA.href = "https:" + mbUrl;
           selA.target = "_blank";
@@ -4435,13 +4435,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           searchBtn.disabled = false;
           candidateList.innerHTML = "";
           const none = document.createElement("div");
-          none.style.cssText = "font-size:0.82rem;color:#888;";
+          none.style.cssText = "font-size:0.82rem;color:var(--mbu-text-weak);";
           none.textContent = "No selection \u2014 search or create";
           candidateList.appendChild(none);
           renderActions(null);
           updateImportBtn();
         }
-        const ACTION_CHIP_STYLE = "display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;padding:0 0.35rem;font-size:0.95rem;line-height:1;cursor:pointer;border:1px solid #d6d6d6;border-radius:0.3rem;background:#fafafa;";
+        const ACTION_CHIP_STYLE = "display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;padding:0 0.35rem;font-size:0.95rem;line-height:1;cursor:pointer;border:1px solid var(--mbu-border);border-radius:0.3rem;background:var(--mbu-bg-raised);";
         function renderActions(selected) {
           tdAction.innerHTML = "";
           if (!selected) {
@@ -4496,7 +4496,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 const _addCount = r._mergeUrls && r._mergeUrls.length ? r._mergeUrls.filter((u) => sourceUrlLinkTypeId(u, entityType)).length : 0;
                 addLinkBtn.textContent = "\u{1F517}" + (_addCount > 1 ? " " + _addCount : "");
                 addLinkBtn.title = (_addCount > 1 ? `Add ${_addCount} source links to MB ${entityType}` : `Add ${srcName} link to MB ${entityType}`) + `  \xB7  right-click: add ${_addCount > 1 ? "them" : "it"} silently in the background`;
-                addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:#e8771d;";
+                addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:var(--mbu-warn);";
                 const openLinkEdit = (background) => {
                   const urls = r._mergeUrls && r._mergeUrls.length ? r._mergeUrls : [discogsHref];
                   const p = new URLSearchParams();
@@ -4566,7 +4566,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               }
             };
             const linkSlot = document.createElement("span");
-            linkSlot.style.cssText = "display:inline-flex;align-items:center;font-size:0.8rem;color:#888;";
+            linkSlot.style.cssText = "display:inline-flex;align-items:center;font-size:0.8rem;color:var(--mbu-text-weak);";
             linkSlot.textContent = "\u2026";
             linkSlot.title = `Checking whether MB already has this ${srcName} URL linked`;
             tdAction.appendChild(linkSlot);
@@ -4709,7 +4709,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const createBtn = document.createElement("button");
           createBtn.textContent = "+";
           createBtn.title = (discogsHref ? `Create in MB with default ${srcName} name + URL` : "Create in MB with the credited name") + "  \xB7  right-click: create silently in a background tab (auto-submitted)";
-          createBtn.style.cssText = ACTION_CHIP_STYLE + "color:#2a7;font-size:1.15rem;font-weight:600;";
+          createBtn.style.cssText = ACTION_CHIP_STYLE + "color:var(--mbu-ok);font-size:1.15rem;font-weight:600;";
           createBtn.addEventListener("click", () => openCreateTab());
           createBtn.addEventListener("contextmenu", (e2) => {
             e2.preventDefault();
@@ -4718,7 +4718,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const createAdvBtn = document.createElement("button");
           createAdvBtn.textContent = "\u25BE";
           createAdvBtn.title = "Create in MB with editable name + disambiguation" + (srcName === "Discogs" && discogsHref ? ", pre-filled from the Discogs profile" : "");
-          createAdvBtn.style.cssText = ACTION_CHIP_STYLE + "color:#666;";
+          createAdvBtn.style.cssText = ACTION_CHIP_STYLE + "color:var(--mbu-text-dim);";
           createAdvBtn.addEventListener("click", () => openAdvancedCreatePopup());
           tdAction.appendChild(createBtn);
           tdAction.appendChild(createAdvBtn);
@@ -4736,13 +4736,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             const overlay = document.createElement("div");
             overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center;";
             const modal = document.createElement("div");
-            modal.style.cssText = "background:#fff;border-radius:0.5rem;padding:1.1rem 1.35rem 1rem;max-width:600px;width:92%;max-height:82vh;display:flex;flex-direction:column;gap:0.55rem;box-shadow:0 12px 32px rgba(0,0,0,0.32);font-family:inherit;";
+            modal.style.cssText = "background:var(--mbu-bg);border-radius:0.5rem;padding:1.1rem 1.35rem 1rem;max-width:600px;width:92%;max-height:82vh;display:flex;flex-direction:column;gap:0.55rem;box-shadow:0 12px 32px rgba(0,0,0,0.32);font-family:inherit;";
             const heading2 = document.createElement("div");
-            heading2.style.cssText = "font-weight:bold;font-size:1.02rem;color:#222;margin-bottom:0.15rem;";
+            heading2.style.cssText = "font-weight:bold;font-size:1.02rem;color:var(--mbu-text);margin-bottom:0.15rem;";
             heading2.textContent = `Create ${entityType} in MusicBrainz`;
             modal.appendChild(heading2);
-            const FIELD_LABEL = "font-size:0.78rem;color:#666;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;margin-top:0.25rem;";
-            const FIELD_INPUT = "padding:0.45rem 0.55rem;border:1px solid #c8c8c8;border-radius:0.3rem;font-size:0.93rem;font-family:inherit;";
+            const FIELD_LABEL = "font-size:0.78rem;color:var(--mbu-text-dim);font-weight:600;letter-spacing:0.02em;text-transform:uppercase;margin-top:0.25rem;";
+            const FIELD_INPUT = "padding:0.45rem 0.55rem;border:1px solid var(--mbu-border);border-radius:0.3rem;font-size:0.93rem;font-family:inherit;";
             const nameLabel = document.createElement("label");
             nameLabel.style.cssText = FIELD_LABEL;
             nameLabel.textContent = "Name";
@@ -4773,11 +4773,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             let profileBox = null;
             if (showProfile) {
               const profileLabel = document.createElement("div");
-              profileLabel.style.cssText = "font-size:0.78rem;color:#888;margin-top:0.55rem;";
+              profileLabel.style.cssText = "font-size:0.78rem;color:var(--mbu-text-weak);margin-top:0.55rem;";
               profileLabel.textContent = "Discogs profile \u2014 select text to copy into Disambiguation";
               modal.appendChild(profileLabel);
               profileBox = document.createElement("div");
-              profileBox.style.cssText = "border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;min-height:5rem;max-height:18rem;flex:1;color:#444;";
+              profileBox.style.cssText = "border:1px solid var(--mbu-border);border-radius:0.3rem;padding:0.5rem 0.6rem;background:var(--mbu-bg-raised);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;min-height:5rem;max-height:18rem;flex:1;color:var(--mbu-text);";
               profileBox.textContent = "Loading profile from Discogs\u2026";
               modal.appendChild(profileBox);
               const captureSelection = () => {
@@ -4796,7 +4796,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             btnRow2.style.cssText = "display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.55rem;";
             const cancelBtn = document.createElement("button");
             cancelBtn.textContent = "Cancel";
-            cancelBtn.style.cssText = "padding:0.4rem 1rem;cursor:pointer;border:1px solid #c8c8c8;border-radius:0.25rem;background:#fafafa;color:#444;font-size:0.88rem;";
+            cancelBtn.style.cssText = "padding:0.4rem 1rem;cursor:pointer;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-bg-raised);color:var(--mbu-text);font-size:0.88rem;";
             const submitBtn = document.createElement("button");
             submitBtn.textContent = "Create \u2197";
             submitBtn.style.cssText = "padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;font-size:0.9rem;";
@@ -4847,11 +4847,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         function makeCandidateRow(a) {
           const row = document.createElement("div");
-          row.style.cssText = "display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid #ddd;border-radius:3px;background:#fff;font-size:0.82rem;";
+          row.style.cssText = "display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid var(--mbu-border);border-radius:3px;background:var(--mbu-bg);font-size:0.82rem;";
           const selBtn = document.createElement("button");
           selBtn.textContent = "\u2713";
           selBtn.title = "Select this candidate as the MB match";
-          selBtn.style.cssText = "font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid #b5d5b5;border-radius:0.25rem;background:#eaf6ea;color:#2a7;font-weight:600;flex-shrink:0;";
+          selBtn.style.cssText = "font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-ok-bg);color:var(--mbu-ok);font-weight:600;flex-shrink:0;";
           selBtn.addEventListener("click", () => setRowResolved(a));
           row.appendChild(selBtn);
           const info = document.createElement("span");
@@ -4865,7 +4865,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           info.appendChild(nameA);
           if (a.disambiguation) {
             const d = document.createElement("span");
-            d.style.cssText = "color:#777;margin-left:0.25rem;";
+            d.style.cssText = "color:var(--mbu-text-dim);margin-left:0.25rem;";
             d.textContent = `(${a.disambiguation})`;
             info.appendChild(d);
           }
@@ -4885,7 +4885,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           if (!q) return;
           const mbid = extractMbid(q);
           if (mbid) {
-            candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;">Looking up MBID\u2026</div>';
+            candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Looking up MBID\u2026</div>';
             mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((json) => {
               if (!json) return;
               candidateList.innerHTML = "";
@@ -4896,31 +4896,31 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                   disambiguation: json.disambiguation || ""
                 }));
               } else {
-                candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;">Not found</div>';
+                candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Not found</div>';
               }
             }).catch(() => {
-              candidateList.innerHTML = `<div style="font-size:0.82rem;color:#c00;">MBID not found or wrong entity type</div>`;
+              candidateList.innerHTML = `<div style="font-size:0.82rem;color:var(--mbu-error);">MBID not found or wrong entity type</div>`;
             });
             return;
           }
-          candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;font-style:italic;">Searching\u2026</div>';
+          candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);font-style:italic;">Searching\u2026</div>';
           mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`).then((json) => {
             if (!json) {
-              candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed \u2014 MB unavailable</div>';
+              candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-error);">Search failed \u2014 MB unavailable</div>';
               return;
             }
             candidateList.innerHTML = "";
             const resultKey = entityType === "label" ? "labels" : entityType === "place" ? "places" : "artists";
             if (!json[resultKey] || json[resultKey].length === 0) {
               const none = document.createElement("div");
-              none.style.cssText = "font-size:0.82rem;color:#888;";
+              none.style.cssText = "font-size:0.82rem;color:var(--mbu-text-weak);";
               none.textContent = "No results";
               candidateList.appendChild(none);
             } else {
               json[resultKey].forEach((a) => candidateList.appendChild(makeCandidateRow(a)));
             }
           }).catch(() => {
-            candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed</div>';
+            candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-error);">Search failed</div>';
           });
         }
         let searchTimer;
@@ -4946,7 +4946,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
           candidateList.innerHTML = "";
           const selRow = document.createElement("div");
-          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;";
+          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid var(--mbu-ok);border-radius:3px;background:var(--mbu-ok-bg);display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;";
           const selA = document.createElement("a");
           selA.href = "https:" + correctedMbUrl;
           selA.target = "_blank";
@@ -4973,7 +4973,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           renderActions(null);
         } else {
           const none = document.createElement("div");
-          none.style.cssText = "font-size:0.82rem;color:#888;";
+          none.style.cssText = "font-size:0.82rem;color:var(--mbu-text-weak);";
           none.textContent = needsAttention ? "No suggestions \u2014 search or create" : "";
           if (needsAttention) candidateList.appendChild(none);
           renderActions(null);
@@ -4987,10 +4987,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       importBtn.style.cssText = "border:none;padding:0.4rem 1.1rem;border-radius:0.3rem;cursor:pointer;font-weight:bold;font-size:0.95rem;display:inline-flex;align-items:center;gap:5px;";
       const issueNote = document.createElement("span");
       issueNote.className = "discogs-issue-note";
-      issueNote.style.cssText = "font-size:0.85rem;color:#7a5c00;";
+      issueNote.style.cssText = "font-size:0.85rem;color:var(--mbu-warn);";
       linksNote = document.createElement("span");
       linksNote.className = "discogs-issue-note discogs-links-note";
-      linksNote.style.cssText = "font-size:0.85rem;color:#e8771d;display:none;";
+      linksNote.style.cssText = "font-size:0.85rem;color:var(--mbu-warn);display:none;";
       linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet \u2014 click to jump to the next one; use its \u{1F517} chip to add the link`;
       linksNote.addEventListener("click", jumpNextLink);
       updateLinksBadge();
@@ -5074,7 +5074,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         thRow.style.background = "#f5f5f5";
         [importSourceName + " entity", "Roles / Tracks", "MB match", "MBID", "Resolved via"].forEach((h) => {
           const th = document.createElement("th");
-          th.style.cssText = "text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;";
+          th.style.cssText = "text-align:left;padding:0.2rem 0.4rem;border:1px solid var(--mbu-border);white-space:nowrap;";
           th.textContent = h;
           thRow.appendChild(th);
         });
@@ -5098,7 +5098,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const viaText = vCfg ? vCfg.text : state.mbUrl ? "\u2014" : "";
           [r.displayName || r.entity?.name, rolesText, matchText, mbid, viaText].forEach((val, ci) => {
             const td = document.createElement("td");
-            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #ddd;" + (ci === 2 && !val ? "color:#aaa;" : ci === 2 ? "color:#060;" : ci === 4 && vCfg ? `color:${vCfg.color};` : "");
+            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid var(--mbu-border);" + (ci === 2 && !val ? "color:var(--mbu-text-weak);" : ci === 2 ? "color:var(--mbu-ok);" : ci === 4 && vCfg ? `color:${vCfg.color};` : "");
             if (ci === 2 && mbid) {
               const a = document.createElement("a");
               a.href = "https:" + state.mbUrl;
@@ -5131,7 +5131,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }).length;
         if (unresolvedCount > 0) {
           const unresolvedLi = document.createElement("li");
-          unresolvedLi.style.cssText = "list-style:none;margin:0.2rem 0;font-size:0.82rem;color:#a06000;";
+          unresolvedLi.style.cssText = "list-style:none;margin:0.2rem 0;font-size:0.82rem;color:var(--mbu-warn);";
           unresolvedLi.textContent = `\u26A0 ${unresolvedCount} entity/entities unresolved \u2014 will be skipped`;
           getLogContainer().appendChild(unresolvedLi);
         }
@@ -5206,7 +5206,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       } catch (e) {
       }
     }
-    const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : "";
+    const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:var(--mbu-text-weak);font-size:0.85em">#${trackPos}</span>` : "";
     log.info(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
     re.dispatch({
       type: "update-relationship-state",
@@ -6492,8 +6492,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
   function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
-    const MBU_TOKENS = ":root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-text:color-mix(in srgb, var(--mbu-accent) 68%, var(--mbu-text));--mbu-accent-deep-text:#3b2c70;--mbu-accent-deep-text:color-mix(in srgb, var(--mbu-accent-deep) 55%, var(--mbu-text));--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}";
-    const MBU_UI_CSS = ".mbu-help{font-size:12px;color:var(--mbu-accent);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-hover);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.72}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) textarea,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) select{background:var(--mbu-bg-sunken);color:var(--mbu-text);border-color:var(--mbu-border)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) input:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) textarea:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) select:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) :where(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--mbu-accent)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg) button{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-compact .mbu-bt{display:none}";
+    const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}';
+    const MBU_UI_CSS = ".mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent-text)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.72}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) textarea,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) select{background:var(--mbu-bg-sunken);color:var(--mbu-text);border-color:var(--mbu-border)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) input:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) textarea:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) select:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) :where(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--mbu-accent)}:root[data-mbu-theme=dark] :where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side){color-scheme:dark}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,#as-root,#as-setup,.as-pop,#tc-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side) button{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-compact .mbu-bt{display:none}";
     function mbuHelpHref(name) {
       return "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/" + name + "/README.md";
     }
@@ -6616,9 +6616,48 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       bar2.classList.toggle("mbu-compact", compact);
       return compact;
     }
+    function mbuThemeOf(bg) {
+      var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(bg || "");
+      if (!m) return null;
+      if (m[4] !== void 0 && +m[4] < 0.5) return null;
+      var f = function(v) {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      };
+      var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
+      return L < 0.35 ? "dark" : "light";
+    }
+    function mbuTheme() {
+      var root = document.documentElement;
+      try {
+        var cs = getComputedStyle(root);
+        var forced = (cs.getPropertyValue("--mbu-theme") || "").trim();
+        var t = forced === "dark" || forced === "light" ? forced : mbuThemeOf(getComputedStyle(document.body).backgroundColor) || mbuThemeOf(cs.backgroundColor) || mbuThemeOf(cs.getPropertyValue("--mbu-bg")) || "light";
+        if (root.getAttribute("data-mbu-theme") !== t) root.setAttribute("data-mbu-theme", t);
+        return t;
+      } catch (e) {
+        return "light";
+      }
+    }
+    try {
+      mbuTheme();
+      var _mbuThemeT = 0;
+      var _mbuThemeSoon = function() {
+        clearTimeout(_mbuThemeT);
+        _mbuThemeT = setTimeout(mbuTheme, 150);
+      };
+      var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+      _mbuThemeObs.observe(document.documentElement, { attributeFilter: ["style", "class"] });
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ["style", "class"] });
+      setTimeout(mbuTheme, 400);
+      setTimeout(mbuTheme, 2e3);
+    } catch (e) {
+    }
     try {
       var _mbuNs = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
       if (!_mbuNs.MBU) _mbuNs.MBU = {};
+      if (!_mbuNs.MBU.theme) _mbuNs.MBU.theme = mbuTheme;
       if (!_mbuNs.MBU.helpHref) _mbuNs.MBU.helpHref = mbuHelpHref;
       if (!_mbuNs.MBU.helpHtml) _mbuNs.MBU.helpHtml = mbuHelpHtml;
       if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
@@ -6633,8 +6672,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-bar {
             font-family: inherit;
             background: var(--mbu-bg);
-            border: 1px solid #e0c88a;
-            border-left: 4px solid #e8771d;
+            border: 1px solid var(--mbu-warn);
+            border-left: 4px solid var(--mbu-warn);
             border-radius: 0.35rem;
             margin-bottom: 1rem;
             overflow: hidden;
@@ -6647,41 +6686,41 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             flex-wrap: wrap;
             padding: 0.5rem 0.75rem;
             background: var(--mbu-bg-raised);
-            border-bottom: 1px solid #eeddb0;
+            border-bottom: 1px solid var(--mbu-warn);
         }
         /* inline options strip in the single bar (#139) */
         .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: var(--mbu-text-weak); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
-        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
-        .discogs-opts-btn:hover { border-color: #e8771d; color: var(--mbu-text); }
+        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-warn); border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .discogs-opts-btn:hover { border-color: var(--mbu-warn); color: var(--mbu-text); }
         .discogs-opts-caret { color: var(--mbu-text-weak); font-size: 0.7rem; }
         /* "Options \u25BE" popover (Dedup toggles) */
-        .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: var(--mbu-bg); border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
+        .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: var(--mbu-bg); border: 1px solid var(--mbu-warn); border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
         .discogs-opts-panel.open { display: flex; }
         .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mbu-text-weak); font-weight: 600; }
         /* "Log" header toggle \u2014 a split button (#142, #217): "Log" toggles, the
            \u25BE half (its own clickable target) opens the copy menu. */
         .discogs-log-split { display: inline-flex; align-items: stretch; }
-        .discogs-logtoggle-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
-        .discogs-log-caret-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
-        .discogs-logtoggle-btn:hover, .discogs-log-caret-btn:hover { border-color: #999; }
+        .discogs-logtoggle-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
+        .discogs-log-caret-btn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
+        .discogs-logtoggle-btn:hover, .discogs-log-caret-btn:hover { border-color: var(--mbu-border); }
         .discogs-log-caret-btn:hover { background: var(--mbu-bg-raised); }
-        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: var(--mbu-bg-hover); border-color: #b9a4e0; color: var(--mbu-accent-deep-text); }
+        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: var(--mbu-bg-hover); border-color: var(--mbu-accent); color: var(--mbu-accent-deep-text); }
         /* "Log \u25BE" dropdown menu (#118): show/hide + the three copy actions. */
-        .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
+        .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
         .discogs-log-menu.open { display: flex; }
         .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: var(--mbu-text); background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
         .discogs-log-menu button:hover { background: var(--mbu-bg-hover); color: var(--mbu-text); }
         /* log panel toolbar: severity filter + copy buttons */
         .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
-        .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
+        .discogs-log-filter { display: inline-flex; border: 1px solid var(--mbu-border); border-radius: 0.3rem; overflow: hidden; }
         .discogs-log-filterbtn { font-size: 0.75rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: none; border-right: 1px solid var(--mbu-divider); padding: 0.15rem 0.55rem; cursor: pointer; }
         .discogs-log-filterbtn:last-child { border-right: none; }
         .discogs-log-filterbtn:hover { background: var(--mbu-bg-raised); }
         .discogs-log-filterbtn.active { background: var(--mbu-accent); color: var(--mbu-text-on-accent); }
         .discogs-log-copyslot { display: inline-flex; gap: 0.4rem; margin-left: auto; }
-        .discogs-log-copybtn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
-        .discogs-log-copybtn:hover { border-color: #999; }
+        .discogs-log-copybtn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-log-copybtn:hover { border-color: var(--mbu-border); }
         .discogs-bar img.discogs-logo {
             height: 20px;
             width: auto;
@@ -6815,20 +6854,20 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-src-ico {
             display: inline-flex; align-items: center; justify-content: center;
             width: 2rem; height: 2rem; padding: 0; cursor: pointer;
-            border: 1px solid #d6d6d6; border-radius: 0.3rem; background: var(--mbu-bg); color: var(--mbu-text-dim);
+            border: 1px solid var(--mbu-border); border-radius: 0.3rem; background: var(--mbu-bg); color: var(--mbu-text-dim);
         }
-        .discogs-src-ico:hover { background: var(--mbu-bg-raised); border-color: #e8771d; color: var(--mbu-warn); }
+        .discogs-src-ico:hover { background: var(--mbu-bg-raised); border-color: var(--mbu-warn); color: var(--mbu-warn); }
         .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
         .discogs-src-ico svg { width: 18px; height: 18px; }
         .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
-        .discogs-src-ico.importing { background: var(--mbu-bg-raised); border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
+        .discogs-src-ico.importing { background: var(--mbu-bg-raised); border-color: var(--mbu-warn); animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
         /* #412: while MusicBrainz is submitting the staged edits (can be slow for hundreds),
            pulse the toolbar blue. Target ROW1 \u2014 that's the strip pinned (position:fixed) at
            the top of the viewport while the page is scrolled down to the submit button, i.e.
            the part actually on screen. The outer container is usually scrolled out of view. */
-        .discogs-bar.is-saving { border-left-color: #1c6fd6; }
-        .discogs-bar.is-saving .discogs-bar-row1 { animation: discogs-bar-saving 1.1s ease-in-out infinite; border-bottom-color: #1c6fd6; }
+        .discogs-bar.is-saving { border-left-color: var(--mbu-info); }
+        .discogs-bar.is-saving .discogs-bar-row1 { animation: discogs-bar-saving 1.1s ease-in-out infinite; border-bottom-color: var(--mbu-info); }
         @keyframes discogs-bar-saving { 0%,100% { background: var(--mbu-bg-raised); } 50% { background: var(--mbu-info-bg); } }
         .discogs-bar.is-saving .discogs-bar-status-final { color: var(--mbu-info); font-weight: 600; }
         /* #412: a toolbar "Enter edit" that fires MB's native submit, so you don't have to
@@ -6836,14 +6875,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
            return-to-source. Green to read as the positive/submit action (matches MB). */
         .discogs-enter-edit {
             flex-shrink: 0; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap;
-            color: var(--mbu-text-on-accent); background: #4b8f29; border: 1px solid #3d7a1f; border-radius: 0.25rem;
+            color: var(--mbu-text-on-accent); background: #4b8f29; border: 1px solid var(--mbu-ok); border-radius: 0.25rem;
             padding: 0.14rem 0.6rem;
         }
         .discogs-enter-edit:hover { background: #57a230; }
         .discogs-bar.is-saving .discogs-enter-edit { opacity: 0.6; pointer-events: none; }
         /* #408 "Import all" \u2014 wider pill with a glyph + label, brand-orange so it reads as the primary action */
-        .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: #e8771d; color: var(--mbu-warn); font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
-        .discogs-src-all:hover { background: #e8771d; color: var(--mbu-text-on-accent); border-color: #e8771d; }
+        .discogs-src-all { width: auto; gap: 0.3rem; padding: 0 0.6rem; border-color: var(--mbu-warn); color: var(--mbu-warn); font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
+        .discogs-src-all:hover { background: #e8771d; color: var(--mbu-text-on-accent); border-color: var(--mbu-warn); }
         .discogs-src-all .discogs-all-glyph { font-size: 1rem; line-height: 1; }
         .discogs-bar-badge, .discogs-src-badge svg { width: 15px; height: 15px; }
         .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
@@ -6883,7 +6922,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-toggle .discogs-toggle-dot {
             width: 14px; height: 14px;
             border-radius: 50%;
-            border: 2px solid #bbb;
+            border: 2px solid var(--mbu-border);
             background: var(--mbu-bg);
             flex-shrink: 0;
             transition: border-color 0.12s, background 0.12s;
@@ -6892,7 +6931,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             color: var(--mbu-text);
         }
         .discogs-toggle.active .discogs-toggle-dot {
-            border-color: #e8771d;
+            border-color: var(--mbu-warn);
             background: #e8771d;
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
@@ -6922,7 +6961,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             top: 0; left: 0; right: 0;
             z-index: 9000;
             background: var(--mbu-bg-raised);
-            border-bottom: 1px solid #eeddb0;
+            border-bottom: 1px solid var(--mbu-warn);
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         /* Occupies row1's height in the flow while row1 is fixed, so the page
@@ -7169,7 +7208,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     docsLink.rel = "noopener noreferrer nofollow";
     docsLink.textContent = "? Help";
     docsLink.title = "Open the script's README in a new tab";
-    docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:var(--mbu-warn);text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:var(--mbu-bg-raised);";
+    docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:var(--mbu-warn);text-decoration:none;padding:0.1rem 0.45rem;border:1px solid var(--mbu-warn);border-radius:0.25rem;background:var(--mbu-bg-raised);";
     const enterEditBtn = document.createElement("button");
     enterEditBtn.type = "button";
     enterEditBtn.className = "discogs-enter-edit";
@@ -7357,7 +7396,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       ov.className = "discogs-cw-warn-ov";
       ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;";
       const box = document.createElement("div");
-      box.style.cssText = "max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid #c0392b;padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:var(--mbu-text);";
+      box.style.cssText = "max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid var(--mbu-error);padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:var(--mbu-text);";
       box.innerHTML = '<div style="font-weight:800;color:var(--mbu-error);font-size:15px;margin-bottom:8px;">\u26A0\uFE0F WARNING: Avoid creating work duplicates!</div><p style="margin:0 0 8px;">Make sure that you <strong>matched works</strong> prior to using this option. You are responsible for matching recordings to existing works.</p><p style="margin:0 0 12px;"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md" target="_blank" rel="noopener noreferrer">Group Therapy</a> userscript makes work matching faster and can start it as soon as you enter the relationship editor so you don\u2019t forget.</p><div style="text-align:right;"><button type="button" style="padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;cursor:pointer;">I understand</button></div>';
       const close = () => ov.remove();
       box.querySelector("button").addEventListener("click", close);
@@ -7837,7 +7876,7 @@ ${lines}
         const summary = `${json.title || ""}${json.year ? " \xB7 " + json.year : ""} \xB7 ${trackCount} tracks`;
         const li = document.createElement("li");
         const pre = document.createElement("pre");
-        pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+        pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
         pre.textContent = JSON.stringify(json, null, 2);
         li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${summary} \u2014 raw Discogs JSON</strong></summary></details>`;
         li.querySelector("details").appendChild(pre);
@@ -7891,7 +7930,7 @@ ${lines}
       if (!harvest.ok) throw new Error(`Tidal harvest failed: ${harvest.error || "unknown error"}`);
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(harvest, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${harvest.tracks.length} tracks \u2014 raw Tidal harvest</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
@@ -7935,7 +7974,7 @@ ${lines}
       if (!harvest.ok) throw new Error(`Metal Archives harvest failed: ${harvest.error || "unknown error"}`);
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(harvest, null, 2);
       const nCredited = (harvest.band?.length || 0) + (harvest.guest?.length || 0) + (harvest.misc?.length || 0);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${(harvest.tracks || []).length} tracks, ${nCredited} credited \u2014 raw Metal Archives harvest</strong></summary></details>`;
@@ -7984,7 +8023,7 @@ ${lines}
       _qobuzJson = { via, source: via === "API" ? `album/get (${parsed.id})` : parsed.pageUrl, album: albumInfo, tracks };
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(_qobuzJson, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Qobuz album"} \xB7 ${tracks.length} tracks \u2014 parsed Qobuz credits (${via === "API" ? "API" : "page"})</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
@@ -8035,7 +8074,7 @@ ${lines}
       _deezerJson = { source: parsed.pageUrl, album: albumInfo, tracks };
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(_deezerJson, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Deezer album"} \xB7 ${tracks.length} tracks \u2014 parsed Deezer credits (page)</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);
@@ -8071,7 +8110,7 @@ ${lines}
       _appleJson = { source: appleUrl, album, tracks };
       const li = document.createElement("li");
       const pre = document.createElement("pre");
-      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
       pre.textContent = JSON.stringify(_appleJson, null, 2);
       li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${album || "Apple album"} \xB7 ${tracks.length} tracks \u2014 parsed Apple credits (API)</strong></summary></details>`;
       li.querySelector("details").appendChild(pre);

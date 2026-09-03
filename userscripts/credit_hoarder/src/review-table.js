@@ -225,8 +225,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             span.title = fromCache && via !== 'cache'
                 ? `Resolved via ${via}, served from cache`
                 : `Resolved via ${via}`;
-            span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};` +
-                                 `padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
+            span.style.cssText = `font-size:0.68rem;background:var(--mbu-bg-raised);color:${cfg.color};` +
+                                 `padding:0 0.35rem;border-radius:8px;border:1px solid var(--mbu-border);flex-shrink:0;`;
             return span;
         }
 
@@ -341,7 +341,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
         // ── Panel shell ────────────────────────────────────────────────────────
         const panel = document.createElement('div');
-        panel.style.cssText = 'border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;';
+        panel.style.cssText = 'border:2px solid var(--mbu-warn);border-radius:0.5rem;background:var(--mbu-bg);padding:1rem 1.5rem;margin:0.5rem 0;';
         // Hover-highlight (issue #63) lives in `src/hover-highlight.js` and
         // installs once at script load, scoped to the whole page — see that
         // module's header for why. The chips below still carry
@@ -356,7 +356,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         }
 
         const heading = document.createElement('div');
-        heading.style.cssText = 'display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:#f5e8a0;border:1px solid #d4b800;';
+        heading.style.cssText = 'display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);';
         // Refresh button on the LEFT side of the heading (#77 follow-up)
         // so the action lives on the same edge as the rest of the
         // review table's left-leaning chip layout.
@@ -367,7 +367,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const refreshBtn = document.createElement('button');
             refreshBtn.textContent = '🔄 Refresh from MB';
             refreshBtn.title = 'Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache';
-            refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;flex-shrink:0;';
+            refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid var(--mbu-warn);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-warn);flex-shrink:0;';
             refreshBtn.addEventListener('click', () => {
                 refreshBtn.disabled = true;
                 refreshBtn.textContent = '🔄 Refreshing…';
@@ -385,17 +385,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             heading.appendChild(refreshBtn);
         }
         const headingText = document.createElement('span');
-        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:#5a4000;flex:1;';
+        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:var(--mbu-warn);flex:1;';
         headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
         heading.appendChild(headingText);
         panel.appendChild(heading);
 
         const intro = document.createElement('p');
-        intro.style.cssText = 'margin:0 0 0.75rem;font-size:0.85rem;color:#666;';
+        intro.style.cssText = 'margin:0 0 0.75rem;font-size:0.85rem;color:var(--mbu-text-dim);';
         intro.innerHTML =
             'Review all artist matches before importing. ' +
-            '<span style="background:#ffe0e0;padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. ' +
-            '<span style="background:#fff8e1;padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch — verify. ' +
+            '<span style="background:var(--mbu-error-bg);padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. ' +
+            '<span style="background:var(--mbu-warn-bg);padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch — verify. ' +
             'Green rows are confirmed. Use the search or create buttons to resolve outstanding issues.';
         panel.appendChild(intro);
 
@@ -407,7 +407,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         hr.style.background = '#f5e8a0';
         [...(entitySources ? ['Source'] : []), importSourceName + ' entity', 'MB match / search'].forEach(col => {
             const th = document.createElement('th');
-            th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;';
+            th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid var(--mbu-warn);white-space:nowrap;';
             th.textContent = col;
             hr.appendChild(th);
         });
@@ -474,7 +474,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // #428: a synthesized key isn't a page — the badge must grey out as a
                 // name-only credit instead of opening a dead URL.
                 const srcUrls = (r._mergeUrls || (discogsHref ? [discogsHref] : [])).filter(u => !isSyntheticProviderUrl(u));
-                if (!names.length) { tdSrc.innerHTML = '<span style="color:#bbb;">—</span>'; }
+                if (!names.length) { tdSrc.innerHTML = '<span style="color:var(--mbu-text-weak);">—</span>'; }
                 else names.forEach(nm => {
                     const url = srcUrls.find(u => sourceNameForUrl(u) === nm) || null;
                     const span = document.createElement('span');
@@ -503,7 +503,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             if (entityType !== 'artist') {
                 const badge = document.createElement('span');
                 badge.textContent = entityType;
-                badge.style.cssText = 'font-size:0.7rem;background:#e0e0e0;border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:#555;vertical-align:middle;';
+                badge.style.cssText = 'font-size:0.7rem;background:var(--mbu-bg-sunken);border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:var(--mbu-text-dim);vertical-align:middle;';
                 nameWrap.appendChild(badge);
             }
             // #325: Tidal exposes no label page, so company credits carry a synthetic
@@ -540,14 +540,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const noUrl = document.createElement('span');
                 noUrl.textContent = 'no profile';
                 noUrl.title = `No ${srcName} artist page — name lookup unavailable, search MB manually`;
-                noUrl.style.cssText = BADGE_BASE + 'background:#fde0e0;color:#a02020;border:1px solid #d44040;';
+                noUrl.style.cssText = BADGE_BASE + 'background:var(--mbu-error-bg);color:var(--mbu-error);border:1px solid var(--mbu-error);';
                 nameWrap.appendChild(noUrl);
             }
             if (nameMismatch) {
                 const w = document.createElement('span');
                 w.textContent = 'name differs';
                 w.title = 'MB entity name differs from the Discogs display name — double-check this is the right match';
-                w.style.cssText = BADGE_BASE + 'background:#fff1c4;color:#7a5800;border:1px solid #d4ad3a;';
+                w.style.cssText = BADGE_BASE + 'background:var(--mbu-warn-bg);color:var(--mbu-warn);border:1px solid var(--mbu-warn);';
                 nameWrap.appendChild(w);
             }
             nameRow.appendChild(nameWrap);
@@ -600,7 +600,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 });
 
                 const rolesLine = document.createElement('div');
-                rolesLine.style.cssText = 'font-size:0.75rem;color:#888;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
+                rolesLine.style.cssText = 'font-size:0.75rem;color:var(--mbu-text-weak);margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
                 rolesLine.title = chips.map(c => c.displayText).join(', ');
                 chips.forEach((chip, i) => {
                     if (i > 0) rolesLine.appendChild(document.createTextNode(', '));
@@ -628,7 +628,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             credLine.style.cssText = 'display:flex;align-items:center;gap:0.3rem;margin-top:1rem;padding-top:0.25rem;max-width:280px;';
             const credLabel = document.createElement('label');
             credLabel.textContent = 'Credited as:';
-            credLabel.style.cssText = 'font-size:0.72rem;color:#888;flex-shrink:0;';
+            credLabel.style.cssText = 'font-size:0.72rem;color:var(--mbu-text-weak);flex-shrink:0;';
             const credInput = noPasswordManagers(document.createElement('input'));
             credInput.type = 'text';
             // Default background is plain white; when the user (or the
@@ -638,7 +638,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // obvious at a glance (#77 follow-up).
             const CRED_BG_SAME      = '#fff';
             const CRED_BG_DIFFERENT = '#fff4d0'; // soft yellow
-            credInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:' + CRED_BG_SAME + ';';
+            credInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid var(--mbu-border);border-radius:3px;background:' + CRED_BG_SAME + ';';
             credInput.placeholder = displayName;
             credInput.title = `Override the credited name dispatched with every rel for this entity.\nLeave empty to use the default (${srcName} name, or MB's most-frequent existing credit when known).`;
             function refreshCredBg() {
@@ -699,7 +699,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // name. Disabled state: [MB] requires a resolved entity AND
             // a value that isn't already the MB name; [D] is disabled
             // when the value already equals the Discogs displayName.
-            const CRED_BTN_STYLE = 'flex-shrink:0;padding:0.05rem 0.35rem;font-size:0.7rem;line-height:1;cursor:pointer;border:1px solid #c8a000;border-radius:3px;background:#fffbe6;color:#7a5000;';
+            const CRED_BTN_STYLE = 'flex-shrink:0;padding:0.05rem 0.35rem;font-size:0.7rem;line-height:1;cursor:pointer;border:1px solid var(--mbu-warn);border-radius:3px;background:var(--mbu-bg-raised);color:var(--mbu-warn);';
             const mbBtn = document.createElement('button');
             mbBtn.type = 'button';
             mbBtn.textContent = 'MB';
@@ -757,7 +757,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const searchInput = noPasswordManagers(document.createElement('input'));
             searchInput.type = 'text';
             searchInput.value = displayName;
-            searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;';
+            searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid var(--mbu-border);border-radius:3px;';
             rowSearchInputs.set(_entityKey, searchInput);   // #139: header "N unresolved" jumps here
             const searchBtn = document.createElement('button');
             searchBtn.type = 'button';
@@ -765,7 +765,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // beveled default button. currentColor so it inherits the muted grey.
             searchBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>';
             searchBtn.title = 'Search MusicBrainz';
-            searchBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;padding:0 0.45rem;cursor:pointer;color:#666;background:#fff;border:1px solid #bbb;border-radius:3px;';
+            searchBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;padding:0 0.45rem;cursor:pointer;color:var(--mbu-text-dim);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:3px;';
             // Per #77 iter 3: search icon on the LEFT of the input.
             searchRow.appendChild(searchBtn);
             searchRow.appendChild(searchInput);
@@ -801,7 +801,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const trigger = document.createElement('a');
                 trigger.href = '#';
                 trigger.textContent = 'MB roles ▾';
-                trigger.style.cssText = 'color:#7a7a9a;text-decoration:none;cursor:pointer;white-space:nowrap;';
+                trigger.style.cssText = 'color:var(--mbu-info);text-decoration:none;cursor:pointer;white-space:nowrap;';
                 trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
                 trigger.addEventListener('click', async (ev) => {
                     ev.preventDefault();
@@ -835,7 +835,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     types.forEach(t => {
                         const c = document.createElement('span');
                         c.textContent = t;
-                        c.style.cssText = 'background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;';
+                        c.style.cssText = 'background:var(--mbu-info-bg);border:1px solid var(--mbu-border);border-radius:0.7rem;padding:0 0.4rem;color:var(--mbu-info);white-space:nowrap;';
                         chipsBox.appendChild(c);
                     });
                 });
@@ -868,8 +868,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // Same box metrics as the resolved selRow so the name lands in place.
                 const ph = document.createElement('div');
                 ph.className = 'ch-creating';
-                ph.style.cssText = 'padding:0.15rem 0.4rem;border:1px dashed #8a8ad0;border-radius:3px;background:#f4f4ff;'
-                    + 'display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#55557a;font-style:italic;margin-bottom:0.3rem;';
+                ph.style.cssText = 'padding:0.15rem 0.4rem;border:1px dashed var(--mbu-info);border-radius:3px;background:var(--mbu-bg);'
+                    + 'display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--mbu-info);font-style:italic;margin-bottom:0.3rem;';
                 const spin = document.createElement('span');
                 spin.textContent = '⟳';   // ⟳
                 spin.style.cssText = 'display:inline-block;animation:ch-creating-spin 0.9s linear infinite;';
@@ -883,7 +883,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const x = document.createElement('button');
                 x.textContent = '✕';
                 x.title = 'Cancel — stop waiting and restore the row';
-                x.style.cssText = 'margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:#55557a;padding:0 0.2rem;';
+                x.style.cssText = 'margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:var(--mbu-info);padding:0 0.2rem;';
                 x.addEventListener('click', () => cancelCreating());
                 ph.appendChild(x);
                 tdMb.insertBefore(ph, candidateList);
@@ -957,7 +957,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                 candidateList.innerHTML = '';
                 const selRow = document.createElement('div');
-                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;';
+                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid var(--mbu-ok);border-radius:3px;background:var(--mbu-ok-bg);display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;';
                 const selA = document.createElement('a');
                 selA.href = 'https:' + mbUrl; selA.target = '_blank'; selA.rel = 'noopener noreferrer nofollow';
                 selA.textContent = '\u2713 ' + a.name + (a.disambiguation ? ` (${a.disambiguation})` : '');
@@ -999,7 +999,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 searchBtn.disabled = false;
                 candidateList.innerHTML = '';
                 const none = document.createElement('div');
-                none.style.cssText = 'font-size:0.82rem;color:#888;';
+                none.style.cssText = 'font-size:0.82rem;color:var(--mbu-text-weak);';
                 none.textContent = 'No selection \u2014 search or create';
                 candidateList.appendChild(none);
                 renderActions(null);
@@ -1014,7 +1014,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 'display:inline-flex;align-items:center;justify-content:center;' +
                 'min-width:1.6rem;height:1.6rem;padding:0 0.35rem;' +
                 'font-size:0.95rem;line-height:1;cursor:pointer;' +
-                'border:1px solid #d6d6d6;border-radius:0.3rem;background:#fafafa;';
+                'border:1px solid var(--mbu-border);border-radius:0.3rem;background:var(--mbu-bg-raised);';
 
             function renderActions(selected) {
                 tdAction.innerHTML = '';
@@ -1034,7 +1034,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     // Inline-flex so it sits next to the create chips on the
                     // same row as the entity name.
                     const linkSlot = document.createElement('span');
-                    linkSlot.style.cssText = 'display:inline-flex;align-items:center;font-size:0.8rem;color:#888;';
+                    linkSlot.style.cssText = 'display:inline-flex;align-items:center;font-size:0.8rem;color:var(--mbu-text-weak);';
                     linkSlot.textContent = '…';
                     linkSlot.title = `Checking whether MB already has this ${srcName} URL linked`;
                     tdAction.appendChild(linkSlot);
@@ -1100,7 +1100,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             const _addCount = (r._mergeUrls && r._mergeUrls.length) ? r._mergeUrls.filter(u => sourceUrlLinkTypeId(u, entityType)).length : 0;
                             addLinkBtn.textContent = '\ud83d\udd17' + (_addCount > 1 ? ' ' + _addCount : '');
                             addLinkBtn.title = (_addCount > 1 ? `Add ${_addCount} source links to MB ${entityType}` : `Add ${srcName} link to MB ${entityType}`) + `  ·  right-click: add ${_addCount > 1 ? 'them' : 'it'} silently in the background`;
-                            addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#e8771d;'; // Discogs orange accent
+                            addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:var(--mbu-warn);'; // Discogs orange accent
                             // #273: left-click = foreground (focus-return recheck); right-click =
                             // background via GM_openInTab + auto-submit, rechecked on `edit-committed`.
                             const openLinkEdit = (background) => {
@@ -1372,7 +1372,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     ? `Create in MB with default ${srcName} name + URL`
                     : 'Create in MB with the credited name')
                     + '  ·  right-click: create silently in a background tab (auto-submitted)';
-                createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#2a7;font-size:1.15rem;font-weight:600;'; // bigger, bolder plus
+                createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:var(--mbu-ok);font-size:1.15rem;font-weight:600;'; // bigger, bolder plus
                 createBtn.addEventListener('click', () => openCreateTab());
                 // #273: right-click creates in the background and auto-commits.
                 createBtn.addEventListener('contextmenu', e => { e.preventDefault(); openCreateTab({ background: true }); });
@@ -1381,7 +1381,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 createAdvBtn.textContent = '▾';
                 createAdvBtn.title = 'Create in MB with editable name + disambiguation'
                     + (srcName === 'Discogs' && discogsHref ? ', pre-filled from the Discogs profile' : '');
-                createAdvBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#666;'; // muted
+                createAdvBtn.style.cssText = ACTION_CHIP_STYLE + 'color:var(--mbu-text-dim);'; // muted
 
                 createAdvBtn.addEventListener('click', () => openAdvancedCreatePopup());
 
@@ -1405,18 +1405,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     const overlay = document.createElement('div');
                     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center;';
                     const modal = document.createElement('div');
-                    modal.style.cssText = 'background:#fff;border-radius:0.5rem;padding:1.1rem 1.35rem 1rem;max-width:600px;width:92%;max-height:82vh;'
+                    modal.style.cssText = 'background:var(--mbu-bg);border-radius:0.5rem;padding:1.1rem 1.35rem 1rem;max-width:600px;width:92%;max-height:82vh;'
                                         + 'display:flex;flex-direction:column;gap:0.55rem;box-shadow:0 12px 32px rgba(0,0,0,0.32);'
                                         + 'font-family:inherit;';
 
                     const heading = document.createElement('div');
-                    heading.style.cssText = 'font-weight:bold;font-size:1.02rem;color:#222;margin-bottom:0.15rem;';
+                    heading.style.cssText = 'font-weight:bold;font-size:1.02rem;color:var(--mbu-text);margin-bottom:0.15rem;';
                     heading.textContent = `Create ${entityType} in MusicBrainz`;
                     modal.appendChild(heading);
 
                     // ── Name input ──────────────────────────────────────────
-                    const FIELD_LABEL = 'font-size:0.78rem;color:#666;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;margin-top:0.25rem;';
-                    const FIELD_INPUT = 'padding:0.45rem 0.55rem;border:1px solid #c8c8c8;border-radius:0.3rem;font-size:0.93rem;font-family:inherit;';
+                    const FIELD_LABEL = 'font-size:0.78rem;color:var(--mbu-text-dim);font-weight:600;letter-spacing:0.02em;text-transform:uppercase;margin-top:0.25rem;';
+                    const FIELD_INPUT = 'padding:0.45rem 0.55rem;border:1px solid var(--mbu-border);border-radius:0.3rem;font-size:0.93rem;font-family:inherit;';
 
                     const nameLabel = document.createElement('label');
                     nameLabel.style.cssText = FIELD_LABEL;
@@ -1455,14 +1455,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     let profileBox = null;
                     if (showProfile) {
                         const profileLabel = document.createElement('div');
-                        profileLabel.style.cssText = 'font-size:0.78rem;color:#888;margin-top:0.55rem;';
+                        profileLabel.style.cssText = 'font-size:0.78rem;color:var(--mbu-text-weak);margin-top:0.55rem;';
                         profileLabel.textContent = 'Discogs profile — select text to copy into Disambiguation';
                         modal.appendChild(profileLabel);
 
                         profileBox = document.createElement('div');
-                        profileBox.style.cssText = 'border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;'
+                        profileBox.style.cssText = 'border:1px solid var(--mbu-border);border-radius:0.3rem;padding:0.5rem 0.6rem;background:var(--mbu-bg-raised);'
                                                  + 'font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;'
-                                                 + 'min-height:5rem;max-height:18rem;flex:1;color:#444;';
+                                                 + 'min-height:5rem;max-height:18rem;flex:1;color:var(--mbu-text);';
                         profileBox.textContent = 'Loading profile from Discogs…';
                         modal.appendChild(profileBox);
 
@@ -1487,7 +1487,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     btnRow.style.cssText = 'display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.55rem;';
                     const cancelBtn = document.createElement('button');
                     cancelBtn.textContent = 'Cancel';
-                    cancelBtn.style.cssText = 'padding:0.4rem 1rem;cursor:pointer;border:1px solid #c8c8c8;border-radius:0.25rem;background:#fafafa;color:#444;font-size:0.88rem;';
+                    cancelBtn.style.cssText = 'padding:0.4rem 1rem;cursor:pointer;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-bg-raised);color:var(--mbu-text);font-size:0.88rem;';
                     const submitBtn = document.createElement('button');
                     submitBtn.textContent = 'Create ↗';
                     submitBtn.style.cssText = 'padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;font-size:0.9rem;';
@@ -1545,12 +1545,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             function makeCandidateRow(a) {
                 const row = document.createElement('div');
-                row.style.cssText = 'display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid #ddd;border-radius:3px;background:#fff;font-size:0.82rem;';
+                row.style.cssText = 'display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid var(--mbu-border);border-radius:3px;background:var(--mbu-bg);font-size:0.82rem;';
                 // Per #77 iter 3: select icon on the LEFT of the candidate row.
                 const selBtn = document.createElement('button');
                 selBtn.textContent = '✓';
                 selBtn.title = 'Select this candidate as the MB match';
-                selBtn.style.cssText = 'font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid #b5d5b5;border-radius:0.25rem;background:#eaf6ea;color:#2a7;font-weight:600;flex-shrink:0;';
+                selBtn.style.cssText = 'font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-ok-bg);color:var(--mbu-ok);font-weight:600;flex-shrink:0;';
                 selBtn.addEventListener('click', () => setRowResolved(a));
                 row.appendChild(selBtn);
 
@@ -1564,7 +1564,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 info.appendChild(nameA);
                 if (a.disambiguation) {
                     const d = document.createElement('span');
-                    d.style.cssText = 'color:#777;margin-left:0.25rem;';
+                    d.style.cssText = 'color:var(--mbu-text-dim);margin-left:0.25rem;';
                     d.textContent = `(${a.disambiguation})`;
                     info.appendChild(d);
                 }
@@ -1586,7 +1586,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // If input looks like an MBID or MB URL, fetch directly
                 const mbid = extractMbid(q);
                 if (mbid) {
-                    candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;">Looking up MBID…</div>';
+                    candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Looking up MBID…</div>';
                     mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`)
                         .then(json => {
                             if (!json) return;
@@ -1598,11 +1598,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                     disambiguation: json.disambiguation || '',
                                 }));
                             } else {
-                                candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;">Not found</div>';
+                                candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Not found</div>';
                             }
                         })
                         .catch(() => {
-                            candidateList.innerHTML = `<div style="font-size:0.82rem;color:#c00;">MBID not found or wrong entity type</div>`;
+                            candidateList.innerHTML = `<div style="font-size:0.82rem;color:var(--mbu-error);">MBID not found or wrong entity type</div>`;
                         });
                     return;
                 }
@@ -1610,18 +1610,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // knows the search button took effect. Without it the
                 // candidate list looks dead for 1–3s while MB responds
                 // (longer when MB is rate-limiting us, see #87).
-                candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;font-style:italic;">Searching…</div>';
+                candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);font-style:italic;">Searching…</div>';
                 mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`)
                     .then(json => {
                         if (!json) {
-                            candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed — MB unavailable</div>';
+                            candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-error);">Search failed — MB unavailable</div>';
                             return;
                         }
                         candidateList.innerHTML = '';
                         const resultKey = entityType === 'label' ? 'labels' : entityType === 'place' ? 'places' : 'artists';
                         if (!json[resultKey] || json[resultKey].length === 0) {
                             const none = document.createElement('div');
-                            none.style.cssText = 'font-size:0.82rem;color:#888;';
+                            none.style.cssText = 'font-size:0.82rem;color:var(--mbu-text-weak);';
                             none.textContent = 'No results';
                             candidateList.appendChild(none);
                         } else {
@@ -1629,7 +1629,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         }
                     })
                     .catch(() => {
-                        candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed</div>';
+                        candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-error);">Search failed</div>';
                     });
             }
 
@@ -1655,7 +1655,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
                 candidateList.innerHTML = '';
                 const selRow = document.createElement('div');
-                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;';
+                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid var(--mbu-ok);border-radius:3px;background:var(--mbu-ok-bg);display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;';
                 const selA = document.createElement('a');
                 selA.href = 'https:' + correctedMbUrl; selA.target = '_blank'; selA.rel = 'noopener noreferrer nofollow';
                 selA.textContent = '\u2713 ' + displayName2 + (initMbDisam ? ` (${initMbDisam})` : '') + (!initMbName ? ' ⚠ name unknown' : '');
@@ -1681,7 +1681,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 renderActions(null);
             } else {
                 const none = document.createElement('div');
-                none.style.cssText = 'font-size:0.82rem;color:#888;';
+                none.style.cssText = 'font-size:0.82rem;color:var(--mbu-text-weak);';
                 none.textContent = needsAttention ? 'No suggestions \u2014 search or create' : '';
                 if (needsAttention) candidateList.appendChild(none);
                 renderActions(null);
@@ -1700,14 +1700,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
         const issueNote = document.createElement('span');
         issueNote.className = 'discogs-issue-note';
-        issueNote.style.cssText = 'font-size:0.85rem;color:#7a5c00;';
+        issueNote.style.cssText = 'font-size:0.85rem;color:var(--mbu-warn);';
 
         // "N links" badge — count of confirmed artists whose Discogs URL isn't yet
         // linked in MB (the 🔗 add-link chip), shown right of "N unresolved" (like
         // Apollo's links badge). Updated live by the per-row URL checks.
         linksNote = document.createElement('span');
         linksNote.className = 'discogs-issue-note discogs-links-note';
-        linksNote.style.cssText = 'font-size:0.85rem;color:#e8771d;display:none;';
+        linksNote.style.cssText = 'font-size:0.85rem;color:var(--mbu-warn);display:none;';
         linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet — click to jump to the next one; use its 🔗 chip to add the link`;
         linksNote.addEventListener('click', jumpNextLink);
         updateLinksBadge();
@@ -1804,7 +1804,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             thRow.style.background = '#f5f5f5';
             [importSourceName + ' entity', 'Roles / Tracks', 'MB match', 'MBID', 'Resolved via'].forEach(h => {
                 const th = document.createElement('th');
-                th.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;';
+                th.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border:1px solid var(--mbu-border);white-space:nowrap;';
                 th.textContent = h;
                 thRow.appendChild(th);
             });
@@ -1835,8 +1835,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                 [r.displayName || r.entity?.name, rolesText, matchText, mbid, viaText].forEach((val, ci) => {
                     const td = document.createElement('td');
-                    td.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #ddd;' +
-                        (ci === 2 && !val ? 'color:#aaa;' : ci === 2 ? 'color:#060;' :
+                    td.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid var(--mbu-border);' +
+                        (ci === 2 && !val ? 'color:var(--mbu-text-weak);' : ci === 2 ? 'color:var(--mbu-ok);' :
                          ci === 4 && vCfg ? `color:${vCfg.color};` : '');
                     if (ci === 2 && mbid) {
                         const a = document.createElement('a');
@@ -1871,7 +1871,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const unresolvedCount = allResults.filter(r => { const _k = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`; return !rowState.get(_k)?.confirmed; }).length;
             if (unresolvedCount > 0) {
                 const unresolvedLi = document.createElement('li');
-                unresolvedLi.style.cssText = 'list-style:none;margin:0.2rem 0;font-size:0.82rem;color:#a06000;';
+                unresolvedLi.style.cssText = 'list-style:none;margin:0.2rem 0;font-size:0.82rem;color:var(--mbu-warn);';
                 unresolvedLi.textContent = `⚠ ${unresolvedCount} entity/entities unresolved — will be skipped`;
                 getLogContainer().appendChild(unresolvedLi);
             }
