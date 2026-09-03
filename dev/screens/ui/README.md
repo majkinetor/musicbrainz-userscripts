@@ -30,5 +30,7 @@ which is what a Stylus theme does.
 | 60 | mammoth | config | ⚠ 60-mammoth-config.png | ⚠ 60-mammoth-config-dark.png |
 | 61 | mammoth | note-panel | [61-mammoth-note-panel.png](./61-mammoth-note-panel.png) | [61-mammoth-note-panel-dark.png](./61-mammoth-note-panel-dark.png) |
 | 70 | shared | toast | [70-shared-toast.png](./70-shared-toast.png) | [70-shared-toast-dark.png](./70-shared-toast-dark.png) |
+| 90 | falcon | panel | [90-falcon-panel.png](./90-falcon-panel.png) | [90-falcon-panel-dark.png](./90-falcon-panel-dark.png) |
+| 91 | falcon | add-to-queue | [91-falcon-add-to-queue.png](./91-falcon-add-to-queue.png) | [91-falcon-add-to-queue-dark.png](./91-falcon-add-to-queue-dark.png) |
 
-_42 shot(s), generated 2026-09-03 12:34 UTC._
+_46 shot(s), generated 2026-09-03 17:53 UTC._

@@ -34,6 +34,16 @@ const DARK = ':root{--background:#1b1820;--text:#e9e5f2;--border:#463d57}'
     + 'html,body{background:#1b1820;color:#e9e5f2}'
     + 'a{color:#b9a7f0}';
 
+// …and the case the harness never covered: a dark userstyle that paints the page
+// but exposes NO variables at all. Most themes are written that way — kellnerd's
+// `--background`/`--text` are a convention, not a requirement — and then every
+// token derived from them stays at its LIGHT fallback while the page around it is
+// dark. That is the "whitish gray backgrounds and invisible text" report:
+// half-light windows on a dark page, which is exactly what deriving from someone
+// else's variables buys you when they are not there.
+const DARK_NOVARS = 'html,body{background:#1b1820;color:#e9e5f2}a{color:#b9a7f0}';
+const NOVARS = process.argv.includes('--novars');
+
 // Each case opens as many surfaces as it can reach, because a window nobody
 // opened is a window nobody measured. `open` may click several things in turn.
 const CASES = [
@@ -44,13 +54,36 @@ const CASES = [
     ['apollo_editor', `/release/${REL}/edit`, 9000, () => {
         [...document.querySelectorAll('a,li,button')].find(e => /^Tracklist$/.test((e.textContent || '').trim()))?.click();
     }],
-    ['credit_hoarder', `/release/${REL}/edit-relationships`, 5000, null],
+    ['credit_hoarder', '/release/63cc0372-6a7b-4d0e-9da5-9efaf419cd8e/edit-relationships', 7000, null, 'https://musicbrainz.org'],
     ['isrc_scout', `/release/${REL}`, 3500, () => {
         document.getElementById('ii-btn')?.click();
         setTimeout(() => [...document.querySelectorAll('#ii-modal button,#ii-modal a')]
             .find(e => /look\s*up|lookup|fetch/i.test(e.textContent || ''))?.click(), 900);
     }],
     ['fusion', `/release-group/${RG}`, 3500, () => document.querySelector('.fs-launch')?.click()],
+    // Falcon — never adopted the tokens until now, so nothing here had ever been
+    // measured. Panel, then the "Add to queue" dialog majkinetor photographed.
+    ['falcon', `/release/${REL}`, 4000, () => document.getElementById('falcon-launcher')?.click()],
+    ['falcon', `/release/${REL}`, 4000, () => {
+        document.getElementById('falcon-launcher')?.click();
+        setTimeout(() => [...document.querySelectorAll('#falcon-panel button')]
+            .find(e => /add from release/i.test(e.textContent || ''))?.click(), 900);
+    }],
+    // The menus from the second round of screenshots: Scout's two dropdowns and
+    // Platform Check's provider list, none of which any opener reached before.
+    ['isrc_scout', `/release/${REL}`, 3500, () => {
+        document.getElementById('ii-btn')?.click();
+        setTimeout(() => document.querySelector('.ii-clear-toggle')?.click(), 900);
+    }],
+    ['isrc_scout', `/release/${REL}`, 3500, () => {
+        document.getElementById('ii-btn')?.click();
+        setTimeout(() => document.querySelector('.ii-sxprov, .ii-prov-toggle')?.click(), 900);
+    }],
+    ['platform_check', `/release/${REL}`, 3500, () => {
+        [...document.querySelectorAll('#mb-pc-panel *')].find(e => /⚙/.test(e.textContent || '') && e.offsetParent)?.click();
+        setTimeout(() => [...document.querySelectorAll('#mb-provider-modal-card button,#mb-provider-modal-card a')]
+            .find(e => /platform/i.test(e.textContent || ''))?.click(), 900);
+    }],
     ['art_station', `/release/${REL}/cover-art`, 3500, () => {
         document.getElementById('as-setup-btn')?.click();
         setTimeout(() => document.querySelector('.mbu-cfg-log')?.click(), 300);
@@ -70,13 +103,20 @@ const CASES = [
         document.querySelector('.fs-launch')?.click();
         setTimeout(() => document.getElementById('fs-cfg')?.click(), 900);
     }],
-    ['mammoth', `/release/${REL}/edit`, 9000, null],
+    ['mammoth', `/release/${REL}/edit-relationships`, 6000, null],
 ];
 
 // Marker classes Apollo puts on MUSICBRAINZ's own form fields so it can find
 // them again. Those elements belong to the page, not to us; a dark userstyle is
 // responsible for them, and repainting someone else's release editor is not.
 const NOT_OURS = [/^\.tc-nav-on$/, /^\.tc-nav-vh$/];
+// …and by the FULL selector, for MusicBrainz controls that one of our own
+// wrappers happens to contain: Mammoth puts .mmth-fieldcol around MusicBrainz's
+// edit-note textarea, which is still MusicBrainz's textarea.
+// The same goes for MusicBrainz's own "Edit note" legend: Mammoth marks the
+// fieldset with .mmth-on so it can find it, but the heading, its orange, and the
+// 2.96:1 it scores on white are all MusicBrainz's.
+const NOT_OURS_FULL = [/textarea\.edit-note$/, /^\.mmth-on legend$/];
 
 const ONLY = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
 const LIGHT = process.argv.includes('--light');
@@ -96,26 +136,43 @@ await ctx.addInitScript(() => {
     window.unsafeWindow = window;
     window.GM_openInTab = () => ({ closed: false, close() {} });
     window.GM_registerMenuCommand = () => {};
+    // A real (fetch-backed) GM_xmlhttpRequest, not a no-op: scripts that probe
+    // external sources bail out early without it, and a script that never
+    // mounted is a script whose colours were never measured. credit_hoarder was
+    // silently doing exactly that.
+    window.GM_xmlhttpRequest = (o) => {
+        const done = (r) => { try { (o.onload || (() => {}))(r); } catch (e) {} };
+        fetch(o.url, { method: o.method || 'GET', headers: o.headers || {}, body: o.data })
+            .then(async (r) => done({ status: r.status, statusText: r.statusText, responseText: await r.text(), finalUrl: r.url, responseHeaders: '' }))
+            .catch((e) => { try { (o.onerror || (() => {}))(e); } catch (_) {} });
+        return { abort() {} };
+    };
 });
 
 const worst = new Map();   // script -> [{sel, ratio, fg, bg, text}]
-for (const [name, path, settle, open] of CASES.filter(c => !ONLY || c[0] === ONLY)) {
+const seenOurs = new Map();   // script -> how many of our elements were ever on screen
+for (const [name, path, settle, open, base] of CASES.filter(c => !ONLY || c[0] === ONLY)) {
     // credit_hoarder is a bundle: the installable file is dist/, not src/
     const src = await readFile(name === 'credit_hoarder'
         ? 'C:/Work/mb-userscripts/userscripts/credit_hoarder/dist/credit_hoarder.user.js'
         : `C:/Work/mb-userscripts/userscripts/${name}/${name}.user.js`, 'utf8');
     const page = await ctx.newPage();
-    await page.route(() => true, r => r.request().method() === 'POST' ? r.abort() : r.continue());
-    await page.goto(B + path, { waitUntil: 'domcontentloaded' });
+    // Abort POSTs, hand everything else back to the browser untouched.
+    // route.continue() RE-ISSUES the request from Playwright, which production
+    // MusicBrainz does not survive — every navigation landed on "/" with an empty
+    // document, so credit_hoarder "mounted nothing" on a page that had never
+    // loaded. fallback() lets the default handling do the work.
+    await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
+    await page.goto((base || B) + path, { waitUntil: 'domcontentloaded' });
     if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); process.exit(3); }
     await page.waitForTimeout(1200);
-    if (!LIGHT) await page.addStyleTag({ content: DARK });
+    if (!LIGHT) await page.addStyleTag({ content: NOVARS ? DARK_NOVARS : DARK });
     await page.addScriptTag({ content: src });
     await page.waitForTimeout(settle);
     if (open) { await page.evaluate(open); await page.waitForTimeout(1800); }
 
     const rows = await page.evaluate((LIGHT) => {
-        const PFX = /^(as|tc|gt|ii|fs|mmth|pc|mbu|mb-pc|mb-provider|discogs)-/;
+        const PFX = /^(as|tc|gt|ii|fs|mmth|pc|mbu|mb-pc|mb-provider|discogs|falcon)-/;
         const ourKey = (el) => {
             for (let n = el; n && n !== document.body; n = n.parentElement) {
                 if (n.id && PFX.test(n.id)) return '#' + n.id;
@@ -221,12 +278,27 @@ for (const [name, path, settle, open] of CASES.filter(c => !ONLY || c[0] === ONL
                 ratio: 0, fg: '-', bg: 'color-scheme: ' + getComputedStyle(el).colorScheme, text: '',
             });
         }
+        // How much of OUR UI was actually on screen. A case whose opener silently
+        // failed measures nothing and reports "ok", which is the most dangerous
+        // result this file can produce — it says a window is fine when the window
+        // was never opened. Reported as a count so an empty case is visible.
+        let ours = 0;
+        for (const el of document.querySelectorAll('*')) {
+            if (!ourKey(el)) continue;
+            const r = el.getBoundingClientRect();
+            if (r.width >= 8 && r.height >= 8) ours++;
+        }
+        out.push({ kind: 'census', sel: '', ratio: 0, fg: '', bg: '', text: '', ours });
         return out;
     }, LIGHT);
 
     const seen = worst.get(name) || [];
+    const census = rows.find(r => r.kind === 'census');
+    seenOurs.set(name, Math.max(seenOurs.get(name) || 0, census ? census.ours : 0));
     for (const r of rows) {
+        if (r.kind === 'census') continue;
         if (NOT_OURS.some(re => re.test(r.sel.split(' ')[0]))) continue;
+        if (NOT_OURS_FULL.some(re => re.test(r.sel))) continue;
         if (!seen.some(s => s.sel === r.sel && s.kind === r.kind)) seen.push(r);
     }
     worst.set(name, seen);
@@ -236,6 +308,7 @@ for (const [name, path, settle, open] of CASES.filter(c => !ONLY || c[0] === ONL
 console.log(`\n=== ${LIGHT ? 'LIGHT' : 'DARK'} theme — text below the WCAG AA threshold\n`);
 for (const [name, rows] of worst) {
     rows.sort((a, b) => (a.kind === b.kind ? a.ratio - b.ratio : a.kind < b.kind ? -1 : 1));
+    ck((seenOurs.get(name) || 0) >= 5, `${name}: its UI was actually on screen to be measured (${seenOurs.get(name) || 0} element(s))`);
     ck(!rows.length, `${name}: every label readable and every surface dark${rows.length ? ` — ${rows.filter(r=>r.kind==='text').length} below AA, ${rows.filter(r=>r.kind==='surface').length} light patch(es), ${rows.filter(r=>r.kind==='scheme').length} unthemed widget(s)` : ''}`);
     for (const r of rows.slice(0, 24)) {
         console.log(r.kind

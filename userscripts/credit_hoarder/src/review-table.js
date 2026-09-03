@@ -404,7 +404,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         table.style.cssText = 'border-collapse:collapse;width:100%;font-size:0.85rem;';
         const thead = document.createElement('thead');
         const hr = document.createElement('tr');
-        hr.style.background = '#f5e8a0';
+        hr.style.background = 'var(--mbu-warn-bg)';
         [...(entitySources ? ['Source'] : []), importSourceName + ' entity', 'MB match / search'].forEach(col => {
             const th = document.createElement('th');
             th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid var(--mbu-warn);white-space:nowrap;';
@@ -816,8 +816,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     const types = await fetchArtistRelTypes(mbid);
                     wrap.innerHTML = '';
                     const label = document.createElement('span');
-                    label.style.color = '#888';
-                    if (!types)        { label.textContent = 'MB roles: fetch failed'; label.style.color = '#a02020'; wrap.appendChild(label); return; }
+                    label.style.color = 'var(--mbu-text-dim)';
+                    if (!types)        { label.textContent = 'MB roles: fetch failed'; label.style.color = 'var(--mbu-error)'; wrap.appendChild(label); return; }
                     if (!types.length) { label.textContent = 'MB roles: none'; wrap.appendChild(label); return; }
                     label.textContent = 'MB roles: ';
                     label.style.whiteSpace = 'nowrap';
@@ -888,7 +888,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 ph.appendChild(x);
                 tdMb.insertBefore(ph, candidateList);
                 _creatingEl = ph;
-                tr.style.background = '#f6f6ff';
+                tr.style.background = 'var(--mbu-info-bg)';
                 _creatingTimer = setTimeout(() => { _creatingTimer = null; cancelCreating(); }, 90000);
             }
             // User clicked ✕ (or the safety timeout fired): stop listening for the
@@ -951,7 +951,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     });
                 }
 
-                tr.style.background = '#f0fff0';
+                tr.style.background = 'var(--mbu-ok-bg)';
                 searchInput.disabled = true;
                 searchBtn.disabled = true;
 
@@ -994,7 +994,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     creditOverrides.delete(r._credInput._activeMbUrl);
                     r._credInput._activeMbUrl = null;
                 }
-                tr.style.background = '#ffe0e0';
+                tr.style.background = 'var(--mbu-error-bg)';
                 searchInput.disabled = false;
                 searchBtn.disabled = false;
                 candidateList.innerHTML = '';
@@ -1086,12 +1086,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         if (result === 'linked') {
                             linkSlot.textContent = '\u2713';
                             linkSlot.title = srcName + ' URL already linked to this MB ' + entityType;
-                            linkSlot.style.color = '#5a5';
+                            linkSlot.style.color = 'var(--mbu-ok)';
                             linkSlot.style.fontWeight = 'bold';
                         } else if (result === 'other') {
                             linkSlot.textContent = '\u26a0\ufe0f';
                             linkSlot.title = `${srcName} URL is linked to a DIFFERENT MB ${entityType}`;
-                            linkSlot.style.color = '#c80';
+                            linkSlot.style.color = 'var(--mbu-warn)';
                         } else {
                             linkSlot.textContent = '';
                             linkSlot.style.color = '';
@@ -1139,7 +1139,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                     linkSlot.innerHTML = '';
                                     linkSlot.textContent = '…';
                                     linkSlot.title = `Adding ${srcName} link in the background…`;
-                                    linkSlot.style.color = '#888';
+                                    linkSlot.style.color = 'var(--mbu-text-dim)';
                                     linkSlot.style.fontStyle = 'italic';
                                     return;
                                 }
@@ -1168,7 +1168,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 // regains focus.
                                 linkSlot.textContent = '\u2026';
                                 linkSlot.title = `Verifying ${srcName} link on return to this tab\u2026`;
-                                linkSlot.style.color = '#888';
+                                linkSlot.style.color = 'var(--mbu-text-dim)';
                                 linkSlot.style.fontStyle = 'italic';
                                 const onReturn = () => {
                                     if (document.visibilityState !== 'visible') return;
@@ -1197,7 +1197,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             linkSlot.remove();
                         } else {
                             linkSlot.textContent = `⚠ No ${srcName} page`;
-                            linkSlot.style.color = '#c80';
+                            linkSlot.style.color = 'var(--mbu-warn)';
                         }
                     } else if (urlCheckCached !== null) {
                         // Session-cache always takes precedence over the
@@ -1650,7 +1650,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (!initMbName) {
                     // Name was null in cache — keep yellow, IDB pre-load handled before rendering
                     rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: '', confirmed: true, via: r.logEntry?.via || null, fromCache: r.logEntry?.fromCache || false });
-                    tr.style.background = '#fff8e1';
+                    tr.style.background = 'var(--mbu-warn-bg)';
                 }
                 const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
                 candidateList.innerHTML = '';
@@ -1759,14 +1759,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             if (unresolved === 0) {
                 importBtn.innerHTML = `Start import${selLabel} \u2192`;   // #272: source icon now lives in the toolbar \u2014 don't double it here
                 importBtn.style.background = '#2ecc40';
-                importBtn.style.color = '#fff';
+                importBtn.style.color = 'var(--mbu-text-on-accent)';
                 issueNote.textContent = '';
                 issueNote.classList.remove('clickable');
                 issueNote.removeAttribute('title');
             } else {
                 importBtn.innerHTML = `Start import anyway${selLabel} \u2192`;   // #272: icon shown in the toolbar
                 importBtn.style.background = '#e0a800';
-                importBtn.style.color = '#fff';
+                importBtn.style.color = 'var(--mbu-text-on-accent)';
                 issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
                 issueNote.classList.add('clickable');
                 issueNote.title = 'Jump to the next unresolved entity \u2014 click again to cycle through them; these will be skipped on import';
@@ -1801,7 +1801,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const tbl = document.createElement('table');
             tbl.style.cssText = 'border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;';
             const thRow = document.createElement('tr');
-            thRow.style.background = '#f5f5f5';
+            thRow.style.background = 'var(--mbu-bg-raised)';
             [importSourceName + ' entity', 'Roles / Tracks', 'MB match', 'MBID', 'Resolved via'].forEach(h => {
                 const th = document.createElement('th');
                 th.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border:1px solid var(--mbu-border);white-space:nowrap;';

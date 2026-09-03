@@ -135,6 +135,29 @@ export const TOKENS = {
 // simply has to be a different purple.
 export const VARIANTS = {
     dark: {
+        // THE THREE SEEDS, RE-SEEDED. This is the whole point of recognising the
+        // theme rather than deriving from it.
+        //
+        // The base set reads `var(--background, #fff)` — kellnerd's convention,
+        // with a light fallback. But most dark userstyles simply paint the page
+        // and expose no variables at all; the convention is a convention, not a
+        // requirement. When that happens every one of our surfaces sits at its
+        // LIGHT fallback on a dark page: white panels, whitish-grey buttons, and
+        // our own dark-theme purple written onto white at 2.13:1. That is exactly
+        // the "buttons and combos still having whiteish gray background and some
+        // text still invisible" report, and no amount of per-rule tokenising ever
+        // reaches it, because every rule involved was already correct.
+        //
+        // So under a recognised dark theme the fallbacks become OURS. A userstyle
+        // that does define the variables still wins — we match its exact shade —
+        // and one that does not gets a dark theme that works anyway. Everything
+        // derived (the raised/sunken/hover surfaces, the muted text levels, the
+        // status tints) follows automatically, because it all mixes off these.
+        'bg': 'var(--background, #1e1b24)',
+        'text': 'var(--text, #e9e5f2)',
+        'border': 'var(--border, #3b3548)',
+
+        // and the two fixed hues that a formula cannot get right (see above)
         'accent-text': '#b9a7f0',        // 8.0:1 on #1b1820 — the same purple, lifted
         'accent-deep-text': '#a493e0',
     },

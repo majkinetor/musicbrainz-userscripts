@@ -77,7 +77,12 @@ for (const [name, path, open, settle] of CASES.filter(c => !ONLY || c[0] === ONL
     console.log('\n=== ' + name);
     const src = await readFile(`C:/Work/mb-userscripts/userscripts/${name}/${name}.user.js`, 'utf8');
     const page = await ctx.newPage();
-    await page.route(() => true, r => r.request().method() === 'POST' ? r.abort() : r.continue());
+    // Abort POSTs, hand everything else back to the browser untouched.
+    // route.continue() RE-ISSUES the request from Playwright, which production
+    // MusicBrainz does not survive — every navigation landed on "/" with an empty
+    // document, so credit_hoarder "mounted nothing" on a page that had never
+    // loaded. fallback() lets the default handling do the work.
+    await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
     await page.goto(B + path, { waitUntil: 'domcontentloaded' });
     if (page.url().includes('/login')) { console.log('  NOT LOGGED IN — skipped'); await page.close(); continue; }
     await page.waitForTimeout(1200);
@@ -88,7 +93,7 @@ for (const [name, path, open, settle] of CASES.filter(c => !ONLY || c[0] === ONL
 
     const found = await page.evaluate(() => {
         // "ours" = the nearest ancestor carrying one of our own name prefixes.
-        const PFX = /^(as|tc|gt|ii|fs|mmth|pc|mbu|mb-pc|mb-provider|discogs)-/;
+        const PFX = /^(as|tc|gt|ii|fs|mmth|pc|mbu|mb-pc|mb-provider|discogs|falcon)-/;
         const owner = (el) => {
             for (let n = el; n && n !== document.body; n = n.parentElement) {
                 if (n.id && PFX.test(n.id)) return '#' + n.id;
