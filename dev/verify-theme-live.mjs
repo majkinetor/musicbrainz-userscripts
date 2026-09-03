@@ -25,8 +25,14 @@ const { chromium } = require('playwright');
 const B = 'https://test.musicbrainz.org';
 const REL = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
 const RG = '1279bc2b-8c89-4f68-b233-38fc9f04f8d4';
-// A userstyle, exactly as Stylus would inject one.
-const DARK = ':root{--background:#1b1820;--text:#e9e5f2;--border:#463d57}';
+// A dark userstyle, as a real one behaves: it sets the variables AND paints the
+// page. Setting only the variables was a bad model of the thing being tested —
+// MusicBrainz stayed white underneath, so our windows inherited black text and
+// the theme detector correctly concluded the page was light. Every check that
+// depends on knowing which theme is on was therefore measuring the wrong world.
+const DARK = ':root{--background:#1b1820;--text:#e9e5f2;--border:#463d57}'
+    + 'html,body{background:#1b1820;color:#e9e5f2}'
+    + 'a{color:#b9a7f0}';
 
 // name, page, how to bring the settings/config surface on screen, settle ms
 const CASES = [

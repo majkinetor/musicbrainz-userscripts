@@ -36,8 +36,14 @@ const MODES = argv.includes('--light') ? ['light'] : argv.includes('--dark') ? [
 const B = 'https://test.musicbrainz.org';
 const REL = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
 const RG = '1279bc2b-8c89-4f68-b233-38fc9f04f8d4';
-// A userstyle, exactly as Stylus would inject one.
-const DARK = ':root{--background:#1b1820;--text:#e9e5f2;--border:#463d57}';
+// A dark userstyle, as a real one behaves: it sets the variables AND paints the
+// page. Setting only the variables was a bad model of the thing being tested —
+// MusicBrainz stayed white underneath, so our windows inherited black text and
+// the theme detector correctly concluded the page was light. Every check that
+// depends on knowing which theme is on was therefore measuring the wrong world.
+const DARK = ':root{--background:#1b1820;--text:#e9e5f2;--border:#463d57}'
+    + 'html,body{background:#1b1820;color:#e9e5f2}'
+    + 'a{color:#b9a7f0}';
 
 // n      stable number — never renumber, append instead
 // script which userscript
@@ -55,10 +61,19 @@ const SHOTS = [
     { n: 5, script: 'art_station', name: 'launcher-pill', page: `/release/${REL}/cover-art`, sel: '#as-switch-wrap' },
 
     { n: 10, script: 'apollo_editor', name: 'nav-bar', page: `/release/${REL}/edit`, sel: '#tc-nav-bar, .tc-nav-steps', settle: 9000 },
-    { n: 11, script: 'apollo_editor', name: 'toolbar', page: `/release/${REL}/edit`, sel: '#tc-bar', settle: 9000 },
+    // #tc-bar lives on the Tracklist step, so the step has to be opened first —
+    // without this the shot was a viewport of the Release tab and the toolbar
+    // majkinetor was asking about never appeared in it.
+    { n: 11, script: 'apollo_editor', name: 'toolbar', page: `/release/${REL}/edit`, sel: '#tc-bar', settle: 9000,
+        open: () => [...document.querySelectorAll('a,li,button,span')].find(e => /^Tracklist$/.test((e.textContent || '').trim()))?.click() },
     { n: 12, script: 'apollo_editor', name: 'settings', page: `/release/${REL}/edit`, sel: '#tc-settings',
         settle: 9000,
-        open: () => [...document.querySelectorAll('button,span,a,div')].find(e => (e.textContent || '').trim() === '⚙' && e.offsetParent)?.click() },
+        open: () => {
+            [...document.querySelectorAll('a,li,button,span')].find(e => /^Tracklist$/.test((e.textContent || '').trim()))?.click();
+            setTimeout(() => [...document.querySelectorAll('button,span,a,div')].find(e => (e.textContent || '').trim() === '⚙' && e.offsetParent)?.click(), 700);
+        } },
+    { n: 13, script: 'apollo_editor', name: 'tracklist', page: `/release/${REL}/edit`, sel: '#tc-mirror-wrap, .tc-mirror', settle: 9000,
+        open: () => [...document.querySelectorAll('a,li,button,span')].find(e => /^Tracklist$/.test((e.textContent || '').trim()))?.click() },
 
     { n: 20, script: 'group_therapy', name: 'toolbar', page: `/release/${REL}/edit-relationships`, sel: '.gt-toolbar' },
     { n: 21, script: 'group_therapy', name: 'config', page: `/release/${REL}/edit-relationships`, sel: '.gt-cfg-pop',
@@ -78,8 +93,18 @@ const SHOTS = [
     { n: 52, script: 'fusion', name: 'settings', page: `/release-group/${RG}`, sel: '#fs-settings',
         open: () => { document.querySelector('.fs-launch')?.click(); setTimeout(() => document.getElementById('fs-cfg')?.click(), 900); } },
 
-    { n: 60, script: 'mammoth', name: 'config', page: `/release/${REL}/edit`, sel: '.mmth-cfg', settle: 9000,
+    { n: 60, script: 'mammoth', name: 'config', page: `/release/${REL}/edit-relationships`, sel: '.mmth-cfg', settle: 5000,
         open: () => [...document.querySelectorAll('button,span,a,div')].find(e => /🦣|mmth/.test(e.className || '') && e.offsetParent)?.click() },
+
+    // Mammoth's panel rides next to an edit-note field. edit-annotation looked
+    // like the shortest page with one and does not have one at all; the
+    // relationship editor does.
+    { n: 61, script: 'mammoth', name: 'note-panel', page: `/release/${REL}/edit-relationships`, sel: '.mmth-side, .mmth-wrap', settle: 5000 },
+
+    // NB no credit_hoarder shot. Its bar only mounts when the release actually
+    // has a Discogs (or other supported) source link, and the sandbox release has
+    // none, so the entry could only ever be a permanent MISS. Its colours were
+    // swept with the same passes as everything else and want a live look.
 
     { n: 70, script: 'shared', name: 'toast', page: `/release/${REL}/cover-art`, sel: '#mbu-toast',
         open: () => window.MBU?.toast('Shared toast — this is what a message looks like', { ms: 60000 }) },
@@ -89,6 +114,8 @@ const list = SHOTS.filter(s => !ONLY || s.script === ONLY);
 const src = {};
 for (const s of new Set(list.map(x => x.script))) {
     if (s === 'shared') { src[s] = await readFile(resolve(ROOT, 'userscripts/art_station/art_station.user.js'), 'utf8'); continue; }
+    // credit_hoarder is a bundle — dist/ is the installable file
+    if (s === 'credit_hoarder') { src[s] = await readFile(resolve(ROOT, 'userscripts/credit_hoarder/dist/credit_hoarder.user.js'), 'utf8'); continue; }
     src[s] = await readFile(resolve(ROOT, `userscripts/${s}/${s}.user.js`), 'utf8');
 }
 

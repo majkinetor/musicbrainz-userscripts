@@ -66,8 +66,12 @@ export const TOKENS = {
     // The accent used AS TEXT. Mixing toward --mbu-text lightens it on a dark
     // ground and deepens it slightly on a light one, so it stays legible either
     // way; --mbu-accent itself is left alone because it is the button fill.
-    'accent-text': ['#5f3ec0', 'color-mix(in srgb, var(--mbu-accent) 68%, var(--mbu-text))'],
-    'accent-deep-text': ['#3b2c70', 'color-mix(in srgb, var(--mbu-accent-deep) 55%, var(--mbu-text))'],
+    // Light is the literal brand purple — deriving it from --mbu-text darkened it
+    // for no reason on the theme nobody complained about. The dark form is stated
+    // in VARIANTS below instead of mixed, because "lighter purple" is a judgement
+    // about a specific hue, not something a formula gets right.
+    'accent-text': '#5f3ec0',
+    'accent-deep-text': '#3b2c70',
 
     // ── status ───────────────────────────────────────────────────────────────
     'ok': ['#1f9d6b', 'color-mix(in srgb, #1f9d6b 78%, var(--mbu-text))'],
@@ -113,12 +117,41 @@ export const TOKENS = {
 };
 
 /** The `:root{…}` rule as a single CSS string. */
+// Theme VARIANTS. #564 (majkinetor): "don't you think it would probably be
+// better if we had CSS holding theme so we could eventually have different
+// variants?" — yes, and this is where a variant lives: a name and the tokens it
+// overrides. Adding "high-contrast" or "sepia" later is one more entry here.
+//
+// A variant is selected by `data-mbu-theme` on <html>, which the shared
+// components set from the rendered page (see mbuTheme in dev/ui-components.mjs).
+// Nothing else changes: a variant only re-points tokens, so every rule in every
+// script follows automatically.
+//
+// Most tokens do NOT need an entry. The surfaces and the muted text levels are
+// derived from --mbu-bg/--mbu-text with color-mix, so they already invert with
+// the page. What must be stated outright is anything with a fixed hue that has
+// to stay recognisable at both ends: our purple as TEXT is 2.45:1 on a dark
+// panel, and no amount of deriving from the background will fix a colour that
+// simply has to be a different purple.
+export const VARIANTS = {
+    dark: {
+        'accent-text': '#b9a7f0',        // 8.0:1 on #1b1820 — the same purple, lifted
+        'accent-deep-text': '#a493e0',
+    },
+};
+
 export function tokensCss() {
     // An array value emits TWO declarations for the same name: the literal
     // first as a fallback, then the derived form. A browser that cannot parse
     // color-mix() drops the second and keeps the first, so nothing is lost.
-    const decls = Object.entries(TOKENS)
+    const decls = (map) => Object.entries(map)
         .flatMap(([k, v]) => (Array.isArray(v) ? v : [v]).map(one => `--mbu-${k}:${one}`))
         .join(';');
-    return `:root{${decls}}`;
+    // The variants come after :root so they win at equal specificity; each is
+    // gated on the attribute, so a page with no theme detected gets the base set
+    // and nothing else — which is exactly today's light appearance.
+    const variants = Object.entries(VARIANTS)
+        .map(([name, map]) => `:root[data-mbu-theme="${name}"]{${decls(map)}}`)
+        .join('');
+    return `:root{${decls(TOKENS)}}${variants}`;
 }
