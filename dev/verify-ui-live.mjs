@@ -389,6 +389,68 @@ for (const [name, path, url, hasToast] of CASES.filter(c => !ONLY || c[0] === ON
     ck(ph.phOpacity === '1', `${name}: opacity pinned, so Firefox cannot dim it further (${ph.phOpacity})`);
     ck(ph.mbStyle === null || ph.mbStyle !== 'italic', `${name}: MusicBrainz's own inputs are left alone (${ph.mbStyle})`);
 
+    // ── open the SETTINGS window ────────────────────────────────────────────
+    // The suite opened every script's log window and never its settings, so a
+    // throw while building the settings window was invisible here. Mammoth's
+    // shipped like that: openSettings dragged the window by its <h4>, which #563
+    // had replaced with the shared .mbu-cfg-h. querySelector returned null,
+    // makeDraggable threw on handle.classList, and every line after it — tab
+    // wiring, option handlers, close button — never ran. The window opened and
+    // did nothing, and majkinetor found it, not this file.
+    //
+    // Opening it is enough: the "no page errors" assertion below does the rest.
+    const openOnce = async () => await page.evaluate(async () => {
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        // offsetParent is null for position:fixed, and every floating launcher in
+        // this repo is fixed — requiring it meant Fusion's launcher was never
+        // clicked and its settings reported "no way in found".
+        const hit = (el) => {
+            if (!el) return false;
+            if (!el.offsetParent && getComputedStyle(el).position !== 'fixed') return false;
+            el.click();
+            return true;
+        };
+        // Already open from an earlier step in this run? Then it was already
+        // built, and any throw while building it has already been captured —
+        // which is the whole point. Clicking the toggle again would only close it.
+        const OPEN = '#as-setup,.mmth-cfg,#tc-settings,.gt-cfg-pop,#fs-settings,#mb-provider-modal-card,#ii-setup-pane.open';
+        if (document.querySelector(OPEN)) return 'already open';
+        // a baby-mammoth pin has to be opened before its gear exists
+        if (hit(document.querySelector('.mmthf-pin'))) {
+            await sleep(600);
+            if (hit(document.querySelector('.mmthf-cfg'))) { await sleep(700); return 'mmthf-cfg'; }
+        }
+        // Direct first. Fusion's launcher TOGGLES its window, and an earlier check
+        // in this run has usually already opened it — clicking the launcher again
+        // closed it and took #fs-cfg with it, which read as "no way in found".
+        const direct = ['#as-setup-btn', '#fs-cfg', '.gt-cfg-btn', '#ii-setup-toggle'];
+        for (const sel of direct) if (hit(document.querySelector(sel))) { await sleep(700); return sel; }
+        // Otherwise the ⚙ lives INSIDE the main window, so open that first.
+        for (const [outer, inner] of [['.fs-launch', '#fs-cfg'], ['#ii-btn', '#ii-setup-toggle']]) {
+            if (!hit(document.querySelector(outer))) continue;
+            await sleep(900);
+            if (hit(document.querySelector(inner))) { await sleep(700); return inner; }
+        }
+        const gear = [...document.querySelectorAll('button,span,a,div')]
+            .find(e => /^[⚙⚙︎]︎?$/.test((e.textContent || '').trim()) && e.offsetParent);
+        if (hit(gear)) { await sleep(700); return 'gear'; }
+        return null;
+    });
+    // Poll rather than look once: Art Station's toolbar mounts after its covers
+    // load, so a single look found nothing and reported "no way in found" on a
+    // perfectly healthy build. A flaky check is a check nobody trusts.
+    let opened = null;
+    for (let i = 0; i < 6 && !opened; i++) {
+        opened = await openOnce();
+        if (!opened) await page.waitForTimeout(1000);
+    }
+    ck(!!opened, `${name}: its settings window could be opened at all (${opened || 'no way in found'})`);
+    // pageerror arrives over CDP, asynchronously. Asserting immediately after the
+    // click read errs[] before the throw had been delivered and passed on a build
+    // that was demonstrably broken — the failure mode this whole block exists to
+    // catch, reproduced inside the catcher.
+    await page.waitForTimeout(600);
+
     ck(errs.length === 0, `${name}: no page errors${errs.length ? ' — ' + JSON.stringify(errs.slice(0, 2)) : ''}`);
     await page.close();
 }

@@ -16,7 +16,7 @@ which is what a Stylus theme does.
 | 5 | art_station | launcher-pill | [05-art_station-launcher-pill.png](./05-art_station-launcher-pill.png) | [05-art_station-launcher-pill-dark.png](./05-art_station-launcher-pill-dark.png) |
 | 10 | apollo_editor | nav-bar | [10-apollo_editor-nav-bar.png](./10-apollo_editor-nav-bar.png) | [10-apollo_editor-nav-bar-dark.png](./10-apollo_editor-nav-bar-dark.png) |
 | 11 | apollo_editor | toolbar | [11-apollo_editor-toolbar.png](./11-apollo_editor-toolbar.png) | [11-apollo_editor-toolbar-dark.png](./11-apollo_editor-toolbar-dark.png) |
-| 12 | apollo_editor | settings | ⚠ 12-apollo_editor-settings.png | ⚠ 12-apollo_editor-settings-dark.png |
+| 12 | apollo_editor | settings | [12-apollo_editor-settings.png](./12-apollo_editor-settings.png) | [12-apollo_editor-settings-dark.png](./12-apollo_editor-settings-dark.png) |
 | 13 | apollo_editor | tracklist | [13-apollo_editor-tracklist.png](./13-apollo_editor-tracklist.png) | [13-apollo_editor-tracklist-dark.png](./13-apollo_editor-tracklist-dark.png) |
 | 20 | group_therapy | toolbar | [20-group_therapy-toolbar.png](./20-group_therapy-toolbar.png) | [20-group_therapy-toolbar-dark.png](./20-group_therapy-toolbar-dark.png) |
 | 21 | group_therapy | config | [21-group_therapy-config.png](./21-group_therapy-config.png) | [21-group_therapy-config-dark.png](./21-group_therapy-config-dark.png) |
@@ -27,10 +27,10 @@ which is what a Stylus theme does.
 | 50 | fusion | launcher | [50-fusion-launcher.png](./50-fusion-launcher.png) | [50-fusion-launcher-dark.png](./50-fusion-launcher-dark.png) |
 | 51 | fusion | main-window | [51-fusion-main-window.png](./51-fusion-main-window.png) | [51-fusion-main-window-dark.png](./51-fusion-main-window-dark.png) |
 | 52 | fusion | settings | [52-fusion-settings.png](./52-fusion-settings.png) | [52-fusion-settings-dark.png](./52-fusion-settings-dark.png) |
-| 60 | mammoth | config | ⚠ 60-mammoth-config.png | ⚠ 60-mammoth-config-dark.png |
+| 60 | mammoth | config | [60-mammoth-config.png](./60-mammoth-config.png) | [60-mammoth-config-dark.png](./60-mammoth-config-dark.png) |
 | 61 | mammoth | note-panel | [61-mammoth-note-panel.png](./61-mammoth-note-panel.png) | [61-mammoth-note-panel-dark.png](./61-mammoth-note-panel-dark.png) |
 | 70 | shared | toast | [70-shared-toast.png](./70-shared-toast.png) | [70-shared-toast-dark.png](./70-shared-toast-dark.png) |
 | 90 | falcon | panel | [90-falcon-panel.png](./90-falcon-panel.png) | [90-falcon-panel-dark.png](./90-falcon-panel-dark.png) |
 | 91 | falcon | add-to-queue | [91-falcon-add-to-queue.png](./91-falcon-add-to-queue.png) | [91-falcon-add-to-queue-dark.png](./91-falcon-add-to-queue-dark.png) |
 
-_46 shot(s), generated 2026-09-03 17:53 UTC._
+_46 shot(s), generated 2026-09-03 21:15 UTC._
