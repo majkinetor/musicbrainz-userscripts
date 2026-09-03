@@ -50,6 +50,72 @@ Run the dry run first and read the plan. `--yes` must be run on a clean `main`.
 - `skip changelog`, `wontfix` — excluded from the changelog.
 - `released` — applied by the publish run so an issue is only ever changelogged once.
 
+## What lives in `dev/`
+
+Shared tooling for the whole repo. Nothing here ships to users — every file is
+either a code generator, a checker, or an operational script. **Keep it that
+way**: `dev/` is not a scratch directory, and anything that is not one of the
+four kinds below does not belong at its root.
+
+### Code generators — run by the pre-commit hook
+
+Each writes into marker blocks (`// <ST-…>` … `// </ST-…>`) inside the scripts.
+**Edit the source module, never the generated block**; the hook re-syncs and
+re-stages every carrier when the module changes.
+
+| Source | Generator | Marker |
+|---|---|---|
+| `design-tokens.mjs` | `sync-tokens.mjs` | `// <ST-TOKENS>` |
+| `ui-components.mjs` | `sync-ui.mjs` | `// <ST-UI>` |
+| `platform-icons.mjs` | `sync-icons.mjs` | `// <ST-ICONS>` |
+
+A new script adopts them by pasting the two marker lines at **module scope**
+(not inside a function — the generated helpers are function declarations, and a
+nested block makes them invisible everywhere else) and prepending `MBU_TOKENS`
+to its stylesheet. `verify-tokens.mjs` checks both.
+
+### Checkers
+
+Static first, live second. The live ones drive real pages on
+`test.musicbrainz.org` and abort every POST, so they never write.
+
+| Script | Answers |
+|---|---|
+| `verify-tokens.mjs` | are the generated blocks present, current, at module scope, and is every referenced token defined? |
+| `verify-tokens-live.mjs` | do the tokens actually resolve in a page? |
+| `verify-ui-live.mjs` | do the shared components behave as agreed — and did every CSS rule a script wrote survive parsing? |
+| `verify-theme-live.mjs` | with a dark userstyle on, is any control in our windows still light? |
+| `verify-contrast-live.mjs` | is every label readable? `--light` checks the light theme, `--novars` the case where a dark userstyle paints the page but defines no variables |
+| `shoot-ui.mjs` | 46 numbered screenshots into `screens/ui/`, light and dark, with an index |
+
+Two habits these encode, both learned the hard way:
+
+- **a check that measured nothing must fail, not pass.** `verify-contrast-live`
+  takes a census of how many of our elements were on screen; two scripts were
+  scoring "ok" on empty pages for days.
+- **don't reason about CSS, render it.** MusicBrainz's stylesheet is
+  cross-origin and invisible to `document.styleSheets`, so reading our own CSS
+  proves nothing about what wins.
+
+### Operational scripts
+
+| Script | Purpose |
+|---|---|
+| `publish.mjs` | the release — changelog, `main → stable`, dated GH release (see above) |
+| `gh-inbox.mjs` | every issue comment newer than my last reply, printed in full |
+| `install-hook.mjs` | points `core.hooksPath` at `.githooks/` |
+| `github-notifications/`, `notif-channel/` | the GH notification → channel pipeline |
+| `script-metrics/` | standalone dashboard of edits made with these scripts; own `npm install` |
+
+### Screenshots
+
+`dev/screens/ui/` is generated and tracked — its numbers are stable, so "31 dark
+is wrong" means the same picture in every future run. **Never renumber**; append.
+
+Working screenshots taken while iterating on an issue go to `dev/_*.png`, which
+is gitignored and disposable. They are not documentation and must not be
+committed; 29 of them had accumulated in the repo before #561.
+
 ## Conventions
 
 ### Design tokens — `dev/design-tokens.mjs`
