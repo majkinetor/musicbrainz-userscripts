@@ -246,10 +246,26 @@ for (const [name, path, settle, open, base] of CASES.filter(c => !ONLY || c[0] =
             if (r.width < 4 || r.height < 4) continue;
             const cs = getComputedStyle(el);
             if (cs.visibility === 'hidden' || +cs.opacity < 0.15) continue;
-            const fg = rgb(cs.color);
+            // WCAG 1.4.3 exempts INACTIVE components, and dimming is how a
+            // disabled control says it is disabled. Falcon's "Retry failed" is
+            // greyed until something has failed; holding it to 4.5:1 would mean
+            // it could not look disabled at all.
+            if (el.closest('[disabled],[aria-disabled="true"],.disabled')) continue;
+            let fg = rgb(cs.color);
             if (!fg || fg[3] < 0.5) continue;
             const bg = behind(el);
             if (!bg) continue;                       // painted by a gradient — unknowable here
+            // OPACITY IS PART OF THE COLOUR. Falcon's header buttons are #fff at
+            // opacity .7 on navy; reading `color` alone scores them as pure white
+            // and calls them readable, which is why this file passed something
+            // majkinetor could not read. Composite the whole opacity chain (and
+            // the colour's own alpha) over the background first.
+            let alpha = fg[3];
+            for (let n = el; n && n !== document.body; n = n.parentElement) {
+                const o = parseFloat(getComputedStyle(n).opacity);
+                if (!isNaN(o) && o < 1) alpha *= o;
+            }
+            if (alpha < 0.999) fg = [0, 1, 2].map(i => fg[i] * alpha + bg[i] * (1 - alpha));
             const cr = ratio(fg, bg);
             // AA: 4.5 for body text, 3.0 once it is large (>=24px, or >=18.66px bold)
             const size = parseFloat(cs.fontSize) || 13;

@@ -143,7 +143,7 @@ const CSS = [
     '.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}',
     '.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}',
     '.mbu-log-error .mbu-log-m{color:var(--mbu-error)}',
-    '.mbu-log-debug{opacity:.72}',
+    '.mbu-log-debug{opacity:.85}',
     '.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}',
     '.mbu-log-empty{color:var(--mbu-text-weak)}',
 

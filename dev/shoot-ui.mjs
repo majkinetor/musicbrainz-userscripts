@@ -68,16 +68,17 @@ const SHOTS = [
         open: () => [...document.querySelectorAll('a,li,button,span')].find(e => /^Tracklist$/.test((e.textContent || '').trim()))?.click() },
     { n: 12, script: 'apollo_editor', name: 'settings', page: `/release/${REL}/edit`, sel: '#tc-settings',
         settle: 9000,
-        open: () => {
-            [...document.querySelectorAll('a,li,button,span')].find(e => /^Tracklist$/.test((e.textContent || '').trim()))?.click();
-            setTimeout(() => [...document.querySelectorAll('button,span,a,div')].find(e => (e.textContent || '').trim() === '⚙' && e.offsetParent)?.click(), 700);
-        } },
+        // Apollo's ⚙ is on the toolbar that is already up; clicking Tracklist
+        // first re-rendered the step and took the gear with it, so this shot was
+        // a MISS in every run.
+        open: () => [...document.querySelectorAll('button,span,a,div')]
+            .find(e => /^⚙︎?️?$/.test((e.textContent || '').trim()) && e.offsetParent)?.click() },
     { n: 13, script: 'apollo_editor', name: 'tracklist', page: `/release/${REL}/edit`, sel: '#tc-mirror-wrap, .tc-mirror', settle: 9000,
         open: () => [...document.querySelectorAll('a,li,button,span')].find(e => /^Tracklist$/.test((e.textContent || '').trim()))?.click() },
 
     { n: 20, script: 'group_therapy', name: 'toolbar', page: `/release/${REL}/edit-relationships`, sel: '.gt-toolbar' },
     { n: 21, script: 'group_therapy', name: 'config', page: `/release/${REL}/edit-relationships`, sel: '.gt-cfg-pop',
-        open: () => [...document.querySelectorAll('button,span,a')].find(e => (e.textContent || '').trim() === '⚙' && e.offsetParent)?.click() },
+        open: () => [...document.querySelectorAll('button,span,a')].find(e => /^⚙︎?️?$/.test((e.textContent || '').trim()) && e.offsetParent)?.click() },
 
     { n: 30, script: 'isrc_scout', name: 'launcher', page: `/release/${REL}`, sel: '#ii-btn' },
     { n: 31, script: 'isrc_scout', name: 'main-window', page: `/release/${REL}`, sel: '#ii-modal',
@@ -93,8 +94,14 @@ const SHOTS = [
     { n: 52, script: 'fusion', name: 'settings', page: `/release-group/${RG}`, sel: '#fs-settings',
         open: () => { document.querySelector('.fs-launch')?.click(); setTimeout(() => document.getElementById('fs-cfg')?.click(), 900); } },
 
-    { n: 60, script: 'mammoth', name: 'config', page: `/release/${REL}/edit-relationships`, sel: '.mmth-cfg', settle: 5000,
-        open: () => [...document.querySelectorAll('button,span,a,div')].find(e => /🦣|mmth/.test(e.className || '') && e.offsetParent)?.click() },
+    { n: 60, script: 'mammoth', name: 'config', page: `/release/${REL}/edit`, sel: '.mmth-cfg', settle: 9000,
+        // Mammoth's settings open from a baby pin's gear, not from a stray
+        // element whose class merely contains "mmth" — the old opener never
+        // found anything, so this shot was a MISS in every run since it existed.
+        open: () => {
+            document.querySelector('.mmthf-pin')?.click();
+            setTimeout(() => document.querySelector('.mmthf-cfg')?.click(), 700);
+        } },
 
     // Mammoth's panel rides next to an edit-note field. edit-annotation looked
     // like the shortest page with one and does not have one at all; the
