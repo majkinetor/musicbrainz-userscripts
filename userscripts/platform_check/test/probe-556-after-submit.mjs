@@ -21,7 +21,12 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const B = 'https://test.musicbrainz.org';
 if (!/^https:\/\/test\.musicbrainz\.org$/.test(B)) { console.error('sandbox only'); process.exit(2); }
 const say = (...a) => console.log(...a);
-const bundle = await readFile(resolve(HERE, '..', '..', 'string_theory', 'string_theory.user.js'), 'utf8');
+// --pc-only loads Platform Check alone instead of the bundle. The difference
+// between the two runs is what the other six scripts cost a background add.
+const PC_ONLY = process.argv.includes('--pc-only');
+const bundle = await readFile(PC_ONLY
+    ? resolve(HERE, '..', 'platform_check.user.js')
+    : resolve(HERE, '..', '..', 'string_theory', 'string_theory.user.js'), 'utf8');
 
 const ctx = await firefox.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile-ff', {
     headless: false, viewport: { width: 1400, height: 900 },
@@ -54,12 +59,24 @@ await ctx.addInitScript(() => {
         window.setInterval = (fn, d, ...a) => si(fn, Math.max(Number(d) || 0, 1000), ...a);
     }
 });
+// A real userscript manager runs the bundle on EVERY matching document, the
+// post-submit landing page included. addScriptTag only reaches the document
+// that is loaded when it is called, so the tab-closing leg — where "it takes
+// around 30s" is actually measured — was never exercised at all.
+await ctx.addInitScript({ content: bundle });
 
 const front = ctx.pages()[0] || await ctx.newPage();
 await front.goto(B, { waitUntil: 'domcontentloaded' });
-const mbid = await front.evaluate(async () => {
-    const j = await (await fetch('/ws/2/release?query=*&limit=30&fmt=json', { headers: { Accept: 'application/json' } })).json();
-    return (j.releases || [])[7]?.id;
+// --mbid picks the release. Without it, the HEAVIEST one a search can find:
+// majkinetor's "it takes around 30s" is on a big editor with seven scripts on
+// it, and a three-track sandbox release finishes in four seconds no matter what
+// is wrong.
+const argMbid = (() => { const i = process.argv.indexOf('--mbid'); return i > 0 ? process.argv[i + 1] : null; })();
+const mbid = argMbid || await front.evaluate(async () => {
+    const j = await (await fetch('/ws/2/release?query=tracks:%5B40%20TO%20*%5D&limit=25&fmt=json', { headers: { Accept: 'application/json' } })).json();
+    const rs = (j.releases || []).filter(r => (r['track-count'] || 0) > 0);
+    rs.sort((a, b) => (b['track-count'] || 0) - (a['track-count'] || 0));
+    return (rs[0] || (j.releases || [])[0])?.id;
 });
 const url = `https://www.deezer.com/album/${Date.now() % 100000000}`;
 say(`release ${B}/release/${mbid}\nurl     ${url}`);
@@ -71,18 +88,38 @@ await seeder.close();
 
 const tab = await ctx.newPage();
 const posts = [];
-tab.on('request', r => { if (r.method() === 'POST') posts.push(r.url()); });
+// Timestamps, not just a list: the question "where do the 30 seconds go" is
+// answered by the GAPS between the submit POST, its response, and the landing
+// page's own request — server time, client sequencing and page load are three
+// different problems with three different answers.
+const T0 = Date.now();
+const at = () => `+${((Date.now() - T0) / 1000).toFixed(1)}s`;
+const short = (u) => u.replace(/^https?:\/\/[^/]+/, '').slice(0, 60);
+tab.on('request', r => {
+    if (/sentry/.test(r.url())) return;
+    if (r.method() === 'POST') { posts.push(r.url()); say(`  net ${at()}  POST  ${short(r.url())}`); }
+    else if (r.isNavigationRequest()) say(`  net ${at()}  NAV   ${short(r.url())}`);
+});
+tab.on('response', r => { if (!/sentry/.test(r.url()) && (r.request().method() === 'POST' || r.request().isNavigationRequest())) say(`  net ${at()}  ${r.status()}   ${short(r.url())}`); });
 tab.on('console', m => { const t = m.text(); if (/Platform Check|Apollo/.test(t)) say('  console: ' + t.slice(0, 200)); });
 tab.on('pageerror', e => say('  PAGEERROR: ' + (e && e.message || e)));
 await tab.goto(`${B}/release/${mbid}/edit#pc-autocommit`, { waitUntil: 'domcontentloaded' });
 await front.bringToFront();
 await tab.waitForTimeout(1200);
-await tab.addScriptTag({ content: bundle });
-await tab.waitForTimeout(25000);
+// 75s: the point is to watch a SLOW run to its end, so the window has to be
+// wider than the 30s being investigated. The bundle is installed via
+// addInitScript (see above), not addScriptTag, so it also runs on the page
+// MusicBrainz redirects to after the submit — the leg that closes the tab, and
+// the only leg no earlier harness ever exercised.
+await tab.waitForTimeout(75000);
 
-say(`\nlanded on: ${tab.url()}`);
+// The tab closes itself on success, so every read from here on may legitimately
+// fail — that IS the pass condition, not an error.
+say(`\ntab closed itself: ${tab.isClosed()}`);
+if (tab.isClosed()) { say('POSTs: ' + JSON.stringify(posts)); }
+say(`landed on: ${tab.isClosed() ? '(closed)' : tab.url()}`);
 say(`POSTs: ${JSON.stringify(posts)}`);
-const page = await tab.evaluate(() => ({
+const page = tab.isClosed() ? null : await tab.evaluate(() => ({
     title: document.title,
     errors: [...document.querySelectorAll('.error, .field-error, .warning, span.error')].map(e => (e.textContent || '').trim()).filter(Boolean).slice(0, 8),
     editNote: (document.querySelector('textarea.edit-note, textarea[name*="edit_note"], #id-edit-note')?.value || '').slice(0, 300),

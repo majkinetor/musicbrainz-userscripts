@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.185702
+// @version      2026.9.4.192001
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.4.185702 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.184615");
+  console.log('%c String Theory %c v2026.9.4.192001 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.191917");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -33717,7 +33717,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.184615","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.184615","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.191917","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.191917","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -33778,6 +33778,8 @@ if (/^\/release\/[0-9a-f-]{36}\/?(?:[?#]|$)/.test(window.location.pathname)) {
     try { closeMbid = sessionStorage.getItem('pc:autocommit-close'); } catch (e) {}
     if (closeMbid) {
         try { sessionStorage.removeItem('pc:autocommit-close'); } catch (e) {}
+        pcMark('landed back on the release page — edit committed, closing the tab');
+        try { sessionStorage.removeItem('pc:bg-t0'); } catch (e) {}
         if (PC_CHANNEL) { try { PC_CHANNEL.postMessage({ type: 'pc-edit-committed', mbid: closeMbid }); } catch (e) {} }
         setTimeout(() => { try { window.close(); } catch (e) {} }, 80);
         return;
@@ -33800,6 +33802,8 @@ if (/^\/release-group\/[0-9a-f-]{36}\/?(?:[?#]|$)/.test(window.location.pathname
     try { closeRg = sessionStorage.getItem('pc:autocommit-close-rg'); } catch (e) {}
     if (closeRg) {
         try { sessionStorage.removeItem('pc:autocommit-close-rg'); } catch (e) {}
+        pcMark('landed back on the release-group page — edit committed, closing the tab');
+        try { sessionStorage.removeItem('pc:bg-t0'); } catch (e) {}
         if (PC_CHANNEL) { try { PC_CHANNEL.postMessage({ type: 'pc-rg-edit-committed', mbid: closeRg }); } catch (e) {} }
         setTimeout(() => { try { window.close(); } catch (e) {} }, 80);
         return;
@@ -33831,6 +33835,39 @@ function pcWait(ms) {
         };
         tick();
     });
+}
+
+// #556 (majkinetor): "It seems to work now but it takes around 30s. If I visit
+// the tab, the links are set and it looks idle (and finishes immediately)."
+//
+// A background add is a chain of six or seven waits across TWO documents, and
+// until now the console said only that it had finished. "Takes 30s" and "hung
+// on step 4 for 28s then flew" are the same line of output, and I have twice
+// gone looking in the wrong half of the flow because of it.
+//
+// So: one timeline, elapsed from the moment the helper starts, carried across
+// the submit redirect in sessionStorage so the landing page's entries continue
+// the same clock rather than starting a second one. Every entry records whether
+// the tab was hidden at the time, because that is the axis the whole bug lives
+// on.
+// ⚠ the key is a literal, NOT a module-level const: the landing-page branch near
+// the top of the IIFE calls pcMark and returns before any `const` down here has
+// been initialised, so referencing one would throw from the temporal dead zone.
+// The same trap is documented on injectInto's TYPE_FORCE.
+function pcT0() {
+    try {
+        const v = Number(sessionStorage.getItem('pc:bg-t0'));
+        if (v > 0) return v;
+        const now = Date.now();
+        sessionStorage.setItem('pc:bg-t0', String(now));
+        return now;
+    } catch (e) { return Date.now(); }
+}
+function pcMark(stage, extra) {
+    try {
+        const ms = Date.now() - pcT0();
+        console.info(`[Platform Check] bg +${(ms / 1000).toFixed(1)}s  ${stage}${extra === undefined ? '' : '  ' + extra}${document.hidden ? '  (tab hidden)' : ''}`);
+    } catch (e) {}
 }
 
 // MutationObserver-backed waiter — resolves the moment `predicate()`
@@ -33943,9 +33980,11 @@ async function runInjectHelper(entityType) {
         // release editor the tab does not exist, so the wait could only ever run to
         // its full timeout before injectInto even started — pure dead time added to
         // every single background add.
+        pcMark(`helper start on ${entityType}`, `${urls.length} url(s) queued, readyState=${document.readyState}`);
         pcOpenExternalLinks();
         await pcWait(200);
         const result = await injectInto(urls, key) || { injected: 0 };
+        pcMark('inject finished', `${result.injected} confirmed`);
         // #464: right-click "add in background" — auto-submit once the URLs are in,
         // and mark this tab so the redirect back to the clean /release/<mbid> page
         // (only that landing page is @match'd; release-group has no such page) can
@@ -33979,12 +34018,29 @@ async function runInjectHelper(entityType) {
                     || [...document.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''))
                 : () => document.querySelector('#enter-edit')
                     || [...document.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''));
-            const btn = await pcWaitFor(findSubmit, 5000);
-            if (btn && !btn.disabled) {
+            // #556: wait for it to be ENABLED, not merely present. MusicBrainz
+            // disables Enter edit while the editor is validating, and the old
+            // wait resolved on the disabled button the instant it appeared —
+            // then took the "no submit button found" branch and gave up without
+            // ever clicking. Same 5s budget; it just spends it on the right
+            // condition. A disabled one that never enables is reported as that,
+            // rather than as "not found", which is a different bug entirely.
+            let sawDisabled = false;
+            const btn = await pcWaitFor(() => {
+                const b = findSubmit();
+                if (!b) return null;
+                if (b.disabled) { sawDisabled = true; return null; }
+                return b;
+            }, 5000);
+            pcMark('submit button', btn ? 'enabled' : (sawDisabled ? 'STILL DISABLED after 5s' : 'not found'));
+            if (btn) {
                 try { sessionStorage.setItem(entityType === 'release-group' ? 'pc:autocommit-close-rg' : 'pc:autocommit-close', mbid); } catch (e) {}
                 btn.click();
+                pcMark('Enter edit clicked — waiting for MusicBrainz to submit and redirect');
             } else {
-                showInjectBanner('Platform Check: background add — no submit button found, review manually', [], { fail: true });
+                showInjectBanner(sawDisabled
+                    ? 'Platform Check: background add — MusicBrainz kept "Enter edit" disabled, review manually'
+                    : 'Platform Check: background add — no submit button found, review manually', [], { fail: true });
             }
         }
     } catch (e) {
@@ -34143,6 +34199,7 @@ async function injectInto(urls, storageKey) {
             }
             return null;
         }, 25000);
+        if (input0) pcMark('External links field found', url);
         if (!input0) {
             const secs = Math.round((Date.now() - _t0) / 1000);
             reports.push({ url, ok: false, miss: `no "Add another link" input ever appeared (${secs}s, External links step never rendered)` });
@@ -34195,6 +34252,7 @@ async function injectInto(urls, storageKey) {
         }
         if (!urlRow) { reports.push({ url, ok: false, miss: 'URL row never appeared after Enter (3 attempts)' }); continue; }
         injected++;   // #556: a CONFIRMED row — see the note where Enter is dispatched
+        pcMark('row confirmed', url);
 
         // Type-force if applicable.  The Type chooser lives in the NEXT
         // sibling <tr.relationship-item> (verified live on MB).
