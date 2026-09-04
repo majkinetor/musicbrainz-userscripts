@@ -162,6 +162,63 @@ for (const f of files) {
     }
 }
 
+// ── and the mirror: themed text on a fixed LIGHT ground ─────────────────────
+// The same half-sweep in the other direction, and the one majkinetor actually
+// hits: the foreground was tokenised and the background left as a literal, so
+// on the dark theme var(--mbu-text) is near-white on a hard-coded white pill.
+// Falcon's cover-picker chips were exactly this — `background:#fff` with
+// `color:var(--mbu-text)` — invisible on the dark panel they sit in.
+//
+// Proximity-based rather than block-based on purpose: these live in template
+// literals inside `style="…"` attributes with a ternary per property, which is
+// not a CSS rule and never matched the block scan above.
+{
+    const relLum = (hex) => {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const [r, g, b] = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    for (const f of files) {
+        // The generated token block is DEFINITIONS, not a rule that paints
+        // anything: `--mbu-bg: var(--background, #fff)` followed a few hundred
+        // characters later by the text tokens looks exactly like the bug and is
+        // not one. Cut it out before scanning.
+        // Whole-line `//` comments go too. The shared components carry the line
+        //   `// carries \`input{background:#fff}\` — specificity 0,0,1 …`
+        // which sync-ui.mjs inlines into every script, and it reads as a light
+        // ground sitting next to the components' own themed text. Only lines
+        // that START with `//` are cut, so an inline `https://…` is safe.
+        const src = readFileSync(f, 'utf8')
+            .replace(/\/\*[\s\S]*?\*\//g, ' ')
+            .replace(/\/\/ <ST-TOKENS>[\s\S]*?\/\/ <\/ST-TOKENS>/g, ' ')   // BEFORE the line-comment strip: its own markers are line comments
+            .replace(/^\s*\/\/.*$/gm, ' ');
+        const rel = relative(ROOT, f).replace(/\\/g, '/');
+        const bad = new Set();
+        for (const m of src.matchAll(/background(?:-color)?\s*:/g)) {
+            // The VALUE region may be a plain literal or a whole ternary:
+            //   background:#fff
+            //   background:${on ? '#eef1fa' : '#fff'}
+            // so take every hex in it, not just one right after the colon. A
+            // regex anchored on `background:\s*#` matched neither of Falcon's
+            // two broken chips, and the guard passed on the build with the bug
+            // still in it — the exact failure this suite exists to prevent.
+            // ONLY this declaration's own value — up to the next `;`. Taking a
+            // flat 120-character window swept in the neighbouring `color:#fff`
+            // and reported every dark chip in the repo as a light one.
+            const value = src.slice(m.index, m.index + 160).split(';')[0];
+            const hexes = [...value.matchAll(/#[0-9a-fA-F]{3,6}\b/g)].map(h => h[0]);
+            const light = hexes.filter(h => relLum(h) >= 0.75);
+            if (!light.length) continue;
+            const near = src.slice(m.index, m.index + 260);
+            const fg = /(?:^|[^-\w])color\s*:\s*(?:[^;"']*?')?var\(--mbu-(text|text-dim|text-weak|accent-text|accent-deep-text)\)/.exec(near);
+            if (fg) light.forEach(h => bad.add(`${h} + var(--mbu-${fg[1]})`));
+        }
+        if (!bad.size) continue;
+        ck(false, `${rel}: themed text on a fixed LIGHT ground — unreadable in the dark theme — ${JSON.stringify([...bad])}`);
+    }
+}
+
 // ── a spinner whose ring and top segment are the same colour ────────────────
 // A CSS spinner is a ring with one differently-coloured side; rotate it and the
 // difference is what you see. The border sweep mapped `border` and

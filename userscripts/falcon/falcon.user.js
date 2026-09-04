@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.184741
+// @version      2026.9.4.201529
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -4403,7 +4403,7 @@
             <input type="text" class="falcon-cover-comment-input" data-id="${it.id}" data-idx="${idx}" placeholder="image comment (optional)" value="${esc(c.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
               style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:3px" />
           </div>
-          ${c.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${c.candidates.map(cand => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-idx="${idx}" data-url="${esc(cand.url)}" title="${esc(cand.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${cand.url === c.url ? '#1b2a4a' : '#ddd'};background:${cand.url === c.url ? '#eef1fa' : '#fff'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:var(--mbu-text)">${esc(cand.provider)}${cand.width ? ` ${cand.width}×${cand.height}` : ''}</button>`).join('')}</div>` : ''}
+          ${c.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${c.candidates.map(cand => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-idx="${idx}" data-url="${esc(cand.url)}" title="${esc(cand.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${cand.url === c.url ? 'var(--mbu-accent)' : 'var(--mbu-border)'};background:${cand.url === c.url ? 'var(--mbu-accent-soft)' : 'var(--mbu-bg-raised)'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:${cand.url === c.url ? 'var(--mbu-accent-deep-text)' : 'var(--mbu-text)'}">${esc(cand.provider)}${cand.width ? ` ${cand.width}×${cand.height}` : ''}</button>`).join('')}</div>` : ''}
         </div>`).join('')}
         ${it.coverExistingCount ? `<div style="color:var(--mbu-warn);font-size:10px">⚠ this release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
@@ -4445,7 +4445,7 @@
       const on = !_disabledTypes.has(t);
       const label = TYPE_BADGE[t] || t.slice(0, 3);
       return `<button type="button" class="falcon-type-chip" data-type="${esc(t)}" title="${on ? `Click to exclude every ${esc(t)} item from the next run` : `Click to include every ${esc(t)} item in the next run`}"
-        style="border:1px solid ${on ? '#1b2a4a' : '#ddd'};background:${on ? '#1b2a4a' : '#f5f5f5'};color:${on ? '#fff' : '#999'};border-radius:12px;padding:2px 10px;font-size:10.5px;cursor:pointer;text-transform:uppercase">${esc(label)} ${counts[t]}</button>`;
+        style="border:1px solid ${on ? '#1b2a4a' : 'var(--mbu-border)'};background:${on ? '#1b2a4a' : 'var(--mbu-bg-raised)'};color:${on ? '#fff' : 'var(--mbu-text-dim)'};border-radius:12px;padding:2px 10px;font-size:10.5px;cursor:pointer;text-transform:uppercase">${esc(label)} ${counts[t]}</button>`;
     }).join('');
   }
   // #513 (majkinetor): "Its still not easily seeable that there were issues.
