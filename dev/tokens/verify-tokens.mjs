@@ -124,6 +124,44 @@ for (const f of files) {
     ck(wired > 0, `${rel}: at least one style sink prepends MBU_TOKENS (${wired} wired, ${bare} other assignment(s))`);
 }
 
+// ── text themed onto a ground that is NOT themed ────────────────────────────
+// A panel with a fixed dark background — a console, a tooltip, a chip — needs a
+// fixed light foreground. The background sweep deliberately left dark grounds
+// alone, but the foreground sweep tokenised the text sitting on them, so in the
+// LIGHT theme that text turns dark and vanishes into its own panel. ISRC Scout's
+// activity log was exactly this: ground #0d1117 with the text on
+// var(--mbu-info), which is a dark blue when the page is light.
+//
+// --mbu-text-on-accent is exempt: it exists precisely to sit on a coloured
+// ground and is fixed in both themes.
+{
+    const relLum = (hex) => {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const [r, g, b] = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    for (const f of files) {
+        const src = readFileSync(f, 'utf8');
+        const rel = relative(ROOT, f).replace(/\\/g, '/');
+        const bad = [];
+        // Strip CSS comments first and allow a generous block: an explanatory
+        // comment inside a rule pushed it past the length cap, and the check
+        // then silently saw nothing at all — which is how it passed on a build
+        // where the bug had deliberately been put back.
+        const clean = src.replace(/\/\*[\s\S]*?\*\//g, ' ');
+        for (const block of clean.match(/\{[^{}]{0,900}\}/g) || []) {
+            const bg = /background(?:-color)?\s*:\s*(#[0-9a-fA-F]{3,6})\b/.exec(block);
+            if (!bg || relLum(bg[1]) > 0.35) continue;
+            const fg = /(?:^|[^-\w])color\s*:\s*var\(--mbu-([a-z-]+)\)/.exec(block);
+            if (!fg || fg[1] === 'text-on-accent') continue;
+            bad.push(`${bg[1]} + var(--mbu-${fg[1]})`);
+        }
+        if (!bad.length) continue;
+        ck(false, `${rel}: themed text on a fixed dark ground — unreadable in the light theme — ${JSON.stringify(bad)}`);
+    }
+}
+
 // ── a spinner whose ring and top segment are the same colour ────────────────
 // A CSS spinner is a ring with one differently-coloured side; rotate it and the
 // difference is what you see. The border sweep mapped `border` and
