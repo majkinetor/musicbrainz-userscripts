@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.4.112131
+// @version      2026.9.4.121607
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -629,7 +629,7 @@
   .mmth-cf-row.mmth-cf-off { background:var(--mbu-bg); }
   .mmth-cf-row.mmth-cf-off .mmth-cf-in, .mmth-cf-row.mmth-cf-off .mmth-cf-cnt, .mmth-cf-row.mmth-cf-off .mmth-cf-sub { opacity:.4; }
   .mmth-cf-row.mmth-cf-off .mmth-cf-tog { color:var(--mbu-text-weak); }
-  .mmth-cf-add { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font:12px inherit; }
+  .mmth-cf-add { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font-size:12px;font-family:inherit; }
   .mmth-cf-add:hover { background:var(--mbu-ok-bg); }
   .mmth-cf-empty { color:var(--mbu-text-weak); font-style:italic; font-size:12px; padding:2px 0; }
   .mmth-cf-reset { margin-left:6px; border:1px solid var(--mbu-border); background:var(--mbu-bg); border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:var(--mbu-ok); cursor:pointer; text-transform:none; letter-spacing:normal; }
@@ -639,7 +639,7 @@
   .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid var(--mbu-border); border-radius:var(--mbu-radius); padding:7px; resize:vertical; }
   .mmth-cf-json:focus { outline:none; border-color:var(--mbu-ok); }
   .mmth-cf-jsonrow { display:flex; align-items:center; gap:9px; margin-top:6px; }
-  .mmth-cf-jsonapply { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font:12px inherit; }
+  .mmth-cf-jsonapply { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font-size:12px;font-family:inherit; }
   .mmth-cf-jsonapply:hover { background:var(--mbu-ok-bg); }
   .mmth-cf-jsonmsg { font-size:11px; color:var(--mbu-text-weak); }
   .mmth-cf-jsonmsg.mmth-cf-bad { color:var(--mbu-error); }

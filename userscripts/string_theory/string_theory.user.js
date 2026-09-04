@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.112759
+// @version      2026.9.4.121608
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.4.112759 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.112131\n  · Art Station v2026.9.4.112131\n  · Credit Hoarder v2026.9.4.112759\n  · Group Therapy v2026.9.4.112131\n  · ISRC Scout v2026.9.4.112131\n  · Mammoth v2026.9.4.112131\n  · Platform Check v2026.9.4.112131");
+  console.log('%c String Theory %c v2026.9.4.121608 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.112131\n  · Art Station v2026.9.4.121607\n  · Credit Hoarder v2026.9.4.112759\n  · Group Therapy v2026.9.4.121607\n  · ISRC Scout v2026.9.4.112131\n  · Mammoth v2026.9.4.121607\n  · Platform Check v2026.9.4.112131");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8731,7 +8731,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.4.112131","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.4.112131","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.4.121607","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.4.121607","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -12511,10 +12511,10 @@ try {
   .as-setup-optlbl{display:inline-flex;gap:8px;align-items:center;cursor:pointer}   /* #262 label wraps only checkbox+text so the mode select stays independent */
   .as-setup-autofront-mode{font-size:12px;padding:1px 3px}
   .as-setup-num{cursor:default}   /* #560 a number box, not a clickable checkbox row */
-  .as-setup-uptimeout{width:52px;font:13px inherit;border:1px solid var(--mbu-border);border-radius:5px;padding:2px 5px;text-align:right}
+  .as-setup-uptimeout{width:52px;font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:5px;padding:2px 5px;text-align:right}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mbu-text-dim);white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
-  #as-root select,.as-btn{font:13px inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:4px 9px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}
+  #as-root select,.as-btn{font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:4px 9px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}
   .as-btn{display:inline-flex;align-items:center;gap:5px}
   /* #234: compact toolbar — hide button labels (keep icons + tooltips) when it would otherwise wrap */
   
@@ -12576,7 +12576,7 @@ try {
   .as-dtypes{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:3px 12px;margin:0 0 10px}
   .as-dtypes label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mbu-text);cursor:pointer}
   .as-dtypes input{accent-color:var(--as-acc)}
-  .as-dcmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:6px 9px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
+  .as-dcmt{width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:6px 9px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
   .as-dcmt:focus{outline:2px solid var(--as-acc);outline-offset:-1px;background:var(--mbu-bg)}
   /* compact group rows: label column + cards beside it */
   .as-grow{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-top:1px solid var(--mbu-accent)}
@@ -12624,7 +12624,7 @@ try {
   .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
   .as-foot-cmt{flex:0 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
   .as-foot-cmt.as-cmt-collapsed{display:none}
-  .as-cmt-text{font:11px inherit;color:var(--mbu-accent-deep-text);line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .as-cmt-text{font-size:11px;font-family:inherit;color:var(--mbu-accent-deep-text);line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--mbu-accent-text)}
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
@@ -12633,8 +12633,8 @@ try {
   .as-type:hover{background:var(--mbu-bg-hover)}
   .as-type-add{color:var(--mbu-accent-text);background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}
   .as-card:hover .as-type-add{opacity:1}
-  .as-cmt{font:11px inherit;border:1px solid var(--mbu-border-soft);border-radius:var(--mbu-radius);padding:2px 6px;color:var(--mbu-text);background:var(--mbu-bg-raised);width:100%}
-  .as-pencil{font:11px inherit;border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
+  .as-cmt{font-size:11px;font-family:inherit;border:1px solid var(--mbu-border-soft);border-radius:var(--mbu-radius);padding:2px 6px;color:var(--mbu-text);background:var(--mbu-bg-raised);width:100%}
+  .as-pencil{font-size:11px;font-family:inherit;border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:var(--mbu-bg-raised);color:var(--mbu-accent-text)}
   /* flat reverse-image-search magnifier — in the comment row, after the comment/pencil,
@@ -12654,7 +12654,7 @@ try {
   .as-selbox{display:flex;align-items:center;gap:8px;flex:0 1 auto;justify-content:center}
   .as-selcnt{font-size:13px;font-weight:700;color:var(--mbu-accent-text);white-space:nowrap}
   .as-selcnt.none{font-weight:400;color:var(--mbu-accent-text)}
-  .as-ic{font:14px/1 inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:3px 9px;color:var(--mbu-accent-deep-text);cursor:pointer}
+  .as-ic{font-size:14px;line-height:1;font-family:inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:3px 9px;color:var(--mbu-accent-deep-text);cursor:pointer}
   .as-ic:hover{background:var(--mbu-bg-raised)}
   .as-ic:disabled{opacity:.4;cursor:default}
   .as-selall{color:var(--mbu-ok)}
@@ -12674,7 +12674,7 @@ try {
   .as-search-pop .as-search-eng{display:block;width:100%;text-align:left;border:1px solid transparent;background:none}   /* borderless until hover (transparent border keeps it from shifting) */
   .as-search-pop .as-search-eng:hover{border-color:var(--mbu-border)}
   .as-search-pop .as-pop-h{display:flex;align-items:baseline;justify-content:space-between;gap:14px}   /* title left, "Open all" right (#open-all-in-title) */
-  .as-search-pop .as-search-all{flex:none;font:600 13px inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0}
+  .as-search-pop .as-search-all{flex:none;font-weight:600;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0}
   .as-search-pop .as-search-all:hover{text-decoration:underline}
   .as-search-pop .as-search-foot{margin-top:6px;padding:7px 6px 2px;border-top:1px solid var(--mbu-divider);font-size:11px;line-height:1.45;color:var(--mbu-accent-text)}
   .as-search-pop .as-search-foot a{color:var(--mbu-accent-text);font-weight:600;text-decoration:none}
@@ -12705,15 +12705,15 @@ try {
   .as-src-hd.open .as-src-htxt{display:none}   /* input fills the whole title when unrolled */
   .as-src-urlwrap{display:inline-flex;align-items:center;flex:none;min-width:0}
   .as-src-hd.open .as-src-urlwrap{flex:1 1 auto}
-  .as-src-url-btn{font:600 13px inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0;white-space:nowrap}
+  .as-src-url-btn{font-weight:600;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0;white-space:nowrap}
   .as-src-url-btn:hover{text-decoration:underline}
   .as-src-hd.open .as-src-url-btn{display:none}
   .as-src-url-inp{display:none}
-  .as-src-hd.open .as-src-url-inp{display:inline-block;width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font:12px inherit}
+  .as-src-hd.open .as-src-url-inp{display:inline-block;width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:12px;font-family:inherit}
   .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
   .as-src-pop > .as-pop-note.as-src-warn{white-space:normal;color:var(--mbu-warn);font-weight:600}
   .as-src-pop > .as-pop-note.as-src-warn a{color:var(--mbu-warn);text-decoration:underline}
-  .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);padding:5px 8px;margin:2px 0 2px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
+  .as-bulk-cmt{width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);padding:5px 8px;margin:2px 0 2px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
   .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:var(--mbu-bg)}
@@ -12758,17 +12758,17 @@ try {
   .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
   .as-lb-caprow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
-  .as-lb-type{font:700 12px inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
+  .as-lb-type{font-weight:700;font-size:12px;font-family:inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:var(--mbu-text-on-accent)}
   .as-lb-type.as-type-add{font-weight:600;border-style:dashed;color:rgba(255,255,255,.6)}
   .as-lb-dim{color:var(--mbu-text-weak)}
   .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
-  .as-lb-cmt{width:100%;font:13px inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
-  .as-lb-cmt-text{font:14px inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
+  .as-lb-cmt{width:100%;font-size:13px;font-family:inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
+  .as-lb-cmt-text{font-size:14px;font-family:inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
   .as-lb-cmt-text:hover{color:#e7dffb}
   .as-lb-cmt::placeholder{color:rgba(255,255,255,.45)}
   .as-lb-cmt:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.14)}
-  .as-lb-cmtadd{font:12px inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
+  .as-lb-cmtadd{font-size:12px;font-family:inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
   .as-lb-cmtadd:hover{color:var(--mbu-text-on-accent);border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
   /* #251 touch viewer: show only the full image; tap reveals the controls, swipe navigates */
   #as-lb.as-lb-touch .as-lb-img{max-width:100vw;max-height:100vh;border-radius:0}
@@ -12805,7 +12805,7 @@ try {
   .as-cm-hist:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-accent)}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:var(--mbu-text-dim)}
   .as-cm-hint{font-size:11px;color:var(--mbu-accent-text);font-weight:400}
-  .as-cm-note{font:13px inherit;border:1px solid var(--mbu-border);border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
+  .as-cm-note{font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
   /* #263 if Mammoth is installed it auto-enhances the .edit-note field (saved notes / history
      panel), which sits below the operations list. It wraps the textarea in .mmth-wrap + a
      300px side panel; the 680px modal fits that — give the wrap the note's bottom margin and
@@ -21537,7 +21537,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.4.112131","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.4.112131","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.4.121607","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.4.121607","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -22260,7 +22260,7 @@ ${lines}
       /* Consolidate RG (#349) — the release×role matrix modal */
       .gt-cons-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center}
       .gt-cons.gt-role-pick{width:520px;max-width:92vw;max-height:min(560px,70vh);display:flex;flex-direction:column}   /* #544: .gt-cons is declared later with the same specificity and was overriding every one of these */
-      .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font:13px inherit;border:1px solid var(--mbu-border);border-radius:4px}
+      .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:4px}
       .gt-role-list{overflow:auto;flex:1;padding:0 4px 8px}
       .gt-role-row{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
       .gt-role-row.gt-role-active{background:var(--mbu-bg-raised);box-shadow:inset 2px 0 0 #5f3ec0}   /* #544 keyboard cursor */
@@ -22288,7 +22288,7 @@ ${lines}
       .gt-cons-legopen{text-decoration:none;color:var(--mbu-text-weak);margin-left:5px}
       .gt-cons-legopen:hover{color:var(--mbu-info)}
       .gt-cons-legyr{color:var(--mbu-text-weak);margin-left:5px}
-      .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px inherit;color:var(--mbu-text);outline:none}
+      .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font-size:12px;font-family:inherit;color:var(--mbu-text);outline:none}
       .gt-cons-paste:focus{border-color:var(--mbu-info)}
       .gt-cons-tbl{border-collapse:collapse;width:100%}
       .gt-cons-tbl th{font-size:11px;color:var(--mbu-text-dim);text-transform:uppercase;letter-spacing:.02em;text-align:left;padding:4px 8px;border-bottom:1px solid var(--mbu-border)}
@@ -22307,7 +22307,7 @@ ${lines}
       .gt-cons-cell.gt-prop{color:var(--mbu-info);outline:1px dashed #9cc2e6;outline-offset:-3px;border-radius:4px}
       .gt-cons-cell.gt-none{color:var(--mbu-info)}
       .gt-cons-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--mbu-border)}
-      .gt-cons-btn{font:600 13px inherit;padding:5px 14px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-info);background:var(--mbu-info-bg);color:var(--mbu-info);cursor:pointer}
+      .gt-cons-btn{font-weight:600;font-size:13px;font-family:inherit;padding:5px 14px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-info);background:var(--mbu-info-bg);color:var(--mbu-info);cursor:pointer}
       .gt-cons-btn:hover{background:var(--mbu-info-bg)}
       .gt-cons-apply{margin-left:auto;background:#2e9e5b;border-color:var(--mbu-ok);color:var(--mbu-text-on-accent)}
       .gt-cons-apply:hover{background:#278a4f}
@@ -22318,7 +22318,7 @@ ${lines}
       .gt-dp-ctrl{padding:10px 14px;border-bottom:1px solid var(--mbu-border);display:flex;flex-direction:column;gap:8px}
       .gt-dp-line{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
       .gt-dp-lbl{font-size:11px;font-weight:700;color:var(--mbu-text-dim);text-transform:uppercase;letter-spacing:.02em;min-width:42px}
-      .gt-dp-date{width:112px;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font:13px inherit;outline:none}
+      .gt-dp-date{width:112px;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:13px;font-family:inherit;outline:none}
       .gt-dp-date:focus{border-color:var(--mbu-info)}
       .gt-dp-date.gt-dp-bad{border-color:var(--mbu-error);background:var(--mbu-bg-raised)}
       .gt-dp-dash{color:var(--mbu-text-weak)}
@@ -24529,9 +24529,9 @@ ${lines}
       + '.gt-tp-scope-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
-      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:12px inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
+      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
       + '.gt-tp-src{padding:0 14px}'
-      + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font:12px inherit;padding:6px 0}'
+      + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font-size:12px;font-family:inherit;padding:6px 0}'
       + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-body{padding-top:8px;overflow:auto}'
       // #522 follow-up (majkinetor, live): the column widths' own sum was
@@ -24567,7 +24567,7 @@ ${lines}
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
       + '.gt-tp-ov{box-sizing:border-box;width:100%;min-width:0;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:var(--mbu-info)}'   /* #544: track the column instead of a fixed 110px, so a narrow column cannot clip the caret */
       + '.gt-tp-rawwrap{display:flex;align-items:center;gap:4px;width:100%}'
-      + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:var(--mbu-text-dim);font:11px inherit;outline:none}.gt-tp-raw:hover{border-color:var(--mbu-border)}.gt-tp-raw:focus{border-color:var(--mbu-info);background:var(--mbu-bg)}'
+      + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:var(--mbu-text-dim);font-size:11px;font-family:inherit;outline:none}.gt-tp-raw:hover{border-color:var(--mbu-border)}.gt-tp-raw:focus{border-color:var(--mbu-info);background:var(--mbu-bg)}'
       + '.gt-tp-rowdel{flex:none;background:none;border:none;color:var(--mbu-info);cursor:pointer;padding:2px 4px;font-size:12px}.gt-tp-rowdel:hover{color:var(--mbu-error)}'
       + '.gt-tp-txt{color:var(--mbu-text)}'
       // #522 follow-up (majkinetor, live): "Tidy up artist / role column -
@@ -24576,7 +24576,7 @@ ${lines}
       // let left click open artist." Unresolved = a plain text-link reading
       // "search"; resolved = plain text (a real <a> for artist, so the
       // click IS the open — no separate icon).
-      + '.gt-tp-search{background:none;border:none;padding:0;cursor:pointer;color:var(--mbu-info);text-decoration:underline;font:11px inherit}.gt-tp-search:hover{color:var(--mbu-info)}'
+      + '.gt-tp-search{background:none;border:none;padding:0;cursor:pointer;color:var(--mbu-info);text-decoration:underline;font-size:11px;font-family:inherit}.gt-tp-search:hover{color:var(--mbu-info)}'
       + '.gt-tp-resolved{color:var(--mbu-text)}'
       + 'a.gt-tp-resolved,button.gt-tp-resolved{color:var(--mbu-info);text-decoration:none}a.gt-tp-resolved:hover,button.gt-tp-resolved:hover{text-decoration:underline;color:var(--mbu-info)}'
       + '.gt-tp-status{color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
@@ -24588,7 +24588,7 @@ ${lines}
       // ⚡ Match button (.gt-wm-btn.primary).
       + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
       + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font:13px inherit;color:var(--mbu-accent-text);font-weight:bold}'
+      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);font-weight:bold}'
       + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:var(--mbu-accent)}'
       + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
       + '.gt-tp-apop{width:340px}'
@@ -24597,11 +24597,11 @@ ${lines}
       // FORCED (see canToggle in txpPickEntity): copyright/phonographic/
       // licensor holders, and ordinary roles MB allows on both sides.
       + '.gt-tp-apop .gt-tp-tabs{display:flex;gap:4px;margin-bottom:6px}'
-      + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:12px inherit;color:var(--mbu-text-dim)}'
+      + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text-dim)}'
       + '.gt-tp-apop .gt-tp-tab:hover{background:var(--mbu-bg-raised)}'
       + '.gt-tp-apop .gt-tp-tab-on{background:#2e6da4;border-color:var(--mbu-info);color:#fff}'
       + '.gt-tp-apop .gt-tp-qwrap{display:flex;gap:5px;margin-bottom:6px}'
-      + '.gt-tp-apop .gt-tp-q{flex:1;min-width:0;box-sizing:border-box;padding:5px 7px;border:1px solid var(--mbu-border);border-radius:5px;font:13px inherit;outline:none}'
+      + '.gt-tp-apop .gt-tp-q{flex:1;min-width:0;box-sizing:border-box;padding:5px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:13px;font-family:inherit;outline:none}'
       + '.gt-tp-apop .gt-tp-plus{flex:0 0 auto;width:28px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:15px monospace;color:var(--mbu-info);line-height:1}.gt-tp-apop .gt-tp-plus:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-info)}'
       + '.gt-tp-apop .gt-tp-hint{color:var(--mbu-text-weak);font-size:10px;margin-bottom:4px}'
       + '.gt-tp-apop .gt-tp-results{max-height:260px;overflow:auto}'
@@ -31811,7 +31811,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.4.112131","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.4.112131","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.4.121607","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.4.121607","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -32431,7 +32431,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-cf-row.mmth-cf-off { background:var(--mbu-bg); }
   .mmth-cf-row.mmth-cf-off .mmth-cf-in, .mmth-cf-row.mmth-cf-off .mmth-cf-cnt, .mmth-cf-row.mmth-cf-off .mmth-cf-sub { opacity:.4; }
   .mmth-cf-row.mmth-cf-off .mmth-cf-tog { color:var(--mbu-text-weak); }
-  .mmth-cf-add { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font:12px inherit; }
+  .mmth-cf-add { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font-size:12px;font-family:inherit; }
   .mmth-cf-add:hover { background:var(--mbu-ok-bg); }
   .mmth-cf-empty { color:var(--mbu-text-weak); font-style:italic; font-size:12px; padding:2px 0; }
   .mmth-cf-reset { margin-left:6px; border:1px solid var(--mbu-border); background:var(--mbu-bg); border-radius:5px; padding:2px 9px; font:11px -apple-system,Segoe UI,Arial,sans-serif; color:var(--mbu-ok); cursor:pointer; text-transform:none; letter-spacing:normal; }
@@ -32441,7 +32441,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   .mmth-cf-json { width:100%; box-sizing:border-box; min-height:150px; font:12px/1.4 ui-monospace,Consolas,monospace; border:1px solid var(--mbu-border); border-radius:var(--mbu-radius); padding:7px; resize:vertical; }
   .mmth-cf-json:focus { outline:none; border-color:var(--mbu-ok); }
   .mmth-cf-jsonrow { display:flex; align-items:center; gap:9px; margin-top:6px; }
-  .mmth-cf-jsonapply { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font:12px inherit; }
+  .mmth-cf-jsonapply { border:1px dashed var(--mbu-border); background:var(--mbu-bg); border-radius:var(--mbu-radius); padding:5px 12px; cursor:pointer; color:var(--mbu-ok); font-size:12px;font-family:inherit; }
   .mmth-cf-jsonapply:hover { background:var(--mbu-ok-bg); }
   .mmth-cf-jsonmsg { font-size:11px; color:var(--mbu-text-weak); }
   .mmth-cf-jsonmsg.mmth-cf-bad { color:var(--mbu-error); }

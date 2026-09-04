@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.4.112131
+// @version      2026.9.4.121607
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3794,10 +3794,10 @@
   .as-setup-optlbl{display:inline-flex;gap:8px;align-items:center;cursor:pointer}   /* #262 label wraps only checkbox+text so the mode select stays independent */
   .as-setup-autofront-mode{font-size:12px;padding:1px 3px}
   .as-setup-num{cursor:default}   /* #560 a number box, not a clickable checkbox row */
-  .as-setup-uptimeout{width:52px;font:13px inherit;border:1px solid var(--mbu-border);border-radius:5px;padding:2px 5px;text-align:right}
+  .as-setup-uptimeout{width:52px;font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:5px;padding:2px 5px;text-align:right}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mbu-text-dim);white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
-  #as-root select,.as-btn{font:13px inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:4px 9px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}
+  #as-root select,.as-btn{font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:4px 9px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}
   .as-btn{display:inline-flex;align-items:center;gap:5px}
   /* #234: compact toolbar — hide button labels (keep icons + tooltips) when it would otherwise wrap */
   
@@ -3859,7 +3859,7 @@
   .as-dtypes{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:3px 12px;margin:0 0 10px}
   .as-dtypes label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mbu-text);cursor:pointer}
   .as-dtypes input{accent-color:var(--as-acc)}
-  .as-dcmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:6px 9px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
+  .as-dcmt{width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:6px 9px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
   .as-dcmt:focus{outline:2px solid var(--as-acc);outline-offset:-1px;background:var(--mbu-bg)}
   /* compact group rows: label column + cards beside it */
   .as-grow{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-top:1px solid var(--mbu-accent)}
@@ -3907,7 +3907,7 @@
   .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
   .as-foot-cmt{flex:0 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
   .as-foot-cmt.as-cmt-collapsed{display:none}
-  .as-cmt-text{font:11px inherit;color:var(--mbu-accent-deep-text);line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .as-cmt-text{font-size:11px;font-family:inherit;color:var(--mbu-accent-deep-text);line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--mbu-accent-text)}
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
@@ -3916,8 +3916,8 @@
   .as-type:hover{background:var(--mbu-bg-hover)}
   .as-type-add{color:var(--mbu-accent-text);background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}
   .as-card:hover .as-type-add{opacity:1}
-  .as-cmt{font:11px inherit;border:1px solid var(--mbu-border-soft);border-radius:var(--mbu-radius);padding:2px 6px;color:var(--mbu-text);background:var(--mbu-bg-raised);width:100%}
-  .as-pencil{font:11px inherit;border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
+  .as-cmt{font-size:11px;font-family:inherit;border:1px solid var(--mbu-border-soft);border-radius:var(--mbu-radius);padding:2px 6px;color:var(--mbu-text);background:var(--mbu-bg-raised);width:100%}
+  .as-pencil{font-size:11px;font-family:inherit;border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:var(--mbu-bg-raised);color:var(--mbu-accent-text)}
   /* flat reverse-image-search magnifier — in the comment row, after the comment/pencil,
@@ -3937,7 +3937,7 @@
   .as-selbox{display:flex;align-items:center;gap:8px;flex:0 1 auto;justify-content:center}
   .as-selcnt{font-size:13px;font-weight:700;color:var(--mbu-accent-text);white-space:nowrap}
   .as-selcnt.none{font-weight:400;color:var(--mbu-accent-text)}
-  .as-ic{font:14px/1 inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:3px 9px;color:var(--mbu-accent-deep-text);cursor:pointer}
+  .as-ic{font-size:14px;line-height:1;font-family:inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:3px 9px;color:var(--mbu-accent-deep-text);cursor:pointer}
   .as-ic:hover{background:var(--mbu-bg-raised)}
   .as-ic:disabled{opacity:.4;cursor:default}
   .as-selall{color:var(--mbu-ok)}
@@ -3957,7 +3957,7 @@
   .as-search-pop .as-search-eng{display:block;width:100%;text-align:left;border:1px solid transparent;background:none}   /* borderless until hover (transparent border keeps it from shifting) */
   .as-search-pop .as-search-eng:hover{border-color:var(--mbu-border)}
   .as-search-pop .as-pop-h{display:flex;align-items:baseline;justify-content:space-between;gap:14px}   /* title left, "Open all" right (#open-all-in-title) */
-  .as-search-pop .as-search-all{flex:none;font:600 13px inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0}
+  .as-search-pop .as-search-all{flex:none;font-weight:600;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0}
   .as-search-pop .as-search-all:hover{text-decoration:underline}
   .as-search-pop .as-search-foot{margin-top:6px;padding:7px 6px 2px;border-top:1px solid var(--mbu-divider);font-size:11px;line-height:1.45;color:var(--mbu-accent-text)}
   .as-search-pop .as-search-foot a{color:var(--mbu-accent-text);font-weight:600;text-decoration:none}
@@ -3988,15 +3988,15 @@
   .as-src-hd.open .as-src-htxt{display:none}   /* input fills the whole title when unrolled */
   .as-src-urlwrap{display:inline-flex;align-items:center;flex:none;min-width:0}
   .as-src-hd.open .as-src-urlwrap{flex:1 1 auto}
-  .as-src-url-btn{font:600 13px inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0;white-space:nowrap}
+  .as-src-url-btn{font-weight:600;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0;white-space:nowrap}
   .as-src-url-btn:hover{text-decoration:underline}
   .as-src-hd.open .as-src-url-btn{display:none}
   .as-src-url-inp{display:none}
-  .as-src-hd.open .as-src-url-inp{display:inline-block;width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font:12px inherit}
+  .as-src-hd.open .as-src-url-inp{display:inline-block;width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:12px;font-family:inherit}
   .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
   .as-src-pop > .as-pop-note.as-src-warn{white-space:normal;color:var(--mbu-warn);font-weight:600}
   .as-src-pop > .as-pop-note.as-src-warn a{color:var(--mbu-warn);text-decoration:underline}
-  .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);padding:5px 8px;margin:2px 0 2px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
+  .as-bulk-cmt{width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);padding:5px 8px;margin:2px 0 2px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
   .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:var(--mbu-bg)}
@@ -4041,17 +4041,17 @@
   .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
   .as-lb-caprow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
-  .as-lb-type{font:700 12px inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
+  .as-lb-type{font-weight:700;font-size:12px;font-family:inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:var(--mbu-text-on-accent)}
   .as-lb-type.as-type-add{font-weight:600;border-style:dashed;color:rgba(255,255,255,.6)}
   .as-lb-dim{color:var(--mbu-text-weak)}
   .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
-  .as-lb-cmt{width:100%;font:13px inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
-  .as-lb-cmt-text{font:14px inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
+  .as-lb-cmt{width:100%;font-size:13px;font-family:inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
+  .as-lb-cmt-text{font-size:14px;font-family:inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
   .as-lb-cmt-text:hover{color:#e7dffb}
   .as-lb-cmt::placeholder{color:rgba(255,255,255,.45)}
   .as-lb-cmt:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.14)}
-  .as-lb-cmtadd{font:12px inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
+  .as-lb-cmtadd{font-size:12px;font-family:inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
   .as-lb-cmtadd:hover{color:var(--mbu-text-on-accent);border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
   /* #251 touch viewer: show only the full image; tap reveals the controls, swipe navigates */
   #as-lb.as-lb-touch .as-lb-img{max-width:100vw;max-height:100vh;border-radius:0}
@@ -4088,7 +4088,7 @@
   .as-cm-hist:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-accent)}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:var(--mbu-text-dim)}
   .as-cm-hint{font-size:11px;color:var(--mbu-accent-text);font-weight:400}
-  .as-cm-note{font:13px inherit;border:1px solid var(--mbu-border);border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
+  .as-cm-note{font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
   /* #263 if Mammoth is installed it auto-enhances the .edit-note field (saved notes / history
      panel), which sits below the operations list. It wraps the textarea in .mmth-wrap + a
      300px side panel; the 680px modal fits that — give the wrap the note's bottom margin and
