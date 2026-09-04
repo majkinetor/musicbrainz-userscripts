@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-04 22:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-04 23:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1828,29 +1828,30 @@ and to as much as fifteen once the tab has spent its execution budget — and
 MusicBrainz's submit is a chain of them. A two-link add measured **20.2s** that
 way; the same add with the tab merely *looked at* took **3.7s**.
 
-A tab holding an active connection is exempt from that throttling, so this
-setting opens a **WebRTC data-channel loopback** — two peers inside that same
-tab, talking to each other — for the few seconds it is alive. Data channels need
-no `getUserMedia`, so there is no permission, no prompt and no indicator on the
-tab. (Thanks to [chaban](https://community.metabrainz.org/t/chabans-userscripts-and-bookmarklet-support-thread/768583/71)
-for the technique.)
+A tab that is **playing audio** is exempt from that throttling, so this setting
+plays an inaudible tone — 30Hz at gain 0.0008, below anything a speaker will
+reproduce — for the few seconds the tab is alive. Measured on the same two-link
+add: **3.7s, tab never shown**.
 
-If WebRTC is unavailable — disabled by pref, by an extension, by a hardened
-profile — it falls back to playing an **inaudible tone**, since an audible tab is
-exempt too. That path is the one measured at 3.7s above, but it needs a
-permission you have to grant yourself (padlock icon → *Autoplay* → **Allow
-Audio**) and it lights the speaker icon while it runs.
-
-Off by default. The Log says which one engaged, and what it cost:
+Off by default, and it **needs a browser permission you have to grant
+yourself**: on a MusicBrainz page, padlock icon → *Autoplay* → **Allow Audio**.
+Without it Firefox blocks the tone, the setting does nothing at all, and the Log
+says so:
 
 ```
-background add: +0.0s  keep-awake  webrtc loopback starting (no permission needed, no tab icon)
-background add: +0.3s  keep-awake  webrtc loopback open — the tab should not be throttled
+background add: +1.5s  keep-awake audio  state=suspended — BLOCKED by the autoplay
+                       policy, so this setting is doing nothing.
 ```
 
-or, on the fallback, `state=running` — and `state=suspended — BLOCKED by the
-autoplay policy` if the permission is missing, in which case the setting is doing
-nothing at all.
+With it, the same line reads `state=running`. The cost is the speaker icon on
+that tab while it runs; being audible *is* the exemption, so there is no way to
+have one without the other.
+
+> A [WebRTC loopback](https://community.metabrainz.org/t/chabans-userscripts-and-bookmarklet-support-thread/768583/71)
+> was tried instead — no permission, no icon, much the nicer trade. It connects
+> in under a second and then changes nothing: 16.8s to commit against 16.9s with
+> the setting off. Whatever Firefox exempts for an active peer connection, it is
+> not the timer throttling.
 
 ### Shortcuts
 
