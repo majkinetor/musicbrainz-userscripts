@@ -282,6 +282,31 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 <img width="400" src="./screenshots/config.png" />
 
+### Keep background-add tabs awake
+
+Right-clicking **+** adds links in a background tab that submits and closes
+itself. Firefox throttles timers in a background tab — to one step per second,
+and to as much as fifteen once the tab has spent its execution budget — and
+MusicBrainz's submit is a chain of them. A two-link add measured **20.2s** that
+way; the same add with the tab merely *looked at* took **3.7s**.
+
+A tab that is playing audio is exempt from that throttling, so this setting plays
+an inaudible tone for the few seconds the tab is alive. Measured on the same
+two-link add: **3.7s, tab never shown**.
+
+It is off by default and it **needs a browser permission you have to grant
+yourself**: on a MusicBrainz page, padlock icon → *Autoplay* → **Allow Audio**.
+Without it Firefox blocks the tone, the setting does nothing at all, and the
+script's Log says so:
+
+```
+background add: +1.5s  keep-awake audio  state=suspended — BLOCKED by the autoplay
+                       policy, so this setting is doing nothing.
+```
+
+With it, the same line reads `state=running`. The cost is the speaker icon on
+that tab while it runs.
+
 ## Shortcuts
 
 | Key   | Action                      |
