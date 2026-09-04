@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.4.160311
+// @version      2026.9.4.185621
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3999,6 +3999,18 @@
   .as-bulk-cmt{width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);padding:5px 8px;margin:2px 0 2px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
+  /* #564 (majkinetor: "AS dark gallery mode buttons top right not visible … image
+     type (front) hardly visible … and download btn"). kellnerd's dark userstyle
+     applies filter:var(--invert-value) to every <button> on the page, and the
+     lightbox chrome is nothing BUT buttons — Play, ✕, the type chip, Download and
+     its caret — all authored light-on-dark for this always-dark overlay. Inverted,
+     they come out near-black on a near-black backdrop, which is invisible and
+     which no computed-style check can see (the filter is applied at paint time).
+     #as-lb is deliberately NOT in the shared ROOTS list that neutralises this
+     elsewhere: those rules also hand the container the THEME's text colour, and
+     this surface is dark in both themes, so it would go dark-on-dark in the light
+     theme instead. It cancels the filter itself, and nothing else. */
+  #as-lb{--invert-value:none;--invert:none}
   .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:var(--mbu-bg)}
   .as-lb-img.loading{visibility:hidden}
   #as-lb.na .as-lb-img{display:none}
