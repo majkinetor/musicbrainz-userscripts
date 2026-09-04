@@ -44,3 +44,7 @@ Merge duplicate recordings: review UI, auto-match, background submit
 
 [Bandcamp Player Enhanced](./userscripts/bandcamp_player_enhanced/README.md)<img src="./userscripts/bandcamp_player_enhanced/icon.svg" align="left" width="32"><br>
 Bandcamp album player with keyboard shortcuts
+
+## Notes
+
+- All userscripts support [Dark Side of MusicBrainz](https://github.com/kellnerd/userstyles#musicbrainz) Stylus theme. 
