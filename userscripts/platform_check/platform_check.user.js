@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.4.221153
+// @version      2026.9.4.222351
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -234,32 +234,89 @@ function pcMark(stage, extra) {
         try { if (PC_CHANNEL) PC_CHANNEL.postMessage({ type: 'pc-bg-log', entry }); } catch (e) {}
     } catch (e) { /* a timeline is never worth failing an edit over */ }
 }
-// #556 — the experiment behind the "keep the background tab awake" setting.
+// #556 — keeping a background-add tab out of Firefox's timer throttling.
 //
-// majkinetor's own two timelines are the controlled trial: Enter edit → committed
-// took 17.7s with the tab left alone and 3.1s once he looked at it, same code,
-// same step. The difference is Firefox holding MusicBrainz's setTimeout chain to
-// one step per second while the tab is in the background, and roughly 3s is what
-// the submit actually costs.
+// Why at all: majkinetor's two timelines of the SAME two-link add, tab never
+// shown in either, are the controlled trial.
 //
-// Firefox does not throttle a tab that is PLAYING AUDIO. So: an inaudible tone
-// for the few seconds a background-add tab is alive should make it behave like
-// the foreground one.
+//     throttled    field 5.7s · Enter edit -> committed 14.5s · total 20.2s
+//     not          field 1.5s · Enter edit -> committed  2.1s · total  3.7s
 //
-// TWO assumptions here, and I can verify NEITHER in the harness:
-//   1. that the audible-tab exemption covers the background timer clamp;
-//   2. that an AudioContext is even allowed to start — a tab opened by
-//      GM_openInTab has no user activation of its own, and Firefox's autoplay
-//      policy can leave the context 'suspended' forever.
-// Playwright will not produce a genuinely backgrounded tab at all (that is why
-// e2e-556's --suspend models the constraints instead), and it relaxes autoplay
-// besides, so a green run here would prove nothing about either.
+// 5.5x, and it is not only the submit — MusicBrainz renders the External links
+// field 3.8x faster too, because the throttling was never about our code. A
+// background tab gets its timers held to one step per second, and once it has
+// spent its execution budget individual ones stretch to as much as fifteen
+// (measured in his log: a setTimeout(…,1500) that fired 8.3s late).
 //
-// Hence: OFF by default, and it reports the AudioContext state into the same
-// timeline — `state=running` means (2) held, and the elapsed time to
-// "edit committed" then answers (1) in a single run. If either is false it comes
-// straight back out.
+// TWO ways out, and the order matters:
+//
+//   1. an active RTCPeerConnection (chaban's suggestion, via the MetaBrainz
+//      forum). A DATA-CHANNEL-only loopback — two peers in this same document,
+//      talking to each other — needs no getUserMedia, so no permission prompt,
+//      no site setting and no indicator on the tab.
+//   2. an inaudible tone. Works, and majkinetor measured the numbers above with
+//      it, but a tab opened by GM_openInTab has no user activation, so Firefox's
+//      autoplay policy leaves the AudioContext `suspended` until the user grants
+//      the site Autoplay > Allow Audio by hand — and it lights the speaker icon.
+//
+// So (1) is tried first and (2) is only the fallback. Neither exemption can be
+// verified here: Playwright will not produce a genuinely backgrounded tab (which
+// is why e2e-556's --suspend models the constraints instead) and it relaxes
+// autoplay besides. What CAN be checked is whether each mechanism engages at
+// all, and both report that into the same timeline — `webrtc loopback open`,
+// `state=running` — so one real run says which is holding the tab awake and the
+// elapsed time says whether it worked.
 function pcKeepAwake() {
+    const handle = { kind: null, close() {} };
+    // ── 1. WebRTC loopback ──────────────────────────────────────────────────
+    try {
+        const RPC = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+        if (RPC) {
+            const a = new RPC({ iceServers: [] });
+            const b = new RPC({ iceServers: [] });
+            handle.kind = 'webrtc';
+            handle.close = () => { try { a.close(); } catch (e) {} try { b.close(); } catch (e) {} };
+            a.onicecandidate = e => { if (e.candidate) b.addIceCandidate(e.candidate).catch(() => {}); };
+            b.onicecandidate = e => { if (e.candidate) a.addIceCandidate(e.candidate).catch(() => {}); };
+            const dc = a.createDataChannel('pc-keepawake');
+            dc.onopen = () => pcMark('keep-awake', 'webrtc loopback open — the tab should not be throttled');
+            (async () => {
+                const offer = await a.createOffer();
+                await a.setLocalDescription(offer);
+                await b.setRemoteDescription(offer);
+                const answer = await b.createAnswer();
+                await b.setLocalDescription(answer);
+                await a.setRemoteDescription(answer);
+            })().catch(err => pcMark('keep-awake', `webrtc loopback failed — ${(err && err.message) || err}`));
+            pcMark('keep-awake', 'webrtc loopback starting (no permission needed, no tab icon)');
+            // If WebRTC is disabled — by pref, by an extension, by a hardened
+            // profile — say so and let the caller fall back rather than sitting
+            // there believing it is protected.
+            setTimeout(() => {
+                if (dc.readyState === 'open') return;
+                pcMark('keep-awake', `webrtc loopback did NOT open (dataChannel=${dc.readyState}) — falling back to the tone`);
+                handle.close();
+                const tone = pcKeepAwakeTone();
+                handle.kind = tone ? 'audio' : null;
+                handle.close = () => { try { tone && tone.close && tone.close(); } catch (e) {} };
+            }, 2000);
+            return handle;
+        }
+        pcMark('keep-awake', 'no RTCPeerConnection in this browser — using the tone instead');
+    } catch (e) {
+        pcMark('keep-awake', `webrtc loopback threw — ${(e && e.message) || e}`);
+    }
+    // ── 2. the inaudible tone ───────────────────────────────────────────────
+    const tone = pcKeepAwakeTone();
+    handle.kind = tone ? 'audio' : null;
+    handle.close = () => { try { tone && tone.close && tone.close(); } catch (e) {} };
+    return handle;
+}
+
+// The fallback. Kept because it is the one majkinetor has already MEASURED —
+// 20.2s to 3.7s — so if the loopback turns out not to defeat Firefox's
+// throttling, this is the known-good path rather than a second guess.
+function pcKeepAwakeTone() {
     try {
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) { pcMark('keep-awake audio', 'no AudioContext in this browser'); return null; }
@@ -290,7 +347,6 @@ function pcKeepAwake() {
         return null;
     }
 }
-
 // Called once at the start of a background add, so the Log shows THIS run rather
 // than this one appended to every previous one.
 function pcMarkReset() {
@@ -1536,7 +1592,7 @@ providerModal.innerHTML = `
           <input type="checkbox" id="mb-open-new-tab" style="margin: 0; width: 16px; height: 16px;"> Add links in a <b>new tab</b></label>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone for the few seconds the background-add tab is alive. Measured on a 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio); without that Firefox blocks the tone and the setting does nothing, which the Log will say. Costs you the speaker icon on that tab while it runs.">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. Measured on a 2-link add: 20.2s throttled, 3.7s not. This holds the tab open with a WebRTC data-channel loopback (chaban's suggestion): no permission, no prompt, no icon. If WebRTC is unavailable it falls back to an inaudible tone, which does need Autoplay > Allow Audio for musicbrainz.org and lights the speaker icon. The Log says which one engaged.">
           <input type="checkbox" id="mb-bg-audio" style="margin: 0; width: 16px; height: 16px;"> Keep background-add tabs <b>awake</b></label>
       </div>
     </div>
@@ -1923,7 +1979,10 @@ document.getElementById('mb-open-new-tab').addEventListener('change', e => {
     GM_setValue('pc:open-new-tab', e.target.checked);      // #464 — off navigates the same tab instead of opening one
 });
 document.getElementById('mb-bg-audio').addEventListener('change', e => {
-    GM_setValue('pc:bg-audio', e.target.checked);          // #556 — inaudible tone so Firefox stops throttling the background-add tab
+    // key kept as pc:bg-audio although it now means "keep awake by any means":
+    // renaming it would silently switch the setting back OFF for anyone who has
+    // already turned it on.
+    GM_setValue('pc:bg-audio', e.target.checked);          // #556 — WebRTC loopback (or a tone) so Firefox stops throttling the background-add tab
 });
 providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
