@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.4.173221
+// @version      2026.9.4.174408
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -859,7 +859,14 @@
     .ii-track-title a { color: inherit; text-decoration: none; }
     .ii-track-title a:hover { color: var(--mbu-accent-text); text-decoration: underline; }
     .ii-track-artist { color: var(--mbu-text-dim); font-size: 11.5px; }
-    .ii-track-dur { color: var(--mbu-text-weak); font-size: 11px; font-family: 'Courier New', monospace; }
+    .ii-track-dur { color: var(--mbu-text-dim); font-size: 11px; font-family: 'Courier New', monospace;
+      /* the row is two lines (title + artist) and #ii-table td is vertical-align:top,
+         so this smaller monospace sat ABOVE the title's baseline. baseline lines it
+         up with the title and the ISRC cell beside it. */
+    }
+    /* #ii-table td sets vertical-align:top at id specificity, so the class alone
+       could not move it — the duration has to be named at the same level. */
+    #ii-table td.ii-track-dur { vertical-align: baseline; }
     /* #219/#301 — provider link icons live in the LINKED / ADD columns. Grey
        monochrome = already linked on MB; brand colour = resolved + addable. */
     .ii-tl-linked, .ii-tl-add { display: flex; align-items: center; gap: 9px; min-height: 18px; }
