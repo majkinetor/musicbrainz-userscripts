@@ -58,6 +58,9 @@ const ROOTS = [
     // mammoth — .mmth-side is the note panel itself. NOT .mmth-wrap: that one
     // wraps MusicBrainz's own edit-note textarea, which belongs to the page.
     '.mmth-pop', '.mmth-cfg', '.mmth-side', '.mmth-pinbar',
+    // …and the BABY-field UI, which is 'mmthf-' with an f — a different prefix
+    // entirely, so none of it was covered by the 'mmth-' entries above
+    '.mmthf-pop', '.mmthf-bar',
     // falcon
     '#falcon-panel', '#falcon-launcher', '#falcon-item-popup', '#falcon-add-page',
     '.falcon-bar', '.falcon-addmenu',

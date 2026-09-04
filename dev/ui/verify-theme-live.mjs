@@ -93,7 +93,7 @@ for (const [name, path, open, settle] of CASES.filter(c => !ONLY || c[0] === ONL
 
     const found = await page.evaluate(() => {
         // "ours" = the nearest ancestor carrying one of our own name prefixes.
-        const PFX = /^(as|tc|gt|ii|fs|mmth|pc|mbu|mb-pc|mb-provider|discogs|falcon)-/;
+        const PFX = /^(as|tc|gt|ii|fs|mmth|mmthf|pc|mbu|mb-pc|mb-provider|discogs|falcon)-/;
         const owner = (el) => {
             for (let n = el; n && n !== document.body; n = n.parentElement) {
                 if (n.id && PFX.test(n.id)) return '#' + n.id;
