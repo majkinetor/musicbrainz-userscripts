@@ -31,8 +31,14 @@ const bundle = await readFile(PC_ONLY
 const ctx = await firefox.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile-ff', {
     headless: false, viewport: { width: 1400, height: 900 },
 });
-await ctx.addInitScript(() => {
+await ctx.addInitScript(([bgAudio]) => {
+    window.__pcBgAudio = bgAudio;
     const store = new Map();
+    // --bg-audio turns on the keep-awake experiment (#556). It cannot prove the
+    // throttling exemption — Playwright has no genuinely backgrounded tab — but
+    // it does prove the code path runs and reports whether the AudioContext is
+    // allowed to start at all, which is the half that can be measured.
+    if (window.__pcBgAudio) store.set('pc:bg-audio', true);
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
     window.GM_setValue = (k, v) => store.set(k, v);
     window.GM_deleteValue = k => store.delete(k);
@@ -58,7 +64,7 @@ await ctx.addInitScript(() => {
         window.setTimeout = (fn, d, ...a) => st(fn, Math.max(Number(d) || 0, 1000), ...a);
         window.setInterval = (fn, d, ...a) => si(fn, Math.max(Number(d) || 0, 1000), ...a);
     }
-});
+}, [process.argv.includes('--bg-audio')]);
 // A real userscript manager runs the bundle on EVERY matching document, the
 // post-submit landing page included. addScriptTag only reaches the document
 // that is loaded when it is called, so the tab-closing leg — where "it takes

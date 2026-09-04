@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.194736
+// @version      2026.9.4.202736
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.4.194736 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.194716");
+  console.log('%c String Theory %c v2026.9.4.202736 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.202715");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -33717,7 +33717,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.194716","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.194716","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.202715","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.202715","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -33914,6 +33914,63 @@ function pcMark(stage, extra) {
         try { if (PC_CHANNEL) PC_CHANNEL.postMessage({ type: 'pc-bg-log', entry }); } catch (e) {}
     } catch (e) { /* a timeline is never worth failing an edit over */ }
 }
+// #556 — the experiment behind the "keep the background tab awake" setting.
+//
+// majkinetor's own two timelines are the controlled trial: Enter edit → committed
+// took 17.7s with the tab left alone and 3.1s once he looked at it, same code,
+// same step. The difference is Firefox holding MusicBrainz's setTimeout chain to
+// one step per second while the tab is in the background, and roughly 3s is what
+// the submit actually costs.
+//
+// Firefox does not throttle a tab that is PLAYING AUDIO. So: an inaudible tone
+// for the few seconds a background-add tab is alive should make it behave like
+// the foreground one.
+//
+// TWO assumptions here, and I can verify NEITHER in the harness:
+//   1. that the audible-tab exemption covers the background timer clamp;
+//   2. that an AudioContext is even allowed to start — a tab opened by
+//      GM_openInTab has no user activation of its own, and Firefox's autoplay
+//      policy can leave the context 'suspended' forever.
+// Playwright will not produce a genuinely backgrounded tab at all (that is why
+// e2e-556's --suspend models the constraints instead), and it relaxes autoplay
+// besides, so a green run here would prove nothing about either.
+//
+// Hence: OFF by default, and it reports the AudioContext state into the same
+// timeline — `state=running` means (2) held, and the elapsed time to
+// "edit committed" then answers (1) in a single run. If either is false it comes
+// straight back out.
+function pcKeepAwake() {
+    try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) { pcMark('keep-awake audio', 'no AudioContext in this browser'); return null; }
+        const ctx = new AC();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        // Non-zero on purpose: a truly silent stream may not mark the tab
+        // audible, which is the entire point. 30Hz at this level is below
+        // anything a speaker will reproduce.
+        gain.gain.value = 0.0008;
+        osc.frequency.value = 30;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        try { const p = ctx.resume && ctx.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+        pcMark('keep-awake audio started', `state=${ctx.state}`);
+        // The state right after construction is not the final answer; autoplay
+        // blocking shows up a beat later as 'suspended'.
+        try {
+            setTimeout(() => pcMark('keep-awake audio', ctx.state === 'running'
+                ? 'state=running — the tab is audible, so it should not be throttled'
+                : `state=${ctx.state} — BLOCKED by the autoplay policy, so this setting is doing nothing. `
+                  + 'Allow Audio for musicbrainz.org in the padlock menu to let it try.'), 1500);
+        } catch (e) {}
+        return ctx;
+    } catch (e) {
+        pcMark('keep-awake audio failed', String((e && e.message) || e));
+        return null;
+    }
+}
+
 // Called once at the start of a background add, so the Log shows THIS run rather
 // than this one appended to every previous one.
 function pcMarkReset() {
@@ -34033,6 +34090,10 @@ async function runInjectHelper(entityType) {
         // its full timeout before injectInto even started — pure dead time added to
         // every single background add.
         pcMark(`helper start on ${entityType}`, `${urls.length} url(s) queued, readyState=${document.readyState}`);
+        // #556: read the hash HERE rather than after the inject — the keep-awake
+        // tone has to start before MusicBrainz's throttled work does, not after.
+        const autoCommit = /pc-autocommit/.test(location.hash);
+        if (autoCommit && GM_getValue('pc:bg-audio', false)) pcKeepAwake();
         pcOpenExternalLinks();
         await pcWait(200);
         const result = await injectInto(urls, key) || { injected: 0 };
@@ -34043,8 +34104,8 @@ async function runInjectHelper(entityType) {
         // post "committed" + close itself. Only the release flow supports this.
         // #559: the release-group editor takes the same route now, for the Discogs
         // master URL. Its form is NOT the release wizard, so the button differs —
-        // see findSubmit below.
-        const autoCommit = /pc-autocommit/.test(location.hash);
+        // see findSubmit below.  (`autoCommit` is read at the top of the helper —
+        // the keep-awake tone needs it before the inject, not after.)
         // #556 (majkinetor): NEVER submit a run that added nothing. This used to
         // fire unconditionally, and the release editor's submit is enabled by ANY
         // pending change — so with Apollo's auto search-and-replace configured, its
@@ -35140,6 +35201,10 @@ providerModal.innerHTML = `
         <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: + opens the release editor in a new tab, leaving this one on the panel. Off: it navigates this tab instead. Either way, right-click on + (or a platform icon) always adds silently in a background tab that submits and closes itself.">
           <input type="checkbox" id="mb-open-new-tab" style="margin: 0; width: 16px; height: 16px;"> Add links in a <b>new tab</b></label>
       </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="EXPERIMENT (#556). Firefox slows every timer in a background tab to one step per second, and MusicBrainz's submit is a chain of them — measured at 17.7s in the background against 3.1s the moment the tab is looked at. A tab that is playing audio is exempt, so this plays an inaudible tone for the few seconds the background-add tab is alive. Costs you the speaker icon on that tab. Firefox blocks the tone unless musicbrainz.org is allowed to play audio (padlock menu > Autoplay > Allow Audio) - measured here as state=suspended without it, and the Log says which you got. One run then tells you whether it helped.">
+          <input type="checkbox" id="mb-bg-audio" style="margin: 0; width: 16px; height: 16px;"> Keep background-add tabs <b>awake</b> <span style="color: var(--mbu-text-dim);">(experiment)</span></label>
+      </div>
     </div>
 
     <div class="pc-setup-sec">Appearance</div>
@@ -35462,6 +35527,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-format-mode').value = GM_getValue('pc:format-mode', 'exists');
     document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
     document.getElementById('mb-open-new-tab').checked = GM_getValue('pc:open-new-tab', true);
+    document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -35521,6 +35587,9 @@ document.getElementById('mb-format-mode').addEventListener('change', e => {
 });
 document.getElementById('mb-open-new-tab').addEventListener('change', e => {
     GM_setValue('pc:open-new-tab', e.target.checked);      // #464 — off navigates the same tab instead of opening one
+});
+document.getElementById('mb-bg-audio').addEventListener('change', e => {
+    GM_setValue('pc:bg-audio', e.target.checked);          // #556 — inaudible tone so Firefox stops throttling the background-add tab
 });
 providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
