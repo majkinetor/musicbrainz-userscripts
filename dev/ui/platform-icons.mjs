@@ -6,12 +6,12 @@
 // The SVGs carry NO width/height: `stIcon(name, size)` stamps a consistent size, so
 // the same platform renders identically (design, colour AND size) in every script.
 //
-// This module is NOT loaded by the userscripts at runtime. `dev/sync-icons.mjs`
+// This module is NOT loaded by the userscripts at runtime. `dev/ui/sync-icons.mjs`
 // inlines a generated `ST_ICONS` map + `stIcon()` into each script between
 // `// <ST-ICONS> … // </ST-ICONS>` markers (run by the pre-commit hook, like the
 // String Theory bundle). Edit icons HERE, never the generated blocks.
 //
-// Adding a platform: add an entry below, then rebuild (`node dev/sync-icons.mjs`).
+// Adding a platform: add an entry below, then rebuild (`node dev/ui/sync-icons.mjs`).
 
 export const PLATFORM_ICONS = {
     // ── MusicBrainz — two-tone hexagon (the reference entity) ──

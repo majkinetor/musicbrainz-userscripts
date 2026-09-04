@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // #564: is the TEXT readable once a dark theme is on?
 //
-// dev/verify-theme-live.mjs answers "did the theme reach the backgrounds"; this
+// dev/ui/verify-theme-live.mjs answers "did the theme reach the backgrounds"; this
 // answers the question majkinetor actually keeps having to ask — "I cannot read
 // this". Backgrounds went dark while plenty of foregrounds stayed dark too, and
 // the failure is invisible in the source: the colour is usually inherited, or
@@ -12,11 +12,11 @@
 // background (walking up until something is actually painted) and report
 // anything under the AA threshold for its size.
 //
-//   node dev/verify-contrast-live.mjs                 all scripts, dark
-//   node dev/verify-contrast-live.mjs --only fusion
-//   node dev/verify-contrast-live.mjs --light         sanity-check the light theme too
-//   node dev/verify-contrast-live.mjs --novars       a dark userstyle that defines no variables
-//   node dev/verify-contrast-live.mjs --userstyle    kellnerd's real "Dark Side of MusicBrainz"
+//   node dev/ui/verify-contrast-live.mjs                 all scripts, dark
+//   node dev/ui/verify-contrast-live.mjs --only fusion
+//   node dev/ui/verify-contrast-live.mjs --light         sanity-check the light theme too
+//   node dev/ui/verify-contrast-live.mjs --novars       a dark userstyle that defines no variables
+//   node dev/ui/verify-contrast-live.mjs --userstyle    kellnerd's real "Dark Side of MusicBrainz"
 //
 // Runs against test.musicbrainz.org and aborts every POST.
 import { createRequire } from 'node:module';

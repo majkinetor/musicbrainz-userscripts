@@ -38,7 +38,7 @@ ck(used.length >= 25, `the pilot actually adopted them (${used.length} of ${Obje
 
 // the generated block must match what the codegen would write right now
 const { tokensCss } = await import('file:///' + resolve(ROOT, 'dev', 'design-tokens.mjs').replace(/\\/g, '/'));
-ck(!!mark && mark[0].includes(`const MBU_TOKENS = '${tokensCss()}';`), 'the inlined block is in sync with dev/design-tokens.mjs (run dev/sync-tokens.mjs)');
+ck(!!mark && mark[0].includes(`const MBU_TOKENS = '${tokensCss()}';`), 'the inlined block is in sync with dev/tokens/design-tokens.mjs (run dev/tokens/sync-tokens.mjs)');
 
 // ── computed-style equivalence against the pre-token stylesheet ─────────────
 // Rebuild the OLD css by expanding every var(--mbu-*) back to its literal, then
