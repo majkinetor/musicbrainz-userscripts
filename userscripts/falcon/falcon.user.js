@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.160102
+// @version      2026.9.4.184741
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1754,9 +1754,20 @@
   // can only ever move the element it belongs to.
   function frameWin(target) { try { return ('contentWindow' in target) ? target.contentWindow : target; } catch (e) { return null; } }
 
+  // ⚠ #556: identify the field STRUCTURALLY, never by its placeholder text.
+  // Apollo Editor rewrites MusicBrainz's "Add another link" to "Paste one or more
+  // links" (its multi-link paste hint) and re-applies it from a MutationObserver,
+  // and Apollo has no @noframes — so it runs inside Falcon's edit iframes too.
+  // Platform Check carried the identical lookup and that is what #556 turned out
+  // to be: the field was there all along under a different label. Fixed in both.
   function findAddLinkInput(doc) {
+    const ed = doc.getElementById('external-links-editor');
+    if (ed) {
+      const empty = [...ed.querySelectorAll('input[type="url"]')].filter(i => !i.value);
+      if (empty.length) return empty[empty.length - 1];
+    }
     const all = [...doc.querySelectorAll('input[type="text"], input[type="url"], input:not([type])')];
-    const RE = /^(?:add (?:another )?link|add another url)$/i;
+    const RE = /^(?:add (?:another )?link|add another url|paste one or more links)$/i;
     return all.find(i => RE.test((i.placeholder || '').trim()) && !i.value)
       || all.find(i => RE.test((i.placeholder || '').trim())) || null;
   }
