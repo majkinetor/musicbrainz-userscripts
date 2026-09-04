@@ -32,7 +32,7 @@
 // are not.
 const ROOTS = [
     // shared
-    '.mbu-ov', '.mbu-ui', '#mbu-logpop', '.discogs-bar',
+    '.mbu-ov', '.mbu-ui', '#mbu-logpop', '.discogs-bar', '.discogs-review-panel-li',
     // art_station — #as-switch-wrap is the floating pill; its two buttons sit
     // OUTSIDE #as-root, so nothing scoped to that reached them
     '#as-root', '#as-setup', '.as-pop', '#as-switch-wrap',
@@ -43,7 +43,7 @@ const ROOTS = [
     '.tc-recpop', '.tc-lppop', '.tc-tpppop', '.tc-tpp-mpop', '.tc-anno-help-pop',
     // …and the parts of Apollo that live ON MusicBrainz's page rather than in a
     // window of its own: the tracklist mirror and the two toolbars around it.
-    '.tc-mirror', '.tc-addrow', '.tc-medopts', '.tc-tools', '#tc-recwrap',
+    '.tc-mirror', '.tc-addrow', '.tc-medopts', '.tc-tools', '#tc-recwrap', '#tc-ri-toolbar',
     // …and MusicBrainz's own format select, which Apollo repaints flat in OUR
     // colours (.tc-fmt-flat). Having adopted its appearance we own its theming.
     '.tc-fmt-flat',
@@ -57,7 +57,7 @@ const ROOTS = [
     '.fs-cons', '#fs-settings', '.fs-overlay',
     // mammoth — .mmth-side is the note panel itself. NOT .mmth-wrap: that one
     // wraps MusicBrainz's own edit-note textarea, which belongs to the page.
-    '.mmth-pop', '.mmth-cfg', '.mmth-side',
+    '.mmth-pop', '.mmth-cfg', '.mmth-side', '.mmth-pinbar',
     // falcon
     '#falcon-panel', '#falcon-launcher', '#falcon-item-popup', '#falcon-add-page',
     '.falcon-bar', '.falcon-addmenu',
@@ -181,6 +181,12 @@ const CSS = [
     //
     // Scoped to our own containers (see ROOTS) rather than a bare `::placeholder`.
     scopedEl('::placeholder') + '{color:var(--mbu-text-weak);opacity:1;font-style:italic}',
+
+    // Our windows carry their own foreground. Inheriting the page's is a bet
+    // that the page agrees with us about the theme, and that is the bet this
+    // issue keeps losing: Platform Check's provider names set no colour of
+    // their own and came out black on a dark panel.
+    ':where(' + ROOTS.join(',') + '){color:var(--mbu-text)}',
 
     // Form controls — the theme has to reach INSIDE the windows too. #564:
     // "Some edit boxes do not follow theme (white rectangles)". A control with no

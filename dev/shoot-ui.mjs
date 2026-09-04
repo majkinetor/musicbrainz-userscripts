@@ -154,14 +154,21 @@ const index = [];
 for (const mode of MODES) {
     for (const shot of list) {
         const tag = `${String(shot.n).padStart(2, '0')}-${shot.script}-${shot.name}${mode === 'dark' ? '-dark' : ''}`;
+        // A full run is 46 sequential loads, and under that load the sandbox
+        // starts handing back empty documents — surfaces that shoot perfectly on
+        // their own come out as "surface did not appear". That is a lie in the
+        // index AND a screenshot of nothing written over a good one, so the
+        // empty-page case gets one retry. A surface that is genuinely absent is
+        // still reported the first time.
+        let note = '';
+        for (let attempt = 1; attempt <= 2; attempt++) {
         const page = await ctx.newPage();
         // Abort POSTs, hand everything else back to the browser untouched.
-    // route.continue() RE-ISSUES the request from Playwright, which production
-    // MusicBrainz does not survive — every navigation landed on "/" with an empty
-    // document, so credit_hoarder "mounted nothing" on a page that had never
-    // loaded. fallback() lets the default handling do the work.
-    await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
-        let note = '';
+        // route.continue() RE-ISSUES the request from Playwright, which
+        // production MusicBrainz does not survive — every navigation landed on
+        // "/" with an empty document. fallback() lets the default handling do it.
+        await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
+        note = '';
         try {
             await page.goto(B + shot.page, { waitUntil: 'domcontentloaded' });
             if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); process.exit(3); }
@@ -171,7 +178,12 @@ for (const mode of MODES) {
             await page.waitForTimeout(shot.settle || 3000);
             if (shot.open) { await page.evaluate(shot.open); await page.waitForTimeout(1600); }
             const el = shot.sel ? await page.$(shot.sel) : null;
-            if (shot.sel && !el) note = 'surface did not appear';
+            if (shot.sel && !el) {
+                // an empty document means the sandbox dropped the request, not
+                // that the surface is missing
+                const empty = await page.evaluate(() => !document.title && location.pathname === '/');
+                note = empty ? 'page never loaded' : 'surface did not appear';
+            }
             const file = resolve(OUT, `${tag}.png`);
             let shot_ok = false;
             if (el) {
@@ -186,8 +198,12 @@ for (const mode of MODES) {
             note = String(e.message || e).slice(0, 80);
             console.log(`FAIL  ${tag}  ${note}`);
         }
-        index.push({ n: shot.n, mode, script: shot.script, surface: shot.name, file: `${tag}.png`, note });
         await page.close();
+        if (note !== 'page never loaded' || attempt === 2) break;
+        console.log(`      retrying ${tag} — the sandbox returned an empty page`);
+        await new Promise(r => setTimeout(r, 4000));
+        }
+        index.push({ n: shot.n, mode, script: shot.script, surface: shot.name, file: `${tag}.png`, note });
     }
 }
 
