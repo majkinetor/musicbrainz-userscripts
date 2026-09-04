@@ -31,18 +31,37 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
-const { chromium } = require('playwright');
+const { chromium, firefox } = require('playwright');
 const HERE = dirname(fileURLToPath(import.meta.url));
 const code = await readFile(resolve(HERE, '..', 'platform_check.user.js'), 'utf8');
+const bundleCode = await readFile(resolve(HERE, '..', '..', 'string_theory', 'string_theory.user.js'), 'utf8').catch(() => '');
 const LOGS = resolve(HERE, 'logs'); await mkdir(LOGS, { recursive: true });
 
 const B = 'https://test.musicbrainz.org';
 if (!/^https:\/\/test\.musicbrainz\.org$/.test(B)) { console.error('refusing to run outside the sandbox'); process.exit(2); }
 
 const argv = process.argv.slice(2);
-const RUNS = Number((argv[argv.indexOf('--runs') + 1]) || 10);
-const FORCE_HIDDEN = argv.includes('--hidden');
-const OFFSET = Number((argv[argv.indexOf('--offset') + 1]) || 0);
+// `argv[argv.indexOf(x) + 1]` reads argv[0] when the flag is ABSENT, so any run
+// that passed some other flag got Number('--suspend') = NaN here — and
+// `pool[NaN % n]` is undefined, which showed up as three SKIPs against
+// /release/undefined rather than as an error.
+const num = (flag, dflt) => { const i = argv.indexOf(flag); const v = i < 0 ? NaN : Number(argv[i + 1]); return Number.isFinite(v) ? v : dflt; };
+const RUNS = num('--runs', 10);
+const FORCE_HIDDEN = argv.includes('--hidden') || argv.includes('--suspend');
+// --suspend is the only mode that actually reproduces #556's condition; see the
+// long note at the init script below.
+const SUSPEND = argv.includes('--suspend');
+const FF = argv.includes('--firefox') || SUSPEND;
+// --bundle loads String Theory (all seven scripts) instead of Platform Check
+// alone. That is the last structural difference between these passing runs and
+// majkinetor's failing ones: seven scripts sharing the editor's main thread.
+const BUNDLE = argv.includes('--bundle');
+// --nofocus models the one thing "switch to the tab and watch it" changes that
+// suspension does not: whether focus works at all. If the flow depends on
+// el.focus()/el.blur() actually moving focus, a tab that cannot take it fails
+// while a watched one succeeds — which is majkinetor's exact symptom.
+const NOFOCUS = argv.includes('--nofocus');
+const OFFSET = num('--offset', 0);
 
 // Distinct, well-formed provider URLs. Each iteration uses a different one, so a
 // release can be reused without the add becoming a no-op duplicate.
@@ -98,8 +117,10 @@ const relUrls = async (page, mbid) => page.evaluate(async ([b, id]) => {
     return { error: 503 };
 }, [B, mbid]);
 
-ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', { headless: false, viewport: { width: 1400, height: 900 } });
-await ctx.addInitScript(([forceHidden]) => {
+ctx = await (FF ? firefox : chromium).launchPersistentContext(
+    FF ? 'C:/Work/mb-userscripts/.pw-profile-ff' : 'C:/Work/mb-userscripts/.pw-profile',
+    { headless: false, viewport: { width: 1400, height: 900 } });
+await ctx.addInitScript(([forceHidden, suspend, nofocus]) => {
     const store = new Map();
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
     window.GM_setValue = (k, v) => store.set(k, v);
@@ -109,16 +130,51 @@ await ctx.addInitScript(([forceHidden]) => {
     window.unsafeWindow = window;
     window.GM_openInTab = () => ({ closed: false, close() {} });
     window.GM_registerMenuCommand = () => {};
+    // String Theory carries seven scripts, so --bundle needs the whole grant
+    // list, not Platform Check's. A missing one throws at load and the bundle
+    // never runs — which would look exactly like the bug under test.
+    window.GM_addValueChangeListener = () => 0;
+    window.GM_removeValueChangeListener = () => {};
+    window.GM_setClipboard = () => {};
+    window.GM_notification = () => {};
+    window.GM_download = () => {};
+    window.GM_addStyle = (css) => { const s = document.createElement('style'); s.textContent = css; document.head?.appendChild(s); return s; };
+    window.GM_xmlhttpRequest = (o) => { try { o && o.onerror && o.onerror({ error: 'e2e: network disabled' }); } catch (e) {} return { abort() {} }; };
+    window.GM = { xmlHttpRequest: window.GM_xmlhttpRequest, getValue: async (k, d) => window.GM_getValue(k, d), setValue: async (k, v) => window.GM_setValue(k, v), info: window.GM_info };
     window.__con = [];
     for (const m of ['info', 'warn', 'error']) {
         const real = console[m].bind(console);
         console[m] = (...a) => { try { window.__con.push(a.map(String).join(' ')); } catch (e) {} return real(...a); };
     }
-    if (forceHidden && /\/edit(#|$)/.test(location.href)) {
+    // ── reproducing a hidden tab ────────────────────────────────────────────
+    // Playwright does not give you one. Both browsers are launched with
+    // backgrounding disabled so tests are not throttled, and `bringToFront()`
+    // on another page leaves this one reporting visibilityState:"visible" —
+    // measured, not assumed. So every earlier run of this harness proved
+    // nothing about #556, which is a hidden-tab bug by majkinetor's own
+    // account ("every time I switch to the tab and watch it, it works").
+    //
+    // --hidden fakes the flag alone, which only exercises code that BRANCHES on
+    // it. --suspend reproduces the actual constraints, on MusicBrainz's code as
+    // much as on ours, before any script runs.
+    if (forceHidden && /\/edit(\?|#|$)/.test(location.href)) {
         Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
         Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
     }
-}, [FORCE_HIDDEN]);
+    if (suspend && /\/edit(\?|#|$)/.test(location.href)) {
+        window.__rafCalls = 0;
+        window.requestAnimationFrame = () => { window.__rafCalls++; return 0; };   // suspended: never fires
+        window.cancelAnimationFrame = () => {};
+        const st = window.setTimeout.bind(window), si = window.setInterval.bind(window);
+        window.setTimeout = (fn, d, ...a) => st(fn, Math.max(Number(d) || 0, 1000), ...a);
+        window.setInterval = (fn, d, ...a) => si(fn, Math.max(Number(d) || 0, 1000), ...a);
+    }
+    if (nofocus && /\/edit(\?|#|$)/.test(location.href)) {
+        HTMLElement.prototype.focus = function () {};
+        HTMLElement.prototype.blur = function () {};
+        document.hasFocus = () => false;
+    }
+}, [FORCE_HIDDEN, SUSPEND, NOFOCUS]);
 
 front = ctx.pages()[0] || await ctx.newPage();
 await front.goto(B, { waitUntil: 'domcontentloaded' });
@@ -129,7 +185,8 @@ const pool = await front.evaluate(async () => {
     const j = await (await fetch('/ws/2/release?query=*&limit=30&fmt=json', { headers: { Accept: 'application/json' } })).json();
     return (j.releases || []).map(x => x.id);
 });
-say(`sandbox releases available: ${pool.length}   runs: ${RUNS}   forceHidden: ${FORCE_HIDDEN}\n`);
+say(`sandbox releases available: ${pool.length}   runs: ${RUNS}   browser: ${FF ? 'firefox' : 'chromium'}   forceHidden: ${FORCE_HIDDEN}   suspend: ${SUSPEND}   bundle: ${BUNDLE ? bundleCode.length + ' bytes' : 'no'}   nofocus: ${NOFOCUS}\n`);
+if (BUNDLE && !bundleCode) { say('String Theory bundle not found'); await ctx.close(); process.exit(2); }
 
 for (let i = 0; i < RUNS; i++) {
     const mbid = pool[(i + OFFSET) % pool.length];
@@ -151,20 +208,43 @@ for (let i = 0; i < RUNS; i++) {
     const tab = await ctx.newPage();
     const posts = [];
     tab.on('request', r => { if (r.method() === 'POST') posts.push(r.url()); });
+    // Capture the console HERE, not by reading window.__con at the end: a
+    // successful run submits and MusicBrainz redirects, so the array is read
+    // from a fresh document and comes back empty — which is how three passing
+    // runs reported no console output at all. Timestamps too, because "how long
+    // did MusicBrainz take" is the whole question.
+    const conLines = [];
+    const tRun = Date.now();
+    const stamp = s => `+${((Date.now() - tRun) / 1000).toFixed(1)}s  ${s}`;
+    tab.on('console', m => { const t = m.text(); if (/Platform Check/.test(t)) conLines.push(stamp(t)); });
+    tab.on('pageerror', e => conLines.push(stamp('PAGEERROR: ' + (e && e.message || e))));
     await tab.goto(`${B}/release/${mbid}/edit#pc-autocommit`, { waitUntil: 'domcontentloaded' });
     await front.bringToFront();                    // <- the tab under test is no longer focused
+    // Assert the fixture before trusting the result: a "hidden tab" run that is
+    // secretly visible passes for the wrong reason, which is how this harness
+    // green-lit a build majkinetor could still break by hand.
+    if (SUSPEND || FORCE_HIDDEN) {
+        const vis = await tab.evaluate(() => document.visibilityState);
+        if (vis !== 'hidden') { say(`!! fixture broken: tab reports ${vis}`); await ctx.close(); process.exit(4); }
+    }
     await tab.waitForTimeout(1200);
-    await tab.addScriptTag({ content: code });
+    await tab.addScriptTag({ content: BUNDLE ? bundleCode : code });
 
     // wait for Platform Check to finish, whatever the outcome
+    // polling: Playwright's default is requestAnimationFrame, which --suspend has
+    // deliberately stopped — so the wait could only ever time out, and every
+    // suspended run would report "never finished" no matter what the script did.
     const finished = await tab.waitForFunction(
         () => (window.__con || []).some(l => /inject: \d+\/\d+ link\(s\) landed|NOT submitting|crashed/.test(l)),
-        null, { timeout: 90000 }).then(() => true).catch(() => false);
+        null, { timeout: 90000, polling: 500 }).then(() => true).catch(() => false);
     rec.ms = Date.now() - t0;
-    rec.console = await tab.evaluate(() => (window.__con || []).filter(l => /Platform Check/.test(l))).catch(() => []);
+    rec.console = conLines;
     rec.hidden = await tab.evaluate(() => document.hidden).catch(() => null);
-    // give the submit + redirect time to complete
-    await tab.waitForTimeout(6000);
+    // Give the submit + redirect time to complete. 6s is plenty for Platform
+    // Check alone; with the whole bundle on a suspended page it is not, and the
+    // read-back then reports "not on the release" for edits that land a moment
+    // later — four false FAILs, chased for half an hour.
+    await tab.waitForTimeout(BUNDLE ? 20000 : 6000);
     rec.posts = posts.length;
     await tab.close().catch(() => {});
 

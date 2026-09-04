@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.4.174514
+// @version      2026.9.4.184615
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -195,6 +195,11 @@ function pcWaitFor(predicate, timeoutMs = 10000) {
         // cap every time, and with the cap at minutes that is far worse than giving
         // up. majkinetor got multi-minute hangs in BOTH foreground and background
         // out of it. The deadline is plain wall clock, as it was.
+        //
+        // Nor is a "be patient while the page is still mutating" budget, which I
+        // built and threw away on the day the real cause turned up: it made the
+        // hidden case merely slower to fail, because what the wait was waiting for
+        // had been RENAMED (see findAddLinkInput) and was never going to match.
         const started = Date.now();
         const poll = () => {
             if (done) return;
@@ -325,11 +330,47 @@ function pcOpenExternalLinks() {
     return tab;
 }
 
+// ⚠ #556 — THE bug, after five wrong diagnoses. This used to identify the field
+// by its PLACEHOLDER TEXT alone, and Apollo Editor rewrites that text.
+//
+// Apollo's multi-link paste (majkinetor: "make a hint show that it can be
+// multiple links") replaces MusicBrainz's "Add another link" with
+// "Paste one or more links", re-applying it from a MutationObserver on
+// #external-links-editor so it survives every React re-render. From that moment
+// this function matched nothing, Platform Check waited out its 25s and reported
+//   no "Add another link" input ever appeared (25s, External links step never rendered)
+// — no link added, nothing submitted, exactly what he saw.
+//
+// Which is a RACE between two of our own scripts, and that is why it looked like
+// a hidden-tab bug for a fortnight: whoever gets to the field first wins. In a
+// foreground tab Platform Check usually arrives before Apollo has installed its
+// observer; in a background tab, where our poll runs on a ~1s clamp, Apollo has
+// always won by the time we look. Hence "every time I switch to the tab and
+// watch it, it works" — and hence, too, "I repeated it and it worked".
+//
+// Measured on the sandbox (probe-556-who-eats-the-field.mjs), each script alone
+// on the release editor:
+//   (none) YES · platform_check YES · art_station YES · credit_hoarder YES
+//   group_therapy YES · isrc_scout YES · mammoth YES
+//   apollo_editor NO · string_theory NO
+//
+// So: find the field STRUCTURALLY — the empty url input inside MusicBrainz's own
+// #external-links-editor, which is what the row actually is and what Apollo's own
+// CSS keys on. Placeholder text is a label for humans; no script should route on
+// another script's cosmetics. The old text match stays as a fallback for forms
+// that have no #external-links-editor.
 function findAddLinkInput() {
-    // /release/<mbid>/edit uses placeholder "Add another link".
-    // /release-group/<rg>/edit uses placeholder "Add link" (no "another").
+    // The editor renders one input[type=url] per link plus a trailing EMPTY one:
+    // that empty one is the "add" row, whatever it happens to say today.
+    const ed = document.getElementById('external-links-editor');
+    if (ed) {
+        const empty = [...ed.querySelectorAll('input[type="url"]')].filter(i => !i.value);
+        if (empty.length) return empty[empty.length - 1];
+    }
+    // Fallback: /release/<mbid>/edit uses placeholder "Add another link",
+    // /release-group/<rg>/edit uses "Add link" (no "another").
     const all = [...document.querySelectorAll('input[type="text"], input[type="url"], input:not([type])')];
-    const RE = /^(?:add (?:another )?link|add another url)$/i;
+    const RE = /^(?:add (?:another )?link|add another url|paste one or more links)$/i;
     return all.find(i => RE.test((i.placeholder || '').trim()) && !i.value)
         || all.find(i => RE.test((i.placeholder || '').trim()))
         || null;
@@ -422,7 +463,11 @@ async function injectInto(urls, storageKey) {
             }
             return null;
         }, 25000);
-        if (!input0) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared (25s, External links step never rendered)' }); break; }
+        if (!input0) {
+            const secs = Math.round((Date.now() - _t0) / 1000);
+            reports.push({ url, ok: false, miss: `no "Add another link" input ever appeared (${secs}s, External links step never rendered)` });
+            break;
+        }
 
         // ⚠ #556: `injected` is NOT bumped for a dispatched keystroke. It gates
         // whether the pending payload is consumed below, and counting the

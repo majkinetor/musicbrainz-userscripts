@@ -394,8 +394,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         intro.style.cssText = 'margin:0 0 0.75rem;font-size:0.85rem;color:var(--mbu-text-dim);';
         intro.innerHTML =
             'Review all artist matches before importing. ' +
-            '<span style="background:var(--mbu-error-bg);padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. ' +
-            '<span style="background:var(--mbu-warn-bg);padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch — verify. ' +
+            // #564: the colour is spelled out on every element that carries an
+            // inline background. kellnerd's dark userstyle has
+            // `span[style*=background]{color:initial}` for MusicBrainz's own
+            // coloured cells, and OURS match it too — `initial` resolves to
+            // canvastext, which Firefox paints BLACK. Inheriting from the panel
+            // can never win against a rule aimed at the element itself.
+            '<span style="background:var(--mbu-error-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. ' +
+            '<span style="background:var(--mbu-warn-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch — verify. ' +
             'Green rows are confirmed. Use the search or create buttons to resolve outstanding issues.';
         panel.appendChild(intro);
 
@@ -407,7 +413,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         hr.style.background = 'var(--mbu-warn-bg)';
         [...(entitySources ? ['Source'] : []), importSourceName + ' entity', 'MB match / search'].forEach(col => {
             const th = document.createElement('th');
-            th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid var(--mbu-warn);white-space:nowrap;';
+            // colour spelled out for the same reason as the legend chips above:
+            // the header row carries an inline background, so the userstyle's
+            // `color:initial` wins over anything these cells could inherit.
+            th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid var(--mbu-warn);white-space:nowrap;color:var(--mbu-text);';
             th.textContent = col;
             hr.appendChild(th);
         });
