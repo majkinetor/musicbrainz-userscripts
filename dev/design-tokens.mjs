@@ -153,13 +153,29 @@ export const VARIANTS = {
         // and one that does not gets a dark theme that works anyway. Everything
         // derived (the raised/sunken/hover surfaces, the muted text levels, the
         // status tints) follows automatically, because it all mixes off these.
-        'bg': 'var(--background, #1e1b24)',
-        'text': 'var(--text, #e9e5f2)',
-        'border': 'var(--border, #3b3548)',
+        // Plain literals, NOT var(--background, …). `var()` takes whatever is
+        // there, and "there" is not always a dark value: a userstyle can paint
+        // the page dark with ordinary rules while leaving --background at a light
+        // value for its own purposes, and then a var() seed hands us a light
+        // surface under a correctly-detected dark theme. Adopting the userstyle's
+        // shade is opt-in below, once it has been checked.
+        'bg': '#1e1b24',
+        'text': '#e9e5f2',
+        'border': '#3b3548',
 
         // and the two fixed hues that a formula cannot get right (see above)
         'accent-text': '#b9a7f0',        // 8.0:1 on #1b1820 — the same purple, lifted
         'accent-deep-text': '#a493e0',
+    },
+    // Adopt the userstyle's OWN shades, so our windows match the page exactly
+    // rather than merely being dark. Gated on data-mbu-seed="theme", which
+    // mbuTheme() sets only after reading --background and confirming its
+    // luminance agrees with the theme it detected. A key containing "[" carries
+    // its extra attribute selectors through verbatim.
+    'dark[data-mbu-seed="theme"]': {
+        'bg': 'var(--background, #1e1b24)',
+        'text': 'var(--text, #e9e5f2)',
+        'border': 'var(--border, #3b3548)',
     },
 };
 
@@ -174,7 +190,12 @@ export function tokensCss() {
     // gated on the attribute, so a page with no theme detected gets the base set
     // and nothing else — which is exactly today's light appearance.
     const variants = Object.entries(VARIANTS)
-        .map(([name, map]) => `:root[data-mbu-theme="${name}"]{${decls(map)}}`)
+        .map(([key, map]) => {
+            const i = key.indexOf('[');
+            const name = i < 0 ? key : key.slice(0, i);
+            const extra = i < 0 ? '' : key.slice(i);
+            return `:root[data-mbu-theme="${name}"]${extra}{${decls(map)}}`;
+        })
         .join('');
     return `:root{${decls(TOKENS)}}${variants}`;
 }
