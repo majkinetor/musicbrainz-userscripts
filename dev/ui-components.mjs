@@ -440,6 +440,27 @@ function mbuTheme() {
                 || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
                 || 'light');
         if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+
+        // Should we adopt the userstyle's OWN shades, or use our own palette?
+        // Only if its --background actually agrees with the theme we detected.
+        // A userstyle can paint the page dark with ordinary rules and still leave
+        // --background at a light value for its own purposes; taking that on
+        // trust hands us a light surface under a correct dark theme, which is
+        // indistinguishable from the bug it looks like. Measured, not assumed.
+        var seed = null;
+        var raw = (cs.getPropertyValue('--background') || '').trim();
+        if (raw) {
+            // resolve it through a throwaway element: --background may itself be
+            // a var(), a named colour, or anything else CSS accepts
+            var probe = document.createElement('span');
+            probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+            document.documentElement.appendChild(probe);
+            var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+            probe.remove();
+            if (got === t) seed = 'theme';
+        }
+        if (seed) root.setAttribute('data-mbu-seed', seed);
+        else root.removeAttribute('data-mbu-seed');
         return t;
     } catch (e) { return 'light'; }
 }
