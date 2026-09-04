@@ -134,6 +134,18 @@ const CASES = [
         setTimeout(() => document.getElementById('fs-cfg')?.click(), 900);
     }],
     ['mammoth', `/release/${REL}/edit-relationships`, 6000, null],
+    // the BABY-field popup and its bar — a different class prefix (mmthf-) and
+    // therefore its own scoping problem, which nothing here opened until now
+    ['mammoth', `/release/${REL}/edit`, 12000, () => {
+        // the pins mount after the release editor has bound its fields, so keep
+        // trying rather than clicking once into an empty page
+        let n = 0;
+        const t = setInterval(() => {
+            const pin = document.querySelector('.mmthf-pin');
+            if (pin) { pin.click(); clearInterval(t); }
+            if (++n > 12) clearInterval(t);
+        }, 400);
+    }],
 ];
 
 // Marker classes Apollo puts on MUSICBRAINZ's own form fields so it can find
@@ -204,7 +216,7 @@ for (const [name, path, settle, open, base] of CASES.filter(c => !ONLY || c[0] =
     if (open) { await page.evaluate(open); await page.waitForTimeout(1800); }
 
     const rows = await page.evaluate((LIGHT) => {
-        const PFX = /^(as|tc|gt|ii|fs|mmth|pc|mbu|mb-pc|mb-provider|discogs|falcon)-/;
+        const PFX = /^(as|tc|gt|ii|fs|mmth|mmthf|pc|mbu|mb-pc|mb-provider|discogs|falcon)-/;
         const ourKey = (el) => {
             for (let n = el; n && n !== document.body; n = n.parentElement) {
                 if (n.id && PFX.test(n.id)) return '#' + n.id;

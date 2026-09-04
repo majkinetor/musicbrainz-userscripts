@@ -441,7 +441,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const needsAttention = r.type === 'attention';
 
             // Row background: orange = needs attention, yellow = mismatch, white = clean
-            const rowBg = needsAttention ? '#ffe0e0' : (nameMismatch ? '#fff8e1' : '#fff');
+            // #564: the row tints. Set through style.cssText, which the JS-colour sweep
+            // never matched — it looked for .style.<prop> = , not a template string.
+            const rowBg = needsAttention ? 'var(--mbu-error-bg)' : (nameMismatch ? 'var(--mbu-warn-bg)' : 'var(--mbu-bg)');
             const borderColor = needsAttention ? '#cc6666' : '#d4d4d4';
 
             const tr = document.createElement('tr');
@@ -1490,7 +1492,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     cancelBtn.style.cssText = 'padding:0.4rem 1rem;cursor:pointer;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-bg-raised);color:var(--mbu-text);font-size:0.88rem;';
                     const submitBtn = document.createElement('button');
                     submitBtn.textContent = 'Create ↗';
-                    submitBtn.style.cssText = 'padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;font-size:0.9rem;';
+                    submitBtn.style.cssText = 'padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:var(--mbu-ok);color:var(--mbu-text-on-accent);border:none;border-radius:0.25rem;font-size:0.9rem;';
                     btnRow.appendChild(cancelBtn);
                     btnRow.appendChild(submitBtn);
                     modal.appendChild(btnRow);

@@ -27,7 +27,7 @@ export function _showBar() {
         pb.style.cssText = 'position:fixed;left:0;right:0;height:5px;z-index:99999;background:var(--mbu-bg-sunken);overflow:hidden;';
         const fill = document.createElement('div');
         fill.id = 'discogs-pb-fill';
-        fill.style.cssText = 'position:absolute;top:0;height:100%;width:40%;background:#e8771d;transition:width 0.2s linear;';
+        fill.style.cssText = 'position:absolute;top:0;height:100%;width:40%;background:var(--mbu-warn);transition:width 0.2s linear;';
         pb.appendChild(fill);
         document.body.appendChild(pb);
     }
