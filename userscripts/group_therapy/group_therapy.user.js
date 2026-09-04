@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.112131
+// @version      2026.9.4.121607
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -737,7 +737,7 @@
       /* Consolidate RG (#349) — the release×role matrix modal */
       .gt-cons-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center}
       .gt-cons.gt-role-pick{width:520px;max-width:92vw;max-height:min(560px,70vh);display:flex;flex-direction:column}   /* #544: .gt-cons is declared later with the same specificity and was overriding every one of these */
-      .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font:13px inherit;border:1px solid var(--mbu-border);border-radius:4px}
+      .gt-role-search{margin:8px 10px 6px;padding:5px 8px;font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:4px}
       .gt-role-list{overflow:auto;flex:1;padding:0 4px 8px}
       .gt-role-row{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
       .gt-role-row.gt-role-active{background:var(--mbu-bg-raised);box-shadow:inset 2px 0 0 #5f3ec0}   /* #544 keyboard cursor */
@@ -765,7 +765,7 @@
       .gt-cons-legopen{text-decoration:none;color:var(--mbu-text-weak);margin-left:5px}
       .gt-cons-legopen:hover{color:var(--mbu-info)}
       .gt-cons-legyr{color:var(--mbu-text-weak);margin-left:5px}
-      .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px inherit;color:var(--mbu-text);outline:none}
+      .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font-size:12px;font-family:inherit;color:var(--mbu-text);outline:none}
       .gt-cons-paste:focus{border-color:var(--mbu-info)}
       .gt-cons-tbl{border-collapse:collapse;width:100%}
       .gt-cons-tbl th{font-size:11px;color:var(--mbu-text-dim);text-transform:uppercase;letter-spacing:.02em;text-align:left;padding:4px 8px;border-bottom:1px solid var(--mbu-border)}
@@ -784,7 +784,7 @@
       .gt-cons-cell.gt-prop{color:var(--mbu-info);outline:1px dashed #9cc2e6;outline-offset:-3px;border-radius:4px}
       .gt-cons-cell.gt-none{color:var(--mbu-info)}
       .gt-cons-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--mbu-border)}
-      .gt-cons-btn{font:600 13px inherit;padding:5px 14px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-info);background:var(--mbu-info-bg);color:var(--mbu-info);cursor:pointer}
+      .gt-cons-btn{font-weight:600;font-size:13px;font-family:inherit;padding:5px 14px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-info);background:var(--mbu-info-bg);color:var(--mbu-info);cursor:pointer}
       .gt-cons-btn:hover{background:var(--mbu-info-bg)}
       .gt-cons-apply{margin-left:auto;background:#2e9e5b;border-color:var(--mbu-ok);color:var(--mbu-text-on-accent)}
       .gt-cons-apply:hover{background:#278a4f}
@@ -795,7 +795,7 @@
       .gt-dp-ctrl{padding:10px 14px;border-bottom:1px solid var(--mbu-border);display:flex;flex-direction:column;gap:8px}
       .gt-dp-line{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
       .gt-dp-lbl{font-size:11px;font-weight:700;color:var(--mbu-text-dim);text-transform:uppercase;letter-spacing:.02em;min-width:42px}
-      .gt-dp-date{width:112px;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font:13px inherit;outline:none}
+      .gt-dp-date{width:112px;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:13px;font-family:inherit;outline:none}
       .gt-dp-date:focus{border-color:var(--mbu-info)}
       .gt-dp-date.gt-dp-bad{border-color:var(--mbu-error);background:var(--mbu-bg-raised)}
       .gt-dp-dash{color:var(--mbu-text-weak)}
@@ -3006,9 +3006,9 @@
       + '.gt-tp-scope-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
-      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:12px inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
+      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
       + '.gt-tp-src{padding:0 14px}'
-      + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font:12px inherit;padding:6px 0}'
+      + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font-size:12px;font-family:inherit;padding:6px 0}'
       + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-body{padding-top:8px;overflow:auto}'
       // #522 follow-up (majkinetor, live): the column widths' own sum was
@@ -3044,7 +3044,7 @@
       + '.gt-tp-dot-green{background:#2e9e5b}.gt-tp-dot-amber{background:#d68910}.gt-tp-dot-red{background:#c0392b}'
       + '.gt-tp-ov{box-sizing:border-box;width:100%;min-width:0;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:var(--mbu-info)}'   /* #544: track the column instead of a fixed 110px, so a narrow column cannot clip the caret */
       + '.gt-tp-rawwrap{display:flex;align-items:center;gap:4px;width:100%}'
-      + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:var(--mbu-text-dim);font:11px inherit;outline:none}.gt-tp-raw:hover{border-color:var(--mbu-border)}.gt-tp-raw:focus{border-color:var(--mbu-info);background:var(--mbu-bg)}'
+      + '.gt-tp-raw{flex:1;min-width:0;padding:3px 6px;border:1px solid transparent;border-radius:4px;background:none;color:var(--mbu-text-dim);font-size:11px;font-family:inherit;outline:none}.gt-tp-raw:hover{border-color:var(--mbu-border)}.gt-tp-raw:focus{border-color:var(--mbu-info);background:var(--mbu-bg)}'
       + '.gt-tp-rowdel{flex:none;background:none;border:none;color:var(--mbu-info);cursor:pointer;padding:2px 4px;font-size:12px}.gt-tp-rowdel:hover{color:var(--mbu-error)}'
       + '.gt-tp-txt{color:var(--mbu-text)}'
       // #522 follow-up (majkinetor, live): "Tidy up artist / role column -
@@ -3053,7 +3053,7 @@
       // let left click open artist." Unresolved = a plain text-link reading
       // "search"; resolved = plain text (a real <a> for artist, so the
       // click IS the open — no separate icon).
-      + '.gt-tp-search{background:none;border:none;padding:0;cursor:pointer;color:var(--mbu-info);text-decoration:underline;font:11px inherit}.gt-tp-search:hover{color:var(--mbu-info)}'
+      + '.gt-tp-search{background:none;border:none;padding:0;cursor:pointer;color:var(--mbu-info);text-decoration:underline;font-size:11px;font-family:inherit}.gt-tp-search:hover{color:var(--mbu-info)}'
       + '.gt-tp-resolved{color:var(--mbu-text)}'
       + 'a.gt-tp-resolved,button.gt-tp-resolved{color:var(--mbu-info);text-decoration:none}a.gt-tp-resolved:hover,button.gt-tp-resolved:hover{text-decoration:underline;color:var(--mbu-info)}'
       + '.gt-tp-status{color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
@@ -3065,7 +3065,7 @@
       // ⚡ Match button (.gt-wm-btn.primary).
       + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
       + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font:13px inherit;color:var(--mbu-accent-text);font-weight:bold}'
+      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);font-weight:bold}'
       + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:var(--mbu-accent)}'
       + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
       + '.gt-tp-apop{width:340px}'
@@ -3074,11 +3074,11 @@
       // FORCED (see canToggle in txpPickEntity): copyright/phonographic/
       // licensor holders, and ordinary roles MB allows on both sides.
       + '.gt-tp-apop .gt-tp-tabs{display:flex;gap:4px;margin-bottom:6px}'
-      + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:12px inherit;color:var(--mbu-text-dim)}'
+      + '.gt-tp-apop .gt-tp-tab{flex:1;padding:4px 0;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text-dim)}'
       + '.gt-tp-apop .gt-tp-tab:hover{background:var(--mbu-bg-raised)}'
       + '.gt-tp-apop .gt-tp-tab-on{background:#2e6da4;border-color:var(--mbu-info);color:#fff}'
       + '.gt-tp-apop .gt-tp-qwrap{display:flex;gap:5px;margin-bottom:6px}'
-      + '.gt-tp-apop .gt-tp-q{flex:1;min-width:0;box-sizing:border-box;padding:5px 7px;border:1px solid var(--mbu-border);border-radius:5px;font:13px inherit;outline:none}'
+      + '.gt-tp-apop .gt-tp-q{flex:1;min-width:0;box-sizing:border-box;padding:5px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:13px;font-family:inherit;outline:none}'
       + '.gt-tp-apop .gt-tp-plus{flex:0 0 auto;width:28px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:15px monospace;color:var(--mbu-info);line-height:1}.gt-tp-apop .gt-tp-plus:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-info)}'
       + '.gt-tp-apop .gt-tp-hint{color:var(--mbu-text-weak);font-size:10px;margin-bottom:4px}'
       + '.gt-tp-apop .gt-tp-results{max-height:260px;overflow:auto}'
