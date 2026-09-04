@@ -33,14 +33,20 @@
 const ROOTS = [
     // shared
     '.mbu-ov', '.mbu-ui', '#mbu-logpop', '.discogs-bar',
-    // art_station
-    '#as-root', '#as-setup', '.as-pop',
+    // art_station — #as-switch-wrap is the floating pill; its two buttons sit
+    // OUTSIDE #as-root, so nothing scoped to that reached them
+    '#as-root', '#as-setup', '.as-pop', '#as-switch-wrap',
+    // the other floating launchers, for the same reason
+    '#ii-btn', '.fs-launch',
     // apollo_editor
-    '#tc-bar', '#tc-settings', '#tc-anno-wrap', '.tc-panel', '.tc-toolcfg', '.tc-acpop',
+    '#tc-bar', '#tc-nav-bar', '#tc-settings', '#tc-anno-wrap', '.tc-panel', '.tc-toolcfg', '.tc-acpop',
     '.tc-recpop', '.tc-lppop', '.tc-tpppop', '.tc-tpp-mpop', '.tc-anno-help-pop',
     // …and the parts of Apollo that live ON MusicBrainz's page rather than in a
     // window of its own: the tracklist mirror and the two toolbars around it.
     '.tc-mirror', '.tc-addrow', '.tc-medopts', '.tc-tools', '#tc-recwrap',
+    // …and MusicBrainz's own format select, which Apollo repaints flat in OUR
+    // colours (.tc-fmt-flat). Having adopted its appearance we own its theming.
+    '.tc-fmt-flat',
     // group_therapy
     '.gt-toolbar', '.gt-cons', '.gt-menu', '.gt-pop', '.gt-cfg-pop', '.gt-wm-pop',
     // isrc_scout
@@ -211,7 +217,33 @@ const CSS = [
     // (#564), and only color-scheme moves it. Scoped to our own containers and
     // gated on the detected theme, so MusicBrainz's own controls are untouched.
     ':root[data-mbu-theme=dark] ' + ':where(' + ROOTS.join(',') + ')',
-    '{color-scheme:dark}',
+    '{color-scheme:dark',
+
+    // OPT OUT OF THE USERSTYLE'S INVERSION. kellnerd's "Dark Side of
+    // MusicBrainz" carries, under the comment "invert all non-text inputs and
+    // buttons":
+    //
+    //     input[type=number], …, select, button, .buttons a
+    //         { filter: var(--invert-value); }     /* invert(.9) hue-rotate(180deg) */
+    //
+    // Sound for MusicBrainz's own controls, which are authored light — inverting
+    // makes them dark. Ours are authored DARK, so the same filter makes them
+    // light grey. That is majkinetor's "all still have gray background", and it
+    // is also why his experiment inverted: setting #000 rendered light, #fff
+    // rendered dark. Nothing in our cascade could cause that, because it happens
+    // after the cascade.
+    //
+    // We cancel it by redefining the userstyle's OWN variable inside our
+    // containers rather than by fighting for `filter`. Custom properties
+    // inherit, so `filter: var(--invert-value)` resolves to `none` for anything
+    // in our windows — no specificity war, no !important, and our own deliberate
+    // filters (the grayscale on dead favicons and unmatched platform icons) are
+    // left completely alone. On a page without that userstyle these two
+    // declarations are inert.
+    //
+    // Gated on the dark theme for the same reason as color-scheme: it is only
+    // right to refuse the inversion once our controls are actually dark.
+    ';--invert-value:none;--invert:none}',
     // A button nobody styled is the same failure as an input nobody styled: the
     // UA paints it light grey with black text, which is invisible-adjacent on a
     // dark panel. Colours only, no border/radius shorthand — a script that drew a

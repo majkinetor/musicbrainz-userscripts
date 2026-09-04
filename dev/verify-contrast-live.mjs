@@ -15,6 +15,8 @@
 //   node dev/verify-contrast-live.mjs                 all scripts, dark
 //   node dev/verify-contrast-live.mjs --only fusion
 //   node dev/verify-contrast-live.mjs --light         sanity-check the light theme too
+//   node dev/verify-contrast-live.mjs --novars       a dark userstyle that defines no variables
+//   node dev/verify-contrast-live.mjs --userstyle    kellnerd's real "Dark Side of MusicBrainz"
 //
 // Runs against test.musicbrainz.org and aborts every POST.
 import { createRequire } from 'node:module';
@@ -43,6 +45,34 @@ const DARK = ':root{--background:#1b1820;--text:#e9e5f2;--border:#463d57}'
 // else's variables buys you when they are not there.
 const DARK_NOVARS = 'html,body{background:#1b1820;color:#e9e5f2}a{color:#b9a7f0}';
 const NOVARS = process.argv.includes('--novars');
+
+// …and the environment majkinetor actually runs: kellnerd's "Dark Side of
+// MusicBrainz". Neither invented userstyle above modelled it, and it does
+// something neither of them does — it applies
+// `filter: invert(.9) hue-rotate(180deg)` to every button, select and non-text
+// input on the page, ours included, which happens AFTER the cascade and so is
+// invisible to every computed-style check ever written here.
+//
+// Fetched rather than vendored: a stale copy in the repo would test a userstyle
+// nobody is running. Cached in the temp dir so a run is not hostage to GitHub.
+const USERSTYLE = process.argv.includes('--userstyle');
+const STYLE_URL = 'https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css';
+async function kellnerdCss() {
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { readFile: rf, writeFile: wf } = await import('node:fs/promises');
+    const cache = join(tmpdir(), 'mbu-kellnerd-dark.css');
+    let raw = null;
+    try { raw = await rf(cache, 'utf8'); } catch (_) {}
+    if (!raw) {
+        raw = await (await fetch(STYLE_URL)).text();
+        await wf(cache, raw);
+    }
+    // strip the ==UserStyle== metadata block and the @-moz-document wrapper
+    const i = raw.indexOf('@-moz-document');
+    if (i < 0) throw new Error('kellnerd userstyle: no @-moz-document wrapper — format changed');
+    return raw.slice(raw.indexOf('{', i) + 1, raw.lastIndexOf('}'));
+}
 
 // Each case opens as many surfaces as it can reach, because a window nobody
 // opened is a window nobody measured. `open` may click several things in turn.
@@ -149,6 +179,8 @@ await ctx.addInitScript(() => {
     };
 });
 
+const STYLE_CSS = USERSTYLE ? await kellnerdCss() : null;
+
 const worst = new Map();   // script -> [{sel, ratio, fg, bg, text}]
 const seenOurs = new Map();   // script -> how many of our elements were ever on screen
 for (const [name, path, settle, open, base] of CASES.filter(c => !ONLY || c[0] === ONLY)) {
@@ -166,7 +198,7 @@ for (const [name, path, settle, open, base] of CASES.filter(c => !ONLY || c[0] =
     await page.goto((base || B) + path, { waitUntil: 'domcontentloaded' });
     if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); process.exit(3); }
     await page.waitForTimeout(1200);
-    if (!LIGHT) await page.addStyleTag({ content: NOVARS ? DARK_NOVARS : DARK });
+    if (!LIGHT) await page.addStyleTag({ content: USERSTYLE ? STYLE_CSS : NOVARS ? DARK_NOVARS : DARK });
     await page.addScriptTag({ content: src });
     await page.waitForTimeout(settle);
     if (open) { await page.evaluate(open); await page.waitForTimeout(1800); }
@@ -280,6 +312,22 @@ for (const [name, path, settle, open, base] of CASES.filter(c => !ONLY || c[0] =
                 text: own.slice(0, 42),
             });
         }
+        // A FILTER APPLIED TO OUR OWN CONTROLS. This is the one thing every
+        // other assertion in this file is structurally blind to: `filter` is
+        // applied when the element is painted, long after the cascade, so
+        // getComputedStyle reports the colour we asked for while the screen
+        // shows its inverse. kellnerd's userstyle inverts every button, select
+        // and non-text input on the page — right for MusicBrainz's own light
+        // controls, wrong for ours, which are already dark. That is how "all
+        // still have gray background" survived a green board.
+        for (const el of document.querySelectorAll('button,select,input,textarea')) {
+            const key = ourKey(el);
+            if (!key || !el.offsetParent) continue;
+            const f = getComputedStyle(el).filter || '';
+            if (!/invert\(/.test(f)) continue;
+            out.push({ kind: 'filter', sel: key + ' ' + el.tagName.toLowerCase(), ratio: 0, fg: '-', bg: f, text: '' });
+        }
+
         // The UA-painted widgets, asked the only question that means anything:
         // has the browser been told which way round the world is? Without
         // color-scheme a checkbox is a white box in Chrome and a black one in
@@ -321,14 +369,17 @@ for (const [name, path, settle, open, base] of CASES.filter(c => !ONLY || c[0] =
     await page.close();
 }
 
-console.log(`\n=== ${LIGHT ? 'LIGHT' : 'DARK'} theme — text below the WCAG AA threshold\n`);
+const MODE = LIGHT ? 'LIGHT' : USERSTYLE ? "kellnerd's userstyle" : NOVARS ? 'DARK (userstyle defines no variables)' : 'DARK';
+console.log(`\n=== ${MODE} — text below the WCAG AA threshold\n`);
 for (const [name, rows] of worst) {
     rows.sort((a, b) => (a.kind === b.kind ? a.ratio - b.ratio : a.kind < b.kind ? -1 : 1));
     ck((seenOurs.get(name) || 0) >= 5, `${name}: its UI was actually on screen to be measured (${seenOurs.get(name) || 0} element(s))`);
-    ck(!rows.length, `${name}: every label readable and every surface dark${rows.length ? ` — ${rows.filter(r=>r.kind==='text').length} below AA, ${rows.filter(r=>r.kind==='surface').length} light patch(es), ${rows.filter(r=>r.kind==='scheme').length} unthemed widget(s)` : ''}`);
+    ck(!rows.length, `${name}: every label readable and every surface dark${rows.length ? ` — ${rows.filter(r=>r.kind==='text').length} below AA, ${rows.filter(r=>r.kind==='surface').length} light patch(es), ${rows.filter(r=>r.kind==='scheme').length} unthemed widget(s), ${rows.filter(r=>r.kind==='filter').length} inverted control(s)` : ''}`);
     for (const r of rows.slice(0, 24)) {
         console.log(r.kind
-            === 'scheme'
+            === 'filter'
+            ? `        INVERTED     ${r.sel.padEnd(38)} ${r.bg}`
+            : r.kind === 'scheme'
             ? `        UA WIDGET    ${r.sel.padEnd(38)} ${r.bg}`
             : r.kind === 'surface'
             ? `        LIGHT PATCH  ${r.sel.padEnd(38)} ${r.bg}   ${JSON.stringify(r.text)}`
