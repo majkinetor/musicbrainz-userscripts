@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.224247
+// @version      2026.9.4.230333
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.4.224247 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.224107");
+  console.log('%c String Theory %c v2026.9.4.230333 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.230151");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -33717,7 +33717,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.224107","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.224107","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.230151","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.230151","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -33916,90 +33916,46 @@ function pcMark(stage, extra) {
 }
 // #556 — keeping a background-add tab out of Firefox's timer throttling.
 //
-// Why at all: majkinetor's two timelines of the SAME two-link add, tab never
-// shown in either, are the controlled trial.
+// Why at all: majkinetor's timelines of the SAME two-link add, tab never shown
+// in any of them, are the controlled trial.
 //
-//     throttled    field 5.7s · Enter edit -> committed 14.5s · total 20.2s
-//     not          field 1.5s · Enter edit -> committed  2.1s · total  3.7s
+//     throttled          field 5.7s · Enter edit -> committed 14.5s · total 20.2s
+//     inaudible tone     field 1.5s · Enter edit -> committed  2.1s · total  3.7s
+//     webrtc loopback    field 4.6s · Enter edit -> committed 16.8s · total 21.4s
 //
-// 5.5x, and it is not only the submit — MusicBrainz renders the External links
-// field 3.8x faster too, because the throttling was never about our code. A
-// background tab gets its timers held to one step per second, and once it has
-// spent its execution budget individual ones stretch to as much as fifteen
-// (measured in his log: a setTimeout(…,1500) that fired 8.3s late).
+// 5.5x for the tone, and not only on the submit — MusicBrainz renders the
+// External links field 3.8x faster too, because the throttling was never about
+// our code. A background tab has its timers held to one step per second, and
+// once it has spent its execution budget individual ones stretch to as much as
+// fifteen (measured in his log: a setTimeout(…,1500) that fired 8.3s late).
 //
-// TWO ways out, and the order matters:
+// ⚠ THE WEBRTC LOOPBACK DOES NOT WORK HERE, so do not re-add it. chaban
+// suggested it and it is much the nicer trade on paper — a data-channel-only
+// loopback between two peers in the same document needs no getUserMedia, so no
+// permission, no prompt and no tab indicator. It connects in under a second
+// (measured: `webrtc loopback open` at +0.8s) and then makes no difference at
+// all: 16.8s to commit against 16.9s with nothing running. Whatever Firefox
+// exempts for an active peer connection, it is not the timer throttling — at
+// least not for a data channel carrying no media.
 //
-//   1. an active RTCPeerConnection (chaban's suggestion, via the MetaBrainz
-//      forum). A DATA-CHANNEL-only loopback — two peers in this same document,
-//      talking to each other — needs no getUserMedia, so no permission prompt,
-//      no site setting and no indicator on the tab.
-//   2. an inaudible tone. Works, and majkinetor measured the numbers above with
-//      it, but a tab opened by GM_openInTab has no user activation, so Firefox's
-//      autoplay policy leaves the AudioContext `suspended` until the user grants
-//      the site Autoplay > Allow Audio by hand — and it lights the speaker icon.
+// So the tone it is. An audible tab IS exempt, and that is measured, not
+// assumed. Two costs, both real:
+//   - a tab opened by GM_openInTab has no user activation, so Firefox's autoplay
+//     policy leaves the context `suspended` until the user grants the site
+//     Autoplay > Allow Audio by hand. Hence off by default, and the state is
+//     reported into the timeline rather than left to be guessed at;
+//   - the tab shows the speaker icon while it runs. Nothing to be done: being
+//     audible is the exemption.
 //
-// So (1) is tried first and (2) is only the fallback. Neither exemption can be
-// verified here: Playwright will not produce a genuinely backgrounded tab (which
-// is why e2e-556's --suspend models the constraints instead) and it relaxes
-// autoplay besides. What CAN be checked is whether each mechanism engages at
-// all, and both report that into the same timeline — `webrtc loopback open`,
-// `state=running` — so one real run says which is holding the tab awake and the
-// elapsed time says whether it worked.
+// Neither exemption can be tested here — Playwright will not produce a genuinely
+// backgrounded tab (which is why e2e-556's --suspend models the constraints
+// instead) and it relaxes autoplay besides. What the harness DOES check is that
+// the mechanism engages and reports itself; the elapsed time in a real run is
+// the rest of the answer.
 function pcKeepAwake() {
-    const handle = { kind: null, close() {} };
-    // ── 1. WebRTC loopback ──────────────────────────────────────────────────
-    try {
-        const RPC = window.RTCPeerConnection || window.webkitRTCPeerConnection;
-        if (RPC) {
-            const a = new RPC({ iceServers: [] });
-            const b = new RPC({ iceServers: [] });
-            handle.kind = 'webrtc';
-            handle.close = () => { try { a.close(); } catch (e) {} try { b.close(); } catch (e) {} };
-            a.onicecandidate = e => { if (e.candidate) b.addIceCandidate(e.candidate).catch(() => {}); };
-            b.onicecandidate = e => { if (e.candidate) a.addIceCandidate(e.candidate).catch(() => {}); };
-            const dc = a.createDataChannel('pc-keepawake');
-            dc.onopen = () => pcMark('keep-awake', 'webrtc loopback open — the tab should not be throttled');
-            (async () => {
-                const offer = await a.createOffer();
-                await a.setLocalDescription(offer);
-                await b.setRemoteDescription(offer);
-                const answer = await b.createAnswer();
-                await b.setLocalDescription(answer);
-                await a.setRemoteDescription(answer);
-            })().catch(err => pcMark('keep-awake', `webrtc loopback failed — ${(err && err.message) || err}`));
-            pcMark('keep-awake', 'webrtc loopback starting (no permission needed, no tab icon)');
-            // If WebRTC is disabled — by pref, by an extension, by a hardened
-            // profile — say so and let the caller fall back rather than sitting
-            // there believing it is protected.
-            setTimeout(() => {
-                if (dc.readyState === 'open') return;
-                pcMark('keep-awake', `webrtc loopback did NOT open (dataChannel=${dc.readyState}) — falling back to the tone`);
-                handle.close();
-                const tone = pcKeepAwakeTone();
-                handle.kind = tone ? 'audio' : null;
-                handle.close = () => { try { tone && tone.close && tone.close(); } catch (e) {} };
-            }, 2000);
-            return handle;
-        }
-        pcMark('keep-awake', 'no RTCPeerConnection in this browser — using the tone instead');
-    } catch (e) {
-        pcMark('keep-awake', `webrtc loopback threw — ${(e && e.message) || e}`);
-    }
-    // ── 2. the inaudible tone ───────────────────────────────────────────────
-    const tone = pcKeepAwakeTone();
-    handle.kind = tone ? 'audio' : null;
-    handle.close = () => { try { tone && tone.close && tone.close(); } catch (e) {} };
-    return handle;
-}
-
-// The fallback. Kept because it is the one majkinetor has already MEASURED —
-// 20.2s to 3.7s — so if the loopback turns out not to defeat Firefox's
-// throttling, this is the known-good path rather than a second guess.
-function pcKeepAwakeTone() {
     try {
         const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) { pcMark('keep-awake audio', 'no AudioContext in this browser'); return null; }
+        if (!AC) { pcMark('keep-awake', 'no AudioContext in this browser — the tab will be throttled'); return null; }
         const ctx = new AC();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -35278,7 +35234,7 @@ providerModal.innerHTML = `
           <input type="checkbox" id="mb-open-new-tab" style="margin: 0; width: 16px; height: 16px;"> Add links in a <b>new tab</b></label>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. Measured on a 2-link add: 20.2s throttled, 3.7s not. This holds the tab open with a WebRTC data-channel loopback (chaban's suggestion): no permission, no prompt, no icon. If WebRTC is unavailable it falls back to an inaudible tone, which does need Autoplay > Allow Audio for musicbrainz.org and lights the speaker icon. The Log says which one engaged.">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone (30Hz, gain 0.0008) for the few seconds the background-add tab is alive. Measured on the same 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio) - without it Firefox blocks the tone and the setting does nothing, which the Log says - and it lights the speaker icon while it runs. A WebRTC loopback was tried instead and does NOT work: it connects, and changes nothing.">
           <input type="checkbox" id="mb-bg-audio" style="margin: 0; width: 16px; height: 16px;"> Keep background-add tabs <b>awake</b></label>
       </div>
     </div>
