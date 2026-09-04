@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.4.222351
+// @version      2026.9.4.224107
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -480,7 +480,13 @@ async function runInjectHelper(entityType) {
         // on purpose — nothing landed, no submit button, a crash — and a tab left
         // open would be a tab humming away with the audio indicator lit until
         // someone closes it. hush() is called explicitly on each of those.
-        awake = (autoCommit && GM_getValue('pc:bg-audio', false)) ? pcKeepAwake() : null;
+        // #556: say when it is OFF, too. A run with the setting disabled logged
+        // NOTHING about keep-awake, so "it didn't work again" and "the mechanism
+        // failed" produced identical output and we both guessed. Silence is not
+        // a diagnosis.
+        const wantAwake = autoCommit && GM_getValue('pc:bg-audio', false);
+        if (autoCommit && !wantAwake) pcMark('keep-awake', 'OFF — enable "Keep background-add tabs awake" in settings to skip the throttling');
+        awake = wantAwake ? pcKeepAwake() : null;
         pcOpenExternalLinks();
         await pcWait(200);
         const result = await injectInto(urls, key) || { injected: 0 };
