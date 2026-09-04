@@ -191,6 +191,26 @@ const CSS = [
     // their own and came out black on a dark panel.
     ':where(' + ROOTS.join(',') + '){color:var(--mbu-text)}',
 
+    // …and hold on to it against the userstyle's inline-background reset.
+    // kellnerd's "Dark Side of MusicBrainz" carries, under the comment "keep
+    // original text color for elements with inline CSS which affects the
+    // background":
+    //
+    //     table[style*=background], td[…], th[…], div[…], span[…], label[…]
+    //         { color: initial; }
+    //
+    // Reasonable for MusicBrainz's own inline-coloured cells. But `initial` is
+    // BLACK, and plenty of our elements set their background inline — Platform
+    // Check's provider rows among them — so the rule repainted our text black on
+    // our own dark panel. Setting the colour on an ancestor cannot save it: that
+    // rule targets the element itself, and inheritance always loses to a rule.
+    //
+    // Matched at the same shape so it weighs the same (0,1,1) and wins on order,
+    // our sheet being the later one. Deliberately not stronger than that: a
+    // per-script rule with real weight should still be able to override us.
+    scopedEl(':is(table,td,th,div,span,label)[style*=background]'),
+    '{color:var(--mbu-text)}',
+
     // Form controls — the theme has to reach INSIDE the windows too. #564:
     // "Some edit boxes do not follow theme (white rectangles)". A control with no
     // background of its own takes the UA default, which is white in every theme,
