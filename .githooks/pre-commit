@@ -21,9 +21,9 @@ STAGED=$(git diff --cached --name-only)
 # platform icons (#404) — when the shared icon set changes, re-inline it into every
 # script carrying a `// <ST-ICONS>` marker and re-stage them. Runs FIRST so the bundle
 # rebuild below sees any synced members (STAGED is refreshed afterwards).
-if printf '%s\n' "$STAGED" | grep -qE '^dev/platform-icons\.mjs$'; then
+if printf '%s\n' "$STAGED" | grep -qE '^dev/ui/platform-icons\.mjs$'; then
     echo "[pre-commit] syncing shared platform icons…"
-    node dev/sync-icons.mjs >/dev/null
+    node dev/ui/sync-icons.mjs >/dev/null
     ICON_FILES=$(grep -rl '// <ST-ICONS>' userscripts --include='*.js' 2>/dev/null || true)
     [ -n "$ICON_FILES" ] && git add $ICON_FILES
     STAGED=$(git diff --cached --name-only)
@@ -32,9 +32,9 @@ fi
 # design tokens (#562) — same deal: the shared token set is the single place the
 # look is configured, so when it changes, re-inline it into every script carrying
 # a `// <ST-TOKENS>` marker. Also FIRST, for the same reason as the icons above.
-if printf '%s\n' "$STAGED" | grep -qE '^dev/(design-tokens|sync-tokens)\.mjs$'; then
+if printf '%s\n' "$STAGED" | grep -qE '^dev/tokens/(design-tokens|sync-tokens)\.mjs$'; then
     echo "[pre-commit] syncing shared design tokens…"
-    node dev/sync-tokens.mjs >/dev/null
+    node dev/tokens/sync-tokens.mjs >/dev/null
     TOKEN_FILES=$(grep -rl '// <ST-TOKENS>' userscripts --include='*.js' 2>/dev/null || true)
     [ -n "$TOKEN_FILES" ] && git add $TOKEN_FILES
     STAGED=$(git diff --cached --name-only)
@@ -42,9 +42,9 @@ fi
 
 # UI components (#563) — the shared widgets. Same deal as the tokens above.
 if printf '%s
-' "$STAGED" | grep -qE '^dev/(ui-components|sync-ui)\.mjs$'; then
+' "$STAGED" | grep -qE '^dev/ui/(ui-components|sync-ui)\.mjs$'; then
     echo "[pre-commit] syncing shared UI components…"
-    node dev/sync-ui.mjs >/dev/null
+    node dev/ui/sync-ui.mjs >/dev/null
     UI_FILES=$(grep -rl '// <ST-UI>' userscripts --include='*.js' 2>/dev/null || true)
     [ -n "$UI_FILES" ] && git add $UI_FILES
     STAGED=$(git diff --cached --name-only)

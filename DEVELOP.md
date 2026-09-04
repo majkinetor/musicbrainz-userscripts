@@ -52,60 +52,42 @@ Run the dry run first and read the plan. `--yes` must be run on a clean `main`.
 
 ## What lives in `dev/`
 
-Shared tooling for the whole repo. Nothing here ships to users — every file is
-either a code generator, a checker, or an operational script. **Keep it that
-way**: `dev/` is not a scratch directory, and anything that is not one of the
-four kinds below does not belong at its root.
+Shared tooling for the whole repo. Nothing here ships to users. **`dev/` is not
+a scratch directory**: a script that belongs to a subsystem lives in that
+subsystem's folder, with a README of its own, and only repo-wide operations sit
+at the root.
 
-### Code generators — run by the pre-commit hook
-
-Each writes into marker blocks (`// <ST-…>` … `// </ST-…>`) inside the scripts.
-**Edit the source module, never the generated block**; the hook re-syncs and
-re-stages every carrier when the module changes.
-
-| Source | Generator | Marker |
-|---|---|---|
-| `design-tokens.mjs` | `sync-tokens.mjs` | `// <ST-TOKENS>` |
-| `ui-components.mjs` | `sync-ui.mjs` | `// <ST-UI>` |
-| `platform-icons.mjs` | `sync-icons.mjs` | `// <ST-ICONS>` |
-
-A new script adopts them by pasting the two marker lines at **module scope**
-(not inside a function — the generated helpers are function declarations, and a
-nested block makes them invisible everywhere else) and prepending `MBU_TOKENS`
-to its stylesheet. `verify-tokens.mjs` checks both.
-
-### Checkers
-
-Static first, live second. The live ones drive real pages on
-`test.musicbrainz.org` and abort every POST, so they never write.
-
-| Script | Answers |
+| Folder | What it is |
 |---|---|
-| `verify-tokens.mjs` | are the generated blocks present, current, at module scope, and is every referenced token defined? |
-| `verify-tokens-live.mjs` | do the tokens actually resolve in a page? |
-| `verify-ui-live.mjs` | do the shared components behave as agreed — and did every CSS rule a script wrote survive parsing? |
-| `verify-theme-live.mjs` | with a dark userstyle on, is any control in our windows still light? |
-| `verify-contrast-live.mjs` | is every label readable? `--light` checks the light theme, `--novars` the case where a dark userstyle paints the page but defines no variables |
-| `shoot-ui.mjs` | 46 numbered screenshots into `screens/ui/`, light and dark, with an index |
+| [`dev/tokens/`](dev/tokens/README.md) | design tokens and themes — the single place the look is configured |
+| [`dev/ui/`](dev/ui/README.md) | the shared components, the platform icons, and the live checks for both |
+| `dev/screens/ui/` | generated screenshots (see below) |
+| `dev/github-notifications/`, `dev/notif-channel/` | the GH notification → channel pipeline |
+| `dev/script-metrics/` | standalone dashboard of edits made with these scripts; own `npm install` |
 
-Two habits these encode, both learned the hard way:
+Each subsystem README carries its own detail — the marker blocks and how a new
+script adopts them, the four theme worlds the contrast check runs in, the ROOTS
+scoping list, and the reasoning behind the choices that look arbitrary.
 
-- **a check that measured nothing must fail, not pass.** `verify-contrast-live`
-  takes a census of how many of our elements were on screen; two scripts were
-  scoring "ok" on empty pages for days.
-- **don't reason about CSS, render it.** MusicBrainz's stylesheet is
-  cross-origin and invisible to `document.styleSheets`, so reading our own CSS
-  proves nothing about what wins.
-
-### Operational scripts
+### At the root — repo operations only
 
 | Script | Purpose |
 |---|---|
 | `publish.mjs` | the release — changelog, `main → stable`, dated GH release (see above) |
 | `gh-inbox.mjs` | every issue comment newer than my last reply, printed in full |
 | `install-hook.mjs` | points `core.hooksPath` at `.githooks/` |
-| `github-notifications/`, `notif-channel/` | the GH notification → channel pipeline |
-| `script-metrics/` | standalone dashboard of edits made with these scripts; own `npm install` |
+
+### Two habits the checkers encode
+
+Both learned the hard way, and both worth keeping in mind well beyond CSS:
+
+- **a check that measured nothing must FAIL, not pass.** `verify-contrast-live`
+  takes a census of how many of our elements were actually on screen; two
+  scripts were scoring "ok" on empty pages for days.
+- **don't reason about CSS, render it.** MusicBrainz's stylesheet is
+  cross-origin and invisible to `document.styleSheets`, and a `filter` is
+  applied after the cascade — so reading our own CSS proves nothing about what
+  reaches the screen.
 
 ### Screenshots
 
@@ -118,16 +100,16 @@ committed; 29 of them had accumulated in the repo before #561.
 
 ## Conventions
 
-### Design tokens — `dev/design-tokens.mjs`
+### Design tokens — `dev/tokens/design-tokens.mjs`
 
-**Colour, font, radius, shadow and z-index values belong in `dev/design-tokens.mjs`, not in a
+**Colour, font, radius, shadow and z-index values belong in `dev/tokens/design-tokens.mjs`, not in a
 script's CSS.** That file is the single place the look is configured (#562); everything else
 consumes it as `var(--mbu-…)`.
 
-A script opts in by carrying a marker pair once, which `dev/sync-tokens.mjs` fills in:
+A script opts in by carrying a marker pair once, which `dev/tokens/sync-tokens.mjs` fills in:
 
 ```js
-// <ST-TOKENS> — generated by dev/sync-tokens.mjs from dev/design-tokens.mjs — DO NOT EDIT
+// <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
 const MBU_TOKENS = ':root{--mbu-bg:#fff;…}';
 // </ST-TOKENS>
 
@@ -136,13 +118,13 @@ const css = MBU_TOKENS + `
 `;
 ```
 
-- Run `node dev/sync-tokens.mjs` after editing values — the pre-commit hook does it for you when
-  `dev/design-tokens.mjs` changes. Never hand-edit a generated block. Same mechanism as the shared
+- Run `node dev/tokens/sync-tokens.mjs` after editing values — the pre-commit hook does it for you when
+  `dev/tokens/design-tokens.mjs` changes. Never hand-edit a generated block. Same mechanism as the shared
   platform icons (`// <ST-ICONS>`, #404).
 - **Semantic names only.** `--mbu-ok`, never `--mbu-green`; a name that describes the appearance
   can't be re-themed without lying about what it is.
 - **Brand colours are exempt** and stay literal — Spotify green and the rest are facts about the
-  outside world, in `dev/platform-icons.mjs`. Someone will eventually "fix" them otherwise.
+  outside world, in `dev/ui/platform-icons.mjs`. Someone will eventually "fix" them otherwise.
 - **Adopting tokens is a refactor: nothing may render differently.** Prove it rather than eyeball
   it — expand every `var(--mbu-*)` in the new stylesheet back to its literal and compare to the old
   one, and diff computed style over the live UI. See `userscripts/art_station/test/verify-562-tokens.mjs`,
@@ -153,20 +135,20 @@ const css = MBU_TOKENS + `
   carrying the `:root` rule would resolve. An undefined `var()` does **not** fall back to the old
   colour — the whole declaration is discarded — and that is invisible to the textual proof above,
   because the substitution itself is faithful. Two checks guard it:
-  - `node dev/verify-tokens.mjs` — static: every referenced token exists, every carrier's block is
+  - `node dev/tokens/verify-tokens.mjs` — static: every referenced token exists, every carrier's block is
     in sync, every style sink is wired.
-  - `node dev/verify-tokens-live.mjs` — loads each script on a real sandbox page and asserts that
+  - `node dev/tokens/verify-tokens-live.mjs` — loads each script on a real sandbox page and asserts that
     every token referenced by a live rule actually resolves.
 - Several scripts on one page — or all of them, via String Theory — each emit the same `:root`
   rule. The duplicates are byte-identical, so the last one wins harmlessly.
 
-### Shared UI components — `dev/ui-components.mjs`
+### Shared UI components — `dev/ui/ui-components.mjs`
 
 **The standard widgets — help link, toast, and the rest as they land — are defined once in
-`dev/ui-components.mjs`, not per script** (#563). Companion to the design tokens: tokens say what
+`dev/ui/ui-components.mjs`, not per script** (#563). Companion to the design tokens: tokens say what
 things look like, this says what they *are*.
 
-A script opts in with a `// <ST-UI>` marker pair, which `dev/sync-ui.mjs` fills in with
+A script opts in with a `// <ST-UI>` marker pair, which `dev/ui/sync-ui.mjs` fills in with
 `MBU_UI_CSS` plus the component helpers. Concatenate `MBU_UI_CSS` into the same sheets as
 `MBU_TOKENS`, and reach the helpers directly (`mbuHelpEl`, `mbuToast`) or via `window.MBU`.
 
@@ -177,7 +159,7 @@ A script opts in with a `// <ST-UI>` marker pair, which `dev/sync-ui.mjs` fills 
   and the script never actually adopts the component.
 - **Adopting a component may change how a script looks** — that's the point when it was the odd one
   out (Fusion's help link was Spotify green). Say which one won, and why, in the commit.
-- `node dev/verify-ui-live.mjs` drives each component in every adopting script on a real page and
+- `node dev/ui/verify-ui-live.mjs` drives each component in every adopting script on a real page and
   asserts the contract — markup, computed style, and behaviour.
 
 ### Settings storage

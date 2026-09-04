@@ -13,8 +13,8 @@
 // and repaints the field white after all our work. The only reliable question is
 // the rendered one: with a dark theme on, is anything in our windows still light?
 //
-//   node dev/verify-theme-live.mjs             all scripts
-//   node dev/verify-theme-live.mjs --only fusion
+//   node dev/ui/verify-theme-live.mjs             all scripts
+//   node dev/ui/verify-theme-live.mjs --only fusion
 //
 // Runs against test.musicbrainz.org and aborts every POST.
 import { createRequire } from 'node:module';
@@ -132,7 +132,7 @@ for (const [name, path, open, settle] of CASES.filter(c => !ONLY || c[0] === ONL
     const bad = Object.entries(found).filter(([k]) => !ALLOWED.some(re => re.test(k)));
     const seen = Object.keys(found).length;
     ck(!bad.length, `${name}: every control in its windows follows the dark theme` +
-        (bad.length ? ` — STILL LIGHT: ${JSON.stringify(bad)} (add the container to ROOTS in dev/ui-components.mjs)` : ` (${seen} allowed exception(s))`));
+        (bad.length ? ` — STILL LIGHT: ${JSON.stringify(bad)} (add the container to ROOTS in dev/ui/ui-components.mjs)` : ` (${seen} allowed exception(s))`));
     await page.close();
 }
 

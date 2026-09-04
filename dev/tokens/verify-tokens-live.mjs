@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// #562 runtime companion to dev/verify-tokens.mjs (which is static).
+// #562 runtime companion to dev/tokens/verify-tokens.mjs (which is static).
 //
 // Load each converted script on a real MusicBrainz page and confirm
 // (a) it mounts without errors, (b) --mbu-* actually resolves, and (c) NO rule
@@ -7,7 +7,7 @@
 // textual no-op proof is blind to: a `var(--mbu-x)` with no definition in scope
 // does not fall back to the old colour, it drops the declaration entirely.
 //
-//   node dev/verify-tokens-live.mjs
+//   node dev/tokens/verify-tokens-live.mjs
 //
 // Runs on test.musicbrainz.org and aborts every POST — nothing is submitted.
 import { createRequire } from 'node:module';

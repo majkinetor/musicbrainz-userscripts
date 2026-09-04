@@ -1,7 +1,7 @@
 // Shared design tokens for every userscript in this repo. #562
 //
 // THIS FILE IS THE SINGLE PLACE WHERE THE LOOK IS CONFIGURED. Change a value
-// here, run `node dev/sync-tokens.mjs` (the pre-commit hook does it for you),
+// here, run `node dev/tokens/sync-tokens.mjs` (the pre-commit hook does it for you),
 // and every script carrying a `// <ST-TOKENS>` marker picks it up.
 //
 // Rules that keep this honest:
@@ -10,7 +10,7 @@
 //    for, so a theme can re-derive it; a name that says what it *looks like*
 //    can't be themed without lying.
 //  · BRAND COLOURS DO NOT BELONG HERE. Spotify green, Discogs black and the
-//    rest live in dev/platform-icons.mjs and stay literal — they are data
+//    rest live in dev/ui/platform-icons.mjs and stay literal — they are data
 //    about the outside world, not decisions about our UI.
 //  · The values below are TODAY'S APPEARANCE, deliberately. #562 is a refactor:
 //    a script adopting tokens must render identically, pixel for pixel. Values
@@ -123,7 +123,7 @@ export const TOKENS = {
 // overrides. Adding "high-contrast" or "sepia" later is one more entry here.
 //
 // A variant is selected by `data-mbu-theme` on <html>, which the shared
-// components set from the rendered page (see mbuTheme in dev/ui-components.mjs).
+// components set from the rendered page (see mbuTheme in dev/ui/ui-components.mjs).
 // Nothing else changes: a variant only re-points tokens, so every rule in every
 // script follows automatically.
 //

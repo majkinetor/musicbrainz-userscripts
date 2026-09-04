@@ -1,10 +1,10 @@
 // Shared UI components for every userscript in this repo. #563
 //
 // THIS FILE IS THE SINGLE PLACE THE STANDARD WIDGETS ARE DEFINED. Change one
-// here, run `node dev/sync-ui.mjs` (the pre-commit hook does it for you), and
+// here, run `node dev/ui/sync-ui.mjs` (the pre-commit hook does it for you), and
 // every script carrying a `// <ST-UI>` marker picks it up.
 //
-// Companion to dev/design-tokens.mjs (#562): tokens say what things look like,
+// Companion to dev/tokens/design-tokens.mjs (#562): tokens say what things look like,
 // this says what they ARE. Every colour below is a var(--mbu-*), so a script
 // adopting a component inherits the token set automatically.
 //

@@ -11,7 +11,7 @@
 // So: for every stylesheet a script emits, if it uses a token it must also carry
 // the token block. Checked statically here, against the shipped sources.
 //
-//   node dev/verify-tokens.mjs
+//   node dev/tokens/verify-tokens.mjs
 //
 // A runtime companion (does the token resolve on a real page) lives in the
 // per-script suites, e.g. userscripts/art_station/test/verify-562-tokens.mjs.
@@ -22,7 +22,7 @@ import { dirname, resolve, join, relative } from 'node:path';
 import { TOKENS, tokensCss } from './design-tokens.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(HERE, '..');
+const ROOT = resolve(HERE, '..', '..');   // dev/<subsystem>/ -> repo root
 let fail = 0;
 const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 
@@ -79,7 +79,7 @@ for (const f of files) {
     const unitHas = (needle) => unit.some(s => s.includes(needle));
     if (!src.includes('// <ST-TOKENS>') && unitHas('// <ST-TOKENS>')) continue;   // a sibling module carries it
     ck(unitHas('// <ST-TOKENS>'), `${rel}: uses tokens, so it must carry the // <ST-TOKENS> block`);
-    ck(unitHas(expected), `${rel}: its inlined block is in sync with dev/design-tokens.mjs (run: node dev/sync-tokens.mjs)`);
+    ck(unitHas(expected), `${rel}: its inlined block is in sync with dev/tokens/design-tokens.mjs (run: node dev/tokens/sync-tokens.mjs)`);
 
     // 2b. THE BLOCKS MUST BE AT MODULE SCOPE. The generated helpers are function
     // declarations, so a block that lands inside `function foo() {…}` defines them

@@ -6,7 +6,7 @@
 // that adopted it, and the CONTRACT is asserted — not just that something
 // appeared, but that it appeared with the agreed shape and behaviour.
 //
-//   node dev/verify-ui-live.mjs
+//   node dev/ui/verify-ui-live.mjs
 //
 // Runs on test.musicbrainz.org and aborts every POST — nothing is submitted.
 import { createRequire } from 'node:module';
