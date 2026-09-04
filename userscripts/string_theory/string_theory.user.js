@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.192001
+// @version      2026.9.4.194736
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.4.192001 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.191917");
+  console.log('%c String Theory %c v2026.9.4.194736 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.194716");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -33717,7 +33717,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.191917","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.191917","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.194716","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.194716","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -33863,11 +33863,63 @@ function pcT0() {
         return now;
     } catch (e) { return Date.now(); }
 }
+// ⚠ #556 (majkinetor): "how am I supposed to fetch this log if both original and
+// new tab gets killed (first one killed, other one reloaded)". Quite right — a
+// console timeline in a tab that closes itself is a timeline nobody can read.
+// So every mark goes three places:
+//
+//   1. the console of the tab it happened in (useful only if you are watching);
+//   2. localStorage, which OUTLIVES both the closed tab and the opener's reload;
+//   3. the BroadcastChannel, so the opener's activity log shows it LIVE, while
+//      the background add is still running.
+//
+// The dashboard drains (2) when it mounts — i.e. right after the post-commit
+// reload — and listens for (3), deduplicating on the entry id so a mark that
+// arrives both ways is logged once. Between them, the whole timeline is in the
+// Log window by the time the tab is gone, whether or not it was open at the time.
+// ⚠ the sequence counter lives on the FUNCTION, not in a module-level `let`.
+// runInjectHelper is called from the top of the IIFE and reaches its first mark
+// before anything declared down here is initialised, so a `let` here is in the
+// temporal dead zone and reading it throws — which is not a broken log line but
+// a dead background add, caught by the helper's outer catch and reported as
+// "inject helper crashed". Cost me a run to rediscover the trap the comment two
+// functions up already warns about. Function declarations are hoisted whole, so
+// a property on one is always safe.
+//
+// The whole body is wrapped, too: diagnostics must never be able to break the
+// thing they are diagnosing.
 function pcMark(stage, extra) {
     try {
         const ms = Date.now() - pcT0();
-        console.info(`[Platform Check] bg +${(ms / 1000).toFixed(1)}s  ${stage}${extra === undefined ? '' : '  ' + extra}${document.hidden ? '  (tab hidden)' : ''}`);
-    } catch (e) {}
+        const line = `+${(ms / 1000).toFixed(1)}s  ${stage}${extra === undefined ? '' : '  ' + extra}${document.hidden ? '  (tab hidden)' : ''}`;
+        try { console.info('[Platform Check] bg ' + line); } catch (e) {}
+        // The id must be unique ACROSS DOCUMENTS. The timeline deliberately spans
+        // two — the editor tab and the page MusicBrainz redirects to — and the
+        // second one starts a fresh script with the counter back at 0 while
+        // pcT0() still reads the same start time out of sessionStorage. `t0-seq`
+        // therefore made the landing page's entry collide with the first one, and
+        // the reader's dedupe threw away the "edit committed" line: the single
+        // most useful entry, missing from both delivery paths. Elapsed ms plus a
+        // per-document tag separates them.
+        pcMark.seq = (pcMark.seq || 0) + 1;
+        pcMark.tag = pcMark.tag || Math.random().toString(36).slice(2, 8);
+        const entry = { id: `${pcT0()}-${ms}-${pcMark.seq}-${pcMark.tag}`, line };
+        // Capped: a run is a dozen entries, but a loop that never finishes must
+        // not grow this without bound.
+        try {
+            const prev = JSON.parse(localStorage.getItem('pc:bg-log') || '[]');
+            const next = (Array.isArray(prev) ? prev : []).concat(entry).slice(-120);
+            localStorage.setItem('pc:bg-log', JSON.stringify(next));
+        } catch (e) {}
+        try { if (PC_CHANNEL) PC_CHANNEL.postMessage({ type: 'pc-bg-log', entry }); } catch (e) {}
+    } catch (e) { /* a timeline is never worth failing an edit over */ }
+}
+// Called once at the start of a background add, so the Log shows THIS run rather
+// than this one appended to every previous one.
+function pcMarkReset() {
+    try { localStorage.removeItem('pc:bg-log'); } catch (e) {}
+    try { sessionStorage.removeItem('pc:bg-t0'); } catch (e) {}
+    pcMark.seq = 0;
 }
 
 // MutationObserver-backed waiter — resolves the moment `predicate()`
@@ -35528,6 +35580,31 @@ function appendLog(platform, msg, kind = 'info') {
     logPanel.scrollTop = logPanel.scrollHeight;
 }
 appendLog('System', `Platform Check v${(typeof GM_info !== 'undefined' && GM_info.script?.version) || '?'} — startup`);
+
+// #556: the background add's stage timeline, surfaced HERE — see pcMark. The
+// tab it happens in closes itself and this page reloads underneath it, so the
+// console it was written to is unreachable by the time anyone would look.
+// Drained from localStorage on mount (which is the reload right after a
+// commit), and streamed live over the channel while a run is in progress.
+{
+    const seen = new Set();
+    const show = (e) => {
+        if (!e || !e.id || seen.has(e.id)) return;
+        seen.add(e.id);
+        const kind = /DISABLED|not found/.test(e.line) ? 'warn' : /edit committed/.test(e.line) ? 'ok' : 'info';
+        // 'System', not a source of its own: LOG_SOURCES drives the filter chips
+        // and a source that isn't in it can never be filtered out again.
+        appendLog('System', 'background add: ' + e.line, kind);
+    };
+    try { (JSON.parse(localStorage.getItem('pc:bg-log') || '[]') || []).forEach(show); } catch (e) {}
+    if (PC_CHANNEL) {
+        try {
+            PC_CHANNEL.addEventListener('message', (ev) => {
+                if (ev && ev.data && ev.data.type === 'pc-bg-log') show(ev.data.entry);
+            });
+        } catch (e) {}
+    }
+}
 
 // ─── GM_xmlhttpRequest wrapper that returns a Promise ──────────────────────
 function gmGet(url, { responseType, headers, timeout = 15000, anonymous } = {}) {
@@ -38663,6 +38740,9 @@ function openReleaseEditTab(mbid_, { background = false } = {}) {
             window.open(url, '_blank');
             return;
         }
+        // #556: start this run's timeline clean, so the Log shows THIS background
+        // add rather than every one since the page loaded.
+        pcMarkReset();
         const bgTab = GM_openInTab(`${url}#pc-autocommit`, { active: false, insert: true });
         const onCommitted = (e) => {
             if (!e.data || e.data.type !== 'pc-edit-committed' || e.data.mbid !== mbid_) return;
@@ -38694,6 +38774,9 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
             window.open(url, '_blank');
             return;
         }
+        // #556: start this run's timeline clean, so the Log shows THIS background
+        // add rather than every one since the page loaded.
+        pcMarkReset();
         const bgTab = GM_openInTab(`${url}#pc-autocommit`, { active: false, insert: true });
         const onCommitted = (e) => {
             if (!e.data || e.data.type !== 'pc-rg-edit-committed' || e.data.mbid !== rgMbid) return;
