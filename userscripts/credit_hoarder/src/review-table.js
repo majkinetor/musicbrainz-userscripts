@@ -636,8 +636,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // different from the original Discogs `displayName`, the
             // background flips to a soft yellow so the difference is
             // obvious at a glance (#77 follow-up).
-            const CRED_BG_SAME      = '#fff';
-            const CRED_BG_DIFFERENT = '#fff4d0'; // soft yellow
+            const CRED_BG_SAME      = 'var(--mbu-bg-sunken)';
+            const CRED_BG_DIFFERENT = 'var(--mbu-warn-bg)';   // soft yellow in light, a warm dark tint on dark
             credInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid var(--mbu-border);border-radius:3px;background:' + CRED_BG_SAME + ';';
             credInput.placeholder = displayName;
             credInput.title = `Override the credited name dispatched with every rel for this entity.\nLeave empty to use the default (${srcName} name, or MB's most-frequent existing credit when known).`;
@@ -1758,14 +1758,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const selLabel = (sel && sel.checked > 0 && sel.checked < sel.total) ? ` (${sel.checked}/${sel.total})` : '';
             if (unresolved === 0) {
                 importBtn.innerHTML = `Start import${selLabel} \u2192`;   // #272: source icon now lives in the toolbar \u2014 don't double it here
-                importBtn.style.background = '#2ecc40';
+                importBtn.style.background = 'var(--mbu-ok)';
                 importBtn.style.color = 'var(--mbu-text-on-accent)';
                 issueNote.textContent = '';
                 issueNote.classList.remove('clickable');
                 issueNote.removeAttribute('title');
             } else {
                 importBtn.innerHTML = `Start import anyway${selLabel} \u2192`;   // #272: icon shown in the toolbar
-                importBtn.style.background = '#e0a800';
+                importBtn.style.background = 'var(--mbu-warn)';
                 importBtn.style.color = 'var(--mbu-text-on-accent)';
                 issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
                 issueNote.classList.add('clickable');
