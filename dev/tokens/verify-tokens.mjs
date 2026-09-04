@@ -124,6 +124,22 @@ for (const f of files) {
     ck(wired > 0, `${rel}: at least one style sink prepends MBU_TOKENS (${wired} wired, ${bare} other assignment(s))`);
 }
 
+// ── a spinner whose ring and top segment are the same colour ────────────────
+// A CSS spinner is a ring with one differently-coloured side; rotate it and the
+// difference is what you see. The border sweep mapped `border` and
+// `border-top-color` to the SAME token in three of them, and the result is a
+// perfectly still circle — the animation is still running, there is just
+// nothing to see. Nothing else in this suite could catch that: every colour
+// involved is a valid token, correctly themed, and the rule parses fine.
+for (const f of files) {
+    const src = readFileSync(f, 'utf8');
+    const rel = relative(ROOT, f).replace(/\\/g, '/');
+    const flat = [...src.matchAll(/border:\s*[\d.]+px\s+solid\s+var\(--mbu-([a-z-]+)\)\s*;\s*border-top-color:\s*var\(--mbu-([a-z-]+)\)/g)]
+        .filter(m => m[1] === m[2]).map(m => m[1]);
+    if (!flat.length) continue;
+    ck(false, `${rel}: a spinner's ring and its top segment are the same colour, so it looks stationary — ${JSON.stringify(flat)}`);
+}
+
 console.log('');
 const unused = Object.keys(TOKENS).filter(t => !usedGlobally.has(t));
 console.log(`tokens in use across the repo: ${usedGlobally.size}/${Object.keys(TOKENS).length}`);

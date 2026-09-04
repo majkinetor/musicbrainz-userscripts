@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.4.160102
+// @version      2026.9.4.160311
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3880,7 +3880,7 @@
   .as-card.pending{background:var(--mbu-warn-bg);border-color:var(--mbu-warn)}
   .as-card.as-sourcing{border-style:dashed}
   .as-srcing-thumb{width:100%;aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;color:var(--mbu-ok)}
-  .as-spinner{width:30px;height:30px;border:3px solid var(--mbu-ok);border-top-color:var(--mbu-ok);border-radius:50%;animation:as-spin .8s linear infinite}
+  .as-spinner{width:30px;height:30px;border:3px solid var(--mbu-ok-bg);border-top-color:var(--mbu-ok);border-radius:50%;animation:as-spin .8s linear infinite}
   @keyframes as-spin{to{transform:rotate(360deg)}}
   .as-srcing-lbl{font:600 12px Arial;color:var(--mbu-ok)}
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:var(--mbu-text-on-accent);font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:var(--mbu-radius);box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
