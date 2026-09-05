@@ -25,8 +25,10 @@
     "analysers that annotate but never submit) so a 0 is not read as a bug."
   ],
 
-  "default_cutoff": "2026-01-01",
-  "default_version_regex": "\\sv([0-9][^\\s]*)(?:\\s+by\\s|\\s*$)",
+  "_default_cutoff": "Where the dashboard's date filter starts, not what is ingested — all history is captured regardless, so widening this needs only a report re-run. Set to the month our scripts actually start (2026-05, 12,766 edits) so the default view carries no empty leading months.",
+  "default_cutoff": "2026-05-01",
+  "_default_version_regex": "Deliberately loose. Most scripts stamp '<Name> v<version> by <author> - <url>', but Group Therapy writes '<Name> by <author> v<version> - <url>', so anchoring on a trailing ' by ' silently lost 38,575 versions. Matching whitespace + v + digit handles both orders.",
+  "default_version_regex": "\\sv([0-9][^\\s]*)",
 
   "_owner_mb_username": "The repo author's MusicBrainz account. The dashboard's 'exclude the author' toggle keys off this, so adoption can be read as 'other people using it'.",
   "owner_mb_username": "majkinetor",
@@ -39,7 +41,9 @@
       "patterns": ["userscripts/credit_hoarder"] },
 
     { "id": "discogs_credits", "name": "Import Discogs Credits", "owner": "majkinetor",
-      "patterns": ["userscripts/discogs_credits"] },
+      "patterns": ["userscripts/discogs_credits"],
+      "_merge_into": "Parallel twin of Credit Hoarder, same tool from a different entry point, so the reports count them as one. This is a presentation-level merge: both are still stored separately, so dropping this line and re-running the reports splits them again without touching the dump.",
+      "merge_into": "credit_hoarder" },
 
     { "id": "art_station", "name": "Art Station", "owner": "majkinetor",
       "patterns": ["userscripts/art_station"] },
@@ -65,12 +69,10 @@
       "note": "bundle loader; edits are normally attributed to the member script that made them" },
 
     { "id": "platform_check", "name": "Platform Check", "owner": "majkinetor",
-      "patterns": ["userscripts/platform_check"],
-      "note": "analysis tool; may not submit edits" },
+      "patterns": ["userscripts/platform_check"] },
 
     { "id": "isrc_scout", "name": "ISRC Scout", "owner": "majkinetor",
-      "patterns": ["userscripts/isrc_scout"],
-      "note": "analysis tool; may not submit edits" },
+      "patterns": ["userscripts/isrc_scout"] },
 
     { "id": "bandcamp_player_enhanced", "name": "Bandcamp Player Enhanced", "owner": "majkinetor",
       "patterns": ["userscripts/bandcamp_player_enhanced"],

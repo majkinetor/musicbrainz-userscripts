@@ -38,6 +38,9 @@ import report  # noqa: E402
 
 APOLLO = 'Apollo Editor v2026.6.22 by majkinetor - https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md'
 HOARDER = 'Credit Hoarder v2026.7.1 by majkinetor - https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md'
+GT_OLD = 'Group Therapy by majkinetor v2026.7.2.1 - https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md'
+GT_NEW = 'Group Therapy v2026.9.5.192523 by majkinetor - https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md'
+BUNDLED = 'Platform Check* v2026.7.1.2 by majkinetor - https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md'
 HARMONY = 'Imported with Harmony (https://harmony.pulsewidth.org.uk/release/actions?release_mbid=abc), using data from:'
 
 
@@ -71,6 +74,9 @@ def build_fixture(path: Path) -> None:
         # script is the one who wrote the note.
         row(1004, 777, 90, 2, 1, '2026-01-09 08:00:00+00', OPEN, OPEN, None, 1),
         row(9999, 999, 90, 2, 1, OPEN, OPEN, OPEN, None, 1),        # unrelated edit
+        row(1005, 502, 90, 2, 1, OPEN, OPEN, OPEN, None, 1),        # GT, old header order
+        row(1006, 502, 90, 2, 1, OPEN, OPEN, OPEN, None, 1),        # GT, fixed header order
+        row(1007, 502, 90, 2, 1, OPEN, OPEN, OPEN, None, 1),        # run from the ST bundle
     ])
     members['mbdump/edit_area'] = b''
     members['mbdump/edit_artist'] = row(1001, 7001, 2)
@@ -89,6 +95,11 @@ def build_fixture(path: Path) -> None:
         row(4, 503, 1004, HARMONY + '\n\n' + HOARDER, OPEN),   # two scripts, one note
         row(5, 504, 9999, 'a manual note with no script signature', OPEN),
         row(6, 505, 7777, APOLLO, OPEN),                       # edit row does not exist
+        # Group Therapy used to put the author before the version; both orders
+        # must parse, and a bundled script's name carries a trailing '*'.
+        row(7, 502, 1005, GT_OLD, OPEN),
+        row(8, 502, 1006, GT_NEW, OPEN),
+        row(9, 502, 1007, BUNDLED, OPEN),
     ])
     members['mbdump/edit_note_recipient'] = b''
     members['mbdump/edit_place'] = b''
@@ -167,9 +178,9 @@ def main() -> int:
         load.record_run(connection, 'selftest', note_count, counts['edit'], len(editor_ids), 0.0)
 
         print('\nAssertions:')
-        check('matched notes', note_count, 5)
-        check('distinct edit ids from notes', len(edit_ids), 5)
-        check('edit rows kept (note 6 points at a deleted edit)', counts['edit'], 4)
+        check('matched notes', note_count, 8)
+        check('distinct edit ids from notes', len(edit_ids), 8)
+        check('edit rows kept (note 6 points at a deleted edit)', counts['edit'], 7)
         check('unrelated edit 9999 excluded',
               connection.execute('SELECT COUNT(*) FROM edit WHERE id = 9999').fetchone()[0], 0)
         check('votes kept', counts['vote'], 1)
@@ -207,7 +218,17 @@ def main() -> int:
         out_dir.mkdir()
         report.render(connection, out_dir, config)
         payload = json.loads((out_dir / 'metrics.json').read_text(encoding='utf8'))
-        check('report counts attributed edits', payload['quality']['total_attributed_edits'], 5)
+        check('report counts attributed edits', payload['quality']['total_attributed_edits'], 8)
+
+        # Both edit-note header orders must yield a version, and a bundled
+        # script's trailing '*' must not leak into or block the parse.
+        version_of = lambda note: connection.execute(
+            'SELECT version FROM note_script WHERE note = ?', (note,)).fetchone()[0]
+        check('version parses with author after it (GT old order)', version_of(7), '2026.7.2.1')
+        check('version parses with author before it (standard)', version_of(8), '2026.9.5.192523')
+        check('bundled script asterisk does not break the version', version_of(9), '2026.7.1.2')
+        check('no version captured an asterisk',
+              connection.execute("SELECT COUNT(*) FROM note_script WHERE version LIKE '%*%'").fetchone()[0], 0)
 
         # Comparison scripts (Harmony here) must fold into untracked buckets, and
         # those buckets must never be mistaken for people.

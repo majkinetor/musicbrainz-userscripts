@@ -54,16 +54,17 @@ def main() -> int:
     load.sync_scripts(connection, scripts)
     load.sync_enums(connection)
 
+    owned_scripts = {s['id'] for s in scripts if s.get('owner') == report.OWNED}
+    version_regexes = extract.compile_version_regexes(scripts, config['default_version_regex'])
+
     if not args.report_only:
         started = time.time()
         meta = fetch.ensure_dumps(Path(args.data_dir), args.dump_id)
 
         matcher = extract.ScriptMatcher(scripts)
-        versions = extract.compile_version_regexes(scripts, config['default_version_regex'])
-
-        owned_scripts = {s['id'] for s in scripts if s.get('owner') == report.OWNED}
         edit_ids, note_editor_ids, note_count = load.insert_notes(
-            connection, extract.iter_notes(Path(meta['edit_dump']), matcher, versions),
+            connection,
+            extract.iter_notes(Path(meta['edit_dump']), matcher, version_regexes),
             owned_scripts)
 
         if not edit_ids:
@@ -96,6 +97,10 @@ def main() -> int:
                         counts['edit'], resolved, duration)
         load.optimise(connection, vacuum=args.vacuum)
         print(f'Ingest finished in {duration / 60:.1f} min', file=sys.stderr)
+
+    # Always, including --report-only: a version-pattern fix in the config takes
+    # effect on the next report build rather than needing a fresh ingest.
+    load.reparse_versions(connection, version_regexes, owned_scripts)
 
     report.render(connection, out_dir, config)
     connection.close()
