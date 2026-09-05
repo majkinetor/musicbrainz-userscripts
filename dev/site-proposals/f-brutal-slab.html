@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUSICBRAINZ TOOLSET</title>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#d9d7d0; --slab:#ffffff; --ink:#0c0c0c; --dim:#4a4a46;
+    --hot:#ff3b00; --rule:#0c0c0c; --shadow:6px 6px 0 var(--rule);
+    --sans: "Arial Black", "Helvetica Neue", Arial, system-ui, sans-serif;
+    --body: Arial, Helvetica, system-ui, sans-serif;
+    --mono: ui-monospace, Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;border-radius:0 !important}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
+  a{color:var(--ink)}
+  .w{max-width:1160px;margin:0 auto;padding:22px 20px 0}
+
+  .slab{background:var(--slab);border:3px solid var(--rule);box-shadow:var(--shadow);margin-bottom:22px}
+  .pad{padding:22px}
+
+  .hd{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--rule);
+      padding:10px 14px;font:700 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase}
+  h1{font:900 clamp(34px,7.4vw,78px)/.92 var(--sans);letter-spacing:-.04em;text-transform:uppercase;margin:0 0 12px}
+  h1 mark{background:var(--hot);color:var(--slab);padding:0 .06em}
+  .lede{margin:0 0 20px;font-size:17px;max-width:56ch;color:var(--dim)}
+
+  .btns{display:flex;flex-wrap:wrap;gap:12px}
+  .b{display:inline-block;border:3px solid var(--rule);background:var(--slab);box-shadow:4px 4px 0 var(--rule);
+     padding:12px 18px;text-decoration:none;font:900 13px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase}
+  .b:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--rule)}
+  .b.hot{background:var(--hot);color:var(--slab)}
+
+  /* align-items:start, or the left slab stretches to match the right column
+     and leaves a field of dead white under the screenshot */
+  .cols{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:start}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+
+  h2{font:900 15px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;margin:0;
+     background:var(--rule);color:var(--slab);padding:11px 14px}
+
+  .stat{display:grid;grid-template-columns:repeat(2,1fr)}
+  .stat div{border-right:3px solid var(--rule);border-bottom:3px solid var(--rule);padding:16px}
+  .stat div:nth-child(2n){border-right:0}
+  .stat div:nth-last-child(-n+2){border-bottom:0}
+  .stat b{display:block;font:900 clamp(26px,4vw,42px)/1 var(--sans);letter-spacing:-.04em}
+  .stat span{display:block;margin-top:6px;font:700 10.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stat div.h b{color:var(--hot)}
+
+  figure{margin:0}
+  figure img{display:block;width:100%;border-bottom:3px solid var(--rule)}
+  figcaption{padding:10px 14px;font:700 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+  .plot{padding:16px 14px;overflow-x:auto}
+  svg text{font:700 11.5px var(--mono);fill:var(--ink)}
+  svg text.v{fill:var(--dim)}
+  details{padding:0 14px 14px}
+  summary{font:700 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+  table.n{width:100%;border-collapse:collapse;margin-top:10px;font:13px var(--body)}
+  table.n td{border-bottom:1px solid var(--rule);padding:5px 6px}
+  table.n td:last-child{text-align:right;font-family:var(--mono)}
+
+  ul.l{list-style:none;margin:0;padding:0}
+  ul.l li{display:flex;gap:12px;align-items:center;border-bottom:3px solid var(--rule);padding:12px 14px}
+  ul.l li:last-child{border-bottom:0}
+  ul.l li:hover{background:var(--hot);color:var(--slab)}
+  ul.l li:hover a{color:var(--slab)}
+  ul.l li:hover img{filter:brightness(0) invert(1)}
+  ul.l img{width:24px;height:24px;flex:none}
+  ul.l .t{flex:1 1 auto;min-width:0}
+  ul.l .t b{display:block;font:900 14px/1.2 var(--sans);letter-spacing:.02em;text-transform:uppercase}
+  ul.l .t b a{text-decoration:none}
+  ul.l .t span{font-size:13.5px;color:var(--dim)}
+  ul.l li:hover .t span{color:var(--slab)}
+  ul.l .in{flex:none;font:700 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+           border:2px solid currentColor;padding:5px 8px;text-decoration:none}
+
+  .bundle{background:var(--hot);color:var(--slab);border:3px solid var(--rule);box-shadow:var(--shadow);
+          padding:20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+  .bundle img{width:44px;height:44px;filter:brightness(0) invert(1)}
+  .bundle .t{flex:1 1 260px}
+  .bundle .t b{display:block;font:900 26px/1 var(--sans);letter-spacing:-.02em;text-transform:uppercase}
+  .bundle .t span{display:block;margin-top:6px}
+  .bundle a{background:var(--slab);color:var(--ink);border:3px solid var(--rule);box-shadow:4px 4px 0 var(--rule);
+            padding:12px 18px;text-decoration:none;font:900 13px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase}
+
+  footer{padding:6px 4px 60px;font:700 11px/1.8 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+         display:flex;gap:20px;flex-wrap:wrap}
+  footer a{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="w">
+
+  <div class="slab">
+    <div class="hd"><span>majkinetor / musicbrainz-userscripts</span><span>12 scripts / MIT</span></div>
+    <div class="pad">
+      <h1>Musicbrainz <mark>Toolset</mark></h1>
+      <p class="lede">Userscripts for people who edit MusicBrainz in bulk — credits, relationships,
+        ISRCs, cover art, merges. Built to work on hundreds of entities without a tab for each.</p>
+      <div class="btns">
+        <a class="b hot" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+        <a class="b" href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
+        <a class="b" href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
+        <a class="b" href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Stats</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="slab" style="margin-bottom:22px">
+      <h2>What it looks like</h2>
+      <figure>
+        <img loading="lazy" alt="Apollo Editor replacing the release editor tracklist"
+             src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+        <figcaption>Apollo Editor — the tracklist, replaced</figcaption>
+      </figure>
+    </div>
+
+    <div>
+      <div class="slab">
+        <h2>In use</h2>
+        <div class="stat">
+          <div><b>499,632</b><span>Edits made</span></div>
+          <div><b>136</b><span>Editors</span></div>
+          <div class="h"><b>99.9%</b><span>Of closed edits applied</span></div>
+          <div><b>9</b><span>Scripts with edits</span></div>
+        </div>
+      </div>
+      <div class="slab">
+        <h2>Edits per script</h2>
+        <div class="plot"><svg id="chart" role="img" aria-label="Edits made with each script"></svg></div>
+        <details><summary>Show the numbers</summary><table class="n"><tbody id="tbl"></tbody></table></details>
+      </div>
+    </div>
+  </div>
+
+  <div class="bundle">
+    <img alt="" src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg">
+    <div class="t"><b>String Theory</b><span>All of them in one file. Install this instead of the list below.</span></div>
+    <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+  </div>
+
+  <div class="slab">
+    <h2>The scripts</h2>
+    <ul class="l" id="list"></ul>
+  </div>
+
+  <footer>
+    <span>Snapshot 20260905 — from 2026-05</span>
+    <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+    <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+  </footer>
+</div>
+
+<script>
+const RAW='https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/';
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['apollo_editor','Apollo Editor','icon.svg','Advanced adding and editing of a release'],
+ ['art_station','Art Station','icon.png','Cover art: view, reorder, retype, comment, remove, add'],
+ ['credit_hoarder','Credit Hoarder','icon.svg','Import credits from several providers, with review'],
+ ['group_therapy','Group Therapy','icon.svg','Batch operations on the relationships page'],
+ ['isrc_scout','ISRC Scout','icon.svg','Existing ISRCs and streaming links; fills the gaps'],
+ ['mammoth','Mammoth','icon.svg','Reusable edit notes, beside the note field'],
+ ['platform_check','Platform Check','icon.svg','Find and verify a release across platforms'],
+ ['falcon','Falcon','icon.svg','Batch-edit entity fields, from Harmony or alone'],
+ ['fusion','Fusion','icon.svg','Merge duplicate recordings: review, match, submit'],
+ ['scribe','Scribe','scribe.svg','Edit MusicBrainz in your real editor'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced','icon.svg','Bandcamp player with keyboard shortcuts'],
+];
+document.getElementById('list').innerHTML = S.map(([s,n,i,d])=>`
+ <li>
+   <img loading="lazy" alt="" src="${RAW}${s}/${i}">
+   <span class="t"><b><a href="${GH}${s}/README.md">${n}</a></b><span>${d}</span></span>
+   <a class="in" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/${s}/${s}.user.js">Install</a>
+ </li>`).join('');
+
+/* One measure, one series, one colour. Values direct-labelled, same numbers in
+   the table below, so nothing depends on reading the bars alone. */
+const D=[['Credit Hoarder',254892],['ISRC Scout',73509],['Falcon',63634],['Group Therapy',50091],
+         ['Apollo Editor',45108],['Platform Check',6753],['Art Station',5420],['Fusion',206],['Scribe',19]];
+const f=n=>n.toLocaleString('en-US');
+(function(){
+  const rowH=27,padL=118,padR=76,W=520,H=D.length*rowH+8,max=D[0][1];
+  const x=v=>Math.max(3,(W-padL-padR)*v/max);
+  const s=document.getElementById('chart');
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`); s.setAttribute('width','100%'); s.style.maxWidth=W+'px';
+  s.innerHTML=D.map(([n,v],i)=>{const y=i*rowH+4;return `
+    <rect x="${padL}" y="${y+5}" width="${x(v)}" height="${rowH-14}" fill="var(--hot)" stroke="var(--rule)" stroke-width="2"></rect>
+    <text x="${padL-8}" y="${y+rowH/2}" text-anchor="end" dominant-baseline="middle">${n}</text>
+    <text class="v" x="${padL+x(v)+7}" y="${y+rowH/2}" dominant-baseline="middle">${f(v)}</text>`;}).join('')
+    + `<line x1="${padL}" x2="${padL}" y1="2" y2="${H-4}" stroke="var(--rule)" stroke-width="3"></line>`;
+})();
+document.getElementById('tbl').innerHTML=D.map(([n,v])=>`<tr><td>${n}</td><td>${f(v)}</td></tr>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUSICBRAINZ TOOLSET</title>
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#0a0a0a; --fg:#f2f2f2; --acid:#e8ff00; --dim:#8c8c8c; --line:#f2f2f2;
+    --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box; border-radius:0 !important;}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg); color:var(--fg); font:14px/1.5 var(--mono);
+       background-image:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.014) 3px 4px);}
+  a{color:var(--acid); text-underline-offset:3px;}
+  .w{max-width:1080px;margin:0 auto;padding:0 18px}
+  .rule{border-top:2px solid var(--line)}
+  .rule-thin{border-top:1px solid var(--line)}
+
+  header{padding:26px 0 0}
+  .bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+       font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);padding-bottom:12px}
+  h1{font:800 clamp(38px,9vw,104px)/.88 var(--mono); letter-spacing:-.045em; text-transform:uppercase;
+     margin:22px 0 18px; word-break:break-word;}
+  h1 em{font-style:normal;background:var(--acid);color:#000;padding:0 .08em;}
+  .lede{max-width:66ch;color:var(--fg);font-size:15px;margin:0 0 24px}
+  .lede b{background:var(--acid);color:#000;font-weight:700;padding:0 4px}
+
+  .btns{display:flex;flex-wrap:wrap;gap:0;margin-bottom:26px}
+  .b{display:inline-block;padding:13px 20px;border:2px solid var(--line);margin:0 -2px -2px 0;
+     text-decoration:none;color:var(--fg);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px}
+  .b:hover{background:var(--fg);color:#000}
+  .b.hot{background:var(--acid);border-color:var(--acid);color:#000}
+  .b.hot:hover{background:#000;color:var(--acid)}
+
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);border:2px solid var(--line);border-right:0}
+  .grid4>div{border-right:2px solid var(--line);padding:16px 14px}
+  .grid4 b{display:block;font:800 clamp(22px,3.6vw,38px)/1 var(--mono);letter-spacing:-.04em}
+  .grid4 span{display:block;margin-top:7px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+  h2{font:800 13px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;margin:0;
+     padding:11px 0;color:#000;background:var(--acid);text-indent:10px}
+
+  .shot{border:2px solid var(--line);margin:0}
+  .shot img{display:block;width:100%;filter:saturate(.82) contrast(1.06)}
+  .shot figcaption{border-top:2px solid var(--line);padding:9px 11px;font-size:11px;letter-spacing:.09em;
+     text-transform:uppercase;color:var(--dim)}
+
+  table.scripts{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.scripts td{border-bottom:1px solid #2a2a2a;padding:11px 8px;vertical-align:top}
+  table.scripts tr:hover td{background:#141400}
+  td.ic{width:34px}
+  td.ic img{width:22px;height:22px;display:block;filter:grayscale(1) contrast(1.2);}
+  tr:hover td.ic img{filter:none}
+  td.nm{white-space:nowrap;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  td.nm a{color:var(--fg);text-decoration:none}
+  tr:hover td.nm a{color:var(--acid)}
+  td.ds{color:var(--dim)}
+  td.go{text-align:right;white-space:nowrap}
+  td.go a{font-size:11px;letter-spacing:.12em;text-transform:uppercase;border:1px solid #3a3a3a;padding:4px 9px;text-decoration:none;display:inline-block}
+  td.go a:hover{background:var(--acid);border-color:var(--acid);color:#000}
+
+  .bundle{border:2px solid var(--acid);padding:16px;margin:0 0 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .bundle img{width:36px;height:36px}
+  .bundle .t{flex:1 1 240px}
+  .bundle .t b{display:block;text-transform:uppercase;letter-spacing:.06em;font-size:15px}
+  .bundle .t span{color:var(--dim)}
+
+  footer{padding:20px 0 60px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+         display:flex;gap:20px;flex-wrap:wrap}
+  footer a{color:var(--dim)}
+  section{padding:0 0 34px}
+  @media(max-width:720px){ .grid4{grid-template-columns:repeat(2,1fr)} .grid4>div:nth-child(-n+2){border-bottom:2px solid var(--line)} td.ds{display:none} }
+</style>
+</head>
+<body>
+<div class="w">
+
+  <header>
+    <div class="bar">
+      <span>majkinetor / musicbrainz-userscripts</span>
+      <span>12 scripts &nbsp;/&nbsp; MIT &nbsp;/&nbsp; snapshot 20260905</span>
+    </div>
+    <div class="rule"></div>
+    <h1>Musicbrainz<br><em>Toolset</em></h1>
+    <p class="lede">Userscripts for people who edit MusicBrainz <b>in bulk</b>. Import credits, fix
+      relationships by the hundred, chase ISRCs, sort cover art, merge duplicates. No tab per entity.</p>
+    <div class="btns">
+      <a class="b hot" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install ▸</a>
+      <a class="b" href="https://github.com/majkinetor/musicbrainz-userscripts">Source</a>
+      <a class="b" href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
+      <a class="b" href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Stats</a>
+    </div>
+  </header>
+
+  <div class="grid4">
+    <div><b>499,632</b><span>Edits made</span></div>
+    <div><b>136</b><span>Editors</span></div>
+    <div><b>99.9%</b><span>Applied</span></div>
+    <div><b>1</b><span>File to install</span></div>
+  </div>
+
+  <section style="padding-top:34px">
+    <h2>Fig. 01 — Apollo Editor</h2>
+    <figure class="shot" style="border-top:0">
+      <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+           src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+      <figcaption>The release editor's tracklist, replaced</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Index</h2>
+    <div style="height:20px"></div>
+    <div class="bundle">
+      <img alt="" src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg">
+      <div class="t"><b>String Theory</b><span>All of it in one file. Install this instead of the list below.</span></div>
+      <a class="b hot" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install ▸</a>
+    </div>
+    <table class="scripts"><tbody id="rows"></tbody></table>
+  </section>
+
+  <div class="rule"></div>
+  <footer>
+    <span>Stats: MB snapshot 20260905, from 2026-05</span>
+    <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+    <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+  </footer>
+</div>
+
+<script>
+const RAW='https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/';
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['apollo_editor','Apollo Editor','icon.svg','Advanced adding and editing of a release'],
+ ['art_station','Art Station','icon.png','Cover art: view, reorder, retype, comment, remove, add'],
+ ['credit_hoarder','Credit Hoarder','icon.svg','Import credits from several providers, with review'],
+ ['group_therapy','Group Therapy','icon.svg','Batch operations on the relationships page'],
+ ['isrc_scout','ISRC Scout','icon.svg','Existing ISRCs and streaming links; fills the gaps'],
+ ['mammoth','Mammoth','icon.svg','Reusable edit notes, beside the note field'],
+ ['platform_check','Platform Check','icon.svg','Find and verify a release across platforms'],
+ ['falcon','Falcon','icon.svg','Batch-edit entity fields, from Harmony or alone'],
+ ['fusion','Fusion','icon.svg','Merge duplicate recordings: review, match, submit'],
+ ['scribe','Scribe','scribe.svg','Edit MusicBrainz in your real editor'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced','icon.svg','Bandcamp player with keyboard shortcuts'],
+];
+document.getElementById('rows').innerHTML = S.map(([s,n,i,d],k)=>`
+ <tr>
+  <td class="ic"><img loading="lazy" alt="" src="${RAW}${s}/${i}"></td>
+  <td class="nm"><a href="${GH}${s}/README.md">${String(k+1).padStart(2,'0')} ${n}</a></td>
+  <td class="ds">${d}</td>
+  <td class="go"><a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/${s}/${s}.user.js">Install</a></td>
+ </tr>`).join('');
+</script>
+</body>
+</html>
