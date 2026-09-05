@@ -1,0 +1,170 @@
+{
+ "base": "https://test.musicbrainz.org",
+ "path": "/release/add",
+ "secs": 5,
+ "scripts": "bundle-userstyle",
+ "calls": [
+  {
+   "t": 10318,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 10319,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 10830,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 10831,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11332,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 11333,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11831,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 11831,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12328,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 12329,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12826,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 12827,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13328,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 13328,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13816,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 13817,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14325,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 14326,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14823,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:5046:19) |     at apply (<anonymous>:5057:25) |     at tidyFmt (<anonymous>:5059:5)"
+  },
+  {
+   "t": 14824,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7278:29) |     at tick (<anonymous>:5191:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  }
+ ],
+ "records": [],
+ "redundant": 20
+}
