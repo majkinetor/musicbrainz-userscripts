@@ -82,6 +82,14 @@ Rows you never touched are **skipped**. That means you can add a whole tracklist
 
 Ticking a recording's **🎬 Video** flag while it is part of the current selection applies it to *every selected recording*, so flagging a whole tracklist is one tick. MusicBrainz treats a video change as votable, so it won't show on the recording until the edit passes.
 
+### From a series
+
+Open Falcon on a **series** page and **+ Add from series** fills the queue with what the series holds. A *release group series* offers its release groups, and optionally every release inside those groups; a *release series* offers its releases, and optionally the release groups behind them.
+
+Rows arrive in the **series' own ordering**, not MusicBrainz's relation order, so they read the way the series page does.
+
+A series' contents are relationships rather than a browsable collection — there is no `/ws/2/release-group?series=…` — so the membership is one request. The two expansions are not: "all releases in those groups" is a browse per group, and "the release groups of those releases" is a lookup per release, which is why both are off by default and say so in the menu.
+
 ## How it works
 
 Since MusicBrainz sends no `X-Frame-Options` / CSP `frame-ancestors`, its edit pages can be framed — so Falcon's panel hosts a handful of same-origin `<iframe>` workers instead. Same-origin means the panel's own script can reach directly into each iframe's DOM — check the form, submit, and once MB redirects off `/edit`, load the next queued entity into a fresh iframe on that same worker. The worker count never grows with the queue size, and nothing opens or closes per item.
@@ -110,11 +118,23 @@ Field usage by entity type
 | field | artist | label | recording | release | release group |
 | --- | --- | --- | --- | --- | --- |
 | External links | yes | yes | yes | yes | yes |
+| Name | yes | yes | yes | yes | yes |
 | ISRC | — | — | yes | — | — |
 | Video | — | — | yes | — | — |
 | Aliases | yes | yes | yes | yes | yes |
 | Disambiguation | yes | yes | yes | yes | yes |
 | Cover art | — | — | — | yes| — |
+
+### Name
+
+Every entity type can be renamed. An expanded row carries a ✎ box **prefilled with the entity's current name** — the job this exists for is conforming existing names to a standard, and retyping a title from scratch to fix its casing would be worse than MusicBrainz's own form. Leave a box as you found it and that row submits nothing.
+
+Four types are renamed by seeding MusicBrainz's own edit form (`edit-<type>.name=`). A **release** is not: its editor is a Knockout app that ignores seeded fields, so Falcon types into it and reads the value back — the same route its disambiguation takes.
+
+> [!NOTE]
+> MusicBrainz treats a rename as **votable** for every entity type, so the new name does not appear until the edit passes. Falcon reports the row as `done` once the edit is created, which is the most it can know.
+
+Combined with [seeding from a series](#from-a-series), this is the bulk-rename path: add a series' release groups, edit the names that need it, press Start.
 
 ### Aliases
 
@@ -183,6 +203,7 @@ Falcon has basic entity forms — the file is loaded by **Import**, written by *
 | `note` | string | edit note |
 | `aliases[]` | array of `{name, locale, type, primary, sortName, begin, end, ended}` | all types — each entry becomes **its own MusicBrainz edit**, submitted through `/<entity>/<mbid>/add-alias`. `type` is the alias type's name as MB spells it for that entity (`Recording name`, `Search hint`, `Legal name` on artists) and is matched against the form's own list, so a wrong one fails with the valid options rather than guessing. Shorthand accepted: a bare string, or `"name@locale"` |
 | `video` | boolean | recording-only — MB's **Video** checkbox. Only ever sent when `true`; leaving it out preserves whatever the recording already has, so `false` means *don't touch*, never *clear it*. Falcon never unsets the flag |
+| `rename` | string | the entity's **new** name — all five types. Not to be confused with `name`, which is the entity's *current* name and is only ever read. A row whose only payload is a `rename` is a valid item |
 | `disambiguation` | string | MB's own disambiguation comment field — every entity type has one. For a release it is the **Disambiguation** box under *Additional information* in the release editor |
 | `isrcs[]` | array of string | recording-only |
 | `cover[]` | array of `{url, comment, type, candidates}` | release-only — the cover art to upload. An **array**: a release can carry more than one cover image, though Falcon today only ever populates one entry from Harmony. Each entry's own `comment` is that image's upload comment (unrelated to `disambiguation`); `type` is MB's cover-art type (`Front`, `Back`, `Booklet`, `Medium`, …, default `Front`); `candidates` are not-yet-measured alternates Falcon is still picking a winner from |

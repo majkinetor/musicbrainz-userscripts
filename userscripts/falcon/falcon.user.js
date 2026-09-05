@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.5.160048
+// @version      2026.9.5.200901
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -869,6 +869,19 @@
   // …four are plain server-rendered forms, seeded straight from the url like
   // every other field here…
   const COMMENT_SEEDS = new Set(['artist', 'label', 'recording', 'release_group']);
+  // #571 (majkinetor): "We should be able to change the name of the entity."
+  //
+  // Renaming splits exactly the same way disambiguation does, for exactly the
+  // same reason — four server-rendered forms take `edit-<type>.name=` from the
+  // query string, and the release editor is a Knockout app that ignores it, so
+  // that one gets typed into (setReleaseName).
+  //
+  // The item field is `rename`, NOT `name`: `name` already means the entity's
+  // CURRENT display name throughout the queue, the JSON model and the
+  // `?falcon=` param. Overloading it would make an existing exported file with
+  // names in it silently rename every entity in the queue on re-import.
+  const RENAMEABLE = new Set(['artist', 'label', 'recording', 'release_group', 'release']);
+  const NAME_SEEDS = new Set(['artist', 'label', 'recording', 'release_group']);
   // …and `release` is the odd one out. Its editor is a Knockout APP: the server
   // only hands seeded data to it on /release/add, so on /release/<mbid>/edit
   // both `edit-release.comment=` and `comment=` are ignored outright (verified
@@ -1055,7 +1068,7 @@
           merged++;
           return;
         }
-        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', source: p.source || '', disambiguation: '', isrcs: [], video: false, aliases: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', source: p.source || '', disambiguation: '', rename: '', isrcs: [], video: false, aliases: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
         queue.push(relItem);
         fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); noteSessionReleaseName(name); } });
         relItem._coverPickPromise = trackSettling(pickBestCover(relItem));
@@ -1090,7 +1103,7 @@
         if (p.name && !existing.name) { existing.name = p.name; if (existing.entityType === 'release') noteSessionReleaseName(p.name); }
         return;
       }
-      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', isrcs: p.isrc ? [p.isrc] : [], video: p.video === true, aliases: normalizeAliases(p.aliases), cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', rename: p.rename || '', isrcs: p.isrc ? [p.isrc] : [], video: p.video === true, aliases: normalizeAliases(p.aliases), cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
       queue.push(item);
       // #509 (majkinetor): "Since Harmony already resolves names, we could
       // just fetch and use them instead of bombing MB." scrapeHarmonyActions
@@ -1121,6 +1134,7 @@
      later" and "export as JSON, fill it in, re-import" both work. */
   const RELEASE_PATH_RE = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
   const RG_PATH_RE = /\/release-group\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  const SERIES_PATH_RE = /\/series\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
   // What can this page offer? release-group pages have no tracklist of their own.
   function pageEntityContext() {
     if (ON_HARMONY) return null;
@@ -1128,7 +1142,48 @@
     if (rg) return { kind: 'release-group', mbid: rg[1] };
     const rel = location.pathname.match(RELEASE_PATH_RE);
     if (rel) return { kind: 'release', mbid: rel[1] };
+    // #572 (majkinetor): "Falcon should be able to seed from RG and release
+    // series." A series page is the natural place to start a bulk rename — the
+    // whole point of the issue is conforming the names of everything in one.
+    const ser = location.pathname.match(SERIES_PATH_RE);
+    if (ser) return { kind: 'series', mbid: ser[1] };
     return null;
+  }
+  // #572: a series' contents are RELATIONSHIPS, not a browsable collection —
+  // there is no /ws/2/release-group?series=… endpoint — so one lookup with the
+  // relationship includes returns the whole membership in a single request.
+  // `ordering-key` is the series' own ordering, which is the order a human sees
+  // on the page, so rows arrive in that order rather than MB's relation order.
+  async function fetchSeriesMembers(mbid) {
+    const url = `${MB_ORIGIN}/ws/2/series/${mbid}?inc=release-group-rels+release-rels&fmt=json`;
+    const j = await mbThrottle.fetchJson(url, undefined, true);
+    const members = [];
+    for (const rel of (j && j.relations) || []) {
+      const tt = rel['target-type'];
+      if (tt !== 'release_group' && tt !== 'release') continue;
+      const tgt = rel[tt];
+      if (!tgt || !tgt.id) continue;
+      members.push({
+        entityType: tt, mbid: tgt.id, name: tgt.title || tgt.name || null,
+        orderingKey: Number(rel['ordering-key']) || 0,
+      });
+    }
+    members.sort((a, b) => a.orderingKey - b.orderingKey);
+    return { name: (j && j.name) || '', type: (j && j.type) || '', members };
+  }
+  // The release groups behind a list of releases. There is no browse endpoint
+  // for this either, so it is one lookup per release — deliberately opt-in in
+  // the menu, and noisy in the log, because 40 releases is 40 round trips.
+  async function fetchReleaseGroupsOf(releases) {
+    const out = [];
+    const seen = new Set();
+    for (let i = 0; i < releases.length; i++) {
+      const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${releases[i].mbid}?inc=release-groups&fmt=json`, undefined, true);
+      const rg = j && j['release-group'];
+      if (rg && rg.id && !seen.has(rg.id)) { seen.add(rg.id); out.push({ entityType: 'release_group', mbid: rg.id, name: rg.title || null, note: '' }); }
+      if ((i + 1) % 10 === 0) log('info', `…read the release group of ${i + 1}/${releases.length} release(s)`);
+    }
+    return out;
   }
   // One request covers every type offered below.
   async function fetchReleaseGraph(mbid) {
@@ -1250,6 +1305,7 @@
       // item(s), skipped 2 unusable row(s)"). urls is optional now; a row is
       // importable if it carries any payload Falcon knows how to submit.
       const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
+        || (RENAMEABLE.has(type) && !!r.rename)
         || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
         || (type === 'recording' && r.video === true)
         || normalizeAliases(r.aliases).length > 0;
@@ -1265,7 +1321,9 @@
         if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
         const reItem = {
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
-          note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
+          note: r.note || '', disambiguation: r.disambiguation || r.comment || '',
+          rename: RENAMEABLE.has(type) ? String(r.rename || '') : '',
+          isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
           video: type === 'recording' && r.video === true,
           aliases: normalizeAliases(r.aliases),
           source: typeof r.source === 'string' ? r.source : '',
@@ -1278,7 +1336,7 @@
         if (hasCover && reItem.status === 'queued') reItem._coverCheckPromise = checkExistingCoverArt(reItem);
         added++;
       } else if (r.url) {
-        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', disambiguation: r.disambiguation || r.comment || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
+        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', disambiguation: r.disambiguation || r.comment || '', rename: r.rename || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
       } else skipped++;
     });
     if (flat.length) { const res = addToQueue(flat); added += res.added; merged += res.merged; }
@@ -1935,10 +1993,15 @@
   // form with no change on it, MB created no edit, and the item still reported
   // 'done'. So wait for the editor, and re-read after a beat to be sure the
   // value survived binding.
-  async function setReleaseComment(iframe, value) {
+  // #571 generalised this from the disambiguation-only version: renaming a
+  // release hits exactly the same wall (KO app, seeds ignored) and needs
+  // exactly the same care, so both go through one implementation rather than
+  // a near-copy that could drift on only one side.
+  //   field = { sel, ko, label }  — DOM selector, observable name, human noun
+  async function setReleaseField(iframe, value, field) {
     const ready = await waitFor(() => {
       const d = frameDoc(iframe); if (!d) return null;
-      const el = d.querySelector('#release-editor #comment, #comment');
+      const el = d.querySelector(field.sel);
       if (!el) return null;
       const api = releaseEditorApi(frameWin(iframe));
       // when the API is reachable, insist the release itself is loaded;
@@ -1948,8 +2011,8 @@
       return d.querySelector('#enter-edit') ? true : null;
     }, 20000);
     const doc = frameDoc(iframe), win = frameWin(iframe);
-    const input = doc && doc.querySelector('#release-editor #comment, #comment');
-    if (!ready || !input) return { ok: false, why: 'the release editor never finished loading its disambiguation field' };
+    const input = doc && doc.querySelector(field.sel);
+    if (!ready || !input) return { ok: false, why: `the release editor never finished loading its ${field.label} field` };
     if ((input.value || '').trim() === String(value).trim()) return { ok: true, unchanged: true, before: input.value || '' };
     const before = input.value || '';
     const type = () => {
@@ -1969,7 +2032,7 @@
     const api = releaseEditorApi(win);
     if (api) {
       let staged = null, ko = null;
-      try { ko = api.rootField.release().comment(); } catch (e) {}
+      try { ko = api.rootField.release()[field.ko](); } catch (e) {}
       try { staged = api.allEdits().length; } catch (e) {}
       if (ko !== null && ko !== value) return { ok: false, why: `the release editor's own state still reads ${JSON.stringify(ko)} — the typed value did not reach it`, before };
       if (staged === 0) return { ok: false, why: 'MusicBrainz staged no edit for this change', before };
@@ -1977,6 +2040,13 @@
     }
     return { ok: true, before, after: input.value, staged: null };
   }
+  const setReleaseComment = (iframe, value) =>
+    setReleaseField(iframe, value, { sel: '#release-editor #comment, #comment', ko: 'comment', label: 'disambiguation' });
+  // The release editor's title box. Selector is deliberately broader than the
+  // comment one: `#name` is a likelier id for MB to reuse elsewhere on the page,
+  // so scope to the editor first and only then fall back.
+  const setReleaseName = (iframe, value) =>
+    setReleaseField(iframe, value, { sel: '#release-editor #name, #release-editor input[name="name"], #name', ko: 'name', label: 'name' });
   // #495: the release editor's own "Enter edit" button lives inside its
   // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
   // active) — a bare element.click() on the tab link does nothing (jQuery UI
@@ -2337,9 +2407,24 @@
       // rather than submitting a form MB will reject as changing nothing.
       if (r.unchanged) releaseCommentSet = false;
     }
+    // #571: a release rename is in the same boat as its disambiguation — the KO
+    // editor ignores the seed, so it has to be typed in here, before the
+    // has-anything-changed checks below can see it.
+    let releaseNameSet = false;
+    if (item.entityType === 'release' && (item.rename || '').trim()) {
+      const r = await setReleaseName(iframe, item.rename.trim());
+      releaseNameSet = !!r.ok;
+      if (r.ok && r.unchanged) dbg(tag, `name already reads ${JSON.stringify(r.before)} — nothing to change`);
+      else if (r.ok) dbg(tag, `name typed into the release editor: ${JSON.stringify(r.before)} → ${JSON.stringify(r.after)}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      else dbg(tag, `NAME NOT SET — ${r.why}`);
+      if (!r.ok) results.push({ url: '(name)', ok: false, error: r.why });
+      if (r.unchanged) releaseNameSet = false;
+    }
     const hasFieldChange = !!(
       (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
       || releaseCommentSet
+      || (NAME_SEEDS.has(item.entityType) && item.rename)
+      || releaseNameSet
       || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
       || (item.entityType === 'recording' && item.video)
     );
@@ -2552,6 +2637,10 @@
     // release is absent from COMMENT_SEEDS on purpose — its KO editor ignores
     // the param (see DISAMBIGUATABLE); setReleaseComment types it in instead.
     if (COMMENT_SEEDS.has(item.entityType) && item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
+    // #571: same story as `comment` above — MB's own wire param is `name`, and
+    // release is absent from NAME_SEEDS because its KO editor ignores it
+    // (setReleaseName types it in instead).
+    if (NAME_SEEDS.has(item.entityType) && item.rename) params.set(`${prefix}name`, item.rename);
     if (item.entityType === 'recording') {
       (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
       // #534: MB's Video checkbox — `edit-recording.video=1` ticks it as the
@@ -3160,11 +3249,12 @@
       const needsAliases = (item.aliases || []).some(a => a && String(a.name || '').trim());
       const needsForm = !!(item.urls.length
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
+        || (RENAMEABLE.has(item.entityType) && (item.rename || '').trim())
         || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
         || (item.entityType === 'recording' && item.video));
       if (!needsForm && !needsCover && !needsAliases) {
         item.status = 'skipped';
-        item.error = 'nothing to submit yet — add a url, disambiguation, ISRC, alias or cover';
+        item.error = 'nothing to submit yet — add a url, name, disambiguation, ISRC, alias or cover';
         log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
         renderQueue();
         continue;
@@ -4012,6 +4102,11 @@
           // type-specific — only including them where the type actually uses
           // them, same reasoning as isrcs[] just below.
           if (DISAMBIGUATABLE.has(i.entityType)) item.disambiguation = i.disambiguation || '';
+          // #571: only written when it actually carries one. Exporting an empty
+          // `rename` on every row would turn the export into a template that
+          // looks like it renames things, and a round-trip through Export →
+          // Import must never acquire an edit nobody asked for.
+          if (RENAMEABLE.has(i.entityType) && (i.rename || '').trim()) item.rename = i.rename.trim();
           if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
           // #535: aliases exist on every type, so they are exported whenever
           // the item has any — and the export doubles as the JSON template.
@@ -4054,16 +4149,51 @@
       if (!ctx) return;                       // stays display:none elsewhere
       btn.style.display = '';
       const bt = btn.querySelector('.falcon-bt');
-      if (bt) bt.textContent = ctx.kind === 'release-group' ? 'Add from group' : 'Add from release';
-      btn.onclick = () => {
+      if (bt) bt.textContent = ctx.kind === 'release-group' ? 'Add from group'
+        : ctx.kind === 'series' ? 'Add from series' : 'Add from release';
+      // #572: a series page cannot label its own menu until we know whether it
+      // holds release groups or releases, so read it once on first open and
+      // cache — the menu then names what is actually in there, with counts.
+      let seriesInfo = null;
+      btn.onclick = async () => {
         document.querySelectorAll('.falcon-addmenu').forEach(m => m.remove());
+        if (ctx.kind === 'series' && !seriesInfo) {
+          log('info', 'reading this series from MusicBrainz…');
+          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this series from MusicBrainz — see the Log tab' });
+          try { seriesInfo = await fetchSeriesMembers(ctx.mbid); }
+          catch (e) { log('error', `could not read this series — ${e.message || e}`); setBtnBusy(btn, false); return; }
+          finally { setBtnBusy(btn, false); }
+          if (!seriesInfo.members.length) {
+            log('warn', 'this series lists no release groups or releases — nothing Falcon can queue from it');
+            return;
+          }
+          log('info', `series "${seriesInfo.name}" (${seriesInfo.type || 'unknown type'}) — ${seriesInfo.members.length} member(s)`);
+        }
         const menu = document.createElement('div');
         menu.className = 'falcon-addmenu';
         const r = btn.getBoundingClientRect();
         menu.style.cssText = `position:fixed;left:${Math.round(r.left)}px;top:${Math.round(r.bottom + 4)}px;z-index:2147483647;`
           + 'background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px 10px;font-size:12px;color:var(--mbu-text);min-width:210px';
         const rgOnly = ctx.kind === 'release-group';
-        menu.innerHTML =
+        const isSeries = ctx.kind === 'series';
+        const seriesRgs = isSeries ? seriesInfo.members.filter(m => m.entityType === 'release_group') : [];
+        const seriesRels = isSeries ? seriesInfo.members.filter(m => m.entityType === 'release') : [];
+        if (isSeries) {
+          menu.innerHTML =
+            `<div style="font-weight:600;margin-bottom:6px">Add from series</div>`
+            + `<div style="color:var(--mbu-text-weak);margin-bottom:6px;max-width:260px">${esc(seriesInfo.name || '')}</div>`
+            + (seriesRgs.length
+              ? `<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_rg" checked> Release groups <span style="color:var(--mbu-text-weak)">(${seriesRgs.length})</span></label>`
+                + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_rg_releases"> Releases <span style="color:var(--mbu-text-weak)">(all in those groups)</span></label>'
+              : '')
+            + (seriesRels.length
+              ? `<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_release" checked> Releases <span style="color:var(--mbu-text-weak)">(${seriesRels.length})</span></label>`
+                + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_release_rg"> Release groups <span style="color:var(--mbu-text-weak)">(of those releases, one request each)</span></label>'
+              : '')
+            + '<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">'
+            + '<button type="button" data-a="cancel" style="padding:2px 8px;cursor:pointer">Cancel</button>'
+            + '<button type="button" data-a="ok" style="padding:2px 10px;cursor:pointer;font-weight:600">Add</button></div>';
+        } else menu.innerHTML =
           '<div style="font-weight:600;margin-bottom:6px">Add to queue</div>'
           + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="recording" checked> Recordings <span style="color:var(--mbu-text-weak)">(tracklist)</span></label>')
           + (rgOnly
@@ -4094,6 +4224,46 @@
           // or speed up, and the whole fix is to stop being silent about it:
           // say what is being read BEFORE awaiting it, spin the button while
           // waiting, keep saying so every 5s, and report how long it took.
+          // #572: the series branch resolves entirely from the membership we
+          // already read, plus (optionally) one browse per group / one lookup
+          // per release for the expansions. It returns early — none of the
+          // release/release-group wording below applies to a series.
+          if (isSeries) {
+            const picks = Object.keys(want).filter(k => want[k]);
+            if (!picks.length) { log('warn', 'nothing selected — tick at least one box'); return; }
+            setBtnBusy(btn, true, { label: 'Reading…', title: 'Building the queue from this series — see the Log tab' });
+            const waiting = beginWait('this series');
+            const tuples = [];
+            try {
+              if (want.series_rg) tuples.push(...seriesRgs.map(m => ({ entityType: 'release_group', mbid: m.mbid, name: m.name, note: '' })));
+              if (want.series_release) tuples.push(...seriesRels.map(m => ({ entityType: 'release', mbid: m.mbid, name: m.name, note: '' })));
+              if (want.series_rg_releases && seriesRgs.length) {
+                log('info', `reading the releases of ${seriesRgs.length} release group(s) — one request each, more for a large group…`);
+                for (let i = 0; i < seriesRgs.length; i++) {
+                  const rels = await fetchGroupReleases(seriesRgs[i].mbid);
+                  tuples.push(...rels);
+                  log('info', `…${i + 1}/${seriesRgs.length} group(s) read, ${tuples.length} row(s) so far`);
+                }
+              }
+              if (want.series_release_rg && seriesRels.length) {
+                log('info', `reading the release group of ${seriesRels.length} release(s) — one request each…`);
+                tuples.push(...await fetchReleaseGroupsOf(seriesRels));
+              }
+            } catch (e) {
+              log('error', `could not build the queue from this series — ${e.message || e}`);
+              waiting.done(); setBtnBusy(btn, false); return;
+            }
+            const ms = waiting.done();
+            setBtnBusy(btn, false);
+            if (!tuples.length) { log('warn', 'nothing to add from this series'); return; }
+            const res = addToQueue(tuples);
+            const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
+            log('info', `added ${res.added} row(s) from series "${seriesInfo.name}" (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
+              + (res.merged ? ` — ${res.merged} merged into rows already queued` : '')
+              + ` — ${(ms / 1000).toFixed(1)}s`);
+            renderQueue();
+            return;
+          }
           const WANT_LABEL = { recording: 'recordings', release: rgOnly ? 'releases' : 'the release itself', release_group: 'the release group', artist: 'artists', label: 'labels' };
           const picked = Object.keys(want).filter(k => want[k]);
           if (!picked.length) { log('warn', 'nothing selected — tick at least one box'); return; }
@@ -4247,6 +4417,20 @@
       // MB's own edit form is what actually validates an ISRC on submit.
       const disambigInp = e.target.closest('.falcon-disambiguation-input');
       if (disambigInp) { const it = queue.find(i => i.id === disambigInp.dataset.id); if (it) it.disambiguation = disambigInp.value.trim(); return; }
+      // #571: only a value that actually DIFFERS from the current name is a
+      // rename. The box is prefilled with the current name, so without this
+      // every expanded row would queue an edit that changes nothing — MB would
+      // reject them as no-ops and the run would read as a wall of 'skipped'.
+      const renameInp = e.target.closest('.falcon-rename-input');
+      if (renameInp) {
+        const it = queue.find(i => i.id === renameInp.dataset.id);
+        if (it) {
+          const v = renameInp.value.trim();
+          it.rename = (v && v !== String(it.name || '').trim()) ? v : '';
+          renderQueue();
+        }
+        return;
+      }
       const isrcInp = e.target.closest('.falcon-isrc-input');
       if (isrcInp) {
         const it = queue.find(i => i.id === isrcInp.dataset.id);
@@ -4507,7 +4691,21 @@
         ${it.coverExistingCount ? `<div style="color:var(--mbu-warn);font-size:10px">⚠ this release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
     // A release gets BOTH: its disambiguation box and its cover-art editor.
-    const meta = metaDisambig + metaCover;
+    // #571: the rename box. Prefilled with the entity's CURRENT name rather than
+    // left blank, because the job this exists for is conforming existing names
+    // to a standard (#572) — retyping a title from scratch to fix its casing
+    // would be worse than MB's own form. The change handler is what keeps that
+    // safe: a value equal to the current name stores nothing, so a row you only
+    // looked at never submits an edit.
+    const metaRename = RENAMEABLE.has(it.entityType) ? `
+      <div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 30px;font-size:10.5px">
+        <span title="Rename this entity" style="flex:0 0 auto;color:var(--mbu-text-weak)">&#9998;</span>
+        <input type="text" class="falcon-rename-input" data-id="${it.id}"
+          title="New name for this entity — leave as-is to keep the current one"
+          placeholder="${esc(it.name || 'new name')}" value="${esc(it.rename || it.name || '')}" ${it.status === 'active' ? 'disabled' : ''}
+          style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid ${it.rename ? 'var(--mbu-accent)' : 'var(--mbu-border)'};border-radius:3px" />
+      </div>` : '';
+    const meta = metaRename + metaDisambig + metaCover;
     // #535: aliases apply to every entity type, so they get their own strip
     // under whatever else this type shows. Each alias is one MB edit; the
     // bulk case ("2 translations for all recordings") is meant to arrive as
@@ -4619,6 +4817,7 @@
             const aliasN = (it.aliases || []).filter(a => a && String(a.name || '').trim()).length;
             const hasCover = (it.cover || []).some(c => c.url || (c.candidates || []).length);
             const extras = [
+              it.rename ? 'rename' : '',
               it.disambiguation ? 'disambiguation' : '',
               isrcN ? (isrcN === 1 ? 'ISRC' : `${isrcN} ISRCs`) : '',
               it.video ? 'video' : '',
@@ -4954,5 +5153,9 @@
     updateWorkerLabel, workerPhase, spawnWorkerCard,
     // #557
     sendToFalcon, maybeAutoSend, cancelAutoSend, openMbTab, harmonyReleaseMbid,
-    autoSendPending: () => !!_autoSendTimer, autoSendFired: () => _autoSendDone };
+    autoSendPending: () => !!_autoSendTimer, autoSendFired: () => _autoSendDone,
+    // #571
+    RENAMEABLE, NAME_SEEDS, setReleaseName, setReleaseField,
+    // #572
+    fetchSeriesMembers, fetchReleaseGroupsOf };
 })();
