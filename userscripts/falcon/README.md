@@ -159,9 +159,26 @@ An expanded queue row shows a 🏷 **aliases** strip where you can add one by ty
 > [!WARNING]
 > MusicBrainz **silently discards the locale** (and *primary for locale*) on a **Search hint** alias — the same submission stores `pl` under *Recording name* and nothing under *Search hint*, with no error either way. Falcon warns in the log when a search hint carries a locale. For a localised title use the `<entity> name` type.
 
+## Batch edit note
+
+**✎ Note**, left of Start, opens a box above the bar. Whatever you put there is appended to **every edit the run makes** — form edits, aliases and cover-art uploads alike — so a batch of renames can say why it happened where a voter will actually see it.
+
+The button is marked while a note is set, because a reason silently attaching itself to edits is the thing worth avoiding. It is deliberately **not** remembered across reloads for the same reason; a leftover reason from an earlier batch is worse than retyping one.
+
+It is part of the JSON model as a root-level `note` (per-item `note` still means that one edit's own note), so a worksheet can carry its reason with it:
+
+```json
+{
+  "note": "Conforming release group titles to the series standard",
+  "items": [
+    { "entityType": "release_group", "mbid": "…", "rename": "Movements 2" }
+  ]
+}
+```
+
 ## JSON model
 
-Falcon has basic entity forms — the file is loaded by **Import**, written by **Export**, and used internally is the actual interface for batch loading; Harmony and `?falcon=` are just producers of this same shape. Root is either a bare array of items or `{"items": [...]}`:
+Falcon has basic entity forms — the file is loaded by **Import**, written by **Export**, and used internally is the actual interface for batch loading; Harmony and `?falcon=` are just producers of this same shape. Root is either a bare array of items or `{"items": [...]}`. A root-level `note` is the [batch edit note](#batch-edit-note) for the whole file:
 
 ```json
 {

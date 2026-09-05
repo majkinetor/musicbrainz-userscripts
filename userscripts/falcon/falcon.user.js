@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.5.203956
+// @version      2026.9.5.204717
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1288,6 +1288,13 @@
     let data;
     try { data = JSON.parse(text); } catch (e) { log('error', `${sourceName || 'import'}: not valid JSON — ${e.message}`); return { added: 0, merged: 0 }; }
     const rows = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
+    // #573: a root-level `note` is the batch note for the whole file. Per-item
+    // `note` is untouched and still means that one edit's own note.
+    if (data && !Array.isArray(data) && typeof data.note === 'string') {
+      setBatchNote(data.note);
+      syncBatchNoteUi(true);
+      if (batchNote()) log('info', `batch edit note set from ${sourceName || 'import'}: ${JSON.stringify(batchNote())}`);
+    }
     if (!rows) { log('error', `${sourceName || 'import'}: no items found (expected {"items":[…]} or an array)`); return { added: 0, merged: 0 }; }
 
     let added = 0, merged = 0, skipped = 0;
@@ -2065,11 +2072,36 @@
   // already seeded it into the textarea by the time this runs — pushing it
   // again duplicated the line (#475: "the edit notes repeat the line
   // 'Matched recording while importing ... with Harmony'").
+  // #573 (majkinetor): "When I rename several entities, I want to put an
+  // additional message on why that is done, visible on all edits."
+  //
+  // One note for the whole batch, appended to every edit the run produces —
+  // form edits, aliases and cover art alike. Deliberately NOT persisted across
+  // reloads: a reason left over from an earlier batch, silently attaching
+  // itself to unrelated edits, is a worse failure than retyping it.
+  let _batchNote = '';
+  const batchNote = () => String(_batchNote || '').trim();
+  const setBatchNote = v => { _batchNote = String(v || ''); };
+  // Appends the batch note to an already-composed note, keeping it as its own
+  // paragraph so it reads as the human message rather than part of Falcon's
+  // own boilerplate.
+  const withBatchNote = text => {
+    const b = batchNote();
+    return b ? [text, b].filter(Boolean).join(String.fromCharCode(10, 10)) : text;
+  };
   const FALCON_SIGNATURE = () => `${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}`;
   const editNoteText = (results) => {
     const added = results.filter(r => r.ok).map(r => r.url);
-    const lines = [FALCON_SIGNATURE(), '', 'Bulk-added via the Falcon queue:', ...added];
-    return lines.join('\n');
+    const lines = [FALCON_SIGNATURE()];
+    // #571/#573: a rename or disambiguation carries no urls, and an empty
+    // "Bulk-added via the Falcon queue:" heading with nothing under it reads
+    // like something went wrong. Only claim to have added links when we did.
+    if (added.length) lines.push('', 'Bulk-added via the Falcon queue:', ...added);
+    // The batch note is added HERE rather than in the seed url: setEditNote
+    // appends to whatever seeding already put in the box, and this runs for
+    // every type including release, whose KO editor ignores seeded fields.
+    // Doing both is how #475 ended up with duplicated lines.
+    return withBatchNote(lines.join(String.fromCharCode(10)));
   };
 
   // MB shows the relationship type as a plain read-only label when there's only one
@@ -2997,7 +3029,7 @@
     p.set('edit-alias.period.begin_date.year', b.year); p.set('edit-alias.period.begin_date.month', b.month); p.set('edit-alias.period.begin_date.day', b.day);
     p.set('edit-alias.period.end_date.year', e.year); p.set('edit-alias.period.end_date.month', e.month); p.set('edit-alias.period.end_date.day', e.day);
     if (alias.ended) p.set('edit-alias.period.ended', '1'); else p.delete('edit-alias.period.ended');
-    p.set('edit-alias.edit_note', [item.note, FALCON_SIGNATURE()].filter(Boolean).join('\n\n'));
+    p.set('edit-alias.edit_note', withBatchNote([item.note, FALCON_SIGNATURE()].filter(Boolean).join(String.fromCharCode(10, 10))));
 
     dbg(tag, `alias POST ${seg}/${item.mbid}: ${JSON.stringify({ name: alias.name, locale: alias.locale || '(none)', type: alias.type || '(none)', primary: !!alias.primary })}`);
     const res = await fetch(url, {
@@ -3169,6 +3201,7 @@
     if (entry.comment) lines.push(`Image comment: ${entry.comment}`);
     lines.push('–');
     lines.push(FALCON_SIGNATURE());
+    if (batchNote()) lines.push('', batchNote());
     return lines.join('\n');
   }
   async function runCoverItem(item, tag, card, priorLinks) {
@@ -3994,6 +4027,14 @@
         </div>
         <div id="falcon-type-chips" style="display:none;gap:6px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid var(--mbu-border)"></div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
+        <div id="falcon-notepanel" style="display:none;padding:8px 10px;border-top:1px solid var(--mbu-border);background:var(--mbu-bg-sunken);flex:0 0 auto">
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px">
+            <span style="font-weight:600;font-size:11px;flex:0 0 auto">Batch edit note</span>
+            <span style="color:var(--mbu-text-weak);font-size:10.5px;flex:1 1 auto;min-width:0">Appended to every edit this run makes &mdash; say why, so a voter can see it.</span>
+          </div>
+          <textarea id="falcon-note-text" rows="3" placeholder="e.g. Conforming release group titles to the series' standard"
+            style="width:100%;box-sizing:border-box;font:12px var(--mbu-font);padding:5px 7px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text);resize:vertical"></textarea>
+        </div>
         <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid var(--mbu-border);flex:0 0 auto">
           <div id="falcon-progress-wrap" style="flex:1;display:flex;align-items:center;gap:6px;min-width:0">
             <div id="falcon-progress-track" style="flex:1;height:8px;background:var(--mbu-bg-sunken);border-radius:4px;overflow:hidden;min-width:40px">
@@ -4001,6 +4042,7 @@
             </div>
             <span id="falcon-progress-text" style="color:var(--mbu-text-dim);font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
           </div>
+          <button type="button" id="falcon-note-btn" title="Batch edit note &mdash; appended to every edit in this run" style="flex:0 0 auto;padding:4px 10px;cursor:pointer"><span class="falcon-bi">&#9998;</span><span class="falcon-bt">Note</span></button>
           <button type="button" id="falcon-run" title="Start processing the queue" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
         </div>
         <div id="falcon-cover-warning" style="display:none;padding:5px 10px;background:var(--mbu-warn-bg);color:var(--mbu-warn);font-size:10.5px;border-top:1px solid var(--mbu-warn);flex:0 0 auto"></div>
@@ -4095,6 +4137,7 @@
       const payload = {
         falcon: scriptVersion(),
         exported: new Date().toISOString(),
+        ...(batchNote() ? { note: batchNote() } : {}),
         items: queue.map(i => {
           const item = {
             entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
@@ -4324,6 +4367,21 @@
     // (with its progress bar) is the more useful view during a run; the Workers
     // tab is for when you actually want to look inside one.
     document.getElementById('falcon-run').onclick = () => { if (running) stop(); else start(); };
+    // #573: the batch note. The button only toggles the panel; the value lives
+    // in _batchNote so an import can set it without the panel ever being open.
+    (function wireBatchNote() {
+      const btn = document.getElementById('falcon-note-btn');
+      const panel = document.getElementById('falcon-notepanel');
+      const box = document.getElementById('falcon-note-text');
+      if (!btn || !panel || !box) return;
+      btn.onclick = () => {
+        const show = panel.style.display === 'none';
+        panel.style.display = show ? '' : 'none';
+        if (show) { box.value = batchNote(); box.focus(); }
+      };
+      box.addEventListener('input', () => { setBatchNote(box.value); syncBatchNoteUi(); });
+      syncBatchNoteUi();
+    })();
     document.getElementById('falcon-select-all').onchange = function () {
       const selectable = queue.filter(i => i.status !== 'active');
       if (this.checked) selectable.forEach(i => _selectedIds.add(i.id));
@@ -5021,6 +5079,23 @@
      next to updateRunBtn because it shares that function's constraint: write
      the .falcon-bt / .falcon-bi spans, never the button's textContent, or the
      collapse markup is wiped and the button sticks at full width. */
+  // #573: reflect whether a batch note is set, so it is obvious from the bar
+  // that every edit in the run will carry one — a reason silently attached to
+  // edits is the thing to avoid.
+  //   force — an IMPORT is an explicit user action and must win over the
+  //   don't-fight-the-cursor guard below; typing must not.
+  function syncBatchNoteUi(force) {
+    const btn = document.getElementById('falcon-note-btn');
+    const box = document.getElementById('falcon-note-text');
+    if (box && (force || document.activeElement !== box)) box.value = batchNote();
+    if (!btn) return;
+    const has = !!batchNote();
+    btn.style.borderColor = has ? 'var(--mbu-accent)' : '';
+    btn.style.color = has ? 'var(--mbu-accent-text)' : '';
+    btn.style.fontWeight = has ? '700' : '';
+    btn.title = has ? `Batch edit note (on every edit this run): ${batchNote()}`
+                    : 'Batch edit note — appended to every edit in this run';
+  }
   function setBtnBusy(btn, on, opts) {
     if (!btn) return;
     const o = opts || {};
@@ -5160,5 +5235,7 @@
     // #571
     RENAMEABLE, NAME_SEEDS, setReleaseName, setReleaseField,
     // #572
-    fetchSeriesMembers, fetchReleaseGroupsOf };
+    fetchSeriesMembers, fetchReleaseGroupsOf,
+    // #573
+    batchNote, setBatchNote, withBatchNote, editNoteText, syncBatchNoteUi };
 })();
