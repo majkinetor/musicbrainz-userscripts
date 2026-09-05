@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.201529
+// @version      2026.9.5.130556
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -233,6 +233,62 @@
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? 'dark' : 'light';
   }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
   function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -254,17 +310,42 @@
           var seed = null;
           var raw = (cs.getPropertyValue('--background') || '').trim();
           if (raw) {
-              // resolve it through a throwaway element: --background may itself be
-              // a var(), a named colour, or anything else CSS accepts
-              var probe = document.createElement('span');
-              probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-              document.documentElement.appendChild(probe);
-              var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-              probe.remove();
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
               if (got === t) seed = 'theme';
           }
-          if (seed) root.setAttribute('data-mbu-seed', seed);
-          else root.removeAttribute('data-mbu-seed');
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
           return t;
       } catch (e) { return 'light'; }
   }
@@ -282,8 +363,26 @@
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
