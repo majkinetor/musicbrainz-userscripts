@@ -103,6 +103,20 @@ console.log('rename-only row: status=' + renamed.status + '  edit POSTs=' + edit
 ck(editPosts().length >= 1, `a release carrying only a rename reaches the edit form (${editPosts().length} attempt(s), all aborted here)`);
 ck(renamed.status !== 'done', `and does not report success when the submit never landed (status: ${renamed.status})`);
 
+// ── the run summary has to SAY it renamed something ─────────────────────────
+// (majkinetor, on #572: "Renaming not added to status table in log".) The row
+// chip, the per-item breakdown in the summary table, and the aggregate
+// "worked on" line are three separate lists of the same categories — adding a
+// field to one of them and not the others is the easy mistake here.
+await page.waitForTimeout(1800);
+// getLog() hands back formatted STRINGS, not {sev,msg} objects.
+const summary = await page.evaluate(() => window.__falconTest.getLog().map(String).find(l => l.includes('run summary')) || '');
+console.log('--- run summary (first lines) ---');
+console.log(summary.split(String.fromCharCode(10)).slice(0, 4).join(String.fromCharCode(10)));
+const sumLines = summary.split(String.fromCharCode(10));
+ck(sumLines.some(l => l.includes(';') && l.includes('rename')), 'the summary table per-item breakdown says the row was renamed');
+ck(sumLines.some(l => l.startsWith('worked on:') && l.includes('rename on 1')), 'and the aggregate "worked on" line counts it');
+
 posts = [];
 const blank = await run({ ...base, id: 'n2', rename: '' });
 console.log('blank row      : ' + JSON.stringify(blank) + '  edit POSTs=' + editPosts().length);
