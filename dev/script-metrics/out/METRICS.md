@@ -5,7 +5,7 @@ MusicBrainz edits made with these userscripts, counted from the `20260905-002519
 [Download HTML Dashboard](./dashboard.html)
 
 - **Window:** 2026-05-01 onwards
-- **Generated:** 2026-09-05T17:41:53+00:00
+- **Generated:** 2026-09-05T19:38:58+00:00
 - **Attributed edits (all time):** 9,101,714
 
 Attribution is by edit-note text — see `config/sources.json`. Counts are per *script*, and one edit can count for two scripts when a note carries both signatures. **Shared** counts exactly those, so a per-script total reads for what it is: Scribe's edits are all shared, while ISRC Scout's are almost entirely its own.

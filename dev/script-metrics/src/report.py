@@ -352,6 +352,10 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
     add(f'MusicBrainz edits made with these userscripts, counted from the '
         f'`{payload["dump_id"]}` database snapshot.')
     add('')
+    # majkinetor added this by hand on 2026-09-05; it lives here now because
+    # METRICS.md is generated and the next report build would have wiped it.
+    add('[Download HTML Dashboard](./dashboard.html)')
+    add('')
     add(f'- **Window:** {cutoff} onwards')
     add(f'- **Generated:** {payload["generated_at"]}')
     add(f'- **Attributed edits (all time):** {payload["quality"]["total_attributed_edits"]:,}')
