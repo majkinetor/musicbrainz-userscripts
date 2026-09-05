@@ -10,7 +10,16 @@ one in a browser to see it.
 | [`b-editorial.html`](b-editorial.html) | **Editorial** — light, centred, generous whitespace. Reads as a product page. Scripts grouped by what they are *for* rather than listed flat. |
 | [`c-gallery.html`](c-gallery.html) | **Gallery** — screenshot-led, two-column feature cards, and the usage numbers as a chart. The most "look what it does" of the three. |
 
-All three carry the same content: the pitch, install, the script list with icons
+Then three brutalist ones, which commit to a single look rather than following
+the system theme:
+
+| File | Direction |
+|---|---|
+| [`d-brutal-terminal.html`](d-brutal-terminal.html) | **Terminal** — black, monospace throughout, acid-yellow highlights, hairline scanlines. Square corners, no shadows, numbered index. |
+| [`e-brutal-poster.html`](e-brutal-poster.html) | **Poster** — Swiss/brutalist. A headline that fills the page edge to edge, 3px rules boxing every band, one blue and one red, no images except the plate. |
+| [`f-brutal-slab.html`](f-brutal-slab.html) | **Slab** — hard-offset drop shadows on white blocks over concrete grey, orange accent, bar chart in its own slab. The most structured of the three. |
+
+All six carry the same content: the pitch, install, the script list with icons
 and one-line descriptions, links to GitHub / docs / statistics, and the usage
 numbers.
 
@@ -38,7 +47,7 @@ is a placeholder.
   and refresh when `script-metrics` runs, or have the page `fetch()`
   `metrics.json` and fill them in at load. The second only works if that file is
   reachable from wherever Pages serves.
-- **Whether it stays one page.** All three are single-page. Per-script pages
+- **Whether it stays one page.** All six are single-page. Per-script pages
   would be a bigger job and would duplicate the READMEs.
 
 ## Regenerating the numbers
@@ -48,5 +57,5 @@ cd dev/script-metrics
 .\run.ps1 -ReportOnly     # rebuild out/metrics.json from the cached database
 ```
 
-Then update the figures in whichever variant is chosen. Only variant C has more
-than the headline numbers.
+Then update the figures in whichever variant is chosen. Variants C and F carry
+per-script numbers as well as the headline ones.
