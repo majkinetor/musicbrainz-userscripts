@@ -2,6 +2,8 @@
 
 This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides/Userscripts), [picard plugins](https://picard-docs.musicbrainz.org/en/latest/extending/plugins.html) and [shell scripts](./scripts)) to be used with [MusicBrainz](https://musicbrainz.org).
 
+[Statistics](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md)
+
 > [!IMPORTANT]
 >  [String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
 One-file bundle of all of the scripts in section bellow — install it *instead* of individuall userscripts
