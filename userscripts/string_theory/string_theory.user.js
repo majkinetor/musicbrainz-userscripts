@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.230333
+// @version      2026.9.5.160106
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,13 +78,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.4.230333 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.4.160850\n  · Art Station v2026.9.4.185621\n  · Credit Hoarder v2026.9.4.185103\n  · Group Therapy v2026.9.4.160850\n  · ISRC Scout v2026.9.4.174408\n  · Mammoth v2026.9.4.160102\n  · Platform Check v2026.9.4.230151");
+  console.log('%c String Theory %c v2026.9.5.160106 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.5.130556\n  · Art Station v2026.9.5.130556\n  · Credit Hoarder v2026.9.5.160106\n  · Group Therapy v2026.9.5.130556\n  · ISRC Scout v2026.9.5.130556\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.4.160850","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.4.160850","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1833,6 +1833,62 @@ try {
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? 'dark' : 'light';
   }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
   function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -1854,17 +1910,42 @@ try {
           var seed = null;
           var raw = (cs.getPropertyValue('--background') || '').trim();
           if (raw) {
-              // resolve it through a throwaway element: --background may itself be
-              // a var(), a named colour, or anything else CSS accepts
-              var probe = document.createElement('span');
-              probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-              document.documentElement.appendChild(probe);
-              var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-              probe.remove();
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
               if (got === t) seed = 'theme';
           }
-          if (seed) root.setAttribute('data-mbu-seed', seed);
-          else root.removeAttribute('data-mbu-seed');
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
           return t;
       } catch (e) { return 'light'; }
   }
@@ -1882,8 +1963,26 @@ try {
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
@@ -5033,7 +5132,11 @@ try {
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
   function curWant() { return apolloEnabled(); }
   function apolloOn() { return apolloEnabled(); }
-  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) lbl.textContent = apolloEnabled() ? 'Original' : 'Apollo Editor'; }
+  // #569: guarded. Assigning textContent replaces the child text node whether or
+  // not the string changed, so this was dispatching a childList record twice a
+  // second — the last idle mutation left after the class guards. Safe here
+  // because the span holds text and nothing else (see mbuProp's warning).
+  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) mbuProp(lbl, 'textContent', apolloEnabled() ? 'Original' : 'Apollo Editor'); }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
@@ -7201,15 +7304,15 @@ try {
     if (!navOn()) return;
     const active = activeStepKey();
     document.querySelectorAll('#tc-nav-steps .tc-nav-step').forEach(b => {
-      b.classList.toggle('active', b.dataset.step === active);
+      mbuCls(b, 'active', b.dataset.step === active);
       const link = stepLink(b.dataset.step), li = link && link.closest('li');   // mirror MB's native tab state
-      if (!link) { b.style.display = 'none'; return; }   // step's native tab not present on this page (e.g. Duplicates exists only on Add)
-      b.style.display = '';
+      if (!link) { mbuProp(b.style, 'display', 'none'); return; }   // step's native tab not present on this page (e.g. Duplicates exists only on Add)
+      mbuProp(b.style, 'display', '');
       const dis = !!(li && li.classList.contains('ui-state-disabled'));
       const panel = document.getElementById(b.dataset.step);   // MB sets error-tab for some errors but not link errors — also scan the panel for a visible field-error
       const err = !!((li && li.classList.contains('error-tab')) || (panel && panel.querySelector('.field-error[data-visible="1"]')));
-      b.disabled = dis; b.classList.toggle('tc-nav-disabled', dis); b.classList.toggle('tc-nav-warn', err);
-      b.title = (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title);   // disabled → MB's "enter all track info…" hint
+      mbuProp(b, 'disabled', dis); mbuCls(b, 'tc-nav-disabled', dis); mbuCls(b, 'tc-nav-warn', err);
+      mbuProp(b, 'title', (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title));   // disabled → MB's "enter all track info…" hint
     });
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
@@ -7219,11 +7322,11 @@ try {
     // state onto the release name in our toolbar — read straight from the DOM, no
     // logic of our own. The .mp node stays in the DOM even while the header is hidden.
     const navTitle = document.getElementById('tc-nav-title');
-    if (navTitle) navTitle.classList.toggle('tc-nav-title-pending', !!document.querySelector('.releaseheader h1 .mp'));
-    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
+    if (navTitle) mbuCls(navTitle, 'tc-nav-title-pending', !!document.querySelector('.releaseheader h1 .mp'));
+    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); mbuProp(proxy.style, 'display', (vis(nat) && changed) ? '' : 'none'); });
     // paginators stay in a fixed position — Prev/Next are never hidden, just disabled
     // when MB's native button isn't applicable (Prev on the first step, Next on the last) (#140)
-    PAGE_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-pager [data-page="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.disabled = !vis(nat); });
+    PAGE_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-pager [data-page="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); mbuProp(proxy, 'disabled', !vis(nat)); });
     updateStickyOffsets();
   }
   // stack the sticky Apollo toolbars BELOW the frozen entity-tab row (both default to top:0 and would
@@ -8622,17 +8725,19 @@ try {
     wireHelpPopover();
     if (riWant()) {
       _apolloUsed = true;
-      document.body.classList.add('tc-ri-on');
+      mbuCls(document.body, 'tc-ri-on', true);   // #569: guarded — re-added 2x/s otherwise
       relocateLinks(true);
       tidyLinkTypeOptions();
       annotateLinkEditHints();
       if (annoWant()) ensureAnnotationToolbar(); else unmountAnnotation();
-      nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
+      // #569: 170 redundant class writes in a 5s idle window — the single
+      // largest source of the DevTools blinking chaban reported
+      nativeHelpBubbles().forEach(b => mbuCls(b, 'tc-ri-helphidden', true));
       _riPrevOn = true;
     } else {
       relocateLinks(false);
       unmountAnnotation();   // Apollo off → tear the annotation editor down too, so the field reverts to native (the toolbar must not linger)
-      document.body.classList.remove('tc-ri-on');
+      mbuCls(document.body, 'tc-ri-on', false);
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
       if (_riPrevOn) { _riPrevOn = false; resetDocBubbles(); }   // one-shot on switch → drop Apollo-era bubble geometry
       watchDocBubbles();
@@ -8731,7 +8836,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.4.185621","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.4.185621","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -12405,6 +12510,62 @@ try {
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? 'dark' : 'light';
   }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
   function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -12426,17 +12587,42 @@ try {
           var seed = null;
           var raw = (cs.getPropertyValue('--background') || '').trim();
           if (raw) {
-              // resolve it through a throwaway element: --background may itself be
-              // a var(), a named colour, or anything else CSS accepts
-              var probe = document.createElement('span');
-              probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-              document.documentElement.appendChild(probe);
-              var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-              probe.remove();
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
               if (got === t) seed = 'theme';
           }
-          if (seed) root.setAttribute('data-mbu-seed', seed);
-          else root.removeAttribute('data-mbu-seed');
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
           return t;
       } catch (e) { return 'light'; }
   }
@@ -12454,8 +12640,26 @@ try {
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
@@ -12996,7 +13200,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.4.185103","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.4.185103","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.5.160106","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.5.160106","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -19593,6 +19797,33 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? "dark" : "light";
     }
+    function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+    }
+    function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === void 0 || value === false) {
+        if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+        el.setAttribute(name, String(value));
+      }
+    }
+    function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+    }
+    function mbuProbe() {
+      var p = document.getElementById("mbu-theme-probe");
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement("span");
+      p.id = "mbu-theme-probe";
+      p.setAttribute("aria-hidden", "true");
+      p.style.cssText = "position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)";
+      document.body.appendChild(p);
+      return p;
+    }
     function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -19603,15 +19834,22 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         var seed = null;
         var raw = (cs.getPropertyValue("--background") || "").trim();
         if (raw) {
-          var probe = document.createElement("span");
-          probe.style.cssText = "position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)";
-          document.documentElement.appendChild(probe);
-          var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-          probe.remove();
+          var probe = mbuProbe();
+          var got = null;
+          if (probe) {
+            got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+          } else {
+            var tmp = document.createElement("span");
+            tmp.style.cssText = "position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)";
+            document.documentElement.appendChild(tmp);
+            got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+            tmp.remove();
+          }
           if (got === t) seed = "theme";
         }
-        if (seed) root.setAttribute("data-mbu-seed", seed);
-        else root.removeAttribute("data-mbu-seed");
+        if (seed) {
+          if (root.getAttribute("data-mbu-seed") !== seed) root.setAttribute("data-mbu-seed", seed);
+        } else if (root.hasAttribute("data-mbu-seed")) root.removeAttribute("data-mbu-seed");
         return t;
       } catch (e) {
         return "light";
@@ -19626,8 +19864,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ["style", "class"] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ["style", "class"] });
+      try {
+        var _mbuMq = matchMedia("(prefers-color-scheme: dark)");
+        if (_mbuMq.addEventListener) _mbuMq.addEventListener("change", _mbuThemeSoon);
+        else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {
+      }
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2e3);
     } catch (e) {
@@ -21549,7 +21793,7 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.4.160850","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.4.160850","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.5.130556","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.5.130556","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -22120,6 +22364,62 @@ ${lines}
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? 'dark' : 'light';
   }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
   function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -22141,17 +22441,42 @@ ${lines}
           var seed = null;
           var raw = (cs.getPropertyValue('--background') || '').trim();
           if (raw) {
-              // resolve it through a throwaway element: --background may itself be
-              // a var(), a named colour, or anything else CSS accepts
-              var probe = document.createElement('span');
-              probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-              document.documentElement.appendChild(probe);
-              var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-              probe.remove();
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
               if (got === t) seed = 'theme';
           }
-          if (seed) root.setAttribute('data-mbu-seed', seed);
-          else root.removeAttribute('data-mbu-seed');
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
           return t;
       } catch (e) { return 'light'; }
   }
@@ -22169,8 +22494,26 @@ ${lines}
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
@@ -26450,7 +26793,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.4.174408","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.4.174408","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -27048,6 +27391,62 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? 'dark' : 'light';
   }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
   function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -27069,17 +27468,42 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
           var seed = null;
           var raw = (cs.getPropertyValue('--background') || '').trim();
           if (raw) {
-              // resolve it through a throwaway element: --background may itself be
-              // a var(), a named colour, or anything else CSS accepts
-              var probe = document.createElement('span');
-              probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-              document.documentElement.appendChild(probe);
-              var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-              probe.remove();
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
               if (got === t) seed = 'theme';
           }
-          if (seed) root.setAttribute('data-mbu-seed', seed);
-          else root.removeAttribute('data-mbu-seed');
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
           return t;
       } catch (e) { return 'light'; }
   }
@@ -27097,8 +27521,26 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
@@ -31830,7 +32272,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.4.160102","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.4.160102","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -32269,6 +32711,62 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? 'dark' : 'light';
   }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
   function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -32290,17 +32788,42 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
           var seed = null;
           var raw = (cs.getPropertyValue('--background') || '').trim();
           if (raw) {
-              // resolve it through a throwaway element: --background may itself be
-              // a var(), a named colour, or anything else CSS accepts
-              var probe = document.createElement('span');
-              probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-              document.documentElement.appendChild(probe);
-              var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-              probe.remove();
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
               if (got === t) seed = 'theme';
           }
-          if (seed) root.setAttribute('data-mbu-seed', seed);
-          else root.removeAttribute('data-mbu-seed');
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
           return t;
       } catch (e) { return 'light'; }
   }
@@ -32318,8 +32841,26 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
@@ -32787,7 +33328,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
   // ── sidebars (one per edit-note textarea) ────────────────────────────────────
   const instances = [];
-  function applyHelp() { document.querySelectorAll('.editnote').forEach(en => en.classList.toggle('mmth-hidehelp', !!SET.hideHelp)); }
+  function applyHelp() { document.querySelectorAll('.editnote').forEach(en => mbuCls(en, 'mmth-hidehelp', !!SET.hideHelp)); }
   const after = (e, el) => (e.clientY - el.getBoundingClientRect().top) > el.offsetHeight / 2;
   const clearMarks = host => host && host.querySelectorAll('.mmth-drop-before,.mmth-drop-after').forEach(r => r.classList.remove('mmth-drop-before', 'mmth-drop-after'));
   let _drag = null;
@@ -33126,15 +33667,19 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   const syncDialog = () => {
     const dlgs = [...document.querySelectorAll('.dialog.popover, .relationship-dialog')];
     const blocking = dlgs.some(d => !d.querySelector('[data-mmthf]'));
-    document.documentElement.classList.toggle('mmthf-dialog', blocking);        // baby pins: hide only when a dialog hosts none of ours
-    document.documentElement.classList.toggle('mmthf-anydialog', dlgs.length > 0);  // main panel/badge: hide under ANY open dialog (#400)
+    // #569: guarded. These fire from a document-wide subtree observer, so an
+    // unconditional toggle on <html> re-triggers every other script's root
+    // watcher, which mutates, which brings us back here — the loop chaban
+    // measured at 12 root mutations a second on an idle page.
+    mbuCls(document.documentElement, 'mmthf-dialog', blocking);        // baby pins: hide only when a dialog hosts none of ours
+    mbuCls(document.documentElement, 'mmthf-anydialog', dlgs.length > 0);  // main panel/badge: hide under ANY open dialog (#400)
   };
   // #462: MB's jQuery-UI autocomplete menu (ul.ui-autocomplete) opens by toggling `display`
   // — a style mutation the childList observer above never sees — so watch each menu's attrs
   // directly and flag `mmthf-acopen` while any is visible, which hides overlapping babies.
   const syncAc = () => {
     const open = [...document.querySelectorAll('ul.ui-autocomplete')].some(u => u.offsetParent !== null && getComputedStyle(u).display !== 'none');
-    document.documentElement.classList.toggle('mmthf-acopen', open);
+    mbuCls(document.documentElement, 'mmthf-acopen', open);
   };
   const acObs = new MutationObserver(syncAc);
   const watchAcMenus = () => { document.querySelectorAll('ul.ui-autocomplete').forEach(u => { if (!u._mmthfAc) { u._mmthfAc = 1; acObs.observe(u, { attributes: true, attributeFilter: ['style', 'class'] }); } }); syncAc(); };
@@ -33717,7 +34262,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.230151","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.4.230151","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.5.130556","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.5.130556","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -34874,6 +35419,62 @@ function mbuThemeOf(bg) {
     var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
     return L < 0.35 ? 'dark' : 'light';
 }
+// #569 (chaban-mb) — write only when the value actually changes.
+//
+// The DOM does not do this for you. classList.add of a token already present,
+// classList.toggle to the state it is already in, setAttribute with the value it
+// already has: each one re-sets the attribute and dispatches a mutation record.
+// Harmless once; these run from 2Hz heartbeats and from observers that react to
+// each other, and the measured idle cost on the release editor was 66 records a
+// second, of which 93% came from writes that changed nothing (see
+// dev/ui/measure-569-idle-mutations.mjs).
+//
+// Semantically these are exact no-ops: they skip a write ONLY when the value is
+// already the one being written, so nothing that reads the DOM afterwards can
+// tell the difference. That is the whole reason they are safe to sprinkle around
+// a 2Hz loop.
+function mbuCls(el, token, on) {
+    if (!el || !el.classList) return;
+    if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+}
+function mbuAttr(el, name, value) {
+    if (!el) return;
+    if (value === null || value === undefined || value === false) {
+        if (el.hasAttribute(name)) el.removeAttribute(name);
+    } else if (el.getAttribute(name) !== String(value)) {
+        el.setAttribute(name, String(value));
+    }
+}
+// For IDL properties (disabled, title, textContent, style.display …). Reading
+// them is cheap; writing them is not, and textContent in particular replaces
+// every child node.
+//
+// ⚠ textContent is the one to think twice about: its getter concatenates the
+// text of ALL descendants, so on an element with child ELEMENTS the comparison
+// can match while the DOM shape is wrong, and the guard then skips a write that
+// would have flattened it. Only use it where the target holds text and nothing
+// else.
+function mbuProp(obj, prop, value) {
+    if (!obj) return;
+    if (obj[prop] !== value) obj[prop] = value;
+}
+
+// #569: the one element mbuTheme resolves --background through. Looked up by id
+// rather than kept in a variable, so the seven scripts of a bundle share ONE
+// probe instead of adding seven, and so it heals itself if anything removes it.
+// It lives in <body>: a permanent stray node under <html>, outside head and
+// body, is the sort of thing another script's document scan trips over.
+function mbuProbe() {
+    var p = document.getElementById('mbu-theme-probe');
+    if (p) return p;
+    if (!document.body) return null;
+    p = document.createElement('span');
+    p.id = 'mbu-theme-probe';
+    p.setAttribute('aria-hidden', 'true');
+    p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+    document.body.appendChild(p);
+    return p;
+}
 function mbuTheme() {
     var root = document.documentElement;
     try {
@@ -34895,17 +35496,42 @@ function mbuTheme() {
         var seed = null;
         var raw = (cs.getPropertyValue('--background') || '').trim();
         if (raw) {
-            // resolve it through a throwaway element: --background may itself be
-            // a var(), a named colour, or anything else CSS accepts
-            var probe = document.createElement('span');
-            probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-            document.documentElement.appendChild(probe);
-            var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-            probe.remove();
+            // Resolved through a real element, because --background may itself be
+            // a var(), a named colour, or anything else CSS accepts.
+            //
+            // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+            // every call, as a direct child of <html>. mbuTheme re-runs whenever
+            // the root or body class changes, Mammoth watches the whole document
+            // for childList changes and reacts by toggling classes on <html>, and
+            // those class changes wake mbuTheme again — a self-feeding loop,
+            // measured at 12 root-node mutations a second on an idle page, which
+            // is what makes DevTools blink.
+            //
+            // One element, created once and left in place, breaks it: the value
+            // is still resolved LIVE on every call (a cached reading would freeze
+            // the theme at whatever it was before Stylus injected, which is the
+            // bug this whole function exists to avoid) but nothing is added to or
+            // removed from the DOM to read it.
+            var probe = mbuProbe();
+            var got = null;
+            if (probe) {
+                got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+            } else {
+                // No <body> yet — document-start. Fall back to the transient
+                // element for these first one or two calls; the idle loop this
+                // avoids cannot exist before the page has a body anyway.
+                var tmp = document.createElement('span');
+                tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                document.documentElement.appendChild(tmp);
+                got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                tmp.remove();
+            }
             if (got === t) seed = 'theme';
         }
-        if (seed) root.setAttribute('data-mbu-seed', seed);
-        else root.removeAttribute('data-mbu-seed');
+        // guarded: setAttribute dispatches a mutation record even when the value
+        // is unchanged, and this runs several times a second
+        if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+        else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
         return t;
     } catch (e) { return 'light'; }
 }
@@ -34923,8 +35549,26 @@ try {
     };
     var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
     _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-    if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+    // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+    // this function ran several times a second whether or not anything had
+    // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+    // which is how a theme change was ever noticed. That accidental polling was
+    // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+    // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+    // palette) adds and removes no nodes, so nothing woke us and the theme went
+    // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+    // pre-fix build and failed on the first version of this one.
+    if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
     if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+    // …and the case that produces no DOM mutation at all: the OS flipping to dark
+    // under a userstyle with a prefers-color-scheme query. Nothing above can see
+    // that, and nothing did before either — it was simply never noticed while the
+    // page was re-checking itself several times a second.
+    try {
+        var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+        if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+        else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+    } catch (e) {}
     setTimeout(mbuTheme, 400);
     setTimeout(mbuTheme, 2000);
 } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }

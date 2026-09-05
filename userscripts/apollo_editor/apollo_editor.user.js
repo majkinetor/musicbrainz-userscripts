@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.4.160850
+// @version      2026.9.5.130556
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1765,6 +1765,62 @@
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? 'dark' : 'light';
   }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
   function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -1786,17 +1842,42 @@
           var seed = null;
           var raw = (cs.getPropertyValue('--background') || '').trim();
           if (raw) {
-              // resolve it through a throwaway element: --background may itself be
-              // a var(), a named colour, or anything else CSS accepts
-              var probe = document.createElement('span');
-              probe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
-              document.documentElement.appendChild(probe);
-              var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-              probe.remove();
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
               if (got === t) seed = 'theme';
           }
-          if (seed) root.setAttribute('data-mbu-seed', seed);
-          else root.removeAttribute('data-mbu-seed');
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
           return t;
       } catch (e) { return 'light'; }
   }
@@ -1814,8 +1895,26 @@
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
@@ -4965,7 +5064,11 @@
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
   function curWant() { return apolloEnabled(); }
   function apolloOn() { return apolloEnabled(); }
-  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) lbl.textContent = apolloEnabled() ? 'Original' : 'Apollo Editor'; }
+  // #569: guarded. Assigning textContent replaces the child text node whether or
+  // not the string changed, so this was dispatching a childList record twice a
+  // second — the last idle mutation left after the class guards. Safe here
+  // because the span holds text and nothing else (see mbuProp's warning).
+  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) mbuProp(lbl, 'textContent', apolloEnabled() ? 'Original' : 'Apollo Editor'); }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
@@ -7133,15 +7236,15 @@
     if (!navOn()) return;
     const active = activeStepKey();
     document.querySelectorAll('#tc-nav-steps .tc-nav-step').forEach(b => {
-      b.classList.toggle('active', b.dataset.step === active);
+      mbuCls(b, 'active', b.dataset.step === active);
       const link = stepLink(b.dataset.step), li = link && link.closest('li');   // mirror MB's native tab state
-      if (!link) { b.style.display = 'none'; return; }   // step's native tab not present on this page (e.g. Duplicates exists only on Add)
-      b.style.display = '';
+      if (!link) { mbuProp(b.style, 'display', 'none'); return; }   // step's native tab not present on this page (e.g. Duplicates exists only on Add)
+      mbuProp(b.style, 'display', '');
       const dis = !!(li && li.classList.contains('ui-state-disabled'));
       const panel = document.getElementById(b.dataset.step);   // MB sets error-tab for some errors but not link errors — also scan the panel for a visible field-error
       const err = !!((li && li.classList.contains('error-tab')) || (panel && panel.querySelector('.field-error[data-visible="1"]')));
-      b.disabled = dis; b.classList.toggle('tc-nav-disabled', dis); b.classList.toggle('tc-nav-warn', err);
-      b.title = (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title);   // disabled → MB's "enter all track info…" hint
+      mbuProp(b, 'disabled', dis); mbuCls(b, 'tc-nav-disabled', dis); mbuCls(b, 'tc-nav-warn', err);
+      mbuProp(b, 'title', (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title));   // disabled → MB's "enter all track info…" hint
     });
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
@@ -7151,11 +7254,11 @@
     // state onto the release name in our toolbar — read straight from the DOM, no
     // logic of our own. The .mp node stays in the DOM even while the header is hidden.
     const navTitle = document.getElementById('tc-nav-title');
-    if (navTitle) navTitle.classList.toggle('tc-nav-title-pending', !!document.querySelector('.releaseheader h1 .mp'));
-    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
+    if (navTitle) mbuCls(navTitle, 'tc-nav-title-pending', !!document.querySelector('.releaseheader h1 .mp'));
+    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); mbuProp(proxy.style, 'display', (vis(nat) && changed) ? '' : 'none'); });
     // paginators stay in a fixed position — Prev/Next are never hidden, just disabled
     // when MB's native button isn't applicable (Prev on the first step, Next on the last) (#140)
-    PAGE_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-pager [data-page="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.disabled = !vis(nat); });
+    PAGE_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-pager [data-page="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); mbuProp(proxy, 'disabled', !vis(nat)); });
     updateStickyOffsets();
   }
   // stack the sticky Apollo toolbars BELOW the frozen entity-tab row (both default to top:0 and would
@@ -8554,17 +8657,19 @@
     wireHelpPopover();
     if (riWant()) {
       _apolloUsed = true;
-      document.body.classList.add('tc-ri-on');
+      mbuCls(document.body, 'tc-ri-on', true);   // #569: guarded — re-added 2x/s otherwise
       relocateLinks(true);
       tidyLinkTypeOptions();
       annotateLinkEditHints();
       if (annoWant()) ensureAnnotationToolbar(); else unmountAnnotation();
-      nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
+      // #569: 170 redundant class writes in a 5s idle window — the single
+      // largest source of the DevTools blinking chaban reported
+      nativeHelpBubbles().forEach(b => mbuCls(b, 'tc-ri-helphidden', true));
       _riPrevOn = true;
     } else {
       relocateLinks(false);
       unmountAnnotation();   // Apollo off → tear the annotation editor down too, so the field reverts to native (the toolbar must not linger)
-      document.body.classList.remove('tc-ri-on');
+      mbuCls(document.body, 'tc-ri-on', false);
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
       if (_riPrevOn) { _riPrevOn = false; resetDocBubbles(); }   // one-shot on switch → drop Apollo-era bubble geometry
       watchDocBubbles();

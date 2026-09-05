@@ -1,0 +1,5501 @@
+{
+ "base": "https://test.musicbrainz.org",
+ "path": "/release/add",
+ "secs": 5,
+ "scripts": "bundle",
+ "calls": [
+  {
+   "t": 10468,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 10468,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 10812,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 10813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 10814,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 10814,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 10966,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 10966,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11310,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11311,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11311,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 11312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 11467,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11467,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11811,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 11812,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 11812,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 11967,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 11967,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12298,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 12298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 12454,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12454,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12811,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 12811,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 12812,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 12813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 12966,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 12967,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13311,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 13311,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13312,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 13312,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 13313,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 13313,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 13466,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13466,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13811,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 13811,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 13812,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13812,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13813,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 13813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 13813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 13813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 13813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 13813,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 13967,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 13967,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14296,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14297,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 14298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 14452,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14452,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14796,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 14796,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 14797,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 14797,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 14798,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 14798,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 14951,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:22155:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 14951,
+   "api": "removeAttribute",
+   "target": "HTML.mmth-reledit",
+   "detail": "data-mbu-seed",
+   "redundant": true,
+   "stack": "    at Element.removeAttribute (<anonymous>:52:9) |     at mbuTheme (<anonymous>:32304:21) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 15296,
+   "api": "classList.toggle",
+   "target": "SELECT#medium-format-new-1",
+   "detail": "tc-fmt-flat=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at setFmtTidy (<anonymous>:4947:19) |     at apply (<anonymous>:4958:25) |     at tidyFmt (<anonymous>:4960:5)"
+  },
+  {
+   "t": 15296,
+   "api": "classList.add",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-ri-on",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at applyReleaseInfo (<anonymous>:8626:31) |     at tick (<anonymous>:5084:33) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.left-tail",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.add",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "detail": "tc-ri-helphidden",
+   "redundant": true,
+   "stack": "    at tl.add (<anonymous>:26:9) |     at <anonymous>:8631:52 |     at Array.forEach (<anonymous>) |     at applyReleaseInfo (<anonymous>:8631:27)"
+  },
+  {
+   "t": 15297,
+   "api": "textContent",
+   "target": "SPAN.tc-launch-lbl",
+   "detail": "Original",
+   "redundant": true,
+   "stack": "    at HTMLSpanElement.set [as textContent] (<anonymous>:64:18) |     at relabelLauncher (<anonymous>:5037:122) |     at ensureLauncher (<anonymous>:5048:49) |     at tick (<anonymous>:5086:25)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "active=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.active",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-disabled=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "active=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7205:19 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-disabled=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:37 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "detail": "tc-nav-warn=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:7212:81 |     at NodeList.forEach (<anonymous>) |     at syncNav (<anonymous>:7204:61)"
+  },
+  {
+   "t": 15297,
+   "api": "classList.toggle",
+   "target": "DIV#tc-nav-title",
+   "detail": "tc-nav-title-pending=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncNav (<anonymous>:7223:38) |     at tick (<anonymous>:5087:99) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 15298,
+   "api": "classList.toggle",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "detail": "tc-zen-on=true",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at applyZen (<anonymous>:7175:29) |     at tick (<anonymous>:5088:7) |     at r (https://static.metabrainz.org/MB/common/sentry-acbd425.js:1:20733)"
+  },
+  {
+   "t": 15298,
+   "api": "classList.toggle",
+   "target": "FIELDSET.editnote.mmth-on",
+   "detail": "mmth-hidehelp=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at <anonymous>:32791:92 |     at NodeList.forEach (<anonymous>) |     at applyHelp (<anonymous>:32791:65)"
+  },
+  {
+   "t": 15298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 15298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.observe.childList (<anonymous>:33142:45)"
+  },
+  {
+   "t": 15298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-acopen=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncAc (<anonymous>:33138:40) |     at watchAcMenus (<anonymous>:33141:213) |     at MutationObserver.observe.childList (<anonymous>:33142:59)"
+  },
+  {
+   "t": 15298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-dialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33130:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  },
+  {
+   "t": 15298,
+   "api": "classList.toggle",
+   "target": "HTML.mmth-reledit",
+   "detail": "mmthf-anydialog=false",
+   "redundant": true,
+   "stack": "    at tl.toggle (<anonymous>:36:9) |     at syncDialog (<anonymous>:33131:40) |     at MutationObserver.<anonymous> (<anonymous>:33700:53)"
+  }
+ ],
+ "records": [
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BODY.tc-tl-on.tc-rec-on",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.left-tail",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "DIV.bubble.tc-ri-helphidden",
+   "attr": "class",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "childList",
+   "target": "SPAN.tc-launch-lbl",
+   "attr": null,
+   "added": 1,
+   "removed": 1
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.active",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-disabled",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-step.tc-nav-diff",
+   "attr": "title",
+   "added": 0,
+   "removed": 0
+  },
+  {
+   "type": "attributes",
+   "target": "BUTTON.tc-nav-wbtn.tc-wiz-prev",
+   "attr": "disabled",
+   "added": 0,
+   "removed": 0
+  }
+ ],
+ "redundant": 450
+}

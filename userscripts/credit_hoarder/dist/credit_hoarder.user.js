@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.4.185103
+// @version      2026.9.5.160106
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -6627,6 +6627,33 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
       return L < 0.35 ? "dark" : "light";
     }
+    function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+    }
+    function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === void 0 || value === false) {
+        if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+        el.setAttribute(name, String(value));
+      }
+    }
+    function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+    }
+    function mbuProbe() {
+      var p = document.getElementById("mbu-theme-probe");
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement("span");
+      p.id = "mbu-theme-probe";
+      p.setAttribute("aria-hidden", "true");
+      p.style.cssText = "position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)";
+      document.body.appendChild(p);
+      return p;
+    }
     function mbuTheme() {
       var root = document.documentElement;
       try {
@@ -6637,15 +6664,22 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         var seed = null;
         var raw = (cs.getPropertyValue("--background") || "").trim();
         if (raw) {
-          var probe = document.createElement("span");
-          probe.style.cssText = "position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)";
-          document.documentElement.appendChild(probe);
-          var got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
-          probe.remove();
+          var probe = mbuProbe();
+          var got = null;
+          if (probe) {
+            got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+          } else {
+            var tmp = document.createElement("span");
+            tmp.style.cssText = "position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)";
+            document.documentElement.appendChild(tmp);
+            got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+            tmp.remove();
+          }
           if (got === t) seed = "theme";
         }
-        if (seed) root.setAttribute("data-mbu-seed", seed);
-        else root.removeAttribute("data-mbu-seed");
+        if (seed) {
+          if (root.getAttribute("data-mbu-seed") !== seed) root.setAttribute("data-mbu-seed", seed);
+        } else if (root.hasAttribute("data-mbu-seed")) root.removeAttribute("data-mbu-seed");
         return t;
       } catch (e) {
         return "light";
@@ -6660,8 +6694,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ["style", "class"] });
-      if (document.head) _mbuThemeObs.observe(document.head, { childList: true });
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
       if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ["style", "class"] });
+      try {
+        var _mbuMq = matchMedia("(prefers-color-scheme: dark)");
+        if (_mbuMq.addEventListener) _mbuMq.addEventListener("change", _mbuThemeSoon);
+        else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {
+      }
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2e3);
     } catch (e) {
