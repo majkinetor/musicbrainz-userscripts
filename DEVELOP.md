@@ -63,7 +63,7 @@ at the root.
 | [`dev/ui/`](dev/ui/README.md) | the shared components, the platform icons, and the live checks for both |
 | `dev/screens/ui/` | generated screenshots (see below) |
 | `dev/github-notifications/`, `dev/notif-channel/` | the GH notification → channel pipeline |
-| `dev/script-metrics/` | standalone dashboard of edits made with these scripts; own `npm install` |
+| [`dev/script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database snapshot; runs entirely in Docker (`.\run.ps1`) |
 
 Each subsystem README carries its own detail — the marker blocks and how a new
 script adopts them, the four theme worlds the contrast check runs in, the ROOTS
