@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.4.201529
+// @version      2026.9.5.153600
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2530,7 +2530,7 @@
     card.dataset.idle = '1';
     card.style.cssText = `border:1px solid var(--mbu-border);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;flex:0 0 auto;width:${cfg.workerSize}px;height:${Math.round(cfg.workerSize * 0.8)}px;`;
     card.innerHTML = `
-      <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);font-size:10px">
+      <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:var(--mbu-bg-raised);color:var(--mbu-text);border-bottom:1px solid var(--mbu-border);font-size:10px">
         <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mbu-text-dim)">idle</span>
         <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
       </div>
@@ -4415,7 +4415,7 @@
     // JSON, so this stays a light add/remove list rather than a form.
     const aliasList = (it.aliases || []).map((a, idx) => `
       <span title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · ') || 'alias')}"
-        style="display:inline-flex;align-items:center;gap:4px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-info);border-radius:10px;padding:1px 4px 1px 7px;max-width:100%">
+        style="display:inline-flex;align-items:center;gap:4px;background:var(--mbu-bg-raised);color:var(--mbu-text);border:1px solid var(--mbu-info);border-radius:10px;padding:1px 4px 1px 7px;max-width:100%">
         <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.name)}${a.locale ? ` <span style="color:var(--mbu-text-dim)">[${esc(a.locale)}]</span>` : ''}${a.primary ? ' ★' : ''}</span>
         <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${it.status === 'active' ? 'disabled' : ''}
           style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak);font-size:11px;line-height:1;padding:2px 3px">✕</button>
@@ -4495,7 +4495,7 @@
       // outcome — an already active/done/failed item is never affected).
       const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
       return `
-      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid var(--mbu-border);background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
+      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid var(--mbu-border);color:var(--mbu-text);background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
         <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
           <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit disambiguation & ISRC' : DISAMBIGUATABLE.has(it.entityType) ? 'Show detail / edit disambiguation' + (it.entityType === 'release' ? ' & cover art image' : '') : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
