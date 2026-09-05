@@ -208,6 +208,24 @@ def main() -> int:
         report.render(connection, out_dir, config)
         payload = json.loads((out_dir / 'metrics.json').read_text(encoding='utf8'))
         check('report counts attributed edits', payload['quality']['total_attributed_edits'], 5)
+
+        # Comparison scripts (Harmony here) must fold into untracked buckets, and
+        # those buckets must never be mistaken for people.
+        tracked = [e for e in payload['editors'] if e['tracked']]
+        untracked = [e for e in payload['editors'] if not e['tracked']]
+        check('untracked buckets exist for comparison scripts', len(untracked), 2)
+        check('every tracked editor has a real MB id',
+              all(e['id'] is not None for e in tracked), True)
+        check('folded buckets carry no MB id',
+              all(e['id'] is None for e in untracked), True)
+        harmony_rows = [r for r in payload['cubes']['main']
+                        if payload['scripts'][r[0]]['id'] == 'harmony']
+        check('harmony edits land in an untracked bucket',
+              all(not payload['editors'][r[2]]['tracked'] for r in harmony_rows) and bool(harmony_rows),
+              True)
+        check('no version cube rows for comparison scripts',
+              any(payload['scripts'][r[0]]['owner'] != 'majkinetor'
+                  for r in payload['cubes']['version']), False)
         check('report flags the orphan note', payload['quality']['notes_without_edit_row'], 1)
         check('dashboard has data injected',
               '/*__DATA__*/null' not in (out_dir / 'dashboard.html').read_text(encoding='utf8'), True)

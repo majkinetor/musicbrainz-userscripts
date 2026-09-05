@@ -123,12 +123,23 @@ JOIN script s ON s.id = ns.script;
 -- actually ran the script — which is the number "who uses this" wants.
 -- Where several notes attribute the same edit to the same script, the earliest
 -- one wins.
+-- Picking the earliest note per (script, edit) with a correlated subquery would
+-- run that subquery once per row — about nine million times on real data. One
+-- grouped pass does the same job in a single scan.
 DROP VIEW IF EXISTS v_script_edit;
 CREATE VIEW v_script_edit AS
-SELECT  ns.script                       AS script_id,
+WITH pick AS (
+    SELECT  ns.script       AS script,
+            n.edit          AS edit,
+            MIN(n.id)       AS note_id
+    FROM note_script ns
+    JOIN note n ON n.id = ns.note
+    GROUP BY ns.script, n.edit
+)
+SELECT  p.script                        AS script_id,
         s.name                          AS script_name,
         s.owner                         AS script_owner,
-        n.edit                          AS edit_id,
+        p.edit                          AS edit_id,
         n.editor                        AS script_user,
         e.editor                        AS edit_editor,
         e.type                          AS edit_type,
@@ -138,14 +149,9 @@ SELECT  ns.script                       AS script_id,
         e.close_time                    AS close_time,
         e.quality                       AS quality,
         ns.version                      AS version,
-        n.id                            AS note_id
-FROM note_script ns
-JOIN note   n ON n.id = ns.note
-JOIN script s ON s.id = ns.script
-LEFT JOIN edit e ON e.id = n.edit
-WHERE n.id = (
-        SELECT MIN(n2.id)
-        FROM note n2
-        JOIN note_script ns2 ON ns2.note = n2.id
-        WHERE n2.edit = n.edit AND ns2.script = ns.script
-);
+        p.note_id                       AS note_id
+FROM pick p
+JOIN note        n  ON n.id  = p.note_id
+JOIN note_script ns ON ns.note = p.note_id AND ns.script = p.script
+JOIN script      s  ON s.id  = p.script
+LEFT JOIN edit   e  ON e.id  = p.edit;
