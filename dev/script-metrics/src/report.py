@@ -168,6 +168,22 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
         key = (script_index[script_id], months.index(month), mine)
         autoedits[key] = autoedits.get(key, 0) + count
 
+    # Which entity types the edits actually touch. This is the only consumer of
+    # edit_entity, which is otherwise ~37M rows of dead weight. An edit can touch
+    # several entities (a merge, a relationship), so these count touches, not
+    # edits, and legitimately sum to more than the edit total.
+    print('  entity touches', file=sys.stderr, flush=True)
+    entities = Encoder()
+    by_entity: dict[tuple, int] = {}
+    for script_id, month, mine, entity_type, count in connection.execute(
+        'SELECT f.script_id, f.month, f.mine, ee.entity_type, COUNT(*) '
+        'FROM fact f JOIN edit_entity ee ON ee.edit = f.edit_id '
+        'WHERE f.month IS NOT NULL GROUP BY 1, 2, 3, 4'
+    ):
+        key = (script_index[script_id], months.index(month), mine,
+               entities.index(entity_type))
+        by_entity[key] = by_entity.get(key, 0) + count
+
     total_edits = _one(connection, 'SELECT COUNT(*) FROM fact') or 0
 
     type_labels = {
@@ -223,6 +239,7 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
         'types': [{'id': v, 'label': type_labels.get(v, f'type {v}'),
                    'entity': entity_of_type.get(v, '')} for v in types.values],
         'versions': versions.values,
+        'entities': entities.values,
         'cubes': {
             # [script, month, editor, outcome, count]
             'main': remapped(main, 1),
@@ -232,6 +249,8 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
             'version': remapped(by_version, 1),
             # [script, month, mine, count]
             'autoedit': remapped(autoedits, 1),
+            # [script, month, mine, entity, count] - entity *touches*, not edits
+            'entity': remapped(by_entity, 1),
         },
         'quality': {
             'total_attributed_edits': total_edits,

@@ -23,7 +23,16 @@ Outputs land in `out/`:
 | `dashboard.html` | standalone interactive dashboard — open it directly, no server, no network | yes |
 | `METRICS.md` | static summary, readable on GitHub | yes |
 | `metrics.json` | the aggregated cubes the dashboard reads | yes |
-| `metrics.db` | SQLite store of every matched edit and note | no (rebuildable) |
+
+The SQLite store itself stays in the Docker volume beside the dump cache, not in
+`out/`. On Docker Desktop `out/` is the Windows filesystem, and a multi-gigabyte
+SQLite file there makes the load I/O-bound on the slowest thing available — the
+first real run spent longer writing the database than it did downloading 15 GB.
+Only the small reports cross back to the host. To inspect it:
+
+```powershell
+docker compose run --rm --entrypoint sqlite3 metrics /data/metrics.db
+```
 
 ## How an edit is attributed to a script
 
@@ -117,8 +126,33 @@ keeps one row per ingest for provenance.
 ### Why the whole note body is stored
 
 Re-attributing a script, fixing a pattern, or parsing versions differently is
-then a local SQL exercise instead of another 15 GB pass. This matters most for
-the third-party scripts, whose note formats we do not control.
+then a local SQL exercise instead of another 15 GB pass.
+
+Full note bodies are kept for **our own** scripts only. The comparison scripts
+matched 8.9 million notes on the first real run — millions of rows of somebody
+else's text — so theirs are truncated to a 400-character prefix, which is still
+enough to identify the note.
+
+### What scale actually forced
+
+The first real run is the reason several things look the way they do. It matched
+**8,870,019 notes out of 103,065,908** scanned, essentially all of it ECAU and
+Harmony, and produced a 7.6 GB database with a 7.7 GB write-ahead log.
+
+- **Editor identity** is kept per-editor for our own scripts only. The
+  comparison scripts' editors fold into two buckets flagged `tracked: false`, so
+  no distinct-editor count can include them. Their volume and timeline are
+  unaffected — that is what they are here for. The per-script table shows a dash
+  rather than `0`, because `0` would read as "nobody uses it".
+- **Entity links** are kept for our own scripts only. Keeping them for
+  everything meant 37 million rows to serve one small per-entity-type
+  breakdown.
+- **The loader commits periodically.** SQLite cannot checkpoint the WAL while a
+  write transaction is open, so loading nine million rows in one transaction
+  grew the WAL to the size of the database itself.
+- **`VACUUM` is opt-in** (`--vacuum`). It rewrites the whole file and wants as
+  much free disk again, which is a bad default for a store that gets rebuilt on
+  the next run.
 
 ## Layout
 
