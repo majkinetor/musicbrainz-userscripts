@@ -24,6 +24,7 @@ import sys
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -35,28 +36,49 @@ SERIES_DARK = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300',
 # Owner value in config/sources.json marking "these are mine".
 OWNED = 'majkinetor'
 
+# How many distinct scripts each edit is attributed to. An edit counted for two
+# scripts is not double-counting: our scripts preserve a previous script's note
+# when they append to it, so both signatures really are on that edit. But it does
+# change how a per-script total should be read — Scribe's edits are *all* shared,
+# while ISRC Scout's are almost all its own — so the reports say so explicitly.
+EDIT_SCRIPTS_SQL = """
+CREATE TEMP TABLE edit_scripts AS
+SELECT n.edit AS edit, COUNT(DISTINCT COALESCE(sm.into_id, ns.script)) AS nscripts
+FROM note n
+JOIN note_script ns ON ns.note = n.id
+LEFT JOIN script_merge sm ON sm.from_id = ns.script
+GROUP BY n.edit
+"""
+
 # One row per (script, edit), flattened once into a temp table so the half-dozen
 # GROUP BYs below do not each re-evaluate the view. On real data this is ~9M
 # rows, almost all of them from the third-party comparison scripts.
+# Grouped by (merged script, edit): a merge folds two scripts into one, and an
+# edit carrying both signatures would otherwise appear twice under the survivor.
+# The grouped columns are per-edit facts, identical across the rows being folded.
 FACT_SQL = """
 CREATE TEMP TABLE fact AS
-SELECT  se.script_id                            AS script_id,
-        se.script_owner                         AS script_owner,
+SELECT  COALESCE(sm.into_id, se.script_id)      AS script_id,
+        MIN(se.script_owner)                    AS script_owner,
         se.edit_id                              AS edit_id,
-        se.script_user                          AS script_user,
-        substr(se.open_time, 1, 7)              AS month,
-        CASE se.edit_status
-             WHEN 2 THEN 'applied'
-             WHEN 1 THEN 'open'
-             ELSE 'failed'
-        END                                     AS outcome,
-        se.edit_type                            AS edit_type,
-        se.version                              AS version,
-        se.autoedit                             AS autoedit,
-        CASE WHEN ed.name = ? THEN 1 ELSE 0 END AS mine
+        MIN(se.script_user)                     AS script_user,
+        MIN(substr(se.open_time, 1, 7))         AS month,
+        MIN(CASE se.edit_status
+                 WHEN 2 THEN 'applied'
+                 WHEN 1 THEN 'open'
+                 ELSE 'failed'
+            END)                                AS outcome,
+        MIN(se.edit_type)                       AS edit_type,
+        MIN(se.version)                         AS version,
+        MIN(se.autoedit)                        AS autoedit,
+        MAX(CASE WHEN ed.name = ? THEN 1 ELSE 0 END)      AS mine,
+        MAX(CASE WHEN es.nscripts > 1 THEN 1 ELSE 0 END)  AS shared
 FROM v_script_edit se
 LEFT JOIN editor ed ON ed.id = se.script_user
+LEFT JOIN edit_scripts es ON es.edit = se.edit_id
+LEFT JOIN script_merge sm ON sm.from_id = se.script_id
 WHERE se.open_time IS NOT NULL
+GROUP BY 1, 3
 """
 
 
@@ -84,13 +106,25 @@ def _one(connection: sqlite3.Connection, sql: str, params: Sequence = ()):
 def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
     owner_name = config.get('owner_mb_username', '')
 
+    merges = {s['id']: s['merge_into'] for s in config['scripts'] if s.get('merge_into')}
+    connection.execute('DROP TABLE IF EXISTS temp.script_merge')
+    connection.execute('CREATE TEMP TABLE script_merge (from_id TEXT PRIMARY KEY, into_id TEXT)')
+    if merges:
+        connection.executemany('INSERT INTO script_merge VALUES (?, ?)', list(merges.items()))
+        print(f'  merging {", ".join(f"{a} -> {b}" for a, b in merges.items())}',
+              file=sys.stderr, flush=True)
+
     scripts = [
         {'id': r[0], 'name': r[1], 'owner': r[2], 'note': r[3]}
         for r in connection.execute(
             'SELECT id, name, owner, note FROM script ORDER BY owner, name')
+        if r[0] not in merges
     ]
 
     print('  flattening fact table', file=sys.stderr, flush=True)
+    connection.execute('DROP TABLE IF EXISTS temp.edit_scripts')
+    connection.execute(EDIT_SCRIPTS_SQL)
+    connection.execute('CREATE INDEX temp.ix_edit_scripts ON edit_scripts (edit)')
     connection.execute('DROP TABLE IF EXISTS temp.fact')
     connection.execute(FACT_SQL, (owner_name,))
     connection.execute('CREATE INDEX temp.ix_fact ON fact (script_id, month)')
@@ -167,6 +201,14 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
     ):
         key = (script_index[script_id], months.index(month), mine)
         autoedits[key] = autoedits.get(key, 0) + count
+
+    shared_counts: dict[tuple, int] = {}
+    for script_id, month, mine, shared, count in connection.execute(
+        'SELECT script_id, month, mine, shared, COUNT(*) FROM fact '
+        'WHERE month IS NOT NULL GROUP BY 1, 2, 3, 4'
+    ):
+        key = (script_index[script_id], months.index(month), mine, shared)
+        shared_counts[key] = shared_counts.get(key, 0) + count
 
     # Which entity types the edits actually touch. This is the only consumer of
     # edit_entity, which is otherwise ~37M rows of dead weight. An edit can touch
@@ -251,6 +293,9 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
             'autoedit': remapped(autoedits, 1),
             # [script, month, mine, entity, count] - entity *touches*, not edits
             'entity': remapped(by_entity, 1),
+            # [script, month, mine, shared, count] - shared=1 means the edit is
+            # also attributed to another script
+            'shared': remapped(shared_counts, 1),
         },
         'quality': {
             'total_attributed_edits': total_edits,
@@ -274,6 +319,12 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
 
     per_script: dict[str, dict] = {}
     per_editor: dict[int, dict] = {}
+    shared_by_script: dict[str, int] = {}
+    for si, mi, _mine, is_shared, count in payload['cubes']['shared']:
+        if months[mi] < cutoff_month or not is_shared:
+            continue
+        sid = payload['scripts'][si]['id']
+        shared_by_script[sid] = shared_by_script.get(sid, 0) + count
     for si, mi, ei, oi, count in payload['cubes']['main']:
         if months[mi] < cutoff_month:
             continue
@@ -290,9 +341,9 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
             continue
         bucket['users'].add(ei)
         person = per_editor.setdefault(
-            editor['id'], {'name': editor['name'], 'edits': 0, 'scripts': set()})
+            editor['id'], {'name': editor['name'], 'edits': 0, 'scripts': {}})
         person['edits'] += count
-        person['scripts'].add(script_id)
+        person['scripts'][script_id] = person['scripts'].get(script_id, 0) + count
 
     lines: list[str] = []
     add = lines.append
@@ -307,37 +358,36 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
     add('')
     add('Attribution is by edit-note text — see `config/sources.json`. Counts are '
         'per *script*, and one edit can count for two scripts when a note carries '
-        'both signatures (our scripts preserve a previous script\'s note).')
+        'both signatures. **Shared** counts exactly those, so a per-script total '
+        'reads for what it is: Scribe\'s edits are all shared, while ISRC Scout\'s '
+        'are almost entirely its own.')
     add('')
 
     total_edits = sum(b['edits'] for b in per_script.values())
     all_users = set()
     for bucket in per_script.values():
         all_users |= bucket['users']
-    others = {e for e in all_users if editors[e]['name'] != owner}
-
     add('## Totals')
     add('')
     add('| Metric | Value |')
     add('|---|---:|')
     add(f'| Edits | {total_edits:,} |')
     add(f'| Distinct editors | {len(all_users):,} |')
-    add(f'| Editors other than `{owner}` | {len(others):,} |')
     add(f'| Scripts with at least one edit | {len(per_script):,} |')
     add('')
 
     add('## Per script')
     add('')
-    add('| Script | Owner | Edits | Editors | Applied | Open | Failed |')
-    add('|---|---|---:|---:|---:|---:|---:|')
+    add('| Script | Owner | Edits | Shared | Editors | Applied |')
+    add('|---|---|---:|---:|---:|---:|')
     for script_id, bucket in sorted(per_script.items(), key=lambda kv: -kv[1]['edits']):
         meta = scripts.get(script_id, {'name': script_id, 'owner': '?'})
         # Editor identity is not tracked for the comparison scripts, so an
         # honest dash beats a 0 that would read as "nobody uses it".
         users = f'{len(bucket["users"]):,}' if meta['owner'] == OWNED else '—'
-        add(f'| {meta["name"]} | {meta["owner"]} | {bucket["edits"]:,} | '
-            f'{users} | {bucket["applied"]:,} | {bucket["open"]:,} | '
-            f'{bucket["failed"]:,} |')
+        shared = shared_by_script.get(script_id, 0)
+        add(f'| {meta["name"]} | {meta["owner"]} | {bucket["edits"]:,} | {shared:,} | '
+            f'{users} | {bucket["applied"]:,} |')
     silent = [s for s in payload['scripts'] if s['id'] not in per_script]
     if silent:
         add('')
@@ -348,13 +398,17 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
 
     add('## Editors')
     add('')
-    add('| Editor | Edits | Scripts used |')
+    add('| Editor | Edits | Usage per script |')
     add('|---|---:|---|')
     ranked = sorted(per_editor.values(), key=lambda p: -p['edits'])[:50]
     for person in ranked:
-        used = ', '.join(sorted(scripts.get(s, {}).get('name', s) for s in person['scripts']))
-        add(f'| [{person["name"]}](https://musicbrainz.org/user/{person["name"]}) '
-            f'| {person["edits"]:,} | {used} |')
+        used = ', '.join(
+            f'{scripts.get(sid, {}).get("name", sid)} {n:,}'
+            for sid, n in sorted(person['scripts'].items(), key=lambda kv: -kv[1]))
+        # MusicBrainz usernames may contain spaces and other URL-unsafe
+        # characters, which silently break the markdown link target.
+        profile = 'https://musicbrainz.org/user/' + quote(person['name'], safe='')
+        add(f'| [{person["name"]}]({profile}) | {person["edits"]:,} | {used} |')
     if len(per_editor) > 50:
         add('')
         add(f'_Showing the top 50 of {len(per_editor):,} editors._')

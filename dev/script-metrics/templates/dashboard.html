@@ -187,7 +187,10 @@
 
   <section class="card">
     <h2>Per script</h2>
-    <p class="hint">Distinct editors is the adoption number — how many different people ran it.
+    <p class="hint"><strong>Shared</strong> counts edits also attributed to another script &mdash; our
+      scripts preserve a previous script's note when they append to theirs, so both signatures
+      really are on that edit.
+      Distinct editors is the adoption number — how many different people ran it.
       Editor identity is only tracked for this repo's own scripts; the comparison
       scripts show &mdash; because their editors are deliberately not stored.</p>
     <div class="scroll" id="tableScripts"></div>
@@ -233,7 +236,14 @@ const $ = (id) => document.getElementById(id);
 // "1.979", which reads as a decimal. Counts must not be ambiguous.
 const NUM = new Intl.NumberFormat('en-US');
 const fmt = (n) => NUM.format(n);
-const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+// Never round a success rate up to a flat 100 while failures exist — the tile
+// sits directly above "611 failed" and would be reading as a lie.
+const pct = (a, b) => {
+  if (!b) return 0;
+  const p = (a / b) * 100;
+  if (p >= 100) return 100;
+  return p > 99 ? Math.floor(p * 10) / 10 : Math.round(p);
+};
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SVG_NS = 'http://www.w3.org/2000/svg';
 function el(name, attrs = {}, parent = null) {
@@ -265,6 +275,7 @@ const state = {
   to: DATA.months.length ? DATA.months[DATA.months.length - 1] : DATA.default_cutoff.slice(0, 7),
   owners: 'mine',
   excludeAuthor: false,
+  allEditors: false,
 };
 
 // The author's own indices, including the folded bucket that stands in for the
@@ -309,8 +320,9 @@ function slice() {
     if (isTracked(ei)) {
       s.users.add(ei);
       let e = perEditor.get(ei);
-      if (!e) perEditor.set(ei, e = { edits: 0, scripts: new Set(), months: new Set() });
-      e.edits += count; e.scripts.add(si); e.months.add(mi);
+      if (!e) perEditor.set(ei, e = { edits: 0, scripts: new Map(), months: new Set() });
+      e.edits += count; e.months.add(mi);
+      e.scripts.set(si, (e.scripts.get(si) || 0) + count);
     }
 
     let m = perMonth.get(mi);
@@ -334,6 +346,12 @@ function slice() {
     if (!versions) perVersion.set(si, versions = new Map());
     versions.set(vi, (versions.get(vi) || 0) + count);
   }
+  const perShared = new Map();
+  for (const [si, mi, mine, isShared, count] of (DATA.cubes.shared || [])) {
+    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine) || !isShared) continue;
+    perShared.set(si, (perShared.get(si) || 0) + count);
+  }
+
   const perEntity = new Map();
   for (const [si, mi, mine, ni, count] of (DATA.cubes.entity || [])) {
     if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
@@ -346,7 +364,7 @@ function slice() {
 
   const months = [...perMonth.keys()].sort((a, b) => a - b);
   return { perScript, perEditor, perMonth, months, perType, perVersion, perEntity,
-           outcomeTotals, total, autoedits };
+           perShared, outcomeTotals, total, autoedits };
 }
 
 /* ---------------------------------------------------------------- tooltip */
@@ -368,13 +386,12 @@ const hideTip = () => { tip.style.opacity = '0'; };
 function renderTiles(view) {
   const users = new Set();
   for (const s of view.perScript.values()) for (const u of s.users) users.add(u);
-  const others = [...users].filter((u) => !authorEditorIdx.has(u));
   const active = [...view.perScript.values()].filter((s) => s.edits > 0).length;
   const closed = view.outcomeTotals.applied + view.outcomeTotals.failed;
 
   const tiles = [
     ['Edits', fmt(view.total), `${fmt(view.autoedits)} auto-applied`],
-    ['Editors', fmt(users.size), `${fmt(others.length)} other than ${esc(DATA.owner_mb_username)}`],
+    ['Editors', fmt(users.size), 'distinct people who ran a script'],
     ['Scripts active', fmt(active), `of ${DATA.scripts.filter((_, i) => scriptOk(i)).length} configured`],
     ['Applied', closed ? pct(view.outcomeTotals.applied, closed) + '<span class="unit">%</span>' : '—',
       `${fmt(view.outcomeTotals.failed)} failed, ${fmt(view.outcomeTotals.open)} open`],
@@ -483,6 +500,7 @@ function simpleTable(head, rows, numericFrom = 0) {
 
 /* ------------------------------------------------------------ script table */
 const sortState = { scripts: { key: 'edits', dir: -1 }, editors: { key: 'edits', dir: -1 } };
+const EDITORS_SHOWN = 25;
 
 function renderScripts(view) {
   const rows = [...view.perScript.entries()].map(([si, s]) => ({
@@ -490,6 +508,7 @@ function renderScripts(view) {
     owner: DATA.scripts[si].owner,
     colour: colourOf.get(si),
     edits: s.edits,
+    shared: view.perShared.get(si) || 0,
     users: s.users.size,
     tracked: DATA.scripts[si].owner === 'majkinetor',
     applied: s.applied,
@@ -500,14 +519,16 @@ function renderScripts(view) {
   rows.sort((a, b) => (a[cfg.key] > b[cfg.key] ? 1 : a[cfg.key] < b[cfg.key] ? -1 : 0) * cfg.dir);
 
   const silent = DATA.scripts.map((s, i) => [s, i]).filter(([s, i]) => scriptOk(i) && !view.perScript.has(i));
-  const columns = [['name','Script',0],['owner','Owner',0],['edits','Edits',1],['users','Editors',1],
-                   ['applied','Applied',1],['open','Open',1],['failed','Failed',1]];
+  const columns = [['name','Script',0],['owner','Owner',0],['edits','Edits',1],
+                   ['shared','Shared',1],['users','Editors',1],['applied','Applied',1]];
   const th = columns.map(([key, label, num]) =>
     `<th class="sortable ${num ? 'num' : ''} ${cfg.key === key ? (cfg.dir === 1 ? 'asc' : 'desc') : ''}" data-t="scripts" data-k="${key}">${label}</th>`).join('');
   const body = rows.map((r) => `<tr>
       <td><span class="sw" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${r.colour};margin-right:7px"></span>${esc(r.name)}</td>
-      <td>${esc(r.owner)}</td><td class="num">${fmt(r.edits)}</td><td class="num">${r.tracked ? fmt(r.users) : '&mdash;'}</td>
-      <td class="num">${fmt(r.applied)}</td><td class="num">${fmt(r.open)}</td><td class="num">${fmt(r.failed)}</td></tr>`).join('');
+      <td>${esc(r.owner)}</td><td class="num">${fmt(r.edits)}</td>
+      <td class="num" title="also attributed to another script">${fmt(r.shared)}</td>
+      <td class="num">${r.tracked ? fmt(r.users) : '&mdash;'}</td>
+      <td class="num">${fmt(r.applied)}</td></tr>`).join('');
 
   let html = `<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
   if (!rows.length) html = '<p class="empty">No edits in this window.</p>';
@@ -522,24 +543,41 @@ function renderEditors(view) {
   const rows = [...view.perEditor.entries()].map(([ei, e]) => ({
     name: DATA.editors[ei].name,
     edits: e.edits,
-    scripts: [...e.scripts].map((si) => DATA.scripts[si].name).sort().join(', '),
+    scripts: [...e.scripts.entries()].sort((a, b) => b[1] - a[1])
+      .map(([si, n]) => `${esc(DATA.scripts[si].name)} <strong>${fmt(n)}</strong>`)
+      .join(' &middot; '),
     nscripts: e.scripts.size,
     months: e.months.size,
   }));
   const cfg = sortState.editors;
   rows.sort((a, b) => (a[cfg.key] > b[cfg.key] ? 1 : a[cfg.key] < b[cfg.key] ? -1 : 0) * cfg.dir);
 
+  // 136 editors is a real number and worth having, but rendering all of them
+  // makes the page scroll for screens on end. Show the head of the list and let
+  // the reader ask for the rest.
+  const capped = !state.allEditors && rows.length > EDITORS_SHOWN;
+  const shown = capped ? rows.slice(0, EDITORS_SHOWN) : rows;
   const columns = [['name','Editor',0],['edits','Edits',1],['nscripts','Scripts',1],['months','Active months',1]];
   const th = columns.map(([key, label, num]) =>
     `<th class="sortable ${num ? 'num' : ''} ${cfg.key === key ? (cfg.dir === 1 ? 'asc' : 'desc') : ''}" data-t="editors" data-k="${key}">${label}</th>`).join('')
-    + '<th>Which</th>';
-  const body = rows.map((r) => `<tr>
+    + '<th>Usage per script</th>';
+  const body = shown.map((r) => `<tr>
       <td><a href="https://musicbrainz.org/user/${encodeURIComponent(r.name)}" target="_blank" rel="noopener">${esc(r.name)}</a></td>
       <td class="num">${fmt(r.edits)}</td><td class="num">${fmt(r.nscripts)}</td>
-      <td class="num">${fmt(r.months)}</td><td>${esc(r.scripts)}</td></tr>`).join('');
-  $('tableEditors').innerHTML = rows.length
+      <td class="num">${fmt(r.months)}</td><td>${r.scripts}</td></tr>`).join('');
+  let html = rows.length
     ? `<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`
     : '<p class="empty">No editors in this window.</p>';
+  if (rows.length > EDITORS_SHOWN) {
+    html += `<p class="empty"><button class="theme-toggle" id="toggleEditors" type="button">` +
+            (capped ? `Show all ${fmt(rows.length)} editors` : 'Show fewer') + '</button></p>';
+  }
+  $('tableEditors').innerHTML = html;
+  const toggle = $('toggleEditors');
+  if (toggle) toggle.addEventListener('click', () => {
+    state.allEditors = !state.allEditors;
+    renderEditors(slice());
+  });
 }
 
 /* -------------------------------------------------------------- type chart */

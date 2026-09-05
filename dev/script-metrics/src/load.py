@@ -180,6 +180,45 @@ def backfill_missing_editors(connection: sqlite3.Connection) -> int:
     return cursor.rowcount or 0
 
 
+def reparse_versions(connection: sqlite3.Connection, version_regexes: dict,
+                     owned_scripts: set[str]) -> int:
+    """Recompute `note_script.version` from the stored note text.
+
+    This is the payoff for keeping our own scripts' note bodies: a wrong or
+    too-strict version pattern is fixed by re-running the reports, not by another
+    15 GB pass over the dump. It runs on every report build so a config change
+    takes effect immediately.
+
+    Only our own scripts are touched — the comparison scripts' notes are stored
+    truncated, so re-parsing them could only lose information.
+    """
+    if not owned_scripts:
+        return 0
+
+    placeholders = ','.join('?' * len(owned_scripts))
+    rows = connection.execute(
+        f'SELECT ns.note, ns.script, ns.version, n.text '
+        f'FROM note_script ns JOIN note n ON n.id = ns.note '
+        f'WHERE ns.script IN ({placeholders})', tuple(owned_scripts)
+    ).fetchall()
+
+    updates = []
+    for note_id, script_id, current, text in rows:
+        regex = version_regexes.get(script_id)
+        found = regex.search(text) if regex is not None and text else None
+        version = found.group(1) if found else None
+        if version != current:
+            updates.append((version, note_id, script_id))
+
+    if updates:
+        connection.executemany(
+            'UPDATE note_script SET version = ? WHERE note = ? AND script = ?', updates)
+        connection.commit()
+    print(f'  re-parsed versions: {len(updates):,} changed of {len(rows):,}',
+          file=sys.stderr, flush=True)
+    return len(updates)
+
+
 def record_run(connection: sqlite3.Connection, dump_id: str, notes: int,
                edits: int, editors: int, duration_s: float) -> None:
     connection.execute(
