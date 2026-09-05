@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.5.194211
+// @version      2026.9.5.210612
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,13 +78,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.5.194211 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.5.130556\n  · Art Station v2026.9.5.130556\n  · Credit Hoarder v2026.9.5.160106\n  · Group Therapy v2026.9.5.192523\n  · ISRC Scout v2026.9.5.130556\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
+  console.log('%c String Theory %c v2026.9.5.210612 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.5.210556\n  · Art Station v2026.9.5.130556\n  · Credit Hoarder v2026.9.5.160106\n  · Group Therapy v2026.9.5.192523\n  · ISRC Scout v2026.9.5.130556\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.5.210556","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.5.210556","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -2028,12 +2028,21 @@ try {
     .tc-mirror .c-num{color:var(--mbu-text-weak);font-variant-numeric:tabular-nums;text-align:center}
     .tc-mirror th.c-len{text-align:right}
     .tc-mirror .c-mv{white-space:nowrap;text-align:center}
-    .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
+     /* #564: these inputs are created WITHOUT a type attribute, which is exactly what kellnerd's
+        "Dark Side of MusicBrainz" targets -- its rule
+          input:not([type]):not(.lookup-performed):not(.required):not([style*=background])
+        paints them --background-dimmed (#222) at specificity (0,4,1), outranking every rule below, so in a
+        dark theme they read as black boxes floating on the row instead of being invisible as they are in
+        light. Measured rather than guessed: test/probe-564-tracklist-bg.mjs prints the computed colour of
+        each one under the real userstyle. !important is what outranks it without specificity golf, and the
+        state fills need it too -- an !important base would otherwise bury the diff/preview/pending colours
+        that actually carry meaning. */
+    .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent!important;font:13px Arial;padding:3px 2px}
     .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:var(--mbu-text-dim)}
     .tc-mirror input.t-num{text-align:center}
-    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:var(--mbu-border);background:var(--mbu-bg)}
+    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:var(--mbu-border);background:var(--mbu-bg)!important}
     .tc-mirror input.t-len[readonly]{color:var(--mbu-text-weak);cursor:default}   /* #329: TOC-fixed length — not editable */
-    .tc-mirror input.t-len[readonly]:hover,.tc-mirror input.t-len[readonly]:focus{border-color:transparent;background:transparent}
+    .tc-mirror input.t-len[readonly]:hover,.tc-mirror input.t-len[readonly]:focus{border-color:transparent;background:transparent!important}
     .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px;position:relative}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
     /* In-cell action buttons (Aa / ⋔) overlay the input's right edge instead of
        sitting in the flex flow, so they don't reserve width and shrink the input —
@@ -2041,8 +2050,8 @@ try {
        clips long titles. #153 */
     .tc-mirror .t-actions{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:3px;pointer-events:none}
     .tc-mirror .t-actions>*{pointer-events:auto}
-    .tc-mirror input.t-title.diff{background:var(--mbu-warn-bg);border-color:var(--mbu-warn);border-radius:3px}
-    .tc-mirror input.t-title.gcpreview{background:var(--mbu-ok-bg);border-color:var(--mbu-ok);border-radius:3px}
+    .tc-mirror input.t-title.diff{background:var(--mbu-warn-bg)!important;border-color:var(--mbu-warn);border-radius:3px}
+    .tc-mirror input.t-title.gcpreview{background:var(--mbu-ok-bg)!important;border-color:var(--mbu-ok);border-radius:3px}
     /* #203: rich title display — read-only styled text (confusable chars enlarged) shown
        when the title isn't being edited; clicking/tabbing into it shows the native input.
        Mirrors the input's diff/gcpreview/hasfeat backgrounds so the cell looks unchanged. */
@@ -2055,7 +2064,7 @@ try {
     .tc-mirror .t-title-disp.tc-hidden{display:none}
     /* #376 mirror MB's native gold "modification pending" mark — color ONLY the pending field
        (the title for a recording edit, the artist for an artist edit), not the whole row */
-    .tc-mirror tr.tc-rec-pending td.c-title .t-title-disp,.tc-mirror tr.tc-rec-pending td.c-title input.t-title{background:var(--mbu-warn-bg);border-color:var(--mbu-warn)}
+    .tc-mirror tr.tc-rec-pending td.c-title .t-title-disp,.tc-mirror tr.tc-rec-pending td.c-title input.t-title{background:var(--mbu-warn-bg)!important;border-color:var(--mbu-warn)}
     .tc-mirror td.c-art .tc-search.tc-slot-pending{background:var(--mbu-warn-bg)!important;border-color:var(--mbu-warn)}   /* #376 per-slot: only a selected artist with pending edits golds, never a free-text slot */
     .tc-mirror.compact .t-title-disp{padding:0 2px;font-size:12px}
     .tc-mirror input.t-title.tc-eml:not(.tc-editing){position:absolute;width:1px;height:1px;min-width:0;padding:0;margin:0;border:0;opacity:0;pointer-events:none}
@@ -2098,7 +2107,7 @@ try {
     body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}
     .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid var(--mbu-warn);background:var(--mbu-warn-bg);color:var(--mbu-warn);font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:var(--mbu-warn-bg)}
     .tc-mirror tr:hover .t-gc{visibility:visible}
-    .tc-mirror input.t-title.hasfeat{background:var(--mbu-bg-raised);border-color:var(--mbu-info);border-radius:3px}
+    .tc-mirror input.t-title.hasfeat{background:var(--mbu-bg-raised)!important;border-color:var(--mbu-info);border-radius:3px}
     .tc-mirror .t-feat{flex:none;cursor:pointer;border:1px solid var(--mbu-info);background:var(--mbu-bg-raised);color:var(--mbu-info);font:bold 12px Arial;border-radius:3px;padding:0 4px;line-height:16px;visibility:hidden}.tc-mirror .t-feat:hover{background:var(--mbu-info-bg)}
     .tc-mirror tr:hover .t-feat{visibility:visible}
     .tc-mirror .mv{cursor:pointer;color:var(--mbu-accent-text);font-size:12px;padding:0 1px}
@@ -2129,14 +2138,14 @@ try {
     .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}   /* a track that differs from its page-load state */
     /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
-    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:var(--mbu-text);border:1px solid transparent;background:transparent;padding:1px 4px 1px 15px;transition:color .12s}
+    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:var(--mbu-text);border:1px solid transparent;background:transparent!important;padding:1px 4px 1px 15px;transition:color .12s}
     .tc-cred::placeholder{color:var(--mbu-text-weak)}
     .tc-credwrap{position:relative;flex:none;display:inline-flex;align-items:center}
     .tc-cred-clr{position:absolute;left:2px;top:50%;transform:translateY(-50%);z-index:2;display:none;border:none;background:none;color:var(--mbu-text-weak);cursor:pointer;font-size:12px;line-height:1;padding:0}
     .tc-aslot.tc-has-cred:hover .tc-cred-clr{display:block}
     .tc-cred-clr:hover{color:var(--mbu-error)}
-    .tc-cred:hover,.tc-cred:focus{border-color:var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-text)}
-    .tc-aslot.tc-can-split .tc-cred{background:var(--mbu-warn-bg);border-color:var(--mbu-warn);border-radius:3px;color:var(--mbu-warn)}
+    .tc-cred:hover,.tc-cred:focus{border-color:var(--mbu-accent);background:var(--mbu-bg)!important;color:var(--mbu-text)}
+    .tc-aslot.tc-can-split .tc-cred{background:var(--mbu-warn-bg)!important;border-color:var(--mbu-warn);border-radius:3px;color:var(--mbu-warn)}
     .tc-aslot.tc-can-split .tc-cred::placeholder{color:var(--mbu-warn)}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--mbu-accent-text);text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:var(--mbu-accent-deep-text)}.tc-tic.dim{color:var(--mbu-accent-text)}
@@ -2173,20 +2182,20 @@ try {
     @keyframes tcflash{0%{box-shadow:0 0 0 3px #e0a800}70%{box-shadow:0 0 0 3px #e0a800}100%{box-shadow:0 0 0 0 rgba(224,168,0,0)}}
     .tc-search.tc-flash{animation:tcflash 1.5s ease-out}
     .tc-search.tc-marked{border:2px solid var(--mbu-warn)}   /* persists when a pick changed several tracks */
-    .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
+    .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent!important;font:13px Arial;padding:3px 0;outline:none}
     .tc-search .tc-bar-aka{flex:0 1 auto;min-width:0;max-width:55%;margin-left:2px;color:var(--mbu-ok);font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
     .tc-search .tc-bar-disamb{flex:0 1 auto;min-width:0;max-width:55%;margin-left:4px;color:var(--mbu-text-weak);font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}   /* artist disambiguation, grey like native #195 */
     .tc-search .mk{flex:none;order:9;cursor:pointer;border:none;background:none;color:var(--mbu-ok);font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:var(--mbu-ok)}   /* order:9 keeps ＋ pinned at the far right, past the join-phrase */
     /* push ＋ to the right edge only when there's NO join-phrase; with a join, .tc-joinwrap's margin-left:auto already pushes the right-group and ＋ (order:9) follows it (two auto-margins would split the gap). #298 follow-up */
     .tc-search:not(:has(.tc-joinwrap)) .mk{margin-left:auto}
     .tc-joinwrap{flex:none;margin-left:auto;display:flex;align-items:center;gap:0}
-    .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:var(--mbu-text-dim);font:italic 900 12px var(--mbu-font);padding:1px 2px;border-radius:3px}
-    .tc-join:hover,.tc-join:focus{border-color:var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text)}
+    .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent!important;color:var(--mbu-text-dim);font:italic 900 12px var(--mbu-font);padding:1px 2px;border-radius:3px}
+    .tc-join:hover,.tc-join:focus{border-color:var(--mbu-border);background:var(--mbu-bg)!important;color:var(--mbu-text)}
     /* #419: the caret needs a REAL hit target (padding-grown), not a bare 10px glyph */
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:var(--mbu-accent-text);font-size:12px;padding:3px 5px;margin:-3px 0;line-height:1;border-radius:3px}
     .tc-joinarrow:hover{color:var(--mbu-accent-text);background:var(--mbu-bg-hover)}
     /* #208 join-phrase spacing flags: ␣ where a space is missing, ␣?␣ when the phrase is missing entirely */
-    .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:var(--mbu-error-bg);color:var(--mbu-error)}
+    .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:var(--mbu-error-bg)!important;color:var(--mbu-error)}
     .tc-jp-nolead::before,.tc-jp-notrail::after,.tc-jp-nophrase::before{background:var(--tc-hl,#e53935);color:var(--mbu-text-on-accent);border-radius:2px;padding:0 1px;font:700 11px Arial;line-height:1}
     .tc-jp-nolead::before{content:'␣'}
     .tc-jp-notrail::after{content:'␣'}
