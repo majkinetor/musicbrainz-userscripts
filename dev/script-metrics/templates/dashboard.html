@@ -207,6 +207,13 @@
   </section>
 
   <section class="card">
+    <h2>What gets touched</h2>
+    <p class="hint">Entity types these edits act on. One edit can touch several &mdash; a merge,
+      a relationship &mdash; so touches legitimately exceed the edit count.</p>
+    <div class="scroll" id="tableEntities"></div>
+  </section>
+
+  <section class="card">
     <h2>Versions in the wild</h2>
     <p class="hint">Parsed from the version stamped in each edit note.</p>
     <div class="scroll" id="tableVersions"></div>
@@ -327,13 +334,19 @@ function slice() {
     if (!versions) perVersion.set(si, versions = new Map());
     versions.set(vi, (versions.get(vi) || 0) + count);
   }
+  const perEntity = new Map();
+  for (const [si, mi, mine, ni, count] of (DATA.cubes.entity || [])) {
+    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    perEntity.set(ni, (perEntity.get(ni) || 0) + count);
+  }
   for (const [si, mi, mine, count] of DATA.cubes.autoedit) {
     if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
     autoedits += count;
   }
 
   const months = [...perMonth.keys()].sort((a, b) => a - b);
-  return { perScript, perEditor, perMonth, months, perType, perVersion, outcomeTotals, total, autoedits };
+  return { perScript, perEditor, perMonth, months, perType, perVersion, perEntity,
+           outcomeTotals, total, autoedits };
 }
 
 /* ---------------------------------------------------------------- tooltip */
@@ -566,6 +579,18 @@ function renderTypes(view) {
   $('tableTypes').innerHTML = simpleTable(['Edit type', 'Edits'], all, 1);
 }
 
+function renderEntities(view) {
+  const rows = [...view.perEntity.entries()]
+    .map(([ni, count]) => ({ name: DATA.entities[ni], count }))
+    .sort((a, b) => b.count - a.count);
+  const total = rows.reduce((sum, r) => sum + r.count, 0);
+  $('tableEntities').innerHTML = rows.length
+    ? simpleTable(['Entity', 'Touches', 'Share'],
+        rows.map((r) => [esc(r.name.replace('_', ' ')), fmt(r.count),
+                         (total ? Math.round((r.count / total) * 100) : 0) + '%']), 1)
+    : '<p class="empty">No entity data in this window.</p>';
+}
+
 const VERSIONS_PER_SCRIPT = 4;
 
 function renderVersions(view) {
@@ -614,6 +639,7 @@ function renderAll() {
   renderScripts(view);
   renderEditors(view);
   renderTypes(view);
+  renderEntities(view);
   renderVersions(view);
 }
 

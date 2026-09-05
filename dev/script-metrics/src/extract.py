@@ -156,9 +156,20 @@ def iter_notes(
     print(f'  scanned {scanned:,} notes, matched {matched:,}', file=sys.stderr, flush=True)
 
 
-def iter_edit_rows(edit_dump: Path, edit_ids: set[int]) -> Iterator[tuple[str, tuple]]:
-    """Pass 2. Yield `('edit'|'entity'|'vote', row)` for the matched edit ids."""
-    print(f'Pass 2/2: pulling edit rows for {len(edit_ids):,} edits', file=sys.stderr, flush=True)
+def iter_edit_rows(edit_dump: Path, edit_ids: set[int],
+                   entity_ids: set[int] | None = None) -> Iterator[tuple[str, tuple]]:
+    """Pass 2. Yield `('edit'|'entity'|'vote', row)` for the matched edit ids.
+
+    `entity_ids` narrows the entity-link tables, which are by far the largest
+    thing pass 2 can produce: the first real run kept 37 million link rows for
+    8.9 million edits, almost all of them belonging to the third-party
+    comparison scripts, to serve one small per-entity-type breakdown. Restricting
+    them to our own scripts keeps that breakdown and drops the bulk.
+    """
+    if entity_ids is None:
+        entity_ids = edit_ids
+    print(f'Pass 2/2: pulling edit rows for {len(edit_ids):,} edits '
+          f'({len(entity_ids):,} with entity links)', file=sys.stderr, flush=True)
     wanted = {EDIT_MEMBER, VOTE_MEMBER, *ENTITY_MEMBERS}
     counts = {'edit': 0, 'entity': 0, 'vote': 0}
 
@@ -217,7 +228,7 @@ def iter_edit_rows(edit_dump: Path, edit_ids: set[int]) -> Iterator[tuple[str, t
                     edit_id = int(head)
                 except ValueError:
                     continue
-                if edit_id not in edit_ids:
+                if edit_id not in entity_ids:
                     continue
                 entity_id, _, _ = rest.partition(b'\t')
                 try:

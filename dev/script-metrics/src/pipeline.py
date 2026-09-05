@@ -33,11 +33,19 @@ def main() -> int:
     parser.add_argument('--dump-id', default=None, help='pin a dump instead of LATEST')
     parser.add_argument('--report-only', action='store_true',
                         help='skip ingest, re-render from the existing database')
+    parser.add_argument('--db', default=None,
+                        help='database path (default <data-dir>/metrics.db)')
+    parser.add_argument('--vacuum', action='store_true',
+                        help='VACUUM after ingest; rewrites the whole file, needs as much disk again')
     args = parser.parse_args()
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    database = out_dir / 'metrics.db'
+    # The database lives beside the dump cache, not in the bind-mounted output
+    # directory. On Docker Desktop that output directory is the Windows
+    # filesystem, and putting a multi-gigabyte SQLite file there makes the load
+    # I/O-bound on the slowest thing available. Only the small reports cross over.
+    database = Path(args.db) if args.db else Path(args.data_dir) / 'metrics.db'
 
     config = json.loads(Path(args.config).read_text(encoding='utf8'))
     scripts = config['scripts']
@@ -53,15 +61,25 @@ def main() -> int:
         matcher = extract.ScriptMatcher(scripts)
         versions = extract.compile_version_regexes(scripts, config['default_version_regex'])
 
+        owned_scripts = {s['id'] for s in scripts if s.get('owner') == report.OWNED}
         edit_ids, note_editor_ids, note_count = load.insert_notes(
-            connection, extract.iter_notes(Path(meta['edit_dump']), matcher, versions))
+            connection, extract.iter_notes(Path(meta['edit_dump']), matcher, versions),
+            owned_scripts)
 
         if not edit_ids:
             print('No edit notes matched any configured pattern — nothing to load.', file=sys.stderr)
             return 1
 
+        # Entity links are only kept for our own scripts; see iter_edit_rows.
+        owned_edit_ids = {
+            row[0] for row in connection.execute(
+                'SELECT DISTINCT n.edit FROM note n '
+                'JOIN note_script ns ON ns.note = n.id '
+                'JOIN script s ON s.id = ns.script WHERE s.owner = ?', (report.OWNED,))
+        }
         counts = load.insert_edit_rows(
-            connection, extract.iter_edit_rows(Path(meta['edit_dump']), edit_ids))
+            connection,
+            extract.iter_edit_rows(Path(meta['edit_dump']), edit_ids, owned_edit_ids))
 
         # Editors we need names for: whoever wrote a matching note, plus whoever
         # made the edit (not always the same person).
@@ -76,7 +94,7 @@ def main() -> int:
         duration = time.time() - started
         load.record_run(connection, meta['dump_id'], note_count,
                         counts['edit'], resolved, duration)
-        load.optimise(connection)
+        load.optimise(connection, vacuum=args.vacuum)
         print(f'Ingest finished in {duration / 60:.1f} min', file=sys.stderr)
 
     report.render(connection, out_dir, config)
