@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.5.130556
+// @version      2026.9.5.192523
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -101,7 +101,10 @@
   function editNoteSig() {
     let s = {}; try { if (typeof GM_info !== 'undefined' && GM_info.script) s = GM_info.script; } catch (e) {}
     const name = (s.name || 'Group Therapy').split(/\s+[—–-]\s+/)[0].trim();   // drop the "— MusicBrainz relationship helper" suffix
-    return `${name} by ${s.author || 'majkinetor'} v${s.version || VERSION} - ${s.homepageURL || s.homepage || GT_HOMEPAGE}`;
+    // Same shape as every other script in the repo: "<Name> v<version> by <author> - <url>".
+    // GT used to put the author before the version, which is the odd one out and made
+    // version stats unparseable for anything reading edit notes (dev/script-metrics #570).
+    return `${name} v${s.version || VERSION} by ${s.author || 'majkinetor'} - ${s.homepageURL || s.homepage || GT_HOMEPAGE}`;
   }
   // Stamp our signature into MB's edit-note field and, under it, an accumulating list of what GT did
   // ("Copied credits from track 4 to tracks 1–5", "Removed guitar (14)"). Any note that preceded ours
