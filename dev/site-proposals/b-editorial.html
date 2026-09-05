@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg:#fbfbfa; --card:#ffffff; --ink:#14151a; --dim:#5c6068; --line:#e6e5e1;
+    --accent:#5f3ec0; --accent-soft:#f2eeff; --hair:rgba(20,21,26,.08);
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-t="light"]) {
+      color-scheme: dark;
+      --bg:#131316; --card:#1a1a1f; --ink:#eceded; --dim:#a0a4ad; --line:#2a2b31;
+      --accent:#b9a7f0; --accent-soft:#221c3a; --hair:rgba(255,255,255,.09);
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 var(--sans); -webkit-font-smoothing:antialiased; }
+  a { color:var(--accent); }
+  .wrap { max-width:880px; margin:0 auto; padding:0 24px; }
+
+  header { padding:86px 0 30px; text-align:center; }
+  h1 { font:600 46px/1.08 var(--sans); letter-spacing:-.03em; margin:0 0 16px; }
+  .lede { font-size:19px; color:var(--dim); max-width:52ch; margin:0 auto; }
+  .cta { display:flex; gap:11px; justify-content:center; flex-wrap:wrap; margin-top:30px; }
+  .btn { display:inline-block; padding:11px 20px; border-radius:9px; text-decoration:none; font-size:15px; font-weight:500;
+         border:1px solid var(--line); background:var(--card); color:var(--ink); }
+  .btn:hover { border-color:var(--accent); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-t="light"]) .btn.primary { color:#17131f; } }
+  .btn.primary:hover { filter:brightness(1.07); }
+  .note { margin-top:14px; font-size:13.5px; color:var(--dim); }
+
+  figure.hero { margin:52px 0 0; }
+  figure.hero img { width:100%; display:block; border-radius:12px; border:1px solid var(--line); box-shadow:0 18px 50px rgba(0,0,0,.10); }
+  figure.hero figcaption { text-align:center; color:var(--dim); font-size:13.5px; margin-top:12px; }
+
+  .rule { height:1px; background:var(--line); margin:66px 0; border:0; }
+
+  .band { display:flex; gap:34px; justify-content:center; flex-wrap:wrap; text-align:center; }
+  .band div b { display:block; font:600 30px/1.15 var(--sans); font-variant-numeric:tabular-nums; }
+  .band div span { font-size:13px; color:var(--dim); }
+
+  h2 { font:600 14px/1 var(--sans); letter-spacing:.13em; text-transform:uppercase; color:var(--dim); margin:0 0 6px; }
+  .grouphint { color:var(--dim); font-size:14px; margin:0 0 20px; }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:17px 18px; text-decoration:none; color:inherit; display:block; }
+  .card:hover { border-color:var(--accent); }
+  .card .top { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+  .card img { width:25px; height:25px; }
+  .card .nm { font-weight:600; }
+  .card p { margin:0; color:var(--dim); font-size:14.5px; line-height:1.5; }
+
+  .bundle { background:var(--accent-soft); border:1px solid var(--accent); border-radius:14px; padding:24px 26px; display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  .bundle img { width:44px; height:44px; }
+  .bundle .b-main { flex:1 1 260px; }
+  .bundle h3 { margin:0 0 4px; font-size:19px; }
+  .bundle p { margin:0; color:var(--dim); font-size:14.5px; }
+
+  footer { padding:56px 0 76px; text-align:center; color:var(--dim); font-size:14px; }
+  footer a { color:var(--dim); margin:0 9px; }
+  @media (max-width:620px){ header{padding-top:56px} h1{font-size:34px} .lede{font-size:17px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>MusicBrainz Toolset</h1>
+    <p class="lede">A set of userscripts for people who edit MusicBrainz in bulk — importing credits,
+      fixing relationships in batches, chasing ISRCs, and getting cover art right.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install the bundle</a>
+      <a class="btn" href="https://github.com/majkinetor/musicbrainz-userscripts">View on GitHub</a>
+    </div>
+    <p class="note">Needs a userscript manager. Every script also works on its own.</p>
+  </header>
+
+  <figure class="hero">
+    <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor's tracklist"
+         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+    <figcaption>Apollo Editor, standing in for the release editor's own tracklist</figcaption>
+  </figure>
+
+  <hr class="rule">
+
+  <div class="band">
+    <div><b>499,632</b><span>edits made with them</span></div>
+    <div><b>136</b><span>editors using them</span></div>
+    <div><b>12</b><span>scripts</span></div>
+  </div>
+  <p style="text-align:center;margin-top:14px">
+    <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md" style="font-size:14px">See the full statistics →</a>
+  </p>
+
+  <hr class="rule">
+
+  <div class="bundle">
+    <img alt="" src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg">
+    <div class="b-main">
+      <h3>String Theory</h3>
+      <p>Most of the scripts below, built into a single file. Install this instead of adding them one by one.</p>
+    </div>
+    <a class="btn primary" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Editing a release</h2>
+  <p class="grouphint">The ones that live inside MusicBrainz's own editor.</p>
+  <div class="cards" id="g1"></div>
+
+  <h2 style="margin-top:44px">Working across releases</h2>
+  <p class="grouphint">Batch tools that run on their own.</p>
+  <div class="cards" id="g2"></div>
+
+  <h2 style="margin-top:44px">Elsewhere</h2>
+  <p class="grouphint">Not MusicBrainz, but here anyway.</p>
+  <div class="cards" id="g3"></div>
+
+  <footer>
+    <div>Statistics from the MusicBrainz database snapshot 20260905, 2026-05 onward.</div>
+    <div style="margin-top:10px">
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">Source</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Documentation</a>
+      <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+const RAW='https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/';
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const G = {
+  g1:[['apollo_editor','Apollo Editor','icon.svg','Advanced adding and editing of a release.'],
+      ['art_station','Art Station','icon.png','Cover art: view, reorder, retype, comment, remove, add from the web.'],
+      ['credit_hoarder','Credit Hoarder','icon.svg','Import credits from several providers, with a review phase.'],
+      ['group_therapy','Group Therapy','icon.svg','Batch operations and helpers for relationships.'],
+      ['isrc_scout','ISRC Scout','icon.svg','Reads existing ISRCs and streaming links, fills the gaps.'],
+      ['mammoth','Mammoth','icon.svg','Keeps your reusable edit notes beside the note field.'],
+      ['platform_check','Platform Check','icon.svg','Find and verify a release across online platforms.']],
+  g2:[['falcon','Falcon','icon.svg','Batch-edit entity fields, from Harmony or on its own.'],
+      ['fusion','Fusion','icon.svg','Merge duplicate recordings: review, auto-match, submit.'],
+      ['scribe','Scribe','scribe.svg','Edit MusicBrainz in your real editor (VS Code, Vim, …).']],
+  g3:[['bandcamp_player_enhanced','Bandcamp Player Enhanced','icon.svg','Bandcamp album player with keyboard shortcuts.']],
+};
+for (const [id, list] of Object.entries(G)) {
+  document.getElementById(id).innerHTML = list.map(([slug,name,icon,tag]) => `
+    <a class="card" href="${GH}${slug}/README.md">
+      <div class="top"><img loading="lazy" alt="" src="${RAW}${slug}/${icon}"><span class="nm">${name}</span></div>
+      <p>${tag}</p>
+    </a>`).join('');
+}
+</script>
+</body>
+</html>

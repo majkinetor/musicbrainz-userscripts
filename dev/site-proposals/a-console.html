@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:#0e0f12; --panel:#15171c; --line:#23262e; --ink:#e8e9ec; --dim:#9aa0ab;
+    --accent:#7c5cff; --accent-soft:#1c1830; --ok:#1baf7a;
+    --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 var(--sans); }
+  a { color:inherit; }
+  .wrap { max-width:1000px; margin:0 auto; padding:0 22px; }
+
+  header { border-bottom:1px solid var(--line); padding:54px 0 34px; }
+  .eyebrow { font:12px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); }
+  h1 { font:600 40px/1.1 var(--sans); letter-spacing:-.025em; margin:14px 0 10px; }
+  h1 .dot { color:var(--accent); }
+  .lede { color:var(--dim); max-width:60ch; margin:0; }
+  .cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:24px; }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:9px 15px; border-radius:8px;
+         border:1px solid var(--line); background:var(--panel); text-decoration:none; font-size:14px; }
+  .btn:hover { border-color:var(--accent); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  .btn.primary:hover { filter:brightness(1.1); }
+
+  .stats { display:flex; flex-wrap:wrap; gap:0; border-bottom:1px solid var(--line); }
+  .stat { flex:1 1 160px; padding:22px 0; }
+  .stat b { display:block; font:600 27px/1.1 var(--sans); font-variant-numeric:tabular-nums; }
+  .stat span { font:11px/1.5 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
+
+  section { padding:44px 0; border-bottom:1px solid var(--line); }
+  h2 { font:600 13px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:0 0 22px; }
+
+  .shot { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--panel); }
+  .shot img { display:block; width:100%; }
+  .shot figcaption { padding:9px 13px; border-top:1px solid var(--line); font:12px var(--mono); color:var(--dim); }
+
+  ul.list { list-style:none; margin:0; padding:0; }
+  ul.list li { display:flex; gap:13px; align-items:flex-start; padding:13px 0; border-top:1px solid var(--line); }
+  ul.list li:first-child { border-top:none; }
+  ul.list img { width:26px; height:26px; flex:none; margin-top:1px; }
+  .nm { font-weight:600; }
+  .nm a { text-decoration:none; }
+  .nm a:hover { color:var(--accent); }
+  .tag { color:var(--dim); font-size:14px; }
+  .li-main { flex:1 1 auto; min-width:0; }
+  .go { flex:none; font:11px var(--mono); color:var(--dim); text-decoration:none; padding:3px 8px;
+        border:1px solid var(--line); border-radius:6px; white-space:nowrap; }
+  .go:hover { color:var(--ink); border-color:var(--accent); }
+
+  .featured { background:var(--accent-soft); border:1px solid #2c2456; border-radius:10px; padding:16px 18px; margin-bottom:26px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  .featured img { width:34px; height:34px; }
+  .featured .li-main { min-width:220px; }
+  .subtle { font:12px var(--mono); color:var(--dim); }
+
+  footer { padding:34px 0 60px; color:var(--dim); font-size:13px; display:flex; gap:18px; flex-wrap:wrap; }
+  footer a { color:var(--dim); }
+  @media (max-width:640px){ h1{font-size:31px} .stat{flex-basis:50%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">majkinetor / musicbrainz-userscripts</div>
+    <h1>MusicBrainz Toolset<span class="dot">.</span></h1>
+    <p class="lede">Userscripts, Picard plugins and shell scripts for people who edit MusicBrainz in bulk —
+      importing credits, batch-fixing relationships, chasing ISRCs and cover art.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install String Theory</a>
+      <a class="btn" href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
+      <a class="btn" href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
+      <a class="btn" href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Stats</a>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b>499,632</b><span>edits made</span></div>
+    <div class="stat"><b>136</b><span>editors using them</span></div>
+    <div class="stat"><b>12</b><span>userscripts</span></div>
+    <div class="stat"><b>1</b><span>file, if you want</span></div>
+  </div>
+
+  <section>
+    <h2>What it looks like</h2>
+    <figure class="shot" style="margin:0">
+      <img loading="lazy" alt="Apollo Editor's tracklist replacing the MusicBrainz release editor"
+           src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+      <figcaption>Apollo Editor — the release editor's tracklist, replaced</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>The scripts</h2>
+
+    <div class="featured">
+      <img alt="" src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg">
+      <div class="li-main">
+        <div class="nm">String Theory</div>
+        <div class="tag">One file with most of the scripts below in it. Install this <em>instead of</em> the individual ones.</div>
+      </div>
+      <a class="btn primary" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+    </div>
+
+    <ul class="list" id="scripts"></ul>
+  </section>
+
+  <footer>
+    <span>Statistics from the MusicBrainz database snapshot <code class="subtle">20260905</code>, 2026-05 onward.</span>
+    <a href="https://github.com/majkinetor/musicbrainz-userscripts">Source</a>
+    <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+    <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript?</a>
+  </footer>
+</div>
+
+<script>
+const RAW = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/';
+const GH  = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const SCRIPTS = [
+  ['apollo_editor','Apollo Editor','icon.svg','Advanced adding and editing of a MusicBrainz release'],
+  ['art_station','Art Station','icon.png','Cover art editor: view, reorder, retype, comment, remove, add from the web'],
+  ['credit_hoarder','Credit Hoarder','icon.svg','Import credits from several providers, with a review phase'],
+  ['group_therapy','Group Therapy','icon.svg','Batch operations and helpers for editing relationships'],
+  ['isrc_scout','ISRC Scout','icon.svg','Reads existing ISRCs and streaming links, fills in what is missing'],
+  ['mammoth','Mammoth','icon.svg','Remembers your edit notes and options so you can recall them'],
+  ['platform_check','Platform Check','icon.svg','Find and verify a release across online platforms'],
+  ['falcon','Falcon','icon.svg','Batch-edit entity fields, from Harmony or on its own'],
+  ['fusion','Fusion','icon.svg','Merge duplicate recordings: review, auto-match, submit'],
+  ['scribe','Scribe','scribe.svg','Edit MusicBrainz in your real editor (VS Code, Vim, …)'],
+  ['bandcamp_player_enhanced','Bandcamp Player Enhanced','icon.svg','Bandcamp album player with keyboard shortcuts'],
+];
+document.getElementById('scripts').innerHTML = SCRIPTS.map(([slug, name, icon, tag]) => `
+  <li>
+    <img loading="lazy" alt="" src="${RAW}${slug}/${icon}">
+    <div class="li-main">
+      <div class="nm"><a href="${GH}${slug}/README.md">${name}</a></div>
+      <div class="tag">${tag}</div>
+    </div>
+    <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/${slug}/${slug}.user.js">install</a>
+  </li>`).join('');
+</script>
+</body>
+</html>
