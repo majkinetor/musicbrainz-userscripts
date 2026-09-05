@@ -187,7 +187,9 @@
 
   <section class="card">
     <h2>Per script</h2>
-    <p class="hint">Distinct editors is the adoption number — how many different people ran it.</p>
+    <p class="hint">Distinct editors is the adoption number — how many different people ran it.
+      Editor identity is only tracked for this repo's own scripts; the comparison
+      scripts show &mdash; because their editors are deliberately not stored.</p>
     <div class="scroll" id="tableScripts"></div>
   </section>
 
@@ -258,9 +260,14 @@ const state = {
   excludeAuthor: false,
 };
 
+// The author's own indices, including the folded bucket that stands in for the
+// author's edits on the comparison scripts.
 const authorEditorIdx = new Set(
-  DATA.editors.map((e, i) => (e.name === DATA.owner_mb_username ? i : -1)).filter((i) => i >= 0)
+  DATA.editors.map((e, i) => (e.is_author ? i : -1)).filter((i) => i >= 0)
 );
+// Folded buckets are real edits but not identifiable people: they must never
+// reach a distinct-editor count or the leaderboard.
+const isTracked = (ei) => DATA.editors[ei].tracked;
 
 function monthOk(mi) {
   const m = DATA.months[mi];
@@ -290,11 +297,14 @@ function slice() {
 
     let s = perScript.get(si);
     if (!s) perScript.set(si, s = { edits: 0, applied: 0, open: 0, failed: 0, users: new Set(), months: new Set() });
-    s.edits += count; s[outcome] += count; s.users.add(ei); s.months.add(mi);
+    s.edits += count; s[outcome] += count; s.months.add(mi);
 
-    let e = perEditor.get(ei);
-    if (!e) perEditor.set(ei, e = { edits: 0, scripts: new Set(), months: new Set() });
-    e.edits += count; e.scripts.add(si); e.months.add(mi);
+    if (isTracked(ei)) {
+      s.users.add(ei);
+      let e = perEditor.get(ei);
+      if (!e) perEditor.set(ei, e = { edits: 0, scripts: new Set(), months: new Set() });
+      e.edits += count; e.scripts.add(si); e.months.add(mi);
+    }
 
     let m = perMonth.get(mi);
     if (!m) perMonth.set(mi, m = { total: 0, byScript: new Map() });
@@ -468,6 +478,7 @@ function renderScripts(view) {
     colour: colourOf.get(si),
     edits: s.edits,
     users: s.users.size,
+    tracked: DATA.scripts[si].owner === 'majkinetor',
     applied: s.applied,
     open: s.open,
     failed: s.failed,
@@ -482,7 +493,7 @@ function renderScripts(view) {
     `<th class="sortable ${num ? 'num' : ''} ${cfg.key === key ? (cfg.dir === 1 ? 'asc' : 'desc') : ''}" data-t="scripts" data-k="${key}">${label}</th>`).join('');
   const body = rows.map((r) => `<tr>
       <td><span class="sw" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${r.colour};margin-right:7px"></span>${esc(r.name)}</td>
-      <td>${esc(r.owner)}</td><td class="num">${fmt(r.edits)}</td><td class="num">${fmt(r.users)}</td>
+      <td>${esc(r.owner)}</td><td class="num">${fmt(r.edits)}</td><td class="num">${r.tracked ? fmt(r.users) : '&mdash;'}</td>
       <td class="num">${fmt(r.applied)}</td><td class="num">${fmt(r.open)}</td><td class="num">${fmt(r.failed)}</td></tr>`).join('');
 
   let html = `<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;

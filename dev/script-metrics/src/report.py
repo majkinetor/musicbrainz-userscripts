@@ -9,9 +9,12 @@ script owner and "exclude the author", so the data it needs is a handful of
 sparse aggregates rather than a row per edit — which keeps the committed JSON in
 the tens of KB instead of megabytes.
 
-Only the main cube carries a full editor dimension (the leaderboard needs it).
-The rest key on a `mine` flag, which is all the "exclude the author" toggle
-requires and avoids multiplying every cube by the editor count.
+Only the main cube carries an editor dimension, and only for our own scripts.
+The third-party comparison scripts run to millions of edits by thousands of
+editors; keeping their editor identities would inflate the committed JSON by
+orders of magnitude to build a leaderboard nobody asked for, so they fold into
+two synthetic buckets flagged `tracked: false`. Every other cube keys on a
+`mine` flag, which is all the "exclude the author" toggle needs.
 """
 from __future__ import annotations
 
@@ -29,21 +32,28 @@ ROOT = Path(__file__).resolve().parent.parent
 SERIES_LIGHT = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948']
 SERIES_DARK = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767']
 
+# Owner value in config/sources.json marking "these are mine".
+OWNED = 'majkinetor'
+
+# One row per (script, edit), flattened once into a temp table so the half-dozen
+# GROUP BYs below do not each re-evaluate the view. On real data this is ~9M
+# rows, almost all of them from the third-party comparison scripts.
 FACT_SQL = """
-SELECT  se.script_id,
-        se.script_owner,
-        se.edit_id,
-        se.script_user,
+CREATE TEMP TABLE fact AS
+SELECT  se.script_id                            AS script_id,
+        se.script_owner                         AS script_owner,
+        se.edit_id                              AS edit_id,
+        se.script_user                          AS script_user,
         substr(se.open_time, 1, 7)              AS month,
         CASE se.edit_status
              WHEN 2 THEN 'applied'
              WHEN 1 THEN 'open'
              ELSE 'failed'
         END                                     AS outcome,
-        se.edit_type,
-        se.version,
-        se.autoedit,
-        ed.name                                 AS user_name
+        se.edit_type                            AS edit_type,
+        se.version                              AS version,
+        se.autoedit                             AS autoedit,
+        CASE WHEN ed.name = ? THEN 1 ELSE 0 END AS mine
 FROM v_script_edit se
 LEFT JOIN editor ed ON ed.id = se.script_user
 WHERE se.open_time IS NOT NULL
@@ -80,6 +90,11 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
             'SELECT id, name, owner, note FROM script ORDER BY owner, name')
     ]
 
+    print('  flattening fact table', file=sys.stderr, flush=True)
+    connection.execute('DROP TABLE IF EXISTS temp.fact')
+    connection.execute(FACT_SQL, (owner_name,))
+    connection.execute('CREATE INDEX temp.ix_fact ON fact (script_id, month)')
+
     months = Encoder()
     editors = Encoder()
     types = Encoder()
@@ -87,37 +102,73 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
     script_index = {s['id']: i for i, s in enumerate(scripts)}
     outcomes = ['applied', 'open', 'failed']
 
-    # (script, month, editor, outcome) -> distinct edits
     main: dict[tuple, int] = {}
-    # (script, month, mine, type) and (script, month, mine, version)
     by_type: dict[tuple, int] = {}
     by_version: dict[tuple, int] = {}
     autoedits: dict[tuple, int] = {}
 
-    editor_names: dict[int, str] = {}
-    total_edits = 0
+    # Editor identity is kept per-editor for our own scripts, where "who is
+    # actually using this" is the whole question. The third-party comparison
+    # scripts are here for volume: they carry thousands of editors across a
+    # decade, and keeping that dimension would bloat the committed JSON by
+    # orders of magnitude to build a leaderboard nobody asked for. Their editors
+    # fold into two synthetic buckets - the author, and everyone else - both
+    # flagged untracked so no distinct-editor count ever counts them.
+    untracked_author = editors.index(('untracked', 1))
+    untracked_others = editors.index(('untracked', 0))
+    # (mb editor id, display name, tracked, is_author)
+    editor_meta: dict[int, tuple] = {
+        untracked_author: (None, owner_name + ' (comparison scripts)', False, True),
+        untracked_others: (None, 'other editors (comparison scripts)', False, False),
+    }
 
-    for row in connection.execute(FACT_SQL):
-        (script_id, _owner, _edit_id, user_id, month,
-         outcome, edit_type, version, autoedit, user_name) = row
-        if script_id not in script_index or not month:
-            continue
-        total_edits += 1
+    print('  aggregating', file=sys.stderr, flush=True)
 
-        si = script_index[script_id]
-        mi = months.index(month)
-        ei = editors.index(user_id)
-        editor_names[user_id] = user_name or f'editor #{user_id}'
-        mine = 1 if (user_name or '') == owner_name else 0
-        oi = outcomes.index(outcome)
+    for script_id, month, user_id, user_name, outcome, count in connection.execute(
+        'SELECT f.script_id, f.month, f.script_user, ed.name, f.outcome, COUNT(*) '
+        'FROM fact f LEFT JOIN editor ed ON ed.id = f.script_user '
+        'WHERE f.script_owner = ? AND f.month IS NOT NULL '
+        'GROUP BY 1, 2, 3, 5', (OWNED,)
+    ):
+        ei = editors.index(('editor', user_id))
+        editor_meta[ei] = (user_id, user_name or f'editor #{user_id}', True,
+                           user_name == owner_name)
+        key = (script_index[script_id], months.index(month), ei, outcomes.index(outcome))
+        main[key] = main.get(key, 0) + count
 
-        main[(si, mi, ei, oi)] = main.get((si, mi, ei, oi), 0) + 1
-        ti = types.index(edit_type)
-        by_type[(si, mi, mine, ti)] = by_type.get((si, mi, mine, ti), 0) + 1
-        vi = versions.index(version or '')
-        by_version[(si, mi, mine, vi)] = by_version.get((si, mi, mine, vi), 0) + 1
-        if autoedit:
-            autoedits[(si, mi, mine)] = autoedits.get((si, mi, mine), 0) + 1
+    for script_id, month, mine, outcome, count in connection.execute(
+        'SELECT script_id, month, mine, outcome, COUNT(*) FROM fact '
+        'WHERE script_owner <> ? AND month IS NOT NULL GROUP BY 1, 2, 3, 4', (OWNED,)
+    ):
+        ei = untracked_author if mine else untracked_others
+        key = (script_index[script_id], months.index(month), ei, outcomes.index(outcome))
+        main[key] = main.get(key, 0) + count
+
+    for script_id, month, mine, edit_type, count in connection.execute(
+        'SELECT script_id, month, mine, edit_type, COUNT(*) FROM fact '
+        'WHERE month IS NOT NULL GROUP BY 1, 2, 3, 4'
+    ):
+        key = (script_index[script_id], months.index(month), mine, types.index(edit_type))
+        by_type[key] = by_type.get(key, 0) + count
+
+    # Versions only for our own scripts: a third party's release cadence is not
+    # something this dashboard has any business reporting on.
+    for script_id, month, mine, version, count in connection.execute(
+        'SELECT script_id, month, mine, version, COUNT(*) FROM fact '
+        'WHERE script_owner = ? AND month IS NOT NULL GROUP BY 1, 2, 3, 4', (OWNED,)
+    ):
+        key = (script_index[script_id], months.index(month), mine,
+               versions.index(version or ''))
+        by_version[key] = by_version.get(key, 0) + count
+
+    for script_id, month, mine, count in connection.execute(
+        'SELECT script_id, month, mine, COUNT(*) FROM fact '
+        'WHERE autoedit = 1 AND month IS NOT NULL GROUP BY 1, 2, 3'
+    ):
+        key = (script_index[script_id], months.index(month), mine)
+        autoedits[key] = autoedits.get(key, 0) + count
+
+    total_edits = _one(connection, 'SELECT COUNT(*) FROM fact') or 0
 
     type_labels = {
         r[0]: r[1] for r in connection.execute('SELECT id, label FROM edit_type')
@@ -161,7 +212,14 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
         'scripts': scripts,
         'months': sorted_months,
         'outcomes': outcomes,
-        'editors': [{'id': v, 'name': editor_names.get(v, str(v))} for v in editors.values],
+        # `tracked` false marks the two synthetic buckets the comparison
+        # scripts' editors fold into; nothing that counts distinct people may
+        # include them.
+        'editors': [
+            {'id': editor_meta[i][0], 'name': editor_meta[i][1],
+             'tracked': editor_meta[i][2], 'is_author': editor_meta[i][3]}
+            for i in range(len(editors.values))
+        ],
         'types': [{'id': v, 'label': type_labels.get(v, f'type {v}'),
                    'entity': entity_of_type.get(v, '')} for v in types.values],
         'versions': versions.values,
@@ -206,9 +264,12 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
             script_id, {'edits': 0, 'applied': 0, 'open': 0, 'failed': 0, 'users': set()})
         bucket['edits'] += count
         bucket[outcome] += count
-        bucket['users'].add(ei)
 
         editor = editors[ei]
+        if not editor['tracked']:
+            # A comparison script's folded bucket: real edits, but not a person.
+            continue
+        bucket['users'].add(ei)
         person = per_editor.setdefault(
             editor['id'], {'name': editor['name'], 'edits': 0, 'scripts': set()})
         person['edits'] += count
@@ -252,8 +313,11 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
     add('|---|---|---:|---:|---:|---:|---:|')
     for script_id, bucket in sorted(per_script.items(), key=lambda kv: -kv[1]['edits']):
         meta = scripts.get(script_id, {'name': script_id, 'owner': '?'})
+        # Editor identity is not tracked for the comparison scripts, so an
+        # honest dash beats a 0 that would read as "nobody uses it".
+        users = f'{len(bucket["users"]):,}' if meta['owner'] == OWNED else '—'
         add(f'| {meta["name"]} | {meta["owner"]} | {bucket["edits"]:,} | '
-            f'{len(bucket["users"]):,} | {bucket["applied"]:,} | {bucket["open"]:,} | '
+            f'{users} | {bucket["applied"]:,} | {bucket["open"]:,} | '
             f'{bucket["failed"]:,} |')
     silent = [s for s in payload['scripts'] if s['id'] not in per_script]
     if silent:
