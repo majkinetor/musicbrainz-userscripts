@@ -2,6 +2,8 @@
 
 MusicBrainz edits made with these userscripts, counted from the `20260905-002519` database snapshot.
 
+[Download HTML Dashboard](./dashboard.html)
+
 - **Window:** 2026-05-01 onwards
 - **Generated:** 2026-09-05T17:41:53+00:00
 - **Attributed edits (all time):** 9,101,714
