@@ -87,7 +87,9 @@ async function falconRun(renameOf, note) {
   await page.evaluate(() => window.__falconTest.start());
   await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 300000 }).catch(() => {});
   const outcome = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ t: i.entityType, s: i.status, e: i.error })));
-  const flog = await page.evaluate(() => window.__falconTest.getLog().map(l => `${l.sev}: ${l.msg}`));
+  // getLog() returns formatted strings; mapping l.sev/l.msg yields "undefined:
+  // undefined" for every line, which is how this diagnostic came out empty.
+  const flog = await page.evaluate(() => window.__falconTest.getLog().map(String));
   await ctx.close();
   return { outcome, flog, errs };
 }
