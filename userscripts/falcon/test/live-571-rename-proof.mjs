@@ -10,6 +10,10 @@
 // (verify-512-release-name-persist and the #509 name tests all read them), so a
 // proof that permanently renamed them would quietly break its neighbours.
 //
+// It also proves #573: a batch edit note set for the run has to appear on EVERY
+// edit it produces. The name and the reason carry different markers, so finding
+// the reason cannot be satisfied by the renamed title alone.
+//
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 // Run: node test/live-571-rename-proof.mjs
 import { createRequire } from 'node:module';
@@ -32,6 +36,9 @@ const TARGETS = [
   { type: 'release',       mbid: '3a37a35f-1e06-457f-9b2a-46155c5c03ce', seg: 'release' },
 ];
 const STAMP = 'falcon rename ' + new Date().toISOString().slice(0, 19).replace('T', ' ');
+// #573: deliberately NOT containing STAMP — otherwise the renamed title would
+// satisfy a search for the reason and the assertion would prove nothing.
+const REASON = 'why this batch ran: conforming names, run id ' + Date.now();
 
 const UA = { 'User-Agent': 'Falcon-verify-571/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )', Accept: 'application/json' };
 // artists/labels use `name`; releases, RGs and recordings use `title`.
@@ -77,6 +84,7 @@ async function falconRun(renameOf, note) {
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
   await page.waitForTimeout(500);
 
+  await page.evaluate(r => window.__falconTest.setBatchNote(r), REASON);
   await page.evaluate(({ targets, renames, note }) => {
     window.__falconTest.setQueue(targets.map((t, i) => ({
       id: 'p' + i, entityType: t.type, mbid: t.mbid, urls: [], note,
@@ -137,6 +145,9 @@ for (const t of TARGETS) {
   const queued = applied[t.type] ? false : await openEditHas(t.seg, t.mbid, STAMP, EDIT_CLASS[t.type]);
   console.log('  ' + t.type.padEnd(14) + JSON.stringify(after) + (applied[t.type] ? '   [applied immediately]' : queued ? '   [submitted, pending a vote]' : '   [NOT FOUND]'));
   ck(applied[t.type] || queued, `${t.type}: Falcon's rename reached MusicBrainz as a real "${EDIT_CLASS[t.type].replace('edit-', 'edit ')}" edit` + (queued ? ' (queued for voting)' : ''));
+  // #573: the batch note has to be on this edit too.
+  const hasReason = await openEditHas(t.seg, t.mbid, REASON, EDIT_CLASS[t.type]);
+  ck(hasReason, `${t.type}: and the batch edit note is on it`);
 }
 await ectx.close();
 
