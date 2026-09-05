@@ -1,0 +1,89 @@
+{
+  "_comment": [
+    "Which userscripts we attribute MusicBrainz edits to, and how.",
+    "",
+    "Attribution is purely by edit-note text. Every script in this repo stamps its",
+    "notes with a header built as `<name> v<version> by <author> - <homepage>`, e.g.",
+    "",
+    "  Apollo Editor v2026.6.22 by majkinetor - https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md",
+    "",
+    "so `userscripts/<slug>` is a unique, stable discriminator: it appears in every",
+    "note the script writes and never collides between scripts.",
+    "",
+    "`patterns` are plain substrings (not regexes) matched against the raw note text.",
+    "Any one of them matching attributes the note to that script. The matching",
+    "pattern is recorded per note, so mis-attribution is diagnosable in SQL.",
+    "",
+    "The full note text is stored in the database. That is deliberate: re-attributing",
+    "or re-parsing versions later is then a local SQL exercise instead of another",
+    "15 GB pass over the dump.",
+    "",
+    "`owner` splits 'my scripts' from third-party ones used for comparison. The",
+    "dashboard defaults to owner = majkinetor.",
+    "",
+    "`note` flags scripts that may legitimately produce zero edits (read-only",
+    "analysers that annotate but never submit) so a 0 is not read as a bug."
+  ],
+
+  "default_cutoff": "2026-01-01",
+  "default_version_regex": "\\sv([0-9][^\\s]*)(?:\\s+by\\s|\\s*$)",
+
+  "_owner_mb_username": "The repo author's MusicBrainz account. The dashboard's 'exclude the author' toggle keys off this, so adoption can be read as 'other people using it'.",
+  "owner_mb_username": "majkinetor",
+
+  "scripts": [
+    { "id": "apollo_editor", "name": "Apollo Editor", "owner": "majkinetor",
+      "patterns": ["userscripts/apollo_editor"] },
+
+    { "id": "credit_hoarder", "name": "Credit Hoarder", "owner": "majkinetor",
+      "patterns": ["userscripts/credit_hoarder"] },
+
+    { "id": "discogs_credits", "name": "Import Discogs Credits", "owner": "majkinetor",
+      "patterns": ["userscripts/discogs_credits"] },
+
+    { "id": "art_station", "name": "Art Station", "owner": "majkinetor",
+      "patterns": ["userscripts/art_station"] },
+
+    { "id": "falcon", "name": "Falcon", "owner": "majkinetor",
+      "patterns": ["userscripts/falcon"] },
+
+    { "id": "fusion", "name": "Fusion", "owner": "majkinetor",
+      "patterns": ["userscripts/fusion"] },
+
+    { "id": "group_therapy", "name": "Group Therapy", "owner": "majkinetor",
+      "patterns": ["userscripts/group_therapy"] },
+
+    { "id": "mammoth", "name": "Mammoth", "owner": "majkinetor",
+      "patterns": ["userscripts/mammoth"],
+      "note": "mostly annotates edit notes; may submit few edits of its own" },
+
+    { "id": "scribe", "name": "Scribe", "owner": "majkinetor",
+      "patterns": ["userscripts/scribe"] },
+
+    { "id": "string_theory", "name": "String Theory", "owner": "majkinetor",
+      "patterns": ["userscripts/string_theory"],
+      "note": "bundle loader; edits are normally attributed to the member script that made them" },
+
+    { "id": "platform_check", "name": "Platform Check", "owner": "majkinetor",
+      "patterns": ["userscripts/platform_check"],
+      "note": "analysis tool; may not submit edits" },
+
+    { "id": "isrc_scout", "name": "ISRC Scout", "owner": "majkinetor",
+      "patterns": ["userscripts/isrc_scout"],
+      "note": "analysis tool; may not submit edits" },
+
+    { "id": "bandcamp_player_enhanced", "name": "Bandcamp Player Enhanced", "owner": "majkinetor",
+      "patterns": ["userscripts/bandcamp_player_enhanced"],
+      "note": "Bandcamp-side player; does not submit MusicBrainz edits" },
+
+    { "id": "harmony", "name": "Harmony", "owner": "external",
+      "patterns": ["with Harmony (", "harmony.pulsewidth.org.uk"],
+      "version_regex": null,
+      "note": "kellnerd's importer. Seeds notes as 'Imported with Harmony (<url>), using data from:' — it carries no version, so version stats stay empty." },
+
+    { "id": "ecau", "name": "Enhanced Cover Art Uploads", "owner": "external",
+      "patterns": ["ROpdebee/mb-userscripts"],
+      "version_regex": "Enhanced Cover Art Uploads\\s+v?([0-9][^\\s]*)",
+      "note": "ROpdebee's ECAU footer is '<name> <version>\\n<namespace>', and the namespace is the shared repo URL — so this pattern also catches ROpdebee's other userscripts. The stored note text lets us split them apart in SQL without a re-run." }
+  ]
+}

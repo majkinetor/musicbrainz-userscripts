@@ -1,0 +1,16 @@
+# docker compose run --rm metrics            full run against the latest dump
+# docker compose run --rm metrics --report-only
+#
+# The dump cache is a named volume, not a bind mount: it holds ~15 GB and lives
+# inside the Docker VM, where reads are far faster than across the Windows
+# filesystem boundary. Only the small outputs cross back to the host.
+services:
+  metrics:
+    build: .
+    image: mb-script-metrics
+    volumes:
+      - dumpcache:/data
+      - ./out:/out
+
+volumes:
+  dumpcache:

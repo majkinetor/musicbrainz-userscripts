@@ -1,0 +1,13 @@
+# The SQLite store is fully rebuildable from the dump, and it carries the whole
+# body of every matched edit note — which is public data, but not something the
+# repo needs a copy of. The derived reports next to it ARE committed.
+out/metrics.db
+out/metrics.db-wal
+out/metrics.db-shm
+
+# Local dump cache, if anyone points --data-dir at the working tree instead of
+# the Docker volume. This is ~15 GB.
+data/
+
+__pycache__/
+*.pyc

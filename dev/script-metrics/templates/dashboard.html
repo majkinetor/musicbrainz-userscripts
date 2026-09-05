@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Script metrics</title>
+<style>
+  /* Palette: the validated categorical reference set. Both modes are selected —
+     the dark column is the same eight hues re-stepped for the dark surface. */
+  :root {
+    color-scheme: light;
+    --surface-1:  #fcfcfb;
+    --plane:      #f9f9f7;
+    --ink:        #0b0b0b;
+    --ink-2:      #52514e;
+    --muted:      #898781;
+    --grid:       #e1e0d9;
+    --axis:       #c3c2b7;
+    --hairline:   rgba(11,11,11,0.10);
+    --good:       #0ca30c;
+    --warning:    #fab219;
+    --critical:   #d03b3b;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+    --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+    --other:      #898781;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-1:  #1a1a19;
+      --plane:      #0d0d0d;
+      --ink:        #ffffff;
+      --ink-2:      #c3c2b7;
+      --muted:      #898781;
+      --grid:       #2c2c2a;
+      --axis:       #383835;
+      --hairline:   rgba(255,255,255,0.10);
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+      --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1:  #1a1a19;
+    --plane:      #0d0d0d;
+    --ink:        #ffffff;
+    --ink-2:      #c3c2b7;
+    --muted:      #898781;
+    --grid:       #2c2c2a;
+    --axis:       #383835;
+    --hairline:   rgba(255,255,255,0.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--plane);
+    color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 72px; }
+
+  header.page { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  header.page h1 { font-size: 24px; margin: 0; letter-spacing: -0.01em; }
+  header.page .sub { color: var(--ink-2); font-size: 13px; }
+  .theme-toggle {
+    margin-left: auto; background: var(--surface-1); color: var(--ink-2);
+    border: 1px solid var(--hairline); border-radius: 8px; padding: 6px 10px;
+    font: inherit; font-size: 13px; cursor: pointer;
+  }
+
+  /* One filter row above everything it scopes. */
+  .filters {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    background: var(--surface-1); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 12px 14px; margin: 18px 0 22px;
+  }
+  .filters label { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .filters select, .filters input[type="month"] {
+    font: inherit; font-size: 13px; padding: 5px 8px; border-radius: 7px;
+    border: 1px solid var(--hairline); background: var(--plane); color: var(--ink);
+  }
+  .filters .spacer { flex: 1 1 auto; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px;
+    border-radius: 999px; border: 1px solid var(--hairline);
+    background: var(--plane); font-size: 13px; color: var(--ink-2); cursor: pointer;
+    min-height: 32px;
+  }
+  .chip input { margin: 0; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 22px; }
+  .tile {
+    background: var(--surface-1); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .tile .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tile .v { font-size: 30px; line-height: 1.15; margin-top: 4px; }
+  .tile .n { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+  .tile .v .unit { font-size: 15px; color: var(--ink-2); }
+
+  .card {
+    background: var(--surface-1); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 16px 18px 12px; margin-bottom: 20px;
+  }
+  .card > h2 { font-size: 15px; margin: 0 0 2px; }
+  .card > .hint { font-size: 12.5px; color: var(--ink-2); margin: 0 0 14px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 12px 0 0; }
+  .legend .item { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); }
+  .legend .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+  .plot { width: 100%; overflow-x: auto; }
+  svg { display: block; }
+  svg text { fill: var(--muted); font-size: 11px; }
+  svg text.val { fill: var(--ink-2); }
+  .gridline { stroke: var(--grid); stroke-width: 1; }
+  .axisline { stroke: var(--axis); stroke-width: 1; }
+
+  details.tv { margin-top: 10px; border-top: 1px solid var(--hairline); padding-top: 8px; }
+  details.tv summary { font-size: 12.5px; color: var(--ink-2); cursor: pointer; }
+  details.tv[open] summary { margin-bottom: 8px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--hairline); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:hover { background: var(--plane); }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable::after { content: ' ⇅'; opacity: .35; }
+  th.sortable.asc::after { content: ' ↑'; opacity: 1; }
+  th.sortable.desc::after { content: ' ↓'; opacity: 1; }
+  a { color: inherit; text-underline-offset: 2px; }
+  .scroll { overflow-x: auto; }
+
+  .tip {
+    position: fixed; pointer-events: none; z-index: 40; opacity: 0;
+    transition: opacity .09s; background: var(--surface-1); color: var(--ink);
+    border: 1px solid var(--hairline); border-radius: 9px; padding: 9px 11px;
+    font-size: 12.5px; box-shadow: 0 6px 22px rgba(0,0,0,.16); max-width: 300px;
+  }
+  .tip .th { font-weight: 600; margin-bottom: 5px; }
+  .tip .row { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .tip .row .sw { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .tip .row .n { margin-left: auto; font-variant-numeric: tabular-nums; padding-left: 14px; }
+
+  .empty { color: var(--ink-2); font-size: 13px; padding: 14px 0; }
+  footer.page { color: var(--muted); font-size: 12px; margin-top: 26px; line-height: 1.7; }
+  code { background: var(--plane); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <h1>Script metrics</h1>
+    <span class="sub" id="provenance"></span>
+    <button class="theme-toggle" id="themeToggle" type="button">Theme</button>
+  </header>
+
+  <div class="filters">
+    <label>From <input type="month" id="from"></label>
+    <label>To <input type="month" id="to"></label>
+    <label>Scripts
+      <select id="owners">
+        <option value="mine">Mine only</option>
+        <option value="all">All (incl. comparison)</option>
+        <option value="external">Comparison only</option>
+      </select>
+    </label>
+    <span class="spacer"></span>
+    <label class="chip"><input type="checkbox" id="excludeAuthor"> Exclude the author</label>
+    <button class="theme-toggle" id="resetBtn" type="button">Reset</button>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section class="card">
+    <h2>Edits over time</h2>
+    <p class="hint">Attributed edits per month, stacked by script.</p>
+    <div class="plot" id="plotMonthly"></div>
+    <div class="legend" id="legendMonthly"></div>
+    <details class="tv"><summary>Table view</summary><div class="scroll" id="tableMonthly"></div></details>
+  </section>
+
+  <section class="card">
+    <h2>Per script</h2>
+    <p class="hint">Distinct editors is the adoption number — how many different people ran it.</p>
+    <div class="scroll" id="tableScripts"></div>
+  </section>
+
+  <section class="card">
+    <h2>Editors</h2>
+    <p class="hint">Everyone whose edit notes carry a script signature, i.e. who is actually using these.</p>
+    <div class="scroll" id="tableEditors"></div>
+  </section>
+
+  <section class="card">
+    <h2>What the edits do</h2>
+    <p class="hint">MusicBrainz edit types, most frequent first.</p>
+    <div class="plot" id="plotTypes"></div>
+    <details class="tv"><summary>Table view</summary><div class="scroll" id="tableTypes"></div></details>
+  </section>
+
+  <section class="card">
+    <h2>Versions in the wild</h2>
+    <p class="hint">Parsed from the version stamped in each edit note.</p>
+    <div class="scroll" id="tableVersions"></div>
+  </section>
+
+  <footer class="page" id="footer"></footer>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+/* ---------------------------------------------------------------- helpers */
+const $ = (id) => document.getElementById(id);
+// Pinned to en-US on purpose: the viewer's locale would otherwise render 1979 as
+// "1.979", which reads as a decimal. Counts must not be ambiguous.
+const NUM = new Intl.NumberFormat('en-US');
+const fmt = (n) => NUM.format(n);
+const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function el(name, attrs = {}, parent = null) {
+  const node = document.createElementNS(SVG_NS, name);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (parent) parent.appendChild(node);
+  return node;
+}
+
+/* Colour follows the entity, never its rank: slots are assigned once from
+   all-time totals, so filtering never repaints a surviving series. */
+const SLOT_VARS = ['--s1','--s2','--s3','--s4','--s5','--s6','--s7','--s8'];
+const colourOf = new Map();
+(function assignColours() {
+  const totals = new Map();
+  for (const [si, , , , count] of DATA.cubes.main) {
+    totals.set(si, (totals.get(si) || 0) + count);
+  }
+  const ranked = [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([si]) => si);
+  ranked.forEach((si, i) => {
+    colourOf.set(si, i < SLOT_VARS.length ? `var(${SLOT_VARS[i]})` : 'var(--other)');
+  });
+  DATA.scripts.forEach((_, si) => { if (!colourOf.has(si)) colourOf.set(si, 'var(--other)'); });
+})();
+
+/* ------------------------------------------------------------------ state */
+const state = {
+  from: DATA.default_cutoff.slice(0, 7),
+  to: DATA.months.length ? DATA.months[DATA.months.length - 1] : DATA.default_cutoff.slice(0, 7),
+  owners: 'mine',
+  excludeAuthor: false,
+};
+
+const authorEditorIdx = new Set(
+  DATA.editors.map((e, i) => (e.name === DATA.owner_mb_username ? i : -1)).filter((i) => i >= 0)
+);
+
+function monthOk(mi) {
+  const m = DATA.months[mi];
+  return m >= state.from && m <= state.to;
+}
+function scriptOk(si) {
+  const owner = DATA.scripts[si].owner;
+  if (state.owners === 'mine') return owner === 'majkinetor';
+  if (state.owners === 'external') return owner !== 'majkinetor';
+  return true;
+}
+
+/* Rebuild every derived number from the cubes for the current filter. */
+function slice() {
+  const perScript = new Map();
+  const perEditor = new Map();
+  const perMonth = new Map();
+  const outcomeTotals = { applied: 0, open: 0, failed: 0 };
+  let total = 0;
+
+  for (const [si, mi, ei, oi, count] of DATA.cubes.main) {
+    if (!scriptOk(si) || !monthOk(mi)) continue;
+    if (state.excludeAuthor && authorEditorIdx.has(ei)) continue;
+    const outcome = DATA.outcomes[oi];
+    total += count;
+    outcomeTotals[outcome] += count;
+
+    let s = perScript.get(si);
+    if (!s) perScript.set(si, s = { edits: 0, applied: 0, open: 0, failed: 0, users: new Set(), months: new Set() });
+    s.edits += count; s[outcome] += count; s.users.add(ei); s.months.add(mi);
+
+    let e = perEditor.get(ei);
+    if (!e) perEditor.set(ei, e = { edits: 0, scripts: new Set(), months: new Set() });
+    e.edits += count; e.scripts.add(si); e.months.add(mi);
+
+    let m = perMonth.get(mi);
+    if (!m) perMonth.set(mi, m = { total: 0, byScript: new Map() });
+    m.total += count;
+    m.byScript.set(si, (m.byScript.get(si) || 0) + count);
+  }
+
+  const perType = new Map();
+  const perVersion = new Map();
+  let autoedits = 0;
+  for (const [si, mi, mine, ti, count] of DATA.cubes.type) {
+    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    perType.set(ti, (perType.get(ti) || 0) + count);
+  }
+  for (const [si, mi, mine, vi, count] of DATA.cubes.version) {
+    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    // Nested maps rather than a delimited composite key: no separator to pick,
+    // and nothing to get wrong when the indices are re-parsed.
+    let versions = perVersion.get(si);
+    if (!versions) perVersion.set(si, versions = new Map());
+    versions.set(vi, (versions.get(vi) || 0) + count);
+  }
+  for (const [si, mi, mine, count] of DATA.cubes.autoedit) {
+    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    autoedits += count;
+  }
+
+  const months = [...perMonth.keys()].sort((a, b) => a - b);
+  return { perScript, perEditor, perMonth, months, perType, perVersion, outcomeTotals, total, autoedits };
+}
+
+/* ---------------------------------------------------------------- tooltip */
+const tip = $('tip');
+function showTip(html, event) {
+  tip.innerHTML = html;
+  tip.style.opacity = '1';
+  const box = tip.getBoundingClientRect();
+  let x = event.clientX + 14;
+  let y = event.clientY + 14;
+  if (x + box.width > window.innerWidth - 8) x = event.clientX - box.width - 14;
+  if (y + box.height > window.innerHeight - 8) y = event.clientY - box.height - 14;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+const hideTip = () => { tip.style.opacity = '0'; };
+
+/* ------------------------------------------------------------------ tiles */
+function renderTiles(view) {
+  const users = new Set();
+  for (const s of view.perScript.values()) for (const u of s.users) users.add(u);
+  const others = [...users].filter((u) => !authorEditorIdx.has(u));
+  const active = [...view.perScript.values()].filter((s) => s.edits > 0).length;
+  const closed = view.outcomeTotals.applied + view.outcomeTotals.failed;
+
+  const tiles = [
+    ['Edits', fmt(view.total), `${fmt(view.autoedits)} auto-applied`],
+    ['Editors', fmt(users.size), `${fmt(others.length)} other than ${esc(DATA.owner_mb_username)}`],
+    ['Scripts active', fmt(active), `of ${DATA.scripts.filter((_, i) => scriptOk(i)).length} configured`],
+    ['Applied', closed ? pct(view.outcomeTotals.applied, closed) + '<span class="unit">%</span>' : '—',
+      `${fmt(view.outcomeTotals.failed)} failed, ${fmt(view.outcomeTotals.open)} open`],
+    ['Months covered', fmt(view.months.length), view.months.length
+      ? `${DATA.months[view.months[0]]} → ${DATA.months[view.months[view.months.length - 1]]}` : '—'],
+  ];
+  $('tiles').innerHTML = tiles.map(([k, v, n]) =>
+    `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${n}</div></div>`).join('');
+}
+
+/* --------------------------------------------------- stacked monthly chart */
+function renderMonthly(view) {
+  const host = $('plotMonthly');
+  host.innerHTML = '';
+  if (!view.months.length) { host.innerHTML = '<p class="empty">No edits in this window.</p>'; $('legendMonthly').innerHTML = ''; $('tableMonthly').innerHTML = ''; return; }
+
+  const seriesIdx = [...new Set(DATA.cubes.main.map(([si]) => si))]
+    .filter((si) => scriptOk(si) && [...view.perScript.keys()].includes(si))
+    .sort((a, b) => (view.perScript.get(b)?.edits || 0) - (view.perScript.get(a)?.edits || 0));
+
+  // Fill the card rather than huddling at the left: derive the bar width from
+  // the available width, clamped so a 3-month view is not absurdly chunky and a
+  // 36-month one stays legible (it scrolls horizontally past that).
+  const padL = 52, padR = 16, padT = 12, padB = 46;
+  const avail = Math.max(360, (host.clientWidth || 1080) - padL - padR);
+  const gap = 12;
+  const barW = Math.max(16, Math.min(84, Math.floor(avail / view.months.length) - gap));
+  const plotH = 260;
+  const width = padL + padR + view.months.length * (barW + gap);
+  const height = plotH + padT + padB;
+  const max = Math.max(...view.months.map((mi) => view.perMonth.get(mi).total), 1);
+  const niceMax = niceCeil(max);
+  const y = (v) => padT + plotH - (v / niceMax) * plotH;
+
+  const svg = el('svg', { width: Math.max(width, 320), height, role: 'img',
+                          'aria-label': 'Attributed edits per month, stacked by script' }, host);
+
+  for (const tick of ticks(niceMax)) {
+    el('line', { class: 'gridline', x1: padL, x2: width - padR, y1: y(tick), y2: y(tick) }, svg);
+    const label = el('text', { x: padL - 8, y: y(tick) + 4, 'text-anchor': 'end' }, svg);
+    label.textContent = fmt(tick);
+  }
+  el('line', { class: 'axisline', x1: padL, x2: width - padR, y1: y(0), y2: y(0) }, svg);
+
+  view.months.forEach((mi, column) => {
+    const x = padL + column * (barW + gap);
+    const bucket = view.perMonth.get(mi);
+    const parts = seriesIdx.map((si) => [si, bucket.byScript.get(si) || 0]).filter(([, v]) => v > 0);
+    let cursor = 0;
+    parts.forEach(([si, value], k) => {
+      const top = y(cursor + value);
+      const bottom = y(cursor);
+      // 2px surface gap between stacked segments; 4px rounded data-end on top.
+      const h = Math.max(1, bottom - top - (k < parts.length - 1 ? 2 : 0));
+      const isTop = k === parts.length - 1;
+      el('rect', {
+        x, y: top, width: barW, height: h, fill: colourOf.get(si),
+        rx: isTop ? 4 : 0, ry: isTop ? 4 : 0,
+      }, svg);
+      cursor += value;
+    });
+
+    // One generous hit target per column rather than per segment.
+    const hit = el('rect', { x: x - gap / 2, y: padT, width: barW + gap, height: plotH,
+                             fill: 'transparent', style: 'cursor:crosshair' }, svg);
+    const rows = parts.slice().reverse().map(([si, value]) =>
+      `<div class="row"><span class="sw" style="background:${colourOf.get(si)}"></span>` +
+      `<span>${esc(DATA.scripts[si].name)}</span><span class="n">${fmt(value)}</span></div>`).join('');
+    const html = `<div class="th">${DATA.months[mi]} · ${fmt(bucket.total)} edits</div>${rows}`;
+    hit.addEventListener('mousemove', (event) => showTip(html, event));
+    hit.addEventListener('mouseleave', hideTip);
+
+    const label = el('text', { x: x + barW / 2, y: height - padB + 16, 'text-anchor': 'middle' }, svg);
+    label.textContent = DATA.months[mi].slice(2);
+    const totalLabel = el('text', { class: 'val', x: x + barW / 2, y: y(bucket.total) - 6, 'text-anchor': 'middle' }, svg);
+    totalLabel.textContent = fmt(bucket.total);
+  });
+
+  $('legendMonthly').innerHTML = seriesIdx.map((si) =>
+    `<span class="item"><span class="sw" style="background:${colourOf.get(si)}"></span>${esc(DATA.scripts[si].name)}</span>`).join('');
+
+  const head = ['Month', ...seriesIdx.map((si) => DATA.scripts[si].name), 'Total'];
+  const body = view.months.map((mi) => {
+    const bucket = view.perMonth.get(mi);
+    return [DATA.months[mi], ...seriesIdx.map((si) => fmt(bucket.byScript.get(si) || 0)), fmt(bucket.total)];
+  });
+  $('tableMonthly').innerHTML = simpleTable(head, body, 1);
+}
+
+function niceCeil(v) {
+  const magnitude = Math.pow(10, Math.floor(Math.log10(v)));
+  return Math.ceil(v / (magnitude / 2)) * (magnitude / 2);
+}
+function ticks(max) {
+  const out = [];
+  for (let i = 0; i <= 4; i++) out.push(Math.round((max / 4) * i));
+  return [...new Set(out)];
+}
+
+function simpleTable(head, rows, numericFrom = 0) {
+  const th = head.map((h, i) => `<th class="${i >= numericFrom ? 'num' : ''}">${esc(h)}</th>`).join('');
+  const tr = rows.map((r) => '<tr>' + r.map((c, i) =>
+    `<td class="${i >= numericFrom ? 'num' : ''}">${c}</td>`).join('') + '</tr>').join('');
+  return `<table><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+}
+
+/* ------------------------------------------------------------ script table */
+const sortState = { scripts: { key: 'edits', dir: -1 }, editors: { key: 'edits', dir: -1 } };
+
+function renderScripts(view) {
+  const rows = [...view.perScript.entries()].map(([si, s]) => ({
+    name: DATA.scripts[si].name,
+    owner: DATA.scripts[si].owner,
+    colour: colourOf.get(si),
+    edits: s.edits,
+    users: s.users.size,
+    applied: s.applied,
+    open: s.open,
+    failed: s.failed,
+  }));
+  const cfg = sortState.scripts;
+  rows.sort((a, b) => (a[cfg.key] > b[cfg.key] ? 1 : a[cfg.key] < b[cfg.key] ? -1 : 0) * cfg.dir);
+
+  const silent = DATA.scripts.map((s, i) => [s, i]).filter(([s, i]) => scriptOk(i) && !view.perScript.has(i));
+  const columns = [['name','Script',0],['owner','Owner',0],['edits','Edits',1],['users','Editors',1],
+                   ['applied','Applied',1],['open','Open',1],['failed','Failed',1]];
+  const th = columns.map(([key, label, num]) =>
+    `<th class="sortable ${num ? 'num' : ''} ${cfg.key === key ? (cfg.dir === 1 ? 'asc' : 'desc') : ''}" data-t="scripts" data-k="${key}">${label}</th>`).join('');
+  const body = rows.map((r) => `<tr>
+      <td><span class="sw" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${r.colour};margin-right:7px"></span>${esc(r.name)}</td>
+      <td>${esc(r.owner)}</td><td class="num">${fmt(r.edits)}</td><td class="num">${fmt(r.users)}</td>
+      <td class="num">${fmt(r.applied)}</td><td class="num">${fmt(r.open)}</td><td class="num">${fmt(r.failed)}</td></tr>`).join('');
+
+  let html = `<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
+  if (!rows.length) html = '<p class="empty">No edits in this window.</p>';
+  if (silent.length) {
+    html += `<p class="empty">No attributed edits here: ` +
+      silent.map(([s]) => esc(s.name) + (s.note ? ` <span title="${esc(s.note)}">(?)</span>` : '')).join(', ') + '</p>';
+  }
+  $('tableScripts').innerHTML = html;
+}
+
+function renderEditors(view) {
+  const rows = [...view.perEditor.entries()].map(([ei, e]) => ({
+    name: DATA.editors[ei].name,
+    edits: e.edits,
+    scripts: [...e.scripts].map((si) => DATA.scripts[si].name).sort().join(', '),
+    nscripts: e.scripts.size,
+    months: e.months.size,
+  }));
+  const cfg = sortState.editors;
+  rows.sort((a, b) => (a[cfg.key] > b[cfg.key] ? 1 : a[cfg.key] < b[cfg.key] ? -1 : 0) * cfg.dir);
+
+  const columns = [['name','Editor',0],['edits','Edits',1],['nscripts','Scripts',1],['months','Active months',1]];
+  const th = columns.map(([key, label, num]) =>
+    `<th class="sortable ${num ? 'num' : ''} ${cfg.key === key ? (cfg.dir === 1 ? 'asc' : 'desc') : ''}" data-t="editors" data-k="${key}">${label}</th>`).join('')
+    + '<th>Which</th>';
+  const body = rows.map((r) => `<tr>
+      <td><a href="https://musicbrainz.org/user/${encodeURIComponent(r.name)}" target="_blank" rel="noopener">${esc(r.name)}</a></td>
+      <td class="num">${fmt(r.edits)}</td><td class="num">${fmt(r.nscripts)}</td>
+      <td class="num">${fmt(r.months)}</td><td>${esc(r.scripts)}</td></tr>`).join('');
+  $('tableEditors').innerHTML = rows.length
+    ? `<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`
+    : '<p class="empty">No editors in this window.</p>';
+}
+
+/* -------------------------------------------------------------- type chart */
+function renderTypes(view) {
+  const host = $('plotTypes');
+  host.innerHTML = '';
+  const rows = [...view.perType.entries()]
+    .map(([ti, count]) => ({ label: DATA.types[ti].label, count }))
+    .sort((a, b) => b.count - a.count).slice(0, 12);
+  if (!rows.length) { host.innerHTML = '<p class="empty">No edits in this window.</p>'; $('tableTypes').innerHTML = ''; return; }
+
+  const rowH = 26, padL = 220, padR = 60, padT = 4;
+  const width = 880, height = rows.length * rowH + padT + 6;
+  const max = Math.max(...rows.map((r) => r.count));
+  const svg = el('svg', { width, height, role: 'img', 'aria-label': 'Edits by MusicBrainz edit type' }, host);
+
+  rows.forEach((row, i) => {
+    const y = padT + i * rowH;
+    const w = Math.max(2, ((width - padL - padR) * row.count) / max);
+    // Single series, so one colour for every bar (slot 1) — never a value ramp.
+    el('rect', { x: padL, y: y + 5, width: w, height: rowH - 12, rx: 4, ry: 4, fill: 'var(--s1)' }, svg);
+    const label = el('text', { x: padL - 10, y: y + rowH / 2 + 4, 'text-anchor': 'end' }, svg);
+    label.textContent = row.label;
+    const value = el('text', { class: 'val', x: padL + w + 8, y: y + rowH / 2 + 4 }, svg);
+    value.textContent = fmt(row.count);
+
+    const hit = el('rect', { x: 0, y, width, height: rowH, fill: 'transparent' }, svg);
+    const html = `<div class="th">${esc(row.label)}</div><div class="row">` +
+                 `<span class="sw" style="background:var(--s1)"></span><span>edits</span>` +
+                 `<span class="n">${fmt(row.count)}</span></div>`;
+    hit.addEventListener('mousemove', (event) => showTip(html, event));
+    hit.addEventListener('mouseleave', hideTip);
+  });
+
+  const all = [...view.perType.entries()].map(([ti, count]) =>
+    [esc(DATA.types[ti].label), fmt(count)]).sort((a, b) => Number(b[1].replace(/,/g, '')) - Number(a[1].replace(/,/g, '')));
+  $('tableTypes').innerHTML = simpleTable(['Edit type', 'Edits'], all, 1);
+}
+
+const VERSIONS_PER_SCRIPT = 4;
+
+function renderVersions(view) {
+  // The full script x version cross-product runs to hundreds of rows and buries
+  // the page. Only the most-used versions per script carry signal; the rest
+  // collapse into one honest "older versions" row.
+  const rows = [];
+  let trimmed = 0;
+  const ordered = [...view.perVersion.entries()]
+    .sort((a, b) => DATA.scripts[a[0]].name.localeCompare(DATA.scripts[b[0]].name));
+
+  for (const [si, versions] of ordered) {
+    const list = [...versions.entries()]
+      .map(([vi, count]) => ({ version: DATA.versions[vi] || '(unstamped)', count }))
+      .sort((a, b) => b.count - a.count);
+    for (const v of list.slice(0, VERSIONS_PER_SCRIPT)) {
+      rows.push([esc(DATA.scripts[si].name), esc(v.version), fmt(v.count)]);
+    }
+    const rest = list.slice(VERSIONS_PER_SCRIPT);
+    if (rest.length) {
+      trimmed += rest.length;
+      rows.push([
+        esc(DATA.scripts[si].name),
+        '<span style="color:var(--muted)">' + rest.length +
+          ' older version' + (rest.length > 1 ? 's' : '') + '</span>',
+        fmt(rest.reduce((sum, v) => sum + v.count, 0)),
+      ]);
+    }
+  }
+
+  let html = rows.length
+    ? simpleTable(['Script', 'Version', 'Edits'], rows, 2)
+    : '<p class="empty">No versions in this window.</p>';
+  if (trimmed) {
+    html += '<p class="empty">Top ' + VERSIONS_PER_SCRIPT + ' versions per script; ' +
+            fmt(trimmed) + ' older ones are folded into the "older versions" rows.</p>';
+  }
+  $('tableVersions').innerHTML = html;
+}
+
+/* ------------------------------------------------------------------ render */
+function renderAll() {
+  const view = slice();
+  renderTiles(view);
+  renderMonthly(view);
+  renderScripts(view);
+  renderEditors(view);
+  renderTypes(view);
+  renderVersions(view);
+}
+
+document.addEventListener('click', (event) => {
+  const th = event.target.closest('th.sortable');
+  if (!th) return;
+  const cfg = sortState[th.dataset.t];
+  if (cfg.key === th.dataset.k) cfg.dir *= -1; else { cfg.key = th.dataset.k; cfg.dir = -1; }
+  renderAll();
+});
+
+function bindFilters() {
+  const from = $('from'), to = $('to');
+  const first = DATA.months[0] || state.from;
+  const last = DATA.months[DATA.months.length - 1] || state.to;
+  for (const input of [from, to]) { input.min = first; input.max = last; }
+  from.value = state.from; to.value = state.to;
+
+  from.addEventListener('change', () => { state.from = from.value || first; renderAll(); });
+  to.addEventListener('change', () => { state.to = to.value || last; renderAll(); });
+  $('owners').addEventListener('change', (e) => { state.owners = e.target.value; renderAll(); });
+  $('excludeAuthor').addEventListener('change', (e) => { state.excludeAuthor = e.target.checked; renderAll(); });
+  $('resetBtn').addEventListener('click', () => {
+    state.from = DATA.default_cutoff.slice(0, 7); state.to = last;
+    state.owners = 'mine'; state.excludeAuthor = false;
+    from.value = state.from; to.value = state.to;
+    $('owners').value = 'mine'; $('excludeAuthor').checked = false;
+    renderAll();
+  });
+  $('themeToggle').addEventListener('click', () => {
+    const root = document.documentElement;
+    const dark = getComputedStyle(root).getPropertyValue('--surface-1').trim() === '#1a1a19';
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+    renderAll();
+  });
+}
+
+$('provenance').textContent =
+  `snapshot ${DATA.dump_id || '?'} · built ${(DATA.generated_at || '').replace('T', ' ')}`;
+$('footer').innerHTML =
+  `Attributed by edit-note text; see <code>dev/script-metrics/config/sources.json</code>. ` +
+  `One edit can count for two scripts when its note carries both signatures. ` +
+  `${fmt(DATA.quality.total_attributed_edits)} attributed edits all-time` +
+  (DATA.quality.notes_without_edit_row
+    ? `, ${fmt(DATA.quality.notes_without_edit_row)} notes had no matching edit row (deleted edits).`
+    : '.');
+
+bindFilters();
+renderAll();
+</script>
+</body>
+</html>
