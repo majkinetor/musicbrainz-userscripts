@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* A plain-text document that happens to be a web page. One typeface, one
+     accent, no boxes, no shadows, no icons. Everything is aligned to a
+     monospace column so the page reads like a well-set README. */
+  :root{ --bg:#fcfcfa; --ink:#1c1c1c; --dim:#84837e; --rule:#e3e2dc; --accent:#0b6b5f; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --bg:#16171a; --ink:#dfe0dc; --dim:#7e8085; --rule:#2a2c31; --accent:#5fd0bd; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+       font:14px/1.72 ui-monospace,"SFMono-Regular","Cascadia Mono",Consolas,"Liberation Mono",monospace;
+       -webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-underline-offset:3px}
+  main{max-width:74ch;margin:0 auto;padding:76px 24px 110px}
+
+  pre.title{margin:0 0 6px;font:inherit;font-weight:700;font-size:15px;letter-spacing:.02em;white-space:pre-wrap}
+  .sub{color:var(--dim);margin:0 0 34px}
+  hr{border:0;border-top:1px solid var(--rule);margin:34px 0}
+
+  p{margin:0 0 18px;max-width:68ch}
+  .k{color:var(--dim)}
+
+  dl.kv{margin:0;display:grid;grid-template-columns:14ch 1fr;gap:2px 2ch}
+  dl.kv dt{color:var(--dim)}
+  dl.kv dd{margin:0}
+
+  h2{font:inherit;font-weight:700;margin:0 0 14px}
+  h2::before{content:"## ";color:var(--dim);font-weight:400}
+
+  table{width:100%;border-collapse:collapse;font:inherit}
+  td{padding:3px 0;vertical-align:top}
+  td.n{width:4ch;color:var(--dim)}
+  td.nm{width:26ch;white-space:nowrap}
+  td.nm a{text-decoration:none}
+  td.nm a:hover{text-decoration:underline}
+  td.ds{color:var(--dim)}
+  tr.bundle td.nm a{font-weight:700}
+
+  figure{margin:34px 0}
+  figure img{display:block;width:100%;border:1px solid var(--rule)}
+  figure figcaption{color:var(--dim);margin-top:8px}
+  figure figcaption::before{content:"$ ";}
+
+  ul.plain{list-style:none;margin:0;padding:0}
+  ul.plain li::before{content:"- ";color:var(--dim)}
+  footer{color:var(--dim);margin-top:44px}
+  @media(max-width:600px){ dl.kv{grid-template-columns:1fr} td.nm{width:auto;white-space:normal} td.ds{display:none} }
+</style>
+</head>
+<body>
+<main>
+
+  <pre class="title">musicbrainz-toolset(7)                          majkinetor</pre>
+  <p class="sub">Userscripts for editing MusicBrainz in bulk.</p>
+
+  <hr>
+
+  <p>Twelve scripts that live inside MusicBrainz's own pages: importing credits,
+     fixing relationships by the hundred, chasing ISRCs, sorting cover art,
+     merging duplicates. Each one works on its own; <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md">String&nbsp;Theory</a>
+     is all of them in a single file.</p>
+
+  <dl class="kv">
+    <dt>install</dt><dd><a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">string_theory.user.js</a></dd>
+    <dt>source</dt><dd><a href="https://github.com/majkinetor/musicbrainz-userscripts">github.com/majkinetor/musicbrainz-userscripts</a></dd>
+    <dt>docs</dt><dd><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">DOCS.md</a></dd>
+    <dt>stats</dt><dd><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">METRICS.md</a></dd>
+    <dt>licence</dt><dd>MIT</dd>
+    <dt>requires</dt><dd>a userscript manager</dd>
+  </dl>
+
+  <hr>
+
+  <h2>usage so far</h2>
+  <dl class="kv">
+    <dt>edits</dt><dd>499,632</dd>
+    <dt>editors</dt><dd>136</dd>
+    <dt>applied</dt><dd>99.9% of closed edits</dd>
+    <dt>measured</dt><dd><span class="k">MusicBrainz snapshot 20260905, from 2026-05</span></dd>
+  </dl>
+
+  <figure>
+    <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+    <figcaption>apollo_editor — the release editor's tracklist, replaced</figcaption>
+  </figure>
+
+  <hr>
+
+  <h2>the scripts</h2>
+  <table><tbody id="rows"></tbody></table>
+
+  <hr>
+
+  <footer>
+    <ul class="plain">
+      <li>Dark theme: <a href="https://github.com/kellnerd/userstyles#musicbrainz">kellnerd/userstyles</a></li>
+      <li>New to this? <a href="https://musicbrainz.org/doc/Guides/Userscripts">MusicBrainz on userscripts</a></li>
+    </ul>
+  </footer>
+</main>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const ST='https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/';
+const S=[
+ ['string_theory','string_theory','all of the below, bundled',1],
+ ['apollo_editor','apollo_editor','adding and editing a release'],
+ ['art_station','art_station','cover art: view, reorder, retype, add'],
+ ['credit_hoarder','credit_hoarder','import credits, with a review phase'],
+ ['group_therapy','group_therapy','batch operations on relationships'],
+ ['isrc_scout','isrc_scout','ISRCs and streaming links'],
+ ['mammoth','mammoth','reusable edit notes'],
+ ['platform_check','platform_check','find a release across platforms'],
+ ['falcon','falcon','batch-edit entity fields'],
+ ['fusion','fusion','merge duplicate recordings'],
+ ['scribe','scribe','edit MusicBrainz in your real editor'],
+ ['bandcamp_player_enhanced','bandcamp_player…','Bandcamp player, with shortcuts'],
+];
+document.getElementById('rows').innerHTML = S.map(([s,n,d,b],i)=>`
+ <tr${b?' class="bundle"':''}>
+   <td class="n">${b?'*':String(i).padStart(2,'0')}</td>
+   <td class="nm"><a href="${GH}${s}/README.md">${n}</a></td>
+   <td class="ds">${d}</td>
+ </tr>`).join('');
+</script>
+</body>
+</html>

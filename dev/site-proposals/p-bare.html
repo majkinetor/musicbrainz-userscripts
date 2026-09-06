@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* The minimal pole: the first screen is a title, three sentences and the
+     names. No stats block, no cards, no icons, no descriptions. Scroll once and
+     there is a single screenshot, and that is the whole site. */
+  :root{ --f:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --bg:#ffffff; --ink:#000000; --dim:#6a6a6a; --rule:#e6e6e6; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --bg:#0b0b0b; --ink:#f0f0f0; --dim:#8f8f8f; --rule:#242424; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+       font:16px/1.72 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  a{color:var(--ink);text-decoration-color:var(--rule);text-underline-offset:3px}
+  a:hover{text-decoration-color:currentColor}
+
+  .screen{min-height:100vh;display:flex;align-items:center}
+  .w{max-width:34em;margin:0 auto;padding:60px 28px}
+
+  h1{font:500 17px/1.5 var(--f);margin:0 0 26px}
+  p{margin:0 0 20px}
+  p.names{color:var(--dim)}
+  p.names a{color:var(--ink)}
+  p.q{color:var(--dim);font-size:14.5px}
+  p.q a{color:var(--dim)}
+
+  .more{border-top:1px solid var(--rule)}
+  .more .w{padding-top:60px;padding-bottom:120px}
+  .more img{display:block;width:100%;margin:0 0 12px}
+  .more figcaption{color:var(--dim);font-size:13.5px;margin-bottom:34px}
+  .more figure{margin:0}
+</style>
+</head>
+<body>
+
+<div class="screen">
+  <div class="w">
+    <h1>MusicBrainz Toolset</h1>
+
+    <p>Twelve userscripts for people who edit MusicBrainz in bulk — credits,
+       relationships, ISRCs, cover art, merges. They live inside MusicBrainz’s own
+       pages. 499,632 edits have been made with them so far, by 136 editors.</p>
+
+    <p><a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js"><strong>Install String Theory</strong></a>
+       — all twelve in one file — or take them one at a time:</p>
+
+    <p class="names" id="names"></p>
+
+    <p class="q">
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">Source</a> ·
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Documentation</a> ·
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Statistics</a> ·
+      <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a> ·
+      <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a> ·
+      MIT
+    </p>
+  </div>
+</div>
+
+<div class="more">
+  <div class="w">
+    <figure>
+      <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+           src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+      <figcaption>Apollo Editor, in place of the release editor’s own tracklist.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['apollo_editor','Apollo Editor'],['art_station','Art Station'],
+ ['credit_hoarder','Credit Hoarder'],['group_therapy','Group Therapy'],
+ ['isrc_scout','ISRC Scout'],['mammoth','Mammoth'],
+ ['platform_check','Platform Check'],['falcon','Falcon'],
+ ['fusion','Fusion'],['scribe','Scribe'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced'],
+];
+document.getElementById('names').innerHTML =
+  S.map(([s,n])=>`<a href="${GH}${s}/README.md">${n}</a>`).join(', ') + '.';
+</script>
+</body>
+</html>

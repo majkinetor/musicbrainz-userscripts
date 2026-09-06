@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* Split screen: the left half never moves and holds the whole pitch; the
+     right half is the only thing that scrolls. Nothing is repeated between them. */
+  :root{ --left:#1d2a2e; --left-ink:#eaf0f0; --left-dim:#93a6a8;
+         --right:#ffffff; --ink:#16191b; --dim:#666c70; --faint:#a0a6aa; --rule:#eceef0;
+         --accent:#0e8f7e;
+         --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --left:#12191b; --left-ink:#e2e9e9; --left-dim:#7f9092;
+    --right:#0e1113; --ink:#e6e9ea; --dim:#98a0a4; --faint:#697174; --rule:#1c2124;
+    --accent:#4fd1bb; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--right);color:var(--ink);font:15px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+
+  /* The pane is 100vh and sticky, so past one screen its box has ended and the
+     left column would show bare page. Paint the column on the grid itself. */
+  .split{display:grid;grid-template-columns:44% 56%;min-height:100vh;
+         background:linear-gradient(to right,var(--left) 0 44%,var(--right) 44% 100%)}
+
+  .pane{background:var(--left);color:var(--left-ink);padding:64px 54px;
+        position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+  .pane .lab{font:600 10px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--left-dim)}
+  .pane h1{font:600 34px/1.16 var(--sans);letter-spacing:-.022em;margin:20px 0 0;max-width:11ch}
+  .pane p{margin:20px 0 0;color:var(--left-dim);font-size:16px;max-width:34ch}
+  .pane .act{margin:34px 0 0;display:flex;gap:10px;flex-wrap:wrap}
+  .pane .act a{font-size:14px;padding:10px 18px;border-radius:6px;text-decoration:none;
+               border:1px solid rgba(255,255,255,.16);color:var(--left-ink)}
+  .pane .act a:hover{border-color:var(--accent);color:var(--accent)}
+  .pane .act a.go{background:var(--accent);border-color:var(--accent);color:#04211c;font-weight:600}
+  .pane .act a.go:hover{filter:brightness(1.09);color:#04211c}
+  .pane .sp{flex:1 1 auto;min-height:26px}
+  .pane .foot{font-size:12.5px;color:var(--left-dim);display:flex;gap:18px;flex-wrap:wrap}
+  .pane .foot a{color:var(--left-dim)}
+  .pane .foot a:hover{color:var(--left-ink)}
+
+  .body{padding:64px 54px 110px;max-width:720px}
+  h2{margin:0 0 16px;font:600 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  h2+h2{margin-top:58px}
+
+  figure{margin:0 0 58px}
+  figure img{display:block;width:100%;border:1px solid var(--rule);border-radius:6px}
+  figcaption{margin-top:9px;font-size:13px;color:var(--faint)}
+
+  dl.stats{display:flex;gap:46px;margin:0 0 58px;flex-wrap:wrap}
+  dl.stats dt{font:600 24px/1 var(--sans);font-variant-numeric:tabular-nums}
+  dl.stats dd{margin:5px 0 0;font-size:13px;color:var(--dim)}
+
+  ul{list-style:none;margin:0;padding:0}
+  ul li{padding:13px 0;border-top:1px solid var(--rule);display:flex;gap:16px;align-items:baseline}
+  ul li:last-child{border-bottom:1px solid var(--rule)}
+  ul .n{flex:0 0 11em;font-weight:500}
+  ul .n a{text-decoration:none}
+  ul .n a:hover{color:var(--accent)}
+  ul .d{flex:1 1 auto;color:var(--dim);font-size:14px}
+  ul li.b .n a{color:var(--accent)}
+
+  @media(max-width:920px){
+    .split{grid-template-columns:1fr;background:var(--right)}
+    .pane{position:static;height:auto;padding:52px 26px}
+    .body{padding:44px 26px 80px}
+    ul li{flex-direction:column;gap:2px}
+    ul .n{flex:none}
+  }
+</style>
+</head>
+<body>
+<div class="split">
+
+  <div class="pane">
+    <div class="lab">majkinetor · musicbrainz</div>
+    <h1>MusicBrainz Toolset</h1>
+    <p>Twelve userscripts for people who edit in bulk. Credits, relationships,
+       ISRCs, cover art, merges — inside MusicBrainz’s own pages.</p>
+    <div class="act">
+      <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
+    </div>
+    <div class="sp"></div>
+    <div class="foot">
+      <span>MIT</span>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Statistics</a>
+      <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+      <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+    </div>
+  </div>
+
+  <div class="body">
+    <h2>What it looks like</h2>
+    <figure>
+      <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+           src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+      <figcaption>Apollo Editor — the release editor’s tracklist, replaced.</figcaption>
+    </figure>
+
+    <h2>Usage so far</h2>
+    <dl class="stats">
+      <div><dt>499,632</dt><dd>edits made</dd></div>
+      <div><dt>136</dt><dd>editors</dd></div>
+      <div><dt>99.9%</dt><dd>of closed edits applied</dd></div>
+    </dl>
+
+    <h2>The scripts</h2>
+    <ul id="idx"></ul>
+  </div>
+</div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['string_theory','String Theory','All of the below in one file — install this instead.',1],
+ ['apollo_editor','Apollo Editor','Advanced adding and editing of a release.'],
+ ['art_station','Art Station','Cover art: view, reorder, retype, comment, remove, add.'],
+ ['credit_hoarder','Credit Hoarder','Import credits from several providers, with review.'],
+ ['group_therapy','Group Therapy','Batch operations on the relationships page.'],
+ ['isrc_scout','ISRC Scout','Reads existing ISRCs and streaming links, fills the gaps.'],
+ ['mammoth','Mammoth','Keeps reusable edit notes beside the note field.'],
+ ['platform_check','Platform Check','Find and verify a release across online platforms.'],
+ ['falcon','Falcon','Batch-edit entity fields, from Harmony or on its own.'],
+ ['fusion','Fusion','Merge duplicate recordings: review, auto-match, submit.'],
+ ['scribe','Scribe','Edit MusicBrainz in your real editor.'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced','Bandcamp player with keyboard shortcuts.'],
+];
+document.getElementById('idx').innerHTML = S.map(([s,n,d,b])=>`
+ <li${b?' class="b"':''}><span class="n"><a href="${GH}${s}/README.md">${n}</a></span><span class="d">${d}</span></li>`).join('');
+</script>
+</body>
+</html>

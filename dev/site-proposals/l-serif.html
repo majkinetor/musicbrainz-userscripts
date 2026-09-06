@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* Reads like a short essay: one narrow measure, a serif face, and prose
+     rather than boxes. The list at the end is the only piece of furniture. */
+  :root{ --paper:#f7f4ee; --ink:#2b2723; --dim:#6b635a; --faint:#9b9287; --rust:#9c4a2c;
+         --serif:"Iowan Old Style","Charter","Palatino Linotype",Palatino,Georgia,serif; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --paper:#171513; --ink:#e6e0d6; --dim:#a9a094; --faint:#7c736a; --rust:#dd8a63; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper);color:var(--ink);font:18px/1.66 var(--serif);-webkit-font-smoothing:antialiased}
+  a{color:var(--rust);text-decoration-thickness:.5px;text-underline-offset:2.5px}
+  .w{max-width:36em;margin:0 auto;padding:0 26px}
+
+  header{padding:118px 0 0}
+  .kicker{font:400 13px/1 var(--serif);letter-spacing:.15em;text-transform:uppercase;color:var(--faint);font-variant:small-caps}
+  h1{font:400 38px/1.16 var(--serif);letter-spacing:-.01em;margin:16px 0 0}
+  .rule{width:56px;height:1px;background:var(--faint);margin:30px 0 30px}
+
+  p{margin:0 0 20px}
+  p.first::first-letter{float:left;font-size:52px;line-height:.86;padding:4px 8px 0 0;color:var(--rust)}
+
+  .aside{margin:34px 0;padding-left:18px;border-left:1px solid var(--faint);color:var(--dim);font-size:16px}
+  .aside p{margin:0 0 8px}
+  .aside p:last-child{margin:0}
+
+  figure{margin:44px 0}
+  figure img{display:block;width:100%;border:1px solid rgba(120,110,95,.25)}
+  figcaption{margin-top:10px;font-size:14px;color:var(--faint);font-style:italic}
+
+  h2{font:400 15px/1 var(--serif);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+     font-variant:small-caps;margin:56px 0 20px}
+
+  ol{list-style:none;counter-reset:s;margin:0;padding:0}
+  ol li{counter-increment:s;padding:11px 0;border-bottom:1px solid rgba(120,110,95,.2)}
+  ol li:first-child{border-top:1px solid rgba(120,110,95,.2)}
+  ol li .n{font-size:17px}
+  ol li .n a{color:var(--ink);text-decoration:none}
+  ol li .n a:hover{color:var(--rust);text-decoration:underline}
+  ol li .n::before{content:counter(s,decimal-leading-zero) "  ";color:var(--faint);font-size:13px}
+  ol li p{margin:1px 0 0 0;font-size:15.5px;color:var(--dim)}
+
+  footer{margin:66px 0 0;padding:0 0 130px;font-size:14px;color:var(--faint)}
+  footer a{color:var(--faint)}
+  @media(max-width:620px){ header{padding-top:64px} h1{font-size:30px} body{font-size:17px} }
+</style>
+</head>
+<body>
+<div class="w">
+
+  <header>
+    <div class="kicker">majkinetor · musicbrainz-userscripts</div>
+    <h1>MusicBrainz Toolset</h1>
+    <div class="rule"></div>
+  </header>
+
+  <p class="first">Editing MusicBrainz one entity at a time is fine until the day you have four
+     hundred of them. These are twelve userscripts written for that day: they import credits
+     from other sites, fix relationships by the hundred, chase ISRCs, sort cover art, and
+     merge duplicate recordings — all inside MusicBrainz’s own pages, in the tab you are
+     already in.</p>
+
+  <p>Each one works on its own. If you would rather not install them one at a time,
+     <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js"><strong>String&nbsp;Theory</strong></a>
+     is all of them built into a single file, sharing one settings window. You will need a
+     userscript manager either way.</p>
+
+  <div class="aside">
+    <p>499,632 edits have been made with these so far, by 136 editors; 99.9% of the ones that
+       closed were applied.</p>
+    <p><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">The full statistics</a>
+       are rebuilt from the MusicBrainz database snapshot.</p>
+  </div>
+
+  <figure>
+    <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+    <figcaption>Apollo Editor, standing in for the release editor’s own tracklist.</figcaption>
+  </figure>
+
+  <h2>The twelve</h2>
+  <ol id="idx"></ol>
+
+  <footer>
+    MIT ·
+    <a href="https://github.com/majkinetor/musicbrainz-userscripts">Source</a> ·
+    <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Documentation</a> ·
+    <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a> ·
+    <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+  </footer>
+</div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['string_theory','String Theory','All of the below in one file.'],
+ ['apollo_editor','Apollo Editor','Advanced adding and editing of a release.'],
+ ['art_station','Art Station','Cover art: view, reorder, retype, comment, remove, add.'],
+ ['credit_hoarder','Credit Hoarder','Import credits from several providers, with review.'],
+ ['group_therapy','Group Therapy','Batch operations on the relationships page.'],
+ ['isrc_scout','ISRC Scout','Reads existing ISRCs and streaming links, fills the gaps.'],
+ ['mammoth','Mammoth','Keeps reusable edit notes beside the note field.'],
+ ['platform_check','Platform Check','Find and verify a release across online platforms.'],
+ ['falcon','Falcon','Batch-edit entity fields, from Harmony or on its own.'],
+ ['fusion','Fusion','Merge duplicate recordings: review, auto-match, submit.'],
+ ['scribe','Scribe','Edit MusicBrainz in your real editor.'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced','Bandcamp player with keyboard shortcuts.'],
+];
+document.getElementById('idx').innerHTML = S.map(([s,n,d])=>`
+ <li><div class="n"><a href="${GH}${s}/README.md">${n}</a></div><p>${d}</p></li>`).join('');
+</script>
+</body>
+</html>
