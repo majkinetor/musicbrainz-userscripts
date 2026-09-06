@@ -19,6 +19,7 @@ two synthetic buckets flagged `tracked: false`. Every other cube keys on a
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import sys
 from collections.abc import Sequence
@@ -454,3 +455,22 @@ def render(connection: sqlite3.Connection, out_dir: Path, config: dict) -> None:
     print(f'  {json_path.name}: {json_path.stat().st_size / 1024:.0f} KB', file=sys.stderr)
     print(f'  {md_path.name}: {md_path.stat().st_size / 1024:.0f} KB', file=sys.stderr)
     print(f'  {html_path.name}: {html_path.stat().st_size / 1024:.0f} KB', file=sys.stderr)
+
+    # The GitHub Pages site links straight at the dashboard, so it has to be
+    # served from docs/ as well. Written from here rather than copied by hand,
+    # because a hand-copied one goes stale the first time this is re-run and
+    # nobody notices — the page still loads, it just quietly shows old numbers.
+    #
+    # In the container the repo is not visible: only ./out is bind-mounted, so
+    # the ROOT-relative path below resolves to a /docs that isn't there. The
+    # compose file mounts the real docs/ at /site and sets SITE_DIR to match;
+    # the ROOT-relative fallback is for running this straight off a checkout.
+    # Skipped, not failed, if neither exists — the pipeline must still work
+    # somewhere that has no site.
+    site_dir = Path(os.environ.get('SITE_DIR') or (ROOT.parent.parent / 'docs'))
+    if site_dir.is_dir():
+        site_path = site_dir / 'stats.html'
+        site_path.write_text(html, encoding='utf8')
+        print(f'  docs/{site_path.name}: {site_path.stat().st_size / 1024:.0f} KB (Pages)', file=sys.stderr)
+    else:
+        print(f'  docs/ not found at {site_dir} — skipping the Pages copy', file=sys.stderr)

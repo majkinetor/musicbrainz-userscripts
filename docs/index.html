@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* One image does all the work: a full-bleed band of the actual UI across the
+     top, then plain centred text under it. No cards, no panels, no second
+     colour. */
+  :root{ --f:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --bg:#ffffff; --ink:#141618; --dim:#5f6469; --faint:#9ba1a6; --rule:#ececef; --accent:#1f6feb; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --bg:#0d0f11; --ink:#e8eaec; --dim:#98a0a6; --faint:#666d73; --rule:#1b1f23; --accent:#6ea8ff; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+       font:15.5px/1.68 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+
+  /* A fixed band rather than a vh one: the crop should not change shape with
+     the window, and the caption sits under the image, never on top of it. */
+  .band{height:clamp(220px,34vw,400px);overflow:hidden;position:relative;background:var(--rule)}
+  .band img{width:100%;height:100%;object-fit:cover;object-position:left top;display:block}
+  .band::after{content:"";position:absolute;inset:auto 0 0 0;height:90px;
+               background:linear-gradient(to bottom,transparent,var(--bg))}
+  .cap{margin:10px 0 0;text-align:center;font-size:12px;color:var(--faint)}
+
+  .w{max-width:640px;margin:0 auto;padding:0 26px;text-align:center}
+  h1{font:600 27px/1.25 var(--f);letter-spacing:-.02em;margin:22px 0 0}
+  .lede{margin:16px auto 0;color:var(--dim);font-size:17px;max-width:38em}
+
+  .act{margin:30px 0 0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .act a{font-size:14px;padding:9px 17px;border:1px solid var(--rule);border-radius:7px;
+         text-decoration:none;color:var(--dim)}
+  .act a:hover{border-color:var(--accent);color:var(--accent)}
+  .act a.go{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+  .act a.go:hover{filter:brightness(1.08);color:#fff}
+
+  .fact{margin:44px 0 0;font-size:14px;color:var(--faint)}
+  .fact b{color:var(--dim);font-weight:600;font-variant-numeric:tabular-nums}
+
+  hr{border:0;border-top:1px solid var(--rule);margin:56px 0}
+
+  .bundle{font-size:15px}
+  .bundle b{font-weight:600}
+  .bundle p{margin:5px 0 0;color:var(--dim);font-size:14px}
+
+  ul{list-style:none;margin:34px 0 0;padding:0;text-align:left}
+  ul li{padding:12px 2px;border-top:1px solid var(--rule)}
+  ul li:last-child{border-bottom:1px solid var(--rule)}
+  ul .n{font-weight:500;font-size:15px}
+  ul .n a{color:var(--ink);text-decoration:none}
+  ul .n a:hover{color:var(--accent)}
+  ul p{margin:1px 0 0;font-size:14px;color:var(--dim)}
+
+  footer{margin:52px 0 0;padding:0 0 110px;font-size:13px;color:var(--faint);
+         display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+  footer a{color:var(--faint)}
+  @media(max-width:620px){ h1{font-size:23px} }
+</style>
+</head>
+<body>
+
+  <div class="band">
+    <img loading="eager" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+  </div>
+
+  <div class="w">
+    <p class="cap">Apollo Editor — the release editor’s tracklist, replaced</p>
+    <h1>MusicBrainz Toolset</h1>
+    <p class="lede">Twelve userscripts for people who edit MusicBrainz in bulk. Credits,
+       relationships, ISRCs, cover art, merges.</p>
+
+    <div class="act">
+      <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
+      <a href="./stats.html">Stats</a>
+    </div>
+
+    <p class="fact"><b>499,632</b> edits · <b>136</b> editors · <b>99.9%</b> of closed edits applied</p>
+
+    <hr>
+
+    <div class="bundle">
+      <b>String Theory</b>
+      <p>All of them in one file. <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install this</a> instead of the list below.</p>
+    </div>
+
+    <ul id="idx"></ul>
+
+    <footer>
+      <span>MIT</span>
+      <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+      <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+      <span>Snapshot 20260905</span>
+    </footer>
+  </div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['apollo_editor','Apollo Editor','Advanced adding and editing of a release.'],
+ ['art_station','Art Station','Cover art: view, reorder, retype, comment, remove, add.'],
+ ['credit_hoarder','Credit Hoarder','Import credits from several providers, with review.'],
+ ['group_therapy','Group Therapy','Batch operations on the relationships page.'],
+ ['isrc_scout','ISRC Scout','Reads existing ISRCs and streaming links, fills the gaps.'],
+ ['mammoth','Mammoth','Keeps reusable edit notes beside the note field.'],
+ ['platform_check','Platform Check','Find and verify a release across online platforms.'],
+ ['falcon','Falcon','Batch-edit entity fields, from Harmony or on its own.'],
+ ['fusion','Fusion','Merge duplicate recordings: review, auto-match, submit.'],
+ ['scribe','Scribe','Edit MusicBrainz in your real editor.'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced','Bandcamp player with keyboard shortcuts.'],
+];
+document.getElementById('idx').innerHTML = S.map(([s,n,d])=>`
+ <li><div class="n"><a href="${GH}${s}/README.md">${n}</a></div><p>${d}</p></li>`).join('');
+</script>
+</body>
+</html>
