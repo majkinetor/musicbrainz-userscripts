@@ -233,6 +233,16 @@ await page.waitForTimeout(150);
 const focusInfo = await page.evaluate(() => ({ cls: document.activeElement.className || '', val: document.activeElement.value || '' }));
 console.log('focus after typing an override:', JSON.stringify(focusInfo));
 ck(focusInfo.cls.includes('gt-tp-ov') && focusInfo.val === 'R: E', `focus and value survive re-renders while typing (got ${JSON.stringify(focusInfo)})`);
+// …and then put it back. A per-line override is keyed by LINE INDEX, so this
+// "R: E" stays attached to line 1 through every later re-fill of the textarea —
+// it silently parsed step 16's "Kwame Yeboah - Keys, Guitar, Piano, Hammond"
+// as one role/entity pair instead of four comma-split instruments, which read
+// as three instruments having stopped auto-resolving. The tool was fine; the
+// test was carrying its own state forward.
+await ov.fill('');
+await page.waitForTimeout(200);
+ck(await page.evaluate(() => [...document.querySelectorAll('.gt-tp-ov')].every(i => !i.value)),
+  'the override is cleared again, so later steps parse with the pattern they set');
 
 // 10. fuzzy role auto-resolution ("compiled" -> "compiler", "mastered by" ->
 // "mastering") without colliding with lookalike roles ("chorus master",
