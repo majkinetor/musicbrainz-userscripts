@@ -19,16 +19,24 @@
   a{color:var(--accent)}
 
   /* A fixed band rather than a vh one: the crop should not change shape with
-     the window, and the caption sits under the image, never on top of it. */
+     the window, and the caption sits under the image, never on top of it.
+     The slides are stacked and cross-faded, so the band never reflows and
+     nothing below it moves while they change. */
   .band{height:clamp(220px,34vw,400px);overflow:hidden;position:relative;background:var(--rule)}
-  .band img{width:100%;height:100%;object-fit:cover;object-position:left top;display:block}
-  .band::after{content:"";position:absolute;inset:auto 0 0 0;height:90px;
+  .band img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:left top;
+            display:block;opacity:0;transition:opacity .7s ease}
+  .band img.on{opacity:1}
+  .band::after{content:"";position:absolute;inset:auto 0 0 0;height:90px;z-index:1;
                background:linear-gradient(to bottom,transparent,var(--bg))}
-  .cap{margin:10px 0 0;text-align:center;font-size:12px;color:var(--faint)}
+  .cap{margin:10px 0 0;text-align:center;font-size:12px;color:var(--faint);
+       transition:opacity .35s ease}
+  .cap.fade{opacity:0}
+  /* Motion is decoration here; the first slide alone says the same thing. */
+  @media (prefers-reduced-motion: reduce){ .band img,.cap{transition:none} }
 
-  .w{max-width:640px;margin:0 auto;padding:0 26px;text-align:center}
+  .w{max-width:660px;margin:0 auto;padding:0 26px;text-align:center}
   h1{font:600 27px/1.25 var(--f);letter-spacing:-.02em;margin:22px 0 0}
-  .lede{margin:16px auto 0;color:var(--dim);font-size:17px;max-width:38em}
+  .lede{margin:16px auto 0;color:var(--dim);font-size:small;max-width:52em}
 
   .act{margin:30px 0 0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
   .act a{font-size:14px;padding:9px 17px;border:1px solid var(--rule);border-radius:7px;
@@ -37,8 +45,18 @@
   .act a.go{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
   .act a.go:hover{filter:brightness(1.08);color:#fff}
 
-  .fact{margin:44px 0 0;font-size:14px;color:var(--faint)}
-  .fact b{color:var(--dim);font-weight:600;font-variant-numeric:tabular-nums}
+  /* Set aside from the action row, in the corner. Fixed rather than absolute so
+     it stays reachable past the band, and it sits over both the screenshot and
+     the page background — hence the translucent chip, which keeps it legible on
+     either without a second colour. The mark is inline SVG: the page must stay
+     self-contained, and GitHub's own asset host is a third party. */
+  .gh{position:fixed;top:14px;right:16px;z-index:2;display:flex;width:34px;height:34px;
+      align-items:center;justify-content:center;border-radius:50%;color:var(--ink);
+      background:color-mix(in srgb, var(--bg) 72%, transparent);
+      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+      box-shadow:0 0 0 1px var(--rule)}
+  .gh:hover{color:var(--accent);background:var(--bg)}
+  .gh svg{width:19px;height:19px;display:block;fill:currentColor}
 
   hr{border:0;border-top:1px solid var(--rule);margin:56px 0}
 
@@ -46,76 +64,170 @@
   .bundle b{font-weight:600}
   .bundle p{margin:5px 0 0;color:var(--dim);font-size:14px}
 
-  ul{list-style:none;margin:34px 0 0;padding:0;text-align:left}
-  ul li{padding:12px 2px;border-top:1px solid var(--rule)}
-  ul li:last-child{border-bottom:1px solid var(--rule)}
-  ul .n{font-weight:500;font-size:15px}
-  ul .n a{color:var(--ink);text-decoration:none}
-  ul .n a:hover{color:var(--accent)}
-  ul p{margin:1px 0 0;font-size:14px;color:var(--dim)}
+  /* Section heads sit over left-aligned lists, so they are left-aligned too —
+     a centred label above a left-aligned column reads as a mistake. */
+  h2{margin:34px 0 0;text-align:left;
+     font:600 11px/1 var(--f);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  h2 + .note{margin:6px 0 0;text-align:left;font-size:13px;color:var(--faint)}
+
+  /* Compact: icon, name and description on ONE line each. The name column is a
+     fixed measure so every description starts at the same x. */
+  ul.idx{list-style:none;margin:14px 0 0;padding:0;text-align:left}
+  ul.idx li{display:grid;grid-template-columns:20px 9.6em 1fr;gap:11px;align-items:center;
+            padding:7px 2px;border-top:1px solid var(--rule)}
+  ul.idx li:last-child{border-bottom:1px solid var(--rule)}
+  ul.idx img{width:18px;height:18px;display:block;object-fit:contain}
+  ul.idx .n{font-weight:500;font-size:14.5px;white-space:nowrap}
+  ul.idx .n a{color:var(--ink);text-decoration:none}
+  ul.idx .n a:hover{color:var(--accent)}
+  ul.idx .d{font-size:13.5px;line-height:1.4;color:var(--dim)}
 
   footer{margin:52px 0 0;padding:0 0 110px;font-size:13px;color:var(--faint);
          display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
   footer a{color:var(--faint)}
-  @media(max-width:620px){ h1{font-size:23px} }
+  @media(max-width:620px){
+    h1{font-size:23px}
+    ul.idx li{grid-template-columns:20px 1fr;row-gap:1px}
+    ul.idx .d{grid-column:2/3}
+  }
 </style>
 </head>
 <body>
 
-  <div class="band">
-    <img loading="eager" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
-         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
-  </div>
+  <a class="gh" href="https://github.com/majkinetor/musicbrainz-userscripts" title="Source on GitHub" aria-label="Source on GitHub">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+  </a>
+
+  <div class="band" id="band"></div>
 
   <div class="w">
-    <p class="cap">Apollo Editor — the release editor’s tracklist, replaced</p>
-    <h1>MusicBrainz Toolset</h1>
-    <p class="lede">Twelve userscripts for people who edit MusicBrainz in bulk. Credits,
-       relationships, ISRCs, cover art, merges.</p>
+    <p class="cap" id="cap"></p>
+
+    <h1>Space age tools for MusicBrainz editors</h1>
+
+    <p class="lede">automatic artist/recording/work matching; importing credits, external links,
+      covers and ISRCs from online platforms; tracklist tools, fast editing via keyboard; bulk
+      loading data and changing relationships; parallel fetching/saving with retries&nbsp;...
+    </p>
 
     <div class="act">
       <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
-      <a href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
       <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
       <a href="./stats.html">Stats</a>
     </div>
-
-    <p class="fact"><b>499,632</b> edits · <b>136</b> editors · <b>99.9%</b> of closed edits applied</p>
 
     <hr>
 
     <div class="bundle">
       <b>String Theory</b>
-      <p>All of them in one file. <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install this</a> instead of the list below.</p>
+      <p>The seven below in one file, sharing one settings window.
+         <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install this</a>
+         instead of adding them one at a time.</p>
     </div>
 
-    <ul id="idx"></ul>
+    <h2>In the bundle</h2>
+    <ul class="idx" id="bundled"></ul>
+
+    <h2>On their own</h2>
+    <p class="note">Not part of String Theory — install these separately.</p>
+    <ul class="idx" id="standalone"></ul>
 
     <footer>
       <span>MIT</span>
       <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
       <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
-      <span>Snapshot 20260905</span>
     </footer>
   </div>
 
 <script>
+const RAW='https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/';
 const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
-const S=[
- ['apollo_editor','Apollo Editor','Advanced adding and editing of a release.'],
- ['art_station','Art Station','Cover art: view, reorder, retype, comment, remove, add.'],
- ['credit_hoarder','Credit Hoarder','Import credits from several providers, with review.'],
- ['group_therapy','Group Therapy','Batch operations on the relationships page.'],
- ['isrc_scout','ISRC Scout','Reads existing ISRCs and streaming links, fills the gaps.'],
- ['mammoth','Mammoth','Keeps reusable edit notes beside the note field.'],
- ['platform_check','Platform Check','Find and verify a release across online platforms.'],
- ['falcon','Falcon','Batch-edit entity fields, from Harmony or on its own.'],
- ['fusion','Fusion','Merge duplicate recordings: review, auto-match, submit.'],
- ['scribe','Scribe','Edit MusicBrainz in your real editor.'],
- ['bandcamp_player_enhanced','Bandcamp Player Enhanced','Bandcamp player with keyboard shortcuts.'],
+// [slug, name, icon file, one-liner] — the split matches string_theory/members.txt.
+// Art Station's icon is a PNG and Scribe's is not called icon.svg; both would
+// 404 silently if this assumed one filename for everything.
+const BUNDLED=[
+ ['apollo_editor','Apollo Editor','icon.svg','Adding and editing a release'],
+ ['art_station','Art Station','icon.png','Cover art: view, reorder, retype, add'],
+ ['credit_hoarder','Credit Hoarder','icon.svg','Import credits, with a review phase'],
+ ['group_therapy','Group Therapy','icon.svg','Batch operations on relationships'],
+ ['isrc_scout','ISRC Scout','icon.svg','ISRCs and streaming links'],
+ ['mammoth','Mammoth','icon.svg','Reusable edit notes'],
+ ['platform_check','Platform Check','icon.svg','Find a release across platforms'],
 ];
-document.getElementById('idx').innerHTML = S.map(([s,n,d])=>`
- <li><div class="n"><a href="${GH}${s}/README.md">${n}</a></div><p>${d}</p></li>`).join('');
+const STANDALONE=[
+ ['falcon','Falcon','icon.svg','Batch-edit entity fields'],
+ ['fusion','Fusion','icon.svg','Merge duplicate recordings'],
+ ['scribe','Scribe','scribe.svg','Edit MusicBrainz in your real editor'],
+];
+// Header slides: real screenshots straight out of each script's own folder.
+// The band is roughly 3:1 and the images are drawn with object-fit:cover, so a
+// tall or square screenshot gets blown up to fill it — Platform Check's 0.6:1
+// dashboard filled the whole band with two words. Everything here is 2:1 or
+// wider, which crops rather than magnifies.
+const SHOTS=[
+ ['apollo_editor/screenshots/tracklist.png','Apollo Editor — the release editor’s tracklist, replaced'],
+ ['apollo_editor/screenshots/recordings.png','Apollo Editor — track ↔ recording, side by side, differences marked'],
+ ['credit_hoarder/screenshots/multi.png','Credit Hoarder — credits harvested from several providers in one run'],
+ ['isrc_scout/screenshots/isrc-tracks.png','ISRC Scout — per-track ISRCs and streaming links'],
+ ['group_therapy/screenshots/consolidation.png','Group Therapy — relationships, edited in batches'],
+ ['falcon/screenshots/workers.png','Falcon — parallel workers chewing through a queue'],
+];
+(function slideshow() {
+  const band = document.getElementById('band'), cap = document.getElementById('cap');
+  // A slide that 404s would otherwise fade the band to empty, so a slide joins
+  // the rotation only once its image has actually decoded. Readiness is recorded
+  // in the slide's own slot rather than by pushing onto a list — the images
+  // finish loading in whatever order the network returns them, and a list would
+  // put the band in that order instead of the one written above.
+  const slides = SHOTS.map(([path, text]) => ({ path, text, img: null }));
+  cap.textContent = slides[0].text;   // no empty line while the first one decodes
+  let at = -1, rotated = false;
+  const show = i => {
+    if (at >= 0) slides[at].img.classList.remove('on');
+    at = i;
+    slides[i].img.classList.add('on');
+    cap.textContent = slides[i].text;
+  };
+  slides.forEach((s, i) => {
+    const img = new Image();
+    img.alt = i ? '' : s.text;
+    img.decoding = 'async';
+    img.onload = () => {
+      s.img = img;
+      // Paint as soon as ANY slide is ready rather than staring at an empty
+      // band, but hand the opening frame back to the earlier slide if it turns
+      // up before the first rotation — otherwise the first thing anyone sees is
+      // whichever screenshot happened to be smallest.
+      if (at < 0 || (!rotated && i < at)) show(i);
+    };
+    img.src = RAW + s.path;
+    band.appendChild(img);
+  });
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  setInterval(() => {
+    if (at < 0 || document.hidden) return;   // nothing shown yet, or nobody looking
+    let next = -1;
+    for (let k = 1; k <= slides.length; k++) {
+      const j = (at + k) % slides.length;
+      if (slides[j].img) { next = j; break; }
+    }
+    if (next < 0 || next === at) return;   // only one slide ever loaded
+    rotated = true;
+    const to = slides[next];
+    cap.classList.add('fade');
+    slides[at].img.classList.remove('on');
+    at = next;
+    to.img.classList.add('on');
+    setTimeout(() => { cap.textContent = to.text; cap.classList.remove('fade'); }, 350);
+  }, 5200);
+})();
+
+const row = ([s,n,i,d]) =>
+ `<li><img loading="lazy" alt="" src="${RAW}${s}/${i}">` +
+ `<span class="n"><a href="${GH}${s}/README.md">${n}</a></span>` +
+ `<span class="d">${d}</span></li>`;
+document.getElementById('bundled').innerHTML = BUNDLED.map(row).join('');
+document.getElementById('standalone').innerHTML = STANDALONE.map(row).join('');
 </script>
 </body>
 </html>
