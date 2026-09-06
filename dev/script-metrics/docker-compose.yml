@@ -11,6 +11,12 @@ services:
     volumes:
       - dumpcache:/data
       - ./out:/out
+      # The GitHub Pages site serves the dashboard as docs/stats.html, so the
+      # report step writes it directly instead of anyone copying it by hand and
+      # forgetting the next time. Nothing else in the repo is exposed.
+      - ../../docs:/site
+    environment:
+      SITE_DIR: /site
 
 volumes:
   dumpcache:
