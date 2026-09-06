@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.5.192523
+// @version      2026.9.6
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3014,6 +3014,31 @@
     return { types, year, holders };
   }
 
+  // #574 (majkinetor): the date period a parsed notice year turns into. A notice
+  // year is a POINT in time, not an open range: filling only begin_date made MB
+  // render the relationship as "from 2021 to present", where what it should say
+  // is "in 2021". Begin = end, with ended set, is what produces that.
+  //
+  // Same call kellnerd's parse-copyright-notice makes — its setYear() sets
+  // begin_date, end_date and ended together — and it matches how IvanDobsky
+  // describes the field: "There is never an 'End' date, always just a new company
+  // claiming copyright from that new date… We are just making use of a database
+  // feature and saying 'no, just the one date to show'."
+  //   community.metabrainz.org/t/how-to-add-ranges-of-years-for-copyrights-or-publishers/588455/4
+  //
+  // Applies to every notice kind, not only ©/℗: a year is only ever parsed off a
+  // notice line in the first place (txpParseCopyrightLine), an ordinary R/A credit
+  // row carries none, and licensed/distributed/marketed come off that same line
+  // with that same single year. kellnerd draws the line in the same place.
+  //
+  // Returns null for a missing or unparseable year, so callers can pass it
+  // straight through to dispatchRelationship as "no dates".
+  const txpNoticeDatePeriod = year => {
+    const y = parseInt(year, 10);
+    if (!y) return null;
+    return { begin_date: { year: y, month: null, day: null }, end_date: { year: y, month: null, day: null }, ended: true };
+  };
+
   // #528 (majkinetor): "Copyright: X under exclusive license to Y" packs TWO
   // holders (X the copyright holder, Y the licensee) into one line —
   // txpParseCopyrightLine above strips only the LEADING marker, so both
@@ -4269,10 +4294,11 @@
       const rows = parsedRows().map(attachResolution).filter(r => r.matched && r.roleMatch && r.entityMatch
         && targets.some(t => !appliedKeys.has(keyFor(r, t))));
       if (!rows.length) { toast('Nothing resolved to apply'); return null; }
-      let ok = 0, fail = 0;
+      let ok = 0, fail = 0, dated = 0;
       for (const r of rows) {
         const credit = r.entity && r.entity !== (r.entityMatch.name || '') ? r.entity : '';
-        const dates = r.year ? { begin_date: { year: parseInt(r.year, 10), month: null, day: null }, end_date: null, ended: false } : null;
+        const dates = txpNoticeDatePeriod(r.year);   // #574: "in 2021", not "from 2021 to present"
+        if (dates) dated++;
         // an instrument-role match carries an attributeId (the "instrument"
         // link type doesn't say WHICH instrument on its own).
         const attrs = r.roleMatch.attributeId ? buildAttrTree([{ typeID: r.roleMatch.attributeId, text_value: '', credited_as: '' }]) : null;
@@ -4285,6 +4311,14 @@
           } catch (e) { fail++; try { console.warn('[Group Therapy] text-parser apply failed:', e); } catch (_) {} }
         }
       }
+      // #574: which rows carried a notice year is the one thing that is invisible
+      // in the parser's own preview (it shows role/holder, never the date), so it
+      // goes in the log — otherwise a wrong year is only findable in MB's diff.
+      try {
+        const yrs = rows.filter(r => r.year).map(r => `${r.crKind || 'credit'} ${r.entity || ''} = in ${r.year}`);
+        console.debug(`[Group Therapy] Text parser: applied ${ok} rel(s), ${fail} failed; ${dated} carried a notice year (begin = end, ended)`
+          + (yrs.length ? ` — ${yrs.join('; ')}` : ''));
+      } catch (_) {}
       // #539 follow-up (majkinetor): "Make sure scope info is added to the edit
       // note." Which tracks were credited is the part a reviewer cannot infer
       // from the diff alone when several runs are batched into one edit, so the
@@ -4901,7 +4935,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       txpCreateNote,   // #544
       txpClearAnnotation, txpFetchAnnotationForm, txpClearAnnotationNote,   // #550
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
-      txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNarrowByScore, txpInstrumentCandidates,
+      txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNoticeDatePeriod, txpNarrowByScore, txpInstrumentCandidates,
       txpSplitCompoundCopyrightLines,
     }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
