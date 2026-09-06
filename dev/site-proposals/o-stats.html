@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* The numbers lead. One chart, one hue, every bar labelled directly, and the
+     bar list doubles as the index — so the page has one structure, not two.
+     Figures are real, from the MusicBrainz snapshot 20260905 (2026-05 onward). */
+  :root{ --f:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --bg:#ffffff; --ink:#14161a; --dim:#5d636b; --faint:#98a0a8; --rule:#eceef1;
+         --bar:#2a78d6; --track:#f1f4f8; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --bg:#0e1013; --ink:#e7eaee; --dim:#98a0a8; --faint:#666d76; --rule:#1c2026;
+    --bar:#3987e5; --track:#171b21; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+       font:15px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .w{max-width:780px;margin:0 auto;padding:0 26px}
+
+  header{padding:104px 0 0}
+  .lab{font:600 10px/1 var(--f);letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  .hero{margin:18px 0 0;font:600 60px/1 var(--f);letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+  .hero small{display:block;font:400 17px/1.5 var(--f);letter-spacing:0;color:var(--dim);margin-top:14px;max-width:34em}
+  h1{font:600 15px/1 var(--f);margin:0;display:inline}
+
+  .act{margin:32px 0 0;display:flex;gap:9px;flex-wrap:wrap}
+  .act a{font-size:14px;padding:8px 16px;border:1px solid var(--rule);border-radius:7px;text-decoration:none;color:var(--dim)}
+  .act a:hover{border-color:var(--bar);color:var(--bar)}
+  .act a.go{background:var(--bar);border-color:var(--bar);color:#fff;font-weight:500}
+  .act a.go:hover{filter:brightness(1.08);color:#fff}
+
+  h2{margin:74px 0 6px;font:600 15px/1.4 var(--f)}
+  h2+.sub{margin:0 0 22px;color:var(--faint);font-size:13.5px}
+
+  /* chart: one series, one hue, thin marks, rounded data end, direct labels */
+  .chart{margin:0;display:grid;grid-template-columns:12.5em 1fr 5.5em;gap:3px 14px;align-items:center}
+  .chart .nm{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chart .nm a{text-decoration:none}
+  .chart .nm a:hover{color:var(--bar);text-decoration:underline}
+  .chart .track{height:14px;background:var(--track);border-radius:2px;overflow:hidden}
+  .chart .fill{height:100%;background:var(--bar);border-radius:0 3px 3px 0;min-width:2px}
+  .chart .v{font-size:13px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+  .chart .row{display:contents}
+  .chart .row:hover .v{color:var(--ink)}
+
+  .none{margin:20px 0 0;font-size:13.5px;color:var(--faint)}
+  .none a{color:var(--dim)}
+
+  dl.k{display:grid;grid-template-columns:12.5em 1fr;gap:9px 14px;margin:0}
+  dl.k dt{color:var(--faint);font-size:13.5px}
+  dl.k dd{margin:0;font-size:14px;font-variant-numeric:tabular-nums}
+
+  figure{margin:74px 0 0}
+  figure img{display:block;width:100%;border:1px solid var(--rule);border-radius:6px}
+  figcaption{margin-top:9px;font-size:13px;color:var(--faint)}
+
+  footer{margin:74px 0 0;padding:26px 0 110px;border-top:1px solid var(--rule);
+         font-size:13px;color:var(--faint);display:flex;gap:20px;flex-wrap:wrap}
+  footer a{color:var(--faint)}
+  @media(max-width:640px){
+    header{padding-top:60px} .hero{font-size:42px}
+    .chart{grid-template-columns:1fr 4.6em;gap:2px 10px}
+    .chart .nm{grid-column:1/3;margin-top:9px}
+    dl.k{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="w">
+
+  <header>
+    <div class="lab">majkinetor · musicbrainz userscripts</div>
+    <div class="hero">499,632
+      <small><h1>MusicBrainz Toolset</h1> — edits made with these twelve userscripts by
+      136 editors since May 2026. 99.9% of the ones that closed were applied.</small>
+    </div>
+    <div class="act">
+      <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Full statistics</a>
+    </div>
+  </header>
+
+  <h2>Edits by script</h2>
+  <p class="sub">Each name links to its README. Bars are to scale; exact counts are printed.</p>
+  <div class="chart" id="chart"></div>
+  <p class="none" id="none"></p>
+
+  <h2>The rest of the numbers</h2>
+  <p class="sub">From the MusicBrainz database snapshot 20260905.</p>
+  <dl class="k">
+    <dt>Editors</dt><dd>136</dd>
+    <dt>Applied</dt><dd>99.9% of closed edits</dd>
+    <dt>Measured from</dt><dd>2026-05-01</dd>
+    <dt>Scripts</dt><dd>12, or 1 if you install String&nbsp;Theory</dd>
+  </dl>
+
+  <figure>
+    <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+    <figcaption>Apollo Editor — the release editor’s tracklist, replaced.</figcaption>
+  </figure>
+
+  <footer>
+    <span>MIT</span>
+    <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+    <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+  </footer>
+</div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const N=new Intl.NumberFormat('en-US');
+const EDITS=[
+ ['credit_hoarder','Credit Hoarder',254892],
+ ['isrc_scout','ISRC Scout',73509],
+ ['falcon','Falcon',63634],
+ ['group_therapy','Group Therapy',50091],
+ ['apollo_editor','Apollo Editor',45108],
+ ['platform_check','Platform Check',6753],
+ ['art_station','Art Station',5420],
+ ['fusion','Fusion',206],
+ ['scribe','Scribe',19],
+];
+const QUIET=[['mammoth','Mammoth'],['bandcamp_player_enhanced','Bandcamp Player Enhanced'],['string_theory','String Theory']];
+const max=Math.max(...EDITS.map(e=>e[2]));
+document.getElementById('chart').innerHTML = EDITS.map(([s,n,v])=>`
+ <div class="row" title="${n}: ${N.format(v)} edits">
+   <div class="nm"><a href="${GH}${s}/README.md">${n}</a></div>
+   <div class="track"><div class="fill" style="width:${(v/max*100).toFixed(2)}%"></div></div>
+   <div class="v">${N.format(v)}</div>
+ </div>`).join('');
+document.getElementById('none').innerHTML =
+ 'Not shown, because they don’t submit edits of their own: ' +
+ QUIET.map(([s,n])=>`<a href="${GH}${s}/README.md">${n}</a>`).join(', ') +
+ ' — String Theory’s edits are counted under the script that made them.';
+</script>
+</body>
+</html>

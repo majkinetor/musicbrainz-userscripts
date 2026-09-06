@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* Documentation-site layout: a quiet fixed sidebar carries the whole index,
+     so the page body only ever has to hold one thought at a time. */
+  :root{ --f:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --bg:#ffffff; --side:#fbfbfc; --ink:#1a1c1f; --dim:#61656c; --faint:#9aa0a8;
+         --rule:#e9eaee; --accent:#2f6feb; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --bg:#0f1115; --side:#0c0e12; --ink:#e6e8ec; --dim:#9aa0aa; --faint:#6a707a;
+    --rule:#1e2229; --accent:#6ea2ff; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+       font:15px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:2px}
+
+  .shell{display:grid;grid-template-columns:262px 1fr;min-height:100vh}
+
+  aside{background:var(--side);border-right:1px solid var(--rule);padding:30px 22px 40px;
+        position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto}
+  aside .brand{font-weight:600;font-size:15px;color:var(--ink)}
+  aside .brand a{color:inherit}
+  aside .ver{color:var(--faint);font-size:12px;margin-top:2px}
+  aside .lab{margin:26px 0 8px;font:600 10px/1 var(--f);letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  aside nav a{display:block;padding:5px 9px;margin:0 -9px;border-radius:5px;color:var(--dim);font-size:14px}
+  aside nav a:hover{background:var(--rule);color:var(--ink);text-decoration:none}
+  aside nav a.on{color:var(--accent);font-weight:500}
+
+  main{padding:56px 46px 110px;max-width:800px}
+  h1{font:600 30px/1.25 var(--f);letter-spacing:-.018em;margin:0 0 12px}
+  .lede{margin:0;font-size:17px;color:var(--dim);max-width:44em}
+
+  .act{margin:26px 0 0;display:flex;gap:9px;flex-wrap:wrap}
+  .act a{font-size:14px;padding:8px 15px;border:1px solid var(--rule);border-radius:7px;color:var(--dim)}
+  .act a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+  .act a.go{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+  .act a.go:hover{filter:brightness(1.08)}
+
+  h2{margin:52px 0 14px;font:600 12px/1 var(--f);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+
+  figure{margin:0}
+  figure img{display:block;width:100%;border:1px solid var(--rule);border-radius:8px}
+  figcaption{margin-top:9px;font-size:13px;color:var(--faint)}
+
+  dl.stats{display:flex;gap:52px;margin:0;flex-wrap:wrap}
+  dl.stats dt{font:600 23px/1 var(--f);font-variant-numeric:tabular-nums}
+  dl.stats dd{margin:5px 0 0;font-size:13px;color:var(--dim)}
+
+  .note{margin:14px 0 0;font-size:13.5px;color:var(--faint)}
+  .callout{margin:0;padding:15px 17px;border:1px solid var(--rule);border-left:2px solid var(--accent);border-radius:0 7px 7px 0}
+  .callout b{font-weight:600}
+  .callout p{margin:4px 0 0;color:var(--dim);font-size:14px}
+
+  @media(max-width:900px){
+    .shell{grid-template-columns:1fr}
+    aside{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--rule)}
+    main{padding:34px 22px 80px}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside>
+    <div class="brand"><a href="#">MusicBrainz Toolset</a></div>
+    <div class="ver">majkinetor · MIT</div>
+
+    <div class="lab">Start</div>
+    <nav>
+      <a class="on" href="#">Overview</a>
+      <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Documentation</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Statistics</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">Source</a>
+    </nav>
+
+    <div class="lab">Scripts</div>
+    <nav id="nav"></nav>
+
+    <div class="lab">Elsewhere</div>
+    <nav>
+      <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+      <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+    </nav>
+  </aside>
+
+  <main>
+    <h1>Twelve tools for editing MusicBrainz in bulk</h1>
+    <p class="lede">Importing credits, fixing relationships by the hundred, chasing ISRCs,
+       sorting cover art, merging duplicates. Each script works on its own, inside
+       MusicBrainz’s own pages.</p>
+
+    <div class="act">
+      <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install String Theory</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Docs</a>
+    </div>
+    <p class="note">Needs a userscript manager. String Theory is all twelve in one file.</p>
+
+    <h2>What it looks like</h2>
+    <figure>
+      <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+           src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+      <figcaption>Apollo Editor — the release editor’s tracklist, replaced.</figcaption>
+    </figure>
+
+    <h2>Usage so far</h2>
+    <dl class="stats">
+      <div><dt>499,632</dt><dd>edits made with them</dd></div>
+      <div><dt>136</dt><dd>editors using them</dd></div>
+      <div><dt>99.9%</dt><dd>of closed edits applied</dd></div>
+    </dl>
+    <p class="note">From the MusicBrainz database snapshot 20260905, 2026-05 onward.</p>
+
+    <h2>If you only install one</h2>
+    <div class="callout">
+      <b>String Theory</b>
+      <p>All of the scripts in the sidebar, built into a single file, sharing one settings
+         window. Install it instead of adding them one at a time.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['apollo_editor','Apollo Editor'],['art_station','Art Station'],
+ ['credit_hoarder','Credit Hoarder'],['group_therapy','Group Therapy'],
+ ['isrc_scout','ISRC Scout'],['mammoth','Mammoth'],
+ ['platform_check','Platform Check'],['falcon','Falcon'],
+ ['fusion','Fusion'],['scribe','Scribe'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced'],
+];
+document.getElementById('nav').innerHTML =
+  `<a href="${GH}string_theory/README.md">String Theory</a>` +
+  S.map(([s,n])=>`<a href="${GH}${s}/README.md">${n}</a>`).join('');
+</script>
+</body>
+</html>

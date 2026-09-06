@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  :root{ --paper:#ffffff; --ink:#111111; --dim:#6d6d6d; --rule:#dcdcdc; --accent:#d2331f;
+         --sans:"Helvetica Neue",Helvetica,Arial,"Segoe UI",system-ui,sans-serif; }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--ink)}
+  .w{max-width:1120px;margin:0 auto;padding:0 40px}
+
+  /* 12-column grid, hairlines only — no boxes, no fills */
+  .row{display:grid;grid-template-columns:repeat(12,1fr);gap:28px}
+  .lab{font:500 10px/1.4 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+
+  header{padding:84px 0 40px;border-bottom:1px solid var(--ink)}
+  h1{grid-column:1/8;font:400 44px/1.06 var(--sans);letter-spacing:-.022em;margin:0}
+  h1 em{font-style:normal;color:var(--accent)}
+  header .meta{grid-column:9/13;padding-top:7px}
+  header .meta p{margin:0 0 3px;color:var(--dim);font-size:13px}
+
+  .intro{padding:30px 0 44px;border-bottom:1px solid var(--rule)}
+  .intro .lab{grid-column:1/3}
+  .intro p{grid-column:3/9;margin:0;font-size:17px;line-height:1.45;max-width:46ch}
+  .intro .links{grid-column:9/13;display:flex;flex-direction:column;gap:6px;font-size:14px}
+  .intro .links a{text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:5px}
+  .intro .links a:hover{border-color:var(--accent);color:var(--accent)}
+  .intro .links a.go{color:var(--accent);border-color:var(--accent)}
+
+  .figures{padding:26px 0;border-bottom:1px solid var(--rule)}
+  .figures .lab{grid-column:1/3}
+  .figures dl{grid-column:3/13;display:flex;gap:64px;margin:0;flex-wrap:wrap}
+  .figures dt{font:400 26px/1 var(--sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .figures dd{margin:6px 0 0;font-size:12px;color:var(--dim)}
+
+  figure{margin:56px 0 0}
+  figure img{display:block;width:100%;border:1px solid var(--rule)}
+  figure figcaption{display:grid;grid-template-columns:repeat(12,1fr);gap:28px;margin-top:10px;font-size:12px;color:var(--dim)}
+  figure figcaption span:first-child{grid-column:1/3}
+  figure figcaption span:last-child{grid-column:3/13}
+
+  h2{margin:64px 0 0;font:400 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+  ul.idx{list-style:none;margin:0;padding:0}
+  ul.idx li{display:grid;grid-template-columns:repeat(12,1fr);gap:28px;padding:16px 0;border-bottom:1px solid var(--rule)}
+  ul.idx .n{grid-column:1/2;color:var(--dim);font-size:12px;font-variant-numeric:tabular-nums;padding-top:3px}
+  ul.idx .nm{grid-column:2/6;font-weight:500}
+  ul.idx .nm a{text-decoration:none}
+  ul.idx .nm a:hover{color:var(--accent)}
+  ul.idx .ds{grid-column:6/12;color:var(--dim);font-size:14px}
+  ul.idx .in{grid-column:12/13;text-align:right;font-size:12px}
+  ul.idx .in a{color:var(--dim);text-decoration:none}
+  ul.idx .in a:hover{color:var(--accent)}
+
+  .bundle{display:grid;grid-template-columns:repeat(12,1fr);gap:28px;margin-top:18px;padding:16px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
+  .bundle .n{grid-column:1/2;color:var(--accent);font-size:12px;padding-top:3px}
+  .bundle .nm{grid-column:2/6;font-weight:500;color:var(--accent)}
+  .bundle .ds{grid-column:6/12;color:var(--dim);font-size:14px}
+  .bundle .in{grid-column:12/13;text-align:right;font-size:12px}
+  .bundle .in a{color:var(--accent);text-decoration:none}
+
+  footer{display:grid;grid-template-columns:repeat(12,1fr);gap:28px;padding:44px 0 90px;font-size:12px;color:var(--dim)}
+  footer .lab{grid-column:1/3}
+  footer div.f{grid-column:3/13;display:flex;gap:26px;flex-wrap:wrap}
+  footer a{color:var(--dim)}
+  @media(max-width:860px){
+    .w{padding:0 22px}
+    h1,header .meta,.intro .lab,.intro p,.intro .links,.figures .lab,.figures dl,
+    ul.idx .n,ul.idx .nm,ul.idx .ds,ul.idx .in,.bundle>*,footer .lab,footer div.f,
+    figure figcaption span{grid-column:1/13}
+    ul.idx li,.bundle{gap:4px}
+    ul.idx .in,.bundle .in{text-align:left}
+  }
+</style>
+</head>
+<body>
+<div class="w">
+
+  <header class="row">
+    <h1>MusicBrainz<br><em>Toolset</em></h1>
+    <div class="meta">
+      <p class="lab">Repository</p>
+      <p>majkinetor / musicbrainz-userscripts</p>
+      <p class="lab" style="margin-top:12px">Licence</p>
+      <p>MIT</p>
+    </div>
+  </header>
+
+  <section class="intro row">
+    <div class="lab">About</div>
+    <p>Userscripts for people who edit MusicBrainz in bulk — importing credits, fixing
+       relationships by the hundred, chasing ISRCs, sorting cover art.</p>
+    <div class="links">
+      <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install →</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub →</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Documentation →</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Statistics →</a>
+    </div>
+  </section>
+
+  <section class="figures row">
+    <div class="lab">Figures</div>
+    <dl>
+      <div><dt>499,632</dt><dd>edits made</dd></div>
+      <div><dt>136</dt><dd>editors</dd></div>
+      <div><dt>12</dt><dd>scripts</dd></div>
+      <div><dt>99.9%</dt><dd>of closed edits applied</dd></div>
+    </dl>
+  </section>
+
+  <figure>
+    <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+    <figcaption><span>Fig. 1</span><span>Apollo Editor, in place of the release editor’s own tracklist</span></figcaption>
+  </figure>
+
+  <h2>Index</h2>
+  <div class="bundle">
+    <div class="n">00</div>
+    <div class="nm">String Theory</div>
+    <div class="ds">All of the below in one file. Install this instead of the individual scripts.</div>
+    <div class="in"><a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a></div>
+  </div>
+  <ul class="idx" id="idx"></ul>
+
+  <footer>
+    <div class="lab">Colophon</div>
+    <div class="f">
+      <span>Statistics: MusicBrainz snapshot 20260905, from 2026-05</span>
+      <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+      <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const ST='https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/';
+const S=[
+ ['apollo_editor','Apollo Editor','Advanced adding and editing of a release'],
+ ['art_station','Art Station','Cover art: view, reorder, retype, comment, remove, add from the web'],
+ ['credit_hoarder','Credit Hoarder','Import credits from several providers, with a review phase'],
+ ['group_therapy','Group Therapy','Batch operations on the relationships page'],
+ ['isrc_scout','ISRC Scout','Reads existing ISRCs and streaming links, fills the gaps'],
+ ['mammoth','Mammoth','Keeps reusable edit notes beside the note field'],
+ ['platform_check','Platform Check','Find and verify a release across online platforms'],
+ ['falcon','Falcon','Batch-edit entity fields, from Harmony or on its own'],
+ ['fusion','Fusion','Merge duplicate recordings: review, auto-match, submit'],
+ ['scribe','Scribe','Edit MusicBrainz in your real editor'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced','Bandcamp album player with keyboard shortcuts'],
+];
+document.getElementById('idx').innerHTML = S.map(([s,n,d],i)=>`
+ <li>
+   <div class="n">${String(i+1).padStart(2,'0')}</div>
+   <div class="nm"><a href="${GH}${s}/README.md">${n}</a></div>
+   <div class="ds">${d}</div>
+   <div class="in"><a href="${ST}${s}/${s}.user.js">Install</a></div>
+ </li>`).join('');
+</script>
+</body>
+</html>

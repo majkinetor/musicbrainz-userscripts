@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MusicBrainz Toolset</title>
+<style>
+  /* No borders, no cards, no fills. Hierarchy comes from space and weight
+     alone; the only decoration on the page is the screenshot itself. */
+  :root{ --f:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --bg:#faf9f7; --ink:#191817; --dim:#78756f; --faint:#a5a29b; --accent:#191817; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --bg:#121211; --ink:#eceae6; --dim:#928e87; --faint:#6a665f; --accent:#eceae6; } }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+       font:16px/1.7 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .w{max-width:760px;margin:0 auto;padding:0 28px}
+
+  header{padding:140px 0 0}
+  h1{font:500 26px/1.3 var(--f);letter-spacing:-.01em;margin:0 0 20px}
+  header p{margin:0;font-size:19px;line-height:1.55;color:var(--dim);max-width:34em}
+
+  .act{margin:36px 0 0;display:flex;gap:26px;flex-wrap:wrap;font-size:15px}
+  .act a{text-decoration:none;color:var(--dim)}
+  .act a:hover{color:var(--ink)}
+  .act a.go{color:var(--ink);font-weight:500}
+  .act a.go::after{content:" →";color:var(--faint)}
+
+  .fig{margin:88px 0 0}
+  .fig img{display:block;width:100%;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 18px 46px rgba(0,0,0,.09)}
+  .fig p{margin:16px 0 0;font-size:13.5px;color:var(--faint)}
+
+  .fact{margin:88px 0 0;font-size:15px;color:var(--dim);line-height:2}
+  .fact b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+  .fact a{color:var(--dim)}
+
+  h2{margin:96px 0 0;font:500 13px/1 var(--f);letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+
+  .bundle{margin:30px 0 0;font-size:15px}
+  .bundle .n{font-weight:500}
+  .bundle .n a{text-decoration:none}
+  .bundle .n a:hover{text-decoration:underline;text-underline-offset:3px}
+  .bundle p{margin:3px 0 0;color:var(--dim)}
+
+  ul{list-style:none;margin:34px 0 0;padding:0;
+     display:grid;grid-template-columns:repeat(2,1fr);column-gap:44px;row-gap:26px}
+  ul li .n{font-size:15px;font-weight:500}
+  ul li .n a{text-decoration:none}
+  ul li .n a:hover{text-decoration:underline;text-underline-offset:3px}
+  ul li p{margin:2px 0 0;font-size:14px;line-height:1.55;color:var(--dim)}
+
+  footer{margin:110px 0 0;padding:0 0 130px;font-size:13.5px;color:var(--faint);display:flex;gap:24px;flex-wrap:wrap}
+  footer a{color:var(--faint)}
+  footer a:hover{color:var(--dim)}
+  @media(max-width:620px){ header{padding-top:80px} ul{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="w">
+
+  <header>
+    <h1>MusicBrainz Toolset</h1>
+    <p>Twelve userscripts for people who edit MusicBrainz in bulk. Credits, relationships,
+       ISRCs, cover art, merges — done a hundred at a time instead of one tab at a time.</p>
+    <div class="act">
+      <a class="go" href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts">GitHub</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/DOCS.md">Documentation</a>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">Statistics</a>
+    </div>
+  </header>
+
+  <div class="fig">
+    <img loading="lazy" alt="Apollo Editor replacing the MusicBrainz release editor tracklist"
+         src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/apollo_editor/screenshots/tracklist.png">
+    <p>Apollo Editor, standing in for the release editor’s own tracklist.</p>
+  </div>
+
+  <div class="fact">
+    <b>499,632</b> edits have been made with these, by <b>136</b> editors.
+    <b>99.9%</b> of the ones that closed were applied.
+    <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md">See the numbers</a>.
+  </div>
+
+  <h2>Scripts</h2>
+
+  <div class="bundle">
+    <div class="n"><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md">String Theory</a></div>
+    <p>All of them in one file. <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install this</a> instead of the list below.</p>
+  </div>
+
+  <ul id="idx"></ul>
+
+  <footer>
+    <span>MIT</span>
+    <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
+    <a href="https://musicbrainz.org/doc/Guides/Userscripts">What is a userscript</a>
+    <span>Statistics from snapshot 20260905</span>
+  </footer>
+</div>
+
+<script>
+const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
+const S=[
+ ['apollo_editor','Apollo Editor','Advanced adding and editing of a release.'],
+ ['art_station','Art Station','Cover art: view, reorder, retype, comment, remove, add from the web.'],
+ ['credit_hoarder','Credit Hoarder','Import credits from several providers, with a review phase.'],
+ ['group_therapy','Group Therapy','Batch operations on the relationships page.'],
+ ['isrc_scout','ISRC Scout','Reads existing ISRCs and streaming links, fills in the gaps.'],
+ ['mammoth','Mammoth','Keeps your reusable edit notes beside the note field.'],
+ ['platform_check','Platform Check','Find and verify a release across online platforms.'],
+ ['falcon','Falcon','Batch-edit entity fields, from Harmony or on its own.'],
+ ['fusion','Fusion','Merge duplicate recordings: review, auto-match, submit.'],
+ ['scribe','Scribe','Edit MusicBrainz in your real editor.'],
+ ['bandcamp_player_enhanced','Bandcamp Player Enhanced','Bandcamp album player with keyboard shortcuts.'],
+];
+document.getElementById('idx').innerHTML = S.map(([s,n,d])=>`
+ <li><div class="n"><a href="${GH}${s}/README.md">${n}</a></div><p>${d}</p></li>`).join('');
+</script>
+</body>
+</html>
