@@ -3019,12 +3019,15 @@
   // render the relationship as "from 2021 to present", where what it should say
   // is "in 2021". Begin = end, with ended set, is what produces that.
   //
-  // Same call kellnerd's parse-copyright-notice makes — its setYear() sets
-  // begin_date, end_date and ended together — and it matches how IvanDobsky
-  // describes the field: "There is never an 'End' date, always just a new company
-  // claiming copyright from that new date… We are just making use of a database
-  // feature and saying 'no, just the one date to show'."
-  //   community.metabrainz.org/t/how-to-add-ranges-of-years-for-copyrights-or-publishers/588455/4
+  // This is MB's own documented guideline for these relationship types, not our
+  // reading of them (chaban-mb on #574) — verbatim, on the Label-Release
+  // Copyright type this parser actually writes:
+  //   "When a year is specified (as in "© 2015 Naxos Rights US, Inc."), use that
+  //    year as both the begin and end date."
+  //   musicbrainz.org/relationship/2ed5a497-4f85-4b3f-831e-d341ad28c544   (©)
+  //   musicbrainz.org/relationship/7fd5fbc0-fbf4-4d04-be23-417d50a4dc30   (℗)
+  // It is also the call kellnerd's parse-copyright-notice makes — its setYear()
+  // sets begin_date, end_date and ended together.
   //
   // Applies to every notice kind, not only ©/℗: a year is only ever parsed off a
   // notice line in the first place (txpParseCopyrightLine), an ordinary R/A credit

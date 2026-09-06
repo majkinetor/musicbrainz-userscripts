@@ -4,10 +4,14 @@
 // "(from 2021 to present)" for the ℗ the parser staged.
 //
 // A notice year is a point in time. MB only renders "in 2021" when begin_date,
-// end_date and ended are all set; begin alone reads as an open-ended range. Same
-// call kellnerd's parse-copyright-notice makes (setYear), and the reading
-// IvanDobsky gives on the forum:
-//   community.metabrainz.org/t/how-to-add-ranges-of-years-for-copyrights-or-publishers/588455/4
+// end_date and ended are all set; begin alone reads as an open-ended range.
+//
+// MB documents this on the relationship types themselves (chaban-mb on #574) —
+// "When a year is specified …, use that year as both the begin and end date" —
+// including on the Label-Release Copyright type this parser writes:
+//   musicbrainz.org/relationship/2ed5a497-4f85-4b3f-831e-d341ad28c544   (©)
+//   musicbrainz.org/relationship/7fd5fbc0-fbf4-4d04-be23-417d50a4dc30   (℗)
+// It is also the call kellnerd's parse-copyright-notice makes (setYear).
 //
 // Two layers, because either alone would be weak:
 //   1. txpNoticeDatePeriod() — the shape, deterministically, including the
