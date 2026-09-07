@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.5.130556
+// @version      2026.9.7
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -651,9 +651,15 @@
     });
     document.addEventListener('keydown', onKey);
   }
-  // at big tile sizes the selection outline alone is plenty obvious, so drop the
-  // per-card ✓ badge — keeps large artwork uncluttered. #234
-  function applyZoomClass() { root.classList.toggle('as-zoomed', SETTINGS.tile >= 280); }
+  // #576 (majkinetor, "Selection icon lost when sizing cards"): there used to be
+  // an applyZoomClass() here that put an `as-zoomed` class on the root at
+  // tile >= 280, whose only job was to hide the per-card ✓ badge — the theory
+  // being that at big sizes the selection outline alone is obvious enough and
+  // the artwork stays uncluttered. In practice one step on the size slider makes
+  // the tick vanish from every selected card while the toolbar still reads
+  // "5 selected", which looks like a bug rather than like restraint. The badge
+  // now shows at every tile size, and the class, its rule and its three call
+  // sites are gone rather than left as dead scaffolding.
 
   function render() {
     mount();
@@ -672,7 +678,6 @@
     wire();
     hydrateImgs();     // re-attach cached <img> for new/pending covers so they don't reload
     applyOriginal();   // keep the native/script view state across re-renders
-    applyZoomClass();
     fitTypePills();    // show as many types as the pill width allows
     fitFooters();      // hide a comment that can't fit even a few chars (no ugly sliver)
     fitToolbar();      // icon-only buttons if the toolbar would otherwise wrap
@@ -1009,12 +1014,12 @@
   function resizeTile(dir) {
     SETTINGS.tile = Math.max(120, Math.min(340, SETTINGS.tile + (dir > 0 ? 25 : -25)));   // #259 bigger step → less scrolling
     const sizeEl = root.querySelector('.as-size'); if (sizeEl) sizeEl.value = SETTINGS.tile;
-    document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); fitFooters();
+    document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); fitTypePills(); fitFooters();
     clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
   }
   function wire() {
     const sizeEl = root.querySelector('.as-size');
-    sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
+    sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); fitTypePills(); };
     sizeEl.onchange = () => { save(); render(); };
     // scroll the wheel over the slider to resize (no need to drag it)
     sizeEl.onwheel = e => { e.preventDefault(); e.stopPropagation(); resizeTile(e.deltaY < 0 ? 1 : -1); };   // stopProp: don't also trigger the RMB+wheel root handler (#259)
@@ -4028,7 +4033,6 @@
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
   .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:var(--mbu-text-on-accent);border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
   .as-card.sel .as-selmark{display:block}
-  #as-root.as-zoomed .as-card.sel .as-selmark{display:none}   /* big tiles: outline alone shows selection */
   .as-card.sel .as-cmt{padding-right:28px}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */

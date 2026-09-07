@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.7.090941
+// @version      2026.9.7.093833
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,8 +78,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.7.090941 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.7\n  · Art Station v2026.9.5.130556\n  · Credit Hoarder v2026.9.5.160106\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.5.130556\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
+  console.log('%c String Theory %c v2026.9.7.093833 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.7\n  · Art Station v2026.9.7\n  · Credit Hoarder v2026.9.5.160106\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.5.130556\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -8899,7 +8899,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.5.130556","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.7","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.7","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -9536,9 +9536,15 @@ try {
     });
     document.addEventListener('keydown', onKey);
   }
-  // at big tile sizes the selection outline alone is plenty obvious, so drop the
-  // per-card ✓ badge — keeps large artwork uncluttered. #234
-  function applyZoomClass() { root.classList.toggle('as-zoomed', SETTINGS.tile >= 280); }
+  // #576 (majkinetor, "Selection icon lost when sizing cards"): there used to be
+  // an applyZoomClass() here that put an `as-zoomed` class on the root at
+  // tile >= 280, whose only job was to hide the per-card ✓ badge — the theory
+  // being that at big sizes the selection outline alone is obvious enough and
+  // the artwork stays uncluttered. In practice one step on the size slider makes
+  // the tick vanish from every selected card while the toolbar still reads
+  // "5 selected", which looks like a bug rather than like restraint. The badge
+  // now shows at every tile size, and the class, its rule and its three call
+  // sites are gone rather than left as dead scaffolding.
 
   function render() {
     mount();
@@ -9557,7 +9563,6 @@ try {
     wire();
     hydrateImgs();     // re-attach cached <img> for new/pending covers so they don't reload
     applyOriginal();   // keep the native/script view state across re-renders
-    applyZoomClass();
     fitTypePills();    // show as many types as the pill width allows
     fitFooters();      // hide a comment that can't fit even a few chars (no ugly sliver)
     fitToolbar();      // icon-only buttons if the toolbar would otherwise wrap
@@ -9894,12 +9899,12 @@ try {
   function resizeTile(dir) {
     SETTINGS.tile = Math.max(120, Math.min(340, SETTINGS.tile + (dir > 0 ? 25 : -25)));   // #259 bigger step → less scrolling
     const sizeEl = root.querySelector('.as-size'); if (sizeEl) sizeEl.value = SETTINGS.tile;
-    document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); fitFooters();
+    document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); fitTypePills(); fitFooters();
     clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
   }
   function wire() {
     const sizeEl = root.querySelector('.as-size');
-    sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
+    sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); fitTypePills(); };
     sizeEl.onchange = () => { save(); render(); };
     // scroll the wheel over the slider to resize (no need to drag it)
     sizeEl.onwheel = e => { e.preventDefault(); e.stopPropagation(); resizeTile(e.deltaY < 0 ? 1 : -1); };   // stopProp: don't also trigger the RMB+wheel root handler (#259)
@@ -12913,7 +12918,6 @@ try {
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
   .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:var(--mbu-text-on-accent);border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
   .as-card.sel .as-selmark{display:block}
-  #as-root.as-zoomed .as-card.sel .as-selmark{display:none}   /* big tiles: outline alone shows selection */
   .as-card.sel .as-cmt{padding-right:28px}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */
