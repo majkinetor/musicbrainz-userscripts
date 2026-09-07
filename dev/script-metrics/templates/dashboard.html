@@ -171,7 +171,6 @@
       </select>
     </label>
     <span class="spacer"></span>
-    <label class="chip"><input type="checkbox" id="excludeAuthor"> Exclude the author</label>
     <button class="theme-toggle" id="resetBtn" type="button">Reset</button>
   </div>
 
@@ -274,15 +273,9 @@ const state = {
   from: DATA.default_cutoff.slice(0, 7),
   to: DATA.months.length ? DATA.months[DATA.months.length - 1] : DATA.default_cutoff.slice(0, 7),
   owners: 'mine',
-  excludeAuthor: false,
   allEditors: false,
 };
 
-// The author's own indices, including the folded bucket that stands in for the
-// author's edits on the comparison scripts.
-const authorEditorIdx = new Set(
-  DATA.editors.map((e, i) => (e.is_author ? i : -1)).filter((i) => i >= 0)
-);
 // Folded buckets are real edits but not identifiable people: they must never
 // reach a distinct-editor count or the leaderboard.
 const isTracked = (ei) => DATA.editors[ei].tracked;
@@ -308,7 +301,6 @@ function slice() {
 
   for (const [si, mi, ei, oi, count] of DATA.cubes.main) {
     if (!scriptOk(si) || !monthOk(mi)) continue;
-    if (state.excludeAuthor && authorEditorIdx.has(ei)) continue;
     const outcome = DATA.outcomes[oi];
     total += count;
     outcomeTotals[outcome] += count;
@@ -335,11 +327,11 @@ function slice() {
   const perVersion = new Map();
   let autoedits = 0;
   for (const [si, mi, mine, ti, count] of DATA.cubes.type) {
-    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    if (!scriptOk(si) || !monthOk(mi)) continue;
     perType.set(ti, (perType.get(ti) || 0) + count);
   }
   for (const [si, mi, mine, vi, count] of DATA.cubes.version) {
-    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    if (!scriptOk(si) || !monthOk(mi)) continue;
     // Nested maps rather than a delimited composite key: no separator to pick,
     // and nothing to get wrong when the indices are re-parsed.
     let versions = perVersion.get(si);
@@ -348,17 +340,17 @@ function slice() {
   }
   const perShared = new Map();
   for (const [si, mi, mine, isShared, count] of (DATA.cubes.shared || [])) {
-    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine) || !isShared) continue;
+    if (!scriptOk(si) || !monthOk(mi) || !isShared) continue;
     perShared.set(si, (perShared.get(si) || 0) + count);
   }
 
   const perEntity = new Map();
   for (const [si, mi, mine, ni, count] of (DATA.cubes.entity || [])) {
-    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    if (!scriptOk(si) || !monthOk(mi)) continue;
     perEntity.set(ni, (perEntity.get(ni) || 0) + count);
   }
   for (const [si, mi, mine, count] of DATA.cubes.autoedit) {
-    if (!scriptOk(si) || !monthOk(mi) || (state.excludeAuthor && mine)) continue;
+    if (!scriptOk(si) || !monthOk(mi)) continue;
     autoedits += count;
   }
 
@@ -386,15 +378,9 @@ const hideTip = () => { tip.style.opacity = '0'; };
 function renderTiles(view) {
   const users = new Set();
   for (const s of view.perScript.values()) for (const u of s.users) users.add(u);
-  const active = [...view.perScript.values()].filter((s) => s.edits > 0).length;
-  const closed = view.outcomeTotals.applied + view.outcomeTotals.failed;
-
   const tiles = [
     ['Edits', fmt(view.total), `${fmt(view.autoedits)} auto-applied`],
     ['Editors', fmt(users.size), 'distinct people who ran a script'],
-    ['Scripts active', fmt(active), `of ${DATA.scripts.filter((_, i) => scriptOk(i)).length} configured`],
-    ['Applied', closed ? pct(view.outcomeTotals.applied, closed) + '<span class="unit">%</span>' : '—',
-      `${fmt(view.outcomeTotals.failed)} failed, ${fmt(view.outcomeTotals.open)} open`],
     ['Months covered', fmt(view.months.length), view.months.length
       ? `${DATA.months[view.months[0]]} → ${DATA.months[view.months[view.months.length - 1]]}` : '—'],
   ];
@@ -518,24 +504,19 @@ function renderScripts(view) {
   const cfg = sortState.scripts;
   rows.sort((a, b) => (a[cfg.key] > b[cfg.key] ? 1 : a[cfg.key] < b[cfg.key] ? -1 : 0) * cfg.dir);
 
-  const silent = DATA.scripts.map((s, i) => [s, i]).filter(([s, i]) => scriptOk(i) && !view.perScript.has(i));
-  const columns = [['name','Script',0],['owner','Owner',0],['edits','Edits',1],
+  const columns = [['name','Script',0],['edits','Edits',1],
                    ['shared','Shared',1],['users','Editors',1],['applied','Applied',1]];
   const th = columns.map(([key, label, num]) =>
     `<th class="sortable ${num ? 'num' : ''} ${cfg.key === key ? (cfg.dir === 1 ? 'asc' : 'desc') : ''}" data-t="scripts" data-k="${key}">${label}</th>`).join('');
   const body = rows.map((r) => `<tr>
       <td><span class="sw" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${r.colour};margin-right:7px"></span>${esc(r.name)}</td>
-      <td>${esc(r.owner)}</td><td class="num">${fmt(r.edits)}</td>
+      <td class="num">${fmt(r.edits)}</td>
       <td class="num" title="also attributed to another script">${fmt(r.shared)}</td>
       <td class="num">${r.tracked ? fmt(r.users) : '&mdash;'}</td>
       <td class="num">${fmt(r.applied)}</td></tr>`).join('');
 
   let html = `<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
   if (!rows.length) html = '<p class="empty">No edits in this window.</p>';
-  if (silent.length) {
-    html += `<p class="empty">No attributed edits here: ` +
-      silent.map(([s]) => esc(s.name) + (s.note ? ` <span title="${esc(s.note)}">(?)</span>` : '')).join(', ') + '</p>';
-  }
   $('tableScripts').innerHTML = html;
 }
 
@@ -699,12 +680,11 @@ function bindFilters() {
   from.addEventListener('change', () => { state.from = from.value || first; renderAll(); });
   to.addEventListener('change', () => { state.to = to.value || last; renderAll(); });
   $('owners').addEventListener('change', (e) => { state.owners = e.target.value; renderAll(); });
-  $('excludeAuthor').addEventListener('change', (e) => { state.excludeAuthor = e.target.checked; renderAll(); });
   $('resetBtn').addEventListener('click', () => {
     state.from = DATA.default_cutoff.slice(0, 7); state.to = last;
-    state.owners = 'mine'; state.excludeAuthor = false;
+    state.owners = 'mine';
     from.value = state.from; to.value = state.to;
-    $('owners').value = 'mine'; $('excludeAuthor').checked = false;
+    $('owners').value = 'mine';
     renderAll();
   });
   $('themeToggle').addEventListener('click', () => {
