@@ -48,18 +48,20 @@ if (!await page.evaluate(() => typeof (window.__falconTest || {}).picardParam ==
   console.log('\n1 FAIL'); await ctx.close(); process.exit(1);
 }
 
-// 1. the parameter
+// 1. the parameter. majkinetor, round 3: "Add `tport` regardless of option
+// (possible since we have default value for port)" — so the tagger button is
+// always available and the checkbox governs only the automatic hand-over.
 const params = await page.evaluate(() => {
   const { cfg, picardParam } = window.__falconTest;
   const out = {};
-  cfg.sendToPicard = false; out.off = picardParam();
-  cfg.sendToPicard = true; out.onDefault = picardParam();
+  cfg.sendToPicard = false; cfg.picardPort = 8000; out.autoOff = picardParam();
+  cfg.sendToPicard = true; out.autoOn = picardParam();
   cfg.picardPort = 8123; out.onCustom = picardParam();
   return out;
 });
 log('parameter:', JSON.stringify(params));
-ck(params.off === '', `off adds nothing to the URL (got ${JSON.stringify(params.off)})`);
-ck(params.onDefault === '&tport=8000', `on, it is &tport= with the 8000 default majkinetor specified (got ${JSON.stringify(params.onDefault)})`);
+ck(params.autoOff === '&tport=8000', `tport is added even with auto-send OFF, so the button is always there to click (got ${JSON.stringify(params.autoOff)})`);
+ck(params.autoOn === '&tport=8000', `and with it on (got ${JSON.stringify(params.autoOn)})`);
 ck(params.onCustom === '&tport=8123', `a custom port is what ends up in the URL (got ${JSON.stringify(params.onCustom)})`);
 // it is appended to a url that ALREADY has ?falcon=, so it must lead with & and
 // never with ? — the whole thing is inert if the query string is malformed
@@ -105,7 +107,7 @@ const ui = await page.evaluate(() => {
 log('options UI:', JSON.stringify(ui));
 ck(!ui.missing, `both controls exist (${ui.missing || 'ok'})`);
 ck(ui.legend === 'Harmony', `they sit in the Harmony section, as asked (got ${JSON.stringify(ui.legend)})`);
-ck(/Send to Picard using port/i.test(ui.label || ''), `labelled "Send to Picard using port" (got ${JSON.stringify(ui.label)})`);
+ck(/Automatically send to Picard using port/i.test(ui.label || ''), `labelled "Automatically send to Picard using port" (got ${JSON.stringify(ui.label)})`);
 ck(ui.type === 'number' && ui.min === '1' && ui.max === '65535', `the port is a bounded number input (${ui.type} ${ui.min}-${ui.max})`);
 
 // 4. the UI actually drives the setting, and the port greys out when the box is
@@ -119,6 +121,8 @@ const wiring = await page.evaluate(async () => {
   const offState = { disabled: port.disabled, cfg: cfg.sendToPicard };
   cb.checked = true; cb.onchange();
   const onState = { disabled: port.disabled, cfg: cfg.sendToPicard };
+  // the port drives ?tport= whether or not the box is ticked, so it must stay
+  // editable — it used to grey out with the checkbox, which is now wrong
   port.value = '9000'; port.onchange();
   const after = { cfgPort: cfg.picardPort, shown: port.value };
   port.value = '99999'; port.onchange();
@@ -127,7 +131,7 @@ const wiring = await page.evaluate(async () => {
 });
 log('wiring:', JSON.stringify(wiring));
 ck(wiring.offState.cfg === false && wiring.onState.cfg === true, 'ticking the box turns the setting on and off');
-ck(wiring.offState.disabled === true && wiring.onState.disabled === false, 'the port input is disabled while the box is unticked');
+ck(wiring.offState.disabled === false && wiring.onState.disabled === false, `the port stays editable with the box unticked — it still feeds ?tport= (got ${JSON.stringify([wiring.offState.disabled, wiring.onState.disabled])})`);
 ck(wiring.after.cfgPort === 9000 && wiring.after.shown === '9000', `typing a port stores it (got ${JSON.stringify(wiring.after)})`);
 ck(wiring.clamped.cfgPort === 8000 && wiring.clamped.shown === '8000', `an impossible port is corrected in the box too, not silently ignored (got ${JSON.stringify(wiring.clamped)})`);
 
@@ -139,9 +143,9 @@ await fresh.addScriptTag({ content: code });
 await fresh.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
 const defaults = await fresh.evaluate(() => ({ on: window.__falconTest.cfg.sendToPicard, port: window.__falconTest.cfg.picardPort, param: window.__falconTest.picardParam() }));
 log('defaults:', JSON.stringify(defaults));
-ck(defaults.on === false, 'off by default');
+ck(defaults.on === false, 'the automatic hand-over is off by default');
 ck(defaults.port === 8000, 'default port is 8000');
-ck(defaults.param === '', 'so a default install adds nothing to the URL');
+ck(defaults.param === '&tport=8000', `but a default install still gets the tagger button (got ${JSON.stringify(defaults.param)})`);
 
 // ── 6. the actual hand-over ────────────────────────────────────────────────
 // #578 follow-up: MusicBrainz's tport button did not appear in majkinetor's
