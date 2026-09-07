@@ -19,6 +19,7 @@
 | [Apollo Editor](../apollo_editor) | Per-track artist-credit resolution in the release editor |
 | [Art Station](../art_station) | Cover/event-art gallery editor |
 | [Credit Hoarder](../credit_hoarder) | Import credits from multiple sources|
+| [Fusion](../fusion) | Merge duplicate recordings: review, auto-match, submit |
 | [Group Therapy](../group_therapy) | Relationship-editor batch helpers |
 | [ISRC Scout](../isrc_scout) | Fill in missing ISRCs and streaming links |
 | [Mammoth](../mammoth) | Remember & recall edit notes and field values |
@@ -35,6 +36,7 @@ String Theory bundles:
   · Apollo Editor v2026.7.2.2
   · Art Station v2026.7.2.1
   · Credit Hoarder v2026.7.2
+  · Fusion v2026.7.2
   · Group Therapy v2026.7.2.1
   · ISRC Scout v2026.7.2
   · Mammoth v2026.7.2.6
