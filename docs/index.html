@@ -64,16 +64,14 @@
   .act a.go:hover{filter:brightness(1.08);color:#fff}
 
   /* Set aside from the action row, in the corner. Fixed rather than absolute so
-     it stays reachable past the band, and it sits over both the screenshot and
-     the page background — hence the translucent chip, which keeps it legible on
-     either without a second colour. The mark is inline SVG: the page must stay
-     self-contained, and GitHub's own asset host is a third party. */
+     it stays reachable past the band. The mark sits bare on whatever is behind
+     it — no chip — so it reads as part of the page rather than a button parked on
+     the screenshot. The mark is inline SVG: the page must stay self-contained,
+     and GitHub's own asset host is a third party. */
   .gh{position:fixed;top:14px;right:16px;z-index:2;display:flex;width:34px;height:34px;
       align-items:center;justify-content:center;border-radius:50%;color:var(--ink);
-      background:color-mix(in srgb, var(--bg) 72%, transparent);
-      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-      box-shadow:0 0 0 1px var(--rule)}
-  .gh:hover{color:var(--accent);background:var(--bg)}
+      background:none}
+  .gh:hover{color:var(--accent)}
   .gh svg{width:19px;height:19px;display:block;fill:currentColor}
 
   hr{border:0;border-top:0px solid var(--rule);margin:26px 0}
