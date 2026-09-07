@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.7
+// @version      2026.9.7.101500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -496,6 +496,19 @@
     await fetchAliasesByGids(need);
     refreshAdorns();
   }
+  // #575 round 2: this is called from loadAndRender and rebuild, and rebuild runs
+  // again for each artist committed during matching — so on majkinetor's release
+  // it fired 29 batched alias fetches, several of them for a SINGLE gid, where
+  // fetchAliasesByGids is built to take 90 at a time. Coalesced on a trailing
+  // timer: the last call of a burst does the work, and since `need` is recomputed
+  // from the model every time, it picks up everyone who arrived meanwhile. The
+  // aliases are decoration beside a name, so arriving a moment later costs
+  // nothing; a run of one-gid searches costs a start slot each.
+  let _enrichT = 0;
+  function enrichResolvedAliasesSoon() {
+    clearTimeout(_enrichT);
+    _enrichT = setTimeout(() => { enrichResolvedAliases().catch(e => Log.warn('alias enrich failed', e.message)); }, 1200);
+  }
   // the alias(es) to show next to a result: the English-locale one(s) if present, otherwise the first
   // alias — joined with ", " and capped so it never gets too long
   // MusicBrainz special-purpose artists carry hundreds of junk/locale aliases
@@ -684,26 +697,42 @@
   // negative (#227). Only successful responses are cached.
   const _discogsResolveCache = new Map();
   const _sleep = ms => new Promise(z => setTimeout(z, ms));
-  // The public /ws/2 endpoint is rate-limited (~1 req/s). Serialize every call
-  // through a gate with a minimum gap so a model full of artists doesn't trip
-  // the limiter and get a wall of 503s (#227).
-  let _wsGate = Promise.resolve(); let _wsLast = 0; const WS_MIN_GAP = 700;
+  // The public /ws/2 endpoint is rate-limited (~1 req/s), so requests are paced
+  // here (#227). This used to pace them by CHAINING: each call waited for the
+  // previous one to come back, then waited out the gap. That makes our rate
+  // depend on MusicBrainz's latency instead of on us.
+  //
+  // #575 round 2, measured on majkinetor's log once duplicate requests were gone:
+  // 70 requests took 843 seconds — an actual rate of 0.08/s, more than ten times
+  // UNDER the limit we were pacing for. The searches themselves are slow (an
+  // alias search on his data returns in ~12s), and with a chain every one of
+  // those blocks everything behind it. So the queue wasn't protecting us from
+  // the limiter, it was idling in front of a slow server.
+  //
+  // Pacing now applies to request STARTS, not completions: a start slot every
+  // WS_MIN_GAP, up to WS_MAX_INFLIGHT outstanding. The sustained rate is now
+  // exactly 1/s — the published guidance, and *stricter* than the 700ms this
+  // used to allow — while a slow response no longer stalls the ones behind it.
+  const WS_MIN_GAP = 1000;      // between STARTS. was 700 between completions
+  const WS_MAX_INFLIGHT = 4;    // a burst ceiling; the gap is what bounds the rate
+  let _wsNextStart = 0, _wsInFlight = 0;
   // opts.stale() → true means "this request has been superseded" (the picker types
   // a new query while an older one still queues). Checked when the turn comes up
   // AND after the gap wait, so a stale call costs no request and no slot. #555
-  function wsGet(url, opts) {
+  async function wsGet(url, opts) {
     const o = opts || {};
-    const run = async () => {
-      if (o.stale && o.stale()) return null;
-      const gap = WS_MIN_GAP - (Date.now() - _wsLast);
-      if (gap > 0) await _sleep(gap);
-      if (o.stale && o.stale()) return null;
-      try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
-      finally { _wsLast = Date.now(); }
-    };
-    const p = _wsGate.then(run, run);
-    _wsGate = p.then(() => {}, () => {});   // keep the chain alive regardless of outcome
-    return p;
+    if (o.stale && o.stale()) return null;
+    // Take a start slot up front, so concurrent callers space out instead of all
+    // reading the same "last request was long ago" and firing at once.
+    const now = Date.now();
+    const startAt = Math.max(now, _wsNextStart);
+    _wsNextStart = startAt + WS_MIN_GAP;
+    if (startAt > now) await _sleep(startAt - now);
+    while (_wsInFlight >= WS_MAX_INFLIGHT) await _sleep(120);
+    if (o.stale && o.stale()) return null;
+    _wsInFlight++;
+    try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
+    finally { _wsInFlight--; }
   }
   // EVERY /ws/2 read goes through here. MusicBrainz answers a throttled request
   // with HTTP 503 (or 429) and a body of `{"error":"…"}` — no `recordings` /
@@ -719,10 +748,10 @@
   // at once they all miss, all enqueue, and the cache only starts helping once
   // the first answer lands. A classic cache stampede.
   //
-  // It is expensive here because /ws/2 reads are deliberately serialised one at a
-  // time with WS_MIN_GAP between them, so every duplicate costs a whole slot in
-  // the queue — and the extra volume is what trips MusicBrainz's rate limiter,
-  // whose backoff then slows down everything behind it. Measured on his log:
+  // It is expensive here because /ws/2 reads are paced (WS_MIN_GAP above), so
+  // every duplicate costs a whole start slot — and the extra volume is what trips
+  // MusicBrainz's rate limiter, whose backoff then slows down everything behind
+  // it. Measured on his log:
   // 115 requests for 48 distinct URLs (67 wasted, 58%), 25 throttle events, one
   // query — arid+"Martha Badibala" — fetched TEN times.
   //
@@ -1550,7 +1579,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.7';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.7.101500';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -3542,7 +3571,7 @@
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }   // (re)build per-medium tables + hide/tidy native
     rerender();   // show the tables instantly
     if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else { updateStatus('auto-match off — click Match'); tagDiscogsForAll(); }   // #227: tag 'set' artists even when not matching
-    enrichResolvedAliases();   // batch-fetch aliases for resolved artists (existing releases too)
+    enrichResolvedAliasesSoon();   // batch-fetch aliases for resolved artists (existing releases too) — coalesced, see #575
     // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
     // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
     if (!_labelsAutoMatchedOnce) { _labelsAutoMatchedOnce = true; matchReleaseLabels().catch(e => Log.warn('label auto-match failed', e.message)); }
@@ -3555,7 +3584,7 @@
     rerender();
     if (!noMatch && SETTINGS.autoMatch !== false) await matchModel();
     else if (!noMatch) tagDiscogsForAll();   // #227: tag 'set' artists when auto-match is off — but NOT on a clear/revert (it would check zero matched artists); refreshStatus clears the badge instead
-    enrichResolvedAliases();
+    enrichResolvedAliasesSoon();
   }
   // revert to the page-load state, but DON'T auto-match (that only runs on startup) — Match is manual here
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(true); }
