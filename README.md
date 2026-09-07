@@ -19,6 +19,9 @@ Cover/event-art editor: view, reorder, retype, comment, remove, download, add so
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
 Import credits from several providers with a review phase
 
+[Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
+Merge duplicate recordings: review UI, auto-match, background submit
+
 [Group Therapy](./userscripts/group_therapy/README.md) <img src="./userscripts/group_therapy/icon.svg" align="left" width="32"><br>
 Batch operations and various helpers for editing relationships
 
@@ -38,9 +41,6 @@ Edit MusicBrainz in your real editor (VS Code, Vim, …)
 
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
 Batch import entity fields from Harmony and standalone
-
-[Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
-Merge duplicate recordings: review UI, auto-match, background submit
 
 ---
 
