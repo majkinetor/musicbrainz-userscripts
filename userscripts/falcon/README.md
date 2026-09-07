@@ -244,8 +244,9 @@ Click the ⚙ tab to open it.
 3. **Auto send** (off by default) - press *Send to Falcon* for you once a Harmony import has finished and its action list has settled. See [Hands-free import](#hands-free-import)
 4. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
 5. **Open from Harmony in new tab** (on by default) - off navigates the current Harmony tab to MusicBrainz instead of opening a new one
-6. **Workers** - how many entities are processed at once (default is 5)
-7. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
+6. **Send to Picard using port** (off by default, port 8000) - appends `&tport=<port>` to the MusicBrainz URL *Send to Falcon* opens, so MusicBrainz shows its green tagger button and the release can be handed straight to [Picard](https://picard.musicbrainz.org/) ([#578](https://github.com/majkinetor/musicbrainz-userscripts/issues/578)). Picard has to be running with **Browser integration** enabled and listening on that port — its own default is 8000
+7. **Workers** - how many entities are processed at once (default is 5)
+8. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
 
 #### Hands-free import
 

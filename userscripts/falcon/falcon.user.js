@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.5.204717
+// @version      2026.9.7
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -498,6 +498,18 @@
     // itself, navigated away to MB instead of window.open()'d elsewhere.
     get openHarmonyInNewTab() { return GM_getValue('falcon:openHarmonyInNewTab', true) === true; },
     set openHarmonyInNewTab(v) { GM_setValue('falcon:openHarmonyInNewTab', !!v); },
+    // #578 (Jormangeud, asking; majkinetor specifying: "Default port is 8000.
+    // Option inside Harmony category should be: [x] Send to Picard using port
+    // [8000]"). MusicBrainz turns a ?tport= parameter into the green tagger
+    // button beside a release, which hands it to Picard listening on that port —
+    // so the whole feature is one query parameter on the URL "Send to Falcon"
+    // already opens. Off by default: it is only useful if Picard is running.
+    get sendToPicard() { return GM_getValue('falcon:sendToPicard', false) === true; },
+    set sendToPicard(v) { GM_setValue('falcon:sendToPicard', !!v); },
+    // Clamped on the way in AND on the way out, so a hand-edited stored value
+    // can't put something that isn't a port into a URL.
+    get picardPort() { const n = Math.floor(Number(GM_getValue('falcon:picardPort', 8000))); return (isFinite(n) && n >= 1 && n <= 65535) ? n : 8000; },
+    set picardPort(v) { const n = Math.floor(Number(v)); GM_setValue('falcon:picardPort', (isFinite(n) && n >= 1 && n <= 65535) ? n : 8000); },
   };
 
   /* ── tiny logger — kept in-memory + console, surfaced in the panel's log tab ── */
@@ -1728,6 +1740,12 @@
   // back to seeding musicbrainz.org's HOME page instead of the release (measured on
   // the shipped build: it opened `https://musicbrainz.org/?falcon=<token>`). Accept
   // either shape — a bare MBID, or an MBID embedded in a /release/<mbid> URL.
+  // #578: ?tport= is what makes MusicBrainz render the green tagger button, which
+  // hands the release to Picard listening on that port. The whole feature is this
+  // one parameter on the URL "Send to Falcon" already opens. Its own function so
+  // the suffix — including the empty one — can be asserted directly rather than
+  // inferred from a URL built on someone else's site.
+  function picardParam() { return cfg.sendToPicard ? `&tport=${cfg.picardPort}` : ''; }
   function harmonyReleaseMbid() {
     const v = new URLSearchParams(location.search).get('release_mbid');
     if (!v) return null;
@@ -1782,7 +1800,8 @@
     if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
     GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
     const relMbid = harmonyReleaseMbid();
-    const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}` : `${MB_TARGET}/?falcon=${token}`;
+    const tport = picardParam();   // #578
+    const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}${tport}` : `${MB_TARGET}/?falcon=${token}${tport}`;
     harmonyLog(`${auto ? 'auto ' : ''}send: ${payload.length} item(s) → ${target}`);
     if (cfg.openHarmonyInNewTab) openMbTab(target, auto);
     else location.href = target;
@@ -3865,7 +3884,7 @@
     // Add covers only when there aren't any enabled here") — a log dump
     // alone doesn't say which toggles were active, which matters for
     // reading a run's behavior back later (this exact bug report needed it).
-    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-send-harmony=${cfg.autoSendFromHarmony ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}`);
+    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-send-harmony=${cfg.autoSendFromHarmony ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}, send-to-picard=${cfg.sendToPicard ? 'port ' + cfg.picardPort : 'off'}`);
     suspendNameLookups();   // cosmetic lookups must not eat the workers' rate-limit budget
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
@@ -4104,6 +4123,10 @@
           </label>
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="On: 'Send to Falcon' opens MusicBrainz in a new tab (today's behavior). Off: navigates this same Harmony tab to MusicBrainz instead">
             <input type="checkbox" id="falcon-opt-open-new-tab" /> <span>Open in new tab</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Append ?tport= to the MusicBrainz URL 'Send to Falcon' opens, so MusicBrainz shows its green tagger button and the release can be handed straight to Picard. Picard must be running, with 'Browser integration' enabled, listening on this port (its default is 8000).">
+            <input type="checkbox" id="falcon-opt-picard" /> <span>Send to Picard using port</span>
+            <input type="number" id="falcon-opt-picard-port" min="1" max="65535" style="width:62px" />
           </label>
         </fieldset>
         <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
@@ -4561,6 +4584,16 @@
     const openNewTabCb = document.getElementById('falcon-opt-open-new-tab');
     openNewTabCb.checked = cfg.openHarmonyInNewTab;
     openNewTabCb.onchange = () => { cfg.openHarmonyInNewTab = openNewTabCb.checked; };
+    // #578: the port only means anything when the box is ticked, so it greys out
+    // with it rather than sitting there live and doing nothing.
+    const picardCb = document.getElementById('falcon-opt-picard');
+    const picardPortIn = document.getElementById('falcon-opt-picard-port');
+    const syncPicard = () => { picardPortIn.disabled = !picardCb.checked; picardPortIn.style.opacity = picardCb.checked ? '' : '.5'; };
+    picardCb.checked = cfg.sendToPicard;
+    picardPortIn.value = cfg.picardPort;
+    syncPicard();
+    picardCb.onchange = () => { cfg.sendToPicard = picardCb.checked; syncPicard(); };
+    picardPortIn.onchange = () => { cfg.picardPort = picardPortIn.value; picardPortIn.value = cfg.picardPort; };
     const logHistoryIn = document.getElementById('falcon-opt-log-history-count');
     logHistoryIn.value = cfg.logHistoryCount;
     logHistoryIn.onchange = () => { cfg.logHistoryCount = logHistoryIn.value; logHistoryIn.value = cfg.logHistoryCount; };
@@ -5230,7 +5263,7 @@
     // #547
     updateWorkerLabel, workerPhase, spawnWorkerCard,
     // #557
-    sendToFalcon, maybeAutoSend, cancelAutoSend, openMbTab, harmonyReleaseMbid,
+    sendToFalcon, maybeAutoSend, cancelAutoSend, openMbTab, harmonyReleaseMbid, picardParam,
     autoSendPending: () => !!_autoSendTimer, autoSendFired: () => _autoSendDone,
     // #571
     RENAMEABLE, NAME_SEEDS, setReleaseName, setReleaseField,
