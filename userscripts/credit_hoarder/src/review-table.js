@@ -1414,6 +1414,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                     // ── Modal shell ─────────────────────────────────────────
                     const overlay = document.createElement('div');
+                    overlay.className = 'mbu-ui';   // #564: it holds buttons, and an unscoped button is inverted by the dark userstyle
                     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center;';
                     const modal = document.createElement('div');
                     modal.style.cssText = 'background:var(--mbu-bg);border-radius:0.5rem;padding:1.1rem 1.35rem 1rem;max-width:600px;width:92%;max-height:82vh;'
