@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.7.101651
+// @version      2026.9.7.103111
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -78,13 +78,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.7.101651 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.7.101500\n  · Art Station v2026.9.7\n  · Credit Hoarder v2026.9.5.160106\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.5.130556\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
+  console.log('%c String Theory %c v2026.9.7.103111 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.7.104500\n  · Art Station v2026.9.7\n  · Credit Hoarder v2026.9.5.160106\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.5.130556\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.7.101500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.7.101500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.7.104500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.7.104500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1397,18 +1397,23 @@ try {
   // match the _pending slots, updating the table row-by-row as results come in
   async function matchModel(onProgress) {
     const isEditing = isEditingNow;   // don't rebuild rows (and orphan the search popup) while the user is in a field
+    _matchStop = false;   // #577: a fresh pass always starts un-stopped
     setMatching(true);
+    // hoisted out of the try so the finally can report how far it got (#577)
+    let stopped = false, done = 0, planned = 0;
     try {
       const siblings = await loadSiblingMap();
       const dmap = await loadDiscogsMap();
-      const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); let done = 0;
+      const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); planned = todo.length;
       const total = MODEL.tracks.length;
       for (let ti = 0; ti < MODEL.tracks.length; ti++) {
+        if (_matchStop) { stopped = true; break; }   // #577
         const t = MODEL.tracks[ti];
         if (!t.slots.some(s => s._pending)) continue;
         const sib = siblings.get(fold(t.title)) || null;
         const durls = discogsUrlsForTrack(dmap, t.title, ti, total).urls;   // title, else by position (#283)
         for (let i = 0; i < t.slots.length; i++) {
+          if (_matchStop) { stopped = true; break; }   // #577: a track can hold several artists, each its own round trip
           const s = t.slots[i]; if (!s._pending) continue;
           const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
           const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i));   // #437
@@ -1419,7 +1424,16 @@ try {
         done++; if (onProgress) onProgress(done, todo.length);
       }
       if (!isEditing()) rerender();
-    } finally { setMatching(false); refreshStatus(); }   // set the final per-medium badges once the pass is done
+      // #577: say so, and say what survived — a silent stop looks like a crash.
+      // Announced before the finally's refreshStatus, which would overwrite it,
+      // so the message is set after instead.
+      if (stopped) Log.info('matching stopped after ' + done + ' of ' + planned + ' track' + (planned === 1 ? '' : 's') + ' — what matched is kept');
+    } finally {
+      setMatching(false);
+      refreshStatus();   // set the final per-medium badges once the pass is done
+      if (stopped) updateStatus('matching stopped — ' + done + '/' + planned + ' done, the rest are still unmatched');
+      _matchStop = false;
+    }
     // #227: tag/resolve Discogs links AFTER the match finally (so its summary
     // message isn't overwritten by refreshStatus) — covers 'set' artists too.
     // Not awaited: tagDiscogsForAll may now poll a few seconds for the release
@@ -1647,7 +1661,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.7.101500';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.7.104500';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2072,6 +2086,11 @@ try {
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:var(--mbu-text)}
     .tc-btn:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-border)}
     .tc-btn.primary{color:var(--mbu-accent-text);font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,var(--mbu-accent));color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
+    /* #577: while a pass runs, Match IS the stop button — it has to stop looking
+       like the thing you press to start one. Tokens, not literals, so a dark
+       userstyle gets a readable pair (#564). */
+    .tc-btn.tc-stopping,#tc-recwrap .tc-rec-am.busy{color:var(--mbu-error);border-color:var(--mbu-error-border);background:var(--mbu-error-bg);font-weight:bold}
+    .tc-btn.tc-stopping:hover,#tc-recwrap .tc-rec-am.busy:hover{background:var(--mbu-error);color:var(--mbu-text-on-accent);border-color:var(--mbu-error)}
     .tc-tbsep{width:1px;height:18px;background:var(--mbu-bg-sunken);flex:none;margin:0 2px}   /* vertical divider before the Match cluster, shared by both toolbars */
     .tc-btn:disabled,.tc-btn:disabled:hover{color:var(--mbu-text-weak);background:transparent;border-color:transparent;cursor:default;font-weight:normal}
     .tc-btn.mini{padding:1px 6px;font-size:11px}
@@ -2866,8 +2885,36 @@ try {
   const statusText = n => (n ? `⚠ ${n} unresolved!` : 'all matched');
   const setStatusSpan = (span, n) => { if (!span) return; span.textContent = statusText(n); span.classList.toggle('tc-unres', n > 0); };
   // disable the Match button while a match pass is running
+  // #577 (majkinetor): "Tracklist and recording matching can't be stopped,
+  // unlike all others (GT work matching etc.)". One flag shared by both loops:
+  // whichever is running checks it between items and returns early.
+  //
+  // Cooperative rather than an AbortController, because Apollo's requests are
+  // paced and coalesced in one place (wsGet) and several callers can be sharing
+  // a single flight — aborting it would cancel someone else's request too. The
+  // cost is that a stop lands after the request in flight comes back rather than
+  // instantly; the win is that it cannot cancel work that another caller still
+  // wants. The UI flips the moment it is clicked, so the wait isn't felt as
+  // "nothing happened".
+  //
+  // Stopping is not undoing: every artist and recording matched before the stop
+  // stays matched, and the leftovers stay unmatched for a later pass — the same
+  // bargain Group Therapy's work matcher makes.
+  let _matchStop = false;
+  const stopMatching = () => { _matchStop = true; };
   let _matching = false;
-  function setMatching(on) { _matching = on; const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'); if (b) b.disabled = on; }
+  // The Match button BECOMES the Stop button for the duration. It used to just
+  // go disabled, which is what made an eight-minute pass feel unstoppable, and
+  // reusing it costs no room in a toolbar that already collapses to icons.
+  function setMatching(on) {
+    _matching = on;
+    const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]');
+    if (!b) return;
+    b.disabled = false;
+    b.classList.toggle('tc-stopping', on);
+    b.textContent = on ? '■ Stop' : '⚡ Match';
+    b.title = on ? 'Stop matching — what has already been matched is kept' : 'search MusicBrainz for the unmatched artists';
+  }
   // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
   const rerender = () => { _hlCur = null; if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); };
   // our rendered row for a track, wherever it lives (a per-medium section or the floating panel)
@@ -4251,7 +4298,7 @@ try {
     // otherwise a stale map (a prior sync while the external button was hidden) means nothing fires, while
     // the Tools menu (which goes through pickTool/getToolCfg) still works.
     if (String(a).startsWith('x:')) { syncBridges(); const b = _bridgeMap[a]; if (b) fireBridge(b); else Log.warn('Apollo bridge not present:', a); return; }
-    if (a === 'match') matchAll();
+    if (a === 'match') { if (_matching) stopMatching(); else matchAll(); }   // #577: the same button stops a running pass
     else if (a === 'revert') revertAll();
     else if (a === 'guesscase') guessCaseAll();
     else if (a === 'guessfeat') guessFeatAll();
@@ -6101,7 +6148,7 @@ try {
         '<th class="c-sep"></th><th>Title</th><th>Artist</th><th class="c-len">Length</th></tr></thead><tbody></tbody></table>';
     // wire the toolbar (once)
     wireCutoff(wrap);
-    const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
+    const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => { if (_autoMatching) stopMatching(); else autoMatchRecordings(); };   // #577
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
     wireRecCellContextMenu(wrap);
     renderRecBody(wrap);
@@ -6541,7 +6588,7 @@ try {
   // MB's first) when it clears the "ignore below" threshold. Already-linked tracks are left untouched. #119
   let _autoMatching = false;
   async function autoMatchRecordings() {
-    if (_autoMatching) return; _autoMatching = true;
+    if (_autoMatching) return; _autoMatching = true; _matchStop = false;   // #577
     const wrap = document.getElementById('tc-recwrap');
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
@@ -6552,10 +6599,12 @@ try {
     const setBusy = (on) => {
       const b = amBtn(); if (!b) return;
       b.classList.toggle('busy', on);
-      b.disabled = on;
+      // #577: it used to go disabled here, which is exactly what made a long
+      // pass unstoppable. It stays live and becomes the Stop button instead.
+      b.disabled = false;
       const lbl = b.querySelector('.tc-rec-am-lbl');
-      if (lbl) lbl.textContent = on ? 'Matching…' : '⚡ Match';
-      b.title = on ? 'Auto-matching unset recordings — this waits on MusicBrainz, so it can take a while'
+      if (lbl) lbl.textContent = on ? '■ Stop' : '⚡ Match';
+      b.title = on ? 'Stop matching — the recordings already linked are kept'
                    : 'auto-match unset recordings to MusicBrainz suggestions';
       const st = document.querySelector('#tc-recwrap .tc-rec-amstatus');
       if (st) st.classList.toggle('busy', on);
@@ -6564,6 +6613,7 @@ try {
     setBusy(true);
     const maxLevel = CUTOFF[SETTINGS.recCutoff || 'near'];
     let linked = 0, considered = 0, ambiguous = 0;   // #540
+    let stopped = false;   // #577
     const _takenGids = new Set();   // #541: recordings this run has already linked
     try {
       // ONE request: pull the whole release group's recordings, index by normalised title, match locally
@@ -6583,6 +6633,7 @@ try {
       const posKeyOf = (r, ko) => { try { return (u(mediums()[r.mi].position) || (r.mi + 1)) + '.' + (u(ko.position) || r.number || (r.ti + 1)); } catch (e) { return null; } };
       const todo = readRecordings().filter(r => !r.recGid);
       for (let i = 0; i < todo.length; i++) {
+        if (_matchStop) { stopped = true; break; }   // #577
         const r = todo[i]; considered++;
         setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '…');
         const ko = koTrack(r.mi, r.ti);
@@ -6661,9 +6712,12 @@ try {
       setBusy(false);   // #545 — after rerenderRec, which replaces the button node
       const w = document.getElementById('tc-recwrap'); const e = w && w.querySelector('.tc-rec-amstatus');
       // #540: an ambiguous slot is a result, not a silence — say so where the count is.
-      if (e) e.textContent = 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
+      // #577: a stop has to name itself, or "linked 6 of 42" reads as a result
+      // rather than as an interruption. What was linked stays linked.
+      if (e) e.textContent = (stopped ? 'stopped · ' : '') + 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
         + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '');
-      Log.info('auto-match: linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : ''));
+      Log.info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (stopped ? ' — the rest are untouched' : ''));
+      _matchStop = false;
     }
   }
   // submit-flag setters (per track / all tracks) + a light re-render of the recordings table
@@ -8861,7 +8915,7 @@ try {
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
