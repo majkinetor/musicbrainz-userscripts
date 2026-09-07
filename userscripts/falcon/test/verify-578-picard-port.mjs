@@ -143,6 +143,37 @@ ck(defaults.on === false, 'off by default');
 ck(defaults.port === 8000, 'default port is 8000');
 ck(defaults.param === '', 'so a default install adds nothing to the URL');
 
+// ── 6. the actual hand-over ────────────────────────────────────────────────
+// #578 follow-up: MusicBrainz's tport button did not appear in majkinetor's
+// browser even though the URL carried the parameter, and waiting for a button to
+// be clicked was never the ask. Falcon now calls Picard's own endpoint when a run
+// finishes. GM_xmlhttpRequest is stubbed, so what is asserted is the request
+// Falcon makes — not whether a Picard happens to be running on this machine.
+const REL = '81fe067b-d8b7-45d2-ae9d-cff74e7bc68d';   // majkinetor's release from the issue
+const handover = await page.evaluate(async (rel) => {
+  const { cfg, sendReleaseToPicard } = window.__falconTest;
+  const calls = [];
+  window.GM_xmlhttpRequest = (o) => { calls.push(o.url); if (o.onload) o.onload({ status: 200 }); };
+  history.replaceState(null, '', '/release/' + rel + '?falcon=tok&tport=8000');
+
+  cfg.sendToPicard = false; cfg.picardPort = 8000;
+  sendReleaseToPicard(); const whenOff = calls.length;
+
+  cfg.sendToPicard = true;
+  sendReleaseToPicard(); const first = calls.slice();
+  sendReleaseToPicard(); const afterRepeat = calls.length;   // must not poke twice
+
+  history.replaceState(null, '', '/');
+  sendReleaseToPicard(); const offRelease = calls.length;
+  return { whenOff, first, afterRepeat, offRelease };
+}, REL);
+log('hand-over:', JSON.stringify(handover));
+ck(handover.whenOff === 0, `with the option off nothing is sent to Picard (got ${handover.whenOff} call(s))`);
+ck(handover.first.length === 1 && handover.first[0] === `http://127.0.0.1:8000/openalbum?id=${REL}`,
+  `with it on Falcon calls Picard's endpoint for this release (got ${JSON.stringify(handover.first)})`);
+ck(handover.afterRepeat === 1, `a second finished run does not poke Picard again for the same release (got ${handover.afterRepeat} call(s))`);
+ck(handover.offRelease === 1, 'a tab that is not a release page hands over nothing');
+
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();

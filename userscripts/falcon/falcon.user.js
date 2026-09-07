@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.7.113000
+// @version      2026.9.7.114500
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -3551,9 +3551,55 @@
         updateRunBtn();
         renderProgress();
         log('info', '=== run finished — the tab and panel stay open; the log above is this session only ===');
+        sendReleaseToPicard();   // #578
         writeLogNow();
       }
     }
+  }
+
+  // #578 follow-up (majkinetor): "Maybe just invoke in new tab or someting
+  // http://127.0.0.1:<port>/openalbum?id=<mbid>". Appending ?tport= is proven to
+  // work — a clean browser renders the tagger button for exactly the URL Falcon
+  // opens (live-578-picard-harmony-proof) — but it did not appear in HIS browser,
+  // and waiting for a button to be clicked was never the ask anyway: Jormangeud
+  // wanted the release "brought into Picard right away". So Falcon calls Picard's
+  // own endpoint and stops depending on MusicBrainz rendering anything. The
+  // ?tport= parameter stays as the manual fallback; it costs nothing.
+  //
+  // Fired when the RUN finishes rather than when the tab opens, so Picard reads
+  // the release AFTER Falcon has added its links, ISRCs and cover — otherwise it
+  // would tag the version that made Falcon necessary in the first place.
+  const _picardSent = new Set();
+  function sendReleaseToPicard() {
+    if (!cfg.sendToPicard) return;
+    const m = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(location.pathname);
+    if (!m) { log('debug', 'Picard: this tab is not a release page, so there is nothing to hand over'); return; }
+    const mbid = m[1].toLowerCase();
+    // a tab can finish a run more than once (Start again, a re-seed); Picard
+    // should not be poked repeatedly for the same release
+    if (_picardSent.has(mbid)) { log('debug', `Picard: already sent ${mbid} from this tab`); return; }
+    _picardSent.add(mbid);
+    const url = `http://127.0.0.1:${cfg.picardPort}/openalbum?id=${mbid}`;
+    // GM_xmlhttpRequest rather than fetch: the page is https and this is plain
+    // http, and rather than rely on every browser treating 127.0.0.1 as a
+    // trustworthy origin, go around it. No tab is opened either way — Picard
+    // answers with a stub page nobody wants to look at.
+    if (typeof GM_xmlhttpRequest === 'function') {
+      log('info', `Picard: sending release ${mbid} → ${url}`);
+      try {
+        GM_xmlhttpRequest({
+          method: 'GET', url, timeout: 5000,
+          onload: r => log(r.status >= 200 && r.status < 400 ? 'ok' : 'warn', `Picard: responded ${r.status}`),
+          // by far the most likely cause, and worth saying rather than leaving a
+          // bare "error" for someone to interpret
+          onerror: () => log('warn', `Picard: could not be reached on port ${cfg.picardPort} — is Picard running with "Browser integration" enabled?`),
+          ontimeout: () => log('warn', `Picard: timed out on port ${cfg.picardPort}`),
+        });
+      } catch (e) { log('warn', `Picard: send failed — ${e.message}`); }
+      return;
+    }
+    log('info', `Picard: opening ${url} (no GM_xmlhttpRequest available)`);
+    try { window.open(url, '_blank'); } catch (e) { log('warn', `Picard: send failed — ${e.message}`); }
   }
 
   // #467 (majkinetor): each worker gets its own card — a small label (which entity
@@ -5267,7 +5313,7 @@
     // #547
     updateWorkerLabel, workerPhase, spawnWorkerCard,
     // #557
-    sendToFalcon, maybeAutoSend, cancelAutoSend, openMbTab, harmonyReleaseMbid, picardParam,
+    sendToFalcon, maybeAutoSend, cancelAutoSend, openMbTab, harmonyReleaseMbid, picardParam, sendReleaseToPicard,
     autoSendPending: () => !!_autoSendTimer, autoSendFired: () => _autoSendDone,
     // #571
     RENAMEABLE, NAME_SEEDS, setReleaseName, setReleaseField,
