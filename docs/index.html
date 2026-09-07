@@ -162,14 +162,21 @@ const STANDALONE=[
 // Header slides: real screenshots straight out of each script's own folder.
 // The band is roughly 3:1 and the images are drawn with object-fit:cover, so a
 // tall or square screenshot gets blown up to fill it — Platform Check's 0.6:1
-// dashboard filled the whole band with two words. Everything here is 2:1 or
-// wider, which crops rather than magnifies.
+// dashboard filled the whole band with two words. Everything here is about 1.8:1
+// or wider, which crops rather than magnifies; each crop was rendered at band
+// size and looked at before being kept.
+//
+// Ordered so the same script doesn't run three slides in a row — four of these
+// are Apollo, and back to back they read as one long screenshot.
 const SHOTS=[
  ['apollo_editor/screenshots/tracklist.png','Apollo Editor — the release editor’s tracklist, replaced'],
- ['apollo_editor/screenshots/recordings.png','Apollo Editor — track ↔ recording, side by side, differences marked'],
+ ['apollo_editor/screenshots/tracklist-dark.png','Apollo Editor — the same tracklist, in the dark theme'],
+ ['art_station/screens/main-pc.png','Art Station — the cover art editor'],
  ['credit_hoarder/screenshots/multi.png','Credit Hoarder — credits harvested from several providers in one run'],
- ['isrc_scout/screenshots/isrc-tracks.png','ISRC Scout — per-track ISRCs and streaming links'],
+ ['isrc_scout/screenshots/isrc.png','ISRC Scout — ISRCs and streaming links, per track'],
+ ['apollo_editor/screenshots/release-dark.png','Apollo Editor — the release itself, in the dark theme'],
  ['group_therapy/screenshots/consolidation.png','Group Therapy — relationships, edited in batches'],
+ ['apollo_editor/screenshots/recordings.png','Apollo Editor — track ↔ recording, side by side, differences marked'],
  ['falcon/screenshots/workers.png','Falcon — parallel workers chewing through a queue'],
 ];
 (function slideshow() {
