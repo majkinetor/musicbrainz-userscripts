@@ -28,6 +28,24 @@
   .band img.on{opacity:1}
   .band::after{content:"";position:absolute;inset:auto 0 0 0;height:90px;z-index:1;
                background:linear-gradient(to bottom,transparent,var(--bg))}
+  /* Step controls. Faint until the band is hovered or something inside it is
+     focused, so they stay off the screenshot without being a secret — and always
+     visible to a keyboard, which cannot hover, and on touch, which has no hover
+     to reveal them with. */
+  .band .nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+             width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+             border:0;border-radius:50%;cursor:pointer;color:var(--ink);
+             background:color-mix(in srgb, var(--bg) 66%, transparent);
+             backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+             box-shadow:0 0 0 1px var(--rule);
+             opacity:0;transition:opacity .18s ease, background .18s ease}
+  .band .nav.prev{left:12px}
+  .band .nav.next{right:12px}
+  .band:hover .nav,.band:focus-within .nav{opacity:1}
+  .band .nav:hover{background:var(--bg)}
+  .band .nav svg{width:20px;height:20px;display:block}
+  .band:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  @media (hover:none){ .band .nav{opacity:1} }
   .cap{margin:10px 0 0;text-align:center;font-size:12px;color:var(--faint);
        transition:opacity .35s ease}
   .cap.fade{opacity:0}
@@ -98,7 +116,14 @@
     <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
   </a>
 
-  <div class="band" id="band"></div>
+  <div class="band" id="band" tabindex="0" aria-roledescription="carousel" aria-label="Screenshots">
+    <button class="nav prev" id="prev" type="button" aria-label="Previous screenshot" title="Previous">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="nav next" id="next" type="button" aria-label="Next screenshot" title="Next">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
 
   <div class="w">
     <p class="cap" id="cap"></p>
@@ -178,6 +203,7 @@ const SHOTS=[
 ];
 (function slideshow() {
   const band = document.getElementById('band'), cap = document.getElementById('cap');
+  const prev = document.getElementById('prev'), next = document.getElementById('next');
   // A slide that 404s would otherwise fade the band to empty, so a slide joins
   // the rotation only once its image has actually decoded. Readiness is recorded
   // in the slide's own slot rather than by pushing onto a list — the images
@@ -185,7 +211,7 @@ const SHOTS=[
   // put the band in that order instead of the one written above.
   const slides = SHOTS.map(([path, text]) => ({ path, text, img: null }));
   cap.textContent = slides[0].text;   // no empty line while the first one decodes
-  let at = -1, rotated = false;
+  let at = -1, rotated = false, timer = null;
   const show = i => {
     if (at >= 0) slides[at].img.classList.remove('on');
     at = i;
@@ -207,23 +233,42 @@ const SHOTS=[
     img.src = RAW + s.path;
     band.appendChild(img);
   });
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  setInterval(() => {
-    if (at < 0 || document.hidden) return;   // nothing shown yet, or nobody looking
-    let next = -1;
+  // The next slide in a direction, skipping any that never loaded — the same
+  // readiness rule the rotation already used, so stepping by hand cannot land on
+  // an empty band either.
+  const nextLoaded = (dir) => {
     for (let k = 1; k <= slides.length; k++) {
-      const j = (at + k) % slides.length;
-      if (slides[j].img) { next = j; break; }
+      const j = (at + dir * k % slides.length + slides.length) % slides.length;
+      if (slides[j].img) return j;
     }
-    if (next < 0 || next === at) return;   // only one slide ever loaded
+    return -1;
+  };
+  const goTo = (to) => {
+    if (at < 0 || to < 0 || to === at) return;
     rotated = true;
-    const to = slides[next];
     cap.classList.add('fade');
     slides[at].img.classList.remove('on');
-    at = next;
-    to.img.classList.add('on');
-    setTimeout(() => { cap.textContent = to.text; cap.classList.remove('fade'); }, 350);
-  }, 5200);
+    at = to;
+    slides[at].img.classList.add('on');
+    const text = slides[at].text;
+    setTimeout(() => { cap.textContent = text; cap.classList.remove('fade'); }, 350);
+  };
+
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduced) timer = setInterval(() => { if (!document.hidden) goTo(nextLoaded(1)); }, 5200);
+  // Stepping by hand means you want to look at something, so the carousel stops
+  // moving under you instead of yanking the slide away two seconds later. It does
+  // not restart afterwards: a page that resumes fighting the reader is worse than
+  // one that simply waits.
+  const step = (dir) => { clearInterval(timer); timer = null; goTo(nextLoaded(dir)); };
+  prev.addEventListener('click', () => step(-1));
+  next.addEventListener('click', () => step(1));
+  // Arrow keys only while the band has focus. Binding them on the document would
+  // swallow ArrowLeft/Right for everything else the reader might be doing.
+  band.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+  });
 })();
 
 const row = ([s,n,i,d]) =>
