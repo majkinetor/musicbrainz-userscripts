@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.6
+// @version      2026.9.7
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -713,7 +713,42 @@
   // on how many requests happened to be in flight. So: retry with backoff,
   // honour Retry-After, and log every attempt. #555
   const WS_TRIES = 4;
-  async function wsJson(url, opts) {
+  // #575 (majkinetor, "Matching takes too long"): every per-caller cache in here
+  // — _aliasMatchCache, _credCache, the duplicates ones — is CHECKED before its
+  // await and WRITTEN after it. When several track slots resolve the same artist
+  // at once they all miss, all enqueue, and the cache only starts helping once
+  // the first answer lands. A classic cache stampede.
+  //
+  // It is expensive here because /ws/2 reads are deliberately serialised one at a
+  // time with WS_MIN_GAP between them, so every duplicate costs a whole slot in
+  // the queue — and the extra volume is what trips MusicBrainz's rate limiter,
+  // whose backoff then slows down everything behind it. Measured on his log:
+  // 115 requests for 48 distinct URLs (67 wasted, 58%), 25 throttle events, one
+  // query — arid+"Martha Badibala" — fetched TEN times.
+  //
+  // Coalescing in flight fixes every caller at once and changes no caller's
+  // logic: a request for a URL already in flight joins that flight instead of
+  // queueing behind it. The entry is dropped the moment the flight settles, so
+  // nothing is remembered across time — a throttled miss is still not cached
+  // (#555) and a later retry really does re-fetch.
+  //
+  // Two option shapes opt out, because they make a response caller-specific
+  // rather than a property of the URL: `stale` (the caller may want the request
+  // dropped when its popup closed — sharing would drop it for someone else too)
+  // and `onThrottle` (a per-caller UI hint that only the owning caller can act on).
+  const _wsFlight = new Map();
+  function wsJson(url, opts) {
+    const o = opts || {};
+    if (o.stale || o.onThrottle) return wsJsonOnce(url, o);
+    const inflight = _wsFlight.get(url);
+    if (inflight) { Log.debug((o.label || 'ws2') + ': joined an identical request already in flight —', url); return inflight; }
+    const p = wsJsonOnce(url, o);
+    _wsFlight.set(url, p);
+    // settle-or-fail, then release: the next caller must be able to retry
+    p.then(() => {}, () => {}).then(() => { if (_wsFlight.get(url) === p) _wsFlight.delete(url); });
+    return p;
+  }
+  async function wsJsonOnce(url, opts) {
     const o = opts || {}, label = o.label || 'ws2';
     for (let attempt = 1; attempt <= WS_TRIES; attempt++) {
       let r;
@@ -1515,7 +1550,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.6';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.7';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -8729,7 +8764,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
