@@ -1298,7 +1298,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // #421: choosing to create works must confront the duplicate-works responsibility.
     function showCreateWorksWarning() {
         const ov = document.createElement('div');
-        ov.className = 'discogs-cw-warn-ov';
+        ov.className = 'discogs-cw-warn-ov mbu-ui';   // #564
         ov.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;';
         const box = document.createElement('div');
         box.style.cssText = 'max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid var(--mbu-error);padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:var(--mbu-text);';
@@ -1335,7 +1335,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">▾</span>';
     optsBtn.title = 'Deduplication options';
     const optsPanel = document.createElement('div');
-    optsPanel.className = 'discogs-opts-panel';
+    optsPanel.className = 'discogs-opts-panel mbu-ui';   // #564: floating, so same escape as the log menu
     const dedupHd = document.createElement('div');
     dedupHd.className = 'discogs-opts-panel-hd';
     dedupHd.textContent = 'Deduplication';
@@ -1439,7 +1439,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // opens this small menu of extra actions — the copy variants (full log /
     // log without JSON / per-source raw data).
     const logMenu = document.createElement('div');
-    logMenu.className = 'discogs-log-menu';
+    // #564: `mbu-ui` is the shared opt-in hook for a container that isn't named
+    // in the theme stylesheet's own list. It matters here beyond colours: that
+    // list is what sets `--invert-value: none`, and kellnerd's dark userstyle
+    // filters every `button` through `invert(0.9) hue-rotate(180deg)`. Without
+    // it this menu's items were being inverted back to dark-on-dark and read as
+    // empty (majkinetor's screenshot on #564). The menu is appended to <body>,
+    // so it is outside .discogs-bar and inherits nothing from it.
+    logMenu.className = 'discogs-log-menu mbu-ui';
     const mkMenuItem = (label, title, fn) => {
         const b = document.createElement('button');
         b.type = 'button'; b.textContent = label; b.title = title;
