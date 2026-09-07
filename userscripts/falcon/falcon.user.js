@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.7
+// @version      2026.9.7.113000
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1802,7 +1802,11 @@
     const relMbid = harmonyReleaseMbid();
     const tport = picardParam();   // #578
     const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}${tport}` : `${MB_TARGET}/?falcon=${token}${tport}`;
-    harmonyLog(`${auto ? 'auto ' : ''}send: ${payload.length} item(s) → ${target}`);
+    // #578: name the Picard decision in the log. majkinetor reported it "not
+    // working" and there was no way to tell from the log whether the option had
+    // reached this page at all — which is most of the diagnosis.
+    harmonyLog(`${auto ? 'auto ' : ''}send: ${payload.length} item(s) → ${target}`
+      + (cfg.sendToPicard ? ` · Picard: tport=${cfg.picardPort}${relMbid ? '' : ' (no release mbid on this page, so MusicBrainz has nothing to tag)'}` : ' · Picard: off'));
     if (cfg.openHarmonyInNewTab) openMbTab(target, auto);
     else location.href = target;
     return true;
