@@ -1,5 +1,3 @@
-*.png
-!icon.png
 dev/ropdebee_eca.user.js
 # test run artifacts (screenshots + the measurements beside them) — the PNGs
 # were already ignored, the JSON next to them was not and got swept into a

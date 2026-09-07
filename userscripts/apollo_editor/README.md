@@ -482,6 +482,13 @@ The join input's preset dropdown (▾) is fully keyboard-driven:
 | <kbd>Enter</kbd> | pick the highlighted preset (or commit the typed value when the list is closed) |
 | <kbd>Esc</kbd> | close the list |
 
+## Dark theme
+
+Apollo supports dark theme that can be enabled via [Stylus](https://github.com/kellnerd/userstyles#musicbrainz):
+
+<img src="./screenshots/release-dark.png" />
+<img src="./screenshots/tracklist-dark.png" />
+
 ## Persistence
 
 These are remembered automatically as you use the UI:

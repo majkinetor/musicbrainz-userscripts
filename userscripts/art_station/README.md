@@ -8,7 +8,7 @@ A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reor
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Art+Station)
 
-![](./screens/screenshot.png)
+![](./screens/main-pc.png)
 
 It runs on a release's **Cover art** tab and an **Event art** tab, replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
 
