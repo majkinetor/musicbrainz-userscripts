@@ -15,8 +15,8 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - Copy/move credits from recording to recordings, work to works, release to release, release from/to recordings 
 - Consolidate release-level credits across an entire release group (matrix + one-click apply)
 - Match recordings to existing works (ISRC + ranked title search) and stage the *performance* relationships
-- Parse unstructured credit text ("Mastering: Nick Robbins") into release relationships, with a small pattern DSL
-- Set a date across a release's credits — a picker to choose the date + exactly which credits get it
+- Parse unstructured credit text into release relationships, with a small pattern DSL
+- Set a date across a release's credits — a picker to choose the date and which credits get it
 - Highlight role or entity everywhere and show tooltip with overall counts
 - Works on existing and newly-added relationships
 - Right-click entity to open its editor
@@ -56,7 +56,7 @@ The menu lists each credit with a **checkbox** (all on by default) — untick an
 - **Right-click a credit** selects only that role (e.g. just the composers); **Shift-right-click** *adds* a role to the current selection.
 - Hover a credit for two buttons that **select destination tracks by that credit**: **[A]** ticks every track crediting that **artist** (in any role), **[R]** every track crediting that artist **in the same role** — so you can, say, copy a credit onto exactly the tracks that already feature that performer.
 
-Copy/Move act on the ticked credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
+Copy/Move act on the selected credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
 
 <img width="650" src="./screenshots/copy.png" /> 
 
