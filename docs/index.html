@@ -58,7 +58,7 @@
   .gh:hover{color:var(--accent);background:var(--bg)}
   .gh svg{width:19px;height:19px;display:block;fill:currentColor}
 
-  hr{border:0;border-top:1px solid var(--rule);margin:56px 0}
+  hr{border:0;border-top:0px solid var(--rule);margin:26px 0}
 
   .bundle{font-size:15px}
   .bundle b{font-weight:600}
@@ -119,19 +119,16 @@
     <hr>
 
     <div class="bundle">
-      <b>String Theory</b>
-      <p>The eight below in one file.
-         <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install this</a>
-         instead of adding them one at a time.</p>
+      <h2>String Theory bundle</h2>
+      <p class="note"><a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install all</a> at once or pick the ones you want</p>
+      <ul class="idx" id="bundled"></ul>
     </div>
 
-    <h2>In the bundle</h2>
-    <ul class="idx" id="bundled"></ul>
-
-    <h2>On their own</h2>
-    <p class="note">Not part of String Theory — install these separately.</p>
-    <ul class="idx" id="standalone"></ul>
-
+    <div class="standalone">
+      <h2>On their own</h2>
+      <p class="note">Not part of String Theory — install these separately.</p>
+      <ul class="idx" id="standalone"></ul>
+    </div>
     <footer>
       <span>MIT</span>
       <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
