@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.7
+// @version      2026.9.7.173251
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -4007,7 +4007,13 @@
   .as-rm:hover{background:var(--as-warn);color:var(--mbu-text-on-accent)}
   .as-undo{opacity:1;background:var(--mbu-bg);color:var(--mbu-accent-text);font-size:12px;font-weight:600}
   /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
-  .as-foot{padding:5px 8px 0;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--mbu-accent)}
+  /* majkinetor: "AS border still looks junky, especially with selection". This
+     line separates the artwork from the footer, and it was drawn in the ACCENT at
+     full strength — a saturated purple rule across every card, cutting through
+     the orange of a pending one and competing with the selection ring it sits
+     inside. A divider should read as a divider; --mbu-divider is the token for
+     exactly that and follows the theme. */
+  .as-foot{padding:5px 8px 0;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--mbu-divider)}
   .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
   .as-foot-cmt{flex:0 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
   .as-foot-cmt.as-cmt-collapsed{display:none}
@@ -4030,7 +4036,13 @@
   .as-card:hover .as-fsearch{opacity:.85}
   .as-fsearch:hover{opacity:1;color:var(--mbu-accent-text)}
   /* selection + keyboard cursor */
-  .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
+  /* Selection used to be a 3px outline at offset -1px sitting ON TOP of the
+     card's own 1px border: two rounded edges of different radii, a hairline of
+     the old border still showing through at the corners, and the ring biting
+     into the artwork. A box-shadow spread is concentric with the border-radius
+     by definition, so the ring is one clean rounded edge OUTSIDE the card rather
+     than a second one drawn over it. The border simply takes the accent colour. */
+  .as-card.sel{border-color:var(--as-acc);box-shadow:0 0 0 2px var(--as-acc),0 3px 14px rgba(95,62,192,.3)}
   .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:var(--mbu-text-on-accent);border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
   .as-card.sel .as-selmark{display:block}
   .as-card.sel .as-cmt{padding-right:28px}

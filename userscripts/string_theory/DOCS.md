@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-07 16:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-07 17:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -499,6 +499,13 @@ The join input's preset dropdown (▾) is fully keyboard-driven:
 | <kbd>Enter</kbd> | pick the highlighted preset (or commit the typed value when the list is closed) |
 | <kbd>Esc</kbd> | close the list |
 
+### Dark theme
+
+Apollo supports dark theme that can be enabled via [Stylus](https://github.com/kellnerd/userstyles#musicbrainz):
+
+<img src="../apollo_editor/screenshots/release-dark.png" />
+<img src="../apollo_editor/screenshots/tracklist-dark.png" />
+
 ### Persistence
 
 These are remembered automatically as you use the UI:
@@ -520,7 +527,7 @@ A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reor
 - [Changelog](../art_station/CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Art+Station)
 
-![](../art_station/screens/screenshot.png)
+![](../art_station/screens/main-pc.png)
 
 It runs on a release's **Cover art** tab and an **Event art** tab, replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
 
