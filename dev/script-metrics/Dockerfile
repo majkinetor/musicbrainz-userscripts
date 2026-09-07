@@ -22,5 +22,11 @@ COPY templates/ /app/templates/
 # Unbuffered so the progress heartbeats actually appear during a long pass.
 ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["python", "/app/src/pipeline.py"]
-CMD ["--data-dir", "/data", "--out", "/out"]
+# The mount points belong on the ENTRYPOINT, not in CMD. `docker compose run
+# metrics --report-only` REPLACES the CMD with the user's arguments, so with the
+# defaults there --out silently fell back to /app/out — inside the container,
+# unmounted, thrown away when it exits. Every --report-only run appeared to
+# "produce no changes" because it never wrote to the host at all. On the
+# ENTRYPOINT they always apply and any extra argument simply appends.
+ENTRYPOINT ["python", "/app/src/pipeline.py", "--data-dir", "/data", "--out", "/out"]
+CMD []

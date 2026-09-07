@@ -1,6 +1,6 @@
 # Mammoth <img src="icon.svg" align="left" width="48" height="48">
 
-Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit.
+Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit. Mamooth babies let you to remember values, add quick buttons, and configure defaults for any form field.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/mammoth/mammoth.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/mammoth/mammoth.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
