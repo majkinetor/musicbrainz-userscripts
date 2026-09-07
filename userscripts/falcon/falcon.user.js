@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.7.130000
+// @version      2026.9.7.133000
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -3875,8 +3875,31 @@
   // that this is a genuine detection bug, not a timing/contention issue
   // staggering could ever fix. Reverted to spawning all N workers at once,
   // same as before any of this.
+  // #579 (majkinetor: "moving Falcon window around while importing barely
+  // works"): despite the name, this never staggered anything — it spawned every
+  // worker in one synchronous loop, so N same-origin MusicBrainz edit pages
+  // started loading at the same instant. Same-origin iframes share this thread,
+  // so their parsing and Knockout binding all land on it together; his 5-worker
+  // run logged nine "UI thread was blocked" warnings, the worst 5.5s, clustered
+  // around the moments several edit pages finished loading at once.
+  //
+  // The stagger only moves the START of each worker. Once running they overlap
+  // exactly as before, so throughput is untouched beyond a one-off ramp of
+  // (workers-1) x WORKER_STAGGER_MS — under 4s for the default five, against
+  // runs measured in tens of seconds.
+  const WORKER_STAGGER_MS = 900;
+  let _pendingSpawns = 0;   // spawns waiting on a timer; topUpWorkers must count them
+  function spawnOneWorker() { const card = spawnWorkerCard(); if (card) workerLoop(card); }
   function spawnWorkersStaggered(count) {
-    for (let i = 0; i < count; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
+    for (let i = 0; i < count; i++) {
+      if (i === 0) { spawnOneWorker(); continue; }   // the first goes now — a run should start visibly
+      _pendingSpawns++;
+      setTimeout(() => {
+        _pendingSpawns--;
+        if (!running) return;   // Stop was pressed while this one waited its turn
+        spawnOneWorker();
+      }, i * WORKER_STAGGER_MS);
+    }
   }
   // #508 follow-up (majkinetor, live: auto-started a Harmony import with 6
   // workers configured, only 1 ever ran): start()'s worker count is
@@ -3922,7 +3945,10 @@
     if (!running) return;
     const remaining = queue.filter(i => i.status === 'queued' && !_disabledTypes.has(i.entityType)).length;
     const target = Math.min(cfg.workers, remaining);
-    const toSpawn = target - workerCards.length;
+    // #579: spawning is staggered now, so workerCards.length lags behind what is
+    // already on its way — without counting those, a queue that grows twice in
+    // quick succession would over-spawn.
+    const toSpawn = target - workerCards.length - _pendingSpawns;
     if (toSpawn <= 0) return;
     log('info', `queue grew — topping up from ${workerCards.length} to ${target} worker(s)`);
     spawnWorkersStaggered(toSpawn);
