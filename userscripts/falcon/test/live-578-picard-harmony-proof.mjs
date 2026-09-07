@@ -66,7 +66,7 @@ const off = await send(false);
 const on = await send(true);
 log('option off →', off);
 log('option on  →', on);
-ck(off && !/tport/.test(off), `with the option off the URL is untouched (got ${off})`);
+ck(off && /[?&]tport=8000(&|$)/.test(off), `tport is on the URL even with auto-send off — the button is always available (got ${off})`);
 ck(on === `https://musicbrainz.org/release/${R}?${on.split('?')[1]}` && /[?&]tport=8000(&|$)/.test(on),
   `with it on the opened URL carries &tport=8000 (got ${on})`);
 ck(on && on.startsWith(`https://musicbrainz.org/release/${R}?falcon=`), 'it is still the release page with the queue token, not a different URL');
