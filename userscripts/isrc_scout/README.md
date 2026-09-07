@@ -1,6 +1,6 @@
 # ISRC Scout <img src="icon.svg" align="left" width="48">
 
-Shows the release's existing ISRCs and lets you fill in the missing ones from several sources. Finds and manages store links to the recordings.
+Shows the release's existing ISRCs and lets you fill in the missing ones from several sources. Finds and manages external links of the recordings.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/isrc_scout/isrc_scout.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
