@@ -13,7 +13,7 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 - **Multiple [platforms](#platforms)** supported with customizable position and visibility
 - **Header info** — MB's release year, format, label and track count in the dashboard header
-- **Insert links to release** — open the release's edit page and insert one or all confirmed platform links. A Bandcamp album whose page includes a **digital** release gets **both** relationships on the one URL — *stream for free* and *purchase for download* (#423); physical-only Bandcamp pages get just the stream rel.
+- **Insert links to release** — open the release's edit page and insert one or all confirmed platform links
 - **Open all found** — open each confirmed platform page not yet in MB in its own tab (plus the Discogs master) Mismatches and unverifiable links are skipped. *(Watch for pop-up blocking.)*
 - **Options** — detailed appearance, authentication, link confidence settings etc.
 - **Diagnostic log** — per-source filter chips to isolate a single platform's chain
@@ -46,11 +46,11 @@ The `+`/icon add opens a **new tab** by default so the panel stays put; setup op
 
 A right-click `+` can have **two** edits in flight, because they land on different entities: the platform links go onto the **release**, and the **Discogs master** goes onto the **release group**. Both are backgrounded and both close themselves when they commit ([#559](https://github.com/majkinetor/musicbrainz-userscripts/issues/559)) — previously only the release half was, and the release-group editor was left open in a focused tab. That is why the script also runs on `/release-group/*` pages: the tab has to be able to close itself after MusicBrainz redirects there. Nothing else happens on a release-group page — the dashboard only ever mounts on a release.
 
-Setup option **Compact unmatched providers** keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search, exactly like clicking its row. Rows rise with a subtle fade so the panel doesn't jump as results stream in. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
+Setup option **Compact unmatched providers** keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
 
 ### Barcode matching
 
-When the MB release has a barcode (read from the release page, with the MB API as a fallback), providers that support a barcode lookup try it **first** for an exact match before any text search.
+When the MB release has a barcode, providers that support a barcode lookup try it **first** for an exact match before any text search.
 
 This avoids the ambiguity of title/artist search when a barcode is available, and prefers the *exact* edition over a Wikidata/search match that may be a different barcode. Platforms index the same GTIN under different zero-paddings (a 12-digit UPC-A, a 13-digit EAN with a leading `0`, a 14-digit form), so when the exact-barcode lookup misses, it is retried with the other paddings (by adding leading zeros which do not change GTIN) before falling back to search (#354). A returned album's own barcode is verified against the query where the API exposes it, since Deezer occasionally hands back an unrelated album for a barcode it doesn't have (#356).
 
@@ -286,14 +286,11 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 Right-clicking **+** adds links in a background tab that submits and closes
 itself. Firefox throttles timers in a background tab — to one step per second,
-and to as much as fifteen once the tab has spent its execution budget — and
-MusicBrainz's submit is a chain of them. A two-link add measured **20.2s** that
-way; the same add with the tab merely *looked at* took **3.7s**.
+and to as much as fifteen once the tab has spent its execution budget.
 
 A tab that is **playing audio** is exempt from that throttling, so this setting
 plays an inaudible tone — 30Hz at gain 0.0008, below anything a speaker will
-reproduce — for the few seconds the tab is alive. Measured on the same two-link
-add: **3.7s, tab never shown**.
+reproduce.
 
 Off by default, and it **needs a browser permission you have to grant
 yourself**: on a MusicBrainz page, padlock icon → *Autoplay* → **Allow Audio**.
@@ -305,15 +302,7 @@ background add: +1.5s  keep-awake audio  state=suspended — BLOCKED by the auto
                        policy, so this setting is doing nothing.
 ```
 
-With it, the same line reads `state=running`. The cost is the speaker icon on
-that tab while it runs; being audible *is* the exemption, so there is no way to
-have one without the other.
-
-> A [WebRTC loopback](https://community.metabrainz.org/t/chabans-userscripts-and-bookmarklet-support-thread/768583/71)
-> was tried instead — no permission, no icon, much the nicer trade. It connects
-> in under a second and then changes nothing: 16.8s to commit against 16.9s with
-> the setting off. Whatever Firefox exempts for an active peer connection, it is
-> not the timer throttling.
+With it, the same line reads `state=running`.
 
 ## Shortcuts
 
