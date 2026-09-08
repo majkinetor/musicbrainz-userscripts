@@ -1,0 +1,302 @@
+{
+  "_": "#575 fixture — the seed fields of the Discogs import majkinetor attached to the issue. Extracted from his saved confirmation page rather than committing the page itself: MusicBrainz embeds its Mapbox token in every rendered page, and GitHub push protection (rightly) refuses it.",
+  "source": "https://github.com/majkinetor/musicbrainz-userscripts/issues/575#issuecomment-5588497886",
+  "fields": [
+    [
+      "artist_credit.names.0.artist.name",
+      "Various Artists"
+    ],
+    [
+      "artist_credit.names.0.mbid",
+      "89ad4ac3-39f7-470e-963a-56509c546377"
+    ],
+    [
+      "barcode",
+      "3596973823267"
+    ],
+    [
+      "country",
+      "FR"
+    ],
+    [
+      "labels.0.catalog_number",
+      "3382326"
+    ],
+    [
+      "labels.0.mbid",
+      "8387a032-b837-4bbf-b6e5-99ad9f7a0bdd"
+    ],
+    [
+      "labels.0.name",
+      "Wagram Music"
+    ],
+    [
+      "mediums.0.format",
+      "12\" Vinyl"
+    ],
+    [
+      "mediums.0.track.0.artist_credit.names.0.artist.name",
+      "Joe Simon"
+    ],
+    [
+      "mediums.0.track.0.artist_credit.names.0.mbid",
+      "b7635355-a40d-4b08-b441-71aa91017bfd"
+    ],
+    [
+      "mediums.0.track.0.artist_credit.names.0.name",
+      "Joe Simon"
+    ],
+    [
+      "mediums.0.track.0.length",
+      "226000"
+    ],
+    [
+      "mediums.0.track.0.name",
+      "Theme From Cleopatra Jones "
+    ],
+    [
+      "mediums.0.track.0.number",
+      "A1"
+    ],
+    [
+      "mediums.0.track.1.artist_credit.names.0.artist.name",
+      "Dee Edwards"
+    ],
+    [
+      "mediums.0.track.1.artist_credit.names.0.name",
+      "Dee Edwards"
+    ],
+    [
+      "mediums.0.track.1.length",
+      "161000"
+    ],
+    [
+      "mediums.0.track.1.name",
+      "Why Can't There Be Love"
+    ],
+    [
+      "mediums.0.track.1.number",
+      "A2"
+    ],
+    [
+      "mediums.0.track.10.artist_credit.names.0.artist.name",
+      "Betty Padgett"
+    ],
+    [
+      "mediums.0.track.10.artist_credit.names.0.name",
+      "Betty Padgett"
+    ],
+    [
+      "mediums.0.track.10.length",
+      "206000"
+    ],
+    [
+      "mediums.0.track.10.name",
+      "Sugar Daddy (Part 1)"
+    ],
+    [
+      "mediums.0.track.10.number",
+      "B5"
+    ],
+    [
+      "mediums.0.track.11.artist_credit.names.0.artist.name",
+      "George Soule"
+    ],
+    [
+      "mediums.0.track.11.artist_credit.names.0.name",
+      "George Soule"
+    ],
+    [
+      "mediums.0.track.11.length",
+      "130000"
+    ],
+    [
+      "mediums.0.track.11.name",
+      "Talkin' About Love "
+    ],
+    [
+      "mediums.0.track.11.number",
+      "B6"
+    ],
+    [
+      "mediums.0.track.2.artist_credit.names.0.artist.name",
+      "Alonzo Smith"
+    ],
+    [
+      "mediums.0.track.2.artist_credit.names.0.name",
+      "Alonzo Smith"
+    ],
+    [
+      "mediums.0.track.2.length",
+      "196000"
+    ],
+    [
+      "mediums.0.track.2.name",
+      "Love Machine"
+    ],
+    [
+      "mediums.0.track.2.number",
+      "A3"
+    ],
+    [
+      "mediums.0.track.3.artist_credit.names.0.artist.name",
+      "King Floyd"
+    ],
+    [
+      "mediums.0.track.3.artist_credit.names.0.name",
+      "King Floyd"
+    ],
+    [
+      "mediums.0.track.3.length",
+      "141000"
+    ],
+    [
+      "mediums.0.track.3.name",
+      "Hard To Handle"
+    ],
+    [
+      "mediums.0.track.3.number",
+      "A4"
+    ],
+    [
+      "mediums.0.track.4.artist_credit.names.0.artist.name",
+      "Tobi Lark"
+    ],
+    [
+      "mediums.0.track.4.artist_credit.names.0.name",
+      "Tobi Lark"
+    ],
+    [
+      "mediums.0.track.4.length",
+      "203000"
+    ],
+    [
+      "mediums.0.track.4.name",
+      "Challenge My Love"
+    ],
+    [
+      "mediums.0.track.4.number",
+      "A5"
+    ],
+    [
+      "mediums.0.track.5.artist_credit.names.0.artist.name",
+      "Millie Jackson"
+    ],
+    [
+      "mediums.0.track.5.artist_credit.names.0.name",
+      "Millie Jackson"
+    ],
+    [
+      "mediums.0.track.5.length",
+      "347000"
+    ],
+    [
+      "mediums.0.track.5.name",
+      "All The Way Lover"
+    ],
+    [
+      "mediums.0.track.5.number",
+      "A6"
+    ],
+    [
+      "mediums.0.track.6.artist_credit.names.0.artist.name",
+      "Nancy Holloway"
+    ],
+    [
+      "mediums.0.track.6.artist_credit.names.0.name",
+      "Nancy Holloway"
+    ],
+    [
+      "mediums.0.track.6.length",
+      "217000"
+    ],
+    [
+      "mediums.0.track.6.name",
+      "Hurt So Bad"
+    ],
+    [
+      "mediums.0.track.6.number",
+      "B1"
+    ],
+    [
+      "mediums.0.track.7.artist_credit.names.0.artist.name",
+      "Darondo"
+    ],
+    [
+      "mediums.0.track.7.artist_credit.names.0.name",
+      "Darondo"
+    ],
+    [
+      "mediums.0.track.7.length",
+      "204000"
+    ],
+    [
+      "mediums.0.track.7.name",
+      "Didn't I"
+    ],
+    [
+      "mediums.0.track.7.number",
+      "B2"
+    ],
+    [
+      "mediums.0.track.8.artist_credit.names.0.artist.name",
+      "Dorothy Moore"
+    ],
+    [
+      "mediums.0.track.8.artist_credit.names.0.name",
+      "Dorothy Moore"
+    ],
+    [
+      "mediums.0.track.8.length",
+      "152000"
+    ],
+    [
+      "mediums.0.track.8.name",
+      "Don't Let Go "
+    ],
+    [
+      "mediums.0.track.8.number",
+      "B3"
+    ],
+    [
+      "mediums.0.track.9.artist_credit.names.0.artist.name",
+      "Brenda George"
+    ],
+    [
+      "mediums.0.track.9.artist_credit.names.0.name",
+      "Brenda George"
+    ],
+    [
+      "mediums.0.track.9.length",
+      "150000"
+    ],
+    [
+      "mediums.0.track.9.name",
+      "What You See Is What You're Gonna Get "
+    ],
+    [
+      "mediums.0.track.9.number",
+      "B4"
+    ],
+    [
+      "name",
+      "Wanted Soul "
+    ],
+    [
+      "type",
+      "compilation"
+    ],
+    [
+      "type",
+      "album"
+    ],
+    [
+      "urls.0.link_type",
+      "76"
+    ],
+    [
+      "urls.0.url",
+      "https://www.discogs.com/release/32870976"
+    ]
+  ]
+}
