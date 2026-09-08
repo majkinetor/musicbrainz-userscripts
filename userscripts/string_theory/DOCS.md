@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-07 17:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-08 15:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -866,9 +866,7 @@ A merge assistant for MusicBrainz recordings: gather a pool of candidates, let a
 - [Changelog](../fusion/CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Fusion)
 
-<img width="3522" height="1722" alt="image" src="https://github.com/user-attachments/assets/03fc1889-ac9a-4c15-9181-aa1c97112019" />
-
-<img width="2510" height="1700" alt="image" src="https://github.com/user-attachments/assets/b97b4503-f646-45fb-8a41-666cf69eed4c" />
+<img src="../fusion/screenshots/pool-groups.png" />
 
 ### Features
 
@@ -1424,7 +1422,7 @@ Other Qobuz gotchas:
 
 ## Mammoth
 
-Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit.
+Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit. Mamooth babies let you to remember values, add quick buttons, and configure defaults for any form field.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/mammoth/mammoth.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/mammoth/mammoth.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
