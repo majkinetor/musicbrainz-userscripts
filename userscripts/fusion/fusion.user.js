@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.5.130556
+// @version      2026.9.8
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -767,6 +767,18 @@ async function enrichAllReleases(recs, concurrency, onProgress) {
                 const r = await fetchAllReleases(rec.gid);
                 if (r) {
                     rec.allReleases = r.releases;
+                    /* #581 (chaban-mb): "Fusion claims (no release) for some
+                       recordings in the table yet when hovering it shows the
+                       release." The cell reads rec.releases[0]; the tooltip reads
+                       rec.allReleases. This backfill filled only the second, so a
+                       recording the search index had missed ended up with a full
+                       tooltip above a cell that flatly denied it.
+                       storeReleaseDetails — the expand-on-demand path — already
+                       seeds both, for this exact reason (#529); this one was
+                       written later and did not. Only when empty: a row seeded
+                       from a release page carries that release as its primary and
+                       must keep it. */
+                    if (!rec.releases || !rec.releases.length) rec.releases = r.releases;
                     if (rec.video == null) rec.video = r.video;
                 }
             }
