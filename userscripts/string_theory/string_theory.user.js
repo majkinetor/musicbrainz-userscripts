@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.7.173310
+// @version      2026.9.8.152403
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.7.173310 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.7.104500\n  · Art Station v2026.9.7.173251\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
+  console.log('%c String Theory %c v2026.9.8.152403 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8\n  · Art Station v2026.9.7.173251\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.7.104500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.7.104500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1376,8 +1376,11 @@ try {
     } finally { _selfEdit = false; }
   }
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
-  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
-  function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias') { s.committed = true; any = true; } }); if (any) commitTrack(t); }
+  // #580: never commit over a slot the user has focused — that is the write that
+  // used to replace a half-typed name with the matched artist.
+  const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias');
+  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
+  function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
     snapshotMissing();   // capture page-load state for any lazily-loaded medium before matching touches it
@@ -1418,6 +1421,7 @@ try {
         for (let i = 0; i < t.slots.length; i++) {
           if (_matchStop) { stopped = true; break; }   // #577: a track can hold several artists, each its own round trip
           const s = t.slots[i]; if (!s._pending) continue;
+          if (s._editing) { Log.debug('match: slot skipped — the user is editing it (#580)'); continue; }   // stays _pending, so leaving the field lets a later pass have it
           const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
           const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i));   // #437
           Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
@@ -1664,7 +1668,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.7.104500';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.8';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2272,6 +2276,12 @@ try {
     .tc-search .tc-bar-aka{flex:0 1 auto;min-width:0;max-width:55%;margin-left:2px;color:var(--mbu-ok);font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
     .tc-search .tc-bar-disamb{flex:0 1 auto;min-width:0;max-width:55%;margin-left:4px;color:var(--mbu-text-weak);font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}   /* artist disambiguation, grey like native #195 */
     .tc-search .mk{flex:none;order:9;cursor:pointer;border:none;background:none;color:var(--mbu-ok);font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:var(--mbu-ok)}   /* order:9 keeps ＋ pinned at the far right, past the join-phrase */
+    /* #580: ＋ belongs to an unresolved slot, but it must also be reachable on a
+       RESOLVED one the moment you focus it — that is how you create an artist
+       that happens to share its name with the matched one. Hidden again on blur,
+       so a settled table stays quiet. */
+    .tc-search.matched .mk{display:none}
+    .tc-search.matched:has(input.nm:focus) .mk{display:inline-block}   /* the name field specifically — not :focus-within, which the join-phrase input would also trip */
     /* push ＋ to the right edge only when there's NO join-phrase; with a join, .tc-joinwrap's margin-left:auto already pushes the right-group and ＋ (order:9) follows it (two auto-margins would split the gap). #298 follow-up */
     .tc-search:not(:has(.tc-joinwrap)) .mk{margin-left:auto}
     .tc-joinwrap{flex:none;margin-left:auto;display:flex;align-items:center;gap:0}
@@ -3283,7 +3293,9 @@ try {
     // special-purpose artists like [unknown], whose alias is suppressed. #195
     const dis = slot.committed ? (getDisamb(slot.gid) || (slot.entity && slot.entity.comment) || '') : '';   // #450 entity fallback (created/pasted picks)
     if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.title = dis; search.insertBefore(ds, ref); }
-    if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz  ·  right-click: create silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref); }
+    // #580: always built. On an unresolved slot it shows outright; on a resolved
+    // one the .tc-search.matched rules keep it hidden until the slot has focus.
+    const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz  ·  right-click: create silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref);
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
@@ -3406,6 +3418,7 @@ try {
     // field value (not focus): a commit-rerender can steal focus before the fetch returns.
     const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); pickArtist(slot, ent); focusSlotInput(entry, i); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };   // refocus the (re-rendered) field so keyboard nav keeps working after a paste
     inp.onfocus = () => {
+      slot._editing = true;   // #580: this slot is the user's now — auto-match leaves it alone until they leave it
       if (slot.committed && slot.candidates && slot.candidates.length) { curQuery = inp.value.trim() || slot.creditedAs || slot.name; curLimit = 8; showResults(slot.candidates, curQuery); return; }
       const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else close();   // empty → no dropdown
     };
@@ -3429,7 +3442,7 @@ try {
       else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); hiliteRow(); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) { const entry = slot._entry, i = entry.slots.indexOf(slot); choose(c); focusSlotInput(entry, i); } }   // keep focus on the field after picking (so ↓ moves on)
     };
-    inp.onblur = () => setTimeout(close, 160);   // keep whatever the user typed (no reset)
+    inp.onblur = () => { slot._editing = false; setTimeout(close, 160); };   // keep whatever the user typed (no reset); #580 hands the slot back to auto-match
   }
 
   // #284: hovering an artist highlights every OTHER instance of that same artist in
@@ -5184,8 +5197,32 @@ try {
   function untidyMediums() { document.querySelectorAll('table.advanced-format').forEach(t => setFmtTidy(t, false)); }
   function syncNative() { setNativeHidden(!_showOriginal); if (_showOriginal) untidyMediums(); else tidyMediums(); }
   // watch the live tracklist so Track parser (or any native structural change) refreshes our table
-  let _subscribed = false, _syncTimer = null;
-  function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(() => { if (document.getElementById('tc-mirror-wrap')) loadAndRender(); }, 400); }
+  let _subscribed = false, _syncTimer = null, _syncDeferred = false;
+  /* #580: a resync rebuilds the whole mirrored tracklist, which replaces the very
+     <input> the caret is in. Typing one character into a matched artist field was
+     enough to trigger it — the edit un-links the artist, that writes the credit
+     back to Knockout, and MB echoes a second notification of its own AFTER our
+     _selfEdit guard has been dropped, so the watcher read it as an external
+     change. The rebuild then dropped the keystroke, took the focus, and re-queued
+     the slot for auto-match, which completed the name straight back to the artist
+     you were editing away from — so ＋ (create) never got a chance to appear.
+     Fixing the echo alone would not be enough: any background resync lands the
+     same blow. So the resync waits for the field to be left, which is also what
+     was asked for — "auto match should run after focus is lost", keeping the
+     split-artist flow intact. */
+  function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(runSync, 400); }
+  function runSync() {
+    if (isEditingNow()) { _syncDeferred = true; Log.debug('tracklist resync deferred — a field is being edited (#580)'); return; }
+    _syncDeferred = false;
+    if (document.getElementById('tc-mirror-wrap')) loadAndRender();
+  }
+  // Released when focus actually leaves our fields. Deferred by a tick because
+  // focusout fires while activeElement is still in flight, and tabbing from one
+  // of our fields to the next must not count as leaving.
+  document.addEventListener('focusout', () => {
+    if (!_syncDeferred) return;
+    setTimeout(() => { if (_syncDeferred && !isEditingNow()) { Log.debug('field left — running the deferred tracklist resync (#580)'); runSync(); } }, 0);
+  }, true);
   // #472: med.tracks.subscribe below only fires on STRUCTURAL changes to that
   // array (added/removed/reordered) — a track edited IN PLACE (a bookmarklet
   // calling tr.name(newName) or tr.artistCredit({...}) directly, or driving
