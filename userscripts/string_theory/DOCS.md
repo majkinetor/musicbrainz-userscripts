@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-08 15:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-08 15:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -519,7 +519,7 @@ These are remembered automatically as you use the UI:
 
 ## Art Station
 
-A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reorder, retype, comment, remove, download, add and source a release's cover and event art — all staged, then applied on **Enter edit**.
+A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reorder, retype, comment, remove, download, and source a release's cover and event art — all staged, then applied on **Enter edit**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/art_station/art_station.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/art_station.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -925,8 +925,8 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - Copy/move credits from recording to recordings, work to works, release to release, release from/to recordings 
 - Consolidate release-level credits across an entire release group (matrix + one-click apply)
 - Match recordings to existing works (ISRC + ranked title search) and stage the *performance* relationships
-- Parse unstructured credit text ("Mastering: Nick Robbins") into release relationships, with a small pattern DSL
-- Set a date across a release's credits — a picker to choose the date + exactly which credits get it
+- Parse unstructured credit text into release relationships, with a small pattern DSL
+- Set a date across a release's credits — a picker to choose the date and which credits get it
 - Highlight role or entity everywhere and show tooltip with overall counts
 - Works on existing and newly-added relationships
 - Right-click entity to open its editor
@@ -966,7 +966,7 @@ The menu lists each credit with a **checkbox** (all on by default) — untick an
 - **Right-click a credit** selects only that role (e.g. just the composers); **Shift-right-click** *adds* a role to the current selection.
 - Hover a credit for two buttons that **select destination tracks by that credit**: **[A]** ticks every track crediting that **artist** (in any role), **[R]** every track crediting that artist **in the same role** — so you can, say, copy a credit onto exactly the tracks that already feature that performer.
 
-Copy/Move act on the ticked credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
+Copy/Move act on the selected credits and the currently-ticked destinations (recomputed live), and the count updates as you go.
 
 <img width="650" src="../group_therapy/screenshots/copy.png" /> 
 
@@ -1163,7 +1163,7 @@ The small MB-editor dispatch helper is **bundled directly into this single file*
 
 ## ISRC Scout
 
-Shows the release's existing ISRCs and lets you fill in the missing ones from several sources. Finds and manages store links to the recordings.
+Shows the release's existing ISRCs and lets you fill in the missing ones from several sources. Finds and manages external links of the recordings.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/isrc_scout/isrc_scout.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -1422,7 +1422,7 @@ Other Qobuz gotchas:
 
 ## Mammoth
 
-Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit. Mamooth babies let you to remember values, add quick buttons, and configure defaults for any form field.
+Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit. Mamooth babies let you remember values, add quick buttons, and configure defaults for any form field.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/mammoth/mammoth.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/mammoth/mammoth.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -1596,7 +1596,7 @@ In the note search box:
 
 ## Platform check
 
-Find URLs for a particular MusicBrainz release on online platforms, verify track counts, surface label / year / format alongside.
+Find URLs for a particular MusicBrainz release on online platforms, verify track counts, surface label / year / format alongside. Automatically matches releases/candidates while respecting bar codes, formats and other release data.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/platform_check/platform_check.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/platform_check/platform_check.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -1609,7 +1609,7 @@ Find URLs for a particular MusicBrainz release on online platforms, verify track
 
 - **Multiple [platforms](#platforms)** supported with customizable position and visibility
 - **Header info** — MB's release year, format, label and track count in the dashboard header
-- **Insert links to release** — open the release's edit page and insert one or all confirmed platform links. A Bandcamp album whose page includes a **digital** release gets **both** relationships on the one URL — *stream for free* and *purchase for download* (#423); physical-only Bandcamp pages get just the stream rel.
+- **Insert links to release** — open the release's edit page and insert one or all confirmed platform links
 - **Open all found** — open each confirmed platform page not yet in MB in its own tab (plus the Discogs master) Mismatches and unverifiable links are skipped. *(Watch for pop-up blocking.)*
 - **Options** — detailed appearance, authentication, link confidence settings etc.
 - **Diagnostic log** — per-source filter chips to isolate a single platform's chain
@@ -1642,11 +1642,11 @@ The `+`/icon add opens a **new tab** by default so the panel stays put; setup op
 
 A right-click `+` can have **two** edits in flight, because they land on different entities: the platform links go onto the **release**, and the **Discogs master** goes onto the **release group**. Both are backgrounded and both close themselves when they commit ([#559](https://github.com/majkinetor/musicbrainz-userscripts/issues/559)) — previously only the release half was, and the release-group editor was left open in a focused tab. That is why the script also runs on `/release-group/*` pages: the tab has to be able to close itself after MusicBrainz redirects there. Nothing else happens on a release-group page — the dashboard only ever mounts on a release.
 
-Setup option **Compact unmatched providers** keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search, exactly like clicking its row. Rows rise with a subtle fade so the panel doesn't jump as results stream in. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
+Setup option **Compact unmatched providers** keeps the panel tidy, every provider **starts compact** — a strip of dimmed brand icons at the bottom — and **rises into a full row only when it's a clean match**. Everything else stays in the strip: not-found *and* found-but-mismatched providers (a different barcode/format — a *different release*), the latter keeping a subtle **amber ring** so that "found but wrong" signal isn't lost. Click a strip icon to run that platform's search. **Discogs and Bandcamp always keep their full rows** (matched or not), since they carry the format/reference detail.
 
 #### Barcode matching
 
-When the MB release has a barcode (read from the release page, with the MB API as a fallback), providers that support a barcode lookup try it **first** for an exact match before any text search.
+When the MB release has a barcode, providers that support a barcode lookup try it **first** for an exact match before any text search.
 
 This avoids the ambiguity of title/artist search when a barcode is available, and prefers the *exact* edition over a Wikidata/search match that may be a different barcode. Platforms index the same GTIN under different zero-paddings (a 12-digit UPC-A, a 13-digit EAN with a leading `0`, a 14-digit form), so when the exact-barcode lookup misses, it is retried with the other paddings (by adding leading zeros which do not change GTIN) before falling back to search (#354). A returned album's own barcode is verified against the query where the API exposes it, since Deezer occasionally hands back an unrelated album for a barcode it doesn't have (#356).
 
@@ -1882,14 +1882,11 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 Right-clicking **+** adds links in a background tab that submits and closes
 itself. Firefox throttles timers in a background tab — to one step per second,
-and to as much as fifteen once the tab has spent its execution budget — and
-MusicBrainz's submit is a chain of them. A two-link add measured **20.2s** that
-way; the same add with the tab merely *looked at* took **3.7s**.
+and to as much as fifteen once the tab has spent its execution budget.
 
 A tab that is **playing audio** is exempt from that throttling, so this setting
 plays an inaudible tone — 30Hz at gain 0.0008, below anything a speaker will
-reproduce — for the few seconds the tab is alive. Measured on the same two-link
-add: **3.7s, tab never shown**.
+reproduce.
 
 Off by default, and it **needs a browser permission you have to grant
 yourself**: on a MusicBrainz page, padlock icon → *Autoplay* → **Allow Audio**.
@@ -1901,15 +1898,7 @@ background add: +1.5s  keep-awake audio  state=suspended — BLOCKED by the auto
                        policy, so this setting is doing nothing.
 ```
 
-With it, the same line reads `state=running`. The cost is the speaker icon on
-that tab while it runs; being audible *is* the exemption, so there is no way to
-have one without the other.
-
-> A [WebRTC loopback](https://community.metabrainz.org/t/chabans-userscripts-and-bookmarklet-support-thread/768583/71)
-> was tried instead — no permission, no icon, much the nicer trade. It connects
-> in under a second and then changes nothing: 16.8s to commit against 16.9s with
-> the setting off. Whatever Firefox exempts for an active peer connection, it is
-> not the timer throttling.
+With it, the same line reads `state=running`.
 
 ### Shortcuts
 
