@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.8.152403
+// @version      2026.9.8.155133
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.8.152403 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8\n  · Art Station v2026.9.7.173251\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
+  console.log('%c String Theory %c v2026.9.8.155133 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8.154646\n  · Art Station v2026.9.7.173251\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.154646","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.154646","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1410,31 +1410,59 @@ try {
     try {
       const siblings = await loadSiblingMap();
       const dmap = await loadDiscogsMap();
-      const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); planned = todo.length;
       const total = MODEL.tracks.length;
-      for (let ti = 0; ti < MODEL.tracks.length; ti++) {
-        if (_matchStop) { stopped = true; break; }   // #577
-        const t = MODEL.tracks[ti];
-        if (!t.slots.some(s => s._pending)) continue;
-        const sib = siblings.get(fold(t.title)) || null;
-        const durls = discogsUrlsForTrack(dmap, t.title, ti, total).urls;   // title, else by position (#283)
-        for (let i = 0; i < t.slots.length; i++) {
-          if (_matchStop) { stopped = true; break; }   // #577: a track can hold several artists, each its own round trip
-          const s = t.slots[i]; if (!s._pending) continue;
-          if (s._editing) { Log.debug('match: slot skipped — the user is editing it (#580)'); continue; }   // stays _pending, so leaving the field lets a later pass have it
-          const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-          const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i));   // #437
-          Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
-          await tagDiscogsAddable(s, dUrl);   // #227
+      // ti is the track's position in the release, which discogsUrlsForTrack
+      // needs (#283 falls back to matching by position), so carry it along
+      // rather than re-deriving it from a filtered list.
+      const todo = MODEL.tracks.map((t, ti) => ({ t, ti })).filter(x => x.t.slots.some(s => s._pending)); planned = todo.length;
+      /* #575 (majkinetor, "Matching takes too long"): this loop used to await
+         each track before starting the next. The /ws/2 pacer allows four reads in
+         flight — measured on a 14-track fixture against production, the pass
+         never got past TWO, and 17 requests took 124 seconds: about 7 seconds per
+         request, all of it spent waiting on MusicBrainz rather than on our own
+         rate limit. A sequential caller turns a slow server day into a multi-
+         minute wait, which is exactly what his 4-minute log shows.
+         So: run the tracks through a small pool instead. This adds no delay and
+         does not raise the REQUEST RATE — the pacer still releases one start per
+         second, which is the published guidance — it only stops the lanes the
+         pacer already allows from sitting idle. Slots within a track stay
+         sequential, so a track's artists still commit together. */
+      const MATCH_LANES = 4;   // == WS_MAX_INFLIGHT; the pacer is what bounds the rate
+      let nextIdx = 0;
+      const lane = async () => {
+        for (;;) {
+          if (_matchStop) { stopped = true; return; }   // #577
+          const job = todo[nextIdx++]; if (!job) return;
+          const { t, ti } = job;
+          const sib = siblings.get(fold(t.title)) || null;
+          const durls = discogsUrlsForTrack(dmap, t.title, ti, total).urls;   // title, else by position (#283)
+          for (let i = 0; i < t.slots.length; i++) {
+            if (_matchStop) { stopped = true; break; }   // #577: a track can hold several artists, each its own round trip
+            const s = t.slots[i]; if (!s._pending) continue;
+            if (s._editing) { Log.debug('match: slot skipped — the user is editing it (#580)'); continue; }   // stays _pending, so leaving the field lets a later pass have it
+            const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
+            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i));   // #437
+            Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
+            await tagDiscogsAddable(s, dUrl);   // #227
+          }
+          autoCommitTrack(t); if (!isEditing()) rerender();
+          done++;
+          /* #575: the counter used to be this loop's own index, so it read "5/14"
+             with one row left on screen — the Discogs pass resolves slots too, and
+             those tracks never showed up in it. Count what is actually still
+             queued instead, so the number matches the table. */
+          if (onProgress) { const left = todo.filter(x => x.t.slots.some(s => s._pending)).length; onProgress(todo.length - left, todo.length); }
         }
-        autoCommitTrack(t); if (!isEditing()) rerender();
-        done++; if (onProgress) onProgress(done, todo.length);
-      }
+      };
+      await Promise.all(Array.from({ length: Math.min(MATCH_LANES, todo.length) }, lane));
       if (!isEditing()) rerender();
       // #577: say so, and say what survived — a silent stop looks like a crash.
       // Announced before the finally's refreshStatus, which would overwrite it,
       // so the message is set after instead.
       if (stopped) Log.info('matching stopped after ' + done + ' of ' + planned + ' track' + (planned === 1 ? '' : 's') + ' — what matched is kept');
+      // #575: the artist pass had no end marker, so the recordings pass's summary
+      // looked like the whole thing finishing while artists were still resolving.
+      else if (planned) Log.info('tracklist match: ' + planned + ' track' + (planned === 1 ? '' : 's') + ' matched — Discogs link checks and alias enrichment continue in the background');
     } finally {
       setMatching(false);
       refreshStatus();   // set the final per-medium badges once the pass is done
@@ -1668,7 +1696,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.8';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.8.154646';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -6756,7 +6784,9 @@ try {
       // rather than as an interruption. What was linked stays linked.
       if (e) e.textContent = (stopped ? 'stopped · ' : '') + 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
         + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '');
-      Log.info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (stopped ? ' — the rest are untouched' : ''));
+      // #575: named for its pass. Plain "auto-match:" read as the whole match
+      // finishing, while the tracklist's artist pass was still going.
+      Log.info('recording auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (stopped ? ' — the rest are untouched' : ''));
       _matchStop = false;
     }
   }
