@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.8.204750
+// @version      2026.9.8.210223
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1669,7 +1669,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.8.204750';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.8.210223';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -5249,7 +5249,10 @@
      split-artist flow intact. */
   function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(runSync, 400); }
   function runSync() {
-    if (isEditingNow()) { _syncDeferred = true; Log.debug('tracklist resync deferred — a field is being edited (#580)'); return; }
+    // Logged on the FIRST deferral of an episode, not on every re-check. The
+    // match branch below re-arms twice a second, and logging each tick buried a
+    // whole session's log under itself — "spamming now like crazy" (majkinetor).
+    if (isEditingNow()) { if (!_syncDeferred) Log.debug('tracklist resync deferred — a field is being edited (#580)'); _syncDeferred = true; return; }
     /* #575 (majkinetor: "'auto-match off - click match' shows while match is
        running. It switches between 'matched N/M' and it periodically"). Every
        committed track writes the credit back to Knockout, MusicBrainz echoes a
@@ -5260,11 +5263,12 @@
        load path dozens of times a run for nothing: a match is OUR write, and
        the model is already up to date when it lands. Wait for the pass. */
     if (_matching || _autoMatching) {
+      if (!_syncDeferred) Log.debug('tracklist resync deferred until the match pass finishes (#575)');
       _syncDeferred = true;
-      Log.debug('tracklist resync deferred — a match pass is running (#575)');
       clearTimeout(_syncTimer); _syncTimer = setTimeout(runSync, 500);
       return;
     }
+    if (_syncDeferred) Log.debug('match pass finished — running the deferred tracklist resync (#575)');
     _syncDeferred = false;
     if (document.getElementById('tc-mirror-wrap')) loadAndRender();
   }
