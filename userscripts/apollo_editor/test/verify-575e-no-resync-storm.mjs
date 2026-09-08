@@ -70,8 +70,14 @@ await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catc
 await page.waitForSelector('.tc-search input.nm', { state: 'visible', timeout: 60000 });
 
 const TL = '#tc-bar [data-act="match"], #tc-hdr [data-act="match"]';
-const idle = await page.evaluate(() => document.body.innerText.includes('auto-match off'));
-ck(idle, 'fixture: with auto-match off, the idle message is on screen before the press');
+/* The idle message is gone entirely now — majkinetor: "lets remove the
+   auto-match off - click Match". It wrote into the same spans that carry each
+   medium's "N unresolved" badge, so every reload wiped the badge to repeat what
+   the Match button already says. What is asserted instead: the badge survives,
+   and the message never appears at any point. */
+const badgeBefore = await page.evaluate(() => document.body.innerText);
+ck(!/auto-match off/.test(badgeBefore), 'the idle "auto-match off — click Match" message is gone');
+ck(/unresolved/.test(badgeBefore), 'and the "N unresolved" badge it used to overwrite is there');
 
 /* Count re-entries of the load path by MODEL IDENTITY: loadAndRender starts with
    buildShell(), which returns a brand-new model object, so a changed identity is
@@ -116,7 +122,7 @@ while (Date.now() - t0 < 45000) {
   loadsDuring = (await countLoads()) - loadsBefore;   // sampled WHILE running: a
   // reload once the pass has ended is legitimate, and counting it afterwards
   // would fail this for the one case it is supposed to allow.
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(100);   // tight: a fast pass must still be sampled
 }
 
 console.log(`[verify-575e] progress messages seen: ${[...seen].join(', ') || 'none'}`);
