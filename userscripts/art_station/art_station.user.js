@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.7.173251
+// @version      2026.9.8.183821
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -250,12 +250,40 @@
       asLog.debug(`archive.org: loaded original file sizes (${SIZES.size})`);
     } catch (e) { asLog.debug('archive.org: metadata unavailable — ' + ((e && e.message) || e)); }   // size is a nicety — never block the gallery
   }
+  // Declared here, not next to the other #566 constants further down: load() runs
+  // on the very next line and reads it, and a `const` below that point is still
+  // in its temporal dead zone — a ReferenceError that takes the whole script out
+  // before anything renders (node --check does not see it; a browser does).
+  const AR_SETTINGS_V = 1;
   let SETTINGS = load();
   // #560 (majkinetor): "Uploading PDF booklet of 50-100MB fails in AS due to
   // timeout (currently visible as IA is slow) while it passes in native uploader.
   // Let's make timeout configurable in minutes, and make default double the
   // current value." Was a hardcoded 5 minutes; the default is 10 now.
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: false, autoRepeatMin: 20, autoRepeatTimes: 20, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10 }; try { return Object.assign(d, JSON.parse(gmLoad('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10 }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
+  /* #566 follow-up (majkinetor): "change defaults to 10/10 and enable the option
+     by default". Raising the defaults alone reaches nobody who already has
+     settings stored — save() persists every key, so a stored 20 shadows the new
+     default (the same trap called out for uploadTimeoutMin just below). Hence a
+     one-shot migration, which only moves values still sitting on the OLD
+     defaults: a deliberate 30 minutes survives untouched. A deliberate opt-OUT
+     cannot be told apart from the old default of false once saved, so it is
+     turned on — which is what was asked for, and the checkbox is right there.
+     AR_SETTINGS_V is declared above `let SETTINGS = load()`, not here. */
+  // The version must be read off the STORED blob, not the merged one: arV is a
+  // default too, so Object.assign hands every old install a current version
+  // number and the migration skips itself. (It did exactly that, until the test
+  // caught it.)
+  function arMigrate(s, stored) {
+    if (!stored || !Object.keys(stored).length) return s;   // fresh install — nothing to move
+    if ((stored.arV || 0) >= AR_SETTINGS_V) return s;
+    if (s.autoRepeat === false) s.autoRepeat = true;
+    if (s.autoRepeatMin === 20) s.autoRepeatMin = 10;
+    if (s.autoRepeatTimes === 20) s.autoRepeatTimes = 10;
+    s.arV = AR_SETTINGS_V;
+    setTimeout(() => { save(); asLog.info('Auto-repeat defaults migrated to on / 10 min / 10 tries (#566)'); }, 0);
+    return s;
+  }
   function save() { try { gmSave('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
   // ⚠ Raising the default alone does nothing for anyone who already has settings
   // stored — Object.assign above lets a persisted 5 shadow it. There is no stored
@@ -266,15 +294,15 @@
   const UPLOAD_TIMEOUT_MIN_DEFAULT = 10, UPLOAD_TIMEOUT_MIN_MAX = 120;
   // #566 (majkinetor): "It could happen that covers fail to upload to Internet
   // Archive (IA), especially in latest weeks. Repeating failed until commit
-  // passes is one option to deal with it." Off by default, N = M = 20, and it
-  // stops at whichever of the two limits is reached first.
+  // passes is one option to deal with it." On by default, N = M = 10 (his
+  // follow-up), and it stops at whichever of the two limits is reached first.
   //
   // Deliberately bounded on BOTH axes: a count alone would hammer a struggling
   // server as fast as it can refuse, and a duration alone would keep a tab busy
   // for hours if each attempt fails instantly. The gap between attempts is the
-  // budget spread over the allowance (20 min / 20 tries = 1 min), clamped so it
+  // budget spread over the allowance (10 min / 10 tries = 1 min), clamped so it
   // can be neither a hot loop nor a wait longer than the whole budget.
-  const AR_MIN_DEFAULT = 20, AR_TIMES_DEFAULT = 20, AR_MIN_MAX = 240, AR_TIMES_MAX = 200;
+  const AR_MIN_DEFAULT = 10, AR_TIMES_DEFAULT = 10, AR_MIN_MAX = 240, AR_TIMES_MAX = 200;
   const arNum = (v, def, max) => { const n = Math.round(Number(v)); return (isFinite(n) && n > 0) ? Math.min(n, max) : def; };
   const arMinutes = () => arNum(SETTINGS.autoRepeatMin, AR_MIN_DEFAULT, AR_MIN_MAX);
   const arTimes = () => arNum(SETTINGS.autoRepeatTimes, AR_TIMES_DEFAULT, AR_TIMES_MAX);
@@ -2717,7 +2745,8 @@
       <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div><div class="as-cm-payload"></div></div>`).join('')}</div>
       <textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
-      <div class="as-cm-f"><span class="as-cm-ar" hidden></span><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
+      <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
+      <div class="as-cm-ar"></div>
     </div>`;
     document.body.appendChild(ov);
     if (_seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
@@ -2928,12 +2957,13 @@
     clearTimeout(ov._ar.timer); clearInterval(ov._ar.tick);
     ov._ar.stopped = true;
     const el = ov.querySelector('.as-cm-ar');
-    if (el) { el.hidden = true; el.textContent = ''; }
+    // #566 follow-up: emptied and made invisible, never removed from the layout —
+    // its row is reserved so the buttons above it cannot move.
+    if (el) { el.className = 'as-cm-ar'; el.textContent = ''; }
   }
   function arNote(ov, text, cls) {
     const el = ov.querySelector('.as-cm-ar'); if (!el) return;
-    el.hidden = false;
-    el.className = 'as-cm-ar' + (cls ? ' ' + cls : '');
+    el.className = 'as-cm-ar on' + (cls ? ' ' + cls : '');
     el.textContent = text;
   }
   function arSchedule(ov, errs, again) {
@@ -4256,7 +4286,17 @@
   .as-cm-id{color:var(--mbu-accent-text);font-size:12px;font-variant-numeric:tabular-nums;flex:none}
   .as-cm-go{background:var(--as-acc);color:var(--mbu-text-on-accent);border-color:var(--as-acc);font-weight:600}
   .as-cm-go:disabled{opacity:.5}
-  .as-cm-ar{font-size:11.5px;color:var(--mbu-warn);flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* #566 follow-up: this used to sit inside .as-cm-f, where it competed with the
+     buttons for width — it was clipped to "1 fail…" and squeezed the checkbox
+     labels onto two lines, moving the buttons under the pointer. Its own row
+     below them instead: full width, free to wrap, and no longer part of any
+     layout the buttons depend on.
+     Its row is ALWAYS in the layout — hidden by visibility, not by display —
+     because appearing at all would otherwise grow the box, and a centred dialog
+     that grows moves its buttons up by half the difference. Which is the very
+     complaint. So one line is reserved and the buttons never shift. */
+  .as-cm-ar{visibility:hidden;margin-top:8px;min-height:17px;font-size:11.5px;line-height:1.45;color:var(--mbu-warn)}
+  .as-cm-ar.on{visibility:visible;padding-top:0}
   .as-cm-ar-done{color:var(--mbu-error)}
   .as-cm-note2{font-size:11px;color:var(--mbu-accent-text);margin-top:8px;text-align:center}
   `;
