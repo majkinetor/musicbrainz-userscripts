@@ -1,12 +1,14 @@
 // #566 (majkinetor): "Automatically repeat failures up to [N] minutes or [M]
 // times […] Current minutes/times should be visible in the footer of the commit
-// window when it happens. By default option is not enabled and N=M=20."
+// window when it happens." His follow-up moved the note to its own footer row
+// and changed the defaults: on, N=M=10. The layout half of that lives in
+// verify-566b; this one still owns the behaviour.
 //
 // Driven through the real commit path: a file is staged, the Internet Archive
 // upload is made to fail at the network layer, and the dialog is left to do
 // whatever it does. What is asserted is behaviour, not the presence of settings:
 //
-//   · off by default, and a failed run then just waits for a manual Repeat;
+//   · turned off, a failed run just waits for a manual Repeat;
 //   · on, it retries BY ITSELF, and the footer says which attempt and how much
 //     of the allowance is gone;
 //   · it stops at the attempt limit, and says why;
@@ -47,7 +49,7 @@ await page.goto(`https://test.musicbrainz.org/release/${RELEASE}/add-cover-art`,
 if (page.url().includes('/login')) { console.log('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
 await page.waitForTimeout(600);
 await page.addScriptTag({ content: code });
-await page.waitForSelector('#as-root', { timeout: 20000 });
+await page.waitForSelector('#as-root', { state: 'attached', timeout: 20000 });
 await page.waitForTimeout(600);
 
 // ── the setting exists, with the defaults the issue specifies ───────────────
@@ -62,8 +64,8 @@ const ui = await page.evaluate(() => {
 });
 console.log('setup: ' + JSON.stringify(ui));
 ck(!ui.missing, '#566: the setup panel has the auto-repeat option');
-ck(!ui.missing && ui.checked === false, 'off by default');
-ck(!ui.missing && ui.min === '20' && ui.times === '20', `N=M=20 by default (got ${ui.min}/${ui.times})`);
+ck(!ui.missing && ui.checked === true, 'on by default (his follow-up)');
+ck(!ui.missing && ui.min === '10' && ui.times === '10', `N=M=10 by default (got ${ui.min}/${ui.times})`);
 // the two numbers live in <input value=…>, which textContent does not include —
 // so assert the wording around them and the inputs separately
 ck(!ui.missing && /repeat failures up to\s+minutes or\s+times/i.test(ui.label), 'worded as the issue asks — ' + JSON.stringify(ui.label));
@@ -74,7 +76,7 @@ const clamped = await page.evaluate(() => {
   return { zeroMin: set('.as-setup-ar-min', 0), emptyTimes: set('.as-setup-ar-times', ''), hugeMin: set('.as-setup-ar-min', 9999) };
 });
 console.log('clamping: ' + JSON.stringify(clamped));
-ck(clamped.zeroMin === '20' && clamped.emptyTimes === '20', 'a zero/empty box falls back to the default rather than persisting a hot loop');
+ck(clamped.zeroMin === '10' && clamped.emptyTimes === '10', 'a zero/empty box falls back to the default rather than persisting a hot loop');
 ck(clamped.hugeMin === '240', 'and an absurd window is capped (' + clamped.hugeMin + ')');
 
 // ── drive a real commit whose upload fails ──────────────────────────────────
@@ -112,8 +114,10 @@ await arm(false, 20, 20);
 ck(await stageAndCommit(), 'fixture: the commit ran and failed, offering Repeat');
 await page.waitForTimeout(2500);
 const offState = await page.evaluate(() => {
+  // The row is always present now - it reserves its space so the buttons cannot
+  // move - so "not showing" means invisible and empty, not absent.
   const el = document.querySelector('.as-cm-ar');
-  return { hidden: !el || el.hidden, text: el ? el.textContent : null };
+  return { hidden: !el || (!el.classList.contains('on') && !el.textContent), text: el ? el.textContent : null };
 });
 console.log('with the option OFF: ' + JSON.stringify(offState));
 ck(offState.hidden, '#566: with the option off there is no auto-repeat and no footer note');
@@ -123,14 +127,14 @@ await page.evaluate(() => document.querySelector('.as-cm-cancel')?.click());
 await arm(true, 1, 3);          // 1 minute / 3 tries -> a 20s gap
 ck(await stageAndCommit(), 'fixture: second commit ran and failed');
 const note = await page.waitForFunction(
-  () => { const e = document.querySelector('.as-cm-ar'); return e && !e.hidden && /Auto-repeat: attempt/.test(e.textContent) ? e.textContent : null; },
+  () => { const e = document.querySelector('.as-cm-ar'); return e && e.classList.contains('on') && /Auto-repeat: attempt/.test(e.textContent) ? e.textContent : null; },
   null, { timeout: 15000 }).then(h => h.jsonValue()).catch(() => null);
 console.log('footer: ' + JSON.stringify(note));
 ck(!!note, '#566: the footer of the commit window announces the auto-repeat');
 ck(!!note && /attempt 1\/3/.test(note), 'naming the attempt and the limit — ' + JSON.stringify(note));
 ck(!!note && /of 1m used/.test(note), 'and how much of the minute allowance is gone');
 ck(!!note && /\d+ failing/.test(note), 'and how many operations are still failing');
-await page.locator('.as-cm-f').screenshot({ path: resolve(SHOTS, 'i566-footer.png') }).catch(() => {});
+await page.locator('.as-cm-box').screenshot({ path: resolve(SHOTS, 'i566-footer.png') }).catch(() => {});
 
 // the countdown must actually tick, not just render once
 const ticked = await page.evaluate(async () => {
@@ -151,14 +155,14 @@ ck(!!gaveUp && /Press Repeat/.test(gaveUp || ''), 'and tells you the manual Repe
 await page.evaluate(() => document.querySelector('.as-cm-cancel')?.click());
 await arm(true, 1, 3);
 ck(await stageAndCommit(), 'fixture: third commit ran and failed');
-await page.waitForFunction(() => { const e = document.querySelector('.as-cm-ar'); return e && !e.hidden; }, null, { timeout: 15000 }).catch(() => {});
+await page.waitForFunction(() => { const e = document.querySelector('.as-cm-ar'); return e && e.classList.contains('on'); }, null, { timeout: 15000 }).catch(() => {});
 const beforeClose = posts;
 await page.evaluate(() => document.querySelector('.as-cm-cancel')?.click());
 await page.waitForTimeout(26000);          // past the 20s gap the countdown was on
 const afterClose = posts;
 const stray = await page.evaluate(() => !!document.querySelector('.as-cm-ar'));
 console.log(`POSTs before close ${beforeClose}, after ${afterClose}`);
-ck(!stray, 'closing the dialog removes the footer note');
+ck(!stray, 'closing the dialog takes the whole window, footer row included');
 ck(afterClose === beforeClose, `#566: and kills the countdown — no retry fired after the window was closed (${afterClose - beforeClose} extra POST)`);
 
 console.log('POST endpoints seen: ' + JSON.stringify([...new Set(postUrls.map(u => u.replace(/\?.*/, '')))].slice(0, 4)));
