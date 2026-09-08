@@ -132,6 +132,16 @@ ck(!sawIdleDuring, 'the idle "auto-match off — click Match" never comes back w
 console.log(`[verify-575e] (reloads during the pass: ${loadsDuring} — one is normal, dozens would be the storm)`);
 ck(loadsDuring <= 2, `no reload storm during the pass (${loadsDuring} re-entries)`);
 
+/* The deferral re-arms twice a second while a pass runs. Logging each tick
+   buried a whole session under itself — "spamming now like crazy" — so it is
+   logged once per episode. Read from Apollo's OWN log, not the console: nothing
+   here reaches the console, which is how an earlier check in this file managed
+   to count zero of everything and pass. */
+const deferLines = await page.evaluate(() =>
+  (window.__apolloEditor.logMarkdown() || '').split(String.fromCharCode(10)).filter(l => /resync deferred/.test(l)).length);
+console.log(`[verify-575e] "resync deferred" log lines: ${deferLines}`);
+ck(deferLines <= 4, `the deferral is logged once per episode, not once per tick (${deferLines} lines)`);
+
 ck(!posted.some(u => /\/ws\/js\/edit\/create/.test(u)), `no edit was submitted (${posted.length} POST(s), all aborted)`);
 ck(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
 await ctx.close();
