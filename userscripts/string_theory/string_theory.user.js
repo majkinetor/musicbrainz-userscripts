@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.8.155133
+// @version      2026.9.8.181740
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.8.155133 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8.154646\n  · Art Station v2026.9.7.173251\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
+  console.log('%c String Theory %c v2026.9.8.181740 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8.181451\n  · Art Station v2026.9.7.173251\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.154646","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.154646","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.181451","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.181451","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -787,6 +787,24 @@ try {
   const WS_MIN_GAP = 1000;      // between STARTS. was 700 between completions
   const WS_MAX_INFLIGHT = 4;    // a burst ceiling; the gap is what bounds the rate
   let _wsNextStart = 0, _wsInFlight = 0;
+  /* #575 round 3 (majkinetor's 2026-09-08 log: 90 of 121 responses were HTTP 503,
+     throttled from the very first request). Every caller used to back off on its
+     own — sleep 1.2s, retry — which is fine for one request and actively harmful
+     for several: while one lane waits out its penalty the others keep firing into
+     the same tripped limiter, so the bucket never refills and everybody's backoff
+     grows together. Retries then make up most of the traffic.
+     So a throttle is now a SHARED signal. One 503 holds every lane behind one
+     deadline, and concurrency collapses to a single probing request until a
+     response comes back clean. All lanes wait the same wall-clock window at the
+     same time, so this costs a bounded pause, never a per-request delay. */
+  let _wsCoolUntil = 0, _wsHot = 0;
+  function wsThrottled(retryAfterSec) {
+    _wsHot = Math.min(_wsHot + 1, 6);
+    const base = Math.max(1000, (retryAfterSec > 0 ? retryAfterSec : 1) * 1000);
+    _wsCoolUntil = Math.max(_wsCoolUntil, Date.now() + base * _wsHot);
+  }
+  const wsOkNow = () => { if (_wsHot) _wsHot--; };   // a clean response earns some room back
+  const wsLanes = () => (_wsHot ? 1 : WS_MAX_INFLIGHT);   // while throttled, probe with one
   // opts.stale() → true means "this request has been superseded" (the picker types
   // a new query while an older one still queues). Checked when the turn comes up
   // AND after the gap wait, so a stale call costs no request and no slot. #555
@@ -794,12 +812,21 @@ try {
     const o = opts || {};
     if (o.stale && o.stale()) return null;
     // Take a start slot up front, so concurrent callers space out instead of all
-    // reading the same "last request was long ago" and firing at once.
-    const now = Date.now();
-    const startAt = Math.max(now, _wsNextStart);
-    _wsNextStart = startAt + WS_MIN_GAP;
-    if (startAt > now) await _sleep(startAt - now);
-    while (_wsInFlight >= WS_MAX_INFLIGHT) await _sleep(120);
+    // reading the same "last request was long ago" and firing at once. The
+    // cooldown is folded into the same slot so a shared penalty does not also
+    // cost everyone their place in the queue.
+    // Re-claimed in a loop: a throttle that lands while we are already waiting
+    // invalidates the slot we hold. Without the re-claim, everything queued when
+    // the hold began would come off it at once with all its start slots long
+    // expired — a thundering herd straight back into the limiter.
+    for (;;) {
+      const now = Date.now();
+      const startAt = Math.max(now, _wsNextStart, _wsCoolUntil);
+      _wsNextStart = startAt + WS_MIN_GAP;
+      if (startAt > now) await _sleep(startAt - now);
+      if (Date.now() >= _wsCoolUntil) break;
+    }
+    while (_wsInFlight >= wsLanes()) await _sleep(120);
     if (o.stale && o.stale()) return null;
     _wsInFlight++;
     try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
@@ -857,12 +884,16 @@ try {
       if (!r) { Log.debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.debug(label + ': HTTP', r.status, url);
       if (r.status === 429 || r.status === 503) {
+        // #575 round 3: hold every lane, not just this one. wsGet blocks on the
+        // shared deadline, so the retry needs no sleep of its own — sleeping here
+        // too would stack a private penalty on top of the shared one.
         const ra = parseInt(r.headers.get('retry-after') || '', 10);
-        const wait = Math.max(1200, (ra > 0 ? ra : 1) * 1000) * attempt;
-        Log.warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — retrying in ' + wait + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
+        wsThrottled(ra);
+        Log.warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — all requests holding ' + Math.max(0, _wsCoolUntil - Date.now()) + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
         if (o.onThrottle) { try { o.onThrottle(attempt); } catch (e) {} }
-        await _sleep(wait); continue;
+        continue;
       }
+      wsOkNow();   // MusicBrainz answered — earn back some of the shared budget
       if (r.status === 404) { Log.debug(label + ': 404 not found —', url); return { notFound: true }; }
       if (!r.ok) { Log.warn(label + ': HTTP ' + r.status + ' — retrying (attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       let j; try { j = await r.json(); }
@@ -883,10 +914,10 @@ try {
       catch (e) { await _sleep(1200); continue; }                 // network error → retry, don't cache
       if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); _dput('resolve', discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
       if (r.status === 429 || r.status === 503) {                 // rate limited → back off, don't cache
-        const ra = parseInt(r.headers.get('retry-after') || '', 10);
-        await _sleep(Math.max(1200, (ra > 0 ? ra : 1) * 1000));
+        wsThrottled(parseInt(r.headers.get('retry-after') || '', 10));   // #575: the shared hold, same as every other caller
         continue;
       }
+      if (r.ok) wsOkNow();
       if (!r.ok) { await _sleep(1200); continue; }                // other transient error → retry, don't cache
       let j; try { j = await r.json(); } catch (e) { await _sleep(1200); continue; }
       const seen = new Set();
@@ -1696,7 +1727,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.8.154646';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.8.181451';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
