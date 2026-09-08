@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.8.183843
+// @version      2026.9.8.191728
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.8.183843 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8.181451\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
+  console.log('%c String Theory %c v2026.9.8.191728 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8.191457\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.7.163216\n  · Fusion v2026.9.5.130556\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.181451","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.181451","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.191457","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.8.191457","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -815,18 +815,26 @@ try {
     // reading the same "last request was long ago" and firing at once. The
     // cooldown is folded into the same slot so a shared penalty does not also
     // cost everyone their place in the queue.
-    // Re-claimed in a loop: a throttle that lands while we are already waiting
-    // invalidates the slot we hold. Without the re-claim, everything queued when
-    // the hold began would come off it at once with all its start slots long
-    // expired — a thundering herd straight back into the limiter.
+    /* One slot is claimed, ONCE. A throttle landing while we wait pushes our
+       start further out, but must not book another slot — the previous version
+       re-claimed on every pass round this loop, and each re-claim shoved
+       _wsNextStart another second into the future. With four lanes and repeated
+       holds the queue ran away from the work actually left, which is what made
+       pressing Match "produce literally nothing, then after a minute or so it
+       starts" (majkinetor, #575). Waiting is not the same as queueing.
+       The wait is interruptible: a lane parked here cannot notice a Stop, and a
+       pass whose lanes are all parked looks exactly as unstoppable as the one
+       #577 was meant to fix. */
+    let startAt = Math.max(Date.now(), _wsNextStart, _wsCoolUntil);
+    _wsNextStart = startAt + WS_MIN_GAP;
     for (;;) {
       const now = Date.now();
-      const startAt = Math.max(now, _wsNextStart, _wsCoolUntil);
-      _wsNextStart = startAt + WS_MIN_GAP;
-      if (startAt > now) await _sleep(startAt - now);
-      if (Date.now() >= _wsCoolUntil) break;
+      const until = Math.max(startAt, _wsCoolUntil);   // a hold that appeared while we queued
+      if (now >= until) break;
+      if (_matchStop) return null;                     // caller treats null as superseded
+      await _sleep(Math.min(until - now, 250));        // in slices, so a Stop lands promptly
     }
-    while (_wsInFlight >= wsLanes()) await _sleep(120);
+    while (_wsInFlight >= wsLanes()) { if (_matchStop) return null; await _sleep(120); }
     if (o.stale && o.stale()) return null;
     _wsInFlight++;
     try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
@@ -1434,7 +1442,12 @@ try {
   // match the _pending slots, updating the table row-by-row as results come in
   async function matchModel(onProgress) {
     const isEditing = isEditingNow;   // don't rebuild rows (and orphan the search popup) while the user is in a field
-    _matchStop = false;   // #577: a fresh pass always starts un-stopped
+    // #577: a fresh pass starts un-stopped — but only if the OTHER pass is not
+    // mid-stop. #575 round 4: the flag is shared, and whichever pass exited
+    // first used to clear it, so a Stop pressed on the Recordings pass was
+    // wiped by the tracklist pass finishing and the recordings loop carried
+    // straight on. That is the "Recordings Match is unresponsive" report.
+    if (!_autoMatching) _matchStop = false;
     setMatching(true);
     // hoisted out of the try so the finally can report how far it got (#577)
     let stopped = false, done = 0, planned = 0;
@@ -1498,7 +1511,7 @@ try {
       setMatching(false);
       refreshStatus();   // set the final per-medium badges once the pass is done
       if (stopped) updateStatus('matching stopped — ' + done + '/' + planned + ' done, the rest are still unmatched');
-      _matchStop = false;
+      if (!_autoMatching) _matchStop = false;   // #575: leave it set while the recordings pass is still winding down
     }
     // #227: tag/resolve Discogs links AFTER the match finally (so its summary
     // message isn't overwritten by refreshStatus) — covers 'set' artists too.
@@ -1727,7 +1740,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.8.181451';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.8.191457';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2973,7 +2986,33 @@ try {
   // stays matched, and the leftovers stay unmatched for a later pass — the same
   // bargain Group Therapy's work matcher makes.
   let _matchStop = false;
-  const stopMatching = () => { _matchStop = true; };
+  /* #575 round 4 (majkinetor): "both Matches can be 100% unresponsive to clicks,
+     especially Recordings one". The main thread turned out to be fine — a rAF
+     round trip stayed at 0ms through a whole 81s pass on his own release — so
+     nothing was frozen. What was missing was any ANSWER to the press: the loops
+     only notice the flag between items, and one item can be a multi-second
+     search or a shared throttle hold, so the button sat there still reading
+     "Stop" and the click read as ignored.
+     Both buttons now say so immediately. The pass still finishes the request in
+     flight before it exits — cancelling it would cancel a flight other callers
+     may be sharing — but that wait is now visible rather than silent. */
+  const stopMatching = () => {
+    if (_matchStop) return;
+    _matchStop = true;
+    // Driven off each pass's own running flag, not off what its button happens
+    // to say. The label is not reliable — a Recordings shell rebuilt mid-pass
+    // reads "Match" — and the flag is shared, so stopping the tracklist must not
+    // relabel an idle Recordings button either.
+    // Deliberately not disabled: setMatching / setBusy own that, and a button
+    // disabled here would stay dead if its pass had already ended.
+    const ack = (b, live) => {
+      if (!b || !live) return;
+      (b.querySelector('.tc-rec-am-lbl') || b).textContent = '⏳ Stopping…';
+      b.title = 'Stopping once the request in flight comes back — everything matched so far is kept';
+    };
+    ack(document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'), _matching);
+    ack(document.querySelector('#tc-recwrap .tc-rec-am'), _autoMatching);
+  };
   let _matching = false;
   // The Match button BECOMES the Stop button for the duration. It used to just
   // go disabled, which is what made an eight-minute pass feel unstoppable, and
@@ -6247,7 +6286,22 @@ try {
         '<th class="c-sep"></th><th>Title</th><th>Artist</th><th class="c-len">Length</th></tr></thead><tbody></tbody></table>';
     // wire the toolbar (once)
     wireCutoff(wrap);
-    const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => { if (_autoMatching) stopMatching(); else autoMatchRecordings(); };   // #577
+    const amBtn = wrap.querySelector('.tc-rec-am');
+    if (amBtn) {
+      amBtn.onclick = () => { if (_autoMatching) stopMatching(); else autoMatchRecordings(); };   // #577
+      /* #575 round 4: the shell is rebuilt when the Recordings tab is entered,
+         and it is built from static markup reading "⚡ Match" — so walking into
+         the tab during a running pass produced a button that offered to start
+         something already running. Clicking it then went to stopMatching(), and
+         nothing about the button said so: the literal "100% unresponsive to
+         clicks". Re-adopt the running state when the shell is (re)built. */
+      if (_autoMatching) {
+        amBtn.classList.add('busy');
+        const lbl = amBtn.querySelector('.tc-rec-am-lbl');
+        if (lbl) lbl.textContent = _matchStop ? '⏳ Stopping…' : '■ Stop';
+        amBtn.title = 'Stop matching — the recordings already linked are kept';
+      }
+    }
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
     wireRecCellContextMenu(wrap);
     renderRecBody(wrap);
@@ -6687,7 +6741,8 @@ try {
   // MB's first) when it clears the "ignore below" threshold. Already-linked tracks are left untouched. #119
   let _autoMatching = false;
   async function autoMatchRecordings() {
-    if (_autoMatching) return; _autoMatching = true; _matchStop = false;   // #577
+    if (_autoMatching) return; _autoMatching = true;   // #577
+    if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
     const wrap = document.getElementById('tc-recwrap');
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
@@ -6772,6 +6827,15 @@ try {
               const before = posIndex.size;
               await fetchDuplicatePositionIndex(relTitleForDup, relArtistGidForDup, rgGidForDup, posIndex);
               Log.debug('rec-match: duplicate search for "' + relTitleForDup + '" (artist=' + (relArtistGidForDup || 'none') + ') → posIndex ' + before + '→' + posIndex.size);
+              /* #575 round 4: "it often shows 'scanning duplicates', although
+                 there either aren't any or all are 0% similar". The status was
+                 written when the scan STARTED and never again until the next
+                 track began, so a search that found nothing — his took 23s and
+                 four throttled retries before giving up — left the pane claiming
+                 to be scanning long after it had stopped. Say what came back. */
+              setStatus(posIndex.size > before
+                ? `auto-matching ${i + 1}/${todo.length}…`
+                : `auto-matching ${i + 1}/${todo.length}… (no duplicate editions found)`);
               tryPos('dup');
             }
           }
@@ -6818,7 +6882,7 @@ try {
       // #575: named for its pass. Plain "auto-match:" read as the whole match
       // finishing, while the tracklist's artist pass was still going.
       Log.info('recording auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (stopped ? ' — the rest are untouched' : ''));
-      _matchStop = false;
+      if (!_matching) _matchStop = false;   // #575: leave it set while the tracklist pass is still winding down
     }
   }
   // submit-flag setters (per track / all tracks) + a light re-render of the recordings table
