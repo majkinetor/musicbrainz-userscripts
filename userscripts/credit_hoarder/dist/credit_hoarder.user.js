@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.7.163216
+// @version      2026.9.9.142736
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3848,16 +3848,13 @@ ${ourBlock}` : ourBlock;
         urlCheckRunning--;
       }
       const VIA_STYLES = {
-        both: { text: "name+url", color: "#2a7" },
-        // green — high confidence
-        url: { text: "url", color: "#46a" },
-        // blue
-        name: { text: "name", color: "#46a" },
-        // blue
-        user: { text: "user", color: "#777" },
-        // grey
-        cache: { text: "cache", color: "#777" }
-        // grey (legacy: original mechanism unknown)
+        both: { text: "name+url", color: "var(--mbu-ok)" },
+        // high confidence
+        url: { text: "url", color: "var(--mbu-accent-text)" },
+        name: { text: "name", color: "var(--mbu-accent-text)" },
+        user: { text: "user", color: "var(--mbu-text-dim)" },
+        cache: { text: "cache", color: "var(--mbu-text-dim)" }
+        // legacy: original mechanism unknown
       };
       function viaCfg(via, fromCache) {
         const base = VIA_STYLES[via];
@@ -4068,7 +4065,10 @@ ${ourBlock}` : ourBlock;
         dlA.target = "_blank";
         dlA.rel = "noopener noreferrer nofollow";
         dlA.textContent = displayName;
-        if (!hasDiscogsUrl) dlA.className = "discogs-entity-name";
+        if (!hasDiscogsUrl) {
+          dlA.className = "discogs-entity-name";
+          dlA.style.color = "var(--mbu-text)";
+        }
         const _srcTitles = [...new Set((r._roles || []).map((x) => x.trackTitle).filter(Boolean))];
         if (_srcTitles.length) dlA.title = _srcTitles.join("\n");
         nameWrap.appendChild(dlA);
