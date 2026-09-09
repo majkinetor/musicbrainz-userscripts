@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.5.130556
+// @version      2026.9.9.153720
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1462,6 +1462,13 @@ ${MBU_TOKENS}${MBU_UI_CSS}
                   font-size: 10px; color: var(--mbu-text-weak); font-family: sans-serif; white-space: nowrap; overflow: hidden; }
   .pc-cell-label { text-overflow: ellipsis; min-width: 0; }
   /* format-family quadrant marker (#350) — vertically centered against the meta text */
+  /* #564 (majkinetor): "PC vinyl is black in format circle and hardly visible".
+     Vinyl is black because vinyl IS black — which works on a white page and
+     disappears on a dark one. The lit quadrant colours are tokens now, with a
+     dark set that lifts each one; the unlit quadrant and the hairline were
+     already tokenised in an earlier pass. */
+  :root { --pc-fmt-vinyl:#2b2b2b; --pc-fmt-cassette:#9a6b3f; --pc-fmt-cd:#7d8894; --pc-fmt-digital:#4a90d9; }
+  :root[data-mbu-theme="dark"] { --pc-fmt-vinyl:#c3bdd0; --pc-fmt-cassette:#c79a6b; --pc-fmt-cd:#aab3bd; --pc-fmt-digital:#7bb3e8; }
   .pc-cell-format .pc-fmt { vertical-align: -2px; }
   #mb-pc-panel.pc-fmt-text .pc-cell-format .pc-fmt { display: none; }
   #mb-pc-panel:not(.pc-fmt-text) .pc-cell-format .pc-fmt-txt { display: none; }
@@ -2675,7 +2682,10 @@ function fmtMarker(fmt) {
         // pale grey and a fixed near-white, so the marker read as a white disc on a
         // dark panel. Set through .style rather than setAttribute: a presentation
         // attribute is not a reliable place for var(), an inline style is.
-        if (fams.includes(fam)) path.setAttribute('fill', PC_FMT_COLOR[fam]);
+        // #564: through .style and a token, for the same reason the unlit one is —
+        // a presentation attribute cannot carry var(), and a fixed #2b2b2b vinyl
+        // is invisible on a dark panel.
+        if (fams.includes(fam)) path.style.fill = `var(--pc-fmt-${fam.toLowerCase()}, ${PC_FMT_COLOR[fam]})`;
         else path.style.fill = 'var(--mbu-bg-sunken)';
         path.style.stroke = 'var(--mbu-bg)'; path.setAttribute('stroke-width', '0.8');
         svg.appendChild(path);
