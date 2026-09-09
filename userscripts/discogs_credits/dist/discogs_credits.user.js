@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.8.28
+// @version      2026.9.9.142735
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2461,16 +2461,13 @@
         urlCheckRunning--;
       }
       const VIA_STYLES = {
-        both: { text: "name+url", color: "#2a7" },
-        // green — high confidence
-        url: { text: "url", color: "#46a" },
-        // blue
-        name: { text: "name", color: "#46a" },
-        // blue
-        user: { text: "user", color: "#777" },
-        // grey
-        cache: { text: "cache", color: "#777" }
-        // grey (legacy: original mechanism unknown)
+        both: { text: "name+url", color: "var(--mbu-ok)" },
+        // high confidence
+        url: { text: "url", color: "var(--mbu-accent-text)" },
+        name: { text: "name", color: "var(--mbu-accent-text)" },
+        user: { text: "user", color: "var(--mbu-text-dim)" },
+        cache: { text: "cache", color: "var(--mbu-text-dim)" }
+        // legacy: original mechanism unknown
       };
       function viaCfg(via, fromCache) {
         const base = VIA_STYLES[via];
@@ -2660,7 +2657,10 @@
         dlA.target = "_blank";
         dlA.rel = "noopener noreferrer nofollow";
         dlA.textContent = displayName;
-        if (!hasDiscogsUrl) dlA.className = "discogs-entity-name";
+        if (!hasDiscogsUrl) {
+          dlA.className = "discogs-entity-name";
+          dlA.style.color = "var(--mbu-text)";
+        }
         nameWrap.appendChild(dlA);
         const BADGE_BASE = "display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;letter-spacing:0.01em;cursor:help;text-transform:lowercase;line-height:1.4;";
         if (!hasDiscogsUrl) {

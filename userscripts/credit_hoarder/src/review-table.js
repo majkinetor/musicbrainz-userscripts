@@ -201,12 +201,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         //                 than a fresh MB lookup.
         // The label composes both: a name-resolved entity loaded from cache
         // shows `name (cache)`, freshly-resolved shows just `name`.
+        // #564: these were hard-coded hex — #2a7, #46a, #777 — chosen against a
+        // light page. A colour set from JavaScript is invisible to every CSS
+        // sweep, so the dark userstyle never touched them, and `name+url` sat as
+        // mid-blue on a dark raised chip. Tokens instead: they carry the theme
+        // with them, and the meaning (confident / resolved / weak) survives.
         const VIA_STYLES = {
-            both:  { text: 'name+url', color: '#2a7' }, // green — high confidence
-            url:   { text: 'url',      color: '#46a' }, // blue
-            name:  { text: 'name',     color: '#46a' }, // blue
-            user:  { text: 'user',     color: '#777' }, // grey
-            cache: { text: 'cache',    color: '#777' }, // grey (legacy: original mechanism unknown)
+            both:  { text: 'name+url', color: 'var(--mbu-ok)' },          // high confidence
+            url:   { text: 'url',      color: 'var(--mbu-accent-text)' },
+            name:  { text: 'name',     color: 'var(--mbu-accent-text)' },
+            user:  { text: 'user',     color: 'var(--mbu-text-dim)' },
+            cache: { text: 'cache',    color: 'var(--mbu-text-dim)' },    // legacy: original mechanism unknown
         };
         /** Resolve a `(via, fromCache)` pair to `{ text, color }` for display. */
         function viaCfg(via, fromCache) {
@@ -527,7 +532,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             dlA.textContent = displayName;
             // Used by the issue-#63 hover-highlight to identify entity-name
             // elements regardless of href presence.
-            if (!hasDiscogsUrl) dlA.className = 'discogs-entity-name';
+            // #564: a linked name is an <a> and takes the link colour; an
+            // unlinked one is a <span> and inherited whatever MusicBrainz had set
+            // on the row — which on a dark userstyle is near-black on near-black,
+            // so "Fernando Adour" was effectively invisible. Say the colour.
+            if (!hasDiscogsUrl) { dlA.className = 'discogs-entity-name'; dlA.style.color = 'var(--mbu-text)'; }
             // #271: tooltip the originating track title(s). The parsed name can
             // legitimately drop part of the real artist ("Europa 51" → "Europa",
             // the trailing number being indistinguishable from a mix qualifier),
