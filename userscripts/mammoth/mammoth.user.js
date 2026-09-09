@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.5.130556
+// @version      2026.9.9.153721
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -43,7 +43,12 @@
   // #308: the 🦣 emoji (U+1F9A3) renders as a tofu box in Chrome on systems whose
   // emoji font lacks it (Firefox bundles its own, hence the inconsistency). Use a
   // self-contained vector mammoth everywhere the icon shows, so it's font-independent.
-  const MAMMOTH_SVG = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true" style="display:block"><g fill="#7a4a1f"><path d="M21 19C21 12.5 17.5 8.5 11.5 8.5C7 8.5 4.2 11.2 4.2 15L4.2 19Z"/><circle cx="7.6" cy="10.6" r="5"/><rect x="7" y="16.5" width="2.8" height="5.2" rx="1.3"/><rect x="15" y="16.5" width="2.8" height="5.2" rx="1.3"/></g><path d="M3.1 11.2C1.6 13.6 2 16.6 3.7 18.1C4.6 18.9 5.9 18.6 6.1 17.5C6.3 16.5 5.7 15.8 5.3 15.3" fill="none" stroke="#7a4a1f" stroke-width="2.7" stroke-linecap="round"/><path d="M5.2 15.2C4.1 16.6 4.3 18.2 5.6 18.9" fill="none" stroke="#efe7d2" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  // #564 (majkinetor): "Mammoth baby could be a bit lighter". The fur was a
+  // fixed #7a4a1f, chosen against a white field; on a dark one it is a brown
+  // smudge. Both colours are tokens now (see --mmth-fur / --mmth-tusk below),
+  // written through style= rather than the fill= attribute, because a
+  // presentation attribute is not a reliable place for var().
+  const MAMMOTH_SVG = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true" style="display:block"><g style="fill:var(--mmth-fur,#7a4a1f)"><path d="M21 19C21 12.5 17.5 8.5 11.5 8.5C7 8.5 4.2 11.2 4.2 15L4.2 19Z"/><circle cx="7.6" cy="10.6" r="5"/><rect x="7" y="16.5" width="2.8" height="5.2" rx="1.3"/><rect x="15" y="16.5" width="2.8" height="5.2" rx="1.3"/></g><path d="M3.1 11.2C1.6 13.6 2 16.6 3.7 18.1C4.6 18.9 5.9 18.6 6.1 17.5C6.3 16.5 5.7 15.8 5.3 15.3" fill="none" style="stroke:var(--mmth-fur,#7a4a1f)" stroke-width="2.7" stroke-linecap="round"/><path d="M5.2 15.2C4.1 16.6 4.3 18.2 5.6 18.9" fill="none" style="stroke:var(--mmth-tusk,#efe7d2)" stroke-width="1.4" stroke-linecap="round"/></svg>';
 
   // #309: optionally keep notes SEPARATE per edit-note entity type (release /
   // artist / recording / …), derived from the page URL — opt-in via the
@@ -684,6 +689,8 @@
   .mmth-filter:focus { outline:none; border-color:var(--mbu-ok); }
   .mmth-count { flex:none; font-size:11px; color:var(--mbu-text-weak); white-space:nowrap; }
   /* #304: pinned saved notes as quick-insert buttons BELOW the field (like baby-field bars) */
+  :root { --mmth-fur:#7a4a1f; --mmth-tusk:#efe7d2; }
+  :root[data-mbu-theme="dark"] { --mmth-fur:#c98a44; --mmth-tusk:#f6efdd; }
   .mmth-pinbar { display:flex; flex-wrap:wrap; gap:5px; margin:5px 0 2px; }
   .mmth-segb { border:1px solid var(--mbu-border) !important; background:var(--mbu-bg); border-radius:7px; padding:3px 10px !important; font:12px/1.2 -apple-system,Segoe UI,Arial,sans-serif !important; color:var(--mbu-ok); cursor:pointer; max-width:200px; height:auto !important; min-height:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
   .mmth-segb:hover { background:var(--mbu-ok-bg); border-color:var(--mbu-ok); }
