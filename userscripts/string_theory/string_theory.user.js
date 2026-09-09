@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.9.142736
+// @version      2026.9.9.153540
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,7 +81,7 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.9.142736 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.9.9.153540 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.9.8.222352\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.9.142736\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.5.130556\n  · Platform Check v2026.9.5.130556");
 } catch (e) {}
 
@@ -24196,9 +24196,20 @@ function fsStyle() {
         // along, but green-text-on-white against grey-text-on-white is nearly
         // invisible at 9.5px — so matched chips now carry a filled tint, a solid
         // border and bold text, and unmatched ones are deliberately faded back.
-        + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-muted);opacity:.55}'
-        + '.fs-sig span.hit{background:rgba(28,155,99,.16);border-color:rgba(28,155,99,.7);color:var(--mbu-ok);font-weight:700;opacity:1}'
-        + '.fs-sig span.partial{border-style:dashed;border-color:rgba(28,155,99,.5);color:var(--mbu-ok);opacity:.85}'
+        // #564 (majkinetor): "Fusion chips all look the same on dark theme (i
+        // can't see for example if isrc is matched or not)". The old pair was a
+        // fixed rgba(28,155,99,.16) tint against a light panel plus opacity:.55
+        // on the miss — on a dark background that tint is nearly the panel
+        // colour, and dimming an already-dim chip leaves two faint outlines that
+        // differ only in hue at 9.5px. So the difference is structural now: a hit
+        // is FILLED with a tint mixed from the theme's own green and its text is
+        // pulled most of the way to the foreground colour; a miss carries no fill
+        // at all and stays a bare outline. A first attempt at 22% fill was still
+        // too quiet to read at 9.5px on dark — the screenshots showed two nearly
+        // identical outlines — so the fill is 42% and the text near-white.
+        + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:transparent;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-weight:500}'
+        + '.fs-sig span.hit{background:color-mix(in srgb, var(--mbu-ok) 42%, transparent);border-color:var(--mbu-ok);color:color-mix(in srgb, var(--mbu-ok) 18%, var(--mbu-text));font-weight:700}'
+        + '.fs-sig span.partial{background:color-mix(in srgb, var(--mbu-ok) 16%, transparent);border-style:dashed;border-color:color-mix(in srgb, var(--mbu-ok) 60%, transparent);color:color-mix(in srgb, var(--mbu-ok) 45%, var(--mbu-text))}'
         + '.fs-mergeicon{vertical-align:-2px;margin-right:2px}'
         + '.fs-mbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-purple-d);background:rgba(109,63,240,.1);color:var(--mbu-accent-deep-text);cursor:pointer;font-weight:600;white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:5px}'
         + '.fs-mbtn.fs-done{background:rgba(28,155,99,.12);border-color:var(--fs-green);color:var(--fs-green);cursor:default}'
