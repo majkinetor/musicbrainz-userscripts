@@ -155,43 +155,67 @@ foreach ($n in $notifs) {
     if ($n.subject.url -and $n.subject.url -match '/(\d+)(?:[?#].*)?$') {
         $num = '#' + $matches[1]
     }
+    $skipToEvent = $false   # set when a state_change must be surfaced despite its comment
     $label = if ($num) { "$num '$title'" } else { "'$title'" }
     Log-Line "  $label  (type=$type, reason=$reason, updated=$updated)"
 
-    if ($n.subject.latest_comment_url) {
+    # A closed/reopened/merged thread still carries `latest_comment_url`, and it
+    # points at whatever comment was last — usually one already processed, or one
+    # the bot wrote itself. The comment path then skipped the whole notification
+    # and the STATE CHANGE went with it: silently, 28 times between July and
+    # 2026-09-09, including majkinetor closing #575 while the bot went on asking
+    # him questions about it. So a state_change is never decided by its comment;
+    # when the comment half has nothing new to say, it falls through to the event
+    # path below, which dedupes on thread+updated_at and therefore fires once per
+    # state change.
+    $isStateChange = ($reason -eq 'state_change')
+    if ($n.subject.latest_comment_url -and -not $skipToEvent) {
         # === comment path =================================================
         if ($state.seenComments -contains $n.subject.latest_comment_url) {
-            Log-Line '    -> skip: already seen (dedupe)'
-            continue
+            if ($isStateChange) {
+                Log-Line '    -> comment already seen, but reason=state_change: falling through to the event path'
+                $skipToEvent = $true
+            } else {
+                Log-Line '    -> skip: already seen (dedupe)'
+                continue
+            }
         }
         try {
-            $comment = Invoke-RestMethod -Uri $n.subject.latest_comment_url -Headers $headers -ErrorAction Stop
-            $author = $comment.user.login
-            if (-not $author) {
+            $comment = if ($skipToEvent) { $null } else { Invoke-RestMethod -Uri $n.subject.latest_comment_url -Headers $headers -ErrorAction Stop }
+            $author = if ($comment) { $comment.user.login } else { '' }
+            if (-not $skipToEvent -and -not $author) {
                 Log-Line '    -> skip: comment has no author'
                 continue
             }
-            if ($author -eq $botLogin) {
-                Log-Line "    -> skip: latest comment by self ($author)"
-                continue
+            if (-not $skipToEvent -and $author -eq $botLogin) {
+                if ($isStateChange) {
+                    Log-Line "    -> latest comment is the bot's own, but reason=state_change: falling through to the event path"
+                    $skipToEvent = $true
+                } else {
+                    Log-Line "    -> skip: latest comment by self ($author)"
+                    continue
+                }
             }
-            Log-Line "    -> ACTIONABLE (comment): latest comment by $author"
-            $actionable += [pscustomobject]@{
-                kind       = 'comment'
-                number     = $num
-                title      = $title
-                author     = $author
-                type       = $type
-                reason     = $reason
-                url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
-                commentUrl = $n.subject.latest_comment_url
-                threadId   = $n.id
+            if (-not $skipToEvent) {
+                Log-Line "    -> ACTIONABLE (comment): latest comment by $author"
+                $actionable += [pscustomobject]@{
+                    kind       = 'comment'
+                    number     = $num
+                    title      = $title
+                    author     = $author
+                    type       = $type
+                    reason     = $reason
+                    url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
+                    commentUrl = $n.subject.latest_comment_url
+                    threadId   = $n.id
+                }
             }
         } catch {
             $cmsg = $_.Exception.Message
             Log-Line "    -> skip: comment fetch failed: $cmsg"
+            continue
         }
-        continue
+        if (-not $skipToEvent) { continue }
     }
 
     # === event path (merges, state_change, subscribed, etc.) =============
