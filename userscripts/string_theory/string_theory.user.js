@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.9.154014
+// @version      2026.9.9.203834
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.9.154014 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.9.154013\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.9.142736\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.9.153720");
+  console.log('%c String Theory %c v2026.9.9.203834 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.9.203833\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.9.142736\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.6\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.9.153720");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.9.154013","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.9.154013","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.9.203833","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.9.203833","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1740,7 +1740,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.9.154013';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.9.203833';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2297,7 +2297,14 @@ try {
     .tc-trackacts button{cursor:pointer;border:none;background:none;font-size:16px;line-height:1}
     .tc-trackacts .trev{color:var(--mbu-accent-text)}.tc-trackacts .trev:hover{color:var(--mbu-accent-text)}
     .tc-trackacts .rm{color:var(--mbu-error);font-weight:bold}.tc-trackacts .rm:hover{color:var(--mbu-error)}
-    .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}   /* a track that differs from its page-load state */
+    /* #564 (majkinetor): "you should also change the blue color on the left that
+       marks modified row, it doesn't look very visible". It was a hard-coded
+       #5f3ec0 — the LIGHT theme's accent — so on a dark row it was a dark violet
+       sliver against a dark background. --mbu-accent-text carries the theme
+       (#b9a7f0 on dark), and 4px rather than 3 gives it a little more presence.
+       Same marker in all three places it is drawn: tracklist rows, the mirror's
+       own row rule, and the Recordings tab. */
+    .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 4px 0 0 var(--mbu-accent-text)}   /* a track that differs from its page-load state */
     /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:var(--mbu-text);border:1px solid transparent;background:transparent!important;padding:1px 4px 1px 15px;transition:color .12s}
@@ -2726,7 +2733,7 @@ try {
       .tc-mirror td.tc-medhdr{display:block}
       /* zebra + changed-marker move to the row (cells are transparent now) */
       .tc-mirror.alt > tbody > tr:nth-child(even){background:var(--mbu-bg-raised)}
-      .tc-mirror > tbody > tr.tc-changed{box-shadow:inset 3px 0 0 #5f3ec0}
+      .tc-mirror > tbody > tr.tc-changed{box-shadow:inset 4px 0 0 var(--mbu-accent-text)}
       .tc-mirror > tbody > tr.tc-changed td:first-child{box-shadow:none}
       /* trim the fixed credited-as + actions so the search box gets the width */
       .tc-cred{width:84px}
@@ -6170,7 +6177,7 @@ try {
       '.tc-rectbl .tc-recmed-exp{width:100%;text-align:left;border:none;background:var(--mbu-bg-raised);color:var(--mbu-accent-deep-text);font:600 13px Arial;padding:7px 10px;cursor:pointer}',
       '.tc-rectbl .tc-recmed-exp:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}',
       '.tc-rectbl .tc-recmed-exp.loading{cursor:default;opacity:.7}',
-      '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}',   // changed-row marker, like the Tracklist tab',
+      '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 4px 0 0 var(--mbu-accent-text)}',   // changed-row marker, like the Tracklist tab',
       '.tc-rectbl .c-n{color:var(--mbu-text-weak);text-align:right;width:34px;min-width:34px;white-space:nowrap}',
       '.tc-rectbl .c-sep{width:20px;text-align:center}',
       // group header (Track | Recording) + a vertical divider down the middle so the two halves read clearly
@@ -6185,6 +6192,19 @@ try {
       '.tc-rectbl .tc-rec-none{color:var(--mbu-error)}.tc-rectbl .tc-rec-new{color:var(--mbu-ok)}',
       '.tc-rectbl td.tc-diff{background:var(--mbu-bg-raised);color:var(--mbu-error)}',
       '.tc-rectbl .tc-dh{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — colour configurable (Matching → highlight colour)
+      /* #564 (majkinetor): "Apollo pending changes on Recordings could be more
+         readable (currently blue over redish)" — and, decisively, a DevTools
+         capture of `<a … style="color: yellow">` inside `span.tc-dh` looking
+         right. It was never the pending tint: it is the DIFF highlight. The span
+         sets its own white foreground, but the run being highlighted is usually
+         an artist LINK, and `.tc-rectbl td a` (0,1,2) matches that <a> directly
+         where `.tc-rectbl .tc-dh` only reaches it by inheritance — so the link
+         kept its --mbu-info blue and sat on the red wash.
+         A link inside the highlight takes the highlight's own colour. !important
+         because the pending rule below is deliberately more specific, and a row
+         that is both pending AND diff-highlighted must not end up with body text
+         on a red background. */
+      '.tc-rectbl .tc-dh a{color:inherit!important;text-decoration:underline;text-underline-offset:2px}',
       '.tc-cf{display:inline-block;padding:0 .5px}',   // #203 confusable/invisible changed char — enlarged inline (Appearance) + hover tooltip names the codepoint
       '.tc-cf-inv{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #443 invisible/whitespace char — always visible (glyph + wash), even at 0px enlargement
       '.tc-jp{display:inline-block;background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font-weight:700}',   // #208 missing space (␣) / missing join phrase (␣?␣) around a join phrase',
