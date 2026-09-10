@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.10.202543
+// @version      2026.9.10.205008
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.10.202543 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.202529\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
+  console.log('%c String Theory %c v2026.9.10.205008 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.205007\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.10.202529","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.10.202529","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.10.205007","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.10.205007","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -352,13 +352,32 @@ try {
   function liveNames(track) { const ac = u(track.artistCredit) || {}; return u(ac.names) || []; }
 
   const ORIGINALS = new Map();
+  /* chaban-mb on #586, verified in test/probe-586f-pregap-revert.mjs: the
+     page-load snapshot was keyed by "medium:INDEX", and an index is not an
+     identity. Tick the Pregap box and MusicBrainz inserts a track at index 0, so
+     every later track shifts down one — "Revert all" then writes each snapshot
+     onto the track BELOW the one it came from, and unticking Pregap deletes what
+     is now index 0. The tracklist comes back shifted by one with the first track
+     gone and the last duplicated. Nothing about it looks like a failure.
+
+     MB gives every track a `uniqueID` that survives inserts and removals and is
+     present on newly added tracks too ("new-17"), so the snapshot is keyed by
+     that. The index remains only as a last resort for a track that somehow has
+     none, which is also the only case that can still drift. */
+  const trackUid = t => { try { return t && t.uniqueID != null ? t.uniqueID : (t && t.id != null ? t.id : null); } catch (e) { return null; } };
+  const origKeyOf = (mi, t, ti) => { const uid = trackUid(t); return uid != null ? mi + ':#' + uid : mi + ':@' + ti; };
+  const origKey = (mi, ti) => { let t = null; try { t = koTrack(mi, ti); } catch (e) {} return origKeyOf(mi, t, ti); };
   const snapTrack = t => ({
     title: u(t.name) || '', number: u(t.number), length: u(t.formattedLength) || '',
+    // #586 (chaban-mb: "Revert all function seems to not affect data tracks") —
+    // the snapshot never carried the data-track flag, so Revert all restored the
+    // cells and left the section where it was.
+    isDataTrack: typeof t.isDataTrack === 'function' ? !!t.isDataTrack() : false,
     names: liveNames(t).map(n => ({ artist: u(n.artist) || { name: u(n.name) || '' }, creditedAs: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })),
   });
   function snapshotOriginals() {
     ORIGINALS.clear();
-    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => ORIGINALS.set(mi + ':' + ti, snapTrack(t))));
+    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => ORIGINALS.set(origKeyOf(mi, t, ti), snapTrack(t))));
     Log.info('snapshot of', ORIGINALS.size, 'original tracks');
   }
   // MB lazy-loads each medium's tracks asynchronously, so the startup snapshot misses mediums that
@@ -366,7 +385,7 @@ try {
   // writes to it — so change-tracking (the ↺ button + the changed-row border) works on every medium.
   function snapshotMissing() {
     let added = 0;
-    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => { const k = mi + ':' + ti; if (!ORIGINALS.has(k)) { ORIGINALS.set(k, snapTrack(t)); added++; } }));
+    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => { const k = origKeyOf(mi, t, ti); if (!ORIGINALS.has(k)) { ORIGINALS.set(k, snapTrack(t)); added++; } }));
     if (added) Log.info('snapshot +', added, 'newly loaded original track(s) →', ORIGINALS.size, 'total');
   }
 
@@ -1524,7 +1543,7 @@ try {
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
   // has this track changed from its page-load state (title/#/length or any artist credit)?
   function trackChanged(entry) {
-    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig) return false;
+    const orig = ORIGINALS.get(origKey(entry.mi, entry.ti)); if (!orig) return false;
     const t = koTrack(entry.mi, entry.ti);
     if ((u(t.name) || '') !== orig.title || String(u(t.number)) !== String(orig.number) || (u(t.formattedLength) || '') !== orig.length) return true;
     if (entry.slots.length !== orig.names.length) return true;
@@ -1536,8 +1555,8 @@ try {
     }
     return false;
   }
-  function resetTrack(entry) {
-    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig) return;
+  function resetTrack(entry, restoreDataFlag) {
+    const orig = ORIGINALS.get(origKey(entry.mi, entry.ti)); if (!orig) return;
     const t = koTrack(entry.mi, entry.ti);
     _selfEdit = true;
     try {
@@ -1545,7 +1564,15 @@ try {
       try { t.name(orig.title); } catch (e) {}
       try { t.number(orig.number); } catch (e) {}
       try { if (typeof t.formattedLength === 'function') t.formattedLength(orig.length); } catch (e) {}
+      /* #586 — the data-track flag is restored only on a whole-tracklist revert.
+         A data section has to stay a TRAILING, contiguous block, and putting one
+         row back on its own can break that (revert the middle of three and the
+         section is split), so a single ↺ leaves the boundary to ⤓/⤒. */
+      if (restoreDataFlag && typeof t.isDataTrack === 'function' && !!t.isDataTrack() !== !!orig.isDataTrack) t.isDataTrack(!!orig.isDataTrack);
     } finally { _selfEdit = false; }
+    if (!restoreDataFlag && typeof t.isDataTrack === 'function' && !!t.isDataTrack() !== !!orig.isDataTrack)
+      Log.info('reset track ' + entry.number + ': it is still ' + (t.isDataTrack() ? 'a data track' : 'an audio track')
+        + ' — use ⤒/⤓ to move the data-track boundary, which has to stay one trailing block');
     Log.info('reset track', entry.number, 'to original (all cells)');
   }
   let _selfEdit = false;   // true while WE mutate the tracklist, so the change-watcher ignores it
@@ -1751,7 +1778,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.10.202529';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.10.205007';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2462,6 +2489,7 @@ try {
     .tc-mirror .tc-dtmv{visibility:hidden;cursor:pointer;background:none;border:none;padding:0 2px;margin-left:2px;font-size:13px;line-height:1;color:var(--mbu-text-weak)}
     .tc-mirror tr:hover .tc-dtmv,.tc-mirror tr.tc-row-data .tc-dtmv{visibility:visible}
     .tc-mirror .tc-dtmv:hover{color:var(--mbu-accent-text)}
+    .tc-mirror .tc-dtmv.void{visibility:hidden!important;cursor:default}   /* holds the slot on the last track */
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:var(--mbu-text-weak);margin-left:12px;font-size:11px}
     .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:var(--mbu-text);margin-right:14px;max-width:140px}
@@ -3341,7 +3369,7 @@ try {
     toast(n ? `linked “${c.name}” on ${n} unresolved track${n > 1 ? 's' : ''}` : 'no unresolved tracks');
   }
   async function revertSlot(entry, i) {
-    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig.names[i]) return;
+    const orig = ORIGINALS.get(origKey(entry.mi, entry.ti)); if (!orig || !orig.names[i]) return;
     const on = orig.names[i], slot = entry.slots[i];
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
@@ -3821,10 +3849,16 @@ try {
          track. Hidden until the row is hovered so the column doesn't gain a
          permanent second glyph — visibility, not display, so nothing shifts. */
       const lastOfMedium = !MODEL.tracks.some(x => x.mi === t.mi && x.ti > t.ti);
+      /* chaban-mb: "Last track is not preserving space for move track down arrow."
+         ⤓ can't do anything on the last track of a medium (there is no section to
+         open below it), but OMITTING the element left that row's ⠿ handle at a
+         different x than every other row's. The slot is always rendered; on the
+         last track it is inert and permanently invisible, so the column lines up. */
       const dtBtn = locked || kind === 'pregap' ? ''
         : kind === 'data'
           ? '<button type="button" class="tc-dtmv up" title="Move this track — and any data track above it — back into the audio section">⤒</button>'
-          : lastOfMedium ? ''
+          : lastOfMedium
+            ? '<button type="button" class="tc-dtmv down void" tabindex="-1" aria-hidden="true">⤓</button>'   // the glyph, hidden: an EMPTY button is ~6px and still misaligns the handle
             : '<button type="button" class="tc-dtmv down" title="Move this track and everything below it on this medium into the data-track section">⤓</button>';
       tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}${dtBtn}</td>
         <td class="c-num"><input class="t-num" ${NOPW_ATTRS} value="${esc(t.number)}" title="track number"></td>
@@ -3896,7 +3930,7 @@ try {
         refreshBadges();
       }; wireRowNav(lenIn);
       const dtb = tr.querySelector('.tc-dtmv');   // #586
-      if (dtb) dtb.onclick = () => setDataBoundary(t.mi, t.ti, dtb.classList.contains('down'));
+      if (dtb && !dtb.classList.contains('void')) dtb.onclick = () => setDataBoundary(t.mi, t.ti, dtb.classList.contains('down'));
       if (canDrag) wireDragReorder(tr, t);   // #330: don't make pregap/data rows drag sources or drop targets
       tbody.appendChild(tr);
     });
@@ -3928,7 +3962,7 @@ try {
     enrichResolvedAliasesSoon();
   }
   // revert to the page-load state, but DON'T auto-match (that only runs on startup) — Match is manual here
-  function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(true); }
+  function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track to what it was when the page loaded?")) return; MODEL.tracks.forEach(t => resetTrack(t, true)); rebuild(true); }   // #586: true = also restore the data-track boundary
   function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.info('guess case → all titles'); }
   // titles carrying a featured-artist credit ("Foo feat. X", "ft.", "featuring") — detect so the
   // row can flag them and offer the split inline (#124). Needs a space/bracket/start before the

@@ -43,13 +43,19 @@ await page.evaluate(() => { const st = document.createElement('style'); st.textC
 await page.locator('.tc-mirror').first().screenshot({ path: resolve(HERE, 'logs', 'shot-tracklist-after.png') });
 
 await tab('recording');
+// #583 — unset one row so a neighbour shows BOTH ＋ and ↺, then force the hover
+// actions visible for the shot (they are hover-only in normal use).
 await page.evaluate(() => {
-  const rows = [...document.querySelectorAll('#tc-recwrap tr.tc-recrow')];
-  const cell = t => rows.find(r => r.dataset.ti === String(t)).querySelector('.tc-recselcell');
-  cell(10).dispatchEvent(new MouseEvent('click', { bubbles: true }));
-  cell(12).dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
+  const tr = [...document.querySelectorAll('#tc-recwrap tr.tc-recrow')].find(r => r.dataset.ti === '11');
+  tr.querySelector('.tc-rec-new-btn').click();
 });
-await page.waitForTimeout(600);
-await page.locator('#tc-recwrap').screenshot({ path: resolve(HERE, 'logs', 'shot-recordings-selected.png') });
+await page.waitForTimeout(900);
+await page.evaluate(() => {
+  const st = document.createElement('style');
+  st.textContent = '.tc-rectbl .tc-rec-new-btn,.tc-rectbl .tc-rec-rev{visibility:visible!important}';
+  document.head.appendChild(st);
+});
+await page.waitForTimeout(300);
+await page.locator('#tc-recwrap').screenshot({ path: resolve(HERE, 'logs', 'shot-recordings-plus.png') });
 console.log('shots written');
 await ctx.close();
