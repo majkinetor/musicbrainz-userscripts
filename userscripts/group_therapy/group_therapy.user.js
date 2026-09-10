@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.6
+// @version      2026.9.10.134747
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -876,7 +876,7 @@
       .gt-cons-tbl th.gt-cons-colsel:hover{background:var(--mbu-info-bg);border-radius:4px}
       .gt-cons-coll{font-weight:700}
       .gt-fmt{display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px}
-      .gt-fmt-b{display:inline-block;min-width:13px;box-sizing:border-box;padding:0 3px;border-radius:3px;font:700 9px/14px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text-on-accent);text-align:center;letter-spacing:.02em}
+      .gt-fmt-b{display:inline-block;min-width:13px;box-sizing:border-box;padding:0 3px;border-radius:3px;font:700 9px/14px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text-on-accent);text-align:center;letter-spacing:.02em;border:1px solid var(--mbu-border)}   /* #564: a hairline so the badge SHAPE is visible even when its fill is close to the page — the near-black vinyl one on dark. The inline colour set in fmtBadges wins over the color above. */
       .gt-cons-col .gt-fmt{margin:2px 0 0;justify-content:center}
       .gt-cons-tbl td{padding:4px 8px;border-bottom:1px solid var(--mbu-border);vertical-align:top}
       .gt-cons-role{color:var(--mbu-text-dim);white-space:nowrap}
@@ -1500,9 +1500,35 @@
     return '';
   }
   const formatFamilies = fmt => [...new Set((fmt || '').split('+').map(formatFamily).filter(Boolean))];
+  /* #564 (majkinetor): "Format icons are not visible clearly in both themes",
+     with a shot of each. The badge background is the format's identity colour —
+     vinyl near-black, CD mid-grey — while the label was always
+     var(--mbu-text-on-accent), i.e. white. A fixed foreground over a fixed
+     palette has to fail somewhere: white on the CD grey is ~2.6:1 on either
+     theme, and the near-black vinyl badge disappears into a dark page entirely.
+     So the label picks itself, from the background it actually sits on: whichever
+     of black or white has more contrast there. That holds for every format and
+     every theme without a per-theme table, and it improves the light theme too,
+     which was never the complaint but was just as wrong. */
+  function badgeInk(hex) {
+    const h = String(hex).replace('#', '');
+    const n = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const ch = i => parseInt(n.slice(i * 2, i * 2 + 2), 16) / 255;
+    const lin = v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    const L = 0.2126 * lin(ch(0)) + 0.7152 * lin(ch(1)) + 0.0722 * lin(ch(2));
+    const onWhite = 1.05 / (L + 0.05);      // contrast of #fff against it
+    const onBlack = (L + 0.05) / 0.05;      // contrast of #000 against it
+    return onBlack >= onWhite ? '#000' : '#fff';
+  }
   function fmtBadges(fmt) {
     const wrap = el('span', 'gt-fmt');
-    for (const fam of formatFamilies(fmt)) { const b = el('span', 'gt-fmt-b', FMT_FAMILY[fam].label); b.style.background = FMT_FAMILY[fam].color; b.title = fam + (fmt && fmt !== fam ? ` (${fmt})` : ''); wrap.appendChild(b); }
+    for (const fam of formatFamilies(fmt)) {
+      const b = el('span', 'gt-fmt-b', FMT_FAMILY[fam].label);
+      b.style.background = FMT_FAMILY[fam].color;
+      b.style.color = badgeInk(FMT_FAMILY[fam].color);
+      b.title = fam + (fmt && fmt !== fam ? ` (${fmt})` : '');
+      wrap.appendChild(b);
+    }
     return wrap;
   }
 
@@ -4931,7 +4957,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     document.body.addEventListener('mouseout', onOut);
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE, replacementRoles, replaceRole, replaceRoleMenuItems, relEnds, openRolePicker,
+    try { W.__groupTherapy = { VERSION, fmtBadges, badgeInk, FMT_FAMILY, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE, replacementRoles, replaceRole, replaceRoleMenuItems, relEnds, openRolePicker,
       // #522 text parser
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
       txpTrackRows, txpMatchTracks,   // #539 recording scope
