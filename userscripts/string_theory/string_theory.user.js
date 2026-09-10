@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.10.205008
+// @version      2026.9.10.215406
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.10.205008 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.205007\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
+  console.log('%c String Theory %c v2026.9.10.215406 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.205007\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.10\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -30915,7 +30915,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.7.164541","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.7.164541","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.10","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.10","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -31888,6 +31888,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-ex-pending { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--mbu-warn);
       background: var(--mbu-warn-bg); border: 1px solid var(--mbu-warn); border-radius: 3px; padding: 0 4px; }
     .ii-ex-pending samp { color: var(--mbu-warn); text-decoration: line-through; }
+    /* #587: a removal whose POST failed — it is still on the recording and no edit
+       exists, which must not read the same as a pending one */
+    .ii-ex-failed { border: 1px solid var(--mbu-error); border-radius: 3px; padding: 0 3px; }
+    .ii-ex-failed samp { color: var(--mbu-error); }
+    /* #587: the Delete button is the global activity indicator while a batch runs —
+       it counts down, so there is one obvious place to look besides the log */
+    .ii-tbtn.ii-busy { color: var(--mbu-warn); border-color: var(--mbu-warn); cursor: progress; opacity: 1; }
+    .ii-tbtn.ii-busy[disabled] { opacity: 1; }
     .ii-inwrap { display: flex; align-items: center; gap: 5px; }
     /* #490: the initial "search SoundExchange by title/artist" entry point used to be a
        permanently-visible text link under every row (spammy on a long tracklist) — now a
@@ -33449,6 +33457,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
      EDITOR MODAL — DOM
   ═══════════════════════════════════════════════════════════════════════ */
   let overlay, modal, tbody, summaryEl, progEl, submitBtn;
+  let _removalBusy = false;   // #587: a Remove-ISRC batch is in flight
   let built = false;
   let noteEdited = false;                 // has the user hand-edited the edit note?
   const _isrcLookupCache = {};            // isrc -> SX rows (single-ISRC lookup cache)
@@ -33504,6 +33513,9 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   function refreshDeleteBtn() {
     const n = tbody.querySelectorAll('.ii-ex-del:checked').length;
     const btn = modal.querySelector('#ii-delete');
+    // #587: while a batch runs the button IS the progress counter — the per-row
+    // repaint calls this to keep the checked count honest, and must not overwrite it.
+    if (_removalBusy) return;
     btn.disabled = n === 0;
     btn.textContent = n ? '🗑 Delete ' + n + ' ISRC' + (n === 1 ? '' : 's') : '🗑 Delete checked';
   }
@@ -34099,6 +34111,9 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     }
   }
   function closeModal() {
+    // #587 — a removal batch is still POSTing; closing hides the only progress
+    // there is, so make it a decision rather than an accident.
+    if (_removalBusy && !confirm('Remove-ISRC edits are still being submitted.\n\nClose anyway? The submissions already sent stay submitted; the rest will not be sent.')) return;
     abortSxWork('window closed');            // don't leave batched SX requests running in the background (#127)
     if (_vvSync && window.visualViewport) {
       window.visualViewport.removeEventListener('resize', _vvSync);
@@ -34890,7 +34905,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
         // #471: ISRC and Links columns are separate cells now, always both visible —
         // no more ii-only-isrc/ii-only-links split within a shared td.
-        '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</div></td>' +
+        '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval, t.failedRemoval) + '</div></td>' +
         // .ii-cands is a sibling of .ii-inwrap (full-width, under the input), NOT inside it.
         '<td><div class="ii-inwrap">' +
           // #490: initial "search SoundExchange by title/artist" entry point — a row-hover-only
@@ -34972,13 +34987,19 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     updateSummary();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
-  function existingHtml(arr, pending) {
+  function existingHtml(arr, pending, failed) {
     if (!arr || !arr.length) return '<span class="none">none</span>';
     const pend = new Set((pending || []).map(normalizeIsrc));
+    // #587: a removal whose POST failed. It stays a checkbox — the point is to be
+    // able to try again — but it must not look untouched, and must not be mistaken
+    // for a pending one: nothing was submitted and no edit exists.
+    const bad = new Set((failed || []).map(normalizeIsrc));
     return arr.map(i => {
       if (pend.has(normalizeIsrc(i)))
         return '<span class="ii-ex-item ii-ex-pending" title="Remove-ISRC edit submitted — pending in the edit queue">⏳ <samp>' + esc(i) + '</samp></span>';
-      return '<label class="ii-ex-item" title="Check to delete this ISRC from the recording">' +
+      const isBad = bad.has(normalizeIsrc(i));
+      return '<label class="ii-ex-item' + (isBad ? ' ii-ex-failed' : '') + '" title="'
+        + (isBad ? 'Remove-ISRC edit failed to submit — see the Log, then check it again to retry' : 'Check to delete this ISRC from the recording') + '">' +
         '<input type="checkbox" class="ii-ex-del" data-isrc="' + esc(i) + '">' +
         '<samp>' + esc(i) + '</samp></label>';
     }).join('');
@@ -36267,25 +36288,81 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     btn.disabled = true;
     Log.info('Submitting Remove-ISRC edits for ' + total + ' ISRC(s) across ' + recs.length + ' recording(s)');
     let ok = 0, fail = 0;
-    for (const [recId, info] of recs) {
-      progEl.textContent = 'Submitting removal for ' + recId.slice(0, 8) + '…';
-      try {
-        await removeIsrcsFromRecording(recId, info.isrcs, note);
-        // mark pending (the edit is queued; don't drop from `existing` — it's still on the recording)
-        const t = RELEASE.tracks[info.idx];
-        t.pendingRemoval = (t.pendingRemoval || []).concat(info.isrcs);
-        recordPendingRemoval(recId, info.isrcs);   // remember across reloads (still pending in MB)
-        ok += info.isrcs.length;
-        Log.info('Submitted Remove-ISRC for ' + info.isrcs.join(', ') + ' (recording ' + recId + ') — pending');
-      } catch (e) {
-        fail += info.isrcs.length;
-        Log.err('Remove from recording ' + recId + ' failed: ' + e.message);
+    /* #587 (chaban-mb): "when batch removing ISRCs there is no indicator apart
+       from logs that (network) actions are in progress. Only once all
+       submissions are done is the hourglass pending edit indicator inserted…
+       and/or a global activity indicator so one doesn't accidentally close the
+       tab before everything is done."
+
+       Three things, because the run is minutes long on a big release (his took
+       48s for 12) and it looked idle throughout:
+         · each row gets its ⏳ the moment ITS edit comes back, not at the end
+         · the button counts down, so there is one obvious place to look
+         · closing the tab or the window mid-run asks first
+       ⏳ still means SUBMITTED, not applied — the edit is in the queue. */
+    setRemovalBusy(true);
+    try {
+      for (const [recId, info] of recs) {
+        const done = ok + fail;
+        const label = 'Submitting removals — ' + (done + 1) + '/' + total + '…';
+        progEl.textContent = label + ' (' + recId.slice(0, 8) + ')';
+        btn.textContent = '⏳ ' + (done + 1) + '/' + total + '…';
+        try {
+          await removeIsrcsFromRecording(recId, info.isrcs, note);
+          // mark pending (the edit is queued; don't drop from `existing` — it's still on the recording)
+          const t = RELEASE.tracks[info.idx];
+          t.pendingRemoval = (t.pendingRemoval || []).concat(info.isrcs);
+          if (t.failedRemoval) { const gone = new Set(info.isrcs.map(normalizeIsrc)); t.failedRemoval = t.failedRemoval.filter(x => !gone.has(normalizeIsrc(x))); }   // #587: a retry that worked
+          recordPendingRemoval(recId, info.isrcs);   // remember across reloads (still pending in MB)
+          ok += info.isrcs.length;
+          refreshExistingCell(info.idx);   // #587 — this row's ⏳ appears now, not after the batch
+          Log.info('Submitted Remove-ISRC for ' + info.isrcs.join(', ') + ' (recording ' + recId + ') — pending');
+        } catch (e) {
+          fail += info.isrcs.length;
+          markRemovalFailed(info.idx, info.isrcs);   // #587 — and a failed row says so in place
+          Log.err('Remove from recording ' + recId + ' failed: ' + e.message);
+        }
+        await sleep(700);
       }
-      await sleep(700);
+    } finally {
+      setRemovalBusy(false);
     }
     renderTracks(); refreshDeleteBtn();
     progEl.textContent = ok + ' removal edit(s) submitted' + (fail ? ', ' + fail + ' failed' : '');
     toast(ok + ' Remove-ISRC edit' + (ok === 1 ? '' : 's') + ' submitted (pending in the edit queue)' + (fail ? ' · ' + fail + ' failed (see Log)' : ''), fail ? 'err' : 'ok');
+  }
+
+  /* #587 — repaint ONE row's existing-ISRC cell. The delete checkboxes are
+     delegated on the tbody, so swapping the cell's HTML keeps them working;
+     doing a whole renderTracks() mid-batch would rebuild every row and throw
+     away the checkboxes still waiting their turn. */
+  function refreshExistingCell(idx) {
+    const tr = tbody && tbody.querySelector('tr[data-idx="' + idx + '"]');
+    const box = tr && tr.querySelector('.ii-existing');
+    const t = RELEASE && RELEASE.tracks[idx];
+    if (!box || !t) return;
+    box.innerHTML = existingHtml(t.existing, t.pendingRemoval, t.failedRemoval);
+    refreshDeleteBtn();   // those ISRCs are no longer deletable — keep the count honest
+  }
+  /* #587 — a removal that failed shouldn't sit there looking untouched. Recorded
+     on the TRACK, not just painted on the row: doDelete ends with a full
+     renderTracks(), which rebuilt every row and threw a row-only marker away. */
+  function markRemovalFailed(idx, isrcs) {
+    const t = RELEASE && RELEASE.tracks[idx]; if (!t) return;
+    t.failedRemoval = (t.failedRemoval || []).concat(isrcs || []);
+    refreshExistingCell(idx);
+  }
+  /* #587 — the global "something is happening" state: the run is a series of
+     page-form POSTs with nothing to show for it between them, and closing the
+     tab halfway leaves the rest unsubmitted. */
+  function removalUnloadGuard(e) { e.preventDefault(); e.returnValue = ''; return ''; }
+  function setRemovalBusy(on) {
+    _removalBusy = !!on;
+    const btn = modal && modal.querySelector('#ii-delete');
+    if (btn) btn.classList.toggle('ii-busy', _removalBusy);
+    if (modal) modal.classList.toggle('ii-removing', _removalBusy);
+    if (on) window.addEventListener('beforeunload', removalUnloadGuard);
+    else window.removeEventListener('beforeunload', removalUnloadGuard);
   }
 
   function decodeHtmlEntities(s) {
