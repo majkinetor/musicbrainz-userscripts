@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.10.134748
+// @version      2026.9.10.173142
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.10.134748 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.9.203833\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.9.153720");
+  console.log('%c String Theory %c v2026.9.10.173142 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.9.203833\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.7.164541\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -38206,7 +38206,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.9.153720","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.9.153720","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.10","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.10","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -40600,6 +40600,45 @@ function formatMismatch(platform, fmt) {
     return ![...remote].some(x => mbCats.has(x));
 }
 
+// Whole row is clickable (#173): anywhere from after the icon to the track
+// count — empty cells and the gaps included (the row is one subgrid box).
+// LEFT-click opens the found platform page, or the provider's SEARCH page when
+// nothing was found (so even completely empty rows work); RIGHT-click always
+// opens the SEARCH page for a manual check. The icon keeps "add to MB" and the
+// name <a> opens natively (both excluded).
+//
+// This used to live inside updateRow, which meant a row only became clickable
+// once its scan had REPORTED. While a scan is running — or after ↻ reset the
+// rows — Discogs and Bandcamp sit there as full rows (they never fold into the
+// compact strip) with no handler at all, so clicking them did nothing, even
+// though the compact icons beside them were already clickable. Wiring is now
+// its own function, called as soon as the search-fallback URLs exist, so a
+// pending row behaves exactly like a compact icon: click → provider search.
+//
+// The destination is read from the anchor at click time rather than captured,
+// so the same wiring serves a pending row and a resolved one: updateRow points
+// the anchor at the found URL, and anything that isn't the stashed search URL
+// counts as "found".
+function wireRowOpen(p) {
+    const row = document.getElementById(`row-${p}`);
+    const a   = document.getElementById(`mb-online-${p}`);
+    if (!row || !a) return;
+    const open = (e, preferSearch) => {
+        if (e.target.closest('.pc-cell-ico') || e.target.closest('a')) return;
+        const search = a.dataset.searchUrl || null;
+        const href   = a.getAttribute('href');
+        const found  = href && href !== search && /^https?:\/\//.test(href) ? href : null;
+        const dest   = preferSearch ? (search || found) : (found || search);
+        if (dest) { e.preventDefault(); window.open(dest, '_blank', 'noopener'); }
+    };
+    row.onclick       = (e) => open(e, false);
+    row.oncontextmenu = (e) => open(e, true);
+    // Only claim to be clickable when there IS somewhere to go — before the
+    // search fallbacks are seeded there isn't.
+    const href = a.getAttribute('href');
+    row.style.cursor = (a.dataset.searchUrl || (href && /^https?:\/\//.test(href))) ? 'pointer' : '';
+}
+
 function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, barcode }) {
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
@@ -40690,22 +40729,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         if (blocked && !diffTips.length) diffTips.push(`Withheld from + / ↗ — couldn't confirm barcode/format (strict mode)`);
         if (diffTips.length) row.title = diffTips.join(' · ');
         else if (row.title && /Different barcode|Format incompatible|Withheld from/.test(row.title)) row.title = '';
-        // Whole row is clickable (#173): anywhere from after the icon to the
-        // track count — empty cells and the gaps included (the row is one
-        // subgrid box). LEFT-click opens the found platform page, or the
-        // provider's SEARCH page when nothing was found (so even completely
-        // empty rows work); RIGHT-click always opens the SEARCH page for a
-        // manual check. Icon keeps "add to MB" and the name <a> opens natively
-        // (both excluded). searchUrl is read lazily so init order doesn't matter.
-        const rowOpen = (e, preferSearch) => {
-            if (e.target.closest('.pc-cell-ico') || e.target.closest('a')) return;
-            const search = a.dataset.searchUrl || null;
-            const dest = preferSearch ? (search || url) : (url || search);
-            if (dest) { e.preventDefault(); window.open(dest, '_blank', 'noopener'); }
-        };
-        row.onclick       = (e) => rowOpen(e, false);
-        row.oncontextmenu = (e) => rowOpen(e, true);
-        row.style.cursor  = 'pointer';
+        wireRowOpen(p);   // #173 — see below; re-wired here so the cursor tracks the new state
     }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
@@ -42795,7 +42819,7 @@ function resetRows() {
         const plat = document.getElementById(`plat-${p}`);
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
-        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match', 'pc-rise'); row.classList.add('pc-st-notfound'); row.onclick = null; row.oncontextmenu = null; row.style.cursor = ''; }   // back to "not found" — refreshCompactStrip re-folds it (#355)
+        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match', 'pc-rise'); row.classList.add('pc-st-notfound'); }   // back to "not found" — refreshCompactStrip re-folds it (#355)
         if (val)  { val.textContent = '—'; val.style.color = 'var(--mbu-error)'; }   // neutral dash while re-scanning
         setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, null, null, null);
         // Reset the anchor href to its search-fallback so parseMbFromDom on
@@ -42803,6 +42827,10 @@ function resetRows() {
         // as an "existing MB rel" — covered by the #mb-pc-panel exclusion
         // in parseMbFromDom too, but defensive cleanup either way.
         if (a)    { a.href = '#'; a.title = ''; }
+        // The row stays clickable across a reset — dataset.searchUrl survives, so
+        // a re-scanning row still opens the provider's search (it's the same
+        // release). runScans re-seeds and re-wires a moment later anyway.
+        wireRowOpen(p);
     }
     refreshCompactStrip();   // #355: clear the strip while re-scanning
 }
@@ -43320,6 +43348,10 @@ async function runScansInner() {
             });
             a.dataset.pcContextMenuWired = '1';
         }
+        // Make the whole row clickable NOW, not when the scan reports — a pending
+        // Discogs/Bandcamp row (they never fold into the compact strip) was dead
+        // to clicks for the whole scan otherwise.
+        wireRowOpen(p);
     }
 
     MB_BARCODE = barcode || null;   // (#182) for the barcode-mismatch indicator
