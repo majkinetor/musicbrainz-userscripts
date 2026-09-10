@@ -105,8 +105,9 @@ Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row a
   - [Enlarge Punctuation](#enlarge-punctuation)
   - [Join-phrase spacing](#join-phrase-spacing)
 - **Expand all media** — a release with many media loads with most collapsed; left-click expands single media, right-click all of them
+- **Select and unset** — click the `#` cell to select a row (shift-click extends the range, clicking a *Medium N* header takes the whole medium), then **Unset** — or press <kbd>Delete</kbd> — to drop those recording links. Each unset track creates a **new recording** on submit; per-row ↺ puts the original back. See [Keyboard](#recordings-1).
 - Revert/Clear all inputs
-- Video recordings show a small video-camera marker next to its name
+- Video recordings show a small video-camera marker **before** the name, so videos are easy to spot down a column of ragged titles
 
 ## Duplicates
 
@@ -442,6 +443,8 @@ Applied to **both** tables (Tracklist and Recordings).
 
 ## Keyboard
 
+### Tracklist
+
 |         Key         |            Description            |
 | ------------------- | --------------------------------- |
 | Down, \<ENTER\>     | focus cell in the next row        |
@@ -450,6 +453,19 @@ Applied to **both** tables (Tracklist and Recordings).
 | SHIFT+Tab           | focus cell in the previous column |
 
 By default, moving between cells keeps the **caret column** where it was (clamped to the destination's length) instead of selecting the whole field — so you can keep typing or fix casing at the same spot rather than overwriting. Turn off **Keep caret position on row navigation** (gear → Appearance) to restore the old behavior, where arriving on a cell selects the whole field so the next keystroke replaces it.
+
+### Recordings
+
+Active while the Recordings tab is open and the focus isn't in a field.
+
+|        Key        |                     Description                      |
+| ----------------- | ---------------------------------------------------- |
+| Click `#`         | select / deselect that track                         |
+| SHIFT + click `#` | extend the selection from the last track clicked     |
+| Click *Medium N*  | select / deselect every track on that medium         |
+| CTRL+A            | select every track                                   |
+| Delete            | unset the selected recording links (→ new recordings) |
+| Esc               | clear the selection                                  |
 
 ### Enlarge punctuation
 

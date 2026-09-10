@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.9.203833
+// @version      2026.9.10
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1490,6 +1490,17 @@
     } catch (e) {}
     return 'audio';
   }
+  /* #584 follow-up (majkinetor: "also show in recording table") — the video
+     marker existed only on the Recordings tab; the Tracklist showed nothing, so
+     the very tracks you go looking for (his release marks its last three as
+     video, and #586 is about pushing exactly those into the data section) were
+     invisible in the table where you do the work. Read live off the linked
+     recording, which does carry .video in the release editor's own model
+     (verified in test/probe-584-video-flag.mjs — 3 of 13 true, none undefined). */
+  function trackRecIsVideo(entry) {
+    try { const rec = u(koTrack(entry.mi, entry.ti).recording); return !!(rec && u(rec.video)); }
+    catch (e) { return false; }
+  }
   // #329: on a disc-ID (TOC) medium the audio tracks' lengths are fixed by the TOC, so
   // native MB makes them read-only. Pregap + data tracks aren't covered by the audio TOC
   // and stay editable — mirror that for Apollo's length cells.
@@ -1669,7 +1680,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.9.203833';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.10';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2370,7 +2381,16 @@
     .tc-medopt:has(input:disabled){color:var(--mbu-text-weak);cursor:default}   /* #330: disc-ID medium — toggle shown but locked */
     .tc-trkkind{flex:none;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mbu-ok);background:var(--mbu-ok-bg);border:1px solid var(--mbu-ok);border-radius:8px;padding:0 5px;margin-right:5px}
     .tc-mirror tr.tc-row-pregap td,.tc-mirror tr.tc-row-data td{background:var(--mbu-bg-raised)}
+    /* #584 — the video marker also rides in the tracklist; its own rules live in
+       recStyle(), which only runs once the Recordings tab has been opened, so
+       repeat them here rather than leaving an unstyled glyph on first paint. */
+    .tc-mirror .tc-rec-video{display:inline-flex;flex:none;vertical-align:-2px;color:var(--mbu-accent-text);margin-right:4px}
+    .tc-mirror .tc-rec-video svg{display:block}
     .tc-mirror tr.tc-datadiv td{background:var(--mbu-bg-hover);color:var(--mbu-accent-deep-text);font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 8px}
+    /* #586 data-track boundary buttons — hover-revealed, but always in layout */
+    .tc-mirror .tc-dtmv{visibility:hidden;cursor:pointer;background:none;border:none;padding:0 2px;margin-left:2px;font-size:13px;line-height:1;color:var(--mbu-text-weak)}
+    .tc-mirror tr:hover .tc-dtmv,.tc-mirror tr.tc-row-data .tc-dtmv{visibility:visible}
+    .tc-mirror .tc-dtmv:hover{color:var(--mbu-accent-text)}
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:var(--mbu-text-weak);margin-left:12px;font-size:11px}
     .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:var(--mbu-text);margin-right:14px;max-width:140px}
@@ -3067,6 +3087,57 @@
     opts.appendChild(mkOpt('Data track', 'hasDataTracks', 'Add / remove a trailing data track (for several, use the native editor)'));
     return opts;
   }
+  /* ── #586 — move tracks across the data-track boundary ────────────────────
+     majkinetor: "The original tracklist editor allows moving tracks between
+     normal and data track section. In Apollo there are no move buttons but
+     drag-n-drop which doesn't allow the same." (His example: the last three
+     video tracks of 55530bc0 should be data tracks.)
+
+     How native does it, read off MB's own handlers:
+
+       moveTrackDown(t): if the track BELOW is already data and this one isn't,
+                         set isDataTrack(true); otherwise swap the two.
+       moveTrackUp(t):   if this is the FIRST data track, set isDataTrack(false);
+                         otherwise swap.
+
+     So native can only ever move the boundary one track at a time, and only
+     from the inside out — three video tracks means opening the section and then
+     clicking down repeatedly. A data section is by definition a TRAILING block,
+     which means the whole state is just a boundary index, so Apollo moves the
+     boundary in one go instead:
+
+       ⤓ on an audio track  → it and everything below it become data tracks
+       ⤒ on a data track    → it and every data track above it become audio
+
+     Both keep the block trailing and contiguous by construction. isDataTrack is
+     a plain writable observable and medium.audioTracks / dataTracks / hasDataTracks
+     all recompute off it (verified live in test/probe-586e-datasection.mjs), so
+     setting the flags is enough — no array surgery. medium.toc(null) is cleared
+     exactly as native does, since the audio track count just changed.
+
+     Disc-ID media are excluded, matching native's disableBecauseDiscIDs on both
+     buttons: crossing the boundary either way would contradict the TOC. */
+  function setDataBoundary(mi, ti, toData) {
+    const med = mediums()[mi]; if (!med) return;
+    if (mediumLocked(mi)) { Log.warn('medium ' + (mi + 1) + ': the data-track boundary is fixed by the Disc ID'); return; }
+    const tracks = u(med.tracks) || [];
+    let n = 0;
+    _selfEdit = true;
+    try {
+      tracks.forEach((t, i) => {
+        if (typeof t.isDataTrack !== 'function') return;
+        const is = !!t.isDataTrack();
+        // down: this track and everything after it · up: this track and every data track before it
+        const want = toData ? (i >= ti ? true : is) : (i <= ti ? false : is);
+        if (want !== is) { t.isDataTrack(want); n++; }
+      });
+      if (typeof med.toc === 'function') med.toc(null);   // native clears the TOC on every boundary move
+    } catch (e) { Log.warn('data-track move failed', e.message); }
+    finally { _selfEdit = false; }
+    Log.info('medium ' + (mi + 1) + ': moved ' + n + ' track' + (n === 1 ? '' : 's')
+      + (toData ? ' into the data-track section (from #' + (ti + 1) + ' down)' : ' back into the audio section (through #' + (ti + 1) + ')'));
+    MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
+  }
   // one Apollo table for a single medium (its own header row + Add footer); returns the tbody.
   // mi == null renders the whole release into one table (the floating panel).
   function mountTable(container, mi) {
@@ -3663,9 +3734,20 @@
       const locked = mediumLocked(t.mi);   // disc-ID medium: no reorder handle (#125)
       const lenLocked = trackLenLocked(t); // disc-ID medium: audio-track length fixed by the TOC (#329)
       const canDrag = !locked && kind === 'audio';   // #330: pregap is pinned at 0, data tracks aren't reordered here
-      tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}</td>
+      /* #586 — boundary buttons in the move column, where native keeps its own.
+         ⤓ only where it can do something (an audio track that isn't the last on
+         its medium, i.e. there is a section to open below it); ⤒ on every data
+         track. Hidden until the row is hovered so the column doesn't gain a
+         permanent second glyph — visibility, not display, so nothing shifts. */
+      const lastOfMedium = !MODEL.tracks.some(x => x.mi === t.mi && x.ti > t.ti);
+      const dtBtn = locked || kind === 'pregap' ? ''
+        : kind === 'data'
+          ? '<button type="button" class="tc-dtmv up" title="Move this track — and any data track above it — back into the audio section">⤒</button>'
+          : lastOfMedium ? ''
+            : '<button type="button" class="tc-dtmv down" title="Move this track and everything below it on this medium into the data-track section">⤓</button>';
+      tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}${dtBtn}</td>
         <td class="c-num"><input class="t-num" ${NOPW_ATTRS} value="${esc(t.number)}" title="track number"></td>
-        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
+        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}${trackRecIsVideo(t) ? VIDEO_MARK_PRE : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" ${NOPW_ATTRS} value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
         <td class="c-badge"></td>`;
@@ -3732,6 +3814,8 @@
         try { const ko = koTrack(t.mi, t.ti); const norm = typeof ko.formattedLength === 'function' ? (u(ko.formattedLength()) || '') : v; e.target.value = norm; t.length = norm; } catch (err) { e.target.value = v; t.length = v; }   // reflect MB's normalized value back into the cell immediately
         refreshBadges();
       }; wireRowNav(lenIn);
+      const dtb = tr.querySelector('.tc-dtmv');   // #586
+      if (dtb) dtb.onclick = () => setDataBoundary(t.mi, t.ti, dtb.classList.contains('down'));
       if (canDrag) wireDragReorder(tr, t);   // #330: don't make pregap/data rows drag sources or drop targets
       tbody.appendChild(tr);
     });
@@ -6142,6 +6226,7 @@
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl .tc-rec-disamb{color:var(--mbu-text-weak);font-weight:400}',   // recording disambiguation, grey like native #144
       '.tc-rec-video{display:inline-flex;vertical-align:-2px;color:var(--mbu-accent-text);margin-left:1px}',   // recording video marker (table + picker) #303
+      '.tc-rec-video.lead{margin-left:0;margin-right:4px}',   // #584 — marker leads the title instead of trailing it
       '.tc-rec-video svg{display:block}',
       '.tc-rectbl .tc-rpk-adis{color:var(--mbu-text-weak);font-weight:400}',     // artist disambiguation in the table — grey like native, not black (tc-rpk-adis base style is picker-scoped) #186
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
@@ -6158,6 +6243,20 @@
       '.tc-recpop .tc-rpk-row.tc-conf-vlow{border-left-color:var(--mbu-error)}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
       '.tc-rectbl tr.tc-recrow:hover td:not(.tc-diff):not(.tc-copy){background:var(--mbu-bg)}',
+      /* #583 — row selection. The box lives in the # cell and swaps with the
+         number, so the table keeps its eight columns. The CELL is the hit
+         target (a 12px box on its own would be far too small to aim at). */
+      '.tc-rectbl td.tc-recselcell{cursor:pointer;user-select:none;padding-left:0!important;padding-right:0!important}',
+      '.tc-rectbl td.tc-recselcell .tc-recbox{display:none;width:12px;height:12px;box-sizing:border-box;border:1px solid var(--mbu-border-strong);border-radius:3px;vertical-align:-2px;background:var(--mbu-bg);position:relative}',
+      '.tc-rectbl tr.tc-recrow:hover td.tc-recselcell .tc-recnum,.tc-rectbl tr.tc-recsel td.tc-recselcell .tc-recnum{display:none}',
+      '.tc-rectbl tr.tc-recrow:hover td.tc-recselcell .tc-recbox,.tc-rectbl tr.tc-recsel td.tc-recselcell .tc-recbox{display:inline-block}',
+      '.tc-rectbl tr.tc-recsel td.tc-recselcell .tc-recbox{background:var(--mbu-accent);border-color:var(--mbu-accent)}',
+      '.tc-rectbl tr.tc-recsel td.tc-recselcell .tc-recbox::after{content:"✓";position:absolute;inset:0;line-height:10px;font-size:10px;text-align:center;color:var(--mbu-text-on-accent)}',
+      '.tc-rectbl tr.tc-recsel > td{background:var(--mbu-accent-soft)!important}',
+      '.tc-rectbl tr.tc-recsel > td.c-n{box-shadow:inset 3px 0 0 var(--mbu-accent-text)}',
+      '.tc-rectbl tr.tc-recmed .tc-recmed-sel{cursor:pointer;user-select:none;border-bottom:1px dotted var(--mbu-border-strong)}',
+      '.tc-rectbl tr.tc-recmed .tc-recmed-sel:hover{color:var(--mbu-accent-text)}',
+      '.tc-rec-tb .tc-rec-unset{border-color:var(--mbu-error);color:var(--mbu-error)}',
       '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);color:var(--mbu-accent-text);border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
       '.tc-rectbl .tc-recpick:hover{background:var(--mbu-bg-hover)}',
       '.tc-recpop{position:fixed;z-index:100003;width:410px;overflow:auto;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
@@ -6263,6 +6362,7 @@
         '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched."><b>Cutoff</b> <span class="tc-cutoff" tabindex="0"><span class="tc-cutoff-dot"></span><span class="tc-cutoff-lbl"></span><span class="tc-cutoff-caret">▾</span></span></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
+        '<button class="tc-rec-unset tc-btn" type="button" style="display:none"></button>' +   // #583 — shown only while rows are selected
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions"><span class="tc-spin"></span><span class="tc-rec-am-lbl">⚡ Match</span></button>' +
         '<button class="tc-rec-revcaret" type="button" title="revert / clear all">▾</button>' +
         '' +   /* gear moved to the Apollo launcher */
@@ -6291,9 +6391,42 @@
         amBtn.title = 'Stop matching — the recordings already linked are kept';
       }
     }
-    const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
+    // #582 — restore the last pass's verdict; the shell above was rebuilt from
+    // static markup and would otherwise come back blank.
+    const amStatus = wrap.querySelector('.tc-rec-amstatus');
+    if (amStatus && _recLastStatus && !_autoMatching) amStatus.textContent = _recLastStatus;
+    const unsetBtn = wrap.querySelector('.tc-rec-unset'); if (unsetBtn) unsetBtn.onclick = () => unsetRecordings();   // #583
+    const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [
+      { label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings },
+      { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings },
+      { label: '☑ Select all', title: '#583 — select every track (Ctrl+A); Delete then unsets them', onClick: recSelAll },
+    ]);
+    wireRecSelectionKeys(wrap);   // #583
     wireRecCellContextMenu(wrap);
     renderRecBody(wrap);
+  }
+  /* #583 — selection keys. Installed on the document ONCE (the recordings shell
+     is rebuilt every time the tab is entered, so wiring it per-shell would stack
+     duplicate listeners), and it does nothing unless the recordings mirror is on
+     screen and the keystroke isn't going into a field. The picker owns Escape
+     while it's open. */
+  let _recSelKeysWired = false;
+  function wireRecSelectionKeys() {
+    if (_recSelKeysWired) return; _recSelKeysWired = true;
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('tc-recwrap') || !recordingsVisible()) return;
+      const t = e.target;
+      if (t && (t.matches('input, textarea, select') || t.isContentEditable)) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (!_recSel.size) return;   // no selection: let the browser have the key
+        e.preventDefault(); unsetRecordings();
+      } else if (e.key === 'a' && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+        e.preventDefault(); recSelAll();
+      } else if (e.key === 'Escape') {
+        if (_recPop) return;   // the picker closes on Escape first
+        if (_recSel.size) { e.preventDefault(); recSelClear(); }
+      }
+    });
   }
   // Right-click a recording title/artist cell to toggle its "copy track value to
   // the recording (on submit)" flag — the same flag the picker checkbox sets, but
@@ -6470,12 +6603,28 @@
   }
   // #303 — recording video marker (mirrors the native recordings table's <span class="video">)
   const VIDEO_MARK = '<span class="tc-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
+  /* #584 (majkinetor): "In recordings editor the video icons are displayed after
+     the titles. While in the original editor they shown before titles. The latter
+     makes it easier to scan and notice videos in the list (because titles rarely
+     have same lengths)." A trailing marker lands at a different x on every row; a
+     leading one lines up in a column the eye can run down. Same glyph, different
+     spacing (.lead flips the margin), used everywhere the marker appears. */
+  const VIDEO_MARK_PRE = VIDEO_MARK.replace('class="tc-rec-video"', 'class="tc-rec-video lead"');
   // (re)render just the rows + the unset-count — leaves the toolbar (status/inputs) untouched
   function renderRecBody(wrap) {
     wrap = wrap || document.getElementById('tc-recwrap'); if (!wrap) return;
     const tb = wrap.querySelector('tbody'); if (!tb) return;
     const rows = readRecordings();
     const multi = mediums().length > 1;
+    recSelPrune();   // #583 — a medium may have collapsed since the last render
+    // #583 — the Unset button carries the selection count and hides when there is none
+    const unsetBtn = wrap.querySelector('.tc-rec-unset');
+    if (unsetBtn) {
+      const n = _recSel.size;
+      unsetBtn.style.display = n ? '' : 'none';
+      unsetBtn.textContent = '✕ Unset ' + n;
+      unsetBtn.title = 'Unset the ' + n + ' selected recording link' + (n === 1 ? '' : 's') + ' — each track will create a NEW recording on submit (shortcut: Delete)';
+    }
     const unset = rows.filter(r => !r.recGid && !r.isNew).length;
     const firstUnset = rows.find(r => !r.recGid && !r.isNew);
     const warn = wrap.querySelector('.tc-recwarn');
@@ -6501,7 +6650,10 @@
           btn.oncontextmenu = (e) => { e.preventDefault(); expandAllRecMediums(btn); };
           td.appendChild(btn); mr.appendChild(td);
         } else {
-          mr.innerHTML = '<td colspan="8">Medium ' + (mi + 1) + '</td>';
+          // #583 — clicking a medium header selects/deselects that whole medium
+          mr.innerHTML = '<td colspan="8"><span class="tc-recmed-sel" title="select every track on this medium (click again to clear) · Delete unsets the selection">Medium ' + (mi + 1) + '</span></td>';
+          const ms = mr.querySelector('.tc-recmed-sel');
+          if (ms) ms.onclick = () => recSelToggleMedium(mi);
         }
         tb.appendChild(mr);
       }
@@ -6589,17 +6741,27 @@
         const sh = lenShade((r.recLen || 0) - (r.trackLen || 0));
         if (sh) { recLenCls = 'tc-dh-len'; recLenStyle = ' style="background:' + sh.bg + ';color:' + sh.fg + '"'; }
       }
-      const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
+      const selected = _recSel.has(recSelKey(r.mi, r.ti));   // #583
+      const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : '') + (selected ? ' tc-recsel' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
       { const ps = recPendingState(r.mi, r.ti); if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.title = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; } }   // #376
       tr.innerHTML =
-        '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
+        // #583 — the # cell doubles as the selection checkbox: the box takes the
+        // number's place on hover and while selected, so no column is added.
+        '<td class="c-n tc-recselcell"><span class="tc-recnum">' + esc(String(r.number == null ? '' : r.number)) + '</span><span class="tc-recbox"></span></td>' +
         '<td class="tc-tkt">' + trackTitleHtml + '</td>' +
         '<td class="tc-tka">' + trackArtistHtml2 + '</td>' +
         '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
-        '<td class="tc-recname ' + tCls + '">' + recTitleHtml + (r.recVideo ? ' ' + VIDEO_MARK : '') + '</td>' +
+        '<td class="tc-recname ' + tCls + '">' + (r.recVideo ? VIDEO_MARK_PRE : '') + recTitleHtml + '</td>' +   // #584 — marker LEADS the title, so it's scannable down a column of ragged titles
         '<td class="tc-recartist ' + aCls + '">' + recArtistCell + '</td>' +
         '<td class="c-len ' + recLenCls + '"' + recLenStyle + '>' + fmtMs(r.recLen) + '</td>';
+      // #583 — the whole # cell is the hit target, not the little box
+      const selCell = tr.querySelector('.tc-recselcell');
+      if (selCell) {
+        selCell.title = 'select this track (shift: extend the range) · Delete unsets the selection · Ctrl+A all · Esc clears';
+        selCell.onclick = e => { e.preventDefault(); e.stopPropagation(); recSelToggleRow(r.mi, r.ti, e.shiftKey); };
+        selCell.onmousedown = e => { if (e.shiftKey) e.preventDefault(); };   // stop shift-click from selecting text across the table
+      }
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.title = r.exact ? 'Exact match' : 'Tolerance match' + (r.tolDiffs && r.tolDiffs.length ? ' (' + r.tolDiffs.join(', ') + ')' : ''); }
@@ -6729,6 +6891,13 @@
   // Auto-match: for each UNSET track, load MB's suggestions and link the BEST-confidence one (not just
   // MB's first) when it clears the "ignore below" threshold. Already-linked tracks are left untouched. #119
   let _autoMatching = false;
+  /* #582 — the pass's verdict, kept so a shell rebuild can put it back. The
+     recordings toolbar is regenerated from static markup every time the tab is
+     entered, and the auto-match usually finishes BEFORE that (it fires from the
+     first showRecMirror), so the one line explaining why nothing happened was
+     being wiped by the very click that went to look at it. Same shape as the
+     #575 fix that re-adopts the running Match/Stop state on rebuild. */
+  let _recLastStatus = '';
   async function autoMatchRecordings() {
     if (_autoMatching) return; _autoMatching = true;   // #577
     if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
@@ -6757,8 +6926,36 @@
     const maxLevel = CUTOFF[SETTINGS.recCutoff || 'near'];
     let linked = 0, considered = 0, ambiguous = 0;   // #540
     let stopped = false;   // #577
+    let noWork = '';   // #582: set to the reason when the pass has nothing to match
     const _takenGids = new Set();   // #541: recordings this run has already linked
     try {
+      /* #582 (majkinetor): "When I open an existing release for editing the
+         recording auto-matching runs even though all recordings are linked
+         already." The pass fetched the release-group recording pool AND the
+         position index BEFORE it ever looked at what needed matching — two
+         /ws/2 round-trips (his took 26s and a 503 retry) only to report
+         "linked 0 of 0 unset tracks".
+
+         The read can't just move up unconditionally: auto-match fires from
+         showRecMirror, and on a release with collapsed media MB is still
+         loading tracks at that moment — an early read would see zero tracks
+         and skipping then would be wrong. So wait, but only while the list is
+         still EMPTY; a release whose media the user left collapsed reports its
+         loaded tracks straight away and never stalls here. */
+      setStatus('reading tracklist…');
+      let rows = readRecordings();
+      for (let t = 0; t < 60 && !rows.length; t++) {
+        if (_matchStop) { stopped = true; break; }
+        await new Promise(z => setTimeout(z, 250));
+        rows = readRecordings();
+      }
+      if (!stopped && !rows.filter(r => !r.recGid).length) {
+        noWork = rows.length
+          ? 'all ' + rows.length + ' recording' + (rows.length === 1 ? '' : 's') + ' already linked'
+          : 'no tracks loaded — nothing to match';
+        Log.info('recording auto-match: skipped — ' + noWork + ' (no release-group lookup needed)');
+        return;   // the finally below still restores the button and writes the status
+      }
       // ONE request: pull the whole release group's recordings, index by normalised title, match locally
       let byTitle = new Map(), pool = [];
       let posIndex = new Map(), rgGidForDup = null, relTitleForDup = '', relArtistGidForDup = null, dupFetched = false;   // #440
@@ -6866,11 +7063,13 @@
       // #540: an ambiguous slot is a result, not a silence — say so where the count is.
       // #577: a stop has to name itself, or "linked 6 of 42" reads as a result
       // rather than as an interruption. What was linked stays linked.
-      if (e) e.textContent = (stopped ? 'stopped · ' : '') + 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
+      _recLastStatus = noWork ? noWork   // #582 — say why nothing happened, not "linked 0 of 0"
+        : (stopped ? 'stopped · ' : '') + 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
         + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '');
+      if (e) e.textContent = _recLastStatus;
       // #575: named for its pass. Plain "auto-match:" read as the whole match
       // finishing, while the tracklist's artist pass was still going.
-      Log.info('recording auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (stopped ? ' — the rest are untouched' : ''));
+      if (!noWork) Log.info('recording auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (stopped ? ' — the rest are untouched' : ''));
       if (!_matching) _matchStop = false;   // #575: leave it set while the tracklist pass is still winding down
     }
   }
@@ -6918,6 +7117,85 @@
     if (!W.confirm('Set every track to a NEW recording (clear all existing recording links)?')) return;
     mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { t.hasNewRecording(true); } catch (e) {} }));
     rerenderRec(); Log.info('cleared all recording links → new recordings');
+  }
+
+  /* ── #583 — quick unset of recording links ────────────────────────────────
+     majkinetor: "When having to create new recordings because the links are
+     wrong Apollo currently only allows unsetting all links or one-by-one via
+     recording search dialog. The former can be too broad while the latter can
+     take many clicks. I'd suggest a shortcut to immediately unset selected
+     recording link. Better yet, for whole medium or ranges (checkboxes 😛)."
+     (MBS-11635, MBS-10589.)
+
+     Rows carry a selection box in the # column: it takes the number's place on
+     hover and while selected, so no column is added and the narrow-layout grid
+     CSS — which addresses cells by nth-child — is untouched. The hit target is
+     the whole cell, never the 12px box.
+
+       click #           toggle that row
+       shift-click #     extend the range from the last row clicked
+       click "Medium N"  toggle every row of that medium
+       Ctrl+A            select every row · Esc clears
+       Delete            unset the selected rows
+
+     "Unset" means what MB's editor and Apollo's own Clear all mean by it: the
+     track is flagged to CREATE A NEW recording on submit — which is exactly the
+     case he described. Per-row ↺ still reverts to the page-load link, and the
+     rows stay selected after an unset so a mis-aimed one is easy to walk back. */
+  let _recSel = new Set();      // "mi:ti" of the selected rows
+  let _recSelAnchor = null;     // last row clicked, for shift-ranges
+  const recSelKey = (mi, ti) => mi + ':' + ti;
+  // Rows in the order they are rendered — the order a shift-range has to follow.
+  function recSelOrder() { return readRecordings().map(r => recSelKey(r.mi, r.ti)); }
+  function recSelPrune() {   // a medium can collapse under us; drop keys that no longer exist
+    const live = new Set(recSelOrder());
+    let changed = false;
+    _recSel.forEach(k => { if (!live.has(k)) { _recSel.delete(k); changed = true; } });
+    return changed;
+  }
+  function recSelSet(keys, on) {
+    keys.forEach(k => on ? _recSel.add(k) : _recSel.delete(k));
+    rerenderRec();
+  }
+  function recSelToggleRow(mi, ti, shift) {
+    const key = recSelKey(mi, ti);
+    if (shift && _recSelAnchor) {
+      const order = recSelOrder();
+      const a = order.indexOf(_recSelAnchor), b = order.indexOf(key);
+      if (a >= 0 && b >= 0) {
+        // extend, never invert: a shift-range adds, matching every checkbox list
+        recSelSet(order.slice(Math.min(a, b), Math.max(a, b) + 1), true);
+        return;
+      }
+    }
+    const on = !_recSel.has(key);
+    _recSelAnchor = key;
+    recSelSet([key], on);
+  }
+  function recSelToggleMedium(mi) {
+    const keys = readRecordings().filter(r => r.mi === mi).map(r => recSelKey(r.mi, r.ti));
+    if (!keys.length) return;
+    const allOn = keys.every(k => _recSel.has(k));   // toggle: fully selected → clear it
+    _recSelAnchor = allOn ? null : keys[0];
+    recSelSet(keys, !allOn);
+  }
+  function recSelAll() { const keys = recSelOrder(); _recSelAnchor = keys[0] || null; recSelSet(keys, true); }
+  function recSelClear() { if (!_recSel.size) return; _recSel.clear(); _recSelAnchor = null; rerenderRec(); }
+  // Unset the selected rows (or the ones passed in) → each becomes a new recording.
+  function unsetRecordings(entries) {
+    const rows = readRecordings();
+    const targets = entries || rows.filter(r => _recSel.has(recSelKey(r.mi, r.ti)));
+    if (!targets.length) { Log.info('unset recordings: nothing selected — pick rows with the # column, or Ctrl+A for all'); return 0; }
+    let n = 0, already = 0;
+    for (const r of targets) {
+      if (r.isNew) { already++; continue; }   // already a new recording — nothing to unset
+      try { koTrack(r.mi, r.ti).hasNewRecording(true); n++; }
+      catch (e) { Log.warn('unset recording failed for track ' + (r.number || (r.ti + 1)), e.message); }
+    }
+    rerenderRec();
+    Log.info('unset ' + n + ' recording link' + (n === 1 ? '' : 's') + ' → new recording'
+      + (n === 1 ? '' : 's') + (already ? ' (' + already + ' already unset)' : '') + ' — ↺ on a row puts its original back');
+    return n;
   }
 
   /* ── recording picker (#119 P2.2): suggestions + search-by-name → setRecordingValue ── */
@@ -7193,8 +7471,8 @@
       : esc(data.name || '');
     const artistHtml = (data.ac && data.ac.length) ? acLinksWs(data.ac, true) : esc(data.artist || '');
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
-      '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
-        (data.video ? ' ' + VIDEO_MARK : '') +
+      '<div class="tc-rpk-main">' + (data.video ? VIDEO_MARK_PRE : '') +   // #584 — leading, same as the table
+        '<span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
       (artistHtml ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + artistHtml + '</div>' : '') +
@@ -7218,8 +7496,9 @@
     const curHtml = isNew
       ? '<span class="tc-rpk-newcur">＋ new recording (created on submit)</span>'
       : curGid
-        ? '<span class="tc-rpk-curmain"><a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
-            + (u(curRec.video) ? ' ' + VIDEO_MARK : '')   // #303 video flag on the linked recording
+        ? '<span class="tc-rpk-curmain">'
+            + (u(curRec.video) ? VIDEO_MARK_PRE : '')   // #303 video flag on the linked recording · #584 leads the title
+            + '<a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
             + (u(curRec.comment) ? ' <span class="tc-rpk-cmt">(' + esc(u(curRec.comment)) + ')</span>' : '')   // disambiguation on selection #144
             + (curArtist ? ' <span class="tc-rpk-curby">- <span class="tc-rpk-curby-ac">' + acLinks(u(curRec.artistCredit), true) + '</span></span>' : '') + '</span>'
           + (u(curRec.length) ? '<span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
@@ -9069,7 +9348,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, trackRecIsVideo, unsetRecordings, recSelToggleRow, recSelToggleMedium, recSelAll, recSelClear, get recSelection() { return [..._recSel]; }, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
