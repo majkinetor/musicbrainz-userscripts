@@ -53,7 +53,16 @@ await page.evaluate(() => {
   const b = [...document.querySelectorAll('#tc-nav-bar button, #tc-nav-bar a')].find(x => x.textContent.trim().toLowerCase().startsWith('recording'));
   if (b) b.click();
 });
-await page.waitForSelector('#tc-recwrap tbody tr.tc-recrow', { state: 'attached', timeout: 20000 });
+/* A multi-medium release opens with its media collapsed and loads them one
+   round-trip at a time, so wait generously — and that case is the point of the
+   guard: the first medium can arrive fully linked while the rest are still
+   coming, and the pass must not decide the whole release from it. */
+await page.waitForSelector('#tc-recwrap', { state: 'attached', timeout: 20000 });
+await page.waitForTimeout(1500);
+if (!(await page.$('#tc-recwrap tbody tr.tc-recrow'))) {
+  await page.evaluate(() => { const b = document.querySelector('#tc-recwrap .tc-recmed-exp'); if (b) b.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+}
+await page.waitForSelector('#tc-recwrap tbody tr.tc-recrow', { state: 'attached', timeout: 60000 });
 // generous: his pre-fix run took ~35s to get through both lookups
 await page.waitForTimeout(20000);
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.10.205007
+// @version      2026.9.10.215733
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1707,7 +1707,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.10.205007';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.10.215733';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -6933,17 +6933,25 @@
 
          The read can't just move up unconditionally: auto-match fires from
          showRecMirror, and on a release with collapsed media MB is still
-         loading tracks at that moment — an early read would see zero tracks
-         and skipping then would be wrong. So wait, but only while the list is
-         still EMPTY; a release whose media the user left collapsed reports its
-         loaded tracks straight away and never stalls here. */
+         loading tracks at that moment — an early read would see zero tracks and
+         skipping then would be wrong.
+
+         Nor is "wait until the list is non-empty" enough. On a multi-medium
+         release the first medium can arrive with everything already linked while
+         the others are still loading, and skipping on THAT would decide the whole
+         release from a fraction of it — a narrowing against the old code, which
+         read its to-do list after ~26s of lookups and so happened to catch the
+         later media. Wait for every medium to report loaded as well, bounded, so
+         a medium that is never going to load can't stall the pass. */
       setStatus('reading tracklist…');
+      const allLoaded = () => { try { return mediums().every(mediumLoadedRec); } catch (e) { return true; } };
       let rows = readRecordings();
-      for (let t = 0; t < 60 && !rows.length; t++) {
+      for (let t = 0; t < 60 && (!rows.length || !allLoaded()); t++) {
         if (_matchStop) { stopped = true; break; }
         await new Promise(z => setTimeout(z, 250));
         rows = readRecordings();
       }
+      if (!allLoaded()) Log.debug('recording auto-match: some media are still collapsed after the wait — deciding on the ' + rows.length + ' track(s) that did load');
       if (!stopped && !rows.filter(r => !r.recGid).length) {
         noWork = rows.length
           ? 'all ' + rows.length + ' recording' + (rows.length === 1 ? '' : 's') + ' already linked'
