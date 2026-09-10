@@ -1985,7 +1985,7 @@ function runTidalImport(tidalUrl, getOpts, cancelled, collect) {
             // when per-track is off the per-track "skipped" list is moot (none imported)
             (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
-            if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); stopMsg(collect, 'No importable credits found'); return; }
             const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
@@ -2028,7 +2028,7 @@ function runMetalArchivesImport(maUrl, getOpts, cancelled, collect) {
             (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach(s => log.info(`Not imported: ${s}`));
             if (harvest.multiBand) log.warn(`Multi-artist release (${harvest.type}) — split/collaboration credits may need per-band track scoping; review carefully.`);
             if (multiVolume) log.warn(`Multi-disc release — positions are "disc-track"; verify they line up with this release's mediums.`);
-            if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable credits found on the Metal Archives page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable credits found on the Metal Archives page.'); stopMsg(collect, 'No importable credits found'); return; }
             const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: maUrl, processTracklist };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
@@ -2055,14 +2055,14 @@ function runQobuzImport(qobuzUrl, getOpts, cancelled, collect) {
         li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || 'Qobuz album'} · ${tracks.length} tracks — parsed Qobuz credits (${via === 'API' ? 'API' : 'page'})</strong></summary></details>`;
         li.querySelector('details').appendChild(pre);
         _logs.appendChild(li);
-        if (!tracks.length) { log.warn('No Qobuz credits found — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+        if (!tracks.length) { log.warn('No Qobuz credits found — nothing to import.'); stopMsg(collect, 'No importable credits found'); return; }
         const { tracklistRels, artistRoles, tracklist, skipped, multiVolume } = qobuzToEngine(tracks);
         log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s)${artistRoles.length ? ` + ${artistRoles.length} release-level relationship(s)` : ''} across ${tracklist.length} track(s)`);
         skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
         // #523: same multi-volume caveat Tidal already carries (#325) — repeated
         // per-medium numbering is a heuristic reset-detection, not a guarantee.
         if (multiVolume) log.warn(`Multi-medium Qobuz album — track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
-        if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable Qobuz credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+        if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable Qobuz credits found.'); stopMsg(collect, 'No importable credits found'); return; }
         const parts = { companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true };
         return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
     };
@@ -2105,14 +2105,14 @@ function runDeezerImport(deezerUrl, getOpts, cancelled, collect) {
             li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || 'Deezer album'} · ${tracks.length} tracks — parsed Deezer credits (page)</strong></summary></details>`;
             li.querySelector('details').appendChild(pre);
             _logs.appendChild(li);
-            if (!tracks.length) { log.warn('No Deezer credits found — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            if (!tracks.length) { log.warn('No Deezer credits found — nothing to import.'); stopMsg(collect, 'No importable credits found'); return; }
             const { tracklistRels, tracklist, skipped, multiVolume } = deezerToEngine(tracks);
             log.info(`Deezer credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
             skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             // #523: same multi-volume caveat Tidal already carries (#325) — repeated
             // per-medium numbering is a heuristic reset-detection, not a guarantee.
             if (multiVolume) log.warn(`Multi-medium Deezer album — track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
-            if (!tracklistRels.length) { log.warn('No importable Deezer credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            if (!tracklistRels.length) { log.warn('No importable Deezer credits found.'); stopMsg(collect, 'No importable credits found'); return; }
             const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: deezerUrl, processTracklist: true };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
@@ -2136,14 +2136,14 @@ function runAppleImport(appleUrl, getOpts, cancelled, collect) {
             li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${album || 'Apple album'} · ${tracks.length} tracks — parsed Apple credits (API)</strong></summary></details>`;
             li.querySelector('details').appendChild(pre);
             _logs.appendChild(li);
-            if (!tracks.length) { log.warn('No Apple credits found (Apple has no credit data for this album, or none of its tracks list credits) — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            if (!tracks.length) { log.warn('No Apple credits found (Apple has no credit data for this album, or none of its tracks list credits) — nothing to import.'); stopMsg(collect, 'No importable credits found'); return; }
             const { tracklistRels, tracklist, skipped, multiVolume } = appleToEngine(tracks);
             log.info(`Apple credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
             skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             // #523: same multi-volume caveat Tidal already carries (#325) — repeated
             // per-medium numbering is a heuristic reset-detection, not a guarantee.
             if (multiVolume) log.warn(`Multi-medium Apple album — track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.`);
-            if (!tracklistRels.length) { log.warn('No importable Apple credits found.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
+            if (!tracklistRels.length) { log.warn('No importable Apple credits found.'); stopMsg(collect, 'No importable credits found'); return; }
             const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: appleUrl, processTracklist: true };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
@@ -2201,7 +2201,7 @@ function runTitlesImport(getOpts, cancelled, collect) {
             log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
             if (!tracklistRels.length) {
                 log.warn('No named remixes found in the track titles — nothing to import.');
-                document.querySelector('.discogs-bar')?._setStopMessage?.('No remixes found in titles');
+                stopMsg(collect, 'No remixes found in titles');
                 return;
             }
             const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: '', processTracklist: true };
@@ -2209,6 +2209,22 @@ function runTitlesImport(getOpts, cancelled, collect) {
         })
         .catch(err => { log.error(err.message || String(err)); });
 }
+
+// majkinetor (#564 thread): "When CH is invoked with 'All', if one provider has
+// no credits, once the right status bar shows 'No importable credits' it stops
+// there and no new status messages are shown, although preflight continues."
+//
+// _setStopMessage is a RUN-level verdict: it sets bar._stopActive, and
+// _setProgress then refuses to write any further status text so the reason the
+// run stopped survives (#216). That is right when the provider IS the run. Under
+// "All" it is one of several — the remaining sources, the merge and the whole
+// preflight still follow — so one empty provider froze the status bar for the
+// rest of the run while the log carried on scrolling underneath it.
+//
+// A provider in collect mode therefore says nothing at run level. The two
+// verdicts that ARE run-level keep saying it unconditionally: "no credits from
+// any source" after the merge, and "nothing to review" in the pipeline.
+const stopMsg = (collect, msg) => { if (!collect) document.querySelector('.discogs-bar')?._setStopMessage?.(msg); };
 
 // #408: consolidated import — harvest EVERY linked source (collect mode), merge + dedup
 // their credits, then run the pipeline ONCE so there's a single review table with a Source
