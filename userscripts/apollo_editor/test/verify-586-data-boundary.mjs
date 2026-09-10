@@ -27,7 +27,13 @@ let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m);
 const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile',
   { headless: !process.argv.includes('--headed'), viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 2 });
 await ctx.addInitScript(() => {
-  const store = new Map();
+  /* The move column is user-resizable and defaults to 32px, which is NARROWER
+     than its own contents — the row overflows and every handle lands at the same
+     x no matter how many children the cell has, so the misalignment chaban-mb
+     screenshotted cannot appear at the default width. Widen it, which is the
+     state his screenshot is in. Without this the alignment check below passes on
+     the broken build too, guarding nothing. */
+  const store = new Map([['apolloEditor.settings.v1', JSON.stringify({ colWidths: { mv: 80 } })]]);
   window.GM_getValue = (k, d) => (store.has(k) ? store.get(k) : d);
   window.GM_setValue = (k, v) => store.set(k, v);
   window.GM_info = { script: { name: 'Apollo Editor', version: 't' } };
@@ -59,8 +65,15 @@ const state = () => page.evaluate(() => {
     toc: m.toc() == null ? null : 'set',
     dividers: document.querySelectorAll('.tc-mirror tr.tc-datadiv').length,
     dataRows: document.querySelectorAll('.tc-mirror tr.tc-row-data').length,
-    downBtns: document.querySelectorAll('.tc-mirror .tc-dtmv.down').length,
+    downBtns: document.querySelectorAll('.tc-mirror .tc-dtmv.down:not(.void)').length,
     upBtns: document.querySelectorAll('.tc-mirror .tc-dtmv.up').length,
+    /* chaban-mb: "Last track is not preserving space for move track down arrow."
+       ⤓ is inert on the last track of a medium, but the SLOT still has to be
+       there or that row's ⠿ handle sits at a different x than every other's.
+       One distinct x across all handles is the check. */
+    handleX: [...new Set([...document.querySelectorAll('.tc-mirror tr[data-tk] .tc-drag')]
+      .map(h => Math.round(h.getBoundingClientRect().left)))],
+    voidSlots: document.querySelectorAll('.tc-mirror .tc-dtmv.void').length,
   };
 });
 
@@ -70,6 +83,8 @@ ck(before.downBtns > 0, `the tracklist renders ⤓ boundary buttons (${before.do
 ck(before.data === 0 && before.flags.indexOf('D') < 0, 'fixture starts with no data tracks');
 // ⤓ is only offered where it can act — never on the last track of a medium
 ck(before.downBtns === before.flags.length - 1, `⤓ is offered on every track but the last (${before.downBtns} of ${before.flags.length})`);
+ck(before.voidSlots === 1, `the last track still holds an inert ⤓ slot (${before.voidSlots})`);
+ck(before.handleX.length === 1, `every ⠿ handle is at the same x — the last row reserves the ⤓ space (${JSON.stringify(before.handleX)})`);
 
 // click ⤓ on track 11 — the first of his three video karaoke tracks
 const clicked = await page.evaluate(() => {
