@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.10.215734
+// @version      2026.9.11.101114
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.10.215734 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.215733\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.10\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
+  console.log('%c String Theory %c v2026.9.11.101114 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.215733\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.10.134747\n  · ISRC Scout v2026.9.11.101028\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -30923,7 +30923,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.10","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.10","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.11.101028","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.11.101028","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -31896,6 +31896,9 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-ex-pending { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--mbu-warn);
       background: var(--mbu-warn-bg); border: 1px solid var(--mbu-warn); border-radius: 3px; padding: 0 4px; }
     .ii-ex-pending samp { color: var(--mbu-warn); text-decoration: line-through; }
+    a.ii-ex-pending { text-decoration: none; }
+    a.ii-ex-pending:hover { background: var(--mbu-warn); color: var(--mbu-text-on-accent); }
+    a.ii-ex-pending:hover samp { color: var(--mbu-text-on-accent); }
     /* #587: a removal whose POST failed — it is still on the recording and no edit
        exists, which must not read the same as a pending one */
     .ii-ex-failed { border: 1px solid var(--mbu-error); border-radius: 3px; padding: 0 3px; }
@@ -32351,6 +32354,52 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   function savePendingRemovals(map) {
     const has = map && Object.keys(map).some(k => (map[k] || []).length);
     if (has) localStore.set(pendKey(), map); else localStore.del(pendKey());
+  }
+  /* #587 follow-up (majkinetor): "I removed some isrcs, and it showed ASAP and on
+     reload. Then I canceled edits … However, it still shows as pending so
+     something is wrong here. How did you determine the pending state on
+     recording?"
+
+     Honestly: it didn't. ⏳ was drawn purely from what WE remembered submitting,
+     with one heuristic — if the ISRC had disappeared from the recording the edit
+     must have been applied, so forget it. That covers applied edits and nothing
+     else. A CANCELLED or rejected edit leaves the ISRC exactly where it was, so
+     the marker stuck for good, with no way back short of clearing site data.
+
+     So ask MusicBrainz. /recording/<gid>/open_edits lists only OPEN edits, so an
+     ISRC we think is pending must still appear there; if it doesn't, the edit is
+     gone (cancelled, rejected, or applied) and the marker goes with it. One
+     request per recording we remember — not per track — run in the background
+     after the table is up, so it costs nothing on a release with no pendings.
+     A network failure leaves the marker alone rather than guessing. */
+  async function reconcilePendingRemovals() {
+    const tracks = (RELEASE && RELEASE.tracks) || [];
+    const todo = tracks.map((t, i) => ({ t, i })).filter(x => x.t.recId && (x.t.pendingRemoval || []).length);
+    if (!todo.length) return;
+    Log.info('Checking ' + todo.length + ' recording(s) with a remembered pending Remove-ISRC edit against MusicBrainz…');
+    const map = loadPendingRemovals();
+    let changed = false, cleared = 0;
+    for (const { t, i } of todo) {
+      let html = null;
+      try {
+        const r = await gmGet(MB_ROOT + '/recording/' + t.recId + '/open_edits', { 'Accept': 'text/html' });
+        if (r.status === 200) html = r.responseText || '';
+      } catch (e) { /* leave it be */ }
+      if (html == null) { Log.warn('Could not check open edits for recording ' + t.recId + ' — leaving its ⏳ markers alone'); continue; }
+      const still = (t.pendingRemoval || []).filter(isrc => html.indexOf(normalizeIsrc(isrc)) !== -1);
+      if (still.length !== (t.pendingRemoval || []).length) {
+        const gone = (t.pendingRemoval || []).filter(x => still.indexOf(x) === -1);
+        cleared += gone.length;
+        t.pendingRemoval = still;
+        if (still.length) map[t.recId] = still; else delete map[t.recId];
+        changed = true;
+        refreshExistingCell(i);
+        Log.info('No open Remove-ISRC edit for ' + gone.join(', ') + ' on recording ' + t.recId + ' — the edit was cancelled, rejected or applied; clearing ⏳');
+      }
+      await sleep(600);
+    }
+    if (changed) savePendingRemovals(map);
+    Log.info('Pending check done' + (cleared ? ' — cleared ' + cleared + ' stale ⏳ marker(s)' : ' — all remembered edits are still open'));
   }
   function recordPendingRemoval(recId, isrcs) {
     const map = loadPendingRemovals();
@@ -34110,12 +34159,13 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--mbu-text-weak)">Loading release…</td></tr>';
       fetchRelease()
-        .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels)
+        .then(() => { renderTracks(); reconcilePendingRemovals(); })   // existing track links ride along on the release fetch (recording-level-rels)
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--mbu-error)">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
     } else {
       renderTracks();
+      reconcilePendingRemovals();
     }
   }
   function closeModal() {
@@ -34913,7 +34963,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
         // #471: ISRC and Links columns are separate cells now, always both visible —
         // no more ii-only-isrc/ii-only-links split within a shared td.
-        '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval, t.failedRemoval) + '</div></td>' +
+        '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval, t.failedRemoval, t.recId) + '</div></td>' +
         // .ii-cands is a sibling of .ii-inwrap (full-width, under the input), NOT inside it.
         '<td><div class="ii-inwrap">' +
           // #490: initial "search SoundExchange by title/artist" entry point — a row-hover-only
@@ -34995,7 +35045,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     updateSummary();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
-  function existingHtml(arr, pending, failed) {
+  function existingHtml(arr, pending, failed, recId) {
     if (!arr || !arr.length) return '<span class="none">none</span>';
     const pend = new Set((pending || []).map(normalizeIsrc));
     // #587: a removal whose POST failed. It stays a checkbox — the point is to be
@@ -35003,8 +35053,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // for a pending one: nothing was submitted and no edit exists.
     const bad = new Set((failed || []).map(normalizeIsrc));
     return arr.map(i => {
-      if (pend.has(normalizeIsrc(i)))
-        return '<span class="ii-ex-item ii-ex-pending" title="Remove-ISRC edit submitted — pending in the edit queue">⏳ <samp>' + esc(i) + '</samp></span>';
+      if (pend.has(normalizeIsrc(i))) {
+        // #587: the marker says where it got that from — the recording's open edits.
+        const inner = '⏳ <samp>' + esc(i) + '</samp>';
+        const tip = 'Remove-ISRC edit submitted — open in the edit queue. Click to see this recording’s open edits.';
+        return recId
+          ? '<a class="ii-ex-item ii-ex-pending" href="' + MB_ROOT + '/recording/' + esc(recId) + '/open_edits" target="_blank" rel="noopener" title="' + tip + '">' + inner + '</a>'
+          : '<span class="ii-ex-item ii-ex-pending" title="' + tip + '">' + inner + '</span>';
+      }
       const isBad = bad.has(normalizeIsrc(i));
       return '<label class="ii-ex-item' + (isBad ? ' ii-ex-failed' : '') + '" title="'
         + (isBad ? 'Remove-ISRC edit failed to submit — see the Log, then check it again to retry' : 'Check to delete this ISRC from the recording') + '">' +
@@ -36349,7 +36405,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const box = tr && tr.querySelector('.ii-existing');
     const t = RELEASE && RELEASE.tracks[idx];
     if (!box || !t) return;
-    box.innerHTML = existingHtml(t.existing, t.pendingRemoval, t.failedRemoval);
+    box.innerHTML = existingHtml(t.existing, t.pendingRemoval, t.failedRemoval, t.recId);
     refreshDeleteBtn();   // those ISRCs are no longer deletable — keep the count honest
   }
   /* #587 — a removal that failed shouldn't sit there looking untouched. Recorded
