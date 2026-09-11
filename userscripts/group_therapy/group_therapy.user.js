@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.10.134747
+// @version      2026.9.11.111553
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -789,12 +789,22 @@
       .gt-mi .gt-mi-s{flex:none;min-width:20px;text-align:center;font-weight:700;font-size:11px;color:var(--mbu-text-dim);background:var(--mbu-info-bg);border-radius:9px;padding:1px 7px}
       .gt-mi.gt-danger:hover{background:var(--mbu-error-bg)}
       .gt-mi.gt-danger .gt-mi-s{color:var(--mbu-text-on-accent);background:#c0392b}
-      ::highlight(gt-hl-existing){background:#1f6feb;color:var(--mbu-text-on-accent)}
-      ::highlight(gt-hl-new){background:#1f6feb;color:var(--mbu-warn)}
+      /* #564 (majkinetor, light theme): "black on blue name highlight". The two
+         highlights shared one blue background and were told apart by their TEXT
+         colour, and --mbu-warn on that blue computes to about 1.1:1 — the amber
+         and the blue have nearly the same luminance, so the name vanished into
+         its own highlight. (Custom-highlight styling can't be read back with
+         getComputedStyle, which is why it survived: it has to be measured off
+         rendered pixels, in both engines — see test/verify-564-highlight-readable.mjs.)
+         The distinction now lives in the BACKGROUND, with white text on both.
+         Literal colours, not tokens: the pair has to stay legible on its own
+         terms and neither background follows the page theme. */
+      ::highlight(gt-hl-existing){background:#1f6feb;color:#fff}
+      ::highlight(gt-hl-new){background:#b45309;color:#fff}
       .gt-tip{position:fixed;z-index:2147483647;pointer-events:none;background:#1b2430;color:#eef2f7;
         font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:4px 9px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
       .gt-tip .gt-tip-name{font-weight:600}
-      .gt-tip .gt-tip-stat{color:var(--mbu-info);font-size:11px;margin-top:1px}
+      .gt-tip .gt-tip-stat{color:#a9bed4;font-size:11px;margin-top:1px}   /* #564: the pill is always dark, so this is too — --mbu-info is mixed toward the page text and went near-black on it in the light theme */
       .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-info);background:var(--mbu-info-bg);
         border:1px solid var(--mbu-info);border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
       .gt-clone-btn:hover{background:var(--mbu-info-bg)}
