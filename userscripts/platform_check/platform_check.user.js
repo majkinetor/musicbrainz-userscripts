@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.10
+// @version      2026.9.11.120830
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -5076,6 +5076,56 @@ async function runScansInner() {
     appendLog('MusicBrainz', `Release: <a href="${MB_ORIGIN}/release/${mbid}" target="_blank" rel="noopener" style="color:var(--mbu-accent-text);text-decoration:underline;">${MB_ORIGIN}/release/${mbid}</a>`);
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode } = mbData;
+    /* majkinetor: "still can't click first 2 rows in PC but only on initial load.
+       If I click refresh, its there." This block used to sit ~70 lines further
+       down, after the release-group lookup, the cache-upgrade pass and the
+       Wikidata SPARQL — all network. The rows are wired here, so on a fresh load
+       they were dead for as long as those took, which is precisely the window in
+       which you look at a panel that just appeared. ↻ felt instant only because
+       the rows were still wired from the previous run.
+
+       It only ever needed the artist and the album, and both are on the line
+       above, parsed from the page DOM with no request at all. */
+    // Seed search fallback URLs. Each provider link starts pointed at the
+    // provider's native search results — overridden to the resolved album
+    // URL once a scan finds a confident match. The original search URL is
+    // stashed on the anchor's dataset so right-click can re-open it even
+    // after a positive match (convenient for cross-checking).
+    const searchUrls = {
+        spotify:  `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
+        discogs:  `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`,
+        bandcamp: `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`,
+        deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
+        apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
+        tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        qobuz:    `https://www.qobuz.com/us-en/search/albums/${encodeURIComponent(`${artist} ${album}`)}`,
+        beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        volumo:   `https://volumo.com/releases?search=${encodeURIComponent(`${artist} ${album}`)}`,
+        hdtracks: `https://www.hdtracks.com/#/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        soundcloud: `https://soundcloud.com/search/sets?q=${encodeURIComponent(`${artist} ${album}`)}`,
+    };
+    for (const [p, u] of Object.entries(searchUrls)) {
+        const a = document.getElementById(`mb-online-${p}`);
+        if (!a) continue;
+        a.href = u;
+        a.dataset.searchUrl = u;
+        // Right-click → open native search. Preserves the browser's own
+        // copy-link affordance on middle-click / shift-click; only the
+        // bare-right-click is intercepted.
+        if (!a.dataset.pcContextMenuWired) {
+            a.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                const search = a.dataset.searchUrl;
+                if (search) window.open(search, '_blank', 'noopener');
+            });
+            a.dataset.pcContextMenuWired = '1';
+        }
+        // Make the whole row clickable NOW, not when the scan reports — a pending
+        // Discogs/Bandcamp row (they never fold into the compact strip) was dead
+        // to clicks for the whole scan otherwise.
+        wireRowOpen(p);
+    }
+
     // Header subtitle: year · label · format (left-aligned), and the MB
     // track count right-aligned so it sits in the same column as the
     // platform vals below.
@@ -5143,46 +5193,6 @@ async function runScansInner() {
         appendLog('Wikidata', `skipped — Spotify/Tidal/Beatport already resolved`);
     } else {
         wd = await lookupWikidata(releaseGroupMbid, mbid);
-    }
-
-    // Seed search fallback URLs. Each provider link starts pointed at the
-    // provider's native search results — overridden to the resolved album
-    // URL once a scan finds a confident match. The original search URL is
-    // stashed on the anchor's dataset so right-click can re-open it even
-    // after a positive match (convenient for cross-checking).
-    const searchUrls = {
-        spotify:  `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
-        discogs:  `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`,
-        bandcamp: `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`,
-        deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
-        apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
-        tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
-        qobuz:    `https://www.qobuz.com/us-en/search/albums/${encodeURIComponent(`${artist} ${album}`)}`,
-        beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
-        volumo:   `https://volumo.com/releases?search=${encodeURIComponent(`${artist} ${album}`)}`,
-        hdtracks: `https://www.hdtracks.com/#/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
-        soundcloud: `https://soundcloud.com/search/sets?q=${encodeURIComponent(`${artist} ${album}`)}`,
-    };
-    for (const [p, u] of Object.entries(searchUrls)) {
-        const a = document.getElementById(`mb-online-${p}`);
-        if (!a) continue;
-        a.href = u;
-        a.dataset.searchUrl = u;
-        // Right-click → open native search. Preserves the browser's own
-        // copy-link affordance on middle-click / shift-click; only the
-        // bare-right-click is intercepted.
-        if (!a.dataset.pcContextMenuWired) {
-            a.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                const search = a.dataset.searchUrl;
-                if (search) window.open(search, '_blank', 'noopener');
-            });
-            a.dataset.pcContextMenuWired = '1';
-        }
-        // Make the whole row clickable NOW, not when the scan reports — a pending
-        // Discogs/Bandcamp row (they never fold into the compact strip) was dead
-        // to clicks for the whole scan otherwise.
-        wireRowOpen(p);
     }
 
     MB_BARCODE = barcode || null;   // (#182) for the barcode-mismatch indicator
