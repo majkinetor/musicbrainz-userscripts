@@ -122,6 +122,19 @@ for (const t of ['light', 'dark']) {
   // A badge whose fill is close to the page needs its outline to find its edge.
   const findable = badges.every(b => (b.fill_vs_page || 0) >= 1.4 || (b.border_vs_page || 0) >= 1.4);
   ck(findable, `${t}: every badge is findable — either its fill or its border separates it from the page`);
+  /* His second report was about the FILL, not the label: on a white page Digital
+     sat at 3.34:1 and CD at 3.61:1 while Vinyl was 10.60:1, so LP looked like a
+     badge and D and CD looked washed out next to it. "Findable" above is too weak
+     to catch that — the hairline border satisfies it on its own. On a white page
+     the fill has to carry itself. (In the dark theme a dark fill legitimately
+     can't, which is exactly what the border is for.) */
+  if (t === 'light') {
+    const weakest = badges.reduce((w, b) => Math.min(w, b.fill_vs_page || 0), Infinity);
+    ck(weakest >= 4.5, `${t}: every badge's fill stands off the page, so none looks washed out beside the others — weakest ${weakest === Infinity ? 'n/a' : weakest.toFixed(2)}:1`);
+  }
+  // …and they all get the same treatment, so no one badge reads as the odd one out
+  const inks = [...new Set(badges.map(b => b.fg))];
+  ck(inks.length === 1, `${t}: all badges use one ink, like LP always did (${JSON.stringify(inks)})`);
 }
 ck(posted.length === 0, `no write endpoint was called (${posted.length})`);
 ck(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 2).join(' | ') : ''));
