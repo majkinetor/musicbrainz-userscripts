@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.10
+// @version      2026.9.11.101028
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1009,6 +1009,9 @@
     .ii-ex-pending { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--mbu-warn);
       background: var(--mbu-warn-bg); border: 1px solid var(--mbu-warn); border-radius: 3px; padding: 0 4px; }
     .ii-ex-pending samp { color: var(--mbu-warn); text-decoration: line-through; }
+    a.ii-ex-pending { text-decoration: none; }
+    a.ii-ex-pending:hover { background: var(--mbu-warn); color: var(--mbu-text-on-accent); }
+    a.ii-ex-pending:hover samp { color: var(--mbu-text-on-accent); }
     /* #587: a removal whose POST failed — it is still on the recording and no edit
        exists, which must not read the same as a pending one */
     .ii-ex-failed { border: 1px solid var(--mbu-error); border-radius: 3px; padding: 0 3px; }
@@ -1464,6 +1467,52 @@
   function savePendingRemovals(map) {
     const has = map && Object.keys(map).some(k => (map[k] || []).length);
     if (has) localStore.set(pendKey(), map); else localStore.del(pendKey());
+  }
+  /* #587 follow-up (majkinetor): "I removed some isrcs, and it showed ASAP and on
+     reload. Then I canceled edits … However, it still shows as pending so
+     something is wrong here. How did you determine the pending state on
+     recording?"
+
+     Honestly: it didn't. ⏳ was drawn purely from what WE remembered submitting,
+     with one heuristic — if the ISRC had disappeared from the recording the edit
+     must have been applied, so forget it. That covers applied edits and nothing
+     else. A CANCELLED or rejected edit leaves the ISRC exactly where it was, so
+     the marker stuck for good, with no way back short of clearing site data.
+
+     So ask MusicBrainz. /recording/<gid>/open_edits lists only OPEN edits, so an
+     ISRC we think is pending must still appear there; if it doesn't, the edit is
+     gone (cancelled, rejected, or applied) and the marker goes with it. One
+     request per recording we remember — not per track — run in the background
+     after the table is up, so it costs nothing on a release with no pendings.
+     A network failure leaves the marker alone rather than guessing. */
+  async function reconcilePendingRemovals() {
+    const tracks = (RELEASE && RELEASE.tracks) || [];
+    const todo = tracks.map((t, i) => ({ t, i })).filter(x => x.t.recId && (x.t.pendingRemoval || []).length);
+    if (!todo.length) return;
+    Log.info('Checking ' + todo.length + ' recording(s) with a remembered pending Remove-ISRC edit against MusicBrainz…');
+    const map = loadPendingRemovals();
+    let changed = false, cleared = 0;
+    for (const { t, i } of todo) {
+      let html = null;
+      try {
+        const r = await gmGet(MB_ROOT + '/recording/' + t.recId + '/open_edits', { 'Accept': 'text/html' });
+        if (r.status === 200) html = r.responseText || '';
+      } catch (e) { /* leave it be */ }
+      if (html == null) { Log.warn('Could not check open edits for recording ' + t.recId + ' — leaving its ⏳ markers alone'); continue; }
+      const still = (t.pendingRemoval || []).filter(isrc => html.indexOf(normalizeIsrc(isrc)) !== -1);
+      if (still.length !== (t.pendingRemoval || []).length) {
+        const gone = (t.pendingRemoval || []).filter(x => still.indexOf(x) === -1);
+        cleared += gone.length;
+        t.pendingRemoval = still;
+        if (still.length) map[t.recId] = still; else delete map[t.recId];
+        changed = true;
+        refreshExistingCell(i);
+        Log.info('No open Remove-ISRC edit for ' + gone.join(', ') + ' on recording ' + t.recId + ' — the edit was cancelled, rejected or applied; clearing ⏳');
+      }
+      await sleep(600);
+    }
+    if (changed) savePendingRemovals(map);
+    Log.info('Pending check done' + (cleared ? ' — cleared ' + cleared + ' stale ⏳ marker(s)' : ' — all remembered edits are still open'));
   }
   function recordPendingRemoval(recId, isrcs) {
     const map = loadPendingRemovals();
@@ -3223,12 +3272,13 @@
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--mbu-text-weak)">Loading release…</td></tr>';
       fetchRelease()
-        .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels)
+        .then(() => { renderTracks(); reconcilePendingRemovals(); })   // existing track links ride along on the release fetch (recording-level-rels)
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--mbu-error)">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
     } else {
       renderTracks();
+      reconcilePendingRemovals();
     }
   }
   function closeModal() {
@@ -4026,7 +4076,7 @@
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
         // #471: ISRC and Links columns are separate cells now, always both visible —
         // no more ii-only-isrc/ii-only-links split within a shared td.
-        '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval, t.failedRemoval) + '</div></td>' +
+        '<td><div class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval, t.failedRemoval, t.recId) + '</div></td>' +
         // .ii-cands is a sibling of .ii-inwrap (full-width, under the input), NOT inside it.
         '<td><div class="ii-inwrap">' +
           // #490: initial "search SoundExchange by title/artist" entry point — a row-hover-only
@@ -4108,7 +4158,7 @@
     updateSummary();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
-  function existingHtml(arr, pending, failed) {
+  function existingHtml(arr, pending, failed, recId) {
     if (!arr || !arr.length) return '<span class="none">none</span>';
     const pend = new Set((pending || []).map(normalizeIsrc));
     // #587: a removal whose POST failed. It stays a checkbox — the point is to be
@@ -4116,8 +4166,14 @@
     // for a pending one: nothing was submitted and no edit exists.
     const bad = new Set((failed || []).map(normalizeIsrc));
     return arr.map(i => {
-      if (pend.has(normalizeIsrc(i)))
-        return '<span class="ii-ex-item ii-ex-pending" title="Remove-ISRC edit submitted — pending in the edit queue">⏳ <samp>' + esc(i) + '</samp></span>';
+      if (pend.has(normalizeIsrc(i))) {
+        // #587: the marker says where it got that from — the recording's open edits.
+        const inner = '⏳ <samp>' + esc(i) + '</samp>';
+        const tip = 'Remove-ISRC edit submitted — open in the edit queue. Click to see this recording’s open edits.';
+        return recId
+          ? '<a class="ii-ex-item ii-ex-pending" href="' + MB_ROOT + '/recording/' + esc(recId) + '/open_edits" target="_blank" rel="noopener" title="' + tip + '">' + inner + '</a>'
+          : '<span class="ii-ex-item ii-ex-pending" title="' + tip + '">' + inner + '</span>';
+      }
       const isBad = bad.has(normalizeIsrc(i));
       return '<label class="ii-ex-item' + (isBad ? ' ii-ex-failed' : '') + '" title="'
         + (isBad ? 'Remove-ISRC edit failed to submit — see the Log, then check it again to retry' : 'Check to delete this ISRC from the recording') + '">' +
@@ -5462,7 +5518,7 @@
     const box = tr && tr.querySelector('.ii-existing');
     const t = RELEASE && RELEASE.tracks[idx];
     if (!box || !t) return;
-    box.innerHTML = existingHtml(t.existing, t.pendingRemoval, t.failedRemoval);
+    box.innerHTML = existingHtml(t.existing, t.pendingRemoval, t.failedRemoval, t.recId);
     refreshDeleteBtn();   // those ISRCs are no longer deletable — keep the count honest
   }
   /* #587 — a removal that failed shouldn't sit there looking untouched. Recorded
