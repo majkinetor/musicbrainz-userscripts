@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.11.114100
+// @version      2026.9.11.120831
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.11.114100 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.215733\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.11.114059\n  · ISRC Scout v2026.9.11.112316\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.10");
+  console.log('%c String Theory %c v2026.9.11.120831 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.10.215733\n  · Art Station v2026.9.8.183821\n  · Credit Hoarder v2026.9.10.104332\n  · Fusion v2026.9.8\n  · Group Therapy v2026.9.11.114059\n  · ISRC Scout v2026.9.11.112316\n  · Mammoth v2026.9.9.153721\n  · Platform Check v2026.9.11.120830");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -38551,7 +38551,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.10","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.10","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.11.120830","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.11.120830","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -43590,6 +43590,56 @@ async function runScansInner() {
     appendLog('MusicBrainz', `Release: <a href="${MB_ORIGIN}/release/${mbid}" target="_blank" rel="noopener" style="color:var(--mbu-accent-text);text-decoration:underline;">${MB_ORIGIN}/release/${mbid}</a>`);
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode } = mbData;
+    /* majkinetor: "still can't click first 2 rows in PC but only on initial load.
+       If I click refresh, its there." This block used to sit ~70 lines further
+       down, after the release-group lookup, the cache-upgrade pass and the
+       Wikidata SPARQL — all network. The rows are wired here, so on a fresh load
+       they were dead for as long as those took, which is precisely the window in
+       which you look at a panel that just appeared. ↻ felt instant only because
+       the rows were still wired from the previous run.
+
+       It only ever needed the artist and the album, and both are on the line
+       above, parsed from the page DOM with no request at all. */
+    // Seed search fallback URLs. Each provider link starts pointed at the
+    // provider's native search results — overridden to the resolved album
+    // URL once a scan finds a confident match. The original search URL is
+    // stashed on the anchor's dataset so right-click can re-open it even
+    // after a positive match (convenient for cross-checking).
+    const searchUrls = {
+        spotify:  `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
+        discogs:  `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`,
+        bandcamp: `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`,
+        deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
+        apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
+        tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        qobuz:    `https://www.qobuz.com/us-en/search/albums/${encodeURIComponent(`${artist} ${album}`)}`,
+        beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        volumo:   `https://volumo.com/releases?search=${encodeURIComponent(`${artist} ${album}`)}`,
+        hdtracks: `https://www.hdtracks.com/#/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        soundcloud: `https://soundcloud.com/search/sets?q=${encodeURIComponent(`${artist} ${album}`)}`,
+    };
+    for (const [p, u] of Object.entries(searchUrls)) {
+        const a = document.getElementById(`mb-online-${p}`);
+        if (!a) continue;
+        a.href = u;
+        a.dataset.searchUrl = u;
+        // Right-click → open native search. Preserves the browser's own
+        // copy-link affordance on middle-click / shift-click; only the
+        // bare-right-click is intercepted.
+        if (!a.dataset.pcContextMenuWired) {
+            a.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                const search = a.dataset.searchUrl;
+                if (search) window.open(search, '_blank', 'noopener');
+            });
+            a.dataset.pcContextMenuWired = '1';
+        }
+        // Make the whole row clickable NOW, not when the scan reports — a pending
+        // Discogs/Bandcamp row (they never fold into the compact strip) was dead
+        // to clicks for the whole scan otherwise.
+        wireRowOpen(p);
+    }
+
     // Header subtitle: year · label · format (left-aligned), and the MB
     // track count right-aligned so it sits in the same column as the
     // platform vals below.
@@ -43657,46 +43707,6 @@ async function runScansInner() {
         appendLog('Wikidata', `skipped — Spotify/Tidal/Beatport already resolved`);
     } else {
         wd = await lookupWikidata(releaseGroupMbid, mbid);
-    }
-
-    // Seed search fallback URLs. Each provider link starts pointed at the
-    // provider's native search results — overridden to the resolved album
-    // URL once a scan finds a confident match. The original search URL is
-    // stashed on the anchor's dataset so right-click can re-open it even
-    // after a positive match (convenient for cross-checking).
-    const searchUrls = {
-        spotify:  `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
-        discogs:  `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`,
-        bandcamp: `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`,
-        deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
-        apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
-        tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
-        qobuz:    `https://www.qobuz.com/us-en/search/albums/${encodeURIComponent(`${artist} ${album}`)}`,
-        beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
-        volumo:   `https://volumo.com/releases?search=${encodeURIComponent(`${artist} ${album}`)}`,
-        hdtracks: `https://www.hdtracks.com/#/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
-        soundcloud: `https://soundcloud.com/search/sets?q=${encodeURIComponent(`${artist} ${album}`)}`,
-    };
-    for (const [p, u] of Object.entries(searchUrls)) {
-        const a = document.getElementById(`mb-online-${p}`);
-        if (!a) continue;
-        a.href = u;
-        a.dataset.searchUrl = u;
-        // Right-click → open native search. Preserves the browser's own
-        // copy-link affordance on middle-click / shift-click; only the
-        // bare-right-click is intercepted.
-        if (!a.dataset.pcContextMenuWired) {
-            a.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                const search = a.dataset.searchUrl;
-                if (search) window.open(search, '_blank', 'noopener');
-            });
-            a.dataset.pcContextMenuWired = '1';
-        }
-        // Make the whole row clickable NOW, not when the scan reports — a pending
-        // Discogs/Bandcamp row (they never fold into the compact strip) was dead
-        // to clicks for the whole scan otherwise.
-        wireRowOpen(p);
     }
 
     MB_BARCODE = barcode || null;   // (#182) for the barcode-mismatch indicator
