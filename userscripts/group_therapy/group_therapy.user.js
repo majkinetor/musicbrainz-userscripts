@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.11.111553
+// @version      2026.9.11.114059
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1500,7 +1500,17 @@
 
   // ── format-family markers (#350): collapse any MB format to Digital / Vinyl / CD / Cassette, drawn as a
   // compact colored badge (full format in the tooltip). Optical (DVD/SACD/Blu-ray) folds into CD.
-  const FMT_FAMILY = { Digital: { label: 'D', color: '#4a90d9' }, Vinyl: { label: 'LP', color: '#3a3f47' }, CD: { label: 'CD', color: '#7d8894' }, Cassette: { label: 'MC', color: '#9a6b3f' } };
+  /* #564 follow-up (majkinetor, RG Consolidation, light theme): "still has format
+     button issues … D and CD". Not the label this time — badgeInk already picks a
+     readable ink — but the FILL against a white page:
+
+         Digital #4a90d9  3.34:1     CD #7d8894  3.61:1     Vinyl #3a3f47  10.60:1
+
+     which is why LP looked like a badge and D and CD looked washed out beside it.
+     Darkened so every family sits at 5:1 or better on white, which also puts all
+     four on white ink — the LP treatment, applied consistently. badgeInk still
+     chooses; it just now chooses the same thing for all of them. */
+  const FMT_FAMILY = { Digital: { label: 'D', color: '#2f6fb0' }, Vinyl: { label: 'LP', color: '#3a3f47' }, CD: { label: 'CD', color: '#556270' }, Cassette: { label: 'MC', color: '#8a5f37' } };
   function formatFamily(f) {
     f = (f || '').toLowerCase();
     if (/cassette|tape/.test(f)) return 'Cassette';
