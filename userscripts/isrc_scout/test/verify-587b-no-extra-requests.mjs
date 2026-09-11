@@ -95,10 +95,10 @@ ck(during.pending === 2, `both removals are marked ⏳ in the session that submi
 ck(!during.urls.some(u => /open_edits/.test(u)), 'no /open_edits request was made — the pending state is not verified against MB');
 const perRec = during.urls.filter(u => /\/recording\/[0-9a-f-]{36}\//i.test(u));
 ck(perRec.every(u => /\/edit$/.test(u.replace(/^\w+ /, ''))), `the only per-recording requests are the edit forms the removal must POST to (${perRec.length})`);
-/* Categorise rather than count to a magic number: the release fetch happens
-   TWICE on open (pre-existing, reported to majkinetor rather than changed — the
-   request count in this script is his call now), so a bare "<= 1 + N" was wrong
-   about the code rather than about the behaviour under test. */
+/* Categorise rather than count to a magic number. The release used to be fetched
+   TWICE on open — the overview primes the button on load, and a click while that
+   was still in flight started a second identical request. majkinetor: "Dedup it."
+   It is now one, and that is asserted rather than noted. */
 const gets = during.urls.filter(u => u.startsWith('GET'));
 const relGets = gets.filter(u => /\/ws\/2\/release\//.test(u));
 const formGets = gets.filter(u => /\/recording\/[0-9a-f-]{36}\/edit$/.test(u));
@@ -106,7 +106,7 @@ const otherGets = gets.filter(u => !relGets.includes(u) && !formGets.includes(u)
 console.log(`GETs: ${relGets.length} release, ${formGets.length} edit form, ${otherGets.length} other`);
 ck(formGets.length === picked.length, `exactly one edit form per removal (${formGets.length} for ${picked.length})`);
 ck(otherGets.length === 0, `nothing else was fetched at all (${JSON.stringify(otherGets)})`);
-if (relGets.length > 1) console.log(`note: the release JSON is fetched ${relGets.length}× on open — pre-existing, not touched here`);
+ck(relGets.length === 1, `the release JSON is fetched ONCE, not once per caller (${relGets.length})`);
 
 // …and after a reload the script has forgotten, because only MB knows now
 await page.reload({ waitUntil: 'domcontentloaded' });
