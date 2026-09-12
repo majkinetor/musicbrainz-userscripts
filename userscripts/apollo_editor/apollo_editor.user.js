@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.12
+// @version      2026.9.12.151845
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -6883,6 +6883,93 @@
     if (n === 1 || lenDiff > 3000) return 1;
     return 0;
   }
+  /* #585 (chaban-mb) — a music video auto-linked onto a regular audio track.
+     His examples are the expensive kind to undo: new recordings had to be made,
+     lengths restored, wrong links and ISRCs stripped.
+
+     The rule is not ours to invent — MusicBrainz already defines it, in code, as
+     a database cleanup report (Report/VideosInNonVideoMediums.pm):
+
+         r.video IS TRUE
+         AND t.is_data_track IS FALSE
+         AND m.format IN ($NON_VIDEO_FORMATS)
+
+     so when Apollo links a video recording to a non-data track on one of those
+     formats it is manufacturing new rows for that report. Position plays no part
+     in it, which matters: the "videos come last" heuristic from the issue needs a
+     format gate to be safe at all (a DVD's tracks are ALL videos), and it breaks
+     on a trailing RUN of videos, where the earlier ones are not last — majkinetor
+     raised exactly that. Format + data-track is exact, needs no ordering, and is
+     free: both are already in the Knockout model.
+
+     The list is MB's, transcribed. Formats not in it (DVD, Blu-ray, VHS, digital
+     media…) can hold video, so nothing is refused there. Only the AUTO-matcher
+     applies this — picking a video by hand in the picker is untouched, and #584's
+     icon is right there while you do it. */
+  const NON_VIDEO_FORMAT_IDS = new Set([
+    1,    // CD
+    3,    // SACD
+    6,    // MiniDisc
+    7,    // Vinyl
+    8,    // Cassette
+    10,   // Reel-to-reel
+    14,   // Wax Cylinder
+    15,   // Piano Roll
+    16,   // DCC
+    25,   // HDCD
+    29,   // 7" Vinyl
+    30,   // 10" Vinyl
+    31,   // 12" Vinyl
+    34,   // 8cm CD
+    36,   // SHM-CD
+    37,   // HQCD
+    38,   // Hybrid SACD
+    42,   // Enhanced CD
+    44,   // DTS CD
+    50,   // Edison Diamond Disc
+    51,   // Flexi-disc
+    52,   // 7" Flexi-disc
+    53,   // Shellac
+    54,   // 10" Shellac
+    55,   // 12" Shellac
+    56,   // 7" Shellac
+    57,   // SHM-SACD
+    58,   // Pathe disc
+    61,   // Copy Control CD
+    63,   // Hybrid SACD (CD layer)
+    64,   // Hybrid SACD (SACD layer)
+    67,   // DualDisc (CD side)
+    70,   // DVDplus (CD side)
+    73,   // Phonograph record
+    74,   // PlayTape
+    75,   // HiPac
+    81,   // VinylDisc (Vinyl side)
+    82,   // VinylDisc (CD side)
+    83,   // Microcassette
+    84,   // SACD (2 channels)
+    85,   // SACD (multichannel)
+    86,   // Hybrid SACD (SACD layer, multichannel)
+    87,   // Hybrid SACD (SACD layer, 2 channels)
+    88,   // SHM-SACD (multichannel)
+    89,   // SHM-SACD (2 channels)
+    90,   // Tefifon
+    128,  // DataPlay
+    129,  // Mixed Mode CD
+  ]);
+  // Would linking a VIDEO recording to this track put a row in MB's cleanup
+  // report? Unknown format (null/0, "(unknown)") is left alone — refusing on
+  // missing data would block legitimate matches on half-entered releases.
+  function videoBlockedHere(mi, ti) {
+    try {
+      const med = mediums()[mi]; if (!med) return false;
+      const fmt = Number(u(med.formatID));
+      if (!fmt || !NON_VIDEO_FORMAT_IDS.has(fmt)) return false;
+      const ko = koTrack(mi, ti);
+      if (ko && typeof ko.isDataTrack === 'function' && u(ko.isDataTrack())) return false;   // data section can hold it
+      return true;
+    } catch (e) { return false; }
+  }
+
   // Auto-match: for each UNSET track, load MB's suggestions and link the BEST-confidence one (not just
   // MB's first) when it clears the "ignore below" threshold. Already-linked tracks are left untouched. #119
   let _autoMatching = false;
@@ -6920,6 +7007,7 @@
     setBusy(true);
     const maxLevel = CUTOFF[SETTINGS.recCutoff || 'near'];
     let linked = 0, considered = 0, ambiguous = 0;   // #540
+    let vidBlocked = 0;   // #585 — video candidates refused on audio-only mediums
     let stopped = false;   // #577
     let noWork = '';   // #582: set to the reason when the pass has nothing to match
     const _takenGids = new Set();   // #541: recordings this run has already linked
@@ -6987,7 +7075,18 @@
         // recognised at the end instead of being decided by arrival order.
         let best = null, bestLevel = Infinity;
         const seen = [];
-        const note = (d, lvl) => { if (!d) return; d._level = lvl; seen.push(d); if (lvl < bestLevel) { bestLevel = lvl; best = d; } };
+        /* #585 — drop video candidates this track cannot legitimately hold, before
+           they are scored. Done here rather than inside recConfLevel because that
+           function also colours the picker: penalising video-ness there would mark
+           a DELIBERATE pick as low confidence, and would tar every candidate on a
+           DVD, where they are all videos. */
+        const videoBlocked = videoBlockedHere(r.mi, r.ti);
+        let vidSkipped = 0;
+        const note = (d, lvl) => {
+          if (!d) return;
+          if (videoBlocked && d.video) { vidSkipped++; return; }
+          d._level = lvl; seen.push(d); if (lvl < bestLevel) { bestLevel = lvl; best = d; }
+        };
         const consider = d => note(d, recComboLevel(d, ctx));   // lower combined level (exact < tolerance < near < …) wins
         // #440 — a POSITION candidate that passed the similarity gate AND matches on LENGTH is
         // strong evidence it's the same recording, even when the recording's canonical title or
@@ -7057,6 +7156,10 @@
           try { ko.setRecordingValue(recEntityFrom(best)); linked++; if (best.gid) _takenGids.add(best.gid); renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); }
         }
         else Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' NO LINK — best=' + (best ? '"' + best.name + '" level=' + bestLevel + ' > cutoff ' + maxLevel : 'none'));   // #440 diag
+        if (vidSkipped) {   // #585
+          vidBlocked += vidSkipped;
+          Log.info('rec-match #' + (r.number || (r.ti + 1)) + ': skipped ' + vidSkipped + ' video recording(s) — this medium’s format cannot hold video and the track is not a data track (MusicBrainz would list it under "Videos in non-video mediums")');
+        }
       }
     } finally {
       _autoMatching = false;
@@ -7068,11 +7171,12 @@
       // rather than as an interruption. What was linked stays linked.
       _recLastStatus = noWork ? noWork   // #582 — say why nothing happened, not "linked 0 of 0"
         : (stopped ? 'stopped · ' : '') + 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
-        + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '');
+        + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '')
+        + (vidBlocked ? ' · ' + vidBlocked + ' video skipped' : '');   // #585
       if (e) e.textContent = _recLastStatus;
       // #575: named for its pass. Plain "auto-match:" read as the whole match
       // finishing, while the tracklist's artist pass was still going.
-      if (!noWork) Log.info('recording auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (stopped ? ' — the rest are untouched' : ''));
+      if (!noWork) Log.info('recording auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium (#585)' : '') + (stopped ? ' — the rest are untouched' : ''));
       if (!_matching) _matchStop = false;   // #575: leave it set while the tracklist pass is still winding down
     }
   }
@@ -9293,7 +9397,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
