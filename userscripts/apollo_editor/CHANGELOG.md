@@ -1,5 +1,22 @@
 # Apollo Editor Changelog
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### Features
+
+1. Moving tracks to data section ([#586](https://github.com/majkinetor/musicbrainz-userscripts/issues/586))
+1. Show video indicator before recording title ([#584](https://github.com/majkinetor/musicbrainz-userscripts/issues/584))
+1. Hover action to create new recording ([#583](https://github.com/majkinetor/musicbrainz-userscripts/issues/583))
+1. Option to stop ongoing matching ([#577](https://github.com/majkinetor/musicbrainz-userscripts/issues/577))
+
+### Fixes
+
+1. Recording auto-matching runs for existing recordings ([#582](https://github.com/majkinetor/musicbrainz-userscripts/issues/582))
+1. Tracklist automatch runs while user interacts with the item ([#580](https://github.com/majkinetor/musicbrainz-userscripts/issues/580))
+1. Matching takes too long ([#575](https://github.com/majkinetor/musicbrainz-userscripts/issues/575))
+1. Continuous idle DOM mutations cause DevTools & Styles pane blinking ([#569](https://github.com/majkinetor/musicbrainz-userscripts/issues/569))
+1. Inconsistent recording search results ([#555](https://github.com/majkinetor/musicbrainz-userscripts/issues/555))
+
 ## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
 
 ### Features

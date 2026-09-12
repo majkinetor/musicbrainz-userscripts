@@ -1,5 +1,17 @@
 # Art Station Changelog
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### Features
+
+1. Option to automatically repeat failed uploads ([#566](https://github.com/majkinetor/musicbrainz-userscripts/issues/566))
+1. Upload timeout configuration ([#560](https://github.com/majkinetor/musicbrainz-userscripts/issues/560))
+1. Right click URL button to import from all ([#558](https://github.com/majkinetor/musicbrainz-userscripts/issues/558))
+
+### Fixes
+
+1. Selection icon lost when sizing cards ([#576](https://github.com/majkinetor/musicbrainz-userscripts/issues/576))
+
 ## [2026.8.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.23)
 
 - Small improvements

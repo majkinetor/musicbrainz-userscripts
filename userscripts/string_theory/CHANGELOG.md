@@ -1,5 +1,54 @@
 # String Theory Changelog
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Moving tracks to data section ([#586](https://github.com/majkinetor/musicbrainz-userscripts/issues/586))
+1. Show video indicator before recording title ([#584](https://github.com/majkinetor/musicbrainz-userscripts/issues/584))
+1. Hover action to create new recording ([#583](https://github.com/majkinetor/musicbrainz-userscripts/issues/583))
+1. Option to stop ongoing matching ([#577](https://github.com/majkinetor/musicbrainz-userscripts/issues/577))
+1. Recording auto-matching runs for existing recordings ([#582](https://github.com/majkinetor/musicbrainz-userscripts/issues/582))
+1. Tracklist automatch runs while user interacts with the item ([#580](https://github.com/majkinetor/musicbrainz-userscripts/issues/580))
+1. Matching takes too long ([#575](https://github.com/majkinetor/musicbrainz-userscripts/issues/575))
+1. Continuous idle DOM mutations cause DevTools & Styles pane blinking ([#569](https://github.com/majkinetor/musicbrainz-userscripts/issues/569))
+1. Inconsistent recording search results ([#555](https://github.com/majkinetor/musicbrainz-userscripts/issues/555))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Option to automatically repeat failed uploads ([#566](https://github.com/majkinetor/musicbrainz-userscripts/issues/566))
+1. Upload timeout configuration ([#560](https://github.com/majkinetor/musicbrainz-userscripts/issues/560))
+1. Right click URL button to import from all ([#558](https://github.com/majkinetor/musicbrainz-userscripts/issues/558))
+1. Selection icon lost when sizing cards ([#576](https://github.com/majkinetor/musicbrainz-userscripts/issues/576))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Small improvements
+
+### [Fusion](../fusion/CHANGELOG.md)
+
+1. Release data not loaded for all recordings ([#581](https://github.com/majkinetor/musicbrainz-userscripts/issues/581))
+1. Recordings with different capitalization not pooled / matched ([#565](https://github.com/majkinetor/musicbrainz-userscripts/issues/565))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Copyright year in end date ([#574](https://github.com/majkinetor/musicbrainz-userscripts/issues/574))
+1. Text parser UX enhacements ([#544](https://github.com/majkinetor/musicbrainz-userscripts/issues/544))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Status indicator for pending ISRC removal ([#587](https://github.com/majkinetor/musicbrainz-userscripts/issues/587))
+
+### [Mammoth](../mammoth/CHANGELOG.md)
+
+1. Continuous idle DOM mutations cause DevTools & Styles pane blinking ([#569](https://github.com/majkinetor/musicbrainz-userscripts/issues/569))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Add Discogs master link in the background ([#559](https://github.com/majkinetor/musicbrainz-userscripts/issues/559))
+1. Discogs master frequently not circled on tabs other than Overview ([#567](https://github.com/majkinetor/musicbrainz-userscripts/issues/567))
+1. Adding all links in the background randomly fails ([#556](https://github.com/majkinetor/musicbrainz-userscripts/issues/556))
+
 ## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

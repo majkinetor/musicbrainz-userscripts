@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### Features
+
+1. Status indicator for pending ISRC removal ([#587](https://github.com/majkinetor/musicbrainz-userscripts/issues/587))
+
 ## [2026.8.17](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.17)
 
 - Small improvements

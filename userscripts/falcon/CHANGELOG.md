@@ -1,5 +1,16 @@
 # Falcon 
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### Features
+
+1. Send Harmony release to Picard  ([#578](https://github.com/majkinetor/musicbrainz-userscripts/issues/578))
+1. Batch edit note ([#573](https://github.com/majkinetor/musicbrainz-userscripts/issues/573))
+1. Seed from series ([#572](https://github.com/majkinetor/musicbrainz-userscripts/issues/572))
+1. Name attribute ([#571](https://github.com/majkinetor/musicbrainz-userscripts/issues/571))
+1. Auto send from the Harmony option ([#557](https://github.com/majkinetor/musicbrainz-userscripts/issues/557))
+1. Option to not process Harmony covers ([#537](https://github.com/majkinetor/musicbrainz-userscripts/issues/537))
+
 ## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
 
 ### Features

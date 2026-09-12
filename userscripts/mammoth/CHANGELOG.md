@@ -1,5 +1,11 @@
 # Mammoth Changelog
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### Fixes
+
+1. Continuous idle DOM mutations cause DevTools & Styles pane blinking ([#569](https://github.com/majkinetor/musicbrainz-userscripts/issues/569))
+
 ## [2026.7.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.23)
 
 ### Fixes
