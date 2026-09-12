@@ -1,5 +1,16 @@
 # Platform Check Changelog
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### Features
+
+1. Add Discogs master link in the background ([#559](https://github.com/majkinetor/musicbrainz-userscripts/issues/559))
+
+### Fixes
+
+1. Discogs master frequently not circled on tabs other than Overview ([#567](https://github.com/majkinetor/musicbrainz-userscripts/issues/567))
+1. Adding all links in the background randomly fails ([#556](https://github.com/majkinetor/musicbrainz-userscripts/issues/556))
+
 ## [2026.8.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.22)
 
 ### Features

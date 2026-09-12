@@ -1,5 +1,12 @@
 # Group Therapy
 
+## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
+
+### Features
+
+1. Copyright year in end date ([#574](https://github.com/majkinetor/musicbrainz-userscripts/issues/574))
+1. Text parser UX enhacements ([#544](https://github.com/majkinetor/musicbrainz-userscripts/issues/544))
+
 ## [2026.8.28](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.8.28)
 
 ### Features
