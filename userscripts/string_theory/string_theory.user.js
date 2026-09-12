@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.12.151846
+// @version      2026.9.12.153657
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.12.151846 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.12\n  · Credit Hoarder v2026.9.12\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
+  console.log('%c String Theory %c v2026.9.12.153657 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.12.153656\n  · Credit Hoarder v2026.9.12\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -9535,7 +9535,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.12","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.12","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.12.153656","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.12.153656","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11293,6 +11293,13 @@ try {
     return null;
   }
   if (typeof window !== 'undefined') window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
+  // #566 test hook — the auto-repeat state machine, so its semantics can be
+  // driven without provoking real archive.org failures. No behaviour change.
+  if (typeof window !== 'undefined') window.__asAutoRepeat = {
+    get schedule() { return arSchedule; }, get stop() { return arStop; },
+    get cancelPending() { return arCancelPending; }, get delayMs() { return arDelayMs; },
+    state: ov => ov && ov._ar,
+  };
   // ECAU injects its own UI into the add page (the paste-URL box, the "Import from …"
   // buttons, the supported-providers link). Its presence is how we tell the manager
   // actually loaded it — used to warn in the source popover and to fail a sourcing
@@ -12410,14 +12417,20 @@ try {
     // state. Polled (not threaded through every status-set site) so the count is robust.
     const prog = ov.querySelector('.as-cm-prog');
     const progFill = prog.querySelector('.as-cm-prog-fill'), progTxt = prog.querySelector('.as-cm-prog-txt');
+    /* #566 (majkinetor, "progress bar was glitchy"): this counted over `ops`,
+       which on a REPEAT is only the failed subset — his shot reads "2 / 2 · 100%"
+       above a list of five rows, three of them already green. The bar belongs to
+       the commit, so count the whole plan; a retried row is reset to pending
+       first (see above), so it climbs back through the same numbers. */
     const tickOverall = () => {
       let done = 0;
-      for (const op of ops) { const r = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); const s = r ? r.querySelector('.as-cm-st').textContent : ''; if ('✅👁❌⛔⏭'.includes(s)) done++; }
-      const total = ops.length, pct = total ? Math.round(done / total * 100) : 100;
+      for (const op of plan) { const r = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); const s = r ? r.querySelector('.as-cm-st').textContent : ''; if ('✅👁❌⛔⏭'.includes(s)) done++; }
+      const total = plan.length, pct = total ? Math.round(done / total * 100) : 100;
       progFill.style.width = pct + '%';
       progTxt.textContent = `${done} / ${total} · ${pct}%`;
     };
     prog.hidden = false; tickOverall();
+    if (ov._ar) ov._ar.running = true;   // #566 — no schedule may fire while a run is in flight
     const progTimer = setInterval(tickOverall, 150);
     if (!meta.dry) asLog.info(`Commit: ${isRepeat ? 'retrying' : 'applying'} ${ops.length} edit${ops.length === 1 ? '' : 's'}${meta.votable ? ' (votable)' : ''}`);
     // uploads + register run in parallel; edits/removes parallel; the reorder edit runs LAST and sets order.
@@ -12427,6 +12440,7 @@ try {
       if (!ctl.aborted) await runPool(ops.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
     } finally {
       clearInterval(progTimer); tickOverall();   // settle the overall bar on the final tally
+      if (ov._ar) ov._ar.running = false;   // #566
       endRun();   // run finished/failed — re-allow backdrop close and drop the unload guard (before any auto-reload)
     }
     cancelBtn.disabled = false;
@@ -12459,11 +12473,15 @@ try {
         b.textContent = `Repeat (${errs} failed)`; b.disabled = false;
         b.classList.add('as-cm-repeat');
         const again = () => runPlan(ov, plan, meta, plan.filter(o => o._err));
-        b.onclick = () => { arStop(ov); again(); };   // a manual press cancels the countdown and goes now
+        /* #566: a manual press cancels the WAIT and goes now — it used to call
+           arStop, which marks the schedule abandoned, so one manual Repeat killed
+           auto-repeat for the rest of the window ("it just stopped after that
+           retry"). The budget and the attempt count carry on from where they were. */
+        b.onclick = () => { arCancelPending(ov); again(); };
         // #566: do it by itself when asked to. State lives on the overlay so it
         // survives the recursion through runPlan, and the countdown is torn down
         // by arStop from Cancel/Close as well as from a manual Repeat.
-        if (SETTINGS.autoRepeat) arSchedule(ov, errs, again);
+        if (SETTINGS.autoRepeat) arSchedule(ov, again);
       }
     }
     else ov.querySelector('.as-cm-go').disabled = false;
@@ -12473,13 +12491,30 @@ try {
   // The state hangs off the overlay because runPlan recurses into itself for a
   // repeat: a module-level counter would be shared by two commit windows and
   // would not reset when one is closed.
+  function arTeardown(ov) {
+    const st = ov && ov._ar; if (!st) return;
+    clearTimeout(st.timer); clearInterval(st.tick);
+    st.timer = st.tick = null;
+    st.gen++;   // anything still holding an older gen is now inert
+  }
+  // Cancel / Close: give up on auto-repeat entirely.
   function arStop(ov) {
     if (!ov || !ov._ar) return;
-    clearTimeout(ov._ar.timer); clearInterval(ov._ar.tick);
-    ov._ar.stopped = true;
+    arTeardown(ov);
+    ov._ar.abandoned = true;
     const el = ov.querySelector('.as-cm-ar');
     // #566 follow-up: emptied and made invisible, never removed from the layout —
     // its row is reserved so the buttons above it cannot move.
+    if (el) { el.className = 'as-cm-ar'; el.textContent = ''; }
+  }
+  /* #566 — a manual Repeat: drop the pending wait, keep the schedule. Distinct
+     from arStop, and that distinction is the bug he reported: the button used to
+     abandon the schedule, so pressing it once meant no further attempts and no
+     countdown for the rest of the window. */
+  function arCancelPending(ov) {
+    if (!ov || !ov._ar) return;
+    arTeardown(ov);
+    const el = ov.querySelector('.as-cm-ar');
     if (el) { el.className = 'as-cm-ar'; el.textContent = ''; }
   }
   function arNote(ov, text, cls) {
@@ -12487,36 +12522,58 @@ try {
     el.className = 'as-cm-ar on' + (cls ? ' ' + cls : '');
     el.textContent = text;
   }
-  function arSchedule(ov, errs, again) {
-    const st = ov._ar || (ov._ar = { n: 0, t0: Date.now(), stopped: false, timer: null, tick: null });
-    if (st.stopped) return;
+  /* How many ops are failing RIGHT NOW. Read off the rows, never captured: the old
+     countdown closed over the count from when it was scheduled, which is why his
+     shot shows "3 failing" beside a button reading "Repeat (1 failed)". */
+  const arErrs = ov => ov.querySelectorAll('.as-cm-op.err').length;
+  function arSchedule(ov, again) {
+    const st = ov._ar || (ov._ar = { n: 0, t0: Date.now(), abandoned: false, gen: 0, timer: null, tick: null, running: false });
+    if (st.abandoned) return;
+    arTeardown(ov);                  // one owner: drop whatever was pending
+    const gen = st.gen;              // …and let only this generation act
     const budgetMs = arMinutes() * 60000, maxTries = arTimes();
     const usedMs = Date.now() - st.t0;
     // Both limits, whichever comes first — and the NEXT attempt has to fit inside
     // the window, otherwise it is scheduled only to be cut off mid-flight.
     if (st.n >= maxTries || usedMs >= budgetMs) {
       const why = st.n >= maxTries ? `${st.n} attempt${st.n === 1 ? '' : 's'}` : `${fmtDur(usedMs)} of ${arMinutes()}m`;
-      arNote(ov, `Auto-repeat gave up after ${why} — ${errs} still failing. Press Repeat to keep trying.`, 'as-cm-ar-done');
-      asLog.warn(`Commit: auto-repeat gave up after ${why} — ${errs} still failing`);
+      arNote(ov, `Auto-repeat gave up after ${why} — ${arErrs(ov)} still failing. Press Repeat to keep trying.`, 'as-cm-ar-done');
+      asLog.warn(`Commit: auto-repeat gave up after ${why} — ${arErrs(ov)} still failing`);
       return;
     }
     st.n++;
     const delay = arDelayMs(st.n);
     const at = Date.now() + delay;
+    const fire = () => {
+      if (st.gen !== gen || st.abandoned || !document.body.contains(ov)) return;
+      /* Never start on top of a run. The old code could not express this, and a
+         stale timer firing into a live run is the shape of both the glitchy bar
+         and a countdown that outlives its own attempt. Re-check shortly instead. */
+      if (st.running) { clearTimeout(st.timer); st.timer = setTimeout(fire, 1500); return; }
+      arTeardown(ov);
+      arNote(ov, `Auto-repeat: attempt ${st.n}/${maxTries} running…`);
+      asLog.info(`Commit: auto-repeat attempt ${st.n}/${maxTries} (${fmtDur(Date.now() - st.t0)} of ${arMinutes()}m used) — retrying ${arErrs(ov)} failed op(s)`);
+      again();
+    };
     const render = () => {
-      const left = Math.max(0, at - Date.now());
-      arNote(ov, `Auto-repeat: attempt ${st.n}/${maxTries} in ${fmtDur(left)} · ${fmtDur(Date.now() - st.t0)} of ${arMinutes()}m used · ${errs} failing`);
+      if (st.gen !== gen) return;    // a ticker from an older schedule says nothing
+      const left = at - Date.now();
+      /* He saw the countdown stop at "in 0s" once, with no give-up message and no
+         log — a state the old code could sit in forever, since a frozen ticker and
+         a timer that never fires both leave the last text on screen. Past due it
+         says so, and if it STAYS past due (a throttled background tab will do it)
+         the tick starts the attempt itself rather than waiting for a timer that may
+         never arrive. */
+      if (left <= 0) {
+        arNote(ov, `Auto-repeat: attempt ${st.n}/${maxTries} due${st.running ? ' — waiting for the current run' : ' — starting…'} · ${fmtDur(Date.now() - st.t0)} of ${arMinutes()}m used · ${arErrs(ov)} failing`);
+        if (!st.running && Date.now() - at > 3000) fire();
+        return;
+      }
+      arNote(ov, `Auto-repeat: attempt ${st.n}/${maxTries} in ${fmtDur(left)} · ${fmtDur(Date.now() - st.t0)} of ${arMinutes()}m used · ${arErrs(ov)} failing`);
     };
     render();
-    clearInterval(st.tick); st.tick = setInterval(render, 1000);
-    clearTimeout(st.timer);
-    st.timer = setTimeout(() => {
-      clearInterval(st.tick);
-      if (st.stopped || !document.body.contains(ov)) return;
-      arNote(ov, `Auto-repeat: attempt ${st.n}/${maxTries} running…`);
-      asLog.info(`Commit: auto-repeat attempt ${st.n}/${maxTries} (${fmtDur(Date.now() - st.t0)} of ${arMinutes()}m used) — retrying ${errs} failed op(s)`);
-      again();
-    }, delay);
+    st.tick = setInterval(render, 1000);
+    st.timer = setTimeout(fire, delay);
   }
 
   // ── lightbox (#230: click image → popup, ←→↑↓ navigate) ───────────────────────
