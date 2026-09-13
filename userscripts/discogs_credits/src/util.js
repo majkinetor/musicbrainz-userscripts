@@ -105,5 +105,20 @@ export function noPasswordManagers(el) {
     el.setAttribute('data-1p-ignore', 'true');     // 1Password
     el.setAttribute('data-bwignore', 'true');      // Bitwarden
     el.setAttribute('data-form-type', 'other');    // Dashlane
+    /* majkinetor reported the LastPass icon in "Credited as" AGAIN, on a build
+       that already carries every attribute above — so his LastPass is ignoring
+       its own documented opt-out (`data-lpignore`), and no further attribute is
+       going to help.
+     *
+     * What does help is not being the kind of field a password manager looks at:
+     * they classify text/email/tel/password and skip `search`. The class below
+     * restores the plain-input appearance, so this is a semantic change only.
+     *
+     * Stated plainly because it matters: LastPass cannot be installed in the test
+     * environment, so this one is reasoned rather than measured. What IS measured
+     * is that every input the review table creates carries the attributes and the
+     * type — see test/verify-lastpass-icon.mjs. */
+    if (el.tagName === 'INPUT' && (!el.type || el.type === 'text')) el.type = 'search';
+    el.classList.add('ch-nopw');
     return el;
 }

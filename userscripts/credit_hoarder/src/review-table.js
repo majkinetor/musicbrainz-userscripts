@@ -650,7 +650,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             credLabel.textContent = 'Credited as:';
             credLabel.style.cssText = 'font-size:0.72rem;color:var(--mbu-text-weak);flex-shrink:0;';
             const credInput = noPasswordManagers(document.createElement('input'));
-            credInput.type = 'text';
             // Default background is plain white; when the user (or the
             // most-frequent-existing-credit pre-fill) sets a value
             // different from the original Discogs `displayName`, the
@@ -775,7 +774,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const searchRow = document.createElement('div');
             searchRow.style.cssText = 'display:flex;gap:0.3rem;';
             const searchInput = noPasswordManagers(document.createElement('input'));
-            searchInput.type = 'text';
             searchInput.value = displayName;
             searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid var(--mbu-border);border-radius:3px;';
             rowSearchInputs.set(_entityKey, searchInput);   // #139: header "N unresolved" jumps here
@@ -1445,7 +1443,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     modal.appendChild(nameLabel);
 
                     const nameInput = noPasswordManagers(document.createElement('input'));
-                    nameInput.type = 'text';
                     nameInput.value = displayName;
                     nameInput.style.cssText = FIELD_INPUT;
                     modal.appendChild(nameInput);
@@ -1463,7 +1460,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     modal.appendChild(disLabel);
 
                     const disInput = noPasswordManagers(document.createElement('input'));
-                    disInput.type = 'text';
                     disInput.value = defaultDis;
                     disInput.style.cssText = FIELD_INPUT;
                     modal.appendChild(disInput);

@@ -861,6 +861,15 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
            used to fire instantly and felt jumpy when sweeping across
            toggles. */
         .discogs-tooltip.discogs-tooltip-visible { display: block; }
+        /* An input that password managers leave alone is typed "search"; these
+           rules put back the look of a plain text box (Chrome draws a clear
+           button and its own inner spacing otherwise). See noPasswordManagers.
+           No backticks in here: this whole block is a JS template literal. */
+        input.ch-nopw { -webkit-appearance: textfield; appearance: textfield; }
+        input.ch-nopw::-webkit-search-decoration,
+        input.ch-nopw::-webkit-search-cancel-button,
+        input.ch-nopw::-webkit-search-results-button,
+        input.ch-nopw::-webkit-search-results-decoration { display: none; -webkit-appearance: none; }
     `;
     document.head.appendChild(style);
 
