@@ -289,6 +289,27 @@ Running fully automatic leaves you looking at a drained queue over a release pag
 
 It deliberately does nothing when anything failed, came back partial, or is waiting on a manual review — those are only visible in the queue, and the queue does not survive a reload. The run's **log does** survive it (it lives in the session store, so the Log tab still has it), and the consumed `falcon=` token is dropped from the URL while `tport=` is kept, so MusicBrainz still draws its tagger button.
 
+### Disc IDs from a rip log
+
+MusicBrainz has no web way to attach a disc ID — the documented route is Picard, which reads a CD rip log, works out the disc ID and opens `/cdtoc/attach` for you ([#591](https://github.com/majkinetor/musicbrainz-userscripts/issues/591)).
+
+Falcon puts that on the release's **Disc IDs** tab. Each medium gets a drop zone; drop a rip log on it (or click to pick one) and Falcon reads the TOC, computes the disc ID and takes you to MusicBrainz's attach page. **Nothing is submitted on your behalf** — the edit note and *Enter edit* are MusicBrainz's own, exactly as they are from Picard.
+
+Logs it reads, all ports of [Picard's own parsers](https://github.com/metabrainz/picard/tree/master/picard/disc):
+
+| program | what it reads |
+|---|---|
+| **EAC**, **XLD**, **fre:ac** | the TOC table (matched by shape, so localised EAC output works) |
+| **whipper** | the `TOC:` block |
+| **dBpoweramp** | `Track N: Ripped LBA x to y` |
+| **cyanrip** | `Start LSN` / `End LSN` per track |
+
+A MusicBrainz disc ID is a SHA-1 over the TOC, so all of this happens in the browser — no Picard, no libdiscid, and the log file never leaves your machine.
+
+It refuses rather than guessing in the cases Picard refuses: a partial rip (non-consecutive track numbers), a non-standard track sequence, and a file it does not recognise. A trailing **data track** is dropped the way Picard drops it (an 11401-sector gap), and a log whose track count doesn't match the medium you dropped it on asks before continuing — a disc ID on the wrong medium is an edit someone else has to undo.
+
+Where the drop takes you depends on what the page can tell Falcon. A medium that **already has a disc ID** exposes its internal medium id in its own Remove/Move links, so the drop goes straight to the confirmation page. A medium with none doesn't, so the drop goes to MusicBrainz's medium picker with the release already filled in — one extra click, and no extra lookup.
+
 ### Reporting a problem
 
 The **Log** tab traces every worker step — which entity it loaded, how each url was resolved (already present / seeded and classified / typed / rejected and why), whether the submit button was reachable, and how long each stage took. Lines are tagged per worker (`[w1]`, `[w2]`…) since workers run concurrently. Leave the **debug** checkbox on, reproduce the problem, then hit **Copy log** and paste it into the issue — that's usually enough to pinpoint a worker that stopped short of submitting without needing a live reproduction.
