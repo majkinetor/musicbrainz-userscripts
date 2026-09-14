@@ -85,9 +85,14 @@ const PICKER = `<!doctype html><body><div id="content"><h2>Attach CD TOC</h2><fo
     <tr><td><input type="radio" name="medium" value="1123588"></td><td>CD 3: Know (show tracklist)</td></tr>
   </table>
   <button type="submit">Attach CD TOC</button></form></div></body>`;
+/* ⚠ The edit-note box is named `confirm.edit_note` with id `edit-note-text` —
+   read off test.musicbrainz.org, not invented. The first fixture used
+   name="edit-note", which the class selector happened to match anyway: it would
+   have passed even if the real page named it something else entirely. */
 const CONFIRM = `<!doctype html><body><div id="content"><h2>Attach CD TOC</h2>
-  <p>Attaching to CD 3</p>
-  <div class="edit-note"><textarea class="edit-note" name="edit-note"></textarea></div>
+  <h2>Medium</h2><p>Attaching to CD 3</p>
+  <textarea class="edit-note" id="edit-note-text" name="confirm.edit_note"></textarea>
+  <input type="checkbox" name="confirm.make_votable">
   <button type="submit">Enter edit</button></div></body>`;
 await ctx.route(/^https:\/\/musicbrainz\.org\/cdtoc\/attach/, r => {
   const u = r.request().url();
@@ -330,6 +335,8 @@ const note = await pPick.evaluate(() => (document.querySelector('textarea.edit-n
 console.log('edit note:', JSON.stringify(note));
 ck(/Falcon v/.test(note), `the final edit note carries Falcon's signature — "${note.split(String.fromCharCode(10))[0]}"`);
 ck(/rip log/i.test(note), 'and says where the disc ID came from');
+ck(await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).name) === 'confirm.edit_note',
+  "…in MusicBrainz's own edit-note field, by its real name");
 // a re-render must not stack signatures
 await pPick.evaluate(() => window.__falconTest.signAttachEditNote());
 const note2 = await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).value || '');
