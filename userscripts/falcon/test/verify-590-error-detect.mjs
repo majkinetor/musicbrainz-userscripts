@@ -104,6 +104,19 @@ const FIXTURES = {
   beatport: page_(`<h2 class="release-title">Test Release</h2><h2>Release Actions</h2>
     <div id="hbr-beatport-message" class="message error"><span class="provider">Beatport Recovery:</span><div><p>MusicBrainz rate limited the request.</p></div></div>
     ${RECORDING_ACTIONS}`),
+  /* majkinetor's own case, from the screenshots on the issue: one provider fails
+     to parse and never recovers, while six others returned perfectly good data.
+     "It blocked 6 providers that did have data." Reloading cannot fix it, and
+     standing down throws away the six. */
+  providerOnly: page_(`<h2 class="release-title">Test Release</h2><h2>Release Actions</h2>
+    ${msg('error', 'Failed to extract embedded player JSON: https://www.beatport.com/release/x/123', 'Beatport')}
+    <div class="action"><p><a href="https://musicbrainz.org/release/${MBID}">Open in MusicBrainz</a></p></div>
+    ${RECORDING_ACTIONS}`),
+  // both at once: the MusicBrainz error is the one worth reloading for
+  both: page_(`<h2 class="release-title">Test Release</h2><h2>Release Actions</h2>
+    ${msg('error', 'Failed to extract embedded player JSON: https://www.beatport.com/release/x/123', 'Beatport')}
+    ${msg('error', 'The MusicBrainz web server is currently busy. Please try again later.')}
+    ${RECORDING_ACTIONS}`),
 };
 
 const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', { headless: true, viewport: { width: 1200, height: 900 } });
@@ -145,21 +158,26 @@ const open = async (which, opts) => {
    this sentinel instead, so those checks FAIL and say why, while the behavioural
    checks further down (which use only sendToFalcon, present on both builds) still
    run and show what actually changed. */
-const NONE = { shape: '(no detector on this build)', bad: null, permanent: null, hasRelease: null,
-  unchecked: [], providers: [], slowDown: null, from: [], n: 0, summary: '' };
+const NONE = { shape: '(no detector on this build)', bad: null, mbBad: null, permanent: null, hasRelease: null,
+  unchecked: [], providers: [], slowDown: null, mb: 0, prov: 0, from: [], n: 0, summary: '' };
 const state = async p => (await p.evaluate(() => {
   if (typeof window.__falconTest.harmonyErrorState !== 'function') return null;
   const st = window.__falconTest.harmonyErrorState();
-  return { shape: st.shape, bad: st.bad, permanent: st.permanent, hasRelease: st.hasRelease,
+  return { shape: st.shape, bad: st.bad, mbBad: st.mbBad, permanent: st.permanent, hasRelease: st.hasRelease,
     unchecked: st.uncheckedTypes, providers: st.providers, slowDown: st.slowDown,
+    mb: st.mbErrors.length, prov: st.providerErrors.length,
     from: st.boxes.map(b => b.from), n: st.boxes.length,
     summary: window.__falconTest.harmonyErrorSummary(st) };
 })) || NONE;
 
 /* ── 2. every shape is told apart ──────────────────────────────────────────── */
-// Reload deliberately OFF for this file, so nothing here can navigate; the
-// bounding and the actual reload are verify-590-reload-bounded's job.
-const OFF = { 'falcon:harmonyReloadOnError': false, 'falcon:autoSendFromHarmony': true };
+/* There is no "reload on error" option any more — majkinetor, after running the
+   first cut: "lets just look for MB errors (without an option) and send at the
+   end whatever is there." So the reload cannot be switched off for this file;
+   instead every fixture here is CANCELLED the moment it arms (cancelHarmonyReload),
+   which leaves the page still on screen for the classification checks. The
+   bounding and the real reload are verify-590-reload-bounded's job. */
+const OFF = { 'falcon:autoSendFromHarmony': true };
 
 const pClean = await open('clean', OFF);
 const hasDetector = await pClean.evaluate(() => typeof window.__falconTest.harmonyErrorState === 'function');
@@ -175,8 +193,9 @@ const sA = await state(pA);
 console.log('A:', JSON.stringify(sA));
 ck(sA.bad && sA.shape === 'A', `a failed merge is shape A (${sA.shape})`);
 ck(sA.hasRelease === false, 'shape A is recognised by the release never having rendered');
+ck(sA.mbBad === true && sA.prov === 0, `an error with no provider chip is a MusicBrainz error (mb ${sA.mb})`);
 ck(sA.slowDown === true, '"currently busy" is a 503 overload rather than a rate limit, but it asks for the same longer backoff');
-ck(/no actions on this page/.test(sA.summary), `and says so in one line: "${sA.summary}"`);
+ck(/this page has no actions/.test(sA.summary), `and says so in one line: "${sA.summary}"`);
 // the bug in the issue, precisely: today this page makes the auto-send claim success
 ck(await pA.evaluate(() => window.__falconTest.scrapeHarmonyActions().length) === 0,
   'fixture: shape A really has zero actions to scrape');
@@ -194,6 +213,8 @@ console.log('C:', JSON.stringify(sC));
 ck(sC.bad && sC.shape === 'C', `a provider that dropped out is shape C (${sC.shape})`);
 ck(JSON.stringify(sC.providers) === '["Deezer"]', `and the provider is named (${JSON.stringify(sC.providers)})`);
 ck(sC.unchecked.length === 0, 'shape C has no "could not be checked" warning — that is what makes it invisible');
+ck(sC.mbBad === false && sC.prov === 1,
+  `a provider error is NOT a MusicBrainz error (mb ${sC.mb}, provider ${sC.prov}) — reloading cannot bring a provider back`);
 ck(await pC.evaluate(() => window.__falconTest.scrapeHarmonyActions().length) === 2,
   'fixture: shape C still LOOKS complete — the actions are all there, they are just short of Deezer');
 
@@ -230,45 +251,93 @@ ck(perm.no === 0, `and no transient one is (${perm.no} of ${perm.noN} wrongly ca
 ck(perm.slow === 4, `every "slow down" error earns the longer backoff (${perm.slow}/4)`);
 ck(perm.slowNot === 0, `and an ordinary failure does not (${perm.slowNot})`);
 
-/* ── 5. chaban's own script's errors count too ─────────────────────────────── */
+/* ── 5. the correction majkinetor made after running the first cut ─────────
+   "'Beatport: Failed to extract embedded JSON' is a showstopper for me, and it
+   seems to never resolve, so it blocks all other providers that did. It blocked
+   6 providers that did have data. So, lets just look for MB errors."
+   A provider error must therefore never arm a reload and never stop a send. */
 const pBp = await open('beatport', OFF);
 const sBp = await state(pBp);
 console.log('beatport-recovery:', JSON.stringify(sBp));
 ck(sBp.bad && sBp.from[0] === 'beatport-recovery',
   'an error injected by harmony-beatport-recovery is detected AND attributed to it');
-ck(sBp.slowDown, 'and its rate-limit wording earns the longer backoff');
+ck(sBp.mbBad === false, 'and is a provider error, not a MusicBrainz one');
 
-/* ── 6. what it actually changes: the send ─────────────────────────────────── */
-for (const [name, p] of [['A', pA], ['B', pB], ['C', pC], ['beatport', pBp]]) {
+const pPo = await open('providerOnly', OFF);
+const sPo = await state(pPo);
+console.log('provider only:', JSON.stringify(sPo));
+ck(sPo.bad === true && sPo.mbBad === false, `his Beatport case is an error, but not a MusicBrainz one (mb ${sPo.mb}, provider ${sPo.prov})`);
+ck(JSON.stringify(sPo.providers) === '["Beatport"]', `the provider is named for the edit note (${JSON.stringify(sPo.providers)})`);
+const poReload = await pPo.evaluate(() => ({ armed: window.__falconTest.reloadPending(), log: window.__log.slice() }));
+ck(poReload.armed === false, 'no reload is armed for it — reloading would never fix it');
+ck(poReload.log.some(l => /reloading would not bring them back/.test(l)),
+  `and the log says exactly that — "${(poReload.log.find(l => /would not bring them back/.test(l)) || '').slice(0, 120)}"`);
+
+const pBoth = await open('both', OFF);
+const sBoth = await state(pBoth);
+console.log('both kinds:', JSON.stringify(sBoth));
+ck(sBoth.mb === 1 && sBoth.prov === 1, `a page with one of each is split correctly (mb ${sBoth.mb}, provider ${sBoth.prov})`);
+ck(sBoth.mbBad === true, 'and the MusicBrainz error is what decides the reload');
+ck(/Beatport/.test(sBoth.summary) && /MusicBrainz/.test(sBoth.summary),
+  `the summary names both, since both belong in the edit note — "${sBoth.summary}"`);
+await pBoth.evaluate(() => window.__falconTest.cancelHarmonyReload('test'));
+
+/* ── 6. what it actually changes: the send goes through ───────────────────
+   The first cut stood down on an errored page. majkinetor ruled the other way
+   after running it: "we should certainly submit at the end with whatever comes
+   through after all repeats are exhausted. Falcon is idempotent in any case, so
+   half input is still better than no input." So every one of these must SEND. */
+for (const [name, p] of [['B (MusicBrainz error)', pB], ['C (provider error)', pC], ['beatport-recovery', pBp], ['his Beatport case', pPo]]) {
   const r = await p.evaluate(async () => {
-    window.__falconTest.maybeAutoSend();
-    await new Promise(r => setTimeout(r, 200));
-    const auto = await window.__falconTest.sendToFalcon(true);
-    const manual = await window.__falconTest.sendToFalcon(false);   // confirm() declines
-    return { auto, manual, opened: window.__opened.length, confirms: window.__confirms, log: window.__log };
+    window.__falconTest.cancelHarmonyReload('test');   // don't navigate mid-check
+    const before = window.__opened.length;
+    const sent = await window.__falconTest.sendToFalcon(true);   // the AUTOMATIC path
+    const url = window.__opened[window.__opened.length - 1];
+    const token = url ? new URL(typeof url === 'string' ? url : url.u || url).searchParams.get('falcon') : null;
+    return { sent, opened: window.__opened.length - before, token,
+      note: token ? window.GM_getValue('falcon:pendingNote:' + token, null) : null,
+      payload: token ? JSON.parse(window.GM_getValue('falcon:pending:' + token, '[]')).length : 0,
+      log: window.__log.slice() };
   });
-  ck(r.auto === false && r.opened === 0, `${name}: an automatic send stands down and opens nothing`);
-  ck(r.manual === false && r.confirms.length === 1, `${name}: a manual send asks first, and honours "no"`);
-  ck(/Send anyway\?/.test(r.confirms[0] || '') && /Harmony reported/.test(r.confirms[0] || ''),
-    `${name}: the confirm names the damage — "${(r.confirms[0] || '').split('\n')[0]}"`);
-  ck(r.log.some(l => /standing down/.test(l)), `${name}: and the reason is in the console, not just swallowed`);
+  ck(r.sent === true && r.opened === 1, `${name}: an automatic send goes ahead anyway (${r.opened} tab)`);
+  ck(r.payload >= 2, `${name}: and carries what the page did have (${r.payload} item(s)) — half the input beats none`);
+  // majkinetor: "Falcon could add this partial info in its edit note for the batch."
+  ck(!!r.note && /Harmony reported an error/.test(r.note || ''),
+    `${name}: the reason travels with the batch as its edit note — "${(r.note || 'NO NOTE').slice(0, 90)}…"`);
+  ck(/idempotent/.test(r.note || ''), `${name}: and says the run can be topped up later`);
+  ck(r.log.some(l => /possibly incomplete/.test(l)), `${name}: with the same reason in the console`);
+  ck(!r.log.some(l => /standing down/.test(l)), `${name}: and nothing stands down any more`);
 }
-// the clean page must be entirely unaffected by all of this
+// the one case that genuinely has nothing to send still says so, correctly
+const rA = await pA.evaluate(async () => {
+  window.__falconTest.cancelHarmonyReload('test');
+  window.__falconTest.maybeAutoSend();
+  await new Promise(r => setTimeout(r, 250));
+  return { opened: window.__opened.length, log: window.__log.slice() };
+});
+ck(rA.opened === 0, 'shape A opens nothing, because there is genuinely nothing on the page to send');
+ck(rA.log.some(l => /nothing on this page to send/.test(l)),
+  `and says THAT rather than "the import succeeded" — "${(rA.log.find(l => /nothing on this page/.test(l)) || '').slice(0, 110)}"`);
+
+// a clean page is untouched by any of it — no note, no marker
 const rc = await pClean.evaluate(async () => {
   const ok = await window.__falconTest.sendToFalcon(false);
-  return { ok, opened: window.__opened.length, confirms: window.__confirms.length };
+  const url = window.__opened[0];
+  const token = url ? new URL(typeof url === 'string' ? url : url.u || url).searchParams.get('falcon') : null;
+  return { ok, opened: window.__opened.length, note: token ? window.GM_getValue('falcon:pendingNote:' + token, null) : 'no token' };
 });
-ck(rc.ok === true && rc.opened === 1 && rc.confirms === 0,
-  `a clean page still sends straight through, no questions asked (opened ${rc.opened}, confirms ${rc.confirms})`);
+ck(rc.ok === true && rc.opened === 1, `a clean page still sends straight through (opened ${rc.opened})`);
+ck(!rc.note, `and attaches no "may be incomplete" note to a batch that is complete (${JSON.stringify(rc.note)})`);
 
-/* ── 7. the button says which ──────────────────────────────────────────────── */
-const label = p => p.evaluate(() => { window.__falconTest; const l = document.getElementById('falcon-harmony-lbl'); return l ? l.textContent : null; });
-const labels = { clean: await label(pClean), A: await label(pA), B: await label(pB), permanent: await label(pP) };
+/* ── 7. the button says the batch may be short, but still sends ────────────── */
+const label = p => p.evaluate(() => { const l = document.getElementById('falcon-harmony-lbl'); return l ? l.textContent : null; });
+await Promise.all([pClean, pB, pC, pPo].map(p => p.evaluate(() => { window.__falconTest.cancelHarmonyReload('test'); window.__falconTest.maybeAutoSend; })));
+const labels = { clean: await label(pClean), B: await label(pB), C: await label(pC), provider: await label(pPo) };
 console.log('\nbutton labels:', JSON.stringify(labels, null, 1));
-ck(/^Send \d+ to Falcon$/.test(labels.clean || ''), `clean page keeps today's label (${labels.clean})`);
-ck(/Harmony errored/.test(labels.A || ''), `shape A says so (${labels.A})`);
-ck(/Harmony errored — send anyway \(2\)/.test(labels.B || ''), `shape B offers the send with its count (${labels.B})`);
-ck(/can't load this release/.test(labels.permanent || ''), `a permanent error offers nothing (${labels.permanent})`);
+ck(/^Send \d+ to Falcon$/.test(labels.clean || ''), `a clean page keeps today's label (${labels.clean})`);
+ck(/^Send 2 to Falcon \(partial\)$/.test(labels.B || ''), `a MusicBrainz error still offers the send, marked partial (${labels.B})`);
+ck(/\(partial\)/.test(labels.C || ''), `so does a provider error (${labels.C})`);
+ck(/\(partial\)/.test(labels.provider || ''), `and his Beatport case (${labels.provider})`);
 
 await ctx.close();
 if (!srcOk) console.log('\n(note: Harmony\'s source was unreachable, so the markup-contract checks did not run)');

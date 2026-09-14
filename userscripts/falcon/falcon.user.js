@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.14.144832
+// @version      2026.9.14.145808
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -488,19 +488,10 @@
     // the options UI — it exists so the send is interruptible, not to be tuned.
     get autoSendDelayMs() { const n = Number(GM_getValue('falcon:autoSendDelayMs', 4000)); return Math.max(0, Math.min(30000, isFinite(n) ? n : 4000)); },
     set autoSendDelayMs(v) { GM_setValue('falcon:autoSendDelayMs', Math.max(0, Math.min(30000, Number(v) || 0))); },
-    // #590 (chaban-mb): "Harmony release actions page is often missing recording,
-    // artist, label links when an error occurs. However Falcon ignores this in
-    // 'Auto send' mode leading to incomplete entries." Harmony has no retry of
-    // its own, so the page has to be loaded again until it comes back clean.
-    //
-    // Default ON, but the automatic RELOAD only happens when Auto send is on
-    // (see maybeReloadOnError). Nobody's manual workflow starts navigating by
-    // itself; the mode where this actually bites is fixed without having to go
-    // and find a new toggle, and a manual user still gets told on the button.
-    get harmonyReloadOnError() { return GM_getValue('falcon:harmonyReloadOnError', true) === true; },
-    set harmonyReloadOnError(v) { GM_setValue('falcon:harmonyReloadOnError', !!v); },
-    // Not in the options UI, same reasoning as autoSendDelayMs: these bound the
-    // retry so it can't become a loop against MusicBrainz, they are not a knob.
+    // #590: no option. majkinetor, after trying the first cut: "lets just look
+    // for MB errors (without an option) and send at the end whatever is there."
+    // Not in the options UI, same reasoning as autoSendDelayMs: this bounds the
+    // retry so it can't become a loop against MusicBrainz, it is not a knob.
     get harmonyReloadMax() { const n = Number(GM_getValue('falcon:harmonyReloadMax', 5)); return Math.max(0, Math.min(20, isFinite(n) ? n : 5)); },
     set harmonyReloadMax(v) { GM_setValue('falcon:harmonyReloadMax', Math.max(0, Math.min(20, Number(v) || 0))); },
     // #588 (chaban-mb / majkinetor): "add new Harmony option: Reload release page
@@ -1428,7 +1419,14 @@
     let fromHarmony = false;
     if (json == null) {
       const stored = GM_getValue('falcon:pending:' + raw, null);
-      if (stored != null) { json = stored; fromHarmony = true; try { GM_deleteValue('falcon:pending:' + raw); } catch (e) {} }
+      if (stored != null) {
+        json = stored; fromHarmony = true;
+        // #590: the "this batch may be short, and why" note the Harmony side
+        // left with the payload, applied to every edit of the run (#573).
+        const note = GM_getValue('falcon:pendingNote:' + raw, null);
+        if (note) { setBatchNote(note); log('warn', `Harmony note carried over to this batch's edit note: ${note}`); }
+        try { GM_deleteValue('falcon:pending:' + raw); GM_deleteValue('falcon:pendingNote:' + raw); } catch (e) {}
+      }
     }
     if (json == null) { log('warn', 'falcon= param present but neither valid base64 JSON nor a known pending token'); return null; }
     try {
@@ -1792,22 +1790,18 @@
   // exactly the same path — one implementation, no drift between "you clicked
   // it" and "Falcon clicked it for you".
   async function sendToFalcon(auto) {
-    /* #590 — the other half of the fix, and arguably the more important half:
-     * today the send proceeds regardless of what the page says about itself.
-     * An AUTOMATIC send never leaves an errored page (by the time this runs the
-     * reload has already had its bounded go, or was never allowed one); a MANUAL
-     * one is offered, with the damage named, because the person clicking can
-     * legitimately decide that unfiltered links beat no links. */
+    /* #590, second cut. The first one stood down on an errored page; majkinetor
+     * tried it and ruled the other way: "we should certainly submit at the end
+     * with whatever comes through after all repeats are exhausted. Falcon is
+     * idempotent in any case, so half input is still better than no input."
+     *
+     * So nothing here refuses any more. The reload has already had its bounded
+     * go at the MusicBrainz errors by the time this runs; whatever the page has
+     * now is what gets sent, and the reason it may be short travels with the
+     * batch as its edit note rather than being lost in a console line. */
     const errSt = onHarmonyActionsPage() ? harmonyErrorState() : null;
-    if (errSt && errSt.bad) {
-      const why = harmonyErrorSummary(errSt);
-      if (auto) { harmonyLog(`auto send: standing down — ${why}`); return false; }
-      if (!confirm(`${NAME}: ${why}.\n\nSending now will queue an incomplete or unfiltered batch. Send anyway?`)) {
-        harmonyLog('send: you declined to send from an errored page');
-        return false;
-      }
-      harmonyLog(`send: sending from an errored page at your request — ${why}`);
-    }
+    const partialWhy = errSt && errSt.bad ? harmonyErrorSummary(errSt) : '';
+    if (partialWhy) harmonyLog(`${auto ? 'auto ' : ''}send: sending a possibly incomplete batch — ${partialWhy}`);
     let found = scrapeHarmonyActions();
     if (found.some(t => !t.name)) {
       // #509 follow-up (majkinetor, live: a saved copy of the exact page
@@ -1849,6 +1843,13 @@
     if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates, source: location.href });
     if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
     GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
+    /* #590 (majkinetor): "Falcon could add this partial info in its edit note
+       for the batch." Carried alongside the payload rather than inside it —
+       parseUrlParam requires the payload to be a bare array, and widening that
+       contract for one string would touch every producer of it. */
+    if (partialWhy) {
+      GM_setValue('falcon:pendingNote:' + token, `${partialWhy}. These links may therefore be incomplete; Falcon is idempotent, so re-running over this release later will fill in the rest.`);
+    }
     const relMbid = harmonyReleaseMbid();
     const tport = picardParam();   // #578
     const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}${tport}` : `${MB_TARGET}/?falcon=${token}${tport}`;
@@ -1911,16 +1912,14 @@
     }
     const lbl = document.getElementById('falcon-harmony-lbl');
     if (_autoSendTimer || _reloadTimer) return;   // a countdown owns the label while it runs
-    // #590: an errored page says so rather than quietly offering a batch built
-    // from it. The send is still available — it is a click on a button whose
-    // own label names the problem, and sendToFalcon asks once more before going.
+    /* #590 second cut: the button still SENDS — it just says the batch may be
+       short, so a partial import is a visible choice rather than a surprise.
+       The tooltip carries the detail; the same wording goes on the edit note. */
     const err = onHarmonyActionsPage() ? harmonyErrorState() : null;
-    if (err && err.bad) {
-      const why = harmonyErrorSummary(err);
-      lbl.textContent = err.permanent ? "Harmony can't load this release"
-        : total ? `Harmony errored — send anyway (${total})` : 'Harmony errored — nothing to send';
-      harmonyBtn.style.opacity = err.permanent || !total ? '.6' : '1';
-      harmonyBtn.title = why + (err.permanent ? '. Reloading could not help, so Falcon leaves it alone.' : total ? '. Click to send anyway.' : '.');
+    if (err && err.bad && total) {
+      lbl.textContent = `Send ${total} to Falcon (partial)`;
+      harmonyBtn.style.opacity = '1';
+      harmonyBtn.title = harmonyErrorSummary(err) + '. Sending anyway — Falcon is idempotent, so a partial import can be topped up later.';
       return;
     }
     lbl.textContent = total ? `Send ${total} to Falcon` : 'No Falcon actions found yet…';
@@ -1963,16 +1962,17 @@
     const cover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
     const isrcFallback = harmonyIsrcFallback();
     const total = items.length + (cover ? 1 : 0) + (isrcFallback ? isrcFallback.isrcs.filter(Boolean).length : 0);
-    // #590: "nothing left to send" was being logged for shape A too, where the
-    // truth is the opposite — Harmony never managed to load the release, so
-    // there is everything left to do and this tab is about to look finished.
-    // sendToFalcon owns the stand-down decision; this only has to stop claiming
-    // success on a page that failed.
+    /* #590: "nothing left to send" was being logged for shape A too, where the
+       truth is the opposite — Harmony never managed to load the release, so
+       there is everything left to do and this tab is about to look finished.
+       An errored page with actions on it still sends (see sendToFalcon); only a
+       page with genuinely nothing on it stands down, and it now says which of
+       the two it is. */
     const errSt = harmonyErrorState();
-    if (!total && !errSt.bad) { harmonyLog('auto send: the import succeeded but there is nothing left to send'); _autoSendDone = true; return; }
-    if (errSt.bad) {
-      harmonyLog(`auto send: standing down — ${harmonyErrorSummary(errSt)}`
-        + (cfg.harmonyReloadOnError ? '' : ' (turn "Reload on error" on to have Falcon load the page again)'));
+    if (!total) {
+      harmonyLog(errSt.bad
+        ? `auto send: nothing on this page to send — ${harmonyErrorSummary(errSt)}`
+        : 'auto send: the import succeeded but there is nothing left to send');
       _autoSendDone = true; return;
     }
     _autoSendDone = true;
@@ -2039,6 +2039,11 @@
   const HARMONY_SLOW_DOWN_RE = /(rate limit|too many requests queued|currently busy|429)/i;
   // Harmony marks the shape-B case itself, in LinkWithMusicBrainz — verbatim.
   const HARMONY_UNCHECKED_RE = /Already existing (\w+) links on MusicBrainz could not be checked/;
+  // MessageBox renders <span class="provider"> for a ProviderError and nothing
+  // else, so no chip means the error came from the MusicBrainz API calls
+  // themselves. MusicBrainz is also one of Harmony's own providers, so a chip
+  // naming it is still a MusicBrainz error.
+  const isMbErrorBox = b => !b.provider || /^musicbrainz$/i.test(b.provider);
   function harmonyErrorState() {
     const main = document.querySelector('main') || document.body;
     const boxes = [...main.querySelectorAll('.message.error')].map(b => ({
@@ -2058,29 +2063,52 @@
     const uncheckedTypes = [...new Set([...main.querySelectorAll('.message.warning')]
       .map(w => (HARMONY_UNCHECKED_RE.exec(w.textContent || '') || [])[1])
       .filter(Boolean))];
-    const slowDown = boxes.some(b => HARMONY_SLOW_DOWN_RE.test(b.text));
+    /* ⚠ Only a MusicBrainz error is worth reloading for, and this is the line
+       that decides which is which. majkinetor, after running the first cut:
+       "'Beatport: Failed to extract embedded JSON' is a showstopper for me, and
+       it seems to never resolve, so it blocks all other providers that did. It
+       blocked 6 providers that did have data… lets just look for MB errors."
+
+       MessageBox renders <span class="provider"> for a ProviderError and for
+       nothing else, so an error with no provider chip came from the MusicBrainz
+       API calls themselves. The MusicBrainz provider is also a provider in
+       Harmony's own lookup, so a chip reading "MusicBrainz" counts too. */
+    const mbErrors = boxes.filter(isMbErrorBox);
+    const providerErrors = boxes.filter(b => !isMbErrorBox(b));
+    const slowDown = mbErrors.some(b => HARMONY_SLOW_DOWN_RE.test(b.text));
     return {
       boxes,
+      mbErrors,
+      providerErrors,
       uncheckedTypes,
       slowDown,
       // <h2 class="release-title"> is only rendered when `release` merged, which
       // is precisely the A/not-A distinction.
       hasRelease: !!document.querySelector('h2.release-title'),
-      providers: [...new Set(boxes.map(b => b.provider).filter(Boolean))],
-      permanent: boxes.length > 0 && boxes.every(b => HARMONY_PERMANENT_RE.test(b.text)),
+      providers: [...new Set(providerErrors.map(b => b.provider).filter(Boolean))],
+      // "permanent" only ever decides whether to RELOAD, so it is about the
+      // MusicBrainz errors alone.
+      permanent: mbErrors.length > 0 && mbErrors.every(b => HARMONY_PERMANENT_RE.test(b.text)),
       get bad() { return boxes.length > 0; },
+      get mbBad() { return mbErrors.length > 0; },
       get shape() { return !boxes.length ? 'clean' : !this.hasRelease ? 'A' : uncheckedTypes.length ? 'B' : 'C'; },
     };
   }
-  // A one-line human summary, used on the button, in the confirm and in the log
-  // — one wording, so the three can never drift apart.
+  /* A one-line human summary — used on the button, in the log, and as the batch
+     edit note, so all three say the same thing. majkinetor: "Falcon could add
+     this partial info in its edit note for the batch." */
   function harmonyErrorSummary(st) {
     if (!st.bad) return '';
-    const what = st.shape === 'A' ? 'it could not load the release at all, so there are no actions on this page'
-      : st.shape === 'B' ? `existing ${st.uncheckedTypes.join('/')} links could not be checked, so these actions are unfiltered`
-        : 'the actions look complete but are missing whatever the failed provider would have contributed';
-    return `Harmony reported ${st.boxes.length} error${st.boxes.length === 1 ? '' : 's'}`
-      + (st.providers.length ? ` (${st.providers.join(', ')})` : '') + ` — ${what}`;
+    const bits = [];
+    if (st.mbErrors.length) {
+      bits.push(st.shape === 'A' ? 'MusicBrainz could not be read at all, so this page has no actions'
+        : st.uncheckedTypes.length ? `existing ${st.uncheckedTypes.join('/')} links could not be checked against MusicBrainz, so these actions are unfiltered`
+          : `MusicBrainz returned an error (${st.mbErrors[0].text.replace(/\s+/g, ' ').slice(0, 80)})`);
+    }
+    if (st.providerErrors.length) {
+      bits.push(`${st.providers.join(', ')} failed, so whatever ${st.providers.length === 1 ? 'it' : 'they'} would have contributed is missing`);
+    }
+    return 'Harmony reported an error — ' + bits.join('; ');
   }
   function onHarmonyActionsPage() {
     return ON_HARMONY && /\/release\/actions\/?$/.test(location.pathname) && !!harmonyReleaseMbid();
@@ -2116,23 +2144,29 @@
   function maybeReloadOnError() {
     if (!onHarmonyActionsPage()) return false;
     const st = harmonyErrorState();
-    if (!st.bad) {
-      // A clean load ends the retry series, so an intermittent provider can
+    st.boxes.forEach(b => harmonyLog(`${isMbErrorBox(b) ? 'MusicBrainz' : 'provider'} error (${b.from}${b.provider ? ', ' + b.provider : ''}): ${b.text.replace(/\s+/g, ' ').slice(0, 300)}`));
+    if (!st.mbBad) {
+      // A clean MusicBrainz load ends the retry series, so a flaky moment can
       // never accumulate a count across successful imports.
-      if (harmonyReloadCount()) { harmonyLog(`loaded cleanly after ${harmonyReloadCount()} reload(s)`); setHarmonyReloadCount(0); }
+      if (harmonyReloadCount()) { harmonyLog(`MusicBrainz came back cleanly after ${harmonyReloadCount()} reload(s)`); setHarmonyReloadCount(0); }
+      /* ⚠ A PROVIDER error is deliberately not reloaded for. majkinetor hit
+         exactly this: "'Beatport: Failed to extract embedded JSON'… seems to
+         never resolve, so it blocks all other providers that did. It blocked 6
+         providers that did have data." Reloading cannot fix a provider whose
+         page Harmony can't parse, and the six that worked are worth sending. */
+      if (st.providerErrors.length) harmonyLog(`${st.providers.join(', ')} failed, but MusicBrainz itself is fine — reloading would not bring them back, so this sends as it is`);
       return false;
     }
     const why = harmonyErrorSummary(st);
-    st.boxes.forEach(b => harmonyLog(`error (${b.from}${b.provider ? ', ' + b.provider : ''}): ${b.text.replace(/\s+/g, ' ').slice(0, 300)}`));
     harmonyLog(`${why} [shape ${st.shape}]`);
-    if (!cfg.harmonyReloadOnError) { harmonyLog('"Reload on error" is off — leaving the page alone'); return false; }
-    if (st.permanent) { harmonyLog('every error on this page is permanent — reloading it could never help, so it will not be reloaded'); return false; }
-    // The automatic navigation is the auto-send path's; a manual user gets told
-    // on the button and decides for themselves.
-    if (!cfg.autoSendFromHarmony) { harmonyLog('"Auto send" is off, so this tab is not reloaded by itself — the button offers it'); return false; }
+    if (st.permanent) { harmonyLog('every MusicBrainz error on this page is permanent — reloading it could never help, so it will not be reloaded'); return false; }
     const n = harmonyReloadCount() + 1;
     if (n > cfg.harmonyReloadMax) {
-      harmonyLog(`gave up after ${cfg.harmonyReloadMax} reload(s) — the error is still there, so nothing will be sent from this page`);
+      /* majkinetor: "we should certainly submit at the end with whatever comes
+         through after all repeats are exhausted. Falcon is idempotent in any
+         case, so half input is still better than no input." So the retries stop
+         and the send goes ahead — carrying the reason in the batch edit note. */
+      harmonyLog(`gave up after ${cfg.harmonyReloadMax} reload(s) — sending whatever this page does have, since a partial import beats none`);
       return false;
     }
     if (_reloadCancelled || _reloadTimer) return true;
@@ -4854,9 +4888,6 @@
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
             <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start import</span>
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Harmony drops its recording, artist and label actions when a MusicBrainz or provider call fails, and has no retry of its own — so a batch built from that page is incomplete. With this on, an errored actions page is loaded again (up to 5 times, backing off 5s to 60s) until it comes back clean; a countdown shows on the button first, click it to cancel. Errors that a reload could never fix (a bad MBID, a release that isn't there) are left alone. Either way, Auto send never sends from a page that is still showing an error.">
-            <input type="checkbox" id="falcon-opt-harmony-reload-error" /> <span>Reload actions page on error</span>
-          </label>
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="When a Harmony import finishes with nothing failed, reload the MusicBrainz release page so it shows what Falcon just added instead of the state it had before the run. The run's log survives the reload, and Falcon's corner icon turns green on a page it reloaded so you can tell which tab it was among many.">
             <input type="checkbox" id="falcon-opt-reload-after-import" /> <span>Reload release page after import without errors</span>
           </label>
@@ -5320,9 +5351,6 @@
     const autoStartCb = document.getElementById('falcon-opt-auto-start-harmony');
     autoStartCb.checked = cfg.autoStartHarmonyImport;
     autoStartCb.onchange = () => { cfg.autoStartHarmonyImport = autoStartCb.checked; };
-    const reloadErrCb = document.getElementById('falcon-opt-harmony-reload-error');   // #590
-    reloadErrCb.checked = cfg.harmonyReloadOnError;
-    reloadErrCb.onchange = () => { cfg.harmonyReloadOnError = reloadErrCb.checked; };
     const reloadAfterCb = document.getElementById('falcon-opt-reload-after-import');   // #588
     reloadAfterCb.checked = cfg.reloadReleaseAfterImport;
     reloadAfterCb.onchange = () => { cfg.reloadReleaseAfterImport = reloadAfterCb.checked; };
@@ -6023,7 +6051,7 @@
     // #590
     harmonyErrorState, harmonyErrorSummary, harmonyReloadDelayMs, maybeReloadOnError, cancelHarmonyReload,
     onHarmonyActionsPage, harmonyReloadCount, setHarmonyReloadCount,
-    HARMONY_PERMANENT_RE, HARMONY_SLOW_DOWN_RE, HARMONY_UNCHECKED_RE,
+    HARMONY_PERMANENT_RE, HARMONY_SLOW_DOWN_RE, HARMONY_UNCHECKED_RE, isMbErrorBox,
     reloadPending: () => !!_reloadTimer,
     // #588
     maybeReloadReleasePage, reloadedAfterImportHere, RELOADED_KEY,

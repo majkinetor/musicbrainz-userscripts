@@ -32,6 +32,12 @@ const FIXTURES = {
     ${act(1)}`),
   permanent: body(`<h2>Release Actions</h2>
     <div class="message error"><div class="markdown"><p>"x" is not a valid MBID</p></div></div>`),
+  /* majkinetor's showstopper: a provider that never recovers. Reloading for it
+     would loop to the cap every time while the providers that DID work sit
+     there unsent. */
+  provider: body(`<h2 class="release-title">T</h2>
+    <div class="message error"><span class="provider">Beatport:</span><div class="markdown"><p>Failed to extract embedded player JSON: https://www.beatport.com/release/x/1</p></div></div>
+    ${act(1)}${act(2)}`),
   clean: body(`<h2 class="release-title">T</h2>${act(1)}${act(2)}`),
 };
 
@@ -84,7 +90,9 @@ const count = p => p.evaluate(() => (window.__falconTest.harmonyReloadCount ? wi
 const lbl = p => p.evaluate(() => { const l = document.getElementById('falcon-harmony-lbl'); return l ? l.textContent : null; });
 const logs = p => p.evaluate(() => window.__log.slice());
 
-const ON = { 'falcon:harmonyReloadOnError': true, 'falcon:autoSendFromHarmony': true, 'falcon:harmonyReloadMax': 1 };
+// No reload option to set — it is unconditional now. Only the cap is turned
+// down, so the whole arm → reload → give up → send cycle fits in one short test.
+const ON = { 'falcon:autoSendFromHarmony': true, 'falcon:harmonyReloadMax': 1 };
 
 /* ── 0. the build has the machinery ────────────────────────────────────────── */
 const probe = await open('clean', ON);
@@ -123,10 +131,12 @@ ck(cleanedUp.before === 3 && cleanedUp.after === 0,
 ck(cleanedUp.pending === false, 'and arms nothing');
 
 /* ── 3. it refuses in every case it should ─────────────────────────────────── */
+/* There is no option to turn any of this off any more, and the reload no longer
+   waits on Auto send — majkinetor: "lets just look for MB errors (without an
+   option)". What is left are the two cases where reloading cannot help. */
 const cases = [
-  ['reload turned off', 'err', { ...ON, 'falcon:harmonyReloadOnError': false }, /Reload on error" is off/],
-  ['auto send off', 'err', { ...ON, 'falcon:autoSendFromHarmony': false }, /not reloaded by itself/],
   ['a permanent error', 'permanent', ON, /permanent/],
+  ['a provider error', 'provider', ON, /would not bring them back/],
 ];
 for (const [name, fx, opts, re] of cases) {
   const p = await open(fx, opts);
@@ -172,10 +182,23 @@ console.log('after the reload:', JSON.stringify({ pending: await pending(p), lab
 ck(await pending(p) === false, 'with max=1 spent, no second reload is armed');
 ck(afterLog.some(l => /gave up after 1 reload/.test(l)),
   `it says it gave up — "${(afterLog.find(l => /gave up/.test(l)) || '').slice(0, 120)}"`);
-ck(/Harmony errored/.test(afterLbl || ''), `and the button now names the problem instead of counting down (${afterLbl})`);
-ck(await p.evaluate(() => window.__opened.length) === 0,
-  'and STILL nothing has been sent from the errored page — the point of the whole exercise');
-ck(afterLog.some(l => /standing down/.test(l)), 'the auto-send stood down rather than shipping a batch');
+/* …and then it SENDS. This is the assertion that flipped after majkinetor ran
+   the first cut: "we should certainly submit at the end with whatever comes
+   through after all repeats are exhausted. Falcon is idempotent in any case, so
+   half input is still better than no input." */
+const sentAfter = await p.waitForFunction(() => window.__opened.length > 0, null, { timeout: 25000 }).then(() => true).catch(() => false);
+const out = await p.evaluate(() => {
+  const u = window.__opened[0];
+  const token = u ? new URL(typeof u === 'string' ? u : u.u || u).searchParams.get('falcon') : null;
+  return { n: window.__opened.length, token, note: token ? window.GM_getValue('falcon:pendingNote:' + token, null) : null,
+    items: token ? JSON.parse(window.GM_getValue('falcon:pending:' + token, '[]')).length : 0, lbl: (document.getElementById('falcon-harmony-lbl') || {}).textContent };
+});
+console.log('after giving up:', JSON.stringify(out));
+ck(sentAfter && out.n === 1, `once the retries are spent the batch is sent anyway (${out.n})`);
+ck(out.items >= 2, `carrying what the page did have (${out.items} items)`);
+ck(!!out.note && /Harmony reported an error/.test(out.note || ''),
+  `with the reason attached as the batch's edit note — "${(out.note || 'NONE').slice(0, 90)}…"`);
+ck(!afterLog.some(l => /standing down/.test(l)), 'and nothing stands down');
 
 /* ── 5. cancelling is sticky ───────────────────────────────────────────────── */
 const pc = await open('busy', ON);
