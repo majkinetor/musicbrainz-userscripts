@@ -12,6 +12,19 @@ Adding data in automated way has no good options today. For example, an importer
 
 Falcon provides unified interface to bulk edit supported entity [attributes](#attributes), regardless if it is done via API or form manipulation.  
 
+## Features
+
+- **[Queue from anywhere](#usage)** — a [Harmony](#from-harmony) Release Actions page, [the release or release group you are on](#from-the-current-page), [a series](#from-a-series), or a [JSON worksheet](#json-model).
+- **[Bulk attributes](#attributes)** — external links, [names](#name), disambiguations, [aliases](#aliases), ISRCs, the video flag and [cover art](#cover-art), across all five entity types.
+- **[Worker pool](#how-it-works)** — a fixed set of same-origin iframes seeds MusicBrainz's own forms, or uses the API where one exists; nothing opens or closes per item.
+- **[Failures stay inspectable](#statuses)** — MusicBrainz's own error on the row, the live worker to look at, retry in place, or open in a real tab to finish by hand.
+- **Export / import** — a run round-trips as JSON with each item's outcome, so a partial batch can be kept, edited and re-run without repeating what already went through.
+- **[Batch edit note](#batch-edit-note)** — one reason appended to every edit the run makes.
+- **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)** — EAC, XLD, fre:ac, whipper, dBpoweramp and cyanrip, computed in the browser.
+- **[Hands-free import](#hands-free-import)** — a finished Harmony import can carry through to a finished run, [retrying MusicBrainz errors](#when-harmony-errors) and sending what it has.
+- **[Picard](#options)** — the tagger button is always there, with optional automatic hand-off once a run finishes.
+- Idempotent where it can be — untouched rows and aliases the entity already has are skipped rather than re-submitted.
+
 ## Usage
 
 1. Populate a queue from [Harmony](#from-harmony), [the page you are on](#from-the-current-page), or import a [JSON file](#json-model) by accessing Falcon on any Musicbrainz page (CTRL+ALT+F).
