@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.14
+// @version      2026.9.14.230436
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -4111,7 +4111,15 @@
   .as-prov img{width:18px;height:18px;display:block;object-fit:contain}
   .as-dthumb .as-prov{left:4px;bottom:4px;width:22px;height:22px}
   .as-dthumb .as-prov img{width:16px;height:16px}
-  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:var(--mbu-bg-sunken);cursor:zoom-in;border-radius:9px 9px 0 0;overflow:hidden}
+  /* majkinetor, again: "it still happens that borders are junky", "mostly visible
+     on smaller sizes". The selection ring was fixed earlier (c5cf0aed) but the
+     base geometry never was: the card is border-radius 9px over a 1px border, so
+     the INSIDE of that border curves at 9 − 1 = 8px, while this sat in it at 9px.
+     A corner rounded harder than the hole it sits in leaves a sliver of card
+     background showing at each top corner — a fixed ~1px, so the smaller the
+     tile the larger a share of the corner it is, which is exactly where he sees
+     it. Concentric radii: inner = outer − border width. */
+  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:var(--mbu-bg-sunken);cursor:zoom-in;border-radius:8px 8px 0 0;overflow:hidden}
   .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--mbu-bg),var(--mbu-bg-raised))}
   .as-thumb.na img{display:none}
