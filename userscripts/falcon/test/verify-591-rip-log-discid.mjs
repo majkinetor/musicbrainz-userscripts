@@ -72,9 +72,28 @@ const attachHits = [];
 // a chrome-error page in an earlier session.
 await ctx.route(/^https:\/\/musicbrainz\.org\/ws\/2\/release\//, r =>
   r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(STATE.media) }));
+/* The attach page, copied from what test.musicbrainz.org actually serves: the
+   mediums are RADIOS named `medium` in a GET form whose submit reads "Attach CD
+   TOC", and the confirmation page (medium= present) carries the edit note box.
+   The first cut looked for <a href*="medium="> here, which does not exist — that
+   is why majkinetor still had to pick the medium by hand. */
+const PICKER = `<!doctype html><body><div id="content"><h2>Attach CD TOC</h2><form method="get">
+  <input type="hidden" name="toc" value="1 17 343468">
+  <input type="hidden" name="filter-release.query" value="${MBID}">
+  <table>
+    <tr><td><input type="radio" name="medium" value="1123587"></td><td>CD 2: Don't (show tracklist)</td></tr>
+    <tr><td><input type="radio" name="medium" value="1123588"></td><td>CD 3: Know (show tracklist)</td></tr>
+  </table>
+  <button type="submit">Attach CD TOC</button></form></div></body>`;
+const CONFIRM = `<!doctype html><body><div id="content"><h2>Attach CD TOC</h2>
+  <p>Attaching to CD 3</p>
+  <div class="edit-note"><textarea class="edit-note" name="edit-note"></textarea></div>
+  <button type="submit">Enter edit</button></div></body>`;
 await ctx.route(/^https:\/\/musicbrainz\.org\/cdtoc\/attach/, r => {
-  attachHits.push(r.request().url());
-  return r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: '<!doctype html><body><div id="content">attach</div></body>' });
+  const u = r.request().url();
+  attachHits.push(u);
+  const body = /[?&]medium=/.test(u) ? CONFIRM : PICKER;
+  return r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body });
 });
 await ctx.route(/^https:\/\/musicbrainz\.org\/release\//, r =>
   r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: STATE.page }));
@@ -252,6 +271,72 @@ console.log('attach url (medium id known):', attachHits[0]);
 const u2 = new URL(attachHits[0] || 'https://x/');
 ck(u2.searchParams.get('medium') === '3374577', 'it goes straight to that medium — MusicBrainz renders the confirmation, not the picker');
 ck(!u2.searchParams.has('filter-release.query'), 'and skips the release filter entirely');
+
+/* ── 5b. neither intermediate page should be shown at all ──────────────────
+   majkinetor: "It shows me a page to select MBID, which it shouldn't as Falcon
+   already knows it… When MBID is added we again have page that can be skipped -
+   select media - Falcon already knows which media was used."
+   So when the medium id is not on the release page, Falcon resolves it from the
+   picker itself and goes straight to the confirmation. */
+attachHits.length = 0;
+const resolved = await page2.evaluate(() => window.__falconTest.resolveMediumId(
+  '9b3fe0b2-d286-437c-b13c-2943f90780b4', 3, '1+17+343468+150'));
+console.log('\nresolved medium for position 3:', resolved);
+ck(resolved === '1123588', `the medium id is read off MusicBrainz's own radio list (${resolved}) — CD 3, not CD 2`);
+const resolved2 = await page2.evaluate(() => window.__falconTest.resolveMediumId(
+  '9b3fe0b2-d286-437c-b13c-2943f90780b4', 2, '1+17+343468+150'));
+ck(resolved2 === '1123587', `and position 2 resolves to the other one (${resolved2}) — the row label is what distinguishes them`);
+// ⚠ the refusal matters more than the match: a disc ID on the wrong medium is
+// an edit another editor has to undo
+const resolved3 = await page2.evaluate(() => window.__falconTest.resolveMediumId(
+  '9b3fe0b2-d286-437c-b13c-2943f90780b4', 9, '1+17+343468+150'));
+ck(resolved3 === null, `a medium MusicBrainz did not offer resolves to nothing rather than to a guess (${JSON.stringify(resolved3)})`);
+
+// end to end: a drop with no known medium id lands on the CONFIRMATION page
+attachHits.length = 0;
+await page2.evaluate(() => window.__falconTest.goAttachResolved(
+  { id: 'ID', tocString: '1+17+343468+150', tracks: 17 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 3, undefined, null));
+await page2.waitForTimeout(1500);
+const last = attachHits[attachHits.length - 1] || '';
+console.log('landed on:', last);
+ck(/[?&]medium=1123588/.test(last), 'a drop goes straight to the confirmation for the right medium');
+ck(!/filter-release\.query/.test(last), 'without ever showing the MBID box or the medium picker');
+
+/* ── 5c. the fallback page, and the signature ──────────────────────────────── */
+const pPick = await ctx.newPage();
+pPick.on('pageerror', e => { console.log('PAGEERROR ' + e.message); fail++; });
+await pPick.addInitScript(() => {
+  const store = new Map();
+  window.GM_getValue = (k, d) => (store.has(k) ? store.get(k) : d);
+  window.GM_setValue = (k, v) => store.set(k, v);
+  window.GM_info = { script: { name: 'Falcon', version: 't' } };
+  window.GM_xmlhttpRequest = () => {};
+  window.__log = [];
+  const ci = console.info.bind(console);
+  console.info = (...a) => { window.__log.push(a.join(' ')); ci(...a); };
+});
+pPick.on('load', () => { pPick.addScriptTag({ content: code }).catch(() => {}); });
+attachHits.length = 0;
+// landing on the picker WITH falcon-medium: Falcon must tick the radio and press Attach
+await pPick.goto(`https://musicbrainz.org/cdtoc/attach?toc=1+17+343468+150&falcon-medium=3&filter-release.query=${MBID}`, { waitUntil: 'domcontentloaded' });
+await pPick.waitForTimeout(2500);
+console.log('\nafter the picker:', pPick.url());
+ck(/[?&]medium=1123588/.test(pPick.url()),
+  'landing on the picker anyway, Falcon selects the right medium and presses "Attach CD TOC"');
+// …and the confirmation page gets signed
+await pPick.waitForFunction(() => !!document.querySelector('textarea.edit-note'), null, { timeout: 10000 }).catch(() => {});
+await pPick.waitForTimeout(800);
+const note = await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).value || '');
+console.log('edit note:', JSON.stringify(note));
+ck(/Falcon v/.test(note), `the final edit note carries Falcon's signature — "${note.split(String.fromCharCode(10))[0]}"`);
+ck(/rip log/i.test(note), 'and says where the disc ID came from');
+// a re-render must not stack signatures
+await pPick.evaluate(() => window.__falconTest.signAttachEditNote());
+const note2 = await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).value || '');
+ck((note2.match(/Falcon v/g) || []).length === 1, `signing twice does not stack it (${(note2.match(/Falcon v/g) || []).length})`);
+// nothing was ever submitted — "Enter edit" is still the user's to press
+ck(await pPick.evaluate(() => document.querySelectorAll('button[type="submit"]').length > 0),
+  'the "Enter edit" button is still there, unpressed — Falcon never submits the edit');
 
 /* ── 6. nothing was submitted ──────────────────────────────────────────────── */
 for (const [n, p] of [['1', page], ['2', page2], ['3', page3]]) {

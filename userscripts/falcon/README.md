@@ -303,7 +303,9 @@ A MusicBrainz disc ID is a SHA-1 over the TOC, so all of this happens in the bro
 
 It refuses rather than guessing in the cases Picard refuses: a partial rip (non-consecutive track numbers), a non-standard track sequence, and a file it does not recognise. A trailing **data track** is dropped the way Picard drops it (an 11401-sector gap), and a log whose track count doesn't match the medium you dropped it on asks before continuing — a disc ID on the wrong medium is an edit someone else has to undo.
 
-Where the drop takes you depends on what the page can tell Falcon. A medium that **already has a disc ID** exposes its internal medium id in its own Remove/Move links, so the drop goes straight to the confirmation page. A medium with none doesn't, so the drop goes to MusicBrainz's medium picker with the release already filled in — one extra click, and no extra lookup.
+A drop goes **straight to MusicBrainz's confirmation page** — neither the "enter a release MBID" box nor the medium picker is shown, since Falcon already knows both. The medium's internal row id is the only thing it lacks: for a medium that already has a disc ID that id is in the page's own Remove/Move links, and otherwise Falcon reads it off MusicBrainz's own medium list in the background. If MusicBrainz doesn't offer that medium (it only lists mediums whose track count matches the TOC), Falcon shows the picker rather than guessing — a disc ID on the wrong medium is an edit someone else has to undo.
+
+On the confirmation page it signs the edit note. The **Enter edit** button is still yours to press.
 
 ### Reporting a problem
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.14.151332
+// @version      2026.9.14.164508
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2527,12 +2527,62 @@
       return;
     }
     zoneSay(z, null, `${esc(r.format)} log · ${r.tracks} tracks · <code>${esc(r.id)}</code> — opening MusicBrainz…`);
-    goAttach(r, mbid, pos, z.dataset.mediumId);
+    await goAttachResolved(r, mbid, pos, z.dataset.mediumId, z);
+  }
+  // Known medium id → straight there. Otherwise resolve it first, and only fall
+  // back to MusicBrainz's own picker if that cannot be done honestly.
+  async function goAttachResolved(r, mbid, pos, knownId, z) {
+    let id = knownId;
+    if (!id) {
+      if (z) zoneSay(z, 'busy', 'Finding this medium on MusicBrainz…');
+      id = await resolveMediumId(mbid, pos, r.tocString);
+    }
+    goAttach(r, mbid, pos, id);
   }
   /* Straight to the confirmation when the medium's internal id is known,
      otherwise to MusicBrainz's own medium picker filtered to this release. The
      `falcon-medium` parameter is ignored by MusicBrainz and read back by Falcon
      on that page (see autoPickAttachMedium) to preselect the right one. */
+  /* majkinetor: "It shows me a page to select MBID, which it shouldn't as Falcon
+   * already knows it… When MBID is added we again have page that can be skipped
+   * - select media - Falcon already knows which media was used."
+   *
+   * Both pages are the same page: /cdtoc/attach?toc=…&filter-release.query=<mbid>
+   * renders the release's mediums as RADIOS named `medium` (measured on the
+   * sandbox: value 1123588, row "CD 3: Know"), and the only thing standing
+   * between that and the confirmation is the internal medium id. So fetch that
+   * page once, read the id off the radio, and go straight to the confirmation.
+   *
+   * ⚠ MusicBrainz lists only the mediums whose track count matches the TOC, so
+   * the one dropped on can legitimately be absent. That returns null and the
+   * caller falls back to showing the page rather than guessing at a medium —
+   * attaching a disc ID to the wrong one is an edit someone else has to undo.
+   */
+  async function resolveMediumId(mbid, position, tocString) {
+    const url = `${MB_ORIGIN}/cdtoc/attach?toc=${tocString}&filter-release.query=${mbid}`;
+    let html;
+    try {
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) { log('warn', `disc IDs: could not read the medium list (HTTP ${res.status})`); return null; }
+      html = await res.text();
+    } catch (e) { log('warn', `disc IDs: could not read the medium list — ${e.message}`); return null; }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const radios = [...doc.querySelectorAll('input[name="medium"]')];
+    if (!radios.length) { log('warn', 'disc IDs: MusicBrainz offered no medium for this TOC — falling back to its own picker'); return null; }
+    const seen = radios.map(i => {
+      const row = i.closest('tr') || i.closest('li') || i.parentElement;
+      const text = ((row && row.textContent) || '').replace(/\s+/g, ' ').trim();
+      // rows read "CD 3: Know (show tracklist)" — format, then the position
+      const m = /(?:^|\s)(?:CD|Medium|Disc|DVD|Vinyl|Cassette)?\s*(\d+)\s*:/i.exec(text);
+      return { id: i.value, pos: m ? +m[1] : null, text: text.slice(0, 60) };
+    });
+    log('info', `disc IDs: MusicBrainz offers ${seen.length} medium(s) for this TOC — ${seen.map(s => `#${s.pos}=${s.id}`).join(', ')}`);
+    const hit = seen.find(s => s.pos === position)
+      // one candidate and no position to read: unambiguous either way
+      || (seen.length === 1 && seen[0].pos == null ? seen[0] : null);
+    if (!hit) { log('warn', `disc IDs: none of the offered mediums is #${position} — letting MusicBrainz ask`); return null; }
+    return hit.id;
+  }
   function goAttach(r, mbid, position, mediumId) {
     /* ⚠ The toc parameter is NOT percent-encoded, and that is the whole trick.
      * MusicBrainz validates it with /\A\d+(?: \d+)*\z/ — SPACE separated
@@ -2556,19 +2606,50 @@
      confirmation, so nothing is submitted without the edit being entered by hand. */
   function autoPickAttachMedium() {
     if (!/^\/cdtoc\/attach\/?$/.test(location.pathname)) return;
-    const want = new URLSearchParams(location.search).get('falcon-medium');
+    const q = new URLSearchParams(location.search);
+    // The confirmation page — the last stop, where the edit note lives.
+    // majkinetor: "That will then leave the user to the final edit note (where
+    // Falcon should add its own signature too)."
+    if (q.get('medium')) return signAttachEditNote();
+    const want = q.get('falcon-medium');
     if (!want) return;
-    const links = [...document.querySelectorAll('a[href*="/cdtoc/attach?"][href*="medium="]')];
-    if (!links.length) { console.info(`[${NAME}] disc IDs: no medium links on this page to pick from`); return; }
-    // the rows are in medium order, and each one names itself ("CD 1", "Medium 2")
-    const match = links.find(a => {
-      const row = a.closest('tr') || a.parentElement;
-      return row && new RegExp(`(?:medium|cd|disc)\\s*${want}\\b`, 'i').test(row.textContent || '');
-    }) || (links.length === 1 ? links[0] : null);
-    if (!match) { console.info(`[${NAME}] disc IDs: could not tell which of ${links.length} mediums is #${want} — pick it yourself`); return; }
-    match.style.outline = '2px solid var(--mbu-accent, #5f3ec0)';
-    console.info(`[${NAME}] disc IDs: following the link for medium #${want}`);
-    location.href = match.href;
+    /* ⚠ RADIOS, not links. The first cut looked for a[href*="medium="] and so
+       did nothing at all on this page — which is why majkinetor still had to
+       pick the medium by hand. Measured on the sandbox: the mediums are
+       <input type="radio" name="medium" value="1123588"> in a GET form whose
+       submit button reads "Attach CD TOC". */
+    const radios = [...document.querySelectorAll('input[type="radio"][name="medium"]')];
+    if (!radios.length) { console.info(`[${NAME}] disc IDs: no medium to choose on this page`); return; }
+    const rowOf = i => ((i.closest('tr') || i.closest('li') || i.parentElement || {}).textContent || '').replace(/\s+/g, ' ').trim();
+    const match = radios.find(i => new RegExp(`(?:^|\\s)(?:CD|Medium|Disc|DVD|Vinyl|Cassette)?\\s*${want}\\s*:`, 'i').test(rowOf(i)))
+      || (radios.length === 1 ? radios[0] : null);
+    if (!match) { console.info(`[${NAME}] disc IDs: could not tell which of ${radios.length} mediums is #${want} — pick it yourself`); return; }
+    match.checked = true;
+    match.dispatchEvent(new Event('change', { bubbles: true }));
+    const form = match.closest('form');
+    const submit = form && [...form.querySelectorAll('button[type="submit"], input[type="submit"]')]
+      .find(b => /attach/i.test(b.textContent || b.value || ''));
+    if (!submit) { console.info(`[${NAME}] disc IDs: medium #${want} selected — press "Attach CD TOC" to continue`); return; }
+    console.info(`[${NAME}] disc IDs: medium #${want} selected (${match.value}), attaching`);
+    submit.click();
+  }
+  /* The confirmation page is where MusicBrainz asks for the edit note, and it is
+     the only edit in this flow — Falcon never submits it, so signing the note is
+     the only trace it leaves. Appended, never replacing: anything already typed
+     (or seeded) stays. */
+  function signAttachEditNote() {
+    const ta = document.querySelector('textarea.edit-note, textarea[name="edit-note"], textarea[name*="edit_note"], #id-edit-note, .edit-note textarea');
+    if (!ta) { console.info(`[${NAME}] disc IDs: no edit note box on this page to sign`); return; }
+    const sig = `${FALCON_SIGNATURE()}${String.fromCharCode(10)}Disc ID computed from a CD rip log.`;
+    if ((ta.value || '').includes(FALCON_SIGNATURE())) return;   // a re-render must not stack them
+    try {
+      const set = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      const existing = (ta.value || '').trim();
+      set.call(ta, existing ? existing + String.fromCharCode(10) + sig : sig);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.dispatchEvent(new Event('change', { bubbles: true }));
+      console.info(`[${NAME}] disc IDs: signed the edit note`);
+    } catch (e) { console.info(`[${NAME}] disc IDs: could not sign the edit note — ${e.message}`); }
   }
 
   /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
@@ -6081,6 +6162,7 @@
     parseRipLog, parseEacLog, parseWhipperLog, parseDbPowerampLog, parseCyanripLog,
     calcMbToc, mbDiscId, tocParam, readLogText, discIdFromLog,
     ensureDiscIdUi, autoPickAttachMedium, mediumMayHaveDiscIds, scrapeMediumIds, goAttach,
+    resolveMediumId, goAttachResolved, signAttachEditNote, FALCON_SIGNATURE,
     // #571
     RENAMEABLE, NAME_SEEDS, setReleaseName, setReleaseField,
     // #572
