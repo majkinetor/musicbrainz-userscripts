@@ -27,9 +27,12 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const code = await readFile(process.env.FALCON_SRC || resolve(HERE, '..', 'falcon.user.js'), 'utf8');
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 
-// majkinetor's own attachment, kept next to the test so this does not depend on
-// GitHub being reachable on a later run.
-const LOG_DIR = resolve(HERE, 'logs');
+// majkinetor's own attachment, committed next to the test so this does not
+// depend on GitHub being reachable on a later run.
+// ⚠ test/fixtures/, NOT test/logs/ — the latter is gitignored, so a fixture put
+// there works on this machine and silently turns into a network fetch for
+// everybody else, in a test whose whole claim is that it touches no network.
+const LOG_DIR = resolve(HERE, 'fixtures');
 const REAL_LOG = resolve(LOG_DIR, 'The.Deadbeats.-.Made.In.The.Shade.log');
 const EXPECT_ID = 'UHvvp8Oyi0D5QEK.qYfeX7GrcLw-';
 const EXPECT_TOC = '1+13+279873+150+19836+37901+60766+81178+104637+132997+161041+177507+196805+218380+240602+265363';
