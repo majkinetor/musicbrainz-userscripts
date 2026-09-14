@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.14.145808
+// @version      2026.9.14.151332
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2416,21 +2416,34 @@
     const mbid = m[1].toLowerCase();
     const host = document.getElementById('content');
     if (!host) return;
+    /* majkinetor: "Dark theme please". The first cut hardcoded light colours,
+       which is doubly wrong here: MBU_TOKENS is injected by ensurePanel(), and
+       this box exists on pages where the panel was never opened — so the tokens
+       have to come with it. mbuTheme() is what stamps data-mbu-theme on <html>;
+       calling it here means the box follows a dark userstyle even when nothing
+       else of Falcon's is on screen. */
+    try { mbuTheme(); } catch (e) {}
     const box = document.createElement('div');
     box.id = 'falcon-discid-box';
+    box.className = 'mbu-ui';
     box.innerHTML = `<style>
-      #falcon-discid-box{margin:10px 0 16px;font:13px var(--mbu-font, -apple-system,Segoe UI,Roboto,Arial,sans-serif)}
+      ${document.getElementById('falcon-panel') ? '' : MBU_TOKENS}
+      #falcon-discid-box{margin:10px 0 16px;font:13px var(--mbu-font);color:var(--mbu-text)}
+      #falcon-discid-box h2{color:var(--mbu-text)}
       #falcon-discid-box .fd-zones{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
-      #falcon-discid-box .fd-zone{flex:1 1 220px;min-height:76px;border:2px dashed #b9b0d4;border-radius:8px;padding:10px 12px;
-        display:flex;flex-direction:column;justify-content:center;gap:3px;cursor:pointer;background:#faf9fe;transition:background .12s,border-color .12s}
-      #falcon-discid-box .fd-zone:hover,#falcon-discid-box .fd-zone.over{background:#f1ecff;border-color:#5f3ec0}
+      #falcon-discid-box .fd-zone{flex:1 1 220px;min-height:76px;border:2px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;
+        display:flex;flex-direction:column;justify-content:center;gap:3px;cursor:pointer;color:var(--mbu-text);
+        background:var(--mbu-bg-raised);transition:background .12s,border-color .12s}
+      #falcon-discid-box .fd-zone:hover,#falcon-discid-box .fd-zone.over{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
       #falcon-discid-box .fd-zone.busy{cursor:progress;opacity:.7}
-      #falcon-discid-box .fd-zone.bad{border-color:#c0392b;background:#fdecec}
+      #falcon-discid-box .fd-zone.bad{border-color:var(--mbu-error-border);background:var(--mbu-error-bg)}
       #falcon-discid-box .fd-zone.off{cursor:not-allowed;opacity:.55;border-style:solid}
-      #falcon-discid-box .fd-t{font-weight:600}
-      #falcon-discid-box .fd-s{font-size:11px;color:#666}
-      #falcon-discid-box .fd-err{color:#c0392b}
-      #falcon-discid-box .fd-foot{font-size:11px;color:#666}
+      #falcon-discid-box .fd-t{font-weight:600;color:var(--mbu-text)}
+      #falcon-discid-box .fd-s{font-size:11px;color:var(--mbu-text-dim)}
+      #falcon-discid-box .fd-err{color:var(--mbu-error)}
+      #falcon-discid-box code{font-family:var(--mbu-font-mono);background:var(--mbu-bg-sunken);padding:0 3px;border-radius:3px}
+      #falcon-discid-box a{color:var(--mbu-accent-text)}
+      #falcon-discid-box .fd-foot{font-size:11px;color:var(--mbu-text-dim)}
     </style>
     <h2>Disc IDs from a rip log</h2>
     <div class="fd-zones" id="falcon-discid-zones"><div class="fd-s">Reading this release…</div></div>
@@ -2521,7 +2534,16 @@
      `falcon-medium` parameter is ignored by MusicBrainz and read back by Falcon
      on that page (see autoPickAttachMedium) to preselect the right one. */
   function goAttach(r, mbid, position, mediumId) {
-    const base = `${MB_ORIGIN}/cdtoc/attach?toc=${encodeURIComponent(r.tocString)}&id=${encodeURIComponent(r.id)}&tracks=${r.tracks}`;
+    /* ⚠ The toc parameter is NOT percent-encoded, and that is the whole trick.
+     * MusicBrainz validates it with /\A\d+(?: \d+)*\z/ — SPACE separated
+     * (Entity/CDTOC.pm, new_from_toc). Picard sends `1+13+279873+150+…` because
+     * a `+` in a query string decodes to a space, so Perl sees the spaces it
+     * wants. Running the same string through encodeURIComponent turns each `+`
+     * into `%2B`, which decodes to a literal plus, and MusicBrainz answers
+     * "The provided CD TOC is not valid" — majkinetor hit exactly that.
+     * tocString is digits and plus signs only, so there is nothing here that
+     * needs escaping anyway. */
+    const base = `${MB_ORIGIN}/cdtoc/attach?toc=${r.tocString}&id=${encodeURIComponent(r.id)}&tracks=${r.tracks}`;
     const url = mediumId
       ? `${base}&medium=${mediumId}`
       : `${base}&filter-release.query=${mbid}&falcon-medium=${position}`;

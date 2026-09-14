@@ -120,6 +120,18 @@ ck(real.tracks === 13, `13 tracks (${real.tracks})`);
 ck(/UTF-16LE/.test(real.encoding), `the UTF-16 encoding was detected rather than mangled (${real.encoding})`);
 ck(/EAC/.test(real.format), `recognised as an EAC-family log (${real.format})`);
 
+/* ── 1b. his SECOND log, the one that came back "CD TOC is not valid" ──────
+   Worth keeping because the disc ID was never the problem — the URL encoding
+   was (see the raw-toc checks further down). This pins both halves at once. */
+const ninja = await readFile(resolve(LOG_DIR, 'Various.Artists.-.Ninja.Cuts.Disc.3.log'));
+await asFile(page, ninja, 'Various.Artists.-.Ninja.Cuts.Disc.3.log');
+const n3 = await page.evaluate(() => window.__falconTest.discIdFromLog(window.__file));
+console.log('\nNinja Cuts 3 →', n3.id, '·', n3.tracks, 'tracks');
+console.log('         toc', n3.tocString);
+ck(n3.id === '9XSS5W9GpTC6mVNa1ARWrddUGaM-', `the disc ID he saw in the rejected URL, recomputed — ${n3.id}`);
+ck(n3.tocString === '1+17+343468+150+10902+38417+59818+73397+88340+102846+131788+156798+180209+192526+212134+229832+242739+261099+285744+325451',
+  `and the TOC, offset for offset (${n3.tracks} tracks)`);
+
 /* ── 2. the same TOC from every other rip program ──────────────────────────
    Each of these is the same disc expressed the way that program writes it, so
    all four must land on the identical disc ID. That is a much stronger check
@@ -198,14 +210,32 @@ ck(fmtCheck.no === 0, `and no format that cannot carry a disc ID is (${fmtCheck.
 // (a) medium id unknown → MusicBrainz's own picker, filtered to this release
 attachHits.length = 0;
 await page2.evaluate(() => {
-  const r = { id: 'ID', tocString: '1+2+3', tracks: 2 };
+  const r = { id: '9XSS5W9GpTC6mVNa1ARWrddUGaM-', tocString: '1+17+343468+150+10902+38417', tracks: 17 };
   window.__falconTest.goAttach(r, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, undefined);
 });
 await page2.waitForTimeout(900);
 console.log('\nattach url (no medium id):', attachHits[0]);
 ck(attachHits.length === 1, 'the drop navigates to the attach page');
 const u1 = new URL(attachHits[0] || 'https://x/');
-ck(u1.searchParams.get('toc') === '1+2+3', `carrying the toc (${u1.searchParams.get('toc')})`);
+/* ⚠ The RAW query string, not the parsed value — and this is the check that was
+   missing when majkinetor hit "The provided CD TOC is not valid".
+   MusicBrainz validates the toc with /\A\d+(?: \d+)*\z/, i.e. SPACE separated
+   (Entity/CDTOC.pm). Picard sends plus signs because a `+` in a query string
+   decodes to a space. The first cut ran the string through encodeURIComponent,
+   which sends `%2B` — a literal plus — and Perl rejects it.
+   The old assertion read searchParams.get('toc') and compared it to '1+2+3',
+   which is exactly what a BROKEN url decodes to, so it passed on the bug and
+   would have failed on the fix. It asserted the defect. */
+const rawToc = /[?&]toc=([^&]*)/.exec(attachHits[0] || '')[1];
+console.log('raw toc param:', rawToc);
+ck(!/%2B/i.test(rawToc), `the toc is not percent-encoded (${rawToc.slice(0, 40)}…)`);
+ck(rawToc === '1+17+343468+150+10902+38417', 'it is sent exactly as Picard sends it, plus signs and all');
+// and what MusicBrainz's Perl will actually see, against MusicBrainz's own regex
+const asPerlSeesIt = u1.searchParams.get('toc');
+console.log('what MusicBrainz parses:', JSON.stringify(asPerlSeesIt));
+ck(/^\d+( \d+)*$/.test(asPerlSeesIt || ''),
+  `MusicBrainz's own validator accepts it — space separated, no stray characters (${JSON.stringify(asPerlSeesIt)})`);
+ck(asPerlSeesIt === '1 17 343468 150 10902 38417', 'each offset survives the round trip intact');
 ck(u1.searchParams.get('filter-release.query') === MBID, "filtered to this release, so no MBID has to be typed in");
 ck(u1.searchParams.get('falcon-medium') === '1', 'and remembering which medium the drop was aimed at');
 
@@ -216,7 +246,7 @@ const scraped = await page3.evaluate(() => window.__falconTest.scrapeMediumIds()
 console.log('scraped medium ids:', JSON.stringify(scraped));
 ck(scraped['1'] === 3374577, `the medium's internal id is read off the page's own Remove/Move links (${JSON.stringify(scraped)})`);
 attachHits.length = 0;
-await page3.evaluate(() => window.__falconTest.goAttach({ id: 'ID', tocString: '1+2+3', tracks: 2 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, '3374577'));
+await page3.evaluate(() => window.__falconTest.goAttach({ id: 'ID', tocString: '1+17+343468+150', tracks: 17 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, '3374577'));
 await page3.waitForTimeout(900);
 console.log('attach url (medium id known):', attachHits[0]);
 const u2 = new URL(attachHits[0] || 'https://x/');
