@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.12.153656
+// @version      2026.9.14
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2278,7 +2278,37 @@
     const srcHd = pop.querySelector('.as-src-hd');
     const urlBtn = pop.querySelector('.as-src-url-btn');
     const urlInp = pop.querySelector('.as-src-url-inp');
-    const openUrlAdd = () => { srcHd.classList.add('open'); setTimeout(() => urlInp.focus(), 0); };
+    /* majkinetor: "when clicking 'By URL' lets automatically paste from clipboard".
+     * Almost always the reason you press it is that a URL is already on the
+     * clipboard, so filling it in saves the paste.
+     *
+     * Deliberately fills and SELECTS rather than importing: the existing
+     * onpaste handler fetches on a real paste because that paste was aimed at
+     * this box, whereas the clipboard merely happening to hold a URL when the
+     * popover opens is not an instruction to import it. Selected, so Enter runs
+     * it and typing replaces it — one keystroke either way.
+     *
+     * Only an http(s) URL is taken. Anything else and the box stays empty:
+     * dropping an unrelated line of clipboard text into a field that fetches
+     * would be worse than not helping at all.
+     *
+     * ⚠ readText() needs both a user gesture (the click is one) and permission.
+     * Firefox refuses it for ordinary page script regardless, so this must fail
+     * silently and leave the box exactly as it was.
+     */
+    const pasteUrlFromClipboard = async () => {
+      if (!navigator.clipboard || !navigator.clipboard.readText) return;
+      let txt = '';
+      try { txt = (await navigator.clipboard.readText()) || ''; }
+      catch (e) { asLog.debug('By URL: clipboard not readable (' + (e && e.message) + ') — leaving the box empty'); return; }
+      txt = txt.trim();
+      if (!urlInp.isConnected || urlInp.value) return;         // popover closed, or you already typed
+      if (!/^https?:\/\/\S+$/i.test(txt)) { asLog.debug('By URL: clipboard holds no URL — leaving the box empty'); return; }
+      urlInp.value = txt;
+      urlInp.select();
+      asLog.debug('By URL: pasted the clipboard URL — press Enter to import it');
+    };
+    const openUrlAdd = () => { srcHd.classList.add('open'); setTimeout(() => urlInp.focus(), 0); pasteUrlFromClipboard(); };
     const closeUrlAdd = () => { srcHd.classList.remove('open'); urlInp.value = ''; };
     const go = () => { const v = urlInp.value; closeUrlAdd(); pop.remove(); sourceFromUrl(v); };
     urlBtn.onclick = () => srcHd.classList.contains('open') ? closeUrlAdd() : openUrlAdd();
