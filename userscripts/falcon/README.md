@@ -264,6 +264,8 @@ Auto send holds back deliberately in three cases, since an unattended send that 
 - **Harmony hasn't finished rendering.** Its actions arrive client-side; the send waits for the same "count stopped changing" signal the *Send N to Falcon* label already waits for, so it can't ship half a batch
 - **there is nothing to send.** A re-run over an already-complete release stands down quietly rather than opening an empty queue
 
+An *errored* page is deliberately not one of those cases — it sends what it has and says so. See [When Harmony errors](#when-harmony-errors).
+
 It also **counts down on the button first** (`Auto-sending 42 in 4… (click to cancel)`). With *Open from Harmony in new tab* off, a send navigates the tab away from Harmony, and that should never happen without a beat in which to stop it. Clicking the button cancels, and it will not re-arm on that page.
 
 #### When Harmony errors
@@ -278,7 +280,7 @@ So, with no option to set:
 - **retries exhausted, or a provider errored, or the error is one a reload could never fix** (a malformed MBID, a release that isn't there) → **the batch is sent anyway**. Falcon is idempotent, so a partial import beats none and can be topped up by running it again later.
 - either way, the button reads `Send 43 to Falcon (partial)` and **the reason is attached to the batch as its edit note**, so every edit the run produces says why it might be short.
 
-#### Reload after a clean run#### Reload after a clean run
+#### Reload after a clean run
 
 Running fully automatic leaves you looking at a drained queue over a release page showing the state from *before* the run. **Reload release page after import without errors** ([#588](https://github.com/majkinetor/musicbrainz-userscripts/issues/588)) reloads it once the run finishes, and the icon in the corner turns **green** so you can pick that tab out of a screenful.
 
@@ -288,7 +290,7 @@ It deliberately does nothing when anything failed, came back partial, or is wait
 
 MusicBrainz has no web way to attach a disc ID — the documented route is Picard, which reads a CD rip log, works out the disc ID and opens `/cdtoc/attach` for you ([#591](https://github.com/majkinetor/musicbrainz-userscripts/issues/591)).
 
-Falcon puts that on the release's **Disc IDs** tab. Each medium gets a drop zone; drop a rip log on it (or click to pick one) and Falcon reads the TOC, computes the disc ID and takes you to MusicBrainz's attach page. **Nothing is submitted on your behalf** — the edit note and *Enter edit* are MusicBrainz's own, exactly as they are from Picard.
+Falcon puts that on the release's **Disc IDs** tab. Each medium gets a drop zone; drop a rip log on it (or click to pick one) and Falcon reads the TOC, computes the disc ID and takes you to MusicBrainz's attach page. **The edit itself is never submitted for you** — Falcon fills the edit note in and stops there, leaving *Enter edit* to you, exactly as it is coming from Picard.
 
 Logs it reads, all ports of [Picard's own parsers](https://github.com/metabrainz/picard/tree/master/picard/disc):
 
@@ -303,9 +305,18 @@ A MusicBrainz disc ID is a SHA-1 over the TOC, so all of this happens in the bro
 
 It refuses rather than guessing in the cases Picard refuses: a partial rip (non-consecutive track numbers), a non-standard track sequence, and a file it does not recognise. A trailing **data track** is dropped the way Picard drops it (an 11401-sector gap), and a log whose track count doesn't match the medium you dropped it on asks before continuing — a disc ID on the wrong medium is an edit someone else has to undo.
 
-A drop goes **straight to MusicBrainz's confirmation page** — neither the "enter a release MBID" box nor the medium picker is shown, since Falcon already knows both. The medium's internal row id is the only thing it lacks: for a medium that already has a disc ID that id is in the page's own Remove/Move links, and otherwise Falcon reads it off MusicBrainz's own medium list in the background. If MusicBrainz doesn't offer that medium (it only lists mediums whose track count matches the TOC), Falcon shows the picker rather than guessing — a disc ID on the wrong medium is an edit someone else has to undo.
+A drop goes **straight to MusicBrainz's confirmation page** — neither the "enter a release MBID" box nor the medium picker is shown, since Falcon already knows both. The medium's internal row id is the only thing it lacks: for a medium that already has a disc ID that id is in the page's own Remove/Move links, and otherwise Falcon reads it off MusicBrainz's own medium list in the background. Should you land on the medium picker anyway, Falcon ticks the right medium and presses **Attach CD TOC** for you.
 
-On the confirmation page it signs the edit note. The **Enter edit** button is still yours to press.
+If MusicBrainz doesn't offer that medium at all — it only lists mediums whose track count matches the TOC — Falcon leaves the picker up rather than choosing the nearest thing.
+
+On the confirmation page Falcon signs the edit note:
+
+```
+Falcon v2026.9.14 by majkinetor - https://github.com/…/falcon/README.md
+Disc ID computed from a CD rip log.
+```
+
+Anything already in the box is kept, and the signature is not added twice. **Enter edit** is still yours to press.
 
 ### Reporting a problem
 

@@ -40,7 +40,7 @@ Find and verify URLs for a particular MusicBrainz release on online platforms
 Edit MusicBrainz in your real editor (VS Code, Vim, …)
 
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
-Batch import entity fields from Harmony and standalone
+Batch import entity fields from Harmony and standalone; attach disc IDs from CD rip logs
 
 ---
 
