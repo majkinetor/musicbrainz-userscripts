@@ -243,10 +243,12 @@ Click the ⚙ tab to open it.
 2. **Add covers only when there aren't any** - skip a release's cover upload instead of adding it blind when the release already has cover art
 3. **Auto send** (off by default) - press *Send to Falcon* for you once a Harmony import has finished and its action list has settled. See [Hands-free import](#hands-free-import)
 4. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
-5. **Open from Harmony in new tab** (on by default) - off navigates the current Harmony tab to MusicBrainz instead of opening a new one
-6. **Automatically send to Picard using port** (off by default, port 8000) - hands the release to [Picard](https://picard.musicbrainz.org/) once a run finishes, by calling its `openalbum` endpoint directly ([#578](https://github.com/majkinetor/musicbrainz-userscripts/issues/578)). It fires *after* the run, so Picard reads the release with Falcon's links, ISRCs and cover already on it, and only once per release per tab. Picard has to be running with **Browser integration** enabled and listening on that port — its own default is 8000; if it isn't reachable the Log says so rather than failing silently.<br>The port is used **whether or not this is ticked**: the MusicBrainz URL *Send to Falcon* opens always carries `&tport=<port>`, so MusicBrainz's own green tagger button is always there. Leave the box unticked to import only the releases you pick
-7. **Workers** - how many entities are processed at once (default is 5)
-8. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
+5. **Reload actions page on error** (on by default) - Harmony drops its recording, artist and label actions when a MusicBrainz or provider call fails and has no retry of its own, so load the page again until it comes back clean. See [When Harmony errors](#when-harmony-errors)
+6. **Reload release page after import without errors** (off by default) - once a run finishes with nothing failed, reload the MusicBrainz release page so it shows what Falcon just added instead of the state it had before the run. Falcon's corner icon turns green on a page it reloaded, so you can tell which tab it was. See [Reload after a clean run](#reload-after-a-clean-run)
+7. **Open from Harmony in new tab** (on by default) - off navigates the current Harmony tab to MusicBrainz instead of opening a new one
+8. **Automatically send to Picard using port** (off by default, port 8000) - hands the release to [Picard](https://picard.musicbrainz.org/) once a run finishes, by calling its `openalbum` endpoint directly ([#578](https://github.com/majkinetor/musicbrainz-userscripts/issues/578)). It fires *after* the run, so Picard reads the release with Falcon's links, ISRCs and cover already on it, and only once per release per tab. Picard has to be running with **Browser integration** enabled and listening on that port — its own default is 8000; if it isn't reachable the Log says so rather than failing silently.<br>The port is used **whether or not this is ticked**: the MusicBrainz URL *Send to Falcon* opens always carries `&tport=<port>`, so MusicBrainz's own green tagger button is always there. Leave the box unticked to import only the releases you pick
+9. **Workers** - how many entities are processed at once (default is 5)
+10. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
 
 #### Hands-free import
 
@@ -264,6 +266,28 @@ Auto send holds back deliberately in three cases, since an unattended send that 
 - **there is nothing to send.** A re-run over an already-complete release stands down quietly rather than opening an empty queue
 
 It also **counts down on the button first** (`Auto-sending 42 in 4… (click to cancel)`). With *Open from Harmony in new tab* off, a send navigates the tab away from Harmony, and that should never happen without a beat in which to stop it. Clicking the button cancels, and it will not re-arm on that page.
+
+#### When Harmony errors
+
+Harmony builds its actions page in one pass: the release lookup, the merge, and then a browse of the release's artists, recordings and labels. If any of those fails the rest is abandoned, but the page still returns `200 OK` and renders — just without the actions it never got to build ([#590](https://github.com/majkinetor/musicbrainz-userscripts/issues/590)). There is no retry on Harmony's side, so the only cure is to load it again.
+
+The failure comes in three shapes, and only the first one looks broken:
+
+| | what happened | what the page looks like |
+|---|---|---|
+| **A** | the release lookup or merge failed | no actions at all, just the MBID form and an error |
+| **B** | one of the artist/recording/label browses failed | the actions are there but **unfiltered** — Harmony could not check which links MusicBrainz already has, and says so per type |
+| **C** | one provider dropped out of the merge | looks completely normal, and is quietly **missing that provider's links** |
+
+With **Reload actions page on error** on, an errored page is loaded again — up to 5 times, backing off 5s → 60s (starting at 15s when the server asks for less traffic), with a countdown on the button you can click to cancel. Errors a reload could never fix — a malformed MBID, a release that isn't there, a provider that doesn't support the URL — are recognised and left alone.
+
+Regardless of that option, **Auto send never sends from a page that is still showing an error**. A manual click still can, after a confirm that names what is wrong with the batch.
+
+#### Reload after a clean run
+
+Running fully automatic leaves you looking at a drained queue over a release page showing the state from *before* the run. **Reload release page after import without errors** ([#588](https://github.com/majkinetor/musicbrainz-userscripts/issues/588)) reloads it once the run finishes, and the icon in the corner turns **green** so you can pick that tab out of a screenful.
+
+It deliberately does nothing when anything failed, came back partial, or is waiting on a manual review — those are only visible in the queue, and the queue does not survive a reload. The run's **log does** survive it (it lives in the session store, so the Log tab still has it), and the consumed `falcon=` token is dropped from the URL while `tport=` is kept, so MusicBrainz still draws its tagger button.
 
 ### Reporting a problem
 
