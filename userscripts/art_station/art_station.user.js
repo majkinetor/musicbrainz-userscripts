@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.15.085300
+// @version      2026.9.15.092439
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -904,7 +904,13 @@
     const typePill = firstType
       ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
       : `<span class="as-type as-type-add" title="set type">＋ type</span>`;
-    const typeRow = `<div class="as-foot-type"><span class="as-tline"></span>${typePill}<span class="as-tline"></span></div>`;
+    /* #592: no flanking rules. The type pill straddles the card's own bottom
+       border, which already IS the line these drew — so they doubled it, 1px
+       above it, in a different colour, and stopped at x=9 where the corner
+       starts to curve. That mismatch at both bottom corners is the "bottom
+       border" looking broken. The pill has its own background, so it masks the
+       border behind it exactly as before. */
+    const typeRow = `<div class="as-foot-type">${typePill}</div>`;
     const dim = `<span class="as-dim">${dimHtml(it)}</span>`;
     if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
     const cmt = it._editcmt
@@ -4157,9 +4163,8 @@
   .as-foot-cmt.as-cmt-collapsed{display:none}
   .as-cmt-text{font-size:11px;font-family:inherit;color:var(--mbu-accent-deep-text);line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--mbu-accent-text)}
-  .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
+  .as-foot-type{display:flex;align-items:center;justify-content:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
-  .as-tline{flex:1;height:1px;background:var(--mbu-bg-hover)}
   .as-type{font-size:11px;font-weight:700;color:var(--mbu-accent-deep-text);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-accent);border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .as-type:hover{background:var(--mbu-bg-hover)}
   .as-type-add{color:var(--mbu-accent-text);background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}
