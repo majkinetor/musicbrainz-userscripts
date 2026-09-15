@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.14.230436
+// @version      2026.9.15.085300
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -4125,7 +4125,20 @@
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:var(--mbu-accent-text);font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
   .as-thumb.na.as-na-new::after{content:'Preview unavailable — the image couldn’t be decoded'}   /* #250 a staged blob that won't render (no CAA fallback) */
-  .as-dim{font-size:12px;font-weight:600;color:var(--mbu-accent-text);flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:0 7px;white-space:nowrap}   /* nowrap: the size + resolution must never wrap to a 2nd (clipped) line when the hover 🔍 narrows the row */
+  /* #592 follow-up (majkinetor: "still happens", at small tile sizes). This was
+     'flex-wrap:nowrap;white-space:nowrap' to stop the two halves wrapping to a
+     second line — but that only moved the problem: on a small tile "329Kb
+     1245 × 1121" is wider than the card, so instead of wrapping it ran PAST the
+     right border and under the next card, which is the border looking broken.
+     Measured at --as-tile:120px: .as-dim overflowed the card's inner edge by
+     11.7px (scrollWidth 132 vs clientWidth 120); at 175px it fitted, which is
+     why it only showed on smaller sizes.
+     So: the two spans may wrap between themselves again — which is what
+     dimHtml's separate spans were always for — while each stays unbroken
+     internally, so a resolution never splits mid-value. The grid row is
+     align-items:stretch, so a card that grows a line lifts its whole row
+     instead of being clipped. */
+  .as-dim{font-size:12px;font-weight:600;color:var(--mbu-accent-text);flex:0 1 auto;min-width:0;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:var(--mbu-radius);background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:var(--mbu-text-dim);box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
