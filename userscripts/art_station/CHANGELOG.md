@@ -1,5 +1,16 @@
 # Art Station Changelog
 
+## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
+
+### Features
+
+1. Option to automatically repeat failed uploads ([#566](https://github.com/majkinetor/musicbrainz-userscripts/issues/566))
+1. CTRL+v anywhere in the window to add URL from clipboard ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554))
+
+### Fixes
+
+1. Junky card borders ([#592](https://github.com/majkinetor/musicbrainz-userscripts/issues/592))
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### Features

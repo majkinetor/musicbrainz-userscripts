@@ -1,5 +1,17 @@
 # Falcon 
 
+## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
+
+### Features
+
+1. Import CD rip log files ([#591](https://github.com/majkinetor/musicbrainz-userscripts/issues/591))
+1. Reload Harmony release actions on MB error ([#590](https://github.com/majkinetor/musicbrainz-userscripts/issues/590))
+1. Reload page after edits were entered ([#588](https://github.com/majkinetor/musicbrainz-userscripts/issues/588))
+
+### Fixes
+
+1. Historic log not full ([#593](https://github.com/majkinetor/musicbrainz-userscripts/issues/593))
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### Features

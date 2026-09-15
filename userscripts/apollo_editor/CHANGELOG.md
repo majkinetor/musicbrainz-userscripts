@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
+
+### Features
+
+1. Video recording matching only for pre-defined media formats ([#585](https://github.com/majkinetor/musicbrainz-userscripts/issues/585))
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### Features

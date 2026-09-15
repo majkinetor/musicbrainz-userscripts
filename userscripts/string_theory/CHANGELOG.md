@@ -1,5 +1,21 @@
 # String Theory Changelog
 
+## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Video recording matching only for pre-defined media formats ([#585](https://github.com/majkinetor/musicbrainz-userscripts/issues/585))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Option to automatically repeat failed uploads ([#566](https://github.com/majkinetor/musicbrainz-userscripts/issues/566))
+1. CTRL+v anywhere in the window to add URL from clipboard ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554))
+1. Junky card borders ([#592](https://github.com/majkinetor/musicbrainz-userscripts/issues/592))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Small improvements
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)
