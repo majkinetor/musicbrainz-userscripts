@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.15.092439
+// @version      2026.9.15.114000
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.15.092439 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.15.092439\n  · Credit Hoarder v2026.9.13.122539\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
+  console.log('%c String Theory %c v2026.9.15.114000 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.15.113959\n  · Credit Hoarder v2026.9.13.122539\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -9535,7 +9535,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.092439","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.092439","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.113959","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.113959","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11451,6 +11451,10 @@ try {
   // cover so the gallery shows where it came from until commit (#249).
   function sourceFromUrl(rawUrl, prov) {
     const url = (rawUrl || '').trim();
+    // test breadcrumb, same idea as window.__asAutoRepeat: an import leaves no
+    // other trace a test can read (asLog is in-memory, nothing reaches console),
+    // and "did one actually start" is the check #554 turns on.
+    try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
     // known provider → its name+icon; otherwise fall back to the URL's host so a
     // pasted link from anywhere (e.g. nugs.net) still gets a favicon badge. #249
@@ -11779,7 +11783,7 @@ try {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
     pop.innerHTML = `<div class="as-pop-h as-src-hd"><span class="as-src-htxt">Source ${ENT.noun}</span>`
-      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import by URL — paste a provider page or direct image URL">By URL</button>`
+      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import whatever URL is on your clipboard — a provider page or a direct image URL. With nothing usable on it, a box opens to type one.">Paste URL</button>`
       + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
@@ -11805,40 +11809,43 @@ try {
     const srcHd = pop.querySelector('.as-src-hd');
     const urlBtn = pop.querySelector('.as-src-url-btn');
     const urlInp = pop.querySelector('.as-src-url-inp');
-    /* majkinetor: "when clicking 'By URL' lets automatically paste from clipboard".
-     * Almost always the reason you press it is that a URL is already on the
-     * clipboard, so filling it in saves the paste.
+    /* majkinetor, after trying the first cut: "Revert that. It first shows
+     * 'Paste' button, then it pastes clipboad and leaves input open. What I want
+     * is this: clipboard is immediately used, and no edit is shown. Rename by
+     * URL to Paste URL. So, you click it and it goes loading image from
+     * clipboard without ceremony."
      *
-     * Deliberately fills and SELECTS rather than importing: the existing
-     * onpaste handler fetches on a real paste because that paste was aimed at
-     * this box, whereas the clipboard merely happening to hold a URL when the
-     * popover opens is not an instruction to import it. Selected, so Enter runs
-     * it and typing replaces it — one keystroke either way.
+     * So the button IS the action: read the clipboard, and if it holds a URL,
+     * import it. No input, no Enter, no second click.
      *
-     * Only an http(s) URL is taken. Anything else and the box stays empty:
-     * dropping an unrelated line of clipboard text into a field that fetches
-     * would be worse than not helping at all.
-     *
-     * ⚠ readText() needs both a user gesture (the click is one) and permission.
-     * Firefox refuses it for ordinary page script regardless, so this must fail
-     * silently and leave the box exactly as it was.
+     * The input still exists, for the two cases where there is nothing to act
+     * on — the clipboard holds no URL, or the browser refuses to let a script
+     * read it at all (Firefox does; Chrome asks first, see below). Falling back
+     * to it keeps the feature usable rather than leaving a button that does
+     * nothing, and it is the only path that still shows a box.
      */
-    const pasteUrlFromClipboard = async () => {
-      if (!navigator.clipboard || !navigator.clipboard.readText) return;
+    const pasteUrlAndGo = async () => {
       let txt = '';
-      try { txt = (await navigator.clipboard.readText()) || ''; }
-      catch (e) { asLog.debug('By URL: clipboard not readable (' + (e && e.message) + ') — leaving the box empty'); return; }
-      txt = txt.trim();
-      if (!urlInp.isConnected || urlInp.value) return;         // popover closed, or you already typed
-      if (!/^https?:\/\/\S+$/i.test(txt)) { asLog.debug('By URL: clipboard holds no URL — leaving the box empty'); return; }
-      urlInp.value = txt;
-      urlInp.select();
-      asLog.debug('By URL: pasted the clipboard URL — press Enter to import it');
+      const readable = navigator.clipboard && navigator.clipboard.readText;
+      if (readable) {
+        try { txt = ((await navigator.clipboard.readText()) || '').trim(); }
+        catch (e) { asLog.debug('Paste URL: the browser would not let the script read the clipboard (' + (e && e.message) + ')'); }
+      }
+      if (/^https?:\/\/\S+$/i.test(txt)) {
+        asLog.info('Paste URL: importing from the clipboard — ' + txt);
+        pop.remove();
+        sourceFromUrl(txt);
+        return;
+      }
+      // nothing usable — open the box so it can be typed or pasted by hand
+      asLog.debug('Paste URL: clipboard held no URL' + (readable ? '' : ' (no clipboard access)') + ' — opening the box instead');
+      toast(readable ? 'No URL on the clipboard — paste or type one' : 'This browser will not let a script read the clipboard — paste one here', 4000);
+      srcHd.classList.add('open');
+      setTimeout(() => urlInp.focus(), 0);
     };
-    const openUrlAdd = () => { srcHd.classList.add('open'); setTimeout(() => urlInp.focus(), 0); pasteUrlFromClipboard(); };
     const closeUrlAdd = () => { srcHd.classList.remove('open'); urlInp.value = ''; };
     const go = () => { const v = urlInp.value; closeUrlAdd(); pop.remove(); sourceFromUrl(v); };
-    urlBtn.onclick = () => srcHd.classList.contains('open') ? closeUrlAdd() : openUrlAdd();
+    urlBtn.onclick = () => { if (srcHd.classList.contains('open')) { closeUrlAdd(); return; } pasteUrlAndGo(); };
     urlInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeUrlAdd(); } };
     // paste a URL → fetch immediately (no need to press Enter). Read after the paste
     // lands; only auto-go when the whole field is a URL (typing-then-pasting won't fire).

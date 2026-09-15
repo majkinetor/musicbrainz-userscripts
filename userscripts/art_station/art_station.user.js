@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.15.092439
+// @version      2026.9.15.113959
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1930,6 +1930,10 @@
   // cover so the gallery shows where it came from until commit (#249).
   function sourceFromUrl(rawUrl, prov) {
     const url = (rawUrl || '').trim();
+    // test breadcrumb, same idea as window.__asAutoRepeat: an import leaves no
+    // other trace a test can read (asLog is in-memory, nothing reaches console),
+    // and "did one actually start" is the check #554 turns on.
+    try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
     // known provider → its name+icon; otherwise fall back to the URL's host so a
     // pasted link from anywhere (e.g. nugs.net) still gets a favicon badge. #249
@@ -2258,7 +2262,7 @@
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
     pop.innerHTML = `<div class="as-pop-h as-src-hd"><span class="as-src-htxt">Source ${ENT.noun}</span>`
-      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import by URL — paste a provider page or direct image URL">By URL</button>`
+      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import whatever URL is on your clipboard — a provider page or a direct image URL. With nothing usable on it, a box opens to type one.">Paste URL</button>`
       + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
@@ -2284,40 +2288,43 @@
     const srcHd = pop.querySelector('.as-src-hd');
     const urlBtn = pop.querySelector('.as-src-url-btn');
     const urlInp = pop.querySelector('.as-src-url-inp');
-    /* majkinetor: "when clicking 'By URL' lets automatically paste from clipboard".
-     * Almost always the reason you press it is that a URL is already on the
-     * clipboard, so filling it in saves the paste.
+    /* majkinetor, after trying the first cut: "Revert that. It first shows
+     * 'Paste' button, then it pastes clipboad and leaves input open. What I want
+     * is this: clipboard is immediately used, and no edit is shown. Rename by
+     * URL to Paste URL. So, you click it and it goes loading image from
+     * clipboard without ceremony."
      *
-     * Deliberately fills and SELECTS rather than importing: the existing
-     * onpaste handler fetches on a real paste because that paste was aimed at
-     * this box, whereas the clipboard merely happening to hold a URL when the
-     * popover opens is not an instruction to import it. Selected, so Enter runs
-     * it and typing replaces it — one keystroke either way.
+     * So the button IS the action: read the clipboard, and if it holds a URL,
+     * import it. No input, no Enter, no second click.
      *
-     * Only an http(s) URL is taken. Anything else and the box stays empty:
-     * dropping an unrelated line of clipboard text into a field that fetches
-     * would be worse than not helping at all.
-     *
-     * ⚠ readText() needs both a user gesture (the click is one) and permission.
-     * Firefox refuses it for ordinary page script regardless, so this must fail
-     * silently and leave the box exactly as it was.
+     * The input still exists, for the two cases where there is nothing to act
+     * on — the clipboard holds no URL, or the browser refuses to let a script
+     * read it at all (Firefox does; Chrome asks first, see below). Falling back
+     * to it keeps the feature usable rather than leaving a button that does
+     * nothing, and it is the only path that still shows a box.
      */
-    const pasteUrlFromClipboard = async () => {
-      if (!navigator.clipboard || !navigator.clipboard.readText) return;
+    const pasteUrlAndGo = async () => {
       let txt = '';
-      try { txt = (await navigator.clipboard.readText()) || ''; }
-      catch (e) { asLog.debug('By URL: clipboard not readable (' + (e && e.message) + ') — leaving the box empty'); return; }
-      txt = txt.trim();
-      if (!urlInp.isConnected || urlInp.value) return;         // popover closed, or you already typed
-      if (!/^https?:\/\/\S+$/i.test(txt)) { asLog.debug('By URL: clipboard holds no URL — leaving the box empty'); return; }
-      urlInp.value = txt;
-      urlInp.select();
-      asLog.debug('By URL: pasted the clipboard URL — press Enter to import it');
+      const readable = navigator.clipboard && navigator.clipboard.readText;
+      if (readable) {
+        try { txt = ((await navigator.clipboard.readText()) || '').trim(); }
+        catch (e) { asLog.debug('Paste URL: the browser would not let the script read the clipboard (' + (e && e.message) + ')'); }
+      }
+      if (/^https?:\/\/\S+$/i.test(txt)) {
+        asLog.info('Paste URL: importing from the clipboard — ' + txt);
+        pop.remove();
+        sourceFromUrl(txt);
+        return;
+      }
+      // nothing usable — open the box so it can be typed or pasted by hand
+      asLog.debug('Paste URL: clipboard held no URL' + (readable ? '' : ' (no clipboard access)') + ' — opening the box instead');
+      toast(readable ? 'No URL on the clipboard — paste or type one' : 'This browser will not let a script read the clipboard — paste one here', 4000);
+      srcHd.classList.add('open');
+      setTimeout(() => urlInp.focus(), 0);
     };
-    const openUrlAdd = () => { srcHd.classList.add('open'); setTimeout(() => urlInp.focus(), 0); pasteUrlFromClipboard(); };
     const closeUrlAdd = () => { srcHd.classList.remove('open'); urlInp.value = ''; };
     const go = () => { const v = urlInp.value; closeUrlAdd(); pop.remove(); sourceFromUrl(v); };
-    urlBtn.onclick = () => srcHd.classList.contains('open') ? closeUrlAdd() : openUrlAdd();
+    urlBtn.onclick = () => { if (srcHd.classList.contains('open')) { closeUrlAdd(); return; } pasteUrlAndGo(); };
     urlInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeUrlAdd(); } };
     // paste a URL → fetch immediately (no need to press Enter). Read after the paste
     // lands; only auto-go when the whole field is a URL (typing-then-pasting won't fire).

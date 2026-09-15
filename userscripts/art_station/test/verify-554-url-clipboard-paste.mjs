@@ -1,14 +1,15 @@
 // #554 (vzell, part 2): "Maybe even automatically paste the URL directly when
 // it's not malformed and in the clipboard when clicking the 'By URL' link"
 //
-// majkinetor declined it at the time and has since asked for it:
-// "in Art Station, when clicking 'By URL' lets automatically paste from
-// clipboard". Part 1 of that issue — keeping the input permanently open — stays
-// declined; his reasoning is on the issue.
+// majkinetor declined it, then asked for it, then corrected the shape of it:
+// "Revert that. It first shows 'Paste' button, then it pastes clipboad and
+// leaves input open. What I want is this: clipboard is immediately used, and no
+// edit is shown. Rename by URL to Paste URL. So, you click it and it goes
+// loading image from clipboard without ceremony."
 //
-// The interesting checks are the three where it must NOT paste, since a field
-// that fetches whatever happened to be on the clipboard is worse than one that
-// does nothing.
+// So the button IS the action. The checks that matter are that one click both
+// imports AND leaves no input behind, and that a clipboard holding something
+// which is not a URL still cannot start an import.
 //
 // Chromium can actually grant clipboard-read, so this drives the real API rather
 // than a stub. Nothing is ever uploaded: every write endpoint is asserted unused.
@@ -48,77 +49,61 @@ ck(booted, 'fixture: Art Station mounted its toolbar (otherwise nothing below me
 if (!booted) { await ctx.close(); console.log(`\n${fail} FAILED`); process.exit(1); }
 
 const setClip = t => page.evaluate(v => navigator.clipboard.writeText(v), t);
-// open the Source popover, then press "By URL", and read the box back
-const pressByUrl = async () => {
-  await page.evaluate(() => { document.querySelectorAll('.as-pop').forEach(p => p.remove()); });
+// open the Source popover, press "Paste URL", and report what that ONE click did
+const pressPasteUrl = async () => {
+  await page.evaluate(() => { document.querySelectorAll('.as-pop').forEach(p => p.remove()); if (window.__asTest) window.__asTest.lastSource = null; });
   await page.click('.as-src');
   await page.waitForSelector('.as-src-url-btn', { timeout: 10000 });
+  const label = await page.evaluate(() => document.querySelector('.as-src-url-btn').textContent.trim());
   await page.click('.as-src-url-btn');
-  await page.waitForTimeout(700);           // the clipboard read is async
-  return page.evaluate(() => {
+  await page.waitForTimeout(900);           // the clipboard read is async
+  return page.evaluate((lbl) => {
     const i = document.querySelector('.as-src-url-inp');
-    return { value: i ? i.value : null, open: !!document.querySelector('.as-src-hd.open'),
-      selected: i ? (i.selectionEnd - i.selectionStart) : 0, focused: document.activeElement === i };
-  });
+    return {
+      label: lbl,
+      popoverGone: !document.querySelector('.as-src-pop'),
+      boxShown: !!document.querySelector('.as-src-hd.open'),
+      value: i ? i.value : null,
+      focused: !!i && document.activeElement === i,
+      sourced: (window.__asTest && window.__asTest.lastSource) || null,
+    };
+  }, label);
 };
 
-/* ── 1. a URL on the clipboard is filled in ────────────────────────────────── */
+/* ── 1. one click imports, with nothing left on screen ─────────────────────
+   The whole point of his correction: no box, no Enter, no second click. */
 const URL1 = 'https://www.example.com/artwork/front-3000.jpg';
 await setClip(URL1);
-const r1 = await pressByUrl();
-console.log('\nclipboard has a URL →', JSON.stringify(r1));
-ck(r1.open, 'the input unrolls, as it did before');
-ck(r1.value === URL1, `and arrives already filled in (${JSON.stringify(r1.value)})`);
-ck(r1.focused, 'focused, so Enter imports it without touching the mouse');
-ck(r1.selected === URL1.length, `and selected, so typing replaces it instead of appending (${r1.selected}/${URL1.length})`);
+const r1 = await pressPasteUrl();
+console.log('\nclipboard has a URL -> ' + JSON.stringify(r1));
+ck(r1.label === 'Paste URL', `the control is called "Paste URL" (${JSON.stringify(r1.label)})`);
+ck(r1.popoverGone, 'one click closes the panel and gets on with it');
+ck(!r1.boxShown, 'no input is shown — "no edit is shown", as asked');
+ck(r1.sourced === URL1, `and the import ran on the clipboard URL (${JSON.stringify(r1.sourced)})`);
 
-/* ── 2. it must NOT import by itself ───────────────────────────────────────
-   The existing onpaste handler fetches on a real paste, because that paste was
-   aimed at this box. The clipboard merely holding a URL when the popover opens
-   is not an instruction to import it — and an unwanted import is the one
-   outcome here that costs somebody an edit to undo. */
-ck(await page.evaluate(() => !!document.querySelector('.as-src-pop')),
-  'the popover is still open — nothing was fetched or submitted on opening it');
-ck(posted.length === 0, `and no upload was started (${posted.length})`);
-
-/* ── 3. the three cases where it must leave the box alone ──────────────────── */
+/* ── 2. nothing usable on the clipboard: the box, not an import ────────────
+   A field that fetches whatever happened to be on the clipboard is worse than
+   one that does nothing, so these must NOT start anything. */
 for (const [what, clip] of [
   ['plain text', 'Psych Funk Sa-Re-Ga!'],
   ['a bare file path', 'C:\\covers\\front.jpg'],
   ['a non-http scheme', 'javascript:alert(1)'],
 ]) {
   await setClip(clip);
-  const r = await pressByUrl();
-  ck(r.value === '', `${what} on the clipboard leaves the box empty (${JSON.stringify(r.value)})`);
-  ck(r.open && r.focused, `${what}: …and the box still opens and focuses, exactly as before`);
+  const r = await pressPasteUrl();
+  ck(r.sourced === null, `${what}: starts no import`);
+  ck(r.boxShown && r.focused, `${what}: falls back to the box, focused, so it can still be used by hand`);
+  ck(r.value === '', `${what}: and the box is empty rather than carrying junk (${JSON.stringify(r.value)})`);
 }
 
-/* ── 4. it never overwrites what you typed ─────────────────────────────────── */
-await setClip('https://www.example.com/other.jpg');
-await page.evaluate(() => { document.querySelectorAll('.as-pop').forEach(p => p.remove()); });
-await page.click('.as-src');
-await page.waitForSelector('.as-src-url-btn', { timeout: 10000 });
-// open, type, then re-open without closing: the guard is `urlInp.value` being set
-await page.click('.as-src-url-btn');
-await page.waitForTimeout(700);
-await page.evaluate(() => { const i = document.querySelector('.as-src-url-inp'); i.value = 'https://typed.example/mine.jpg'; });
-await page.evaluate(() => { const f = window.__asTest; });   // no-op; keep the popover as it is
-const typed = await page.evaluate(() => (document.querySelector('.as-src-url-inp') || {}).value);
-ck(typed === 'https://typed.example/mine.jpg', `fixture: a typed value is in the box (${typed})`);
-
-/* ── 5. source-level: the guard, and the deliberate non-import ─────────────── */
-ck(/if \(!urlInp\.isConnected \|\| urlInp\.value\) return;/.test(code),
-  'the paste is guarded on the box being empty and still on screen');
-ck(/\^https\?:\\\/\\\/\\S\+\$/.test(code) || /\/\^https\?:\\\/\\\/\\S\+\$\/i/.test(code),
-  'only a complete http(s) URL is accepted');
-/* Scoped to the function's own body. A 600-char window after its NAME ran past
-   the closing brace into `const go = …` below it, and failed on a build that was
-   perfectly correct — the check was measuring the neighbourhood, not the code. */
-const fnBody = (code.match(/const pasteUrlFromClipboard = async \(\) => \{[\s\S]*?\n    \};/) || [''])[0];
+/* ── 3. source-level: the button is the action ─────────────────────────────── */
+const fnBody = (code.match(/const pasteUrlAndGo = async \(\) => \{[\s\S]*?\n    \};/) || [''])[0];
 ck(!!fnBody, 'the clipboard helper is where this test thinks it is');
-ck(!!fnBody && !/\bgo\(\)/.test(fnBody),
-  'and never calls go() — filling the box is not the same as pressing import');
-ck(!!fnBody && /\.select\(\)/.test(fnBody), 'it selects what it pasted, so one keystroke replaces it');
+ck(!!fnBody && /sourceFromUrl\(txt\)/.test(fnBody),
+  'it imports directly rather than filling a box for you to confirm');
+ck(!!fnBody && !/urlInp\.value = /.test(fnBody),
+  'and never writes the URL into the input — that was the "leaves input open" complaint');
+ck(!/>By URL</.test(code), 'the old "By URL" label is gone');
 
 ck(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 2).join(' | ') : ''));
 console.log('\nPOSTs seen:', allPosts.length, '- writes among them:', posted.length);
