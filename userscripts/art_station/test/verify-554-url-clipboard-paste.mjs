@@ -1,15 +1,14 @@
 // #554 (vzell, part 2): "Maybe even automatically paste the URL directly when
 // it's not malformed and in the clipboard when clicking the 'By URL' link"
 //
-// majkinetor declined it, then asked for it, then corrected the shape of it:
-// "Revert that. It first shows 'Paste' button, then it pastes clipboad and
-// leaves input open. What I want is this: clipboard is immediately used, and no
-// edit is shown. Rename by URL to Paste URL. So, you click it and it goes
-// loading image from clipboard without ceremony."
+// majkinetor declined it, asked for it, then corrected its shape three times.
+// The final word: "CTRL v works, but button not - it should work the same as
+// doing CTRL v but with the click. It now opens an edit box and shows the
+// message to use ctrl v. So, make paste URL behave the same as CTRL v and
+// remove edit as nobody will type URL."
 //
-// So the button IS the action. The checks that matter are that one click both
-// imports AND leaves no input behind, and that a clipboard holding something
-// which is not a URL still cannot start an import.
+// So there is no input anywhere any more, and two ways in that do the same
+// thing: Ctrl+V on the gallery, and the "Paste URL" button.
 //
 // Chromium can actually grant clipboard-read, so this drives the real API rather
 // than a stub. Nothing is ever uploaded: every write endpoint is asserted unused.
@@ -27,9 +26,6 @@ const RELEASE = 'https://musicbrainz.org/release/55530bc0-97ec-4256-97fc-e605895
 const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', {
   headless: !process.argv.includes('--headed'), viewport: { width: 1500, height: 1000 },
 });
-// clipboard-write only to begin with: the point of the first section is what
-// happens when clipboard-READ is still in its default "prompt" state, which is
-// the state that makes Chrome show its "Paste" chip.
 await ctx.grantPermissions(['clipboard-write'], { origin: 'https://musicbrainz.org' });
 const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
@@ -52,7 +48,10 @@ ck(booted, 'fixture: Art Station mounted its toolbar (otherwise nothing below me
 if (!booted) { await ctx.close(); console.log(`\n${fail} FAILED`); process.exit(1); }
 
 const setClip = t => page.evaluate(v => navigator.clipboard.writeText(v), t);
-// open the Source popover, press "Paste URL", and report what that ONE click did
+// open the Source popover, press "Paste URL", and report what that ONE click did.
+// `.as-src-url-inp` no longer exists — the lookups for it stay so the checks can
+// assert its ABSENCE rather than silently passing on a selector that matches
+// nothing either way.
 const pressPasteUrl = async () => {
   await page.evaluate(() => { document.querySelectorAll('.as-pop').forEach(p => p.remove()); if (window.__asTest) window.__asTest.lastSource = null; });
   await page.click('.as-src');
@@ -73,63 +72,55 @@ const pressPasteUrl = async () => {
   }, label);
 };
 
-/* ── 1. permission NOT granted: the clipboard must never be read ───────────
-   majkinetor: "there is a second click again" / "That '&Paste' button should go
-   away". That chip is Chrome's clipboard-read permission prompt, raised by
-   readText() while the permission is in its default "prompt" state. A page
-   script cannot dismiss or pre-approve it — so the only way to remove it is to
-   not make the call. */
-const readCalls = await page.evaluate(() => {
-  window.__readCalls = 0;
-  const real = navigator.clipboard.readText.bind(navigator.clipboard);
-  navigator.clipboard.readText = (...a) => { window.__readCalls++; return real(...a); };
-  return navigator.permissions.query({ name: 'clipboard-read' }).then(s => s.state).catch(() => 'unknown');
-});
-console.log('\nclipboard-read permission state:', readCalls);
-/* "prompt" is the state a real Chrome starts in and the one that raises the
-   chip; Playwright reports "denied" here because grantPermissions() implicitly
-   denies everything not listed. The code treats both the same — read only when
-   "granted" — so the check is that it is NOT granted. Asserting === 'prompt'
-   failed on a correct build for a reason that has nothing to do with Art
-   Station. */
-ck(readCalls !== 'granted', `fixture: clipboard-read is not granted (${readCalls}) — otherwise this proves nothing`);
+/* ── 1. the button is Ctrl+V with a click ──────────────────────────────────
+   majkinetor: "it should work the same as doing CTRL v but with the click…
+   remove edit as nobody will type URL". So: no box anywhere, and the click
+   imports. */
+ck(!/as-src-url-inp/.test(code), 'the URL input is gone from the markup');
+ck(!/class="as-src-url-inp"/.test(code) && !/\.as-src-url-inp\{/.test(code),
+  'and so is its styling — nothing is left to unroll');
 
-await setClip('https://www.example.com/artwork/front-3000.jpg');
+await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'https://musicbrainz.org' });
+const URL1 = 'https://www.example.com/artwork/front-3000.jpg';
+await setClip(URL1);
 const r1 = await pressPasteUrl();
-console.log('not granted →', JSON.stringify(r1));
+console.log('\nclick with a URL on the clipboard →', JSON.stringify(r1));
 ck(r1.label === 'Paste URL', `the control is called "Paste URL" (${JSON.stringify(r1.label)})`);
-ck(await page.evaluate(() => window.__readCalls) === 0,
-  'readText() is never called while the permission is only "prompt" — so Chrome has nothing to raise its chip for');
-ck(r1.boxShown && r1.focused, 'instead the box opens focused, ready for the paste gesture');
+ck(r1.sourced === URL1, `one click imports the clipboard URL (${JSON.stringify(r1.sourced)})`);
+ck(r1.popoverGone, 'the panel closes — nothing is left on screen');
+ck(!r1.boxShown && r1.value === null, 'and no box is shown at any point');
 
-/* ── 2. …and the paste gesture imports, with no permission involved ────────── */
-const pasted = await page.evaluate(async () => {
-  if (window.__asTest) window.__asTest.lastSource = null;
-  const i = document.querySelector('.as-src-url-inp');
-  i.focus();
-  const dt = new DataTransfer();
-  dt.setData('text', 'https://www.example.com/pasted.jpg');
-  i.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-  i.value = 'https://www.example.com/pasted.jpg';           // what the browser would do
-  await new Promise(r => setTimeout(r, 400));
-  return (window.__asTest && window.__asTest.lastSource) || null;
-});
-ck(pasted === 'https://www.example.com/pasted.jpg', `Ctrl+V in the box imports straight away (${JSON.stringify(pasted)})`);
-
-/* ── 3. paste anywhere on the gallery — no button at all ───────────────────── */
+/* ── 2. Ctrl+V does the same, including while the panel is open ────────────
+   The box that used to catch a paste inside the panel is gone, so the
+   page-level handler has to cover that case now. */
 const anywhere = await page.evaluate(async () => {
   document.querySelectorAll('.as-pop').forEach(p => p.remove());
   if (window.__asTest) window.__asTest.lastSource = null;
   const dt = new DataTransfer();
   dt.setData('text', 'https://www.example.com/anywhere.jpg');
   document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-  await new Promise(r => setTimeout(r, 400));
+  await new Promise(r => setTimeout(r, 350));
   return (window.__asTest && window.__asTest.lastSource) || null;
 });
-ck(anywhere === 'https://www.example.com/anywhere.jpg',
-  `pasting a URL onto the gallery imports it with no button and no prompt (${JSON.stringify(anywhere)})`);
+ck(anywhere === 'https://www.example.com/anywhere.jpg', `Ctrl+V on the gallery imports (${JSON.stringify(anywhere)})`);
 
-// …but it must not eat a paste aimed at a real field
+const withPanel = await page.evaluate(async () => {
+  if (window.__asTest) window.__asTest.lastSource = null;
+  document.querySelector('.as-src').click();
+  await new Promise(r => setTimeout(r, 500));
+  const hadPanel = !!document.querySelector('.as-src-pop');
+  const dt = new DataTransfer();
+  dt.setData('text', 'https://www.example.com/with-panel.jpg');
+  document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  await new Promise(r => setTimeout(r, 350));
+  return { hadPanel, sourced: (window.__asTest && window.__asTest.lastSource) || null, panelGone: !document.querySelector('.as-src-pop') };
+});
+ck(withPanel.hadPanel, 'fixture: the source panel was open');
+ck(withPanel.sourced === 'https://www.example.com/with-panel.jpg',
+  `Ctrl+V works with the panel open too (${JSON.stringify(withPanel.sourced)})`);
+ck(withPanel.panelGone, 'and the panel closes behind it');
+
+// …but a paste aimed at a real field is still left alone
 const notStolen = await page.evaluate(async () => {
   if (window.__asTest) window.__asTest.lastSource = null;
   const inp = document.createElement('input');
@@ -144,19 +135,7 @@ const notStolen = await page.evaluate(async () => {
 });
 ck(notStolen === null, `a paste aimed at some other input is left alone (${JSON.stringify(notStolen)})`);
 
-/* ── 4. permission GRANTED: one click, read silently, no box ───────────────── */
-await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'https://musicbrainz.org' });
-await page.evaluate(() => { window.__readCalls = 0; });
-const URL1 = 'https://www.example.com/artwork/front-3000.jpg';
-await setClip(URL1);
-const r4 = await pressPasteUrl();
-console.log('granted →', JSON.stringify(r4));
-ck(r4.popoverGone, 'with the permission granted, one click closes the panel and gets on with it');
-ck(!r4.boxShown, 'no input is shown — "no edit is shown", as asked');
-ck(r4.sourced === URL1, `and the import ran on the clipboard URL (${JSON.stringify(r4.sourced)})`);
-ck(await page.evaluate(() => window.__readCalls) === 1, 'the clipboard is read exactly once, and only now that it is allowed');
-
-/* ── 5. still nothing usable → no import ───────────────────────────────────── */
+/* ── 3. nothing usable → nothing happens, and it says so ───────────────────── */
 for (const [what, clip] of [
   ['plain text', 'Psych Funk Sa-Re-Ga!'],
   ['a non-http scheme', 'javascript:alert(1)'],
@@ -164,13 +143,8 @@ for (const [what, clip] of [
   await setClip(clip);
   const r = await pressPasteUrl();
   ck(r.sourced === null, `${what}: starts no import`);
-  ck(r.boxShown, `${what}: falls back to the box so it can still be used by hand`);
+  ck(!r.boxShown, `${what}: and still shows no box — it is a toast, not a form`);
 }
-
-/* ── 6. source-level ───────────────────────────────────────────────────────── */
-ck(/const clipboardGranted = async/.test(code), 'the permission is checked before the clipboard is touched');
-ck(!/>By URL</.test(code), 'the old "By URL" label is gone');
-ck(/document\.addEventListener\('paste'/.test(code), 'and a paste anywhere on the gallery is handled');
 
 ck(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 2).join(' | ') : ''));
 console.log('\nPOSTs seen:', allPosts.length, '- writes among them:', posted.length);

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-15 15:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-15 15:13 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -570,12 +570,13 @@ Works on one cover or the whole selection:
 - **Folder upload** (#359) — drop a **folder** on the gallery, or **Shift-click** the drop zone to browse one. It stages the folder's image/PDF files recursively, but bounded: **one level of subfolders deep** and up to **100 files** (a stray huge tree can't flood the gallery).
 - **URL link** — uses [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch covers from Discogs, Apple, Spotify, Bandcamp…
   The **`URL (N)`** toolbar button opens a panel listing every source this release offers — its linked platforms plus any [registered providers](#plugin-api) — with one **⬇ Import from …** per source and an **⬇ Import all N sources** below them. **Right-click the button** to run *Import all* straight away without opening the panel ([#558](https://github.com/majkinetor/musicbrainz-userscripts/issues/558)); with nothing to import it opens the panel instead, where **Paste URL** still is.
-  **Paste a URL** and it is imported — no dialog, no confirmation, and no browser permission prompt ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554)). Two ways:
+  **Paste a URL** and it is imported — no dialog, no box, nothing to confirm ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554)). Two ways in, both doing exactly the same thing:
 
-  - **Ctrl+V anywhere on the gallery.** Copy a URL, press Ctrl+V, done. A paste *gesture* carries its own data, so no permission is involved and nothing can prompt you. Pastes aimed at a real input (a comment field, the URL box) are left alone.
-  - **The `Paste URL` button** in the panel. If you have already allowed clipboard access for musicbrainz.org it reads it and imports in that one click. If you haven't, Art Station **does not touch the clipboard** — it opens a focused box for you to Ctrl+V into, which imports immediately.
+  - **Ctrl+V anywhere on the gallery** — including while the source panel is open. A paste *gesture* carries its own data, so no permission is involved and nothing can prompt you. Pastes aimed at a real input (a comment field, anything contenteditable) are left alone.
+  - **The `Paste URL` button** in the panel.
 
-  > That second rule is deliberate. Chrome shows its own small **Paste** chip whenever a page reads the clipboard without permission, and a page script cannot dismiss or pre-approve it. The only way to be rid of it is not to make the call, so Art Station only reads the clipboard when the permission is already granted.
+  > Reading the clipboard from a *click* needs the clipboard-read permission. Where it is already granted the button is silent and identical to Ctrl+V; where it isn't, Chrome shows its own small **Paste** chip to grant that one read — that chip *is* the permission prompt and no page script can dismiss or pre-approve it. Allowing clipboard access for the site once (padlock → Site settings → Clipboard) retires it. Firefox never lets a script read the clipboard, so use Ctrl+V there.
+
 - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover.
 - **Reverse-image search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](../art_station/as_picker/README.md) companion installed, click the better copy on the results (or any site reachable from there) and it's sent straight back into the gallery.
 - Fresh covers shown faster than the native UI.
