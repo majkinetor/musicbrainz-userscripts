@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.15.151332
+// @version      2026.9.15.151926
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.15.151332 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.15.151331\n  · Credit Hoarder v2026.9.13.122539\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
+  console.log('%c String Theory %c v2026.9.15.151926 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.15.151909\n  · Credit Hoarder v2026.9.13.122539\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -9535,7 +9535,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.151331","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.151331","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.151909","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.151909","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11783,7 +11783,8 @@ try {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
     pop.innerHTML = `<div class="as-pop-h as-src-hd"><span class="as-src-htxt">Source ${ENT.noun}</span>`
-      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import the URL on your clipboard — the same as pressing Ctrl+V on the gallery">Paste URL</button></span></div>`
+      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import by URL — paste a provider page or direct image URL">By URL</button>`
+      + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
       + `<div class="as-src-allwrap"></div>`   // #558: "Import all" now spans platforms AND registered providers, so it lives below both
@@ -11805,44 +11806,18 @@ try {
     // (apollo/isrc_scout-style unroll — see #180), replacing the old always-visible
     // "or paste any URL" row + Fetch button. Pasting a URL fetches immediately; no
     // button needed either way.
+    const srcHd = pop.querySelector('.as-src-hd');
     const urlBtn = pop.querySelector('.as-src-url-btn');
-    /* majkinetor: "CTRL v works, but button not - it should work the same as
-     * doing CTRL v but with the click. It now opens an edit box and shows the
-     * message to use ctrl v. So, make paste URL behave the same as CTRL v and
-     * remove edit as nobody will type URL."
-     *
-     * So the box is gone and the button reads the clipboard and imports, full
-     * stop. One honest limitation, since it decides what you see:
-     *
-     *   Reading the clipboard from a CLICK needs the clipboard-read permission.
-     *   Where it is already granted this is silent and identical to Ctrl+V.
-     *   Where it is not, Chrome shows its own "Paste" chip to grant that one
-     *   read — that chip is the permission prompt itself and no page script can
-     *   dismiss or pre-approve it. Allowing clipboard access for the site once
-     *   (padlock -> Site settings -> Clipboard) retires it for good.
-     *
-     * Ctrl+V needs none of that, because a paste gesture carries its own data —
-     * which is why it is the documented path and stays available everywhere,
-     * including Firefox, where scripts cannot read the clipboard at all.
-     */
-    const pasteUrlAndGo = async () => {
-      let txt = '';
-      try { txt = ((await navigator.clipboard.readText()) || '').trim(); }
-      catch (e) {
-        asLog.warn('Paste URL: the browser would not allow the clipboard to be read (' + (e && e.message) + ') — press Ctrl+V instead');
-        toast('This browser will not let a script read the clipboard — press Ctrl+V instead', 5000);
-        return;
-      }
-      if (!/^https?:\/\/\S+$/i.test(txt)) {
-        asLog.warn('Paste URL: the clipboard holds no URL — ' + (txt ? JSON.stringify(txt.slice(0, 60)) : '(empty)'));
-        toast('No URL on the clipboard', 3500);
-        return;
-      }
-      asLog.info('Paste URL: importing from the clipboard — ' + txt);
-      pop.remove();
-      sourceFromUrl(txt);
-    };
-    urlBtn.onclick = () => pasteUrlAndGo();
+    const urlInp = pop.querySelector('.as-src-url-inp');
+    const openUrlAdd = () => { srcHd.classList.add('open'); setTimeout(() => urlInp.focus(), 0); };
+    const closeUrlAdd = () => { srcHd.classList.remove('open'); urlInp.value = ''; };
+    const go = () => { const v = urlInp.value; closeUrlAdd(); pop.remove(); sourceFromUrl(v); };
+    urlBtn.onclick = () => srcHd.classList.contains('open') ? closeUrlAdd() : openUrlAdd();
+    urlInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeUrlAdd(); } };
+    // paste a URL → fetch immediately (no need to press Enter). Read after the paste
+    // lands; only auto-go when the whole field is a URL (typing-then-pasting won't fire).
+    urlInp.onpaste = () => setTimeout(() => { if (/^https?:\/\//i.test(urlInp.value.trim())) go(); }, 0);
+    // populate "Import from <provider>" buttons from the release's linked platforms
     // populate "Import from <provider>" buttons from the release's linked platforms
     getProvLinks().then(provs => {
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
@@ -13788,9 +13763,14 @@ try {
   .as-src-ic{width:16px;height:16px;object-fit:contain;flex:0 0 auto}
   .as-src-n{opacity:.85}
   .as-src-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .as-src-hd.open .as-src-htxt{display:none}   /* input fills the whole title when unrolled */
   .as-src-urlwrap{display:inline-flex;align-items:center;flex:none;min-width:0}
+  .as-src-hd.open .as-src-urlwrap{flex:1 1 auto}
   .as-src-url-btn{font-weight:600;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0;white-space:nowrap}
   .as-src-url-btn:hover{text-decoration:underline}
+  .as-src-hd.open .as-src-url-btn{display:none}
+  .as-src-url-inp{display:none}
+  .as-src-hd.open .as-src-url-inp{display:inline-block;width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:12px;font-family:inherit}
   .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
   .as-src-pop > .as-pop-note.as-src-warn{white-space:normal;color:var(--mbu-warn);font-weight:600}
   .as-src-pop > .as-pop-note.as-src-warn a{color:var(--mbu-warn);text-decoration:underline}

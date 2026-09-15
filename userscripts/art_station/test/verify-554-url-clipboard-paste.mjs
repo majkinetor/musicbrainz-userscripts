@@ -1,17 +1,18 @@
 // #554 (vzell, part 2): "Maybe even automatically paste the URL directly when
 // it's not malformed and in the clipboard when clicking the 'By URL' link"
 //
-// majkinetor declined it, asked for it, then corrected its shape three times.
-// The final word: "CTRL v works, but button not - it should work the same as
-// doing CTRL v but with the click. It now opens an edit box and shows the
-// message to use ctrl v. So, make paste URL behave the same as CTRL v and
-// remove edit as nobody will type URL."
+// Settled shape, after several rounds with majkinetor: "Revert the button and
+// input to previous and keep ctrl + v."
 //
-// So there is no input anywhere any more, and two ways in that do the same
-// thing: Ctrl+V on the gallery, and the "Paste URL" button.
+// So the popover's "By URL" button and its input are exactly as they were before
+// any of this — click to unroll, type or paste, Enter or a pasted URL imports —
+// and the ONE thing #554 adds is a page-level Ctrl+V.
 //
-// Chromium can actually grant clipboard-read, so this drives the real API rather
-// than a stub. Nothing is ever uploaded: every write endpoint is asserted unused.
+// That is the shape that needs no clipboard permission and therefore raises no
+// browser prompt: a paste GESTURE carries its own data, whereas reading the
+// clipboard from a click does not, which is what Chrome's "Paste" chip was.
+//
+// Nothing is ever uploaded: every write endpoint is asserted unused.
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +27,6 @@ const RELEASE = 'https://musicbrainz.org/release/55530bc0-97ec-4256-97fc-e605895
 const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', {
   headless: !process.argv.includes('--headed'), viewport: { width: 1500, height: 1000 },
 });
-await ctx.grantPermissions(['clipboard-write'], { origin: 'https://musicbrainz.org' });
 const page = ctx.pages()[0] || await ctx.newPage();
 const errs = []; page.on('pageerror', e => errs.push(e.message));
 const posted = [];
@@ -72,27 +72,31 @@ const pressPasteUrl = async () => {
   }, label);
 };
 
-/* ── 1. the button is Ctrl+V with a click ──────────────────────────────────
-   majkinetor: "it should work the same as doing CTRL v but with the click…
-   remove edit as nobody will type URL". So: no box anywhere, and the click
-   imports. */
-ck(!/as-src-url-inp/.test(code), 'the URL input is gone from the markup');
-ck(!/class="as-src-url-inp"/.test(code) && !/\.as-src-url-inp\{/.test(code),
-  'and so is its styling — nothing is left to unroll');
+/* ── 1. the button and input are back to what they were ───────────────────── */
+ck(/>By URL</.test(code), 'the control is called "By URL" again');
+ck(/class="as-src-url-inp"/.test(code), 'its input is back in the markup');
+ck(!/pasteUrlAndGo|clipboardGranted/.test(code), 'and no clipboard reading is left behind');
+ck(!/navigator\.clipboard\.readText/.test(code),
+  'readText() is not called anywhere — so no browser permission prompt can be raised');
 
-await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'https://musicbrainz.org' });
-const URL1 = 'https://www.example.com/artwork/front-3000.jpg';
-await setClip(URL1);
-const r1 = await pressPasteUrl();
-console.log('\nclick with a URL on the clipboard →', JSON.stringify(r1));
-ck(r1.label === 'Paste URL', `the control is called "Paste URL" (${JSON.stringify(r1.label)})`);
-ck(r1.sourced === URL1, `one click imports the clipboard URL (${JSON.stringify(r1.sourced)})`);
-ck(r1.popoverGone, 'the panel closes — nothing is left on screen');
-ck(!r1.boxShown && r1.value === null, 'and no box is shown at any point');
+const ui = await page.evaluate(async () => {
+  document.querySelectorAll('.as-pop').forEach(p => p.remove());
+  document.querySelector('.as-src').click();
+  await new Promise(r => setTimeout(r, 600));
+  const before = !!document.querySelector('.as-src-hd.open');
+  document.querySelector('.as-src-url-btn').click();
+  await new Promise(r => setTimeout(r, 300));
+  const i = document.querySelector('.as-src-url-inp');
+  return { label: document.querySelector('.as-src-url-btn').textContent.trim(),
+    closedBefore: !before, opensOnClick: !!document.querySelector('.as-src-hd.open'),
+    focused: document.activeElement === i };
+});
+console.log('\nbutton behaviour:', JSON.stringify(ui));
+ck(ui.label === 'By URL', `the label is "By URL" (${JSON.stringify(ui.label)})`);
+ck(ui.closedBefore && ui.opensOnClick, 'clicking it unrolls the input, as it always did');
+ck(ui.focused, 'and focuses it');
 
-/* ── 2. Ctrl+V does the same, including while the panel is open ────────────
-   The box that used to catch a paste inside the panel is gone, so the
-   page-level handler has to cover that case now. */
+/* ── 2. the one thing #554 keeps: Ctrl+V anywhere ─────────────────────────── */
 const anywhere = await page.evaluate(async () => {
   document.querySelectorAll('.as-pop').forEach(p => p.remove());
   if (window.__asTest) window.__asTest.lastSource = null;
@@ -102,25 +106,11 @@ const anywhere = await page.evaluate(async () => {
   await new Promise(r => setTimeout(r, 350));
   return (window.__asTest && window.__asTest.lastSource) || null;
 });
-ck(anywhere === 'https://www.example.com/anywhere.jpg', `Ctrl+V on the gallery imports (${JSON.stringify(anywhere)})`);
+ck(anywhere === 'https://www.example.com/anywhere.jpg',
+  `Ctrl+V on the gallery imports, with no button and no prompt (${JSON.stringify(anywhere)})`);
 
-const withPanel = await page.evaluate(async () => {
-  if (window.__asTest) window.__asTest.lastSource = null;
-  document.querySelector('.as-src').click();
-  await new Promise(r => setTimeout(r, 500));
-  const hadPanel = !!document.querySelector('.as-src-pop');
-  const dt = new DataTransfer();
-  dt.setData('text', 'https://www.example.com/with-panel.jpg');
-  document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-  await new Promise(r => setTimeout(r, 350));
-  return { hadPanel, sourced: (window.__asTest && window.__asTest.lastSource) || null, panelGone: !document.querySelector('.as-src-pop') };
-});
-ck(withPanel.hadPanel, 'fixture: the source panel was open');
-ck(withPanel.sourced === 'https://www.example.com/with-panel.jpg',
-  `Ctrl+V works with the panel open too (${JSON.stringify(withPanel.sourced)})`);
-ck(withPanel.panelGone, 'and the panel closes behind it');
-
-// …but a paste aimed at a real field is still left alone
+// …and it must not steal a paste meant for a field — including the URL box,
+// which has its own handler and would otherwise import twice
 const notStolen = await page.evaluate(async () => {
   if (window.__asTest) window.__asTest.lastSource = null;
   const inp = document.createElement('input');
@@ -133,18 +123,20 @@ const notStolen = await page.evaluate(async () => {
   inp.remove();
   return v;
 });
-ck(notStolen === null, `a paste aimed at some other input is left alone (${JSON.stringify(notStolen)})`);
+ck(notStolen === null, `a paste aimed at an input is left to that input (${JSON.stringify(notStolen)})`);
 
-/* ── 3. nothing usable → nothing happens, and it says so ───────────────────── */
-for (const [what, clip] of [
-  ['plain text', 'Psych Funk Sa-Re-Ga!'],
-  ['a non-http scheme', 'javascript:alert(1)'],
-]) {
-  await setClip(clip);
-  const r = await pressPasteUrl();
-  ck(r.sourced === null, `${what}: starts no import`);
-  ck(!r.boxShown, `${what}: and still shows no box — it is a toast, not a form`);
-}
+// non-URL text on the gallery does nothing at all
+const junk = await page.evaluate(async () => {
+  if (window.__asTest) window.__asTest.lastSource = null;
+  for (const t of ['Psych Funk Sa-Re-Ga!', 'javascript:alert(1)', 'C:\covers\front.jpg']) {
+    const dt = new DataTransfer();
+    dt.setData('text', t);
+    document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  }
+  await new Promise(r => setTimeout(r, 350));
+  return (window.__asTest && window.__asTest.lastSource) || null;
+});
+ck(junk === null, `pasting something that is not an http(s) URL does nothing (${JSON.stringify(junk)})`);
 
 ck(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 2).join(' | ') : ''));
 console.log('\nPOSTs seen:', allPosts.length, '- writes among them:', posted.length);
