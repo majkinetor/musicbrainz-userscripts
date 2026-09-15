@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.15.113959
+// @version      2026.9.15.150733
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2288,37 +2288,53 @@
     const srcHd = pop.querySelector('.as-src-hd');
     const urlBtn = pop.querySelector('.as-src-url-btn');
     const urlInp = pop.querySelector('.as-src-url-inp');
-    /* majkinetor, after trying the first cut: "Revert that. It first shows
-     * 'Paste' button, then it pastes clipboad and leaves input open. What I want
-     * is this: clipboard is immediately used, and no edit is shown. Rename by
-     * URL to Paste URL. So, you click it and it goes loading image from
-     * clipboard without ceremony."
+    /* majkinetor: "Revert that… clipboard is immediately used, and no edit is
+     * shown. Rename by URL to Paste URL." Then, on the build that did exactly
+     * that: "there is a second click again", with a shot of Chrome's own small
+     * "Paste" chip sitting over the button — "That '&Paste' button should go
+     * away".
      *
-     * So the button IS the action: read the clipboard, and if it holds a URL,
-     * import it. No input, no Enter, no second click.
+     * That chip is Chrome's clipboard-read permission prompt. It appears
+     * whenever a page calls navigator.clipboard.readText() while the permission
+     * is still in its default "prompt" state, and a page script cannot dismiss
+     * or pre-approve it — measured: state "prompt" -> readText() throws
+     * NotAllowedError, state "granted" -> it returns silently.
      *
-     * The input still exists, for the two cases where there is nothing to act
-     * on — the clipboard holds no URL, or the browser refuses to let a script
-     * read it at all (Firefox does; Chrome asks first, see below). Falling back
-     * to it keeps the feature usable rather than leaving a button that does
-     * nothing, and it is the only path that still shows a box.
+     * So the fix is not to bypass it but to NEVER TRIGGER IT: ask the
+     * Permissions API what the state is, and only read the clipboard when it is
+     * already "granted". In that case the button is genuinely one click with no
+     * prompt. Otherwise the clipboard is never touched, so no chip can appear —
+     * the box opens focused instead, and Ctrl+V there imports immediately
+     * (urlInp.onpaste, below), because a real paste GESTURE needs no permission
+     * at all. Either way the count of clicks is one, and the chip is gone.
      */
+    const clipboardGranted = async () => {
+      try {
+        if (!navigator.permissions || !navigator.permissions.query) return false;
+        const st = await navigator.permissions.query({ name: 'clipboard-read' });
+        return st && st.state === 'granted';
+      } catch (e) { return false; }   // Firefox has no such permission name at all
+    };
     const pasteUrlAndGo = async () => {
-      let txt = '';
-      const readable = navigator.clipboard && navigator.clipboard.readText;
-      if (readable) {
+      const canRead = navigator.clipboard && navigator.clipboard.readText && await clipboardGranted();
+      if (canRead) {
+        let txt = '';
         try { txt = ((await navigator.clipboard.readText()) || '').trim(); }
-        catch (e) { asLog.debug('Paste URL: the browser would not let the script read the clipboard (' + (e && e.message) + ')'); }
+        catch (e) { asLog.debug('Paste URL: clipboard read refused despite permission (' + (e && e.message) + ')'); }
+        if (/^https?:\/\/\S+$/i.test(txt)) {
+          asLog.info('Paste URL: importing from the clipboard — ' + txt);
+          pop.remove();
+          sourceFromUrl(txt);
+          return;
+        }
+        asLog.debug('Paste URL: clipboard held no URL — opening the box instead');
+        toast('No URL on the clipboard — paste or type one', 4000);
+      } else {
+        /* Deliberately NOT calling readText() here: that call is what raises
+           Chrome's "Paste" chip, and raising it is the thing he asked to remove. */
+        asLog.debug('Paste URL: clipboard permission not granted — using the paste gesture instead of asking for it');
+        toast('Press Ctrl+V to paste the URL', 3500);
       }
-      if (/^https?:\/\/\S+$/i.test(txt)) {
-        asLog.info('Paste URL: importing from the clipboard — ' + txt);
-        pop.remove();
-        sourceFromUrl(txt);
-        return;
-      }
-      // nothing usable — open the box so it can be typed or pasted by hand
-      asLog.debug('Paste URL: clipboard held no URL' + (readable ? '' : ' (no clipboard access)') + ' — opening the box instead');
-      toast(readable ? 'No URL on the clipboard — paste or type one' : 'This browser will not let a script read the clipboard — paste one here', 4000);
       srcHd.classList.add('open');
       setTimeout(() => urlInp.focus(), 0);
     };
@@ -3365,6 +3381,27 @@
     }
     if (best) { _cursorId = best.dataset.id; markCursor(true); }
   }
+  /* #554 (majkinetor: "there is a second click again" / "That '&Paste' button
+     should go away"). A real paste GESTURE carries its data with no permission
+     and therefore no Chrome chip — so copy a URL, press Ctrl+V anywhere on the
+     gallery, and it imports. That is one keystroke and no button at all, which
+     is fewer steps than the flow he was objecting to rather than more.
+     Ignored while typing somewhere, and while a lightbox or a popover has the
+     page, so it can never eat a paste meant for a comment box or the URL input
+     (which has its own handler). */
+  document.addEventListener('paste', e => {
+    try {
+      const t = e.target;
+      if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+      if (_lb || document.querySelector('.as-pop')) return;
+      if (!document.getElementById('as-root')) return;   // not on a gallery page
+      const txt = ((e.clipboardData && e.clipboardData.getData('text')) || '').trim();
+      if (!/^https?:\/\/\S+$/i.test(txt)) return;
+      e.preventDefault();
+      asLog.info('Pasted a URL onto the gallery — importing ' + txt);
+      sourceFromUrl(txt);
+    } catch (err) { asLog.debug('paste handler: ' + (err && err.message)); }
+  });
   document.addEventListener('keydown', e => {
     const t = e.target;
     // a popover (type picker / bulk pop) is open → Escape dismisses IT first

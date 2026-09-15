@@ -18,7 +18,7 @@ It runs on a release's **Cover art** tab and an **Event art** tab, replacing the
 - **Reorder** by dragging a single cover or a whole selection together.
 - **Select** with right-click or right-drag.
 - **[Single or bulk actions](#single-or-bulk-actions)** — set type, set comment, remove, download (zip) and reports, on one cover or the whole selection.
-- **[Add images](#add-images)** — file drop, one-click **Paste URL** from the clipboard (Enhanced Cover Art Uploads), MH Covers, and reverse-image search.
+- **[Add images](#add-images)** — file drop, **Ctrl+V a URL anywhere** (Enhanced Cover Art Uploads), MH Covers, and reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** — navigate, zoom, mouse-follow pan, slideshow, set type/comment, delete.
 - **[File names ⇄ types](#file-names--types)** — cover types and file names round-trip, so a downloaded archive re-adds with types intact.
 - Parallel operations on final commit
@@ -47,9 +47,12 @@ Works on one cover or the whole selection:
 - **Folder upload** (#359) — drop a **folder** on the gallery, or **Shift-click** the drop zone to browse one. It stages the folder's image/PDF files recursively, but bounded: **one level of subfolders deep** and up to **100 files** (a stray huge tree can't flood the gallery).
 - **URL link** — uses [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch covers from Discogs, Apple, Spotify, Bandcamp…
   The **`URL (N)`** toolbar button opens a panel listing every source this release offers — its linked platforms plus any [registered providers](#plugin-api) — with one **⬇ Import from …** per source and an **⬇ Import all N sources** below them. **Right-click the button** to run *Import all* straight away without opening the panel ([#558](https://github.com/majkinetor/musicbrainz-userscripts/issues/558)); with nothing to import it opens the panel instead, where **Paste URL** still is.
-  **Paste URL** imports straight from the clipboard in one click, with no box to fill in and nothing to confirm ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554)). With anything other than an `http(s)` URL on the clipboard — or in a browser that won't let a script read it, which includes Firefox — it opens an input to type one into instead, so it is never a button that does nothing.
+  **Paste a URL** and it is imported — no dialog, no confirmation, and no browser permission prompt ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554)). Two ways:
 
-  > Chrome asks for permission the first time with its own small **Paste** confirmation. That prompt is the browser's, not Art Station's; allowing clipboard access for musicbrainz.org in site settings stops it appearing.
+  - **Ctrl+V anywhere on the gallery.** Copy a URL, press Ctrl+V, done. A paste *gesture* carries its own data, so no permission is involved and nothing can prompt you. Pastes aimed at a real input (a comment field, the URL box) are left alone.
+  - **The `Paste URL` button** in the panel. If you have already allowed clipboard access for musicbrainz.org it reads it and imports in that one click. If you haven't, Art Station **does not touch the clipboard** — it opens a focused box for you to Ctrl+V into, which imports immediately.
+
+  > That second rule is deliberate. Chrome shows its own small **Paste** chip whenever a page reads the clipboard without permission, and a page script cannot dismiss or pre-approve it. The only way to be rid of it is not to make the call, so Art Station only reads the clipboard when the permission is already granted.
 - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover.
 - **Reverse-image search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](./as_picker/README.md) companion installed, click the better copy on the results (or any site reachable from there) and it's sent straight back into the gallery.
 - Fresh covers shown faster than the native UI.
@@ -140,6 +143,12 @@ window.ArtStation?.registerProvider({
 - When Art Station isn't installed, `window.ArtStation` is simply absent, so the `?.` call is a no-op.
 
 ## Shortcuts
+
+**Gallery:**
+
+| Key | Action |
+|---|---|
+| `Ctrl+V` | import the URL on the clipboard ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554)) — anywhere on the page, no permission prompt |
 
 **Gallery** (when a cover is focused — arrow to it first):
 

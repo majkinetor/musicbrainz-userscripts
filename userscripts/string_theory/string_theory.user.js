@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.15.114020
+// @version      2026.9.15.150733
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.15.114020 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.15.113959\n  · Credit Hoarder v2026.9.13.122539\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
+  console.log('%c String Theory %c v2026.9.15.150733 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.12.151845\n  · Art Station v2026.9.15.150733\n  · Credit Hoarder v2026.9.13.122539\n  · Fusion v2026.9.12\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -9535,7 +9535,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.113959","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.113959","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.150733","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.15.150733","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11809,37 +11809,53 @@ try {
     const srcHd = pop.querySelector('.as-src-hd');
     const urlBtn = pop.querySelector('.as-src-url-btn');
     const urlInp = pop.querySelector('.as-src-url-inp');
-    /* majkinetor, after trying the first cut: "Revert that. It first shows
-     * 'Paste' button, then it pastes clipboad and leaves input open. What I want
-     * is this: clipboard is immediately used, and no edit is shown. Rename by
-     * URL to Paste URL. So, you click it and it goes loading image from
-     * clipboard without ceremony."
+    /* majkinetor: "Revert that… clipboard is immediately used, and no edit is
+     * shown. Rename by URL to Paste URL." Then, on the build that did exactly
+     * that: "there is a second click again", with a shot of Chrome's own small
+     * "Paste" chip sitting over the button — "That '&Paste' button should go
+     * away".
      *
-     * So the button IS the action: read the clipboard, and if it holds a URL,
-     * import it. No input, no Enter, no second click.
+     * That chip is Chrome's clipboard-read permission prompt. It appears
+     * whenever a page calls navigator.clipboard.readText() while the permission
+     * is still in its default "prompt" state, and a page script cannot dismiss
+     * or pre-approve it — measured: state "prompt" -> readText() throws
+     * NotAllowedError, state "granted" -> it returns silently.
      *
-     * The input still exists, for the two cases where there is nothing to act
-     * on — the clipboard holds no URL, or the browser refuses to let a script
-     * read it at all (Firefox does; Chrome asks first, see below). Falling back
-     * to it keeps the feature usable rather than leaving a button that does
-     * nothing, and it is the only path that still shows a box.
+     * So the fix is not to bypass it but to NEVER TRIGGER IT: ask the
+     * Permissions API what the state is, and only read the clipboard when it is
+     * already "granted". In that case the button is genuinely one click with no
+     * prompt. Otherwise the clipboard is never touched, so no chip can appear —
+     * the box opens focused instead, and Ctrl+V there imports immediately
+     * (urlInp.onpaste, below), because a real paste GESTURE needs no permission
+     * at all. Either way the count of clicks is one, and the chip is gone.
      */
+    const clipboardGranted = async () => {
+      try {
+        if (!navigator.permissions || !navigator.permissions.query) return false;
+        const st = await navigator.permissions.query({ name: 'clipboard-read' });
+        return st && st.state === 'granted';
+      } catch (e) { return false; }   // Firefox has no such permission name at all
+    };
     const pasteUrlAndGo = async () => {
-      let txt = '';
-      const readable = navigator.clipboard && navigator.clipboard.readText;
-      if (readable) {
+      const canRead = navigator.clipboard && navigator.clipboard.readText && await clipboardGranted();
+      if (canRead) {
+        let txt = '';
         try { txt = ((await navigator.clipboard.readText()) || '').trim(); }
-        catch (e) { asLog.debug('Paste URL: the browser would not let the script read the clipboard (' + (e && e.message) + ')'); }
+        catch (e) { asLog.debug('Paste URL: clipboard read refused despite permission (' + (e && e.message) + ')'); }
+        if (/^https?:\/\/\S+$/i.test(txt)) {
+          asLog.info('Paste URL: importing from the clipboard — ' + txt);
+          pop.remove();
+          sourceFromUrl(txt);
+          return;
+        }
+        asLog.debug('Paste URL: clipboard held no URL — opening the box instead');
+        toast('No URL on the clipboard — paste or type one', 4000);
+      } else {
+        /* Deliberately NOT calling readText() here: that call is what raises
+           Chrome's "Paste" chip, and raising it is the thing he asked to remove. */
+        asLog.debug('Paste URL: clipboard permission not granted — using the paste gesture instead of asking for it');
+        toast('Press Ctrl+V to paste the URL', 3500);
       }
-      if (/^https?:\/\/\S+$/i.test(txt)) {
-        asLog.info('Paste URL: importing from the clipboard — ' + txt);
-        pop.remove();
-        sourceFromUrl(txt);
-        return;
-      }
-      // nothing usable — open the box so it can be typed or pasted by hand
-      asLog.debug('Paste URL: clipboard held no URL' + (readable ? '' : ' (no clipboard access)') + ' — opening the box instead');
-      toast(readable ? 'No URL on the clipboard — paste or type one' : 'This browser will not let a script read the clipboard — paste one here', 4000);
       srcHd.classList.add('open');
       setTimeout(() => urlInp.focus(), 0);
     };
@@ -12886,6 +12902,27 @@ try {
     }
     if (best) { _cursorId = best.dataset.id; markCursor(true); }
   }
+  /* #554 (majkinetor: "there is a second click again" / "That '&Paste' button
+     should go away"). A real paste GESTURE carries its data with no permission
+     and therefore no Chrome chip — so copy a URL, press Ctrl+V anywhere on the
+     gallery, and it imports. That is one keystroke and no button at all, which
+     is fewer steps than the flow he was objecting to rather than more.
+     Ignored while typing somewhere, and while a lightbox or a popover has the
+     page, so it can never eat a paste meant for a comment box or the URL input
+     (which has its own handler). */
+  document.addEventListener('paste', e => {
+    try {
+      const t = e.target;
+      if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+      if (_lb || document.querySelector('.as-pop')) return;
+      if (!document.getElementById('as-root')) return;   // not on a gallery page
+      const txt = ((e.clipboardData && e.clipboardData.getData('text')) || '').trim();
+      if (!/^https?:\/\/\S+$/i.test(txt)) return;
+      e.preventDefault();
+      asLog.info('Pasted a URL onto the gallery — importing ' + txt);
+      sourceFromUrl(txt);
+    } catch (err) { asLog.debug('paste handler: ' + (err && err.message)); }
+  });
   document.addEventListener('keydown', e => {
     const t = e.target;
     // a popover (type picker / bulk pop) is open → Escape dismisses IT first
