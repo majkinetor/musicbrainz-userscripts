@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.14.164508
+// @version      2026.9.15.110512
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -666,6 +666,17 @@
     SESSION_ID = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++_sessionSeq);
     LOG.length = 0;
     try { if (LS) LS.setItem('falcon:session:current', SESSION_ID); } catch (e) {}
+    /* #593 (majkinetor): "It didn't have a name (just date) while release name
+       is resolved." The name WAS resolved — against the previous session. A
+       Harmony seed calls newSession() at boot, the release name arrives a moment
+       later from fetchEntityName and is stashed under THAT id, and then Start
+       mints a second session for the run itself. The run's own session, the one
+       history lists, never had a name stored for it.
+       The queue survives across the two, so carry the name over. */
+    try {
+      const rel = queue.find(i => i.entityType === 'release' && i.name);
+      if (rel) noteSessionReleaseName(rel.name);
+    } catch (e) {}
     pruneOldSessions();
     log('info', `=== session ${SESSION_ID} started (${reason}) ===`);
   }
@@ -684,11 +695,39 @@
     const prev = cur && midrun && LS.getItem(LS_PREFIX + cur);
     if (cur && prev) { SESSION_ID = cur; LOG.push(...JSON.parse(prev)); }
   } catch (e) {}
+  /* #593 (majkinetor): "it is missing starting lines" — a stored log began
+   * mid-run, 53 seconds after its own session start.
+   *
+   * LOG.slice(-LOG_PERSIST_MAX) keeps the LAST 400 lines, so every run bigger
+   * than that lost its opening: the options dump, the queue contents, the
+   * "[names] release:… " line and "starting N worker(s)". Those are the lines
+   * you need to read a run back, and two other things quietly depended on them:
+   *
+   *   · sessionHasRealWork() matches "starting N worker(s)". Trimmed away, a
+   *     big run's log looks like it did nothing, and newSession() DELETES it
+   *     when the next run supersedes it — the log disappears from history.
+   *   · extractReleaseName() mines "[names] release:…", the fallback for
+   *     sessions stored before the dedicated name key existed.
+   *
+   * So keep both ends and drop the middle, which is per-url worker chatter and
+   * the least worth storing. Same 400-line budget, no extra storage.
+   */
+  const LOG_PERSIST_HEAD = 140;
+  function persistWindow(lines) {
+    if (lines.length <= LOG_PERSIST_MAX) return lines;
+    const tail = LOG_PERSIST_MAX - LOG_PERSIST_HEAD - 1;
+    const cut = lines.length - LOG_PERSIST_HEAD - tail;
+    return [
+      ...lines.slice(0, LOG_PERSIST_HEAD),
+      `[--:--:--] INFO  ——— ${cut} line(s) from the middle of this run were dropped to fit the stored-log budget; its start and end are kept in full ———`,
+      ...lines.slice(-tail),
+    ];
+  }
   let _persistTimer = null, _lastPersisted = '';
   function writeLogNow() {
     if (!SESSION_ID) return;
     try {
-      const payload = JSON.stringify(LOG.slice(-LOG_PERSIST_MAX));
+      const payload = JSON.stringify(persistWindow(LOG));
       if (payload === _lastPersisted) return;
       _lastPersisted = payload;
       if (LS) LS.setItem(LS_PREFIX + SESSION_ID, payload);
@@ -5498,7 +5537,15 @@
     document.getElementById('falcon-log-copy').onclick = async () => {
       const note = document.getElementById('falcon-log-copied');
       const lines = currentLogLines();
-      const label = _viewingSession ? `session ${formatSessionLabel(_viewingSession)}` : 'current session';
+      /* #593 (majkinetor): "It didn't have a name (just date) while release name
+         is resolved." He was reading the header of a COPIED log, which is what
+         gets pasted into an issue — and it used formatSessionLabel alone, the
+         bare timestamp, while the history dropdown beside it composed
+         "<release> — <date>" from sessionReleaseName. One of the two was wrong,
+         and it was the one that travels. */
+      const sessName = _viewingSession ? sessionReleaseName(_viewingSession) : sessionReleaseName(SESSION_ID);
+      const label = (_viewingSession ? `session ${formatSessionLabel(_viewingSession)}` : 'current session')
+        + (sessName ? ` — ${sessName}` : '');
       const text = `<details><summary>Falcon log (v${scriptVersion()}, ${label}, ${lines.length} lines)</summary>\n\n\`\`\`\n${lines.join('\n')}\n\`\`\`\n\n</details>`;
       try {
         await navigator.clipboard.writeText(text);
@@ -6137,6 +6184,8 @@
     getViewingSession: () => _viewingSession,
     // #512 follow-up: release name persisted outside the trimmable log
     sessionNameKey, noteSessionReleaseName, sessionReleaseName, deleteSessionData,
+    // #593
+    newSession, writeLogNow, persistWindow, log, LOG_PERSIST_MAX: () => LOG_PERSIST_MAX, LOG_PERSIST_HEAD: () => LOG_PERSIST_HEAD,
     // #513
     getStatusFilter: () => _statusFilter, setStatusFilter: s => { _statusFilter = s; renderQueue(); },
     // #508 follow-up
