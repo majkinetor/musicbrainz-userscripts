@@ -21,11 +21,28 @@
   commit itself.
 
 .NOTES
-  Scheduled: Thursday and Sunday, 03:00 local.
-  MusicBrainz publishes a fullexport on Wednesday and Saturday, finishing about
-  04:45 UTC (06:45 local). Running the following night means the dump is ~20
-  hours old and certainly complete — a 03:00 Wed/Sat run would have used the
-  PREVIOUS export and looked like it worked.
+  Scheduled: Wednesday and Saturday, 23:30 local.
+
+  Measured across three exports, MusicBrainz's fullexport runs to a tight
+  schedule:
+
+      export id / start   00:21-00:24 UTC
+      mbdump-edit.tar.bz2 04:42-04:45 UTC
+      SHA256SUMS (last)   04:48-04:51 UTC   <- the completion marker
+
+  So it finishes ~04:50 UTC, i.e. 06:50 local. 23:30 the same evening is ~17
+  hours after that: complete, still night, and the dump is used the same day it
+  is published.
+
+  Not 03:00 on the export morning: at 01:00 UTC the export is 40 minutes in and
+  LATEST still names the PREVIOUS dump, so a run then would rebuild from
+  four-day-old data and report success. (The already-built check would in fact
+  catch that and skip, but relying on a safety net for something the schedule
+  can simply avoid is the wrong way round.)
+
+  Waiting costs nothing in data freshness either way: a dump is a snapshot taken
+  at ~00:21 UTC, so ingesting it at 07:00 or at 23:30 yields identical numbers.
+  The only thing the timing changes is how soon the dashboard reflects it.
 #>
 [CmdletBinding()]
 param(
