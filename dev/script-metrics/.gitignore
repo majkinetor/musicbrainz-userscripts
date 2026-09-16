@@ -9,5 +9,9 @@ out/metrics.db-shm
 # the Docker volume. This is ~15 GB.
 data/
 
+# Per-run logs from scheduled-run.ps1 (twice a week, last 20 kept). Local
+# diagnostics for an unattended run, not repo content.
+logs/
+
 __pycache__/
 *.pyc
