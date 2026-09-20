@@ -26,6 +26,8 @@
   ],
 
   "_default_cutoff": "Where the dashboard's date filter starts, not what is ingested — all history is captured regardless, so widening this needs only a report re-run. Set to the month our scripts actually start (2026-05, 12,766 edits) so the default view carries no empty leading months.",
+  "_min_edits_default": "Dashboard: editors with fewer edits than this in the selected window are left out of the editor counts and the leaderboard (edit totals are unaffected). The control on the page is live; this is only its starting value.",
+  "min_edits_default": 100,
   "default_cutoff": "2026-05-01",
   "_default_version_regex": "Deliberately loose. Most scripts stamp '<Name> v<version> by <author> - <url>', but Group Therapy writes '<Name> by <author> v<version> - <url>', so anchoring on a trailing ' by ' silently lost 38,575 versions. Matching whitespace + v + digit handles both orders.",
   "default_version_regex": "\\sv([0-9][^\\s]*)",

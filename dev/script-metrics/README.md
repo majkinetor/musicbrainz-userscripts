@@ -34,6 +34,28 @@ Only the small reports cross back to the host. To inspect it:
 docker compose run --rm --entrypoint sqlite3 metrics /data/metrics.db
 ```
 
+## Dashboard filters
+
+`dashboard.html` recomputes every number client-side from the cubes in
+`metrics.json`, so the filters are live:
+
+| Filter | Effect |
+|---|---|
+| **From / To** | the month window; everything else is derived within it |
+| **Scripts** | mine only / all / comparison scripts only |
+| **Min edits/editor** | editors with fewer edits than this **in the current window** are left out of the editor counts and the leaderboard |
+
+**Min edits/editor** defaults to `100` (`min_edits_default` in
+`config/sources.json`). The long tail below it is overwhelmingly someone who ran
+a script once — real edits, but not adoption, and they bury the people who
+actually use the thing.
+
+> It filters **people, not edits**. Edit totals, the month series and the
+> outcome tiles still count every edit; only the distinct-editor counts, the
+> per-script user column and the leaderboard change. Measured on the current
+> data: 152 editors at 0, 108 at 100, 57 at 1000 — with the edit total sitting
+> at 631,726 throughout.
+
 ## How an edit is attributed to a script
 
 Every script in this repo stamps its MusicBrainz edit notes with a header:

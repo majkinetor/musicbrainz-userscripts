@@ -170,6 +170,9 @@
         <option value="external">Comparison only</option>
       </select>
     </label>
+    <label title="Editors with fewer edits than this in the selected window are left out of the editor counts and the leaderboard. Edit totals are not affected — this filters people, not edits.">Min edits/editor
+      <input type="number" id="minEdits" min="0" step="10" style="width:5.5em">
+    </label>
     <span class="spacer"></span>
     <button class="theme-toggle" id="resetBtn" type="button">Reset</button>
   </div>
@@ -274,6 +277,10 @@ const state = {
   to: DATA.months.length ? DATA.months[DATA.months.length - 1] : DATA.default_cutoff.slice(0, 7),
   owners: 'mine',
   allEditors: false,
+  // Editors below this many edits in the window are not counted as adopters.
+  // Most of the long tail is someone who ran a script once; they are real edits
+  // but they are not adoption, and they bury the people who actually use it.
+  minEdits: DATA.min_edits_default,
 };
 
 // Folded buckets are real edits but not identifiable people: they must never
@@ -321,6 +328,20 @@ function slice() {
     if (!m) perMonth.set(mi, m = { total: 0, byScript: new Map() });
     m.total += count;
     m.byScript.set(si, (m.byScript.get(si) || 0) + count);
+  }
+
+  /* Drop editors under the threshold — necessarily after the loop above, since
+     an editor's total for the window is only known once it has finished.
+     Deliberately filters PEOPLE, not edits: the script totals, the month series
+     and the outcome tiles all still count every edit. Removing the edits too
+     would silently change "how much did this script do", which is a different
+     question from "how many people use it". */
+  if (state.minEdits > 0) {
+    for (const [ei, e] of perEditor) {
+      if (e.edits >= state.minEdits) continue;
+      perEditor.delete(ei);
+      for (const s of perScript.values()) s.users.delete(ei);
+    }
   }
 
   const perType = new Map();
@@ -677,14 +698,26 @@ function bindFilters() {
   for (const input of [from, to]) { input.min = first; input.max = last; }
   from.value = state.from; to.value = state.to;
 
+  const minEdits = $('minEdits');
+  minEdits.value = state.minEdits;
+
   from.addEventListener('change', () => { state.from = from.value || first; renderAll(); });
   to.addEventListener('change', () => { state.to = to.value || last; renderAll(); });
   $('owners').addEventListener('change', (e) => { state.owners = e.target.value; renderAll(); });
+  // 'input', not 'change': typing a threshold should update as you go. A blank
+  // or negative box means no filter rather than NaN, which would drop everyone.
+  minEdits.addEventListener('input', () => {
+    const n = parseInt(minEdits.value, 10);
+    state.minEdits = Number.isFinite(n) && n > 0 ? n : 0;
+    renderAll();
+  });
   $('resetBtn').addEventListener('click', () => {
     state.from = DATA.default_cutoff.slice(0, 7); state.to = last;
     state.owners = 'mine';
+    state.minEdits = DATA.min_edits_default;
     from.value = state.from; to.value = state.to;
     $('owners').value = 'mine';
+    minEdits.value = state.minEdits;
     renderAll();
   });
   $('themeToggle').addEventListener('click', () => {

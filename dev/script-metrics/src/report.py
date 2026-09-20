@@ -266,6 +266,11 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
         'generated_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
         'dump_id': runs[-1]['dump_id'] if runs else None,
         'default_cutoff': config.get('default_cutoff', '2026-01-01'),
+        # The dashboard's starting "min edits per editor". Configurable because
+        # what counts as a real adopter differs per script; 100 is the default
+        # because the long tail below it is overwhelmingly people who ran
+        # something once. The control is live, so this is only where it starts.
+        'min_edits_default': int(config.get('min_edits_default', 100)),
         'owner_mb_username': owner_name,
         'palette': {'light': SERIES_LIGHT, 'dark': SERIES_DARK},
         'scripts': scripts,
