@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.12
+// @version      2026.9.20
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -429,6 +429,12 @@ function acName(ac) {
     return ac.map(x => (x.name || (x.artist && x.artist.name) || '') + (x.joinphrase || '')).join('');
 }
 function acPrimaryGid(ac) { return (Array.isArray(ac) && ac[0] && ac[0].artist && ac[0].artist.id) || null; }
+/* #594 (chaban-mb): every artist MBID in the credit, in order.
+   acPrimaryGid deliberately stays — it is what the artist LINK in the table
+   points at — but matching needs the whole credit. Comparing only the primary
+   would call "Radium" and "Radium feat. Someone" the same artist, which is the
+   opposite mistake to the one being fixed. */
+function acGids(ac) { return Array.isArray(ac) ? ac.map(x => x.artist && x.artist.id).filter(Boolean) : []; }
 function dur(ms) {
     if (ms == null) return '—';
     const s = Math.round(ms / 1000);
@@ -446,7 +452,7 @@ function mkRecording(gid, opts) {
     // enrichAllReleases); true/false once known. #529: "Video recordings should
     // never be added to groups with audio recordings" — null is deliberately
     // treated as "don't block" everywhere, only a known true/false mismatch does.
-    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false, isrcSource: null }, opts || {});
+    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, artistGids: [], releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false, isrcSource: null }, opts || {});
 }
 
 async function fetchReleaseRecordings(releaseMbid) {
@@ -461,7 +467,7 @@ async function fetchReleaseRecordings(releaseMbid) {
                 title: r.title || t.title,
                 length: r.length != null ? r.length : t.length,
                 isrcs: r.isrcs || [],
-                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index',
+                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index',
                 releases: [{ gid: j.id, title: j.title, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
             }));
         }
@@ -499,7 +505,7 @@ async function fetchRecordingsByBrowse(browseQuery, label, onPage) {
             // effort, and stay unknown rather than empty when they cannot be.
             recordings.push(mkRecording(r.id, {
                 title: r.title, length: r.length, isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
-                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video,
+                artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video,
                 releases: [], allReleases: null,
             }));
         }
@@ -587,7 +593,7 @@ async function fetchRecordingsBySearch(luceneQuery, label, onPage) {
             // the search already returns every release a recording appears on,
             // across every release group — so it doubles as the deduped
             // "all releases" list, with no extra per-recording fetch.
-            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index', releases, allReleases: releases }));
+            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index', releases, allReleases: releases }));
         }
         offset += SEARCH_PAGE_LIMIT; pages++;
         if (pages >= SEARCH_MAX_PAGES && offset < total) truncatedBy = 'the ' + SEARCH_MAX_PAGES + '-page cap';
@@ -634,7 +640,7 @@ async function fetchRGRecordings(rgMbid, onPage) {
                     byGid.set(r.id, mkRecording(r.id, {
                         title: r.title, length: r.length != null ? r.length : t.length,
                         isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
-                        artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!r.video,
+                        artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video,
                         releases: [relRef], allReleases: null,
                     }));
                 }
@@ -682,7 +688,7 @@ async function fetchRecordingByGid(gid) {
     if (!j) return null;
     const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null }));
     const ac = j['artist-credit'];
-    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', releases, allReleases: releases });
+    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', releases, allReleases: releases });
 }
 // #529 follow-up (majkinetor, with a screenshot of jesus2099's reference
 // script): "We should have a list of recording releases too (deduped)" — the
@@ -1067,7 +1073,7 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, artistByMbid: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false };
     // #565: three states, not two. `length` false meant BOTH "the lengths differ"
     // and "we have no length to compare", and the normal cutoff required it — so a
     // release whose recordings carry no length at all could never form a group,
@@ -1083,7 +1089,25 @@ function pairSignals(a, b, tolMs) {
     if (a.acoustids && b.acoustids && a.acoustids.length && b.acoustids.length && a.acoustids.some(x => b.acoustids.includes(x))) sig.acoustid = true;
     if (lengthClose(a.length, b.length, tolMs)) sig.length = true;
     if (a.title && b.title && titleSimilar(a.title, b.title)) sig.title = true;
-    if (a.artistCredit && b.artistCredit && artistSimilar(a.artistCredit, b.artistCredit)) sig.artist = true;
+    /* #594 (chaban-mb): "auto-matching with normal cutoff fails due to differing
+       artists credits even though the artist themselves are identical."
+       Measured on his release group: both releases credit artist
+       5b44eac2-b29e-42ba-bd99-213a270149d6, one as "Radium" and the other as
+       "DJ Radium". artistSimilar scores that 1 token of 2 = 0.5, under its 0.8
+       threshold, so sig.artist was false and `normal` — which needs
+       title && artist && length — could not group even the pair whose titles and
+       5:05 lengths were identical. Dropping to `loose` was the only way through,
+       and that weakens every other pair in the pool at the same time.
+       A credit string is a display form; the MBID is the artist. When both sides
+       carry MBIDs, compare those and let the string disagree. Sets, not sequence:
+       "A & B" and "B & A" are the same two artists. The string comparison stays
+       as the fallback for recordings fetched without artist credits. */
+    if (a.artistGids && a.artistGids.length && b.artistGids && b.artistGids.length) {
+        const ka = a.artistGids.slice().sort().join(','), kb = b.artistGids.slice().sort().join(',');
+        if (ka === kb) { sig.artist = true; sig.artistByMbid = true; }
+    } else if (a.artistCredit && b.artistCredit && artistSimilar(a.artistCredit, b.artistCredit)) {
+        sig.artist = true;
+    }
     return sig;
 }
 function autoMatch(pool, tolMs, cutoff) {
@@ -1096,6 +1120,14 @@ function autoMatch(pool, tolMs, cutoff) {
     for (let i = 0; i < pool.length; i++) {
         for (let j = i + 1; j < pool.length; j++) {
             const sig = pairSignals(pool[i], pool[j], tolMs);
+            /* #594: say so when the MBID path is what carried the artist signal
+               and the credit strings would have refused it. This is the whole
+               behaviour change, and without a line for it the only evidence is a
+               group appearing that did not before. */
+            if (sig.artistByMbid && !artistSimilar(pool[i].artistCredit || '', pool[j].artistCredit || '')) {
+                Log.info('  same artist by MBID despite differing credits: "' + pool[i].artistCredit
+                    + '" vs "' + pool[j].artistCredit + '" (' + pool[i].artistGids.join(', ') + ')');
+            }
             // a pair that would otherwise have grouped, held back purely by the
             // gross-length guard — worth reporting rather than silently dropping
             if (sig.lengthConflict && (sig.isrc || sig.acoustid || (sig.title && sig.artist) || (sig.title && sig.length))) {
@@ -3402,7 +3434,7 @@ try {
     W.__fusion = {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
-        normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, dur, parseMbidFromInput, parseAddInput,
+        normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,
