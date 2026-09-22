@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-22 22:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-22 22:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -626,6 +626,7 @@ Every change is staged. **Enter edit** opens a panel that lists the pending oper
 - Edits, removes and uploads all run in **parallel** (upload + register per image); a single **reorder** edit runs **last** and sets the final order, so register order doesn't matter. If a run has failures, **Repeat** re-runs just the failed ops — and re-runs the reorder too, so a retried upload still lands in place.
 - A shared **edit note** and **make votable** apply to every edit.
 - While a run is in progress the dialog can't be dismissed by clicking outside, and leaving the page warns first — so edits are never silently cut off. Use **Cancel** to abort.
+- The panel is **resizable** from its bottom-right corner and **remembers the size** you leave it at, per dialog ([#595](https://github.com/majkinetor/musicbrainz-userscripts/issues/595)). Clicking the backdrop still closes it, but only when the click *starts* there — dragging the resize corner, or a text selection, out past the edge no longer counts as clicking outside.
 - **Automatically repeat failures** (⚙ setup, **on** by default, up to **10 minutes or 10 times**) — when a commit finishes with failures, Art Station re-runs *just the failed operations* by itself until they succeed or the allowance runs out ([#566](https://github.com/majkinetor/musicbrainz-userscripts/issues/566)). Uploads to the Internet Archive have been unreliable, and a failed booklet is expensive to redo by hand.
     - It stops at whichever limit comes first. The gap between attempts starts as the window spread over the allowance (10 min / 10 tries = one a minute) and **backs off as attempts pile up** — doubling from the 10th, tripling from the 100th — so a server that has already refused ten times isn't asked again at the same cadence. (Backoff shape borrowed from [Anakunda's MB Auto-retry on upload to CAA error](https://greasyfork.org/en/scripts/475225-mb-auto-retry-on-upload-to-caa-error), via chaban-mb.)
     - A footer row of its own beneath the buttons shows the attempt, the countdown, how much of the window is gone and how many operations are still failing. **Repeat** still works and goes immediately; **Close** stops the countdown.

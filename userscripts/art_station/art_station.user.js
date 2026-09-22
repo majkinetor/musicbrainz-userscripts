@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.15
+// @version      2026.9.22
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2754,6 +2754,68 @@
   // decide, just cut the extra click. `immediate` defers the auto-run past the next paint
   // (double rAF) so the dialog genuinely renders open first, rather than firing in the same
   // synchronous tick and never visibly appearing before the run's own DOM updates take over.
+  /* #595 (vzell): "by dragging and releasing the resize handler with the mouse
+     the dialog closes immediately as soon as releasing the mouse."
+
+     A `click` whose mousedown and mouseup have DIFFERENT targets is dispatched on
+     their nearest COMMON ANCESTOR. Drag the box's resize corner and the pointer
+     ends up over the backdrop, so the pair is (box, overlay) and the click is
+     dispatched on the overlay — `e.target === ov` was true for a gesture that
+     began inside the dialog. The same thing happens selecting text in the edit
+     note and releasing past the edge, which threw the note away without a word.
+
+     Requiring the gesture to have STARTED on the backdrop is what separates
+     "clicked outside" from "finished a drag outside". `extra` is an additional
+     guard evaluated at click time (a run in flight, an open popover, …). */
+  /* #595, second half (vzell): "When then clicking the 'Enter edit' button again,
+     it starts with the original size again." Every open rebuilds the dialog, so a
+     resize lasted exactly as long as that one dialog — and for someone who makes
+     it large every time ("personal habit"), that is a resize per open forever.
+
+     Remembered per dialog kind, the same way Fusion persists its own window
+     (ResizeObserver → GM storage). Sizes are clamped to the viewport on restore,
+     so a size saved on a big monitor cannot leave the dialog larger than the
+     screen it is reopened on. */
+  const AS_DLG_SIZE_KEY = 'artstation:dialogSize';
+  function asDlgSizes() { try { return JSON.parse(gmLoad(AS_DLG_SIZE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function rememberDialogSize(box, kind) {
+    const saved = asDlgSizes()[kind];
+    if (saved && saved.w > 0 && saved.h > 0) {
+      box.style.width = Math.min(saved.w, Math.round(window.innerWidth * 0.94)) + 'px';
+      box.style.height = Math.min(saved.h, Math.round(window.innerHeight * 0.88)) + 'px';
+    }
+    // The observer fires once on observe() with the CURRENT size; that would
+    // write back whatever was just restored, which is harmless, but it would
+    // also persist the default size for a dialog nobody ever resized. Skip the
+    // first callback so only a real resize is recorded.
+    let first = true;
+    try {
+      new ResizeObserver(() => {
+        if (first) { first = false; return; }
+        if (!box.isConnected) return;
+        // ⚠ what the UA resizer writes to style.width is a CONTENT-box value —
+        // .as-cm-box is content-box and carries 18px/20px padding. Storing
+        // offsetWidth (which includes that padding) and assigning it back to
+        // style.width grew the dialog by 40x36px on every reopen. Measured.
+        // Reading back the resizer's own inline values needs no box-model
+        // arithmetic and cannot drift if the padding or box-sizing changes.
+        const w = parseFloat(box.style.width), h = parseFloat(box.style.height);
+        if (!(w > 0) || !(h > 0)) return;
+        const all = asDlgSizes();
+        all[kind] = { w: Math.round(w), h: Math.round(h) };
+        gmSave(AS_DLG_SIZE_KEY, JSON.stringify(all));
+      }).observe(box);
+    } catch (e) { /* no ResizeObserver — the dialog just won't remember its size */ }
+  }
+  function onBackdropClick(ov, run, extra) {
+    ov.addEventListener('mousedown', e => { ov._downOnBackdrop = (e.target === ov); });
+    ov.addEventListener('click', e => {
+      const fromBackdrop = ov._downOnBackdrop; ov._downOnBackdrop = false;
+      if (e.target !== ov || !fromBackdrop) return;
+      if (extra && !extra()) return;
+      run();
+    });
+  }
   function enterEdit(immediate) {
     document.getElementById('as-commit')?.remove();
     const plan = buildPlan();
@@ -2771,7 +2833,8 @@
     // backdrop click closes — but NOT while a live run is in flight (#269): that
     // path bypassed the abort, orphaning the in-flight edits. During a run the only
     // exits are Cancel (aborts) or Close (after it finishes).
-    ov.onclick = e => { if (e.target === ov && !ov._running) { arStop(ov); ov.remove(); } };
+    onBackdropClick(ov, () => { arStop(ov); ov.remove(); }, () => !ov._running);   // #595
+    rememberDialogSize(ov.querySelector('.as-cm-box'), 'commit');                  // #595
     ov.querySelector('.as-cm-cancel').onclick = () => { arStop(ov); ov.remove(); };
     const dryEl = ov.querySelector('.as-cm-dryrun');
     const goBtn = ov.querySelector('.as-cm-go');
@@ -3120,7 +3183,10 @@
       // a backdrop click while a type popover is open OR the comment is focused
       // should dismiss THAT (handled by their own outside-click/blur), not close
       // the whole viewer — _popJustClosed / _lbJustBlurred bridge the mousedown→click gap
-      ov.onclick = e => { if (e.target === ov && !_popJustClosed && !_lbJustBlurred && !_dlJustClosed && !document.querySelector('.as-pop')) closeLightbox(); };
+      // #595: onBackdropClick, so a drag that ENDS on the backdrop (panning a
+      // zoomed image, dragging a selection out of the comment box) is not a close.
+      onBackdropClick(ov, closeLightbox,
+        () => !_popJustClosed && !_lbJustBlurred && !_dlJustClosed && !document.querySelector('.as-pop'));
       // wheel zooms the image toward the cursor (instead of scrolling the page behind)
       ov.addEventListener('wheel', e => {
         e.preventDefault();
@@ -3583,7 +3649,10 @@
     </div>`;
     document.body.appendChild(ov);
     const close = () => { ov.remove(); maybeClearSel(); };   // #277: report counts as "using" the selection → clear on close
-    ov.onclick = e => { if (e.target === ov) close(); };
+    // #595: same box (.as-cm-box is resize:both) and a textarea people select
+    // out of — the report dialog had the identical closes-on-drag-release bug.
+    onBackdropClick(ov, close);
+    rememberDialogSize(ov.querySelector('.as-cm-box'), 'report');   // #595
     ov.querySelector('.as-cm-cancel').onclick = close;
     const ta = ov.querySelector('.as-rp-out');
     const regen = async () => {
