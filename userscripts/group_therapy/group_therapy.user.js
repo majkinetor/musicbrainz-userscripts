@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.22
+// @version      2026.9.22.201429
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -137,6 +137,32 @@
       if (it === 'sep') { menuEl.appendChild(el('div', 'gt-sep')); continue; }
       if (it.header != null) { const h = el('div', 'gt-hdr', it.header); it._set = v => { try { h.textContent = v; } catch (e) {} }; menuEl.appendChild(h); continue; }   // #377 live header
       if (it.note != null) { menuEl.appendChild(el('div', 'gt-note', it.note)); continue; }
+      // #597: a text field inside the menu — the track selector for the vertical
+      // moves. onInput reports back {text, ok, title} so the row underneath can
+      // say what the spec actually matched BEFORE anything is copied, the same
+      // way the text parser's Scope does.
+      if (it.input) {
+        const wrap = el('div', 'gt-mi-input');
+        const inp = el('input', 'gt-mi-in'); inp.type = 'text';
+        inp.placeholder = it.input.placeholder || ''; inp.title = it.input.title || ''; inp.value = it.input.value || '';
+        const info = el('div', 'gt-mi-ininfo', '');
+        const upd = () => {
+          const res = it.input.onInput(inp.value) || {};
+          info.textContent = res.text || '';
+          info.style.color = res.ok ? 'var(--mbu-ok)' : 'var(--mbu-warn)';
+          info.title = res.title || '';
+        };
+        inp.addEventListener('input', upd);
+        // A menu whose CONTENT depends on the spec (the ⬇ checklist is built
+        // from the tracks being scanned) has to be rebuilt, and rebuilding on
+        // every keystroke would yank the field out from under the typing. So
+        // the live echo runs on input and the rebuild waits for `change` —
+        // Enter, or clicking away.
+        if (it.input.onChange) inp.addEventListener('change', () => it.input.onChange(inp.value));
+        wrap.append(inp, info); menuEl.appendChild(wrap); upd();
+        setTimeout(() => { try { inp.focus(); } catch (e) {} }, 0);
+        continue;
+      }
       if (it.checklist) {   // per-credit toggles for copy/move — clicking a box toggles, doesn't close the menu
         const box = el('div', 'gt-ck-list');
         it.checklist.forEach(entry => {
@@ -767,6 +793,11 @@
       .gt-mi .gt-mi-tx{flex:1;white-space:normal;word-break:break-word}
       .gt-mi .gt-mi-more{color:var(--mbu-info);font-style:italic}
       .gt-menu .gt-sep{height:1px;background:var(--mbu-bg-sunken);margin:4px 2px}
+      .gt-menu .gt-mi-input{padding:3px 9px 6px}
+      .gt-menu .gt-mi-in{width:100%;box-sizing:border-box;font:12px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text);
+        background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:5px;padding:3px 7px}
+      .gt-menu .gt-mi-in:focus{border-color:var(--mbu-info);outline:none}
+      .gt-menu .gt-mi-ininfo{font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .gt-menu .gt-hdr{padding:5px 9px 4px;font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--mbu-text-dim);text-transform:uppercase}
       .gt-menu .gt-note{padding:0 9px 6px;font-size:11px;color:var(--mbu-text-weak);white-space:normal;word-break:break-word}
       .gt-menu .gt-ck-list{margin:2px 0 3px}
@@ -1090,11 +1121,60 @@
   }
   const releaseEntity = () => { try { const re = RE(); return re && (re.state.entity || re.state.release) || null; } catch (e) { return null; } };
   // #365 (1) copy/move the release's own credits onto its recordings (the ticked ones, or all if none ticked)
+  /* #597 (majkinetor): "Vertical move could also have option to paste tracks or
+     specify them as in Text Pattern scope as selecting checkboxes is slow."
+
+     One selector, shared by both vertical moves and using the text parser's own
+     matcher, so the syntax, the live preview and the vinyl/ordinal handling
+     cannot drift apart between the three places that offer it.
+
+     Precedence: a typed spec wins; otherwise the ticked tracks; otherwise all.
+     `state.v` is the live text — the caller reads it back through rowsFor(). */
+  function gtTrackSpecState(opts) {
+    // blankAll: an empty field means EVERY track, ignoring the tick boxes. That
+    // is what ⬇ has always done, and quietly narrowing its harvest to whatever
+    // happened to be ticked would change an existing tool's behaviour.
+    const blankAll = !!(opts && opts.blankAll);
+    const state = { v: '' };
+    const tickedRows = rows => rows.filter(x => { const cb = x.tr.querySelector('input.recording'); return cb && cb.checked; });
+    state.rowsFor = () => {
+      const rows = txpTrackRows();
+      if (state.v.trim()) return txpMatchTracks(state.v, rows);
+      if (blankAll) return rows;
+      const t = tickedRows(rows);
+      return t.length ? t : rows;
+    };
+    state.label = () => {
+      const rows = state.rowsFor();
+      const cap = ns => (ns.length > 8 ? `${ns.slice(0, 8).join(', ')} +${ns.length - 8}` : ns.join(', '));
+      if (state.v.trim()) return rows.length ? `${rows.length} track${rows.length > 1 ? 's' : ''} (${cap(rows.map(x => x.num))})` : 'nothing matched';
+      return (!blankAll && tickedRows(txpTrackRows()).length)
+        ? `${rows.length} selected recording${rows.length > 1 ? 's' : ''}`
+        : `all ${rows.length} recordings`;
+    };
+    state.item = (blank, onChange, onCommit) => ({
+      input: {
+        value: state.v,
+        onChange: onCommit || null,
+        placeholder: `tracks: 1,3,5-7 · 2:4 · all   (blank = ${blank})`,
+        title: 'A track number as shown (3, A1), a range (5-7), a medium-qualified number or range (2:4, 2:4-6), '
+          + 'a whole medium (2:*), or all.\nA plain number matching no displayed position means the Nth track, '
+          + `which is how a vinyl's "track 4" finds B1.\nLeave empty to use ${blank}.`,
+        onInput: (v) => {
+          state.v = v;
+          const rows = state.rowsFor();
+          if (onChange) onChange();
+          return { ok: rows.length > 0, text: '→ ' + state.label(), title: rows.map(x => `${x.num}  ${x.title}`).join('\n') };
+        },
+      },
+    });
+    return state;
+  }
   function openRelToRec(anchor) {
     const srcRels = releaseCreditRels().filter(r => !r.removed);
-    const selTr = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
-    const dests = (selTr.length ? selTr : [...document.querySelectorAll('tr.track')]).map(recordingEntity).filter(Boolean);
-    const where = selTr.length ? `${dests.length} selected recording${dests.length > 1 ? 's' : ''}` : `all ${dests.length} recordings`;
+    const sel = gtTrackSpecState();
+    const dests = () => sel.rowsFor().map(x => x.rec).filter(Boolean);
+    const where = () => sel.label();
     // #365 cleansing — release-level / packaging roles that don't belong on a recording start UNTICKED
     // (re-tick to override). Matched as substrings against the role label.
     const CLEANSE = ['liner note', 'compiler', 'mastering', 'remaster', 'artwork', 'art direction', 'design', 'illustration', 'photograph', 'graphic', 'manufactured', 'pressed by', 'printed by', 'booklet', 'translat', 'lacquer', 'publish', 'copyright', 'booking', '℗', '©'];
@@ -1102,19 +1182,34 @@
     const chosen = () => entries.filter(e => e.cb ? e.cb.checked : e.checked !== false).map(e => e.rel);
     const r = anchor.getBoundingClientRect();
     if (!srcRels.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No release-level credits to copy' }]); return; }
-    if (!dests.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No recordings on this release' }]); return; }
-    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n, skipped } = copyCreditsMapped(c, dests); if (n) markUsed(`Copied ${n} release credit${n > 1 ? 's' : ''} to ${where}`); toast(`Copied ${n} to ${where}${skipped ? ` · ${skipped} had no per-recording role` : ''} — review & save`); } };
-    const moveItem = { label: 'Move (remove from release)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n } = copyCreditsMapped(c, dests); c.forEach(s => { try { const rm = s.item.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} }); if (n) markUsed(`Moved ${n} release credit${n > 1 ? 's' : ''} to ${where}`); toast(`Moved ${n} to ${where} — review & save`); } };
-    openMenu(r.left, r.bottom + 4, [{ header: `Copy release credits → ${where}` }, { checklist: entries, onToggle: () => copyItem._setSub && copyItem._setSub(String(chosen().length)) }, copyItem, moveItem]);
+    if (!txpTrackRows().length) { openMenu(r.left, r.bottom + 4, [{ header: 'No recordings on this release' }]); return; }
+    // #597: `dests`/`where` are functions now — the destination is whatever the
+    // track field says at the moment Copy/Move is pressed, not what it said
+    // when the menu opened.
+    const guard = (run) => () => {
+      const c = chosen(); if (!c.length) { toast('No credits selected'); return; }
+      const d = dests(); if (!d.length) { toast('No track matched that selection'); return; }
+      run(c, d, where());
+    };
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: guard((c, d, w) => { const { n, skipped } = copyCreditsMapped(c, d); if (n) markUsed(`Copied ${n} release credit${n > 1 ? 's' : ''} to ${w}`); toast(`Copied ${n} to ${w}${skipped ? ` · ${skipped} had no per-recording role` : ''} — review & save`); }) };
+    const moveItem = { label: 'Move (remove from release)', danger: true, run: guard((c, d, w) => { const { n } = copyCreditsMapped(c, d); c.forEach(s => { try { const rm = s.item.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} }); if (n) markUsed(`Moved ${n} release credit${n > 1 ? 's' : ''} to ${w}`); toast(`Moved ${n} to ${w} — review & save`); }) };
+    const hdr = { header: `Copy release credits → ${where()}` };
+    openMenu(r.left, r.bottom + 4, [hdr,
+      sel.item('ticked tracks, or all', () => hdr._set && hdr._set(`Copy release credits → ${where()}`)),
+      { checklist: entries, onToggle: () => copyItem._setSub && copyItem._setSub(String(chosen().length)) }, copyItem, moveItem]);
   }
   // #365 (2) collect the recordings' credits onto the release — a UNION across all tracks (dedup by
   // role+artist+credit), each row showing the track range it covers (* = every track).
-  function openRecToRel(anchor) {
+  function openRecToRel(anchor, sel) {
     const rel = releaseEntity();
     const r = anchor.getBoundingClientRect();
     if (!rel || rel.id == null) { openMenu(r.left, r.bottom + 4, [{ header: 'Release not ready' }]); return; }
-    const total = document.querySelectorAll('tr.track').length, byKey = new Map();
-    document.querySelectorAll('tr.track').forEach(tr => {
+    // #597: which tracks to harvest FROM. Carried across the rebuild (see the
+    // onCommit below) so the field keeps what was typed into it.
+    sel = sel || gtTrackSpecState({ blankAll: true });
+    const srcRows = sel.rowsFor();
+    const total = srcRows.length, byKey = new Map();
+    srcRows.map(x => x.tr).forEach(tr => {
       const pos = trackPosOfRow(tr);
       recordingRels(tr).filter(s => !s.removed && s.other && ['artist', 'label'].includes(s.other.entityType)).forEach(s => {
         const key = roleKeyOfSpec(s) + '|' + (val(s.other.gid) || '') + '|' + (s.credit || '');
@@ -1126,10 +1221,20 @@
     const trkLbl = set => (set.size && set.size >= total) ? '*' : ranges(set);
     const entries = [...byKey.values()].map(e => ({ _e: e, role: e.rel.linkTypeID + '#' + e.roleLbl, pos: e.roleLbl, text: `${trkLbl(e.tracks)}  ${val(e.other.name)}${e.credit && e.credit !== val(e.other.name) ? ` (${e.credit})` : ''}` }));
     const chosen = () => entries.filter(x => x.cb ? x.cb.checked : true);
-    if (!entries.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No recording credits to collect' }]); return; }
-    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n, skipped } = copyCreditsMapped(c.map(x => x._e.rel), [rel]); if (n) markUsed(`Collected ${n} credit${n > 1 ? 's' : ''} onto the release`); toast(`Added ${n} to the release${skipped ? ` · ${skipped} had no release role` : ''} — review & save`); } };
-    const moveItem = { label: 'Move (remove from recordings)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n } = copyCreditsMapped(c.map(x => x._e.rel), [rel]); c.forEach(x => x._e.items.forEach(it => { try { const rm = it.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} })); if (n) markUsed(`Moved ${n} credit${n > 1 ? 's' : ''} from recordings onto the release`); toast(`Moved ${n} onto the release — review & save`); } };
-    openMenu(r.left, r.bottom + 4, [{ header: 'Collect recording credits → the release (union)' }, { checklist: entries, onToggle: () => copyItem._setSub && copyItem._setSub(String(chosen().length)) }, copyItem, moveItem]);
+    // #597: rebuilding is how the checklist follows the track field — the
+    // entries ARE the harvest, so they cannot be recomputed in place. `sel` is
+    // handed back in so the field keeps its text and the caret lands at the end.
+    const reopen = () => openRecToRel(anchor, sel);
+    const specItem = sel.item('all tracks', null, reopen);
+    // #597: the "nothing to collect" menu keeps the field too. Without it, a
+    // spec matching no credits would strand you in a dead menu with no way to
+    // correct what you typed except closing and starting over.
+    const from = sel.v.trim() ? ` from ${sel.label()}` : '';
+    if (!entries.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No recording credits to collect' + from }, specItem]); return; }
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n, skipped } = copyCreditsMapped(c.map(x => x._e.rel), [rel]); if (n) markUsed(`Collected ${n} credit${n > 1 ? 's' : ''} onto the release${from}`); toast(`Added ${n} to the release${skipped ? ` · ${skipped} had no release role` : ''} — review & save`); } };
+    const moveItem = { label: 'Move (remove from recordings)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const { n } = copyCreditsMapped(c.map(x => x._e.rel), [rel]); c.forEach(x => x._e.items.forEach(it => { try { const rm = it.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} })); if (n) markUsed(`Moved ${n} credit${n > 1 ? 's' : ''} from recordings onto the release${from}`); toast(`Moved ${n} onto the release — review & save`); } };
+    openMenu(r.left, r.bottom + 4, [{ header: 'Collect recording credits → the release (union)' }, specItem,
+      { checklist: entries, onToggle: () => copyItem._setSub && copyItem._setSub(String(chosen().length)) }, copyItem, moveItem]);
   }
   // destination recordings = every OTHER track row whose recording checkbox is ticked
   function checkedDestinations(sourceTr) {
@@ -1173,28 +1278,102 @@
   // (`3`, `A1`), a numeric range (`5-7`), a medium-qualified number or range
   // (`2:4`, `2:4-6`), a whole medium (`2:*`), or `all`. A colon is used for the
   // medium rather than a dash so `2-4` can only ever mean a range.
+  // One token of a selector -> the rows it names. Split out of txpMatchTracks
+  // (#597) because two callers now need to know whether a token matched
+  // ANYTHING on its own: the ordinal fallback below, and auto-detect, whose
+  // whole safety rule is "every token must name a real track".
+  function txpMatchTrackToken(tok, rows) {
+    const numOf = r => { const n = parseInt(String(r.num).replace(/^\D+/, ''), 10); return isFinite(n) ? n : null; };
+    let m;
+    if ((m = tok.match(/^(\d+):(\*|all)$/i))) return rows.filter(r => r.medium === +m[1]);
+    if ((m = tok.match(/^(\d+):(\d+)(?:-(\d+))?$/))) {
+      const [lo, hi] = [+m[2], m[3] ? +m[3] : +m[2]];
+      return rows.filter(r => r.medium === +m[1] && numOf(r) !== null && numOf(r) >= lo && numOf(r) <= hi);
+    }
+    // #597: a plain number (or numeric range) that names no DISPLAYED position
+    // falls back to the Nth track overall. Liner notes on a vinyl say "(tracks
+    // 1,2,4)" while the positions on the page are A1/B2, so a literal match
+    // finds nothing at all and the ordinal is what the note plainly means.
+    // Strictly a fallback: on a CD "3" matches the position "3" literally and
+    // never gets here, so nothing that already worked moves.
+    if ((m = tok.match(/^(\d+)-(\d+)$/))) {
+      const [lo, hi] = [+m[1], +m[2]];
+      const hit = rows.filter(r => numOf(r) !== null && numOf(r) >= lo && numOf(r) <= hi);
+      return hit.length ? hit : rows.filter(r => r.ordinal >= lo && r.ordinal <= hi);
+    }
+    const t = tok.toLowerCase();
+    const hit = rows.filter(r => String(r.num).toLowerCase() === t);
+    if (hit.length || !/^\d+$/.test(t)) return hit;
+    return rows.filter(r => r.ordinal === +t);
+  }
   function txpMatchTracks(spec, rows) {
     const s = String(spec || '').trim();
     if (!s) return [];
     if (/^all$/i.test(s)) return rows.slice();
     const picked = new Set();
-    const numOf = r => { const n = parseInt(String(r.num).replace(/^\D+/, ''), 10); return isFinite(n) ? n : null; };
-    for (const tok of s.split(/[,\s]+/).filter(Boolean)) {
-      let m;
-      if ((m = tok.match(/^(\d+):(\*|all)$/i))) {
-        rows.filter(r => r.medium === +m[1]).forEach(r => picked.add(r));
-      } else if ((m = tok.match(/^(\d+):(\d+)(?:-(\d+))?$/))) {
-        const [lo, hi] = [+m[2], m[3] ? +m[3] : +m[2]];
-        rows.filter(r => r.medium === +m[1] && numOf(r) >= lo && numOf(r) <= hi).forEach(r => picked.add(r));
-      } else if ((m = tok.match(/^(\d+)-(\d+)$/))) {
-        const [lo, hi] = [+m[1], +m[2]];
-        rows.filter(r => numOf(r) !== null && numOf(r) >= lo && numOf(r) <= hi).forEach(r => picked.add(r));
-      } else {
-        const t = tok.toLowerCase();
-        rows.filter(r => String(r.num).toLowerCase() === t).forEach(r => picked.add(r));
-      }
-    }
+    for (const tok of s.split(/[,\s]+/).filter(Boolean)) txpMatchTrackToken(tok, rows).forEach(r => picked.add(r));
     return rows.filter(r => picked.has(r));
+  }
+  /* ── #597: reading the track list out of the credit text itself ─────────────
+     (majkinetor) "Tracks are never mentioned this tidy but we could probably
+     parse them if user selects or gives part that has tracks e.g. 1,2,3,7 or
+     (tracks 1,2,3,7) or even auto recognized as numbers usually do not appear
+     just like that (especially not vinyl)."
+
+     Until now a clause like "Lead vocals (tracks 2,6,9)" was parsed, resolved
+     and then silently discarded — the credit went on the whole release. Nothing
+     LOOKED wrong either, because MB's role matcher tolerates the suffix:
+     measured, "Lead vocals (tracks 2,6,9)" resolves to `vocal` exactly as the
+     clean text does, and "Djembe (track 4)" to `djembe`. A plausible result
+     crediting the wrong scope is the reason the preview column exists.
+
+     The one rule that makes auto-detection safe: EVERY token in the clause must
+     name a real track on this release. "(2003)" is not a track list because
+     2003 is not a track. That needs no blocklist of years, catalogue numbers or
+     durations, and it fails by deciding the clause was never a track clause at
+     all — which costs nothing. */
+  function txpDetectTracks(text, rows) {
+    const s = String(text || '');
+    if (!s.trim() || !rows || !rows.length) return null;
+    const cands = [];
+    const covered = i => cands.some(c => i >= c.start && i < c.end);
+    let m;
+    // (tracks 1,2,4,7,8) · [track 3] · (trk 4) · (on tracks 2 and 6)
+    const reWord = /[([]\s*(?:on\s+)?(?:tracks?|trks?)\.?\s*([^)\]]+?)\s*[)\]]/gi;
+    while ((m = reWord.exec(s))) cands.push({ start: m.index, end: m.index + m[0].length, inner: m[1], explicit: true });
+    // trailing and unbracketed: "…, tracks 2 & 6" · "… on tracks 2, 6 and 9"
+    const reTail = /[,;]?\s*(?:on\s+)?(?:tracks?|trks?)\.?\s+([0-9A-Za-z][0-9A-Za-z,;&\s-]*?)\s*\.?\s*$/i;
+    if ((m = reTail.exec(s)) && !covered(m.index)) cands.push({ start: m.index, end: m.index + m[0].length, inner: m[1], explicit: true });
+    // bare: "(2,6,9)" · "(A1, B2)" · "(1-3)"
+    const reBare = /[([]\s*([^)\]]+?)\s*[)\]]/g;
+    while ((m = reBare.exec(s))) { if (!covered(m.index)) cands.push({ start: m.index, end: m.index + m[0].length, inner: m[1], explicit: false }); }
+
+    const norm = t => String(t).replace(/\band\b/gi, ',').replace(/[&;]/g, ',')
+      .replace(/\s*,\s*/g, ',').replace(/,+/g, ',').replace(/^,|[,.]+$/g, '').trim();
+    const ok = [];
+    for (const c of cands) {
+      const spec = norm(c.inner);
+      const toks = spec ? spec.split(/[,\s]+/).filter(Boolean) : [];
+      if (!toks.length) continue;
+      const hits = toks.map(t => txpMatchTrackToken(t, rows));
+      if (hits.some(h => !h.length)) continue;                     // ← the safety rule
+      // A bare single plain number is a footnote marker at least as often as a
+      // track ("Guitar (1)"), so it needs company to count: two or more tokens,
+      // a range, a medium qualifier, or a lettered position like A1. An
+      // explicit "track"/"tracks" says what it is and needs none of that.
+      if (!c.explicit && toks.length === 1 && /^\d+$/.test(toks[0])) continue;
+      ok.push({ ...c, spec, targets: rows.filter(r => hits.some(h => h.includes(r))) });
+    }
+    if (!ok.length) return null;
+    // (majkinetor) "We should assume that 1 line contains only 1 track list."
+    // When that assumption is broken — "Mandolin (tracks 1,2), Guitar (tracks
+    // 3,4)" — nothing here can tell which role owns which list, so it stands
+    // down and says so instead of guessing. Splitting the line is the fix, and
+    // saying that is more useful than crediting half of it wrongly.
+    if (ok.length > 1) return { ambiguous: ok.length };
+    const c = ok[0];
+    const clean = (s.slice(0, c.start) + ' ' + s.slice(c.end)).replace(/\s+/g, ' ').replace(/[\s,;.]+$/, '').trim();
+    return { spec: c.spec, targets: c.targets, clean };
   }
   const rowForRecording = gid => [...document.querySelectorAll('tr.track')].find(tr => { const rec = recordingEntity(tr); return rec && rec.gid === gid; });
   async function removeSourceRels(srcGid, srcRels) {
@@ -3179,7 +3358,7 @@
       + '.gt-tp-chip{font:11px monospace;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:11px;padding:2px 9px;cursor:pointer;color:var(--mbu-text)}.gt-tp-chip:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-info)}'
       + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mbu-text-dim);background:var(--mbu-bg-raised);border-radius:11px;padding:3px 10px;min-width:0}'
       + '.gt-tp-scope-lbl{color:var(--mbu-text-weak)}'
-      + '.gt-tp-scope-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
+      + '.gt-tp-scope-sel,.gt-tp-det-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
       + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
@@ -3197,6 +3376,11 @@
       + '.gt-tp-tbl th,.gt-tp-tbl td{box-sizing:border-box}'
       + '.gt-tp-tbl th{white-space:nowrap;position:relative;overflow:hidden;text-overflow:ellipsis}'
       + '.gt-tp-tbl td{vertical-align:top;padding:3px 8px;font-size:12px;border-bottom:1px solid var(--mbu-border);overflow:hidden;text-overflow:ellipsis}'
+      /* #597 the "tracks" column — where this one credit is going */
+      + '.gt-tp-trk{font-size:11px;white-space:nowrap}'
+      + '.gt-tp-trk-on{color:var(--mbu-ok);font-weight:600;cursor:help}'
+      + '.gt-tp-trk-warn{color:var(--mbu-warn);cursor:help}'
+      + '.gt-tp-trk-dim{color:var(--mbu-text-weak)}'
       // #522 follow-up (majkinetor, live): "Column bars are not visible (so
       // it hard to resize)" then "column separators are very fat now, make
       // them line" — a permanent but THIN (1px) line, drawn via a
@@ -3344,7 +3528,13 @@
     // He was applying credits to the release and then moving them onto one
     // recording, four times over. `spec` is a track selector (see txpMatchTracks)
     // and only means anything while kind === 'recording'.
-    let scope = { kind: (saved && saved.scopeKind) || 'release', spec: (saved && saved.scopeSpec) || '' };
+    // #597: `tracks` is the per-row track detection mode — 'auto' reads a track
+    // clause out of each credit's own role text (see txpDetectTracks), 'off'
+    // restores the pre-#597 behaviour where a row can only ever go where the
+    // Scope control says. On by default: the clause is there to be obeyed, and
+    // a run that silently ignores it is the bug this fixes.
+    let scope = { kind: (saved && saved.scopeKind) || 'release', spec: (saved && saved.scopeSpec) || '',
+      tracks: (saved && saved.scopeTracks) || 'auto' };
     let lines = [];                  // [{ raw, override }]
     // #522 follow-up (majkinetor): drives whether "Apply & clear annotation"
     // is even offered — only true right after "Load annotation" succeeds,
@@ -3414,6 +3604,24 @@
     // ordinary credits and copyright lines together.
     function parsedRows() {
       const out = [];
+      // #597: read the page's track rows ONCE per parse, not once per credit —
+      // txpTrackRows walks the whole editor table, and this runs on every
+      // render. null when detection is off, which also skips the work entirely.
+      const trackRows = scope.tracks === 'auto' ? txpTrackRows() : null;
+      // Lift a track clause off a row's role text and hand the row its own
+      // targets. The clause is REMOVED from the role, so everything downstream
+      // (role matching, roleCache keying, the preview) sees "Lead vocals", not
+      // "Lead vocals (tracks 2,6,9)".
+      const attachTracks = (rec) => {
+        if (!trackRows || !rec.role) return rec;
+        const det = txpDetectTracks(rec.role, trackRows);
+        if (!det) return rec;
+        if (det.ambiguous) { rec.trackNote = `${det.ambiguous} track lists — split the line`; return rec; }
+        if (det.clean) rec.role = det.clean;
+        rec.trackSpec = det.spec;
+        rec.trackTargets = det.targets;
+        return rec;
+      };
       lines.forEach((ln, li) => {
         if (!ln.raw.trim()) return;   // blank lines are silently skipped, not even shown unmatched
         splitPairs(ln.raw).forEach((piece, pi) => {
@@ -3434,7 +3642,7 @@
           const compiled = pat ? compiledFor(pat) : null;
           const expanded = compiled ? txpExpand(compiled, piece) : null;
           if (!expanded) { out.push({ li, pi, si: 0, raw: ln.raw, role: null, entity: null, matched: false }); return; }
-          expanded.forEach((row, si) => out.push({ li, pi, si, raw: ln.raw, role: row.role || '', entity: row.entity || '', matched: true }));
+          expanded.forEach((row, si) => out.push(attachTracks({ li, pi, si, raw: ln.raw, role: row.role || '', entity: row.entity || '', matched: true })));
         });
       });
       return out;
@@ -3633,7 +3841,18 @@
       + 'a medium-qualified number or range (2:4, 2:4-6), a whole medium (2:*), or all. '
       + 'Leave empty to use the tracks ticked in the editor.';
     const tracksInfo = el('span', 'gt-tp-tracks-info', '');
-    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo);
+    // #597: per-row track detection. Separate from Scope on purpose — Scope
+    // says where rows that name NO tracks go, this says whether a row may name
+    // its own at all, and the two are useful in every combination.
+    // ⚠ its own class, NOT a second .gt-tp-scope-sel — Playwright's page.* helpers
+    // are strict, so a duplicate class makes verify-539's selectOption throw.
+    const detSel = el('select', 'gt-tp-det-sel');
+    [['auto', 'Tracks: auto'], ['off', 'Tracks: off']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; detSel.appendChild(o); });
+    detSel.value = scope.tracks;
+    detSel.title = 'auto: a credit that names its own tracks — "Lead vocals (tracks 2,6,9)", "Djembe (track 4)" — goes on those recordings, '
+      + 'whatever Scope says; everything else follows Scope. A clause only counts when every number in it is a real track on this release, '
+      + 'so "(2003)" is left alone.\noff: the pre-#597 behaviour — Scope decides for every row.';
+    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel);
     // What did that selector actually match? Shown before anything is applied,
     // because "1-3" meaning something other than you thought is a silent way to
     // credit the wrong recordings.
@@ -3664,6 +3883,7 @@
     }
     scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); };
     tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
+    detSel.onchange = () => { scope.tracks = detSel.value; render(); saveState(); };   // #597
     // #539 follow-up (majkinetor): "We again have new row, this time for out of
     // the box patterns … Move scope to the bottom, opposite of Apply." So the
     // top bar is back to what it was — pattern · presets · ⚡ Match — and the
@@ -3697,7 +3917,10 @@
     // — resized column widths are remembered (a global GM value, not a
     // per-release one — this is a layout preference, not release data).
     const TXP_COLS_KEY = 'gt-tp-colwidths';
-    const defaultColWidths = ['24px', '120px', '230px', '110px', '170px', '110px', '170px', '80px'];
+    // #597 added the "tracks" column. A saved 8-entry array no longer matches
+    // the 9 cols, so the length check below falls back to these defaults —
+    // widths reset once on upgrade, which is the right way for that to go.
+    const defaultColWidths = ['24px', '120px', '230px', '110px', '170px', '110px', '170px', '90px', '80px'];
     let savedColWidths = null;
     try { savedColWidths = JSON.parse(GM_getValue(TXP_COLS_KEY, '')) || null; } catch (e) {}
     const colgroup = el('colgroup');
@@ -3706,7 +3929,7 @@
     });
     const saveColWidths = () => { try { GM_setValue(TXP_COLS_KEY, JSON.stringify([...colgroup.children].map(c => c.style.width))); } catch (e) {} };
     const thead = el('thead');
-    thead.innerHTML = '<tr><th></th><th>pattern</th><th>raw line</th><th>role</th><th>entity</th><th>→ role</th><th>→ entity</th><th></th></tr>';
+    thead.innerHTML = '<tr><th></th><th>pattern</th><th>raw line</th><th>role</th><th>entity</th><th>→ role</th><th>→ entity</th><th>tracks</th><th></th></tr>';
     [...thead.querySelectorAll('th')].forEach((th, i) => {
       if (i === 0) return;   // the status-dot column stays fixed
       const handle = el('span', 'gt-tp-colresize');
@@ -3886,6 +4109,25 @@
           } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickEntity(r, ab); entTd.appendChild(ab); }
         }
         tr.appendChild(entTd);
+        /* #597: where this credit is actually going. Not decoration — the role
+           matcher tolerates a "(tracks 2,6,9)" suffix and resolves it exactly
+           as the clean text would, so before this column a run that ignored the
+           clause and credited the whole release looked completely normal. */
+        const trkTd = el('td', 'gt-tp-trk');
+        if (r.trackNote) {
+          // the line carried more than one track list — see txpDetectTracks
+          const w = el('span', 'gt-tp-trk-warn', '⚠ split line');
+          w.title = `${r.trackNote}\n\nOne line can only carry one track list, so this credit is going wherever Scope points instead. Split it into one role per line.`;
+          trkTd.appendChild(w);
+        } else if (r.trackTargets && r.trackTargets.length) {
+          const nums = r.trackTargets.map(t => t.num);
+          const s = el('span', 'gt-tp-trk-on', nums.length > 4 ? `${nums.slice(0, 4).join(', ')} +${nums.length - 4}` : nums.join(', '));
+          s.title = `From “${r.trackSpec}” in the credit text:\n` + r.trackTargets.map(t => `${t.num}  ${t.title}`).join('\n');
+          trkTd.appendChild(s);
+        } else if (scope.kind === 'recording') {
+          trkTd.appendChild(el('span', 'gt-tp-trk-dim', 'scope'));
+        }
+        tr.appendChild(trkTd);
         const stTd = el('td', 'gt-tp-status' + (appliedKeys.has(r.key) ? ' gt-tp-applied' : ''), statusText(r));
         tr.appendChild(stTd);
         tbody.appendChild(tr);
@@ -3894,7 +4136,7 @@
       // left with text when there is no text input" — the empty-state <td>
       // had no colspan, so table-layout:fixed confined it to the FIRST
       // (narrowest) column, wrapping the message into a tall sliver.
-      if (!rows.length) { const td = el('td', 'gt-pop-note', 'Paste credit text above, or load the annotation.'); td.colSpan = 8; tbody.appendChild(el('tr')).appendChild(td); }
+      if (!rows.length) { const td = el('td', 'gt-pop-note', 'Paste credit text above, or load the annotation.'); td.colSpan = 9; tbody.appendChild(el('tr')).appendChild(td); }
       const matched = rows.filter(r => r.matched).length;
       const ready = rows.filter(r => r.matched && r.roleMatch && r.entityMatch && !appliedKeys.has(r.key)).length;
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
@@ -4344,29 +4586,42 @@
       // #539: one dispatch per (credit × target). appliedKeys is keyed per
       // target too, so the same parsed text can be applied to track 3 now and
       // track 7 later without the second run thinking it already ran.
-      const targets = scope.kind === 'recording' ? txpScopeTargets().map(t => t.rec) : [release];
-      if (!targets.length) {
+      const fallback = scope.kind === 'recording' ? txpScopeTargets().map(t => t.rec) : [release];
+      // #597: a row that named its own tracks goes THERE; the Scope control is
+      // only the default for rows that named none. That is what lets one run
+      // handle a liner-note block where most credits are release-wide and a few
+      // are "(track 4)" — no mode switching between them.
+      const targetsFor = r => (r.trackTargets && r.trackTargets.length) ? r.trackTargets.map(t => t.rec) : fallback;
+      const allRows = parsedRows().map(attachResolution);
+      if (!fallback.length && !allRows.some(r => r.trackTargets && r.trackTargets.length)) {
         toast(scope.spec.trim() ? 'No track matched that selection' : 'No tracks ticked — type track numbers or tick some');
         return null;
       }
-      const keyFor = (r, target) => (targets.length === 1 && scope.kind !== 'recording') ? r.key : `${r.key}|${target.gid || target.id}`;
-      const rows = parsedRows().map(attachResolution).filter(r => r.matched && r.roleMatch && r.entityMatch
-        && targets.some(t => !appliedKeys.has(keyFor(r, t))));
+      const keyFor = (r, target) => {
+        const t = targetsFor(r);
+        return (t.length === 1 && t === fallback && scope.kind !== 'recording') ? r.key : `${r.key}|${target.gid || target.id}`;
+      };
+      const rows = allRows.filter(r => r.matched && r.roleMatch && r.entityMatch
+        && targetsFor(r).length && targetsFor(r).some(t => !appliedKeys.has(keyFor(r, t))));
       if (!rows.length) { toast('Nothing resolved to apply'); return null; }
       let ok = 0, fail = 0, dated = 0;
+      let okOwn = 0;                      // #597: credits that went to tracks the ROW named
+      const ownNums = new Set();
       for (const r of rows) {
+        const own = !!(r.trackTargets && r.trackTargets.length);
+        if (own) r.trackTargets.forEach(t => ownNums.add(t.num));
         const credit = r.entity && r.entity !== (r.entityMatch.name || '') ? r.entity : '';
         const dates = txpNoticeDatePeriod(r.year);   // #574: "in 2021", not "from 2021 to present"
         if (dates) dated++;
         // an instrument-role match carries an attributeId (the "instrument"
         // link type doesn't say WHICH instrument on its own).
         const attrs = r.roleMatch.attributeId ? buildAttrTree([{ typeID: r.roleMatch.attributeId, text_value: '', credited_as: '' }]) : null;
-        for (const target of targets) {
+        for (const target of targetsFor(r)) {
           const k = keyFor(r, target);
           if (appliedKeys.has(k)) continue;
           try {
             dispatchRelationship(re, target, r.entityMatch, r.roleMatch.id, credit, attrs, dates);
-            appliedKeys.add(k); ok++;
+            appliedKeys.add(k); ok++; if (own) okOwn++;
           } catch (e) { fail++; try { console.warn('[Group Therapy] text-parser apply failed:', e); } catch (_) {} }
         }
       }
@@ -4382,13 +4637,28 @@
       // note." Which tracks were credited is the part a reviewer cannot infer
       // from the diff alone when several runs are batched into one edit, so the
       // note names them (capped — a 40-track selection would bury the note).
+      // #597: one run can now do both — some credits to tracks they named
+      // themselves, the rest wherever Scope points — so the note has to say so
+      // rather than describing only the Scope half and quietly misreporting
+      // where the other credits went.
+      const cap = ns => (ns.length > 8 ? `${ns.slice(0, 8).join(', ')} … (+${ns.length - 8})` : ns.join(', '));
       const nums = scope.kind === 'recording' ? txpScopeTargets().map(t => t.num) : [];
-      const trackList = nums.length > 8 ? `${nums.slice(0, 8).join(', ')} … (+${nums.length - 8})` : nums.join(', ');
-      const where = scope.kind === 'recording'
-        ? ` to ${targets.length} recording${targets.length > 1 ? 's' : ''} (track${nums.length > 1 ? 's' : ''} ${trackList})`
+      const okFallback = ok - okOwn;
+      const on = [...ownNums];
+      // `where` is a phrase that has to read correctly in two sentences (this
+      // note and txpClearAnnotationNote's), so the two single-destination cases
+      // keep their original wording exactly and only a genuinely MIXED run gets
+      // the longer "n … and n …" form.
+      const fallbackWhere = scope.kind === 'recording'
+        ? ` to ${fallback.length} recording${fallback.length > 1 ? 's' : ''} (track${nums.length > 1 ? 's' : ''} ${cap(nums)})`
         : ' on the release';
+      const ownWhere = ` to track${on.length > 1 ? 's' : ''} ${cap(on)} named in the credit text`;
+      const where = (okOwn && okFallback) ? ` — ${okFallback}${fallbackWhere} and ${okOwn}${ownWhere}`
+        : okOwn ? ownWhere
+        : okFallback ? fallbackWhere : '';
       if (ok) markUsed(`Parsed ${ok} credit${ok > 1 ? 's' : ''} from text${where}`);
-      const shortWhere = scope.kind === 'recording' ? ` to ${targets.length} recording${targets.length > 1 ? 's' : ''}` : '';
+      const shortWhere = okOwn && !okFallback ? ` to ${ownNums.size} track${ownNums.size > 1 ? 's' : ''}`
+        : scope.kind === 'recording' ? ` to ${fallback.length} recording${fallback.length > 1 ? 's' : ''}` : '';
       toast(fail ? `Applied ${ok}, ${fail} failed — see console` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''}${shortWhere} — review & save`);
       saveState();
       // #550: `where` is handed back so the annotation edit's note can name the
@@ -4468,7 +4738,7 @@
       // was restored right beside it.
       loadedFromAnnotation,
       text: ta.value, pattern,
-      scopeKind: scope.kind, scopeSpec: scope.spec,
+      scopeKind: scope.kind, scopeSpec: scope.spec, scopeTracks: scope.tracks,
       roleCache: [...roleCache.entries()],
       entityCache: [...entityCache.entries()],
       entityOverride: [...entityOverride.entries()],
@@ -4991,6 +5261,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       // #522 text parser
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
       txpTrackRows, txpMatchTracks,   // #539 recording scope
+      txpMatchTrackToken, txpDetectTracks,   // #597 per-row tracks
       txpCreateNote,   // #544
       txpClearAnnotation, txpFetchAnnotationForm, txpClearAnnotationNote,   // #550
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,

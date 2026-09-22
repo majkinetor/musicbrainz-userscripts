@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-22 12:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-22 20:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1011,6 +1011,8 @@ The **Vertical:** section in the toolbar copies credits between the release and 
 - **⬆ Release → recordings** — copy (or **Move**) the selected release-level credits onto its recordings, or all if none are selected. Release/packaging roles that don't belong on a recording (liner notes, compiler, mastering, artwork, design, photography, manufactured, pressed/printed, publishing, ℗/©, …) start **unselected**
 - **⬇ Recordings → release** — collect the recordings' credits onto the release as a **union** across all tracks (deduped by role + artist), each row showing the **track range** it covers.
 
+Both menus carry a **track field** using the same selector syntax as the text parser's Scope (`1,3`, `5-7`, `2:4`, `2:*`, `all`) — typing `1,3` beats ticking two boxes, and the menu says which tracks it matched before you copy anything. Empty means *ticked, or all* for ⬆ and *all tracks* for ⬇.
+
 Each credit's link type is mapped to the **destination's entity type by name** (e.g. artist-recording *producer* ↔ artist-release *producer*); a role with no equivalent for that entity is skipped and counted. **Move** also removes the source rels. As always, nothing is submitted — the changes land in the editor for you to review and save.
 
 ##### Release Group Consolidation
@@ -1101,6 +1103,8 @@ Each line can be fixed up without leaving the table: a **pattern override** appl
 | `all` | every track |
 | *(empty)* | the tracks **ticked** in the editor |
 
+A plain number that matches no position shown in the editor is taken as the **Nth track** — so on a vinyl, whose positions read `A1`/`B2`, a liner note's *“tracks 1, 2, 4”* still finds `A1`, `A2` and `B1`. A position that exists literally always wins, so nothing on a CD changes.
+
 The roles offered follow the scope too: artist→recording and artist→release are different link-type vocabularies in MusicBrainz (a recording has no "booklet editor", a release has no "video appearance"), so switching scope re-matches the roles. The edit note records where the credits went — *Parsed 2 credits from text to 2 recordings (tracks 1, 3)* — so a reviewer can tell which tracks a batched edit touched.
 
 **Apply** stages the resolved rows as real relationships in the editor and closes the tool — nothing is submitted; you review and save yourself. If the text came from **Load annotation**, an **Apply & clear annotation** button also appears: it applies, then opens the release's own annotation editor pre-cleared so you can review and submit removing the now-redundant free text in one more click. 
@@ -1109,7 +1113,17 @@ The pasted text and every resolution made so far are remembered for as long as t
 
 **🔒** beside the pattern box (*Freeze matched*) pins the current pattern onto every line that still uses the default pattern *and* already matches it, so you can then try a different pattern on what is left without disturbing them — the same idea as Apollo's own freeze.
 
-Deliberately single-line-only: multi-line/grouped-block credit formats aren't parsed, and a track reference *inside* the text (`… (A2, B3)`) is not read — scope is chosen for the whole batch, not per line.
+Deliberately single-line-only: multi-line/grouped-block credit formats aren't parsed.
+
+##### Credits that name their own tracks
+
+Liner notes scope credits in the text itself — *“Aloula Basil: Lead vocals (tracks 2,6,9)”*. With **Tracks: auto** (the default, beside Scope) that clause is read, removed from the role text and used as **that row's** destination; every other row still follows **Scope**. So a block where most credits are album-wide and a few name tracks applies in **one** run.
+
+Recognized: `(tracks 1,2,4)`, `(track 3)`, `(trk 4)`, `[tracks 1-3]`, a trailing `on tracks 2, 6 and 9`, and bare lists like `(2,6,9)` or `(A1, B2)`. The **tracks** column shows what each row resolved to before you apply anything, and the edit note names both destinations — *Parsed 14 credits from text — 9 on the release and 5 to tracks 2, 4, 6, 9 named in the credit text*.
+
+A clause only counts when **every** number in it is a real track on this release, which is what keeps `(2003)` a year rather than a track list — no list of things-to-ignore is involved, and anything unrecognized simply stays release-level. A bare single number (`Guitar (1)`) is left alone too: it's a footnote marker at least as often as a track.
+
+One line carries **one** track list. `Martin Cradick: Mandolin (tracks 1,2,4,7,8), Guitar (tracks 3,5,6,8,9).` has two, so nothing can tell which role owns which — the row says **⚠ split line** and stays release-level until you split it into one role per line. **Tracks: off** restores the old behaviour, where Scope alone decides for every row.
 
 #### Replace role
 
