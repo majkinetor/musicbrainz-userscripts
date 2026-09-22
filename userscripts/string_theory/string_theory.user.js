@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.20.171514
+// @version      2026.9.22.124212
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.20.171514 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.15\n  · Art Station v2026.9.15\n  · Credit Hoarder v2026.9.15\n  · Fusion v2026.9.20\n  · Group Therapy v2026.9.12\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
+  console.log('%c String Theory %c v2026.9.22.124212 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.15\n  · Art Station v2026.9.15\n  · Credit Hoarder v2026.9.15\n  · Fusion v2026.9.20\n  · Group Therapy v2026.9.22\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -26112,7 +26112,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.12","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.12","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.22","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.22","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -30180,7 +30180,17 @@ try {
         // ── background: GM_openInTab, and the created page posts the MBID back
         if (background && typeof GM_openInTab === 'function') {
           const token = Math.random().toString(36).slice(2);
-          try { GM_setValue(GT_PENDING_KEY, JSON.stringify({ kind, token, ts: Date.now() })); } catch (e) {}
+          // #598 (majkinetor): "When 2 background tabs are open creating artist,
+          // one of them doesn't close and consequently return MBID to Text
+          // Pattern." This used to store THE pending create — a single slot — so
+          // starting a second one overwrote the first. The first tab's /create
+          // page then read back a token that was not its own, decided the form
+          // in front of it belonged to somebody else, and stood down without
+          // ever pressing Enter: a tab left sitting on a filled-in form, and a
+          // row spinning on "creating…" until the ten-minute timeout.
+          // The store is a LIST now, so concurrent creates cannot evict one
+          // another; see gtPendingAdd and the two handlers at the bottom.
+          gtPendingAdd({ kind, token, ts: Date.now() });
           // #544 follow-up (majkinetor): "When creating in the background, it
           // doesn't click Enter in 2nd tab." The seeded /create page is only a
           // filled-in FORM — in the foreground you see it and press Enter, but a
@@ -30221,7 +30231,7 @@ try {
           const cancel = (why) => {
             if (!pendingCreates.has(pendKey)) return;
             stop();
-            try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {}
+            gtPendingDrop(token);   // #598: drop only THIS create — another may still be in flight
             render(); saveState();
             toast(`Stopped waiting for “${trunc(name, 30)}” — ${why}`);
           };
@@ -31099,20 +31109,66 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
      else. Everything below still boots only on the relationship editor. */
   const GT_CREATE_CH = 'gt-entity-created';
   const GT_PENDING_KEY = 'gt:pendingCreate';
+  const GT_PENDING_TTL = 10 * 60 * 1000;
+  /* #598: which create a given tab is running. sessionStorage, deliberately —
+     it is per-TAB and survives navigation within that tab, which is exactly the
+     relation we need: the /<kind>/create page and the /<kind>/<mbid> page it
+     submits itself into are the same tab, and no amount of shared GM state can
+     tell those two pages apart once several creates are in flight at once. The
+     create page stamps its token here before pressing Enter; the entity page
+     reads it and knows, with no guessing, which row is waiting for it. */
+  const GT_TAB_KEY = 'gt:createTab';
+  /* #598: the pending-create store. One slot became a list, because two
+     concurrent background creates evicted each other — see the comment at the
+     GM_openInTab call. Every read prunes: a create nobody ever completed must
+     not keep matching forever, and the TTL is the same ten minutes the opener
+     waits before it gives up on its own. */
+  function gtPending() {
+    let v = null;
+    try { v = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
+    // An install upgrading mid-create still has the old single-object shape
+    // under this key; adopt it rather than throwing that create away.
+    if (v && !Array.isArray(v)) v = [v];
+    if (!Array.isArray(v)) return [];
+    const now = Date.now();
+    return v.filter(p => p && p.token && p.kind && p.ts && now - p.ts < GT_PENDING_TTL);
+  }
+  function gtPendingWrite(list) { try { GM_setValue(GT_PENDING_KEY, JSON.stringify(list)); } catch (e) {} }
+  function gtPendingAdd(rec) { gtPendingWrite(gtPending().concat([rec])); }
+  function gtPendingDrop(token) { gtPendingWrite(gtPending().filter(p => p.token !== token)); }
+  function gtTabMark(rec) { try { sessionStorage.setItem(GT_TAB_KEY, JSON.stringify(rec)); } catch (e) {} }
+  function gtTabRead() { try { return JSON.parse(sessionStorage.getItem(GT_TAB_KEY) || 'null'); } catch (e) { return null; } }
+  function gtTabClear() { try { sessionStorage.removeItem(GT_TAB_KEY); } catch (e) {} }
   const GT_ENTITY_PATH = /^\/(artist|label|place)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/i;
   (function announceCreatedEntity() {
     const m = location.pathname.match(GT_ENTITY_PATH);
     if (!m) return;                                   // not an entity page
-    let pending = null;
-    try { pending = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
-    // Only answer a create WE started, for this entity type, in the last few
-    // minutes — otherwise merely browsing an artist page would close the tab.
-    if (!pending || pending.kind !== m[1].toLowerCase()) return;
-    if (!pending.ts || Date.now() - pending.ts > 10 * 60 * 1000) return;
-    try { GM_setValue(GT_PENDING_KEY, ''); } catch (e) {}
+    const kind = m[1].toLowerCase(), gid = m[2].toLowerCase();
+    const list = gtPending();
+    let token = null;
+    // #598: the tab's own stamp is the authority. It was written by this script
+    // in this tab moments ago, immediately before pressing "Enter edit", so it
+    // identifies the create exactly even with several tabs mid-flight.
+    const mark = gtTabRead();
+    if (mark && mark.kind === kind && mark.token && mark.ts && Date.now() - mark.ts < GT_PENDING_TTL) {
+      token = mark.token;
+    } else {
+      // No stamp: an older create page, or sessionStorage unavailable. Fall
+      // back to the pre-#598 behaviour, but ONLY where there is nothing to
+      // guess between — handing the wrong MBID to the wrong row is a worse
+      // outcome than leaving a tab open for the user to deal with.
+      const same = list.filter(p => p.kind === kind);
+      if (same.length !== 1) return;
+      token = same[0].token;
+    }
+    // Only answer a create WE started — otherwise merely browsing an artist
+    // page would close the tab.
+    if (!token) return;
+    gtTabClear();
+    gtPendingDrop(token);
     try {
       const ch = new BroadcastChannel(GT_CREATE_CH);
-      ch.postMessage({ kind: m[1].toLowerCase(), gid: m[2].toLowerCase(), token: pending.token });
+      ch.postMessage({ kind, gid, token });
       setTimeout(() => { try { ch.close(); } catch (e) {} try { window.close(); } catch (e) {} }, 300);
     } catch (e) {}
   })();
@@ -31125,14 +31181,17 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
      text parser waits out its full ten minutes for a post-back that cannot come.
 
      Three things keep this from ever submitting a form it should not:
-      • gt_token in the URL must equal the pending create's token, so this can
-        only ever fire on the exact page one background create opened — not on a
-        /artist/create the user opened themselves while a create was pending;
+      • the x_gtcreate token in the URL must name a create that is actually
+        pending, so this can only ever fire on a page one background create
+        opened — not on a /artist/create the user opened themselves while a
+        create was pending;
       • the name field must actually be filled, i.e. the seed really landed;
-      • it marks the pending record `submitted` BEFORE clicking, so it presses
-        Enter exactly once. If MusicBrainz answers with a duplicate-check or
-        validation page, this stands down and the tab is left for the user —
-        which is the right outcome for anything needing a human decision. */
+      • it stamps the tab and marks the record `submitted` BEFORE clicking, so
+        it presses Enter exactly once. If MusicBrainz answers with a
+        duplicate-check or validation page, this stands down and the tab is left
+        for the user — which is the right outcome for anything needing a human
+        decision. (The stamp outlives that hand-off, so a create the user
+        finishes themselves still reports its MBID back to the row. #598) */
   const GT_CREATE_PATH = /^\/(artist|label|place)\/create\/?$/i;
   (function autoSubmitSeededCreate() {
     const m = location.pathname.match(GT_CREATE_PATH);
@@ -31142,13 +31201,17 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // decided — without a line here, "it didn't create anything" is
     // indistinguishable from "it never ran".
     const say = (msg) => { try { console.log('[Group Therapy] background create: ' + msg); } catch (e) {} };
-    let pending = null;
-    try { pending = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
-    if (!pending || pending.kind !== kind || !pending.token) { say(`no pending ${kind} create — leaving this form alone`); return; }
-    if (pending.submitted) { say('already pressed Enter once for this create — standing down (MusicBrainz may be asking something)'); return; }
-    if (!pending.ts || Date.now() - pending.ts > 10 * 60 * 1000) { say('the pending create is stale — leaving this form alone'); return; }
+    // #598: the URL's token is the question, and the pending LIST is looked up
+    // by it. The old order asked "what is the one pending create?" and then
+    // required this page to be it — so the moment a second create was started,
+    // the first tab's page failed that test and never pressed Enter. Which
+    // create this page belongs to is written right there in its own URL; there
+    // was never a reason to ask a shared slot instead.
     let token = null; try { token = new URLSearchParams(location.search).get('x_gtcreate'); } catch (e) {}
-    if (token !== pending.token) { say('this create page is not the one we opened — leaving it alone'); return; }
+    if (!token) { say('no create token in this URL — we did not open this form, leaving it alone'); return; }
+    const pending = gtPending().find(p => p.token === token && p.kind === kind);
+    if (!pending) { say(`no pending ${kind} create matches this page's token — leaving this form alone`); return; }
+    if (pending.submitted || gtTabRead()) { say('already pressed Enter once for this create — standing down (MusicBrainz may be asking something)'); return; }
     const go = () => {
       // MusicBrainz's edit form needs its own JavaScript before "Enter edit"
       // does anything — measured: clicking at document-start left the tab
@@ -31166,10 +31229,17 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       // second create started meanwhile) could both pass the start-up guard and
       // both click — two artists from one press. Observed with a doubled
       // injection in testing; cheap to make impossible for a create action.
-      let now = null;
-      try { now = JSON.parse(GM_getValue(GT_PENDING_KEY, '') || 'null'); } catch (e) {}
-      if (!now || now.token !== pending.token || now.submitted) { say('another instance already pressed Enter — standing down'); return true; }
-      try { GM_setValue(GT_PENDING_KEY, JSON.stringify(Object.assign({}, now, { submitted: true }))); } catch (e) {}
+      //
+      // #598: the tab stamp is what makes this exact rather than approximate.
+      // It is per-tab, so a create running in ANOTHER tab can neither set nor
+      // clear it, while a second instance in THIS document sees it at once.
+      // Writing it is also what lets the created entity's page — the same tab,
+      // one navigation later — know which of several creates it is.
+      if (gtTabRead()) { say('already pressed Enter once in this tab — standing down'); return true; }
+      const now = gtPending().find(p => p.token === token);
+      if (!now || now.submitted) { say('this create is no longer pending (cancelled, or already submitted) — standing down'); return true; }
+      gtTabMark({ kind, token, ts: Date.now() });
+      gtPendingWrite(gtPending().map(p => (p.token === token ? Object.assign({}, p, { submitted: true }) : p)));
       say(`pressing "Enter edit" for “${name.value.trim()}”`);
       try { submit.click(); } catch (e) { say('the click threw: ' + ((e && e.message) || e)); }
       return true;
