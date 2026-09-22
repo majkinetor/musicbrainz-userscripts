@@ -106,12 +106,52 @@ ck(!!g && JSON.stringify(g.nums) === '["2","6","9"]', 'a BARE multi-number list,
 g = await det('Percussion (A1, B2)', 'vinyl'); show('Percussion (A1, B2) [vinyl]', g);
 ck(!!g && JSON.stringify(g.nums) === '["A1","B2"]', 'vinyl positions, bare');
 
+// A bare SINGLE number was refused at first, on the grounds that "(1)" is a
+// footnote marker at least as often as a track. majkinetor overruled that after
+// testing a real liner-note block: "also recognize (1) as it is shortest way to
+// specify tracks without adding any other words. It isn't likely that footnote
+// will come in that way and if it does, it can be removed by hand."
+g = await det('Guitar (1)', 'cd9'); show('Guitar (1)', g);
+ck(!!g && JSON.stringify(g.nums) === '["1"]' && g.clean === 'Guitar', 'a bare single number counts — the shortest way to name one track');
+g = await det('Guitar (4)', 'vinyl'); show('Guitar (4) [vinyl]', g);
+ck(!!g && JSON.stringify(g.nums) === '["B1"]', 'and it still goes through the ordinal fallback on a vinyl');
+
+// ── 1b. the real block majkinetor signed off on ────────────────────────────
+// Pasted verbatim from the issue, split one role per line the way he split it.
+// Every role text and its expected destination, in order — a regression guard
+// on the actual case rather than on invented shapes.
+console.log('\nHIS BLOCK (9-track release, role text -> tracks):');
+const BLOCK = [
+  ['Lead & backing vocals', null],
+  ['Mandolin (track 3)', '3'],
+  ['Guitar,', null],
+  ['Bass (track 5)', '5'],
+  ['Lead vocals (track 8)', '8'],
+  ['Guitar.', null],
+  ['Lead vocals (tracks 2,6,9)', '2,6,9'],
+  ['Percussion.', null],
+  ['Djembe (track 4)', '4'],
+  ['Mandolin (tracks 1,2,4,7,8)', '1,2,4,7,8'],
+  ['Guitar (tracks 3,5,6,8,9).', '3,5,6,8,9'],
+  ['Bass (tracks 4,6,8,9)', '4,6,8,9'],
+  ['Bass (tracks 1,2,3,7)', '1,2,3,7'],
+  ['Backing vocals.', null],
+];
+let blockBad = 0;
+for (const [role, want] of BLOCK) {
+  const got = await det(role, 'cd9');
+  const gotNums = got && got.nums ? got.nums.join(',') : null;
+  const okRow = gotNums === want;
+  if (!okRow) blockBad++;
+  console.log(`   ${okRow ? ' ' : '!'} ${role.padEnd(30)} -> ${JSON.stringify(gotNums)}${okRow ? '' : '   WANT ' + JSON.stringify(want)}`);
+}
+ck(blockBad === 0, `every line of the block he tested lands where he expected (${BLOCK.length - blockBad}/${BLOCK.length})`);
+
 // ── 2. it refuses when it should — the half that matters ───────────────────
 console.log('\nREFUSES:');
 for (const [text, fixture, why] of [
   ['Guitar', 'cd9', 'a plain role with nothing in it'],
   ['Mastering (2003)', 'cd9', 'a YEAR — 2003 is not a track on this release, so the clause is not a track list'],
-  ['Guitar (1)', 'cd9', 'a bare single number is a footnote marker as often as a track, so it needs company'],
   ['Drums (drum set, congas)', 'cd9', 'a parenthesised instrument detail'],
   ['Vocals (Bob)', 'cd9', 'a credited-as name'],
   ['Engineer (tracks 10,11)', 'cd9', 'a track clause naming tracks this release does not have'],

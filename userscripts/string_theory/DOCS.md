@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-22 20:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-22 22:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1119,9 +1119,9 @@ Deliberately single-line-only: multi-line/grouped-block credit formats aren't pa
 
 Liner notes scope credits in the text itself — *“Aloula Basil: Lead vocals (tracks 2,6,9)”*. With **Tracks: auto** (the default, beside Scope) that clause is read, removed from the role text and used as **that row's** destination; every other row still follows **Scope**. So a block where most credits are album-wide and a few name tracks applies in **one** run.
 
-Recognized: `(tracks 1,2,4)`, `(track 3)`, `(trk 4)`, `[tracks 1-3]`, a trailing `on tracks 2, 6 and 9`, and bare lists like `(2,6,9)` or `(A1, B2)`. The **tracks** column shows what each row resolved to before you apply anything, and the edit note names both destinations — *Parsed 14 credits from text — 9 on the release and 5 to tracks 2, 4, 6, 9 named in the credit text*.
+Recognized: `(tracks 1,2,4)`, `(track 3)`, `(trk 4)`, `[tracks 1-3]`, a trailing `on tracks 2, 6 and 9`, and bare forms with no *track* word at all — `(2,6,9)`, `(A1, B2)`, or just `(1)`, the shortest way to name one track. The **tracks** column shows what each row resolved to before you apply anything, and the edit note names both destinations — *Parsed 14 credits from text — 9 on the release and 5 to tracks 2, 4, 6, 9 named in the credit text*.
 
-A clause only counts when **every** number in it is a real track on this release, which is what keeps `(2003)` a year rather than a track list — no list of things-to-ignore is involved, and anything unrecognized simply stays release-level. A bare single number (`Guitar (1)`) is left alone too: it's a footnote marker at least as often as a track.
+A clause only counts when **every** number in it is a real track on this release, which is what keeps `(2003)` a year rather than a track list — no list of things-to-ignore is involved, and anything unrecognized simply stays release-level.
 
 One line carries **one** track list. `Martin Cradick: Mandolin (tracks 1,2,4,7,8), Guitar (tracks 3,5,6,8,9).` has two, so nothing can tell which role owns which — the row says **⚠ split line** and stays release-level until you split it into one role per line. **Tracks: off** restores the old behaviour, where Scope alone decides for every row.
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.22.201429
+// @version      2026.9.22.222153
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1357,11 +1357,13 @@
       if (!toks.length) continue;
       const hits = toks.map(t => txpMatchTrackToken(t, rows));
       if (hits.some(h => !h.length)) continue;                     // ← the safety rule
-      // A bare single plain number is a footnote marker at least as often as a
-      // track ("Guitar (1)"), so it needs company to count: two or more tokens,
-      // a range, a medium qualifier, or a lettered position like A1. An
-      // explicit "track"/"tracks" says what it is and needs none of that.
-      if (!c.explicit && toks.length === 1 && /^\d+$/.test(toks[0])) continue;
+      // A bare single number — "Guitar (1)" — counts. It was refused at first,
+      // on the grounds that it is a footnote marker at least as often as a
+      // track; majkinetor overruled that after testing a real liner-note block
+      // (#597): "also recognize (1) as it is shortest way to specify tracks
+      // without adding any other words. It isn't likely that footnote will come
+      // in that way and if it does, it can be removed by hand." The safety rule
+      // above still applies, so the number has to BE a track on this release.
       ok.push({ ...c, spec, targets: rows.filter(r => hits.some(h => h.includes(r))) });
     }
     if (!ok.length) return null;
