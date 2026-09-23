@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-23 19:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-23 20:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -568,6 +568,7 @@ Works on one cover or the whole selection:
 
 - **File drop** — choose local files and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see [File names ⇄ types](#file-names--types)).
 - **Folder upload** (#359) — drop a **folder** on the gallery, or **Shift-click** the drop zone to browse one. It stages the folder's image/PDF files recursively, but bounded: **one level of subfolders deep** and up to **100 files** (a stray huge tree can't flood the gallery).
+- **ZIP upload** ([#604](https://github.com/majkinetor/musicbrainz-userscripts/issues/604)) — drop a **.zip** on the gallery (straight from the browser's download bar is fine) or pick one with the file browser. It is unpacked in the browser and staged like a dropped folder, with the same bounds. An **Art Station download** ([#240](https://github.com/majkinetor/musicbrainz-userscripts/issues/240)) restores each cover's exact **types and comment** from its file name, so *download all covers here, drop the zip on another release* copies them over. Other zips get the usual [file-name type guess](#file-names--types). Stored and deflate archives are supported; encrypted and ZIP64 ones are skipped with a message.
 - **URL link** — uses [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch covers from Discogs, Apple, Spotify, Bandcamp…
   The **`URL (N)`** toolbar button opens a panel listing every source this release offers — its linked platforms plus any [registered providers](#plugin-api) — with one **⬇ Import from …** per source and an **⬇ Import all N sources** below them. **Right-click the button** to run *Import all* straight away without opening the panel ([#558](https://github.com/majkinetor/musicbrainz-userscripts/issues/558)); with nothing to import it opens the panel instead, where **By URL** still is.
   **Ctrl+V a URL anywhere on the gallery** and it is imported straight away — no button, no dialog, and no browser permission prompt, because a paste *gesture* carries its own data ([#554](https://github.com/majkinetor/musicbrainz-userscripts/issues/554)). Pastes aimed at an input (the URL box, a comment field, anything contenteditable) are left to that input.
