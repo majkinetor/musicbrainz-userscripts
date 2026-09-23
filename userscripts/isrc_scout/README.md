@@ -84,7 +84,7 @@ Button `(+)` lets you import from an URL — paste any album URL to import from 
 | --- | --- | --- | --- |
 | **⟳ SoundExchange** | [SoundExchange](https://isrc.soundexchange.com/) | none | Searches each track by title/artist, shows candidate ISRCs per row, auto-fills confident matches into empty fields. Searches are capped at **30 at a time** so SoundExchange doesn't block us — remaining tracks show a *"Not searched — click to load the next 30"* message; click any one to continue.|
 | **Deezer** | `api.deezer.com` | none | Enabled when the release has a Deezer album relationship. Fetches each track's ISRC and maps by disc/position (title fallback). Deezer needs one request **per track**, so imports are capped at **50 tracks per batch** (a *"Deezer N/M — click to fetch the next 50"* prompt continues) to avoid spamming Deezer on huge releases. |
-| **Spotify** | `isrchunt.com` | none | Enabled when the release has a Spotify album relationship. Delegates to ISRC Hunt (which does the Spotify lookup server-side) and scrapes the ISRCs from its result page |
+| **Spotify** | `isrc.mollamusicgroup.com` or `isrchunt.com` | none | Enabled when the release has a Spotify album relationship. Delegates to molla or ISRC Hunt (chosen in ⚙ Setup), which do the Spotify lookup server-side — see [Spotify](#spotify) |
 | **Beatport** | `beatport.com` release page | none | Enabled when the release has a Beatport relationship. Beatport is Cloudflare-walled, so a direct cross-origin fetch is always blocked — instead the script opens the release in a brief **background tab** where the page (which the script also runs on) reads the ISRCs out of the embedded `__NEXT_DATA__` and hands them back, then the tab closes. Results are cached, so a repeat import (or one after you've simply visited the page yourself) is instant. |
 | **Tidal** | `openapi.tidal.com` | app token (baked in) | Enabled when the release has a Tidal album relationship. Uses Tidal's official API with a built-in client-credentials app token (catalog access, **no user login**); maps each track's ISRC by disc/track number. |
 | **Volumo** | `volumo.com/api/v1` | none | Enabled when the release has a Volumo relationship (or one Platform Check found via barcode). Clean unauthenticated API — one call returns every track's ISRC; no Cloudflare/token. Link-only, like the others. |
@@ -98,7 +98,10 @@ Button `(+)` lets you import from an URL — paste any album URL to import from 
 
 #### Spotify 
 
-The script uses [ISRC Hunt](https://isrchunt.com), which does the Spotify lookup **server-side** (with its own credentials) and renders the ISRCs into a plain HTML table. The script fetches `isrchunt.com/spotify/importisrc?releaseId=<album url>`, scrapes that table, and maps the ISRCs to your tracks.
+Spotify's own ISRC API needs a paid developer account, so the lookup goes through a service that does it **server-side** with its own credentials. Pick one in **⚙ Setup → Spotify ISRC source**; if one is down or rate-limited, switch to the other (#603).
+
+- **[molla](https://isrc.mollamusicgroup.com)** (default) — one `POST /api/spotify` with the album link returns every track's ISRC as JSON. It gives album order only, no track or disc numbers. When its track count matches the release, ISRCs are mapped by position across all media; otherwise they're placed by title/artist match only, and tracks that don't match stay empty. Its Spotify quota is shared by every molla user, so a burst can hit a temporary rate limit; Scout reports it and a retry a minute later works.
+- **[ISRC Hunt](https://isrchunt.com)** — the script fetches `isrchunt.com/spotify/importisrc?releaseId=<album url>`, scrapes the HTML table of ISRCs, and maps them by disc and position.
 
 #### Beatport 
 

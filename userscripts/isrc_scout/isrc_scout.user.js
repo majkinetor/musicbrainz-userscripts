@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.12
+// @version      2026.9.23
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -21,6 +21,7 @@
 // @connect      isrc.soundexchange.com
 // @connect      api.deezer.com
 // @connect      isrchunt.com
+// @connect      isrc.mollamusicgroup.com
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
 // @connect      volumo.com
@@ -1359,6 +1360,9 @@
   // PC link it withheld by a barcode/format mismatch (it can be a wrong release).
   // Opt in to the old #211 behaviour (use it anyway) with this toggle.
   const ignorePcConfidence = () => !!store.get('ignore_pc_confidence', false);
+  // #603: which service turns a Spotify album link into ISRCs — molla (default,
+  // JSON) or ISRC Hunt (the original, HTML scrape; down since #596).
+  const spotifyIsrcSource = () => store.get('spotify_isrc_source', 'molla') === 'isrchunt' ? 'isrchunt' : 'molla';
 
   // #302: releases in a release group are often split by platform (one has Deezer,
   // another Spotify, …). ISRC and track-link edits target recordings, which are
@@ -1742,7 +1746,7 @@
   // Platform-Check-found URL (via providerAlbumId).
   // Spotify is intentionally absent: its only by-ISRC route is the Web API
   // `isrc:` search, which needs an app token (no free anonymous one), so it can't
-  // be a per-track ISRC provider. (Spotify stays a bulk import button via ISRC Hunt.)
+  // be a per-track ISRC provider. (Spotify stays a bulk import button via molla / ISRC Hunt.)
   const ALBUM_PROVIDERS = {
     deezer:   { source: 'Deezer',   idField: 'deezerId',   fetcher: fetchDeezer,   code: 'dz' },
     beatport: { source: 'Beatport', idField: 'beatportId', fetcher: fetchBeatport, code: 'bp' },
@@ -2019,10 +2023,11 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SPOTIFY  (via ISRC Hunt)
-     Spotify's anti-bot makes a direct userscript token-harvest unreliable, but
-     ISRC Hunt does the Spotify lookup server-side and renders the ISRCs into a
-     plain HTML table — so we just fetch that and scrape it (no token, no login).
+     SPOTIFY  (via molla or ISRC Hunt — chosen in ⚙, #603)
+     Spotify's anti-bot makes a direct userscript token-harvest unreliable, and
+     its ISRC API needs a paid developer app. Both services do the Spotify lookup
+     server-side with their own credentials: molla returns JSON, ISRC Hunt renders
+     the ISRCs into a plain HTML table that we scrape (no token, no login).
   ═══════════════════════════════════════════════════════════════════════ */
   function parseIsrchunt(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -2051,6 +2056,63 @@
     return out;
   }
   async function fetchSpotify(albumId, onProgress, onIsrc) {
+    const src = spotifyIsrcSource();
+    Log.info('Spotify ISRC source: ' + (src === 'isrchunt' ? 'ISRC Hunt' : 'molla') + ' (change in ⚙)');
+    return src === 'isrchunt' ? fetchSpotifyIsrchunt(albumId, onProgress, onIsrc) : fetchSpotifyMolla(albumId, onProgress, onIsrc);
+  }
+  // #603: molla (isrc.mollamusicgroup.com) takes the album link and returns every
+  // track's ISRC in one JSON request. It gives album order only — no track or disc
+  // numbers. When its track count equals this release's, map by flattened position
+  // (MB media in order ↔ Spotify's (disc, track) order, which is molla's order).
+  // Otherwise send no position, so only title/artist matching can place an ISRC and
+  // anything unmatched stays empty rather than landing on the wrong track.
+  // Its Spotify quota is shared by every molla user; running out comes back as
+  // HTTP 500 with "429 Too Many Requests" in the body and no Retry-After.
+  async function fetchSpotifyMolla(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    const input = 'spotify:album:' + albumId;
+    Log.info('Spotify via molla: ' + input);
+    const r = await gmPost('https://isrc.mollamusicgroup.com/api/spotify', JSON.stringify({ input }), { 'Content-Type': 'application/json' });
+    let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { Log.warn('molla: response is not JSON (' + String(r.responseText || '').slice(0, 80) + ')'); }
+    if (r.status !== 200) {
+      const msg = (j && j.error) || ('HTTP ' + r.status);
+      if (/\b429\b|too many requests/i.test(msg)) throw new Error('molla is rate-limited by Spotify (its quota is shared by all molla users) — try again in a minute, or switch to ISRC Hunt in ⚙');
+      throw new Error('molla returned ' + r.status + ': ' + msg);
+    }
+    const tracks = (j && Array.isArray(j.tracks)) ? j.tracks : [];
+    const n = tracks.length, mb = RELEASE.tracks.length;
+    const withIsrc = tracks.filter(t => isValidIsrc(t.isrc || '')).length;
+    Log.info('molla: "' + ((j && j.name) || '?') + '" — ' + n + ' track(s), ' + withIsrc + ' with an ISRC' + (j && j.upc ? ', UPC ' + j.upc : ''));
+    if (!withIsrc) throw new Error('molla found no ISRCs for this album');
+    const byPos = n === mb;
+    if (byPos) Log.info('molla: track count matches this release (' + n + ') — mapping by position');
+    else Log.warn('molla: the album has ' + n + ' track(s) but this release has ' + mb + ' — molla gives no track numbers, so ISRCs are placed by title/artist match only');
+    tracks.forEach((t, i) => {
+      const isrc = normalizeIsrc(t.isrc || '');
+      const title = t.track_name || '', artist = (t.artists || []).join(', ');
+      // Spotify puts featured artists in the title ("Get Lucky (feat. Pharrell Williams
+      // and Nile Rodgers)"); MB keeps them in the artist credit. molla has no durations,
+      // so the title is the only plausibility check — without this every feat. track
+      // on a correct import was flagged implausible.
+      const matchTitle = title.replace(/\s*[([](?:feat\.?|ft\.?|featuring|with)\s[^)\]]*[)\]]/gi, '').trim() || title;
+      // Match on the main (first) artist only: Spotify lists every featured artist, and
+      // MB's credit often names a different set ("Get Lucky": Spotify adds Nile Rodgers,
+      // MB has "Daft Punk feat. Pharrell Williams"), so neither list contains the other.
+      const matchArtist = (t.artists || [])[0] || '';
+      if (isValidIsrc(isrc)) {
+        const mt = byPos ? RELEASE.tracks[i] : null;
+        // pos/disc -1 never matches a real track, which forces mapOneToTrack onto title matching
+        const e = { isrc, title: matchTitle, artist: matchArtist, pos: mt ? +mt.trackPos : -1, disc: mt ? +mt.mediumPos : -1, dur: '' };
+        Log.info('molla #' + (i + 1) + ' ' + isrc + ' "' + title + '"' + (mt ? ' → medium ' + mt.mediumPos + ' track ' + mt.trackPos : ' → by title'));
+        try { if (onIsrc) onIsrc(e); } catch (err) { Log.warn('Spotify map hiccup for ' + isrc + ': ' + errText(err)); }
+      } else {
+        Log.warn('molla #' + (i + 1) + ' "' + title + '": no valid ISRC (' + (t.isrc || 'none') + ')');
+      }
+      try { if (onProgress) onProgress(i + 1, n); } catch (err) {}
+    });
+    return { total: n, next: null };   // molla returns everything in one request — never batched
+  }
+  async function fetchSpotifyIsrchunt(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
     const albumUrl = 'https://open.spotify.com/album/' + albumId;
     const url = 'https://isrchunt.com/spotify/importisrc?releaseId=' + encodeURIComponent(albumUrl);
@@ -2727,6 +2789,15 @@
               <span style="color:var(--mbu-text-weak); font-size:11px">Import from a Platform-Check link even when PC withheld it for a barcode/format mismatch. Off by default — a mismatch can mean PC matched the wrong release, so its ISRCs would be wrong (#314).</span></span>
           </label>
         </div>
+        <div style="margin-top:12px; font-size:12px">
+          <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer">Spotify ISRC source
+            <select id="ii-sp-source" style="font-size:12px">
+              <option value="molla">molla</option>
+              <option value="isrchunt">ISRC Hunt</option>
+            </select>
+          </label>
+          <div style="color:var(--mbu-text-weak); font-size:11px; margin-top:2px">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to the other (#603).</div>
+        </div>
         <div class="ii-cfg-grp" style="margin-top:16px">More</div>
         <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
@@ -3009,6 +3080,16 @@
       cbPc.addEventListener('change', () => {
         store.set('ignore_pc_confidence', cbPc.checked);
         Log.info('Ignore Platform Check link confidence: ' + (cbPc.checked ? 'on — barcode/format-mismatched PC links will be used' : 'off — PC-withheld links are skipped'));
+      });
+    }
+
+    // #603: which service resolves Spotify ISRCs
+    const selSp = modal.querySelector('#ii-sp-source');
+    if (selSp) {
+      selSp.value = spotifyIsrcSource();
+      selSp.addEventListener('change', () => {
+        store.set('spotify_isrc_source', selSp.value);
+        Log.info('Spotify ISRC source: ' + (selSp.value === 'isrchunt' ? 'ISRC Hunt' : 'molla'));
       });
     }
 
