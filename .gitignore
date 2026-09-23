@@ -48,9 +48,12 @@ dev/i2*.png
 dev/script-metrics/node_modules/
 dev/script-metrics/_backfill.log
 
-# Repo-root scratch that keeps reappearing: one-off probe scripts, stray
-# Playwright profiles from a mistyped path, and an accidental root build.
+# Scratch that keeps reappearing: one-off probe scripts, stray Playwright
+# profiles from a mistyped path, and an accidental root build. The profile
+# pattern matches at any depth: bash stripping the backslashes from
+# C:\Work\mb-userscripts\.pw-profile makes Node read it as a relative path,
+# which creates the profile in whatever script folder the harness ran from.
 /probe-*.mjs
 /dist/
-/*.pw-profile/
+*.pw-profile/
 /.pw-profile-ff/
