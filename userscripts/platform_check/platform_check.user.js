@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.12
+// @version      2026.9.23.182042
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -36,7 +36,7 @@
 // @connect      qobuz.com
 // @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
-// @connect      sambl.lioncat6.com
+// @connect      tools.wallstream.com
 // @connect      *
 // ==/UserScript==
 (function () {
@@ -1585,9 +1585,9 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'SAMBL', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Qobuz', 'Beatport', 'Volumo', 'HDtracks', 'SoundCloud'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Wallstream', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Qobuz', 'Beatport', 'Volumo', 'HDtracks', 'SoundCloud'];
 const LOG_SOURCE_COLORS = {
-    System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F', SAMBL: '#4FC3F7',
+    System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F', Wallstream: '#4FC3F7',
     Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF', Apple: '#FA243C',
     Tidal: '#CCC', Qobuz: '#5b9bff', Beatport: '#3AD17A', Volumo: '#b39dff', HDtracks: '#f08a84', SoundCloud: '#ff7a45',
 };
@@ -3135,29 +3135,47 @@ ${releaseMbid      ? `  { ?item wdt:P5813 "${releaseMbid}" }`               : ''
     return out;
 }
 
-// SAMBL (sambl.lioncat6.com) resolves a barcode → exact-UPC album URLs across
-// Spotify / Deezer / Tidal / Apple / Qobuz (#182). Its unique value here is
-// Spotify, which has no other unauthenticated UPC route (Tidal/Deezer already
-// do barcode-first themselves). No CORS header → must go through
-// GM_xmlhttpRequest (@connect sambl.lioncat6.com). Coverage is partial and its
-// Apple result isn't barcode-exact, so callers should trust it only for Spotify.
-async function lookupSambl(barcode) {
-    if (!barcode) return null;
-    const url = `https://sambl.lioncat6.com/api/find?query=${encodeURIComponent(barcode)}&type=upc`;
-    appendLog('SAMBL', `barcode lookup ${barcode}`);
-    const r = await gmGet(url);
-    appendLog('SAMBL', `status=${r.status} ${r.responseText.length}b in ${r.ms}ms`);
-    if (!r.ok) { appendLog('SAMBL', `lookup failed`, 'warn'); return null; }
-    let j; try { j = JSON.parse(r.responseText); } catch (e) { appendLog('SAMBL', `JSON parse: ${e.message}`, 'error'); return null; }
-    const out = {};
-    for (const x of (j.data || [])) {
-        if (!x.url || x.url.urlInfo?.type !== 'album') continue;
-        const prov = x.provider === 'applemusic' ? 'apple' : x.provider;   // normalize
-        if (!out[prov]) out[prov] = x.url.url;
+// Wallstream (tools.wallstream.com, #602) proxies Spotify's catalog search with
+// its own app token, so `q=upc:<code>` resolves a barcode → exact-UPC Spotify
+// album — the only unauthenticated UPC route for Spotify (the embed/API don't
+// expose a UPC without an app token). Replaced SAMBL, which stopped returning
+// Spotify results and blocked every scanner while it ran. No CORS header →
+// GM_xmlhttpRequest (@connect tools.wallstream.com).
+// Spotify's upc: filter matches only the exact string Spotify stored, leading
+// zeros included (0859381157694 hits, 859381157694 doesn't), so try the MB
+// barcode verbatim, then its 12/13/14-digit zero-padded forms, first hit wins.
+// Count with items.length — the response's `total` can be 0 with items present.
+function spotifyUpcVariants(barcode) {
+    const raw = String(barcode || '').trim();
+    if (!raw) return [];
+    const out = [raw];
+    if (/^\d+$/.test(raw)) {
+        const core = raw.replace(/^0+/, '');
+        for (const n of [12, 13, 14]) if (core.length <= n) out.push(core.padStart(n, '0'));
     }
-    const provs = Object.keys(out).filter(k => k !== 'musicbrainz');
-    appendLog('SAMBL', `exact-barcode albums: ${provs.length ? provs.join(', ') : '(none)'}`, provs.length ? 'ok' : 'warn');
-    return out;
+    return [...new Set(out)];
+}
+async function lookupWallstreamSpotify(barcode) {
+    const variants = spotifyUpcVariants(barcode);
+    if (!variants.length) return null;
+    appendLog('Wallstream', `Spotify barcode lookup ${barcode} (forms: ${variants.join(', ')})`);
+    for (const code of variants) {
+        const url = `https://tools.wallstream.com/api/spotify/isrc?q=${encodeURIComponent('upc:' + code)}`;
+        const r = await gmGet(url, { timeout: 8000, anonymous: true });
+        appendLog('Wallstream', `upc:${code} → status=${r.status} ${r.responseText.length}b in ${r.ms}ms${r.error ? ' (' + r.error + ')' : ''}`);
+        if (!r.ok) { appendLog('Wallstream', `lookup failed — falling back to Wikidata/search`, 'warn'); return null; }
+        let j; try { j = JSON.parse(r.responseText); } catch (e) { appendLog('Wallstream', `JSON parse: ${e.message}`, 'error'); return null; }
+        const albums = j?.items?.albums?.items || [];
+        appendLog('Wallstream', `upc:${code} → ${albums.length} album(s)${albums.length ? ': ' + albums.map(x => `"${x.name}" ${x.external_urls?.spotify || x.id}`).join(' | ') : ''}`);
+        const hit = albums.find(x => x?.external_urls?.spotify || x?.id);
+        if (hit) {
+            const albumUrl = hit.external_urls?.spotify || `https://open.spotify.com/album/${hit.id}`;
+            appendLog('Wallstream', `exact-barcode Spotify album (upc:${code}): ${albumUrl}`, 'ok');
+            return albumUrl;
+        }
+    }
+    appendLog('Wallstream', `no Spotify album for any barcode form`, 'warn');
+    return null;
 }
 
 // Concurrent search-engine queries from the same IP can trip anti-bot pages.
@@ -3195,7 +3213,7 @@ async function fetchSpotifyMeta(albumUrl) {
     };
 }
 
-async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId, isVariousArtists, samblUrl }) {
+async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId, isVariousArtists, barcode }) {
     const label = 'Spotify';
 
     // Cache hit WITH URL → use it and skip everything else. A cached "no
@@ -3205,6 +3223,7 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     // (without rerunning search engines; ↻ forces full retry).
     const cached = cacheGet(mbid, 'spotify');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+        appendLog('Wallstream', `skipped — Spotify URL cached from a previous scan (↻ to re-run): ${cached.url}`);
         applyCachedRow('spotify', label, cached, mbTracks);
         return;
     }
@@ -3213,16 +3232,22 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     let source   = null;
     let bestMeta = null;
     let exactBarcode = false;   // (#182) true when the URL was resolved by exact UPC
+    // Barcode lookup (#602) runs here, inside the Spotify scanner, so it no
+    // longer delays the other providers' scans. Every skip is logged, so an
+    // empty Wallstream log never leaves you guessing whether it ran.
+    let barcodeUrl = null;
+    if (albumUrl)      appendLog('Wallstream', `skipped — Spotify already linked in MB: ${albumUrl}`);
+    else if (!barcode) appendLog('Wallstream', `skipped — release has no barcode`);
+    else               barcodeUrl = await lookupWallstreamSpotify(barcode);
 
     if (albumUrl) {
         appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
         source = 'MB rels';
-    } else if (samblUrl) {
-        // SAMBL resolved the exact-barcode Spotify album — the only barcode route
-        // for Spotify (the embed/API don't expose a UPC without an app token). It
-        // beats Wikidata/search, which can point at a different-barcode edition.
-        albumUrl = samblUrl; source = 'SAMBL (barcode)'; exactBarcode = true;
-        appendLog(label, `SAMBL barcode match → ${albumUrl}`, 'ok');
+    } else if (barcodeUrl) {
+        // Wallstream resolved the exact-barcode Spotify album. It beats
+        // Wikidata/search, which can point at a different-barcode edition.
+        albumUrl = barcodeUrl; source = 'Wallstream (barcode)'; exactBarcode = true;
+        appendLog(label, `Wallstream barcode match → ${albumUrl}`, 'ok');
     } else if (wikidataSpotifyId) {
         albumUrl = `https://open.spotify.com/album/${wikidataSpotifyId}`;
         appendLog(label, `Wikidata answer: ${albumUrl}`, 'ok');
@@ -5197,16 +5222,9 @@ async function runScansInner() {
 
     MB_BARCODE = barcode || null;   // (#182) for the barcode-mismatch indicator
     MB_FORMAT  = format  || null;   // (#182) for the format-confidence check
-    // SAMBL barcode resolver (#182) — its unique contribution is the exact-barcode
-    // Spotify album (no other unauthenticated UPC route). Only worth a call when
-    // there's a barcode and Spotify isn't already pinned by an MB rel.
-    let sambl = null;
-    if (barcode && GM_getValue('prov_spotify', true) && !existing.spotify) {
-        sambl = await lookupSambl(barcode);
-    }
     const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, barcode, existingDiscogsMaster: existing.discogsMaster || null };
     const tasks = [];
-    if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null, samblUrl: sambl?.spotify || null }));
+    if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
     if (GM_getValue('prov_bandcamp', true)) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
     if (GM_getValue('prov_deezer',   true)) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
