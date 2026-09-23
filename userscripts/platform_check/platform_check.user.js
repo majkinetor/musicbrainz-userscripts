@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.23
+// @version      2026.9.23.182042
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -3223,6 +3223,7 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     // (without rerunning search engines; ↻ forces full retry).
     const cached = cacheGet(mbid, 'spotify');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+        appendLog('Wallstream', `skipped — Spotify URL cached from a previous scan (↻ to re-run): ${cached.url}`);
         applyCachedRow('spotify', label, cached, mbTracks);
         return;
     }
@@ -3232,8 +3233,12 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     let bestMeta = null;
     let exactBarcode = false;   // (#182) true when the URL was resolved by exact UPC
     // Barcode lookup (#602) runs here, inside the Spotify scanner, so it no
-    // longer delays the other providers' scans.
-    const barcodeUrl = (!albumUrl && barcode) ? await lookupWallstreamSpotify(barcode) : null;
+    // longer delays the other providers' scans. Every skip is logged, so an
+    // empty Wallstream log never leaves you guessing whether it ran.
+    let barcodeUrl = null;
+    if (albumUrl)      appendLog('Wallstream', `skipped — Spotify already linked in MB: ${albumUrl}`);
+    else if (!barcode) appendLog('Wallstream', `skipped — release has no barcode`);
+    else               barcodeUrl = await lookupWallstreamSpotify(barcode);
 
     if (albumUrl) {
         appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
