@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-23 04:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-23 17:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1682,7 +1682,7 @@ MusicBrainz treats a different barcode as a different release, so a found link w
 Platform Check now (#182):
 
 - Captures the found item's barcode where the provider exposes it and, when it differs from MB's, marks the row with a **subtle amber bar on the left edge** — the barcode itself is shown only in the row tooltip + the diagnostic log.
-- Runs **[SAMBL](https://sambl.lioncat6.com)** (`/api/find?query=<UPC>&type=upc`) as a parallel barcode resolver. Its unique contribution here is the exact-barcode **Spotify** album (which has no other unauthenticated UPC route).
+- Resolves the exact-barcode **Spotify** album through **[Wallstream](https://tools.wallstream.com/isrc-lookup)** (`q=upc:<barcode>`), since Spotify has no other unauthenticated UPC route (#602, replacing SAMBL).
 - Has a setup option **"Check barcodes for link confidence"**
   - **if they exist** — withhold from `+`/`↗` only links whose barcode is *known and differs*.
   - **strictly** — only add *barcode-confirmed* links, i.e. also withhold links whose barcode can't be checked (Apple/Spotify, which don't expose a UPC).
@@ -1708,7 +1708,7 @@ Each release's format is shown as a compact **4-quadrant circle**: Vinyl (top-ri
 | --------------------------- | :-------: | :---------: | :------: | :------------: |
 | [Discogs](#discogs)         |  capture  |     ✓      |    –     |       –        |
 | [Bandcamp](#bandcamp)       |  capture  |     ✓      |    –     |       –        |
-| [Spotify](#spotify-1)         | via SAMBL |     ✓      |  P2205   |       –        |
+| [Spotify](#spotify-1)         |  lookup   |     ✓      |  P2205   |       –        |
 | [Apple Music](#apple-music) |  lookup   |     ✓      |  P5121   |       –        |
 | [Deezer](#deezer)           |  lookup   |     ✓      |    –     |       –        |
 | [Tidal](#tidal-1)             |    ✓     |     ✓      |  P4577   | baked-in token |
@@ -1718,7 +1718,7 @@ Each release's format is shown as a compact **4-quadrant circle**: Vinyl (top-ri
 | [HDtracks](#hdtracks)       |    ✓     |     ✓      |    –     |       –        |
 | [SoundCloud](#soundcloud)   |  capture  |     ✓      |    –     |       –        |
 
-**Barcode** legend: `✓` = barcode-first lookup **and** the found item's barcode captured for confidence · `lookup` = barcode-first lookup only (found barcode not exposed) · `capture` = no barcode search, but the found barcode is captured · `via SAMBL` = the barcode-exact album comes from the SAMBL resolver · `–` = neither.
+**Barcode** legend: `✓` = barcode-first lookup **and** the found item's barcode captured for confidence · `lookup` = barcode-first lookup only (found barcode not exposed) · `capture` = no barcode search, but the found barcode is captured · `–` = neither.
 
 ¹ **Qobuz login** (⚙ Setup → Auth) makes verification use `album/get` — reliable track count + **barcode** — instead of the geo-flaky, 429-throttled store-page scrape. The same token is shared with **ISRC Scout** (ISRC import) and **Credit Hoarder** (roled credits). Only the token is stored, never your password. Qobuz is **the one provider that geo-blocks anonymous access** (in some regions even account registration needs a VPN) — but that's *anonymous*-only: once registered and signed in, the token works from your normal connection, region regardless.
 
@@ -1767,15 +1767,15 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **API** — none for catalog (GS + embed)
     - Search: — (no unauthenticated catalog search)
     - Album: `/embed/album/<id>` HTML parse
-    - Barcode: no unauthenticated UPC route of its own — the barcode-exact album comes from **SAMBL**
+    - Barcode: no unauthenticated UPC route of its own — the barcode-exact album comes from **Wallstream**
 - **Local search:** —
 - **Global search:** DuckDuckGo / Brave (`site:open.spotify.com/album/`)
 - **Track verify:** `/embed/album/<id>` HTML parse
 - **Wikidata cross-ref:** P2205
 - **Login:** —
-- **Method:** GS (+ SAMBL barcode resolver)
+- **Method:** Wallstream barcode lookup, then Wikidata, then GS
 - **Notes:**
-    - [SAMBL](https://sambl.lioncat6.com) (`/api/find?query=<UPC>&type=upc`) runs in parallel; its unique contribution is the exact-barcode Spotify album (Spotify has no other unauthenticated UPC route).
+    - [Wallstream](https://tools.wallstream.com/isrc-lookup) (`/api/spotify/isrc?q=upc:<barcode>`) proxies Spotify's catalog search. Spotify matches only the barcode exactly as it stored it, leading zeros included, so the MB barcode is tried as-is and then zero-padded to 12, 13 and 14 digits, first hit wins (#602). A miss or error falls through to Wikidata and web search.
 
 #### Apple Music
 
