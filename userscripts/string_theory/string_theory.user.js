@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.23.191033
+// @version      2026.9.23.203932
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.23.191033 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.23\n  · Art Station v2026.9.22\n  · Credit Hoarder v2026.9.15\n  · Fusion v2026.9.20\n  · Group Therapy v2026.9.22.222153\n  · ISRC Scout v2026.9.23\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.23.182042");
+  console.log('%c String Theory %c v2026.9.23.203932 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.23\n  · Art Station v2026.9.23\n  · Credit Hoarder v2026.9.15\n  · Fusion v2026.9.20\n  · Group Therapy v2026.9.22.222153\n  · ISRC Scout v2026.9.23\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.23.182042");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -9603,7 +9603,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.22","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.22","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.23","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.23","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -10407,8 +10407,8 @@ try {
   }
   function dropZone() {
     if (!_dropZone) return '';
-    return `<div class="as-dropzone" tabindex="0" title="Drop image / PDF files or a folder, or click to browse. Folders upload one level of subfolders deep, up to ${DIR_MAX_FILES} files. Shift-click to browse a folder.">
-      <div class="as-dz-in">⬇ Drop ${ENT.noun} files or a folder here<span>or click to browse · Shift-click for a folder · new ${ITEMS} go first</span></div></div>`;
+    return `<div class="as-dropzone" tabindex="0" title="Drop image / PDF files, a folder or a .zip, or click to browse. Folders and zips upload one level of subfolders deep, up to ${DIR_MAX_FILES} files. Shift-click to browse a folder.">
+      <div class="as-dz-in">⬇ Drop ${ENT.noun} files, a folder or a .zip here<span>or click to browse · Shift-click for a folder · new ${ITEMS} go first</span></div></div>`;
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
@@ -11970,7 +11970,9 @@ try {
   function newItem(f, meta) {
     let types = (meta && meta.types && meta.types.length) ? meta.types.slice() : [];
     let comment = (meta && meta.comment) || '';
-    if (!types.length && (SETTINGS.autoType || SETTINGS.autoComment)) {   // #243/#244 guess type + comment from the file name
+    // #604: a cover unpacked from an Art Station archive already carries its exact types +
+    // comment (read back from its #244 name) — "none" means untyped, so don't re-guess it
+    if (!types.length && !(meta && meta.exactName) && (SETTINGS.autoType || SETTINGS.autoComment)) {   // #243/#244 guess type + comment from the file name
       const p = parseName(f.name);
       if (SETTINGS.autoType) types = p.types;
       if (SETTINGS.autoComment && !comment && p.comment) comment = p.comment;
@@ -12115,11 +12117,118 @@ try {
     if (!/\.(jpe?g|png|gif|pdf)$/i.test(name)) name = (name.replace(/\.[^./]*$/, '') || 'dropped-image') + '.' + ext;
     return new File([bytes], name, { type });
   }
+  // #604: a dropped / picked .zip is unpacked in the browser and its covers staged as if
+  // its folder had been dropped — so an Art Station download (#240) can be dragged
+  // straight from the browser's download bar onto another release, no unpacking.
+  // Reads the central directory (found via the end-of-central-directory record), and
+  // supports the two methods that occur in practice: stored (0 — what #240 writes;
+  // covers are already compressed) and deflate (8 — OS / zip tools, via the built-in
+  // DecompressionStream). Same bounds as a folder drop: CAA types only, one level of
+  // subfolders deep, at most DIR_MAX_FILES. Encrypted, ZIP64 and other methods are
+  // skipped and reported rather than guessed at.
+  const isZipFile = f => !!f && (/\.zip$/i.test(f.name || '') || /^application\/(?:x-)?zip(?:-compressed)?$/i.test(f.type || ''));
+  const MIME_BY_EXT = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', pdf: 'application/pdf' };
+  const AS_MANIFEST_RE = /Report created with \[Art Station\]/;
+  // exact types + comment from a #244 download name ("03 front,sticker a comment.jpg").
+  // Unlike parseName, the "none" placeholder means untyped and KEEPS the comment after it.
+  function parseDownloadName(name) {
+    const base = String(name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\s*\d+\s+/, '').trim();
+    const sp = base.search(/\s/);
+    const head = sp < 0 ? base : base.slice(0, sp), tail = sp < 0 ? '' : base.slice(sp + 1).trim();
+    if (head.toLowerCase() === 'none') return { types: [], comment: tail };
+    const p = parseName(name);
+    return { types: p.types, comment: p.comment };
+  }
+  async function inflateRaw(bytes) {
+    if (typeof DecompressionStream !== 'function') throw new Error('this browser cannot decompress ZIP entries (no DecompressionStream)');
+    const out = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+    return new Uint8Array(out);
+  }
+  async function filesFromZip(zip) {
+    const t0 = Date.now();
+    const buf = new Uint8Array(await zip.arrayBuffer()), dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+    const res = { files: [], metas: [], skipped: [], truncated: false, fromAS: false };
+    let eocd = -1;
+    for (let i = buf.length - 22; i >= Math.max(0, buf.length - 22 - 0xFFFF); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    if (eocd < 0) throw new Error('not a ZIP archive (no end-of-central-directory record)');
+    const count = dv.getUint16(eocd + 10, true), cdOff = dv.getUint32(eocd + 16, true);
+    if (count === 0xFFFF || cdOff === 0xFFFFFFFF) throw new Error('ZIP64 archives are not supported');
+    const dec = new TextDecoder();   // #240 writes UTF-8 names; so do current OS/zip tools
+    const ents = [];
+    for (let n = 0, p = cdOff; n < count; n++) {
+      if (p + 46 > buf.length || dv.getUint32(p, true) !== 0x02014b50) throw new Error(`corrupt central directory at entry ${n + 1}/${count}`);
+      const nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true);
+      ents.push({ name: dec.decode(buf.subarray(p + 46, p + 46 + nl)), flags: dv.getUint16(p + 8, true), method: dv.getUint16(p + 10, true),
+        csize: dv.getUint32(p + 20, true), usize: dv.getUint32(p + 24, true), lho: dv.getUint32(p + 42, true) });
+      p += 46 + nl + xl + cl;
+    }
+    asLog.debug(`Zip ${zip.name}: ${ents.length} entr${ents.length === 1 ? 'y' : 'ies'} — ${ents.map(e => `${e.name} (m${e.method}, ${e.usize}b)`).join(', ').slice(0, 1500)}`);
+    const dataOf = async e => {
+      if (e.flags & 1) throw new Error('encrypted');
+      if (e.csize === 0xFFFFFFFF || e.usize === 0xFFFFFFFF) throw new Error('ZIP64 entry');
+      if (dv.getUint32(e.lho, true) !== 0x04034b50) throw new Error('bad local header');
+      const start = e.lho + 30 + dv.getUint16(e.lho + 26, true) + dv.getUint16(e.lho + 28, true);
+      const raw = buf.subarray(start, start + e.csize);
+      if (e.method === 0) return raw;
+      if (e.method === 8) return inflateRaw(raw);
+      throw new Error('unsupported compression method ' + e.method);
+    };
+    // Art Station's own archive → its README.md manifest says so; its names are then exact
+    const readme = ents.find(e => /^readme\.md$/i.test(e.name));
+    if (readme) { try { res.fromAS = AS_MANIFEST_RE.test(dec.decode(await dataOf(readme))); } catch (e) { asLog.debug(`Zip: README.md unreadable — ${e.message || e}`); } }
+    const cand = ents.filter(e => !e.name.endsWith('/') && !/(^|\/)__MACOSX\//.test(e.name) && !/(^|\/)\./.test(e.name))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));   // #244 "NN …" names → cover order
+    // zipping a folder wraps every entry in that folder's name ("Album/cover.jpg"); the zip
+    // then stands for that folder, so measure depth from inside it — exactly as a drop of
+    // the "Album" folder itself would (its "scans/" is one level deep, not two)
+    const tops = new Set(cand.map(e => e.name.includes('/') ? e.name.split('/')[0] : ''));
+    const wrap = (tops.size === 1 && !tops.has('')) ? 1 : 0;
+    if (wrap) asLog.debug(`Zip: everything is inside "${[...tops][0]}/" — depth counted from there`);
+    for (const e of cand) {
+      const base = e.name.split('/').pop(), depth = e.name.split('/').length - 1 - wrap;
+      if (e === readme) continue;
+      if (!DIR_ACCEPT_RE.test(base)) { res.skipped.push(`${e.name} (not JPEG/PNG/GIF/PDF)`); continue; }
+      if (depth > DIR_MAX_DEPTH) { res.truncated = true; asLog.debug(`Zip: ${e.name} is ${depth} folders deep — skipped`); continue; }
+      if (res.files.length >= DIR_MAX_FILES) { res.truncated = true; continue; }
+      let data; try { data = await dataOf(e); } catch (err) { res.skipped.push(`${e.name} (${err.message || err})`); continue; }
+      const ext = base.split('.').pop().toLowerCase();
+      res.files.push(new File([data], base, { type: MIME_BY_EXT[ext] }));
+      res.metas.push(res.fromAS ? Object.assign({ exactName: true }, parseDownloadName(base)) : undefined);
+    }
+    asLog.info(`Zip ${zip.name}: ${res.files.length} cover${res.files.length === 1 ? '' : 's'} unpacked in ${Date.now() - t0}ms${res.fromAS ? ' — Art Station archive, types + comments from file names' : ''}${res.skipped.length ? `, ${res.skipped.length} skipped` : ''}${res.truncated ? ', capped' : ''}`);
+    res.skipped.forEach(x => asLog.warn('Zip: skipped ' + x));
+    if (res.fromAS) res.files.forEach((f, i) => asLog.debug(`Zip: ${f.name} → types=[${res.metas[i].types.join(', ')}] comment="${res.metas[i].comment}"`));
+    return res;
+  }
+  // expand any .zip among the files into its covers (loose files pass through unchanged)
+  async function expandZips(files) {
+    const out = { files: [], metas: [], zips: 0 };
+    for (const f of files) {
+      if (!isZipFile(f)) { out.files.push(f); out.metas.push(undefined); continue; }
+      out.zips++;
+      try {
+        const z = await filesFromZip(f);
+        out.files.push(...z.files); out.metas.push(...z.metas);
+        const notes = [];
+        if (z.skipped.length) notes.push(`${z.skipped.length} file${z.skipped.length === 1 ? '' : 's'} skipped (see Log)`);
+        if (z.truncated) notes.push(`capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`);
+        toast(z.files.length
+          ? `Unpacked ${z.files.length} ${z.files.length === 1 ? ITEM : ITEMS} from ${f.name}${notes.length ? ' — ' + notes.join('; ') : ''}`
+          : `No JPEG / PNG / GIF / PDF images in ${f.name}${notes.length ? ' — ' + notes.join('; ') : ''}`, notes.length || !z.files.length ? 8000 : 4000);
+      } catch (e) { logErr(`Zip: ${f.name}`, e); toast(`Couldn't read ${f.name}: ${e.message || e}`, 8000); }
+    }
+    return out;
+  }
   // Unified drop ingest: local files if present, else fetch a dropped image URL. Returns true
   // when something was staged.
   async function addFromDrop(dt) {
-    const files = await filesFromDrop(dt);
-    if (files && files.length) { addFiles(files); if (_dropTruncated) toast(`Folder upload capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`, 6000); return true; }
+    const dropped = await filesFromDrop(dt);
+    if (dropped && dropped.length) {
+      const { files, metas, zips } = await expandZips(dropped);   // #604 a .zip → its covers
+      if (files.length) addFiles(files, metas);
+      if (_dropTruncated) toast(`Folder upload capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`, 6000);
+      return files.length > 0 || !zips;
+    }
     const url = urlFromDrop(dt); if (!url) return false;
     try { const f = await fileFromUrl(url); if (f) { addFiles([f], [{ provImageUrl: url, provUrl: url }]); return true; } }
     catch (e) { asLog.err('Drop fetch failed: ' + (e.message || e)); }
@@ -12128,8 +12237,9 @@ try {
   function pickFiles() {
     // Only the types MusicBrainz / the Cover Art Archive accept — `image/*` was too
     // broad (it offered webp, bmp, … which CAA rejects). JPEG · PNG · GIF · PDF.
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,application/pdf'; inp.multiple = true;
-    inp.onchange = () => addFiles(inp.files);
+    // #604 plus a .zip of them (e.g. an Art Station download), unpacked in the browser
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,application/pdf,.zip,application/zip'; inp.multiple = true;
+    inp.onchange = async () => { const { files, metas } = await expandZips([...inp.files]); if (files.length) addFiles(files, metas); };
     inp.click();
   }
   // #359: pick a FOLDER → upload its image/PDF files one level of subfolders deep, capped
