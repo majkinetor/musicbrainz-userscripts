@@ -465,7 +465,7 @@ When [detailed highlighting](#enable-detailed-highlighting) is on:
 
 The _Appearance → Enlarge punctuation by N px_ setting controls **only the enlargement size** — `0` means *no enlargement*, **not** off: the invisible glyphs and missing-space markers still show (they're part of detailed highlighting). To turn the marking off entirely, uncheck **Enable detailed highlighting** (#443).
 
-On the **Tracklist** tab the **Title** can't be styled while it's an editable `<input>`, so it's shown as styled read-only text that **drops into the native input the moment you click or tab into it**.
+On the **Tracklist** tab the **Title** can't be styled while it's an editable `<input>`, so it's shown as styled read-only text that **drops into the native input the moment you click or tab into it** — with the caret landing on the character you clicked, so positioning it takes one click and not two ([#601](https://github.com/majkinetor/musicbrainz-userscripts/issues/601)).
 
 #### Join-phrase spacing
 

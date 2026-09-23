@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.22.223629
+// @version      2026.9.23.040115
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.22.223629 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.15\n  · Art Station v2026.9.22\n  · Credit Hoarder v2026.9.15\n  · Fusion v2026.9.20\n  · Group Therapy v2026.9.22.222153\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
+  console.log('%c String Theory %c v2026.9.23.040115 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.23\n  · Art Station v2026.9.22\n  · Credit Hoarder v2026.9.15\n  · Fusion v2026.9.20\n  · Group Therapy v2026.9.22.222153\n  · ISRC Scout v2026.9.12\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.12");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.15","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.15","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.23","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.23","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -3888,7 +3888,17 @@ try {
         };
         tin.classList.add('tc-eml');
         tin.parentElement.insertBefore(disp, tin);   // sits in the input's flex slot while resting
-        disp.addEventListener('mousedown', e => { e.preventDefault(); tin.focus(); });
+        // #601: work out WHICH character was clicked before anything moves —
+        // focus() hides the span (display:none), after which there is nothing
+        // left to hit-test against.
+        disp.addEventListener('mousedown', e => {
+          if (e.button !== 0) return;
+          const at = dispCaretIndex(disp, tin, e.clientX, e.clientY);
+          e.preventDefault(); tin.focus();
+          // after focus(), so it wins over the focus listeners — `restore()`
+          // assigns tin.value, and assigning value resets the selection.
+          try { tin.setSelectionRange(at, at); } catch (err) {}
+        });
         tin.addEventListener('focus', () => { tin.classList.add('tc-editing'); disp.classList.add('tc-hidden'); });
         tin.addEventListener('blur', () => { tin.classList.remove('tc-editing'); paintDisp(tin.value); disp.classList.remove('tc-hidden'); });
         paintDisp(t.title);
@@ -6157,6 +6167,63 @@ try {
       out += '<span class="' + cls + '"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>';
     }
     return out;
+  }
+  /* #601 (majkinetor): "When clicking on a track, cursor should always be on the
+     place that is clicked. Current behavior is that it rarely does that and
+     mostly moves to start/end… requires one to need 2 clicks to position the
+     cursor instead 1."
+
+     The #203 rich display is a <span> occupying the input's slot; while resting
+     the real input is 1x1 with pointer-events:none, so a click can only ever
+     land on the span. The handler did `e.preventDefault(); tin.focus()` — and
+     preventDefault is exactly what stops the browser placing a caret, so focus()
+     dropped it wherever the input last had it (start, or end). The second click
+     then worked, because by then the input was the thing under the pointer.
+
+     preventDefault has to stay (without it the span keeps its own text
+     selection), so the caret is placed by hand at the character actually
+     clicked. This is the inverse of dhRun: the span's text is the input's text
+     unit for unit, because dhRun emits each source character either as escaped
+     text (identical characters) or as a one-character <span> stand-in, and every
+     entry in CONFUSABLE is a single UTF-16 unit with a single-char `vis`. So
+     walking text nodes gives the offset with no bookkeeping. */
+  function dispCaretIndex(disp, input, x, y) {
+    const val = input.value || '';
+    // empty title: the span shows its own "title…" placeholder, whose text is
+    // not the value — anywhere in it means offset 0.
+    if (!val) return 0;
+    let node = null, offset = 0;
+    if (document.caretPositionFromPoint) {            // Firefox
+      const p = document.caretPositionFromPoint(x, y);
+      if (p) { node = p.offsetNode; offset = p.offset; }
+    } else if (document.caretRangeFromPoint) {        // Chromium / WebKit
+      const r = document.caretRangeFromPoint(x, y);
+      if (r) { node = r.startContainer; offset = r.startOffset; }
+    }
+    // clicked past the end of the text (the span is flex:1, so there is usually
+    // empty space to its right) — that means the end, which is what a text field
+    // does for a click past its content.
+    if (!node || !disp.contains(node)) return val.length;
+    let idx = 0, done = false;
+    const walk = (n) => {
+      if (done) return;
+      if (n.nodeType === 3) {
+        if (n === node) { idx += Math.min(offset, n.nodeValue.length); done = true; return; }
+        idx += n.nodeValue.length;
+        return;
+      }
+      // a caret resolved to an ELEMENT: its offset counts child nodes, not chars
+      if (n === node) {
+        for (let i = 0; i < offset && i < n.childNodes.length; i++) walk(n.childNodes[i]);
+        done = true; return;
+      }
+      for (const c of n.childNodes) { walk(c); if (done) return; }
+    };
+    walk(disp);
+    // clamped because a guess-case PREVIEW can be on screen while the input is
+    // about to be restored to the real title (see `restore` on focus), and the
+    // two can differ in length.
+    return Math.max(0, Math.min(idx, val.length));
   }
   // #208 join-phrase spacing visibility (Recording view). A join phrase between
   // two artists should have a space on BOTH sides (" & ", " feat. ", …). Mark
