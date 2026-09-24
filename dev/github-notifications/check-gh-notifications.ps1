@@ -55,11 +55,40 @@ $cred     = Get-Content $credFile -Raw | ConvertFrom-Json
 $pat      = $cred.token
 $botLogin = if ($cred.login) { $cred.login } else { 'claude-ai-milic' }
 
-# Load previous-poll state. First run: poll all unread non-self threads.
-$state = if (Test-Path $stateFile) {
-    Get-Content $stateFile -Raw | ConvertFrom-Json
+# Load previous-poll state. A missing, empty or unparseable state file must NOT
+# mean "poll everything": GitHub then returns every unread thread ever, and on
+# 2026-09-23 23:50 an empty state file replayed 50 months-old assignment notices
+# into the session at once. Instead look back STATE_FALLBACK_HOURS and say so.
+# (Get-Content -Raw on a 0-byte file yields $null, and $null | ConvertFrom-Json
+# yields nothing without an error, which is how that state silently vanished.)
+$STATE_FALLBACK_HOURS = 1
+$state = $null
+if (Test-Path $stateFile) {
+    try {
+        $raw = Get-Content $stateFile -Raw -ErrorAction Stop
+        if ($raw -and $raw.Trim()) { $state = $raw | ConvertFrom-Json -ErrorAction Stop }
+        else { Log-Line "  WARN: state file is empty ($stateFile)" }
+    } catch {
+        Log-Line "  WARN: state file unreadable: $($_.Exception.Message)"
+    }
 } else {
-    [pscustomobject]@{ lastPolled = $null; seenComments = @() }
+    Log-Line "  WARN: no state file ($stateFile)"
+}
+if (-not $state) { $state = [pscustomobject]@{ lastPolled = $null; seenComments = @() } }
+if (-not $state.lastPolled) {
+    $fallback = (Get-Date).ToUniversalTime().AddHours(-$STATE_FALLBACK_HOURS).ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture)
+    Log-Line "  WARN: no lastPolled in state -- looking back $STATE_FALLBACK_HOURS h (since=$fallback) instead of fetching every unread thread"
+    $state | Add-Member -NotePropertyName lastPolled -NotePropertyValue $fallback -Force
+}
+if (-not $state.seenComments) { $state | Add-Member -NotePropertyName seenComments -NotePropertyValue @() -Force }
+
+# Write state atomically: to a temp file beside it, then swap it in, so a crash or
+# a concurrent reader never sees a truncated / half-written file.
+function Save-State {
+    param([string]$json)
+    $tmp = "$stateFile.tmp"
+    [System.IO.File]::WriteAllText($tmp, $json, [System.Text.UTF8Encoding]::new($false))
+    Move-Item -LiteralPath $tmp -Destination $stateFile -Force
 }
 
 $headers = @{
@@ -387,7 +416,7 @@ if ($actionable.Count -eq 0) {
         seenComments = @(@($state.seenComments) | Where-Object { $_ } | Select-Object -Last 200)
     }
     $json = $newState | ConvertTo-Json -Depth 4
-    [System.IO.File]::WriteAllText($stateFile, $json, [System.Text.UTF8Encoding]::new($false))
+    Save-State $json
     Log-Line '=== poll end OK ==='
     Write-Host "Polled GH: $($notifs.Count) unread thread(s), 0 actionable."
     exit 0
@@ -453,6 +482,6 @@ $newState = [pscustomobject]@{
     seenComments = @($allSeen)
 }
 $json = $newState | ConvertTo-Json -Depth 4
-[System.IO.File]::WriteAllText($stateFile, $json, [System.Text.UTF8Encoding]::new($false))
+Save-State $json
 Log-Line '=== poll end OK ==='
 Write-Host "Polled GH: $($notifs.Count) unread, $($actionable.Count) actionable -- delivered to channel."
