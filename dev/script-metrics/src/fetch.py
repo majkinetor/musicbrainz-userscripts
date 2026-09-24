@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
+import time
 import urllib.request
 from pathlib import Path
 
@@ -23,6 +25,17 @@ BASE = 'https://data.metabrainz.org/pub/musicbrainz/data/fullexport'
 
 EDIT_DUMP = 'mbdump-edit.tar.bz2'
 EDITOR_DUMP = 'mbdump-editor.tar.bz2'
+
+# A stalled transfer must not hang the run. curl's own --retry does not fire on
+# a connection that stays open but stops moving data (2026-09-23: 10% in, then
+# nothing until the task's 8 h limit killed it), so curl is told to give up when
+# the rate stays under STALL_MIN_BYTES/s for STALL_SECONDS, and the loop below
+# resumes the partial file (--continue-at -) after a growing pause.
+STALL_SECONDS = int(os.environ.get('METRICS_STALL_SECONDS', '120'))
+STALL_MIN_BYTES = int(os.environ.get('METRICS_STALL_MIN_BYTES', '1024'))
+DOWNLOAD_ATTEMPTS = int(os.environ.get('METRICS_DOWNLOAD_ATTEMPTS', '10'))
+RETRY_PAUSE_SECONDS = int(os.environ.get('METRICS_RETRY_PAUSE_SECONDS', '30'))
+RETRY_PAUSE_MAX = 300
 
 
 def _get(url: str) -> str:
@@ -61,6 +74,44 @@ def sha256_of(path: Path, label: str) -> str:
     return digest.hexdigest()
 
 
+def fetch_with_retries(url: str, target: Path, name: str) -> None:
+    """curl `url` into `target`, resuming across stalls and dropped connections.
+
+    Each attempt continues from whatever is already on disk, so a retry costs only
+    the part still missing. Gives up after DOWNLOAD_ATTEMPTS attempts.
+    """
+    for attempt in range(1, DOWNLOAD_ATTEMPTS + 1):
+        have = target.stat().st_size if target.exists() else 0
+        note = f' (resuming at {have / 2**20:,.0f} MiB)' if have else ''
+        print(f'  {name}: downloading from {url}{note} - attempt {attempt}/{DOWNLOAD_ATTEMPTS}', file=sys.stderr, flush=True)
+        # curl handles resume and a progress meter better than urllib does. No curl
+        # --retry: its retries restart from the offset THIS curl began at, so a stall
+        # at 60% of the 15 GB file would re-download all of that run's progress, up to
+        # five times. This loop resumes from what is actually on disk instead.
+        command = [
+            'curl', '--fail', '--location',
+            '--speed-limit', str(STALL_MIN_BYTES), '--speed-time', str(STALL_SECONDS),
+            '--continue-at', '-', '--output', str(target), url,
+        ]
+        started = time.monotonic()
+        code = subprocess.run(command).returncode
+        if code == 0:
+            if attempt > 1:
+                print(f'  {name}: completed on attempt {attempt}', file=sys.stderr, flush=True)
+            return
+        got = (target.stat().st_size if target.exists() else 0) - have
+        why = (f'stalled: under {STALL_MIN_BYTES} B/s for {STALL_SECONDS}s' if code == 28
+               else f'curl exit {code}')
+        print(f'  {name}: attempt {attempt} failed after {time.monotonic() - started:,.0f}s, '
+              f'+{got / 2**20:,.0f} MiB - {why}', file=sys.stderr, flush=True)
+        if attempt == DOWNLOAD_ATTEMPTS:
+            break
+        pause = min(RETRY_PAUSE_SECONDS * attempt, RETRY_PAUSE_MAX)
+        print(f'  {name}: retrying in {pause}s', file=sys.stderr, flush=True)
+        time.sleep(pause)
+    raise SystemExit(f'download of {name} failed after {DOWNLOAD_ATTEMPTS} attempts')
+
+
 def download(dump_id: str, name: str, dest_dir: Path, expected: str | None) -> Path:
     """Fetch `name` into `dest_dir`, resuming a partial file, then verify it.
 
@@ -77,15 +128,7 @@ def download(dump_id: str, name: str, dest_dir: Path, expected: str | None) -> P
             return target
 
     url = f'{BASE}/{dump_id}/{name}'
-    print(f'  {name}: downloading from {url}', file=sys.stderr)
-    # curl handles resume, retries and a progress meter better than urllib does.
-    command = [
-        'curl', '--fail', '--location', '--retry', '5', '--retry-delay', '5',
-        '--continue-at', '-', '--output', str(target), url,
-    ]
-    completed = subprocess.run(command)
-    if completed.returncode != 0:
-        raise SystemExit(f'download of {name} failed (curl exit {completed.returncode})')
+    fetch_with_retries(url, target, name)
 
     if expected:
         actual = sha256_of(target, name)

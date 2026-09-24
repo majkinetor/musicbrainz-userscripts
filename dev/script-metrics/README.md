@@ -140,6 +140,14 @@ twice and is why the image ships `lbzip2` — unlike `pbzip2` it parallelises
 decompression of *any* bzip2 stream, which on a multi-core machine is the
 difference between minutes and most of an hour.
 
+A stalled download no longer hangs the run. On 2026-09-23 the connection stayed
+open but stopped moving data 10% in, and the job sat there until the task's 8 h
+limit killed it. curl now gives up when it gets under 1 KB/s for 2 minutes, and
+`fetch.py` resumes the partial file after a growing pause (30 s, 60 s, ...,
+capped at 5 min), up to 10 attempts. The limits can be overridden with
+`METRICS_STALL_SECONDS`, `METRICS_STALL_MIN_BYTES`, `METRICS_DOWNLOAD_ATTEMPTS`
+and `METRICS_RETRY_PAUSE_SECONDS`.
+
 Re-running is safe and idempotent: every table is written with
 `INSERT OR REPLACE`, so a newer dump updates rows in place (an edit that was
 Open last week and Applied today simply changes status) while the `run` table
@@ -190,6 +198,7 @@ sql/schema.sql          the schema, and the two attribution views
 templates/dashboard.html
 tools/gen_mbmeta.py     regenerate mbmeta.py from MusicBrainz Constants.pm
 tools/selftest.py       full pipeline against a synthetic dump
+tools/test_fetch_stall.py  download stall -> resume, against a local server
 ```
 
 ### Self-test
