@@ -384,7 +384,7 @@ console.log('mergeAll result:', JSON.stringify(mergeAllResult));
 ck(mergeAllResult.length === 2, 'clicking Merge All left exactly the 2 groups that were built (' + mergeAllResult.length + ')');
 ck(mergeAllResult.every(g => g.state === 'done'), 'clicking Merge All drove EVERY ready group to state=done, not just the first (' + JSON.stringify(mergeAllResult.map(g => g.state)) + ')');
 const workerLine = await page.evaluate(() => window.__fusion.getLogLines().find(l => /Merge All: \d+ group\(s\) queued/.test(l)) || '');
-ck(/up to [1-9]\d* in parallel/.test(workerLine), 'Merge All reports a real worker count, not NaN — the exact "registered but immediately finished" bug (' + workerLine + ')');
+ck(/up to [1-9]\d* prepared in parallel/.test(workerLine), 'Merge All reports a real worker count, not NaN — the exact "registered but immediately finished" bug (' + workerLine + ')');
 
 // verify against WS2: both survivors still resolve. MB's WS2 throttles under
 // load (transient 503s, same as Fusion's own wsGet() handles with retries),

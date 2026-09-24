@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.20
+// @version      2026.9.24
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1253,6 +1253,18 @@ async function enrichIsrcs(recs, concurrency, onProgress) {
 // it." Modelled on jesus2099's MASS MERGE RECORDINGS note: itemised evidence
 // carrying the ACTUAL values, and distinguishing an exact match from a close
 // one, so a reviewer can judge the merge without opening anything.
+// #608 (chaban-mb): MB keeps the merge queue in ONE per-user session slot
+// ($c->session->{merger}) and wipes it when any merge submits. Two merges in
+// flight at once clobber each other: the loser's POST finds no queue and MB
+// redirects it to "/" without creating an edit. So the merge_queue GET + merge
+// POST pair runs strictly one at a time, whoever starts it (Merge All workers
+// or separate per-group clicks). The lookups before it still run in parallel.
+let _mergeLock = Promise.resolve();
+function withMergeLock(fn) {
+    const run = _mergeLock.then(fn, fn);
+    _mergeLock = run.catch(() => {});
+    return run;
+}
 const uniq = arr => [...new Set(arr)];
 function fmtList(vals, max) {
     max = max || 4;
@@ -1396,23 +1408,33 @@ async function mergeGroup(group) {
         const targetId = ids[targetIdx === -1 ? 0 : targetIdx];
         Log.info('  merging [' + ids.join(', ') + '] → keeping target ' + targetId);
         const addQs = ids.map(id => 'add-to-merge=' + id).join('&');
-        const gr = await gmGet(location.origin + '/recording/merge_queue?' + addQs, { Accept: 'text/html' });
-        if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
-        const mergeUrl = gr.finalUrl || (location.origin + '/recording/merge');
-        Log.info('  merge_queue redirected to ' + mergeUrl);
-        const body = new URLSearchParams();
-        ids.forEach((id, i) => body.append('merge.merging.' + i, String(id)));
-        body.append('merge.target', String(targetId));
-        const note = buildEditNote(group);
-        body.append('merge.edit_note', note);
-        if (SETTINGS.makeVotable) body.append('merge.make_votable', '1');
-        Log.info('  edit note: ' + note.replace(/\n/g, ' ¶ '));
-        const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
-        if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
-        const finalUrl = pr.finalUrl || '';
-        const reRendered = /\/recording\/merge(\?|$)/.test(finalUrl) || /name="merge\.target"/.test(pr.responseText || '');
-        Log.info('  POST landed at ' + finalUrl + (reRendered ? ' (still the merge form — treating as failure)' : ' (redirected away — success)'));
-        if (reRendered) throw new Error('merge form returned an error (nothing submitted) — check you are logged in with merge privileges');
+        const finalUrl = await withMergeLock(async () => {
+            Log.info('  merge session free — submitting group ' + group.id);
+            const gr = await gmGet(location.origin + '/recording/merge_queue?' + addQs, { Accept: 'text/html' });
+            if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
+            const mergeUrl = gr.finalUrl || (location.origin + '/recording/merge');
+            Log.info('  merge_queue redirected to ' + mergeUrl);
+            const body = new URLSearchParams();
+            ids.forEach((id, i) => body.append('merge.merging.' + i, String(id)));
+            body.append('merge.target', String(targetId));
+            const note = buildEditNote(group);
+            body.append('merge.edit_note', note);
+            if (SETTINGS.makeVotable) body.append('merge.make_votable', '1');
+            Log.info('  edit note: ' + note.replace(/\n/g, ' ¶ '));
+            const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
+            if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
+            const landed = pr.finalUrl || '';
+            const reRendered = /\/recording\/merge(\?|$)/.test(landed) || /name="merge\.target"/.test(pr.responseText || '');
+            // #608: a real merge redirects to the kept recording's page. Landing
+            // anywhere else (MB sends a POST whose session queue was gone to "/")
+            // means nothing was submitted — it used to count as success.
+            const landedGid = (landed.match(/\/recording\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) || [])[1] || null;
+            Log.info('  POST landed at ' + landed + (reRendered ? ' (still the merge form — treating as failure)' : landedGid ? ' (recording page — success)' : ' (NOT a recording page — nothing was merged)'));
+            if (reRendered) throw new Error('merge form returned an error (nothing submitted) — check you are logged in with merge privileges');
+            if (!landedGid) throw new Error('MB did not create the merge (landed on ' + (landed || 'an unknown page') + ', not the kept recording) — its merge queue was empty or taken; try again');
+            if (landedGid !== group.target) Log.warn('  landed on recording ' + landedGid + ', expected the target ' + group.target + ' — check the merge in MB');
+            return landed;
+        });
         group.state = 'done';
         group.mergedUrl = finalUrl || null;
         Log.ok('✓ Merged group ' + group.id + ' → ' + finalUrl);
@@ -1424,9 +1446,9 @@ async function mergeGroup(group) {
     renderGroups(); renderFooter();
 }
 // #529 follow-up (majkinetor): "Merge all should be parallel if possible" —
-// each merge is its own GET+POST pair, independent of every other group's, so
-// a small worker pool runs several at once instead of one strictly after
-// another. Capped (not unbounded) to stay reasonable towards MB's server.
+// a small worker pool prepares several groups at once (pending-edit check,
+// internal ids). The submission itself is NOT independent per group: MB's merge
+// queue is one per session, so withMergeLock serialises the GET+POST (#608).
 // #529 (majkinetor): "Merge all should have summary at the end, basically show
 // text that is collapsed". A run's outcome otherwise only existed in the log,
 // which meant opening a separate window to find out whether anything failed.
@@ -1476,7 +1498,7 @@ async function mergeAll(concurrency) {
     const workers = Math.max(1, Math.min(concurrency, pending.length));
     busyStart('merging ' + pending.length + ' group(s)…');
     try {
-    Log.info('══ Merge All: ' + pending.length + ' group(s) queued, up to ' + workers + ' in parallel ══');
+    Log.info('══ Merge All: ' + pending.length + ' group(s) queued, up to ' + workers + ' prepared in parallel, submitted one at a time (#608) ══');
     if (!pending.length) { Log.warn('Merge All: nothing to do — no group is in pending/error state (already merged, or none formed yet)'); return; }
     let doneCount = 0, failCount = 0;
     let i = 0;
