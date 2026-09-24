@@ -18,6 +18,7 @@ import {
     buildAttributes,
 }                                       from './editor-state.js';
 import { buildEditNote, combineEditNote } from './edit-note.js';
+import { expandSplitRoles }              from './split-credit.js';
 import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
 import { _showBar, _setProgressPct }     from './progress-bar.js';
@@ -78,6 +79,17 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     resolvedEntityTypes = resolvedEntityTypes || new Map();
     confirmedMap = confirmedMap || new Map();
     dedupOpts = dedupOpts || {};
+    // #605: a credit split in review ("George & Ira Gershwin" → two rows) fans
+    // out here — every role of the original entity becomes one role per part.
+    if (confirmedMap.splits?.size) {
+        const keyOfEntity = e => e.resource_url || e._syntheticKey || `_nourl_${e.name}`;
+        const before = (artistRoles?.length || 0) + (tracklistRels?.length || 0);
+        artistRoles   = expandSplitRoles(artistRoles, confirmedMap.splits, keyOfEntity);
+        tracklistRels = expandSplitRoles(tracklistRels, confirmedMap.splits, keyOfEntity);
+        const after = (artistRoles?.length || 0) + (tracklistRels?.length || 0);
+        confirmedMap.splits.forEach((parts, k) => log.info(`#605 split ${k} → ${parts.map(p => `${p.name} [${confirmedMap.get(p.key) || 'unresolved'}]`).join(' · ')}`));
+        log.info(`#605 split: ${before} role(s) → ${after} after fan-out`);
+    }
     const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false; // default ON
     const dedupeDuplicateRoles  = dedupOpts.dedupeDuplicateRoles  !== false; // default ON
     const creditOverrides       = dedupOpts.creditOverrides || new Map();

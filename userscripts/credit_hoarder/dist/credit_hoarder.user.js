@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.15
+// @version      2026.9.24.152154
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3728,6 +3728,37 @@ ${stacked}`;
 ${ourBlock}` : ourBlock;
   }
 
+  // src/split-credit.js
+  var SEP_RE2 = /\s*(\bfeat\.?|\bft\.?|\bfeaturing|&|\band\b|\bvs\.?|\bwith\b|×|・|,|;)\s*/gi;
+  var stripDiscogsNum = (s) => String(s || "").replace(/\s+\(\d+\)$/, "");
+  function splitCreditName(name) {
+    const parts = stripDiscogsNum(name).split(SEP_RE2).filter((_, i) => i % 2 === 0).map((p) => p.trim()).filter(Boolean);
+    if (parts.length < 2) return [];
+    const words = (p) => p.split(/\s+/);
+    const last = words(parts[parts.length - 1]);
+    if (last.length > 1 && parts.slice(0, -1).every((p) => words(p).length === 1)) {
+      const surname = last[last.length - 1];
+      return parts.map((p, i) => i === parts.length - 1 ? p : `${p} ${surname}`);
+    }
+    return parts;
+  }
+  var splitKey = (origKey, i) => `${origKey}#split${i}`;
+  function expandSplitRoles(roles, splits, keyOfEntity) {
+    if (!splits || !splits.size || !roles) return roles;
+    const out = [];
+    for (const role of roles) {
+      const parts = role?.artist ? splits.get(keyOfEntity(role.artist)) : null;
+      if (!parts) {
+        out.push(role);
+        continue;
+      }
+      for (const p of parts) {
+        out.push({ ...role, creditedAs: "", artist: { name: p.name, anv: "", _syntheticKey: p.key, _splitOf: keyOfEntity(role.artist) } });
+      }
+    }
+    return out;
+  }
+
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
   function ensureCreatingStyle() {
@@ -3785,6 +3816,7 @@ ${ourBlock}` : ourBlock;
       const linkState = /* @__PURE__ */ new Map();
       const rowLinkChips = /* @__PURE__ */ new Map();
       let linksNote = null;
+      const splits = /* @__PURE__ */ new Map();
       function updateLinksBadge() {
         if (!linksNote) return;
         const n = [...linkState.values()].filter((v) => v === "none").length;
@@ -4001,7 +4033,65 @@ ${ourBlock}` : ourBlock;
       thead.appendChild(hr);
       table.appendChild(thead);
       const tbody = document.createElement("tbody");
-      allResults.forEach((r) => {
+      async function splitRow(r, tr, parts, btn) {
+        const origKey = keyOf(r);
+        if (allResults.indexOf(r) < 0) return;
+        btn.disabled = true;
+        btn.textContent = "\u2026";
+        log.info(`#605 split "${r.displayName}" \u2192 ${parts.join(" \xB7 ")}`);
+        const norm2 = (s) => String(s || "").toLowerCase().trim();
+        const subs = [];
+        for (let i = 0; i < parts.length; i++) {
+          const name = parts[i];
+          const entity = { name, anv: "", _syntheticKey: splitKey(origKey, i), _splitOf: origKey, _splitFrom: r.displayName };
+          let pool = (r.nameMatches || []).filter((a) => norm2(a.name) === norm2(name));
+          let via = "candidates";
+          if (!pool.length) {
+            via = "search";
+            try {
+              const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(name)}&fmt=json&limit=8`);
+              const all = json?.artists || [];
+              const exact2 = all.filter((a) => norm2(a.name) === norm2(name));
+              pool = exact2.length ? exact2 : all;
+            } catch (e) {
+              log.warn(`#605 split: search for "${name}" failed \u2014 ${e.message}`);
+              pool = [];
+            }
+          }
+          const exact = pool.filter((a) => norm2(a.name) === norm2(name));
+          log.info(`#605 split part "${name}": ${pool.length} candidate(s) via ${via}, ${exact.length} exact`);
+          const base = { entityType: "artist", entity, displayName: name, discogsHref: "", _roles: r._roles };
+          if (exact.length === 1) {
+            const a = exact[0], mbUrl = `//musicbrainz.org/artist/${a.id}`;
+            subs.push({
+              ...base,
+              type: "resolved",
+              mbUrl,
+              mbName: a.name,
+              mbDisambig: a.disambiguation || "",
+              logEntry: { displayName: name, discogsHref: "", mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", via: "name", fromCache: false }
+            });
+          } else {
+            subs.push({ ...base, type: "attention", nameMatches: pool });
+          }
+        }
+        const idx = allResults.indexOf(r);
+        if (idx < 0 || !tr.isConnected) return;
+        if (r._credInput?._activeMbUrl) creditOverrides.delete(r._credInput._activeMbUrl);
+        rowState.delete(origKey);
+        rowSearchInputs.delete(origKey);
+        linkState.delete(origKey);
+        if (entitySources?.has(origKey)) subs.forEach((s) => entitySources.set(keyOf(s), entitySources.get(origKey)));
+        allResults.splice(idx, 1, ...subs);
+        subs.forEach((s) => buildRow(s, tr));
+        tr.remove();
+        splits.set(origKey, subs.map((s) => ({ key: keyOf(s), name: s.displayName })));
+        headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
+        updateLinksBadge();
+        updateImportBtn();
+      }
+      allResults.forEach((r) => buildRow(r));
+      function buildRow(r, beforeEl) {
         const entityType = r.entityType || "artist";
         const displayName = r.displayName || r.entity?.name || "";
         const discogsHref = r.discogsHref || "";
@@ -4074,8 +4164,27 @@ ${ourBlock}` : ourBlock;
         const _srcTitles = [...new Set((r._roles || []).map((x) => x.trackTitle).filter(Boolean))];
         if (_srcTitles.length) dlA.title = _srcTitles.join("\n");
         nameWrap.appendChild(dlA);
+        const splitParts = entityType === "artist" && !r.entity?._splitOf ? splitCreditName(displayName || r.entity?.name) : [];
+        if (splitParts.length) {
+          const sp = document.createElement("button");
+          sp.type = "button";
+          sp.className = "discogs-split-btn";
+          sp.textContent = "\u22D4";
+          sp.title = `Split into separate artists: ${splitParts.join(" \xB7 ")}
+Each gets this row's roles.`;
+          sp.style.cssText = "margin-left:0.35rem;padding:0 0.35rem;min-width:1.4rem;cursor:pointer;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg-raised);color:var(--mbu-accent-text);font-size:16px;font-weight:bold;line-height:1.2;vertical-align:middle;";
+          sp.addEventListener("click", () => splitRow(r, tr, splitParts, sp));
+          nameWrap.appendChild(sp);
+        }
+        if (r.entity?._splitOf) {
+          const sb = document.createElement("span");
+          sb.textContent = "split";
+          sb.title = `Split from "${r.entity._splitFrom}" \u2014 gets that credit's roles`;
+          sb.style.cssText = "display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;line-height:1.4;cursor:help;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);border:1px solid var(--mbu-border);";
+          nameWrap.appendChild(sb);
+        }
         const BADGE_BASE = "display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;letter-spacing:0.01em;cursor:help;text-transform:lowercase;line-height:1.4;";
-        if (!hasDiscogsUrl && !placeholderUrl && srcName !== "Titles") {
+        if (!hasDiscogsUrl && !placeholderUrl && srcName !== "Titles" && !r.entity?._splitOf) {
           const noUrl = document.createElement("span");
           noUrl.textContent = "no profile";
           noUrl.title = `No ${srcName} artist page \u2014 name lookup unavailable, search MB manually`;
@@ -4243,7 +4352,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         tdMb.appendChild(searchRow);
         tr.appendChild(tdMb);
         const tdAction = actionsLine;
-        tbody.appendChild(tr);
+        tbody.insertBefore(tr, beforeEl || null);
         function buildMbRolesEl(explicitMbid) {
           if (entityType !== "artist") return null;
           const wrap = document.createElement("span");
@@ -4589,7 +4698,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               linkState.set(_entityKey, "na");
               rowLinkChips.delete(_entityKey);
               updateLinksBadge();
-              if (srcName === "Titles" || placeholderUrl) {
+              if (srcName === "Titles" || placeholderUrl || r.entity?._splitOf) {
                 linkSlot.remove();
               } else {
                 linkSlot.textContent = `\u26A0 No ${srcName} page`;
@@ -4977,7 +5086,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           if (needsAttention) candidateList.appendChild(none);
           renderActions(null);
         }
-      });
+      }
       table.appendChild(tbody);
       panel.appendChild(table);
       const btnRow = document.createElement("div");
@@ -5137,6 +5246,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         confirmedMap.unresolvedCount = unresolvedCount;
         confirmedMap.totalEntities = allResults.length;
         confirmedMap.creditOverrides = creditOverrides;
+        confirmedMap.splits = splits;
         (panelLi || panel).remove();
         if (headerSlot) headerSlot.replaceChildren();
         resolve(confirmedMap);
@@ -5326,7 +5436,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   ];
 
   // src/dispatch.js
-  var stripDiscogsNum = (s) => String(s || "").replace(/\s+\(\d+\)$/, "");
+  var stripDiscogsNum2 = (s) => String(s || "").replace(/\s+\(\d+\)$/, "");
   function makeIdentifyingClassifier(lat) {
     const identifyingRoots = /* @__PURE__ */ new Set();
     if (lat) {
@@ -5353,6 +5463,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
     dedupOpts = dedupOpts || {};
+    if (confirmedMap.splits?.size) {
+      const keyOfEntity = (e) => e.resource_url || e._syntheticKey || `_nourl_${e.name}`;
+      const before = (artistRoles?.length || 0) + (tracklistRels?.length || 0);
+      artistRoles = expandSplitRoles(artistRoles, confirmedMap.splits, keyOfEntity);
+      tracklistRels = expandSplitRoles(tracklistRels, confirmedMap.splits, keyOfEntity);
+      const after = (artistRoles?.length || 0) + (tracklistRels?.length || 0);
+      confirmedMap.splits.forEach((parts, k) => log.info(`#605 split ${k} \u2192 ${parts.map((p) => `${p.name} [${confirmedMap.get(p.key) || "unresolved"}]`).join(" \xB7 ")}`));
+      log.info(`#605 split: ${before} role(s) \u2192 ${after} after fan-out`);
+    }
     const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false;
     const dedupeDuplicateRoles = dedupOpts.dedupeDuplicateRoles !== false;
     const creditOverrides = dedupOpts.creditOverrides || /* @__PURE__ */ new Map();
@@ -5736,7 +5855,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           tickProgress();
           continue;
         }
-        const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
+        const credit = role.creditedAs || stripDiscogsNum2(role.artist.anv?.trim() || role.artist.name);
         await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
         tickProgress();
       }
@@ -5752,7 +5871,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
               continue;
             }
-            const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
+            const credit = role.creditedAs || stripDiscogsNum2(role.artist.anv?.trim() || role.artist.name);
             for (const recEntity of recordingByGid.values()) {
               if (!applyToRec(recEntity.gid)) continue;
               await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
@@ -5902,7 +6021,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             log.skip(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
             continue;
           }
-          const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
+          const credit = role.creditedAs || stripDiscogsNum2(role.artist.anv?.trim() || role.artist.name);
           const srcType = role.entityType || "artist";
           const urlType = (mbUrl.match(/musicbrainz\.org\/(artist|label|place)\//i) || [])[1];
           if (urlType && urlType !== srcType) {
@@ -5943,7 +6062,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           continue;
         }
         if (!applyToRec(recEntity.gid)) continue;
-        const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
+        const credit = role.creditedAs || stripDiscogsNum2(role.artist.anv?.trim() || role.artist.name);
         const attrKey = (role.attributes || []).map((a) => typeof a === "string" ? a : a.value || a._type || "").join(",");
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
         if (seenTrackRels.has(trackRelKey)) continue;
@@ -8445,6 +8564,13 @@ ${lines}
         if (!mb) return;
         members.forEach((k) => {
           if (!confirmedMap.has(k)) confirmedMap.set(k, mb);
+        });
+      });
+      if (_reviewMergeMap && confirmedMap.splits?.size) _reviewMergeMap.forEach((members, repKey) => {
+        const parts = confirmedMap.splits.get(repKey);
+        if (!parts) return;
+        members.forEach((k) => {
+          if (!confirmedMap.splits.has(k)) confirmedMap.splits.set(k, parts);
         });
       });
       capturedConfirmedMap = confirmedMap;
