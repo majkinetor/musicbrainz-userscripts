@@ -15,6 +15,8 @@ import { getLogContainer, getReviewContainer } from './log.js';
 import { noPasswordManagers }               from './util.js';
 import { _hideBar }                        from './progress-bar.js';
 import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
+import { log }                             from './log.js';
+import { splitCreditName, splitKey }       from './split-credit.js';
 
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
 const _urlCheckSessionCache = new Map();
@@ -120,6 +122,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const linkState = new Map();
         const rowLinkChips = new Map();   // _entityKey → the 🔗 add-link button, for jump-to
         let linksNote = null;
+        // #605: rows the user split with ⋔ — origKey → [{ key, name }] of the
+        // part rows that replaced it. Handed to dispatch on confirmedMap.splits,
+        // which fans the original entity's roles out to each part.
+        const splits = new Map();
         function updateLinksBadge() {
             if (!linksNote) return;
             const n = [...linkState.values()].filter(v => v === 'none').length;
@@ -429,7 +435,62 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         table.appendChild(thead);
         const tbody = document.createElement('tbody');
 
-        allResults.forEach(r => {
+        // #605 ⋔: replace a combined-credit row ("George & Ira Gershwin") with one
+        // row per artist. Each part is matched from the candidates the original row
+        // already had, else by the same MB name search the row's search box uses;
+        // a single exact-name match auto-confirms (as preflight does), anything else
+        // is left to pick. The part rows carry no source URL on purpose: the duo's
+        // Discogs page must not be offered as a link for either individual artist.
+        async function splitRow(r, tr, parts, btn) {
+            const origKey = keyOf(r);
+            if (allResults.indexOf(r) < 0) return;
+            btn.disabled = true; btn.textContent = '…';
+            log.info(`#605 split "${r.displayName}" → ${parts.join(' · ')}`);
+            const norm = s => String(s || '').toLowerCase().trim();
+            const subs = [];
+            for (let i = 0; i < parts.length; i++) {
+                const name = parts[i];
+                const entity = { name, anv: '', _syntheticKey: splitKey(origKey, i), _splitOf: origKey, _splitFrom: r.displayName };
+                let pool = (r.nameMatches || []).filter(a => norm(a.name) === norm(name));
+                let via = 'candidates';
+                if (!pool.length) {
+                    via = 'search';
+                    try {
+                        const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(name)}&fmt=json&limit=8`);
+                        const all = json?.artists || [];
+                        const exact = all.filter(a => norm(a.name) === norm(name));
+                        pool = exact.length ? exact : all;
+                    } catch (e) { log.warn(`#605 split: search for "${name}" failed — ${e.message}`); pool = []; }
+                }
+                const exact = pool.filter(a => norm(a.name) === norm(name));
+                log.info(`#605 split part "${name}": ${pool.length} candidate(s) via ${via}, ${exact.length} exact`);
+                const base = { entityType: 'artist', entity, displayName: name, discogsHref: '', _roles: r._roles };
+                if (exact.length === 1) {
+                    const a = exact[0], mbUrl = `//musicbrainz.org/artist/${a.id}`;
+                    subs.push({ ...base, type: 'resolved', mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '',
+                        logEntry: { displayName: name, discogsHref: '', mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', via: 'name', fromCache: false } });
+                } else {
+                    subs.push({ ...base, type: 'attention', nameMatches: pool });
+                }
+            }
+            // A row removed mid-search (refresh / cancel) — nothing to replace.
+            const idx = allResults.indexOf(r);
+            if (idx < 0 || !tr.isConnected) return;
+            if (r._credInput?._activeMbUrl) creditOverrides.delete(r._credInput._activeMbUrl);
+            rowState.delete(origKey); rowSearchInputs.delete(origKey); linkState.delete(origKey);
+            if (entitySources?.has(origKey)) subs.forEach(s => entitySources.set(keyOf(s), entitySources.get(origKey)));
+            allResults.splice(idx, 1, ...subs);
+            subs.forEach(s => buildRow(s, tr));
+            tr.remove();
+            splits.set(origKey, subs.map(s => ({ key: keyOf(s), name: s.displayName })));
+            headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
+            updateLinksBadge();
+            updateImportBtn();
+        }
+
+        allResults.forEach(r => buildRow(r));
+
+        function buildRow(r, beforeEl) {
             // Unified fields set by `resolveEntity` (artists + companies share the
             // same shape, dispatched by `resolveAll` in preflight.js).
             const entityType  = r.entityType || 'artist';
@@ -545,6 +606,26 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const _srcTitles = [...new Set((r._roles || []).map(x => x.trackTitle).filter(Boolean))];
             if (_srcTitles.length) dlA.title = _srcTitles.join('\n');
             nameWrap.appendChild(dlA);
+            // #605 ⋔ — same glyph as Apollo's split. Only on artist rows whose name
+            // holds a separator (& / and / feat. / , …), never on a part row.
+            const splitParts = (entityType === 'artist' && !r.entity?._splitOf) ? splitCreditName(displayName || r.entity?.name) : [];
+            if (splitParts.length) {
+                const sp = document.createElement('button');
+                sp.type = 'button';
+                sp.className = 'discogs-split-btn';
+                sp.textContent = '⋔';
+                sp.title = `Split into separate artists: ${splitParts.join(' · ')}\nEach gets this row's roles.`;
+                sp.style.cssText = 'margin-left:0.35rem;padding:0 0.35rem;min-width:1.4rem;cursor:pointer;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg-raised);color:var(--mbu-accent-text);font-size:16px;font-weight:bold;line-height:1.2;vertical-align:middle;';
+                sp.addEventListener('click', () => splitRow(r, tr, splitParts, sp));
+                nameWrap.appendChild(sp);
+            }
+            if (r.entity?._splitOf) {
+                const sb = document.createElement('span');
+                sb.textContent = 'split';
+                sb.title = `Split from "${r.entity._splitFrom}" — gets that credit's roles`;
+                sb.style.cssText = 'display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;line-height:1.4;cursor:help;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);border:1px solid var(--mbu-border);';
+                nameWrap.appendChild(sb);
+            }
             // Distinct warning badges per #81. Both warnings used to be
             // the same icon, distinguishable only via tooltip. Now each
             // condition gets a short text label with a distinct color.
@@ -556,7 +637,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // no external entity page to miss, so the "no profile" badge is pure
             // noise on every row; skip it. For real URL sources, a URL-less row
             // genuinely lacks a profile, so keep the badge (source-worded).
-            if (!hasDiscogsUrl && !placeholderUrl && srcName !== 'Titles') {
+            if (!hasDiscogsUrl && !placeholderUrl && srcName !== 'Titles' && !r.entity?._splitOf) {
                 const noUrl = document.createElement('span');
                 noUrl.textContent = 'no profile';
                 noUrl.title = `No ${srcName} artist page — name lookup unavailable, search MB manually`;
@@ -797,7 +878,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // We keep a `tdAction` alias pointing at `actionsLine` so the
             // existing `renderActions` body stays compact below.
             const tdAction = actionsLine;
-            tbody.appendChild(tr);
+            tbody.insertBefore(tr, beforeEl || null);   // #605: split rows go where the original was
 
             // ── Helpers ────────────────────────────────────────────────────────
 
@@ -1211,7 +1292,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         // The Titles source / a placeholder show nothing (the chip would be
                         // noise); other real sources keep the informational "no page" chip.
                         linkState.set(_entityKey, 'na'); rowLinkChips.delete(_entityKey); updateLinksBadge();   // no link to add
-                        if (srcName === 'Titles' || placeholderUrl) {
+                        // #605: a split part has no page by design (the duo's page isn't its) — no chip either.
+                        if (srcName === 'Titles' || placeholderUrl || r.entity?._splitOf) {
                             linkSlot.remove();
                         } else {
                             linkSlot.textContent = `⚠ No ${srcName} page`;
@@ -1703,7 +1785,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (needsAttention) candidateList.appendChild(none);
                 renderActions(null);
             }
-        });
+        }
 
         table.appendChild(tbody);
         panel.appendChild(table);
@@ -1902,6 +1984,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // dispatcher picks these up via the `dedupOpts` arg and
             // overrides each rel's `entity1_credit` when present.
             confirmedMap.creditOverrides = creditOverrides;
+            confirmedMap.splits = splits;   // #605
             (panelLi || panel).remove();
             if (headerSlot) headerSlot.replaceChildren();   // #139: clear the header action slot once dispatch starts
             resolve(confirmedMap);

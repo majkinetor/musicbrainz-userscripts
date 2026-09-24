@@ -2485,6 +2485,11 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                         const mb = confirmedMap.get(repKey); if (!mb) return;
                         members.forEach(k => { if (!confirmedMap.has(k)) confirmedMap.set(k, mb); });
                     });
+                    // #605: a split representative splits its merged-away members too.
+                    if (_reviewMergeMap && confirmedMap.splits?.size) _reviewMergeMap.forEach((members, repKey) => {
+                        const parts = confirmedMap.splits.get(repKey); if (!parts) return;
+                        members.forEach(k => { if (!confirmedMap.splits.has(k)) confirmedMap.splits.set(k, parts); });
+                    });
                     capturedConfirmedMap = confirmedMap;
                     // #139: dispatch is starting — a real import phase again, so
                     // restore the "Importing…" button + percentage.
