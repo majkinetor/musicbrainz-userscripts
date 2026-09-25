@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.23
+// @version      2026.9.25
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -8244,8 +8244,9 @@
     /* editable type dropdowns — appearance:none so the text starts flush at the cell edge; a custom caret keeps the affordance.
        padding-right reserves room for the 10px caret with a small gap; keep it tight (not 15px) so the type label has a few
        px of slack and never clips its last glyph under sub-pixel rounding at 100% browser zoom on a scaled display (#143). */
-    body.tc-ri-on #external-links-editor select{-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:12px;color:var(--mbu-accent-deep-text);background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;border:none;border-radius:0;box-shadow:none;padding:0 12px 0 0;height:auto;margin:0;flex:1;min-width:0;width:100%;cursor:pointer}
-    body.tc-ri-on #external-links-editor select:hover{color:var(--mbu-accent-deep-text)}
+    body.tc-ri-on #external-links-editor select{-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:12px;color:var(--mbu-accent-deep-text);background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 5px center;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);box-shadow:none;padding:1px 18px 1px 5px;height:auto;margin:0;flex:1;min-width:0;width:100%;cursor:pointer}   /* #609: bordered, so an empty (no type yet) combo reads as a field to click, not a stray chevron */
+    body.tc-ri-on #external-links-editor select:hover{color:var(--mbu-accent-deep-text);border-color:var(--mbu-accent)}
+    body.tc-ri-on #external-links-editor select:focus-visible{border-color:var(--mbu-accent);outline:none}
     /* video attribute → a compact checkbox (no "video" caption) */
     body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container{grid-column:2;justify-self:start;display:inline-flex;align-items:center;margin:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container label{font-size:0;display:inline-flex;align-items:center;cursor:pointer}
