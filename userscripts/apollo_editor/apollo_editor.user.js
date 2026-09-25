@@ -5563,7 +5563,10 @@
        That is what flipped the status line, and it was re-entering the whole
        load path dozens of times a run for nothing: a match is OUR write, and
        the model is already up to date when it lands. Wait for the pass. */
-    if (_matching || _autoMatching) {
+    // #616: a recording auto-match that is still only WAITING for media to load has
+    // written nothing — holding the resync for it is what kept a just-expanded
+    // medium's tracks out of the table for the rest of that wait.
+    if (_matching || (_autoMatching && !_autoMatchWaiting)) {
       if (!_syncDeferred) Log.debug('tracklist resync deferred until the match pass finishes (#575)');
       _syncDeferred = true;
       clearTimeout(_syncTimer); _syncTimer = setTimeout(runSync, 500);
@@ -7195,6 +7198,7 @@
   // Auto-match: for each UNSET track, load MB's suggestions and link the BEST-confidence one (not just
   // MB's first) when it clears the "ignore below" threshold. Already-linked tracks are left untouched. #119
   let _autoMatching = false;
+  let _autoMatchWaiting = false;   // #616: the recording auto-match is only waiting for media to load (no writes yet)
   /* #582 — the pass's verdict, kept so a shell rebuild can put it back. The
      recordings toolbar is regenerated from static markup every time the tab is
      entered, and the auto-match usually finishes BEFORE that (it fires from the
@@ -7255,13 +7259,23 @@
          a medium that is never going to load can't stall the pass. */
       setStatus('reading tracklist…');
       const allLoaded = () => { try { return mediums().every(mediumLoadedRec); } catch (e) { return true; } };
+      /* #616 (majkinetor: "Tracks not visible 10s after expanding medium"): the wait
+         below used to run until EVERY medium reported loaded. A collapsed medium
+         nobody opened is loaded:false and never loads on its own (MB loads it on
+         expand), so on a release with many collapsed media — 14 on his — the pass
+         always sat out the whole 15s budget. Wait only while MB is actually
+         LOADING a medium (the #582 case: media still arriving at page open). */
+      const anyLoading = () => { try { return mediums().some(m => !mediumLoadedRec(m) && !!u(m.loading)); } catch (e) { return false; } };
       let rows = readRecordings();
-      for (let t = 0; t < 60 && (!rows.length || !allLoaded()); t++) {
-        if (_matchStop) { stopped = true; break; }
-        await new Promise(z => setTimeout(z, 250));
-        rows = readRecordings();
-      }
-      if (!allLoaded()) Log.debug('recording auto-match: some media are still collapsed after the wait — deciding on the ' + rows.length + ' track(s) that did load');
+      _autoMatchWaiting = true;   // #616: reading only — the tracklist may resync meanwhile (see runSync)
+      try {
+        for (let t = 0; t < 60 && (!rows.length || anyLoading()); t++) {
+          if (_matchStop) { stopped = true; break; }
+          await new Promise(z => setTimeout(z, 250));
+          rows = readRecordings();
+        }
+      } finally { _autoMatchWaiting = false; }
+      if (!allLoaded()) Log.debug('recording auto-match: ' + mediums().filter(m => !mediumLoadedRec(m)).length + ' medium(s) collapsed and not loading — deciding on the ' + rows.length + ' track(s) that are loaded');
       if (!stopped && !rows.filter(r => !r.recGid).length) {
         noWork = rows.length
           ? 'all ' + rows.length + ' recording' + (rows.length === 1 ? '' : 's') + ' already linked'
