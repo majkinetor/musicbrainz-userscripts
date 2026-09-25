@@ -506,6 +506,12 @@ function simpleTable(head, rows, numericFrom = 0) {
 }
 
 /* ------------------------------------------------------------ script table */
+// Table sort order. Text compares case-insensitively and in natural number order —
+// a raw < / > sorted every capitalised editor name before every lowercase one
+// ("Zento" before "angriestchair"). Numbers compare as numbers.
+const cmpCell = (x, y) => (typeof x === 'string' && typeof y === 'string'
+  ? x.localeCompare(y, undefined, { sensitivity: 'base', numeric: true })
+  : (x > y ? 1 : x < y ? -1 : 0));
 const sortState = { scripts: { key: 'edits', dir: -1 }, editors: { key: 'edits', dir: -1 } };
 const EDITORS_SHOWN = 25;
 
@@ -523,7 +529,7 @@ function renderScripts(view) {
     failed: s.failed,
   }));
   const cfg = sortState.scripts;
-  rows.sort((a, b) => (a[cfg.key] > b[cfg.key] ? 1 : a[cfg.key] < b[cfg.key] ? -1 : 0) * cfg.dir);
+  rows.sort((a, b) => cmpCell(a[cfg.key], b[cfg.key]) * cfg.dir);
 
   const columns = [['name','Script',0],['edits','Edits',1],
                    ['shared','Shared',1],['users','Editors',1],['applied','Applied',1]];
@@ -552,7 +558,7 @@ function renderEditors(view) {
     months: e.months.size,
   }));
   const cfg = sortState.editors;
-  rows.sort((a, b) => (a[cfg.key] > b[cfg.key] ? 1 : a[cfg.key] < b[cfg.key] ? -1 : 0) * cfg.dir);
+  rows.sort((a, b) => cmpCell(a[cfg.key], b[cfg.key]) * cfg.dir);
 
   // 136 editors is a real number and worth having, but rendering all of them
   // makes the page scroll for screens on end. Show the head of the list and let
