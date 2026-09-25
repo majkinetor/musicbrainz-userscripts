@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.29
+// @version      2026.9.25
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -20,7 +20,10 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.24';
+  // From the manager (String Theory shadows GM_info per script, so this is Scribe's own
+  // @version in the bundle too). The literal is only a fallback — it was the ONLY source
+  // before, and had fallen behind: the window title said v2026.7.24 on a 2026.7.29 build.
+  const VERSION = (() => { try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.9.25'; } catch (e) { return '2026.9.25'; } })();
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -75,12 +78,15 @@
     panel = document.createElement('div'); panel.id = 'scribe-panel';
     panel.style.cssText = 'position:fixed;z-index:2147483647;right:12px;bottom:12px;width:360px;max-width:48vw;background:#222c27;color:#e7ece9;border-radius:9px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 6px 22px rgba(0,0,0,.4);overflow:hidden';
     const hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1b2520;cursor:move;user-select:none';
+    // Colour spelled out on the header AND each of its text elements (#564 lesson): dark
+    // userstyles ship `div[style*=background]{color:initial}`, which turns this header's
+    // inherited colour black in Firefox — the title and –/✕ went black-on-dark-green.
+    hdr.style.cssText = 'display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1b2520;color:#e7ece9;cursor:move;user-select:none';
     const ic = document.createElement('span'); ic.innerHTML = SCRIBE_ICON; ic.style.cssText = 'display:flex;color:#6cc08a';
-    const ttl = document.createElement('span'); ttl.textContent = `${NAME} v${VERSION}`; ttl.style.cssText = 'flex:1;font-weight:700;letter-spacing:.2px';
+    const ttl = document.createElement('span'); ttl.textContent = `${NAME} v${VERSION}`; ttl.style.cssText = 'flex:1;font-weight:700;letter-spacing:.2px;color:#e7ece9';
     badgeEl = document.createElement('span'); badgeEl.title = 'fields not applied'; badgeEl.style.cssText = 'display:none;background:#c0392b;color:#fff;font-weight:700;font-size:10px;border-radius:9px;padding:1px 7px;min-width:12px;text-align:center';
-    const col = document.createElement('span'); col.textContent = '–'; col.title = 'collapse'; col.style.cssText = 'padding:0 7px;cursor:pointer;font-weight:700';
-    const cls = document.createElement('span'); cls.textContent = '✕'; cls.title = 'Stop editing this release'; cls.style.cssText = 'padding:0 4px;cursor:pointer';
+    const col = document.createElement('span'); col.textContent = '–'; col.title = 'collapse'; col.style.cssText = 'padding:0 7px;cursor:pointer;font-weight:700;color:#e7ece9';
+    const cls = document.createElement('span'); cls.textContent = '✕'; cls.title = 'Stop editing this release'; cls.style.cssText = 'padding:0 4px;cursor:pointer;color:#e7ece9';
     hdr.append(ic, ttl, badgeEl, col, cls);
     bodyEl = document.createElement('div');
     tblEl = document.createElement('div'); tblEl.style.cssText = 'max-height:60vh;overflow:auto';
@@ -131,7 +137,7 @@
     if (problems.length) {
       tblEl.appendChild(sectionHead(`⚠ ${problems.length} not applied — fix & save`, 'err'));
       for (const p of problems) {
-        const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;background:#3a2420;border-top:1px solid #4a302c';
+        const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;background:#3a2420;border-top:1px solid #4a302c;color:#ffd9d4';
         const f = document.createElement('span'); f.textContent = p.field; f.title = p.field; f.style.cssText = 'flex:0 0 40%;color:#e7c9c4;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
         const v = document.createElement('span'); v.textContent = p.value == null || p.value === '' ? '(empty)' : p.value; v.title = v.textContent; v.style.cssText = 'flex:1;color:#ffd9d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
         const b = document.createElement('button'); b.textContent = '⌖'; b.title = 'Focus this field in MusicBrainz to fix it'; b.style.cssText = 'flex:0 0 auto;cursor:pointer;background:#6b3a34;color:#fff;border:none;border-radius:4px;padding:1px 7px;font-size:12px';
