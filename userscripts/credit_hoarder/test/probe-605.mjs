@@ -43,7 +43,8 @@ const plainWithBtn = await page.evaluate(() => [...document.querySelectorAll('tb
 ck(plainWithBtn === 1, `⋔ only on rows with a separator (${plainWithBtn} row(s) have it)`);
 
 await page.click('.discogs-split-btn');
-await page.waitForFunction(() => !document.querySelector('.discogs-split-btn') || document.querySelectorAll('tbody tr').length > 0, null, { timeout: 60000 });
+// wait for the combined row to be REPLACED (each part may need an MB search — slow when MB throttles)
+await page.waitForFunction(() => ![...document.querySelectorAll('tbody tr')].some(x => [...x.querySelectorAll('a,span')].some(a => a.textContent.trim() === 'George & Ira Gershwin')), null, { timeout: 90000 });
 await page.waitForTimeout(3000);
 const g = await rowOf('George Gershwin'), i = await rowOf('Ira Gershwin'), gone = await rowOf('George & Ira Gershwin');
 console.log('george:', JSON.stringify(g)); console.log('ira   :', JSON.stringify(i));
@@ -71,10 +72,12 @@ console.log('log:', con.filter(l => /#605|Gershwin|Done:/.test(l)).map(l => l.re
 const fan = con.find(l => /#605 split: \d+ role/.test(l));
 console.log('fan-out:', fan);
 // what dispatch staged, from its own log ("→ writer: <work> ↔ <artist>")
-const staged = con.filter(l => /→ writer: .*Gershwin/.test(l)).map(l => l.replace(/<[^>]+>/g, '').replace(/^\[credit_hoarder\] /, ''));
+// what dispatch did per part: staged ("→ writer…"), or skipped because MB already has it
+// (MB data moves on — the work may since carry the composer; dedup is the right outcome)
+const staged = con.map(l => l.replace(/<[^>]+>/g, '').replace(/^\[credit_hoarder\] /, '')).filter(l => /→ writer\b.*Gershwin|writer not added — .*already in MB.*Gershwin/.test(l));   // log lines carry HTML (<strong>writer</strong>) — strip first
 console.log('staged Gershwin rels:', JSON.stringify(staged, null, 1));
 ck(!!fan, 'dispatch logged the fan-out');
-ck(staged.some(s => /George Gershwin/.test(s)) && staged.some(s => /Ira Gershwin/.test(s)), 'writer staged for George AND Ira Gershwin');
+ck(staged.some(s => /George Gershwin/.test(s)) && staged.some(s => /Ira Gershwin/.test(s)), 'writer staged (or already in MB) for George AND Ira Gershwin');
 ck(!staged.some(s => /George & Ira/.test(s)), 'nothing staged for the combined name');
 ck(con.some(l => /Done: \d+ added, .*, 0 failed/.test(l)), 'import finished with 0 failed');
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
