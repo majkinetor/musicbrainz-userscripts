@@ -36,6 +36,13 @@ async function liveHolds(mbid, name) {
     return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
 }
 
+/** Does the artist carry `name` (name or alias) on MusicBrainz right now? → true/false, or null when
+ *  the lookup failed. Used when you come back from the add-alias form tab. */
+export async function aliasNowHeld(mbid, name) {
+    const live = await liveHolds(mbid, name);
+    return live ? live.held : null;
+}
+
 /** Left click: MB's add-alias form, pre-filled, in a foreground tab — unless the artist
  *  carries the name by now (then the tab is closed again: MB's form would happily take an
  *  exact duplicate, #535). The tab opens FIRST, synchronously — a window.open after an

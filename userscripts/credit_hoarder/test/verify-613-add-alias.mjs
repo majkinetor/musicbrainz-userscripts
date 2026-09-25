@@ -78,7 +78,7 @@ await page.waitForFunction(() => /Preflight done/.test(document.body.innerText),
 await page.waitForTimeout(1500);
 // a cached manual pick (an earlier run's) shows the button straight away
 const cachedBtn = await page.evaluate(() => { const tr = [...document.querySelectorAll('tbody tr')].find(x => [...x.querySelectorAll('a,span')].some(a => a.textContent.trim() === 'George & Ira Gershwin')); return tr && /user \(cache\)/.test(tr.innerText) ? !!tr.querySelector('.discogs-add-alias') : null; });
-if (cachedBtn !== null) ck(cachedBtn, 'a CACHED manual pick shows "+ alias" too');
+if (cachedBtn !== null) ck(!cachedBtn, 'a CACHED manual pick from an earlier run does NOT show "+ alias" (its aliases are unknown — the button came back after the alias was added)');
 // start clean: "Refresh from MB" re-resolves without the local cache, so the row can be picked by hand
 const doneCount = await page.evaluate(() => (document.body.innerText.match(/Preflight done/g) || []).length);
 await page.evaluate(() => [...document.querySelectorAll('button')].find(b => /Refresh from MB/.test(b.textContent)).click());
@@ -107,6 +107,23 @@ if (btn) {
   ck(/\/artist\/[0-9a-f-]{36}\/add-alias$/.test(form.url) && form.name === 'George & Ira Gershwin', 'left click: MB add-alias form for the picked artist, name pre-filled');
   ck(form.type === '' || form.type == null, 'left click: no alias type pre-selected');
   await popup.close();   // never submitted
+  // back on the page without having submitted → still "+ alias" (one live check on return)
+  await page.bringToFront(); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await page.waitForTimeout(2500);
+  const stillAdd = await page.evaluate(() => document.querySelector('.discogs-add-alias').textContent);
+  ck(stillAdd === '+ alias', `returned without submitting the form → still "+ alias" (${stillAdd})`);
+  // now as if the form HAD been submitted: MB answers with the alias present (the live check's
+  // real round trip is covered on the sandbox above — here only the return wiring is faked)
+  await page.evaluate(() => {
+    const real = window.fetch;
+    window.fetch = (u, o) => /\/ws\/2\/artist\/[0-9a-f-]{36}\?inc=aliases/.test(String(u))
+      ? Promise.resolve(new Response(JSON.stringify({ id: String(u).match(/artist\/([0-9a-f-]{36})/)[1], name: 'George Gershwin', aliases: [{ name: 'George & Ira Gershwin' }] }), { headers: { 'Content-Type': 'application/json' } }))
+      : real(u, o);
+  });
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await page.waitForTimeout(1500);
+  const after = await page.evaluate(() => { const b = document.querySelector('.discogs-add-alias'); return { text: b.textContent, disabled: b.disabled }; });
+  ck(after.text === '✓ alias' && after.disabled, `after submitting through the form, returning to the tab turns it into "✓ alias" (${JSON.stringify(after)})`);
 }
 ck(!posts.some(u => /musicbrainz\.org\/(artist\/[^/]+\/add-alias|ws\/js\/edit)/.test(u) && !/test\.musicbrainz/.test(u)), 'nothing submitted on production');
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 2)));

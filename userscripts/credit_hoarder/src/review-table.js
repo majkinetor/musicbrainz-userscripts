@@ -11,7 +11,7 @@ import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId, idbKeyForE
 import { SPECIAL_PURPOSE_ARTISTS }         from './data/special-purpose.js';
 import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
-import { wantsAliasButton, openAddAliasForm, submitAliasBackground } from './alias-add.js';
+import { wantsAliasButton, openAddAliasForm, submitAliasBackground, aliasNowHeld } from './alias-add.js';
 import { getLogContainer, getReviewContainer } from './log.js';
 import { noPasswordManagers }               from './util.js';
 import { _hideBar }                        from './progress-bar.js';
@@ -1021,7 +1021,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // #613 "+ alias" on a MANUAL pick (this session, or a cached one): the credit isn't the
             // artist's name or any alias → offer to add it. Left click: MB's form, pre-filled,
             // foreground. Right click: submit in the background (no alias type).
-            let aliasPick = null;   // #613: the manual pick (this session or cached) the "+ alias" button is for
+            // #613: the manual pick made THIS session that "+ alias" is for. Not a cached pick from an
+            // earlier run — its aliases aren't known, so the button came back after the alias had been
+            // added (majkinetor). A fresh pick's candidate carries its aliases; re-pick to get the button.
+            let aliasPick = null;
             function makeAddAliasBtn(a) {
                 if (!wantsAliasButton(entityType, a, displayName)) return null;
                 const ab = document.createElement('button');
@@ -1040,7 +1043,31 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         ab.textContent = '✓ has alias'; ab.disabled = true;
                         ab.title = `${a.name} already carries "${displayName}" — nothing to add`;
                         ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                        return;
                     }
+                    // The form is in another tab and only you know whether you submitted it: when this
+                    // tab is back in front, re-read the artist's live aliases (one lookup per return) —
+                    // the same focus-return re-check the 🔗 link chip uses. Stays armed until it's there.
+                    if (ab._aliasWatch) return;
+                    let checking = false;
+                    const onReturn = async () => {
+                        if (document.visibilityState !== 'visible' || checking || ab.disabled) return;
+                        checking = true;
+                        const held = await aliasNowHeld(a.id, displayName);
+                        checking = false;
+                        if (held !== true) { log.info(`+ alias: "${displayName}" isn't on ${a.name} yet${held === null ? ' (lookup failed)' : ''} — checked on return to this tab`); return; }
+                        document.removeEventListener('visibilitychange', onReturn);
+                        window.removeEventListener('focus', onReturn);
+                        ab._aliasWatch = null;
+                        ab.textContent = '✓ alias'; ab.disabled = true;
+                        ab.title = `"${displayName}" is now an alias of ${a.name}`;
+                        ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                        a.aliases = [...(a.aliases || []), displayName];
+                        log.info(`+ alias: "${displayName}" is now an alias of ${a.name} (added through the form)`);
+                    };
+                    ab._aliasWatch = onReturn;
+                    // armed a moment later, so the focus change of opening the tab doesn't count as a return
+                    setTimeout(() => { document.addEventListener('visibilitychange', onReturn); window.addEventListener('focus', onReturn); }, 600);
                 });
                 ab.addEventListener('contextmenu', async (ev) => {
                     ev.preventDefault();
@@ -1832,7 +1859,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
-                if (r.logEntry?.via === 'user') aliasPick = fakeA;   // #613: a cached manual pick
                 renderActions(fakeA);
             } else if (r.nameMatches && r.nameMatches.length > 0) {
                 r.nameMatches.forEach(a => candidateList.appendChild(makeCandidateRow(a)));
