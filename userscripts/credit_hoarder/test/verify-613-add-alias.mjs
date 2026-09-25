@@ -73,6 +73,9 @@ await page.waitForTimeout(3000);
 await page.addScriptTag({ content: code });
 await page.waitForSelector('.discogs-bar', { timeout: 30000 });
 await page.waitForTimeout(1000);
+// co-credit search is ON by default now (a one-time migration flips a saved "off" too)
+const coDefault = await page.evaluate(() => { const l = [...document.querySelectorAll('label')].find(x => /Co-credit search/.test(x.textContent)); const i = l && l.querySelector('input'); return i ? i.checked : null; });
+ck(coDefault === true, `Options › Matching › "Co-credit search" is ticked by default (${coDefault})`);
 await page.click('.discogs-src-ico[data-src="Discogs"]').catch(async () => { await page.click('.discogs-src-ico'); });
 await page.waitForFunction(() => /Preflight done/.test(document.body.innerText), null, { timeout: 180000 });
 await page.waitForTimeout(1500);
