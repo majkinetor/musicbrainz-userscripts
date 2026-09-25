@@ -188,7 +188,7 @@ async function resolveEntity(entity, kind, opts) {
             // for via='url'/'both' (we know the linked MBID by definition);
             // leave undefined otherwise so review-table falls back to query.
             let cachedLinkedIds = cachedRec.urlLinkedIds;
-            if (cachedLinkedIds === undefined && (via === 'url' || via === 'both')) {
+            if (cachedLinkedIds === undefined && (via === 'url' || via === 'both' || via === 'both-alias')) {
                 cachedLinkedIds = [cachedRec.mbid];
             }
             // Heal records poisoned by the pre-fix code, which wrote [] when
@@ -330,7 +330,7 @@ async function resolveEntity(entity, kind, opts) {
             // Prefer the URL hit's `kind` (it's authoritative for the
             // place-resolved-as-label case).
             resolved = urlHit;
-            via      = 'both';
+            via      = nameHit.via === 'alias' ? 'both-alias' : 'both';   // #613: say WHICH name agreed
         } else {
             // Disagreement — needs user review. The old code silently picked
             // whichever came first (always name, because the URL lookup was

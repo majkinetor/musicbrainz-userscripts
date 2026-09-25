@@ -30,13 +30,30 @@ export function wantsAliasButton(entityType, artist, credit) {
 
 const aliasFormUrl = mbid => `${location.origin}/artist/${mbid}/add-alias`;
 
-/** Left click: MB's add-alias form, pre-filled, in a foreground tab. */
-export function openAddAliasForm(mbid, name, note) {
+/** The artist's LIVE name + aliases (not the review table's possibly cached view). */
+async function liveHolds(mbid, name) {
+    const live = await fetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
+}
+
+/** Left click: MB's add-alias form, pre-filled, in a foreground tab — unless the artist
+ *  carries the name by now (then the tab is closed again: MB's form would happily take an
+ *  exact duplicate, #535). The tab opens FIRST, synchronously — a window.open after an
+ *  await is no longer a user gesture and gets popup-blocked. → { already } */
+export async function openAddAliasForm(mbid, name, note) {
     const q = new URLSearchParams({ 'edit-alias.name': name, 'edit-alias.sort_name': name });
     if (note) q.set('edit-alias.edit_note', note);
     const url = aliasFormUrl(mbid) + '?' + q.toString();
+    const tab = window.open('about:blank', '_blank');
+    const live = await liveHolds(mbid, name);
+    if (live && live.held) {
+        try { if (tab) tab.close(); } catch (e) {}
+        log.info(`+ alias: "${name}" is already a name/alias of ${live.artistName} — form not opened`);
+        return { already: true };
+    }
     log.info(`+ alias: opening MusicBrainz's add-alias form for "${name}" — ${url.split('?')[0]}`);
-    window.open(url, '_blank');
+    if (tab) tab.location.href = url; else window.open(url, '_blank');
+    return { already: false };
 }
 
 /** Right click: submit the add-alias form in the background (no alias type).
@@ -45,9 +62,9 @@ export function openAddAliasForm(mbid, name, note) {
 export async function submitAliasBackground(mbid, name, note) {
     const url = aliasFormUrl(mbid);
     // the LIVE aliases, not the review table's (possibly cached) view — collaborative space
-    const live = await fetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => (r.ok ? r.json() : null)).catch(() => null);
-    if (live && live.id && aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name)) {
-        log.info(`+ alias: "${name}" is already a name/alias of ${live.name} — nothing submitted`);
+    const live = await liveHolds(mbid, name);
+    if (live && live.held) {
+        log.info(`+ alias: "${name}" is already a name/alias of ${live.artistName} — nothing submitted`);
         return { already: true };
     }
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(`GET add-alias HTTP ${r.status}`); return r.text(); });

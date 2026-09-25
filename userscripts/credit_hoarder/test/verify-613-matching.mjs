@@ -51,6 +51,15 @@ ck(byName(A, 'Kim').type === 'attention' && /not provably unique/.test(byName(A,
 const noCtx = await resolveNames(['George Harrison'], { withContext: false });
 ck(byName(noCtx, 'George Harrison').type === 'attention', 'without context, "George Harrison" stays for review (3 namesakes) — the context is what resolved it');
 
+// URL and an exact ALIAS agree → "alias+url" (Discogs 84909 is linked to Abiodun, credit "Don Abi")
+const both = await page.evaluate(async () => {
+  const C = window.__creditHoarder;
+  const { allResults } = await C.resolveAll([{ name: 'Don Abi', resource_url: 'https://api.discogs.com/artists/84909' }], { kindOf: C.ARTIST_KIND, bypassIdb: true, context: null });
+  const r = allResults[0]; return { type: r.type, via: r.logEntry && r.logEntry.via, gid: (r.mbUrl || '').split('/').pop().slice(0, 8) };
+});
+console.log('URL + alias:', JSON.stringify(both));
+ck(both.via === 'both-alias' && both.gid === 'b4acea3f', 'Discogs URL and the exact ALIAS agree → via "both-alias" (badge "alias+url")');
+
 // ── B. Various Artists release — no context, no request ──────────────────────
 await open('cf24355a-bc71-4cfe-9178-51d748649b2e');
 before = ctxReqs();
