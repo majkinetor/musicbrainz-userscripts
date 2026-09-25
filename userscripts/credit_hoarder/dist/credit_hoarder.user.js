@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.25.181422
+// @version      2026.9.25.205315
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3920,6 +3920,10 @@ ${ourBlock}` : ourBlock;
     const live = await fetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }).then((r) => r.ok ? r.json() : null).catch(() => null);
     return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
   }
+  async function aliasNowHeld(mbid, name) {
+    const live = await liveHolds(mbid, name);
+    return live ? live.held : null;
+  }
   async function openAddAliasForm(mbid, name, note) {
     const q = new URLSearchParams({ "edit-alias.name": name, "edit-alias.sort_name": name });
     if (note) q.set("edit-alias.edit_note", note);
@@ -4753,7 +4757,35 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               ab.title = `${a.name} already carries "${displayName}" \u2014 nothing to add`;
               ab.style.color = "var(--mbu-ok)";
               ab.style.borderColor = "var(--mbu-ok)";
+              return;
             }
+            if (ab._aliasWatch) return;
+            let checking = false;
+            const onReturn = async () => {
+              if (document.visibilityState !== "visible" || checking || ab.disabled) return;
+              checking = true;
+              const held = await aliasNowHeld(a.id, displayName);
+              checking = false;
+              if (held !== true) {
+                log.info(`+ alias: "${displayName}" isn't on ${a.name} yet${held === null ? " (lookup failed)" : ""} \u2014 checked on return to this tab`);
+                return;
+              }
+              document.removeEventListener("visibilitychange", onReturn);
+              window.removeEventListener("focus", onReturn);
+              ab._aliasWatch = null;
+              ab.textContent = "\u2713 alias";
+              ab.disabled = true;
+              ab.title = `"${displayName}" is now an alias of ${a.name}`;
+              ab.style.color = "var(--mbu-ok)";
+              ab.style.borderColor = "var(--mbu-ok)";
+              a.aliases = [...a.aliases || [], displayName];
+              log.info(`+ alias: "${displayName}" is now an alias of ${a.name} (added through the form)`);
+            };
+            ab._aliasWatch = onReturn;
+            setTimeout(() => {
+              document.addEventListener("visibilitychange", onReturn);
+              window.addEventListener("focus", onReturn);
+            }, 600);
           });
           ab.addEventListener("contextmenu", async (ev) => {
             ev.preventDefault();
@@ -5385,7 +5417,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           if (mbRolesEl) selRow.appendChild(mbRolesEl);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
-          if (r.logEntry?.via === "user") aliasPick = fakeA;
           renderActions(fakeA);
         } else if (r.nameMatches && r.nameMatches.length > 0) {
           r.nameMatches.forEach((a) => candidateList.appendChild(makeCandidateRow(a)));
