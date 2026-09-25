@@ -1,5 +1,12 @@
 # Platform Check Changelog
 
+## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
+
+### Features
+
+1. Wikidata lookup performance improvements ([#606](https://github.com/majkinetor/musicbrainz-userscripts/issues/606))
+1.  Wallstream for the Spotify barcode lookup (replaces SAMBL) ([#602](https://github.com/majkinetor/musicbrainz-userscripts/issues/602))
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### Features

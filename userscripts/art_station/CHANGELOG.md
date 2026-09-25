@@ -1,5 +1,15 @@
 # Art Station Changelog
 
+## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
+
+### Features
+
+1. Adding covers from zip archive ([#604](https://github.com/majkinetor/musicbrainz-userscripts/issues/604))
+
+### Fixes
+
+1. Resizing the "Submit edits" dialog is buggy  ([#595](https://github.com/majkinetor/musicbrainz-userscripts/issues/595))
+
 ## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
 
 ### Features
