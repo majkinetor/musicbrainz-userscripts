@@ -51,6 +51,7 @@ ck(st.warn, 'a refusal is shown as a warning (amber)');
 ck(st.inBar === false, 'the toolbar carries no message text');
 ck(before === after, 'no toolbar button moved' + (before === after ? '' : `\n   before: ${before}\n   after : ${after}`));
 ck(st.media >= 3, 'nothing was merged (refused)');
+ck(await page.evaluate(() => !document.querySelector('.tc-toast, .tc-disc-msg')), 'the toolbar has no message spans left (toast, Discogs-link note)');
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 2)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close(); process.exit(fail ? 1 : 0);
