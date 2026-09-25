@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.25.235354
+// @version      2026.9.26.002243
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.25.235354 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.235324\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25\n  · Fusion v2026.9.25\n  · Group Therapy v2026.9.25\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.26.002243 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.235324\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25\n  · Fusion v2026.9.26\n  · Group Therapy v2026.9.25\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -23239,12 +23239,12 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.25","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.25","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.26","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.26","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.8.21.155057';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.9.26';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -25310,6 +25310,9 @@ function fsStyle() {
         // too quiet to read at 9.5px on dark — the screenshots showed two nearly
         // identical outlines — so the fill is 42% and the text near-white.
         + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:transparent;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-weight:500}'
+        + '.fs-sig span.warn{background:color-mix(in srgb, var(--mbu-warn) 22%, transparent);border-color:var(--mbu-warn);color:var(--mbu-warn);font-weight:700}'   // #619 lengths past the tolerance
+        + '.fs-grow .fs-len.fs-len-off{color:var(--mbu-warn);font-weight:700;background:color-mix(in srgb, var(--mbu-warn) 16%, transparent);border-radius:3px;text-align:center}'
+        + '.fs-lenwarn{flex:0 0 auto;margin-left:6px;padding:0 6px;border:1px solid var(--mbu-warn);border-radius:9px;color:var(--mbu-warn);background:color-mix(in srgb, var(--mbu-warn) 14%, transparent);font-size:10.5px;font-weight:700;line-height:1.5;white-space:nowrap;cursor:help}'
         + '.fs-sig span.hit{background:color-mix(in srgb, var(--mbu-ok) 42%, transparent);border-color:var(--mbu-ok);color:color-mix(in srgb, var(--mbu-ok) 18%, var(--mbu-text));font-weight:700}'
         + '.fs-sig span.partial{background:color-mix(in srgb, var(--mbu-ok) 16%, transparent);border-style:dashed;border-color:color-mix(in srgb, var(--mbu-ok) 60%, transparent);color:color-mix(in srgb, var(--mbu-ok) 45%, var(--mbu-text))}'
         + '.fs-mergeicon{vertical-align:-2px;margin-right:2px}'
@@ -25742,12 +25745,25 @@ function groupCardHtml(group) {
     // the other rows sets a new target.
     const ordered = members.slice().sort((a, b) => (a.gid === group.target ? -1 : 0) - (b.gid === group.target ? -1 : 0));
     const confClass = group.confidence === 'high' ? 'high' : group.confidence === 'medium' ? 'med' : 'manual';
+    // #619 (chaban-mb): a group held together by AcoustID/title/artist can still have lengths
+    // well past the tolerance (4:53 vs 4:38) — the card was all green and only a faded Length
+    // chip said so. Flag it: amber Length chip, a "⚠ Ns" badge by the title, the off rows'
+    // length cells, and the card tooltip. Grouping itself is unchanged (the gross-length guard
+    // still decides that); this is the warning MBS-10966 asks for at merge time.
+    const lenTol = SETTINGS.lengthToleranceMs != null ? SETTINGS.lengthToleranceMs : 5000;
+    const lenSpread = lengthSpread(members);
+    const lenOff = lenSpread != null && lenSpread > lenTol;
+    const lenRefRec = members.find(m => m.gid === group.target && typeof m.length === 'number' && m.length > 0) || null;
+    const lenOffBy = m => (lenRefRec && m !== lenRefRec && typeof m.length === 'number' && m.length > 0 && Math.abs(m.length - lenRefRec.length) > lenTol) ? m.length - lenRefRec.length : null;
+    const secs = ms => Math.round(Math.abs(ms) / 1000);
+    const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
     const confLabel = group.confidence === 'high' ? 'HIGH' : group.confidence === 'medium' ? 'MEDIUM' : 'MANUAL';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
     const sigChips = Object.keys(sigNames).map(k => {
         const lit = sigAll.includes(k);
         const partial = !lit && (group.signals || []).includes(k);
+        if (k === 'length' && lenOff) return '<span class="warn" title="' + escapeHtml(lenWarnTitle) + '">' + sigNames[k] + '</span>';   // #619
         const title = lit ? sigNames[k] + ' matches across every recording in this group'
             : partial ? sigNames[k] + ' matches only some of these recordings, not all'
             : 'no ' + sigNames[k] + ' match';
@@ -25831,7 +25847,8 @@ function groupCardHtml(group) {
             + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + '</span>'
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
-            + '<span class="fs-len">' + dur(m.length) + '</span>'
+            + (() => { const d = lenOffBy(m); return d == null ? '<span class="fs-len">' + dur(m.length) + '</span>'
+                : '<span class="fs-len fs-len-off" title="' + (d > 0 ? '+' : '−') + secs(d) + 's against the merge target (' + dur(lenRefRec.length) + ') — tolerance ' + secs(lenTol) + 's">' + dur(m.length) + '</span>'; })()   // #619
             + idCell(m, 'isrc')
             + idCell(m, 'acoustid')
             + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>'
@@ -25871,9 +25888,10 @@ function groupCardHtml(group) {
     //     cannot vary
     //   · the tier is carried by the row tint and left rail, not a text pill
     const tier = group.tier || 'manual';
-    const tierWhy = tier === 'manual'
+    const tierWhy = (tier === 'manual'
         ? 'Grouped by hand — no cutoff level would have formed this group automatically'
-        : 'Holds together at the "' + tier + '" cutoff' + (tier === 'loose' ? ' — it would not form at a stricter setting' : '');
+        : 'Holds together at the "' + tier + '" cutoff' + (tier === 'loose' ? ' — it would not form at a stricter setting' : ''))
+        + (lenOff ? ' — but its lengths differ by up to ' + secs(lenSpread) + 's (tolerance ' + secs(lenTol) + 's)' : '');   // #619: auto or by hand
     return '<div class="fs-gcard fs-gcard-' + confClass + ' fs-tier-' + tier + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '" title="' + escapeHtml(tierWhy) + '">'
         // Three tracks — 1fr | auto | 1fr — so the chip matrix is centred on the
         // CARD, not merely at a fixed offset after the title (#529: "matrix is
@@ -25886,6 +25904,7 @@ function groupCardHtml(group) {
         + '<span class="fs-gnum" title="' + members.length + ' recording' + (members.length === 1 ? '' : 's') + ' in this group">' + members.length + '</span>'
         + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>'
         + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
+        + (lenOff ? '<span class="fs-lenwarn" title="' + escapeHtml(lenWarnTitle) + '">⚠ ' + secs(lenSpread) + 's</span>' : '')   // #619
         + '</div>'
         + '<div class="fs-sig">' + sigChips + '</div>'
         + '<div class="fs-ghr">'
