@@ -76,6 +76,9 @@ if printf '%s\n' "$STAGED" | grep -qE '^(userscripts/credit_hoarder/(src/|build\
     echo "[pre-commit] rebuilding userscripts/credit_hoarder/dist/…"
     (cd userscripts/credit_hoarder && pnpm run build >/dev/null)
     git add userscripts/credit_hoarder/dist/credit_hoarder.user.js
+    # refresh, or the String Theory step below never sees the rebuilt dist when only
+    # src/ was staged — the bundle then shipped the previous Credit Hoarder (#613)
+    STAGED=$(git diff --cached --name-only)
 fi
 
 # string_theory — unified bundle. Rebuild when any listed constituent's userscript
