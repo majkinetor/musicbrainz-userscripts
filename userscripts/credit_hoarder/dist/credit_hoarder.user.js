@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.25.205315
+// @version      2026.9.25.213058
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3541,6 +3541,7 @@
       resolved = urlHit;
       via = "url";
     } else if (isArtist) {
+      let reviewReason = null;
       const ctx = contextHit(context, searchName, nameMatches);
       if (ctx) {
         resolved = { kind: "artist", mbid: ctx.gid, name: ctx.name, disambiguation: "" };
@@ -3556,10 +3557,8 @@
         } else if (idn.status === "failed") {
           return buildAttention(nameMatches, true, null, urlLinkedIds);
         } else {
-          const why = idn.status === "incomplete" ? `not provably unique (${idJson.count} artists match)` : idn.status === "ambiguous" ? `${idn.exact.length} artists carry the name` : "the exact holder did not verify";
-          logDebug(`"${searchName}" left to review \u2014 ${why}`);
-          await cacheAttention(nameMatches);
-          return buildAttention(nameMatches, false, why, urlLinkedIds);
+          reviewReason = idn.status === "incomplete" ? `not provably unique (${idJson.count} artists match)` : idn.status === "ambiguous" ? `${idn.exact.length} artists carry the name` : "the exact holder did not verify";
+          logDebug(`"${searchName}" not resolved by name \u2014 ${reviewReason}`);
         }
       }
       if (!resolved) {
@@ -3569,6 +3568,11 @@
           via = "cred";
           log.info(`Match: ${displayName} \u2192 ${cc.name} \u2014 via existing artist credits (co-credit search)`);
         }
+      }
+      if (!resolved && reviewReason) {
+        logDebug(`"${searchName}" left to review \u2014 ${reviewReason}`);
+        await cacheAttention(nameMatches);
+        return buildAttention(nameMatches, false, reviewReason, urlLinkedIds);
       }
     } else if (nameHit) {
       resolved = nameHit;
@@ -7914,6 +7918,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       } catch (e) {
       }
     }
+    if (!savedOpts.coCreditDefaultOn613) {
+      savedOpts.coCredit = true;
+      savedOpts.coCreditDefaultOn613 = true;
+      try {
+        gmSave(OPTS_KEY, JSON.stringify(savedOpts));
+      } catch (e) {
+      }
+    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
     const tracklistCb = makeCheckbox(
       "Per-track credits",
@@ -8000,8 +8012,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     optsPanel.appendChild(matchHd);
     const coCreditCb = makeCheckbox(
       "Co-credit search",
-      bv("coCredit", false),
-      "For a name still ambiguous after name, alias and release-context matching, search MusicBrainz for a recording that credits it ALONGSIDE the release artist (one extra request per ambiguous name and release artist). Off by default."
+      bv("coCredit", true),
+      "For a name still ambiguous after name, alias and release-context matching, search MusicBrainz for a recording that credits it ALONGSIDE the release artist (one extra request per ambiguous name and release artist; none on Various Artists releases). On by default."
     );
     _optsHost = optsWrap;
     optsWrap.appendChild(optsBtn);
@@ -8033,8 +8045,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           // #421 one-time reset already applied — must survive every save
           dedupeEquivalenceSets: dedupeEqCb.checked,
           dedupeDuplicateRoles: dedupeDupCb.checked,
-          coCredit: coCreditCb.checked
+          coCredit: coCreditCb.checked,
           // #613
+          coCreditDefaultOn613: true
+          // #613 one-time default-on already applied — must survive every save
         }));
       } catch (e) {
       }
@@ -8361,7 +8375,7 @@ ${lines}
         dedupeEquivalenceSets: dedupeEqCb.checked,
         dedupeDuplicateRoles: dedupeDupCb.checked,
         coCredit: coCreditCb.checked
-        // #613 co-credit search (off by default)
+        // #613 co-credit search (on by default)
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;

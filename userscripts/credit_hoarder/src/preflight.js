@@ -347,6 +347,7 @@ async function resolveEntity(entity, kind, opts) {
         resolved = urlHit;
         via      = 'url';
     } else if (isArtist) {
+        let reviewReason = null;
         // #612: the release's context first — a related artist carrying the name exactly
         const ctx = contextHit(context, searchName, nameMatches);
         if (ctx) {
@@ -366,12 +367,12 @@ async function resolveEntity(entity, kind, opts) {
             } else if (idn.status === 'failed') {
                 return buildAttention(nameMatches, true, null, urlLinkedIds);   // throttled — don't cache a guess
             } else {
-                const why = idn.status === 'incomplete' ? `not provably unique (${idJson.count} artists match)` : idn.status === 'ambiguous' ? `${idn.exact.length} artists carry the name` : 'the exact holder did not verify';
-                logDebug(`"${searchName}" left to review — ${why}`);
-                await cacheAttention(nameMatches);
-                return buildAttention(nameMatches, false, why, urlLinkedIds);
+                reviewReason = idn.status === 'incomplete' ? `not provably unique (${idJson.count} artists match)` : idn.status === 'ambiguous' ? `${idn.exact.length} artists carry the name` : 'the exact holder did not verify';
+                logDebug(`"${searchName}" not resolved by name — ${reviewReason}`);
             }
         }
+        // #613: the co-credit step also covers a name the exact-identity check rejected — a
+        // "not provably unique" common name is exactly what it's for
         if (!resolved) {
             const cc = await coCreditHit(context, searchName);
             if (cc) {
@@ -379,6 +380,11 @@ async function resolveEntity(entity, kind, opts) {
                 via = 'cred';
                 log.info(`Match: ${displayName} → ${cc.name} — via existing artist credits (co-credit search)`);
             }
+        }
+        if (!resolved && reviewReason) {
+            logDebug(`"${searchName}" left to review — ${reviewReason}`);
+            await cacheAttention(nameMatches);
+            return buildAttention(nameMatches, false, reviewReason, urlLinkedIds);
         }
     } else if (nameHit) {
         resolved = nameHit;

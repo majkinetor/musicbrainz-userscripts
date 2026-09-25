@@ -10,7 +10,7 @@ import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 const require = createRequire('C:/Work/mb-userscripts/userscripts/apollo_editor/package.json');
 const { chromium } = require('playwright');
-const code = await readFile('C:/Work/mb-userscripts/userscripts/credit_hoarder/dist/credit_hoarder.user.js', 'utf8');
+const code = await readFile(process.env.CH_SRC || 'C:/Work/mb-userscripts/userscripts/credit_hoarder/dist/credit_hoarder.user.js', 'utf8');   // CH_SRC=<old build>
 let fail = 0; const ck = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 
 const ctx = await chromium.launchPersistentContext('C:/Work/mb-userscripts/.pw-profile', { headless: true, viewport: { width: 1500, height: 1000 } });
@@ -74,8 +74,35 @@ await open('a56091bd-dd60-44f5-87f5-dec6754b8523');
 const off = await resolveNames(['Joni'], { coCredit: false });
 const on = await resolveNames(['Joni'], { coCredit: true });
 console.log('C off:', JSON.stringify(byName(off, 'Joni')), '\nC on :', JSON.stringify(byName(on, 'Joni')));
-ck(byName(off, 'Joni').type === 'attention', 'co-credit OFF (default): "Joni" left to review');
+ck(byName(off, 'Joni').type === 'attention', 'co-credit OFF: "Joni" left to review');
 ck(byName(on, 'Joni').via === 'cred' && byName(on, 'Joni').gid === 'a766abff', 'co-credit ON: "Joni" → a766abff via the credit next to Sidney Samson');
+
+// ── D. the gap: a name the exact-identity check rejects ("not provably unique") must
+// still get the co-credit step. MB's answers are simulated in the page (a real release
+// with exactly this shape is hard to pin down) — the release context is the real one.
+const gap = async (coCredit) => page.evaluate(async ([coCredit]) => {
+  const real = window.fetch;
+  const J = o => Promise.resolve(new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } }));
+  const SS = '4fc48643-7a22-482c-b419-9628e0fbfe25';   // Sidney Samson — the page's release artist
+  window.fetch = (u, o) => {
+    const url = decodeURIComponent(String(u));
+    if (/\/ws\/2\/artist\?query=Joni Zz&/.test(url)) return J({ count: 3, offset: 0, artists: [{ id: 'aaaaaaaa-0000-4000-8000-00000000000a', name: 'Joni Zz', score: 100, aliases: [] }, { id: 'bbbbbbbb-0000-4000-8000-00000000000b', name: 'Joni Zzz', score: 80 }, { id: 'cccccccc-0000-4000-8000-00000000000c', name: 'Joni Z', score: 75 }] });
+    if (/\/ws\/2\/artist\?query=alias:"Joni Zz" OR artist:"Joni Zz"/.test(url)) return J({ count: 500, offset: 0, artists: [{ id: 'aaaaaaaa-0000-4000-8000-00000000000a', name: 'Joni Zz', score: 100, aliases: [] }] });
+    if (/\/ws\/2\/recording\?query=arid:/.test(url) && /artistname:"Joni Zz"/.test(url)) return J({ recordings: [{ 'artist-credit': [{ name: 'Sidney Samson', artist: { id: SS, name: 'Sidney Samson' } }, { name: 'Joni Zz', artist: { id: 'dddddddd-0000-4000-8000-00000000000d', name: 'Joni Zz' } }] }] });
+    return real(u, o);
+  };
+  try {
+    const C = window.__creditHoarder;
+    const context = await C.buildReleaseContext({ coCredit });
+    const { allResults } = await C.resolveAll([{ name: 'Joni Zz', resource_url: '' }], { kindOf: C.ARTIST_KIND, bypassIdb: true, context });
+    const r = allResults[0];
+    return { type: r.type, via: r.logEntry && r.logEntry.via, gid: (r.mbUrl || '').split('/').pop().slice(0, 8), reason: r.ambiguityReason || null };
+  } finally { window.fetch = real; }
+}, [coCredit]);
+const gapOn = await gap(true), gapOff = await gap(false);
+console.log('D on :', JSON.stringify(gapOn), '\nD off:', JSON.stringify(gapOff));
+ck(gapOn.via === 'cred' && gapOn.gid === 'dddddddd', 'a "not provably unique" name (500 matches) still gets the co-credit step → resolved via co-credit');
+ck(gapOff.type === 'attention' && /not provably unique \(500 artists match\)/.test(gapOff.reason || ''), `with co-credit off it stays for review, with the reason (${gapOff.reason})`);
 
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 2)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
