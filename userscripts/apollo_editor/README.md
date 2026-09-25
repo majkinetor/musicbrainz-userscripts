@@ -268,7 +268,13 @@ Whichever source, it detects everything shaped like a time — `5:50`, `1′23�
 
 Restructure the mediums without redoing the tracklist by hand. Both tools keep every track's **title, length, artist credit and recording** and reset the track numbers.
 
-<img width="420" src="./screenshots/merge_mediums.png" /> <img width="400" src="./screenshots/split_medium.png" />
+**Merge mediums** — all 14 one-track media of a release ticked, about to become one medium:
+
+<img width="900" src="./screenshots/merge_mediums.png" />
+
+**Split medium** — pick the medium and the track the new medium starts at:
+
+<img width="900" src="./screenshots/split_medium.png" />
 
 - **Merge mediums** — tick the mediums to merge (all are ticked by default); they all go into the **first ticked** one, in medium order, and the others are removed. Tick a subset to merge only some of them (e.g. `2` and `4`).
 - **Split medium** — pick the medium and the track the **new medium starts at**; that track and everything after it move to a new medium, inserted right after the original, with the same format. Later mediums shift down by one.
