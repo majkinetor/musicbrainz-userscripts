@@ -11,6 +11,7 @@ import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId, idbKeyForE
 import { SPECIAL_PURPOSE_ARTISTS }         from './data/special-purpose.js';
 import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
+import { wantsAliasButton, openAddAliasForm, submitAliasBackground } from './alias-add.js';
 import { getLogContainer, getReviewContainer } from './log.js';
 import { noPasswordManagers }               from './util.js';
 import { _hideBar }                        from './progress-bar.js';
@@ -1016,6 +1017,41 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 }
             }
 
+            // #613 "+ alias" on a MANUAL pick (this session, or a cached one): the credit isn't the
+            // artist's name or any alias → offer to add it. Left click: MB's form, pre-filled,
+            // foreground. Right click: submit in the background (no alias type).
+            function makeAddAliasBtn(a) {
+                if (!wantsAliasButton(entityType, a, displayName)) return null;
+                const ab = document.createElement('button');
+                ab.type = 'button';
+                ab.className = 'discogs-add-alias';
+                ab.textContent = '+ alias';
+                ab.title = `Add "${displayName}" as an alias of ${a.name}
+• click: open MusicBrainz's add-alias form, pre-filled (you submit it)
+• right-click: submit it in the background (no alias type)`;
+                ab.style.cssText = 'font-size:0.72rem;cursor:pointer;padding:0 0.4rem;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-accent-text);white-space:nowrap;flex:0 0 auto;';
+                const note = buildCreateNote(`Added "${displayName}" as an alias — the ${srcName} credit${discogsHref ? ' (' + discogsHref + ')' : ''} —`);
+                ab.addEventListener('click', (ev) => { ev.preventDefault(); openAddAliasForm(a.id, displayName, note); });
+                ab.addEventListener('contextmenu', async (ev) => {
+                    ev.preventDefault();
+                    if (ab.disabled) return;
+                    ab.disabled = true; ab.textContent = '⏳ alias';
+                    try {
+                        const res = await submitAliasBackground(a.id, displayName, note);
+                        ab.textContent = res && res.already ? '✓ has alias' : '✓ alias';
+                        ab.title = res && res.already ? `${a.name} already carries "${displayName}" — nothing submitted` : `"${displayName}" submitted as an alias of ${a.name}`;
+                        ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                        a.aliases = [...(a.aliases || []), displayName];   // don't offer it again this session
+                        if (!(res && res.already)) log.info(`+ alias: "${displayName}" submitted as an alias of <a href="${location.origin}/artist/${a.id}/aliases" target="_blank" rel="noopener noreferrer nofollow">${a.name}</a>`);
+                    } catch (e) {
+                        ab.disabled = false; ab.textContent = '✗ alias'; ab.title = `Adding the alias failed: ${e.message} — right-click to retry, click to open the form`;
+                        ab.style.color = 'var(--mbu-error)'; ab.style.borderColor = 'var(--mbu-error)';
+                        log.warn(`+ alias: "${displayName}" → ${a.name} failed — ${e.message}`);
+                    }
+                });
+                return ab;
+            }
+
             function setRowResolved(a) {
                 // a = { id, name, disambiguation }
                 clearRowCreating();   // #273: drop any background-create placeholder
@@ -1076,6 +1112,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // never `(cache)` (this is a fresh pick).
                 const viaBadge = makeViaBadge('user', false);
                 if (viaBadge) selRow.appendChild(viaBadge);
+                const aliasBtn = makeAddAliasBtn(a);   // #613
+                if (aliasBtn) selRow.appendChild(aliasBtn);
                 const mbRolesEl = buildMbRolesEl();
                 if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);
@@ -1689,7 +1727,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const mbid = extractMbid(q);
                 if (mbid) {
                     candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Looking up MBID…</div>';
-                    mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`)
+                    // #613: inc=aliases rides on the same lookup — the "+ alias" button needs to know them
+                    mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?inc=aliases&fmt=json`)
                         .then(json => {
                             if (!json) return;
                             candidateList.innerHTML = '';
@@ -1698,6 +1737,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                     id: json.id,
                                     name: json.name,
                                     disambiguation: json.disambiguation || '',
+                                    aliases: json.aliases || [],
                                 }));
                             } else {
                                 candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Not found</div>';
@@ -1773,6 +1813,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // `(cache)` suffix when the resolution came from IDB.
                 const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
                 if (viaBadge) selRow.appendChild(viaBadge);
+                if (r.logEntry?.via === 'user') { const aliasBtn = makeAddAliasBtn(fakeA); if (aliasBtn) selRow.appendChild(aliasBtn); }   // #613: a cached manual pick
                 const mbRolesEl = buildMbRolesEl();
                 if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);

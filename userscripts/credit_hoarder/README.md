@@ -68,12 +68,17 @@ A single-row-per-entity table for confirming source ↔ MusicBrainz matches befo
 Efficiency features:
 
 - **Parallel lookup** — all artists, labels and places are checked against MB through a shared throttle.
-- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `url` / `name+url` / `user`). Sources that expose a per-credit URL (Discogs, Tidal) cache globally by that URL; **name-only** credits (Qobuz, Deezer, the title-derived remixers) cache **per release** — keyed by the release and the name — so re-running the same release reuses your picks without a bare name leaking a resolution onto a different release.
+- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `alias` / `url` / `name+url` / `context` / `co-credit` / `user`). Sources that expose a per-credit URL (Discogs, Tidal) cache globally by that URL; **name-only** credits (Qobuz, Deezer, the title-derived remixers) cache **per release** — keyed by the release and the name — so re-running the same release reuses your picks without a bare name leaking a resolution onto a different release.
 - **Inline MB search** — a live search field on every row; type a name or paste an MBID / MB URL.
 - **Auto-match** — name search and source-URL lookup run in parallel; auto-resolution only when trustworthy:
     - **Both agree** on the same MB entity → resolved with high confidence.
-    - **Only one side** returns a hit → auto-accepted only when strong (unique exact-name match OR a direct source↔MB URL relation).
+    - **Only one side** returns a hit → auto-accepted only when strong (a *provably unique* exact name or alias — see below — OR a direct source↔MB URL relation).
     - **They disagree** → left unresolved for manual review.
+- **Artist matching** — for artists without a URL match, in this order:
+    - **Release context** (`context`) — the artists related to the release artist (band members, collaborators, …) are loaded once per import (one request per release artist; none on a *Various Artists* release). If exactly one of them carries the credited name — by name or alias — that's the match, even when the name is common (e.g. *George Harrison* on a Beatles release, where MusicBrainz has several).
+    - **Exact name or alias** (`name` / `alias`) — the credit matches an artist's name **or one of its aliases** (e.g. *Don Abi* → *Abiodun*). It's accepted only when MusicBrainz shows that **exactly one** artist carries it — a common name (*Kim*: 2,777 artists match) can't be proven unique and is left for review, with the reason in the row.
+    - **Co-credit search** (`co-credit`, off by default — **Options › Matching**) — for a name still ambiguous, look for a recording that credits it *alongside* the release artist (one extra request per such name and release artist).
+- **+ alias** — after you pick an artist by hand, when the source credit is neither its name nor one of its aliases, **+ alias** offers to add it, so the next import (anyone's) matches it straight away. **Click** opens MusicBrainz's add-alias form, pre-filled, for you to review and submit; **right-click** submits it in the background with no alias type (it re-checks the artist's current aliases first and never adds a duplicate). A one-off spelling that appears on just one release is better left to **Credited as**.
 - **Entity creation**
     - `+` opens MB's create page pre-filled (name, sort name, type, source URL); after save the tab closes itself and the row auto-selects the new entity. Right-click does it in the background.
     - `▾` opens advanced creation options (where the provider supports it, e.g. Discogs): set disambiguation by the role or from text selected in the source profile, take the real name from the source profile.
