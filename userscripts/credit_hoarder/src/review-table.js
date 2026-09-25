@@ -216,6 +216,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             both:  { text: 'name+url', color: 'var(--mbu-ok)' },          // high confidence
             url:   { text: 'url',      color: 'var(--mbu-accent-text)' },
             name:  { text: 'name',     color: 'var(--mbu-accent-text)' },
+            alias: { text: 'alias',    color: 'var(--mbu-accent-text)' },   // #613 exact alias of the MB artist (provably unique)
+            ctx:   { text: 'context',  color: 'var(--mbu-ok)' },            // #612 a related artist of the release artist
+            cred:  { text: 'co-credit', color: 'var(--mbu-accent-text)' },  // #613 co-credit search (option)
             user:  { text: 'user',     color: 'var(--mbu-text-dim)' },
             cache: { text: 'cache',    color: 'var(--mbu-text-dim)' },    // legacy: original mechanism unknown
         };

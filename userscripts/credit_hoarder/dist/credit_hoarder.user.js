@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.25.164741
+// @version      2026.9.25.165244
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2125,6 +2125,112 @@
     }, []) || [];
   }
 
+  // ../../dev/match/artist-match.mjs
+  var MBM_EXACT_LIMIT = 100;
+  var MBM_SPECIAL_PURPOSE = [
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ];
+  function mbmFold(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  function mbmFoldKeepCase(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
+  }
+  function mbmSameName(a, b) {
+    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
+  }
+  function mbmSameNameCase(a, b) {
+    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
+  }
+  function mbmHolds(entity, name, caseExact) {
+    if (!entity) return null;
+    const same = caseExact ? mbmSameNameCase : mbmSameName;
+    if (same(entity.name, name)) return "name";
+    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
+    return null;
+  }
+  function mbmIdentityQuery(name, field) {
+    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
+    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
+  }
+  function mbmExactIdentity(json, name, opts) {
+    const o = opts || {};
+    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
+    const list = json.artists || json.labels || json.places || [];
+    let exact = list.filter((e) => mbmHolds(e, name));
+    if (exact.length > 1) {
+      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
+      if (caseExact.length === 1) exact = caseExact;
+      else if (o.scoreGap) {
+        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
+        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+      }
+    }
+    const offset = typeof json.offset === "number" ? json.offset : 0;
+    const complete = typeof json.count === "number" && json.count <= offset + list.length;
+    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
+    if (exact.length > 1) return { status: "ambiguous", exact, complete };
+    if (!complete) return { status: "incomplete", exact, complete };
+    return { status: "none", exact, complete };
+  }
+  function mbmRelatedArtists(artistJson) {
+    if (!artistJson || !artistJson.id) return [];
+    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
+    for (const r of artistJson.relations || []) {
+      const a = r && r.artist;
+      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
+      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
+    }
+    return out;
+  }
+  function mbmContextHolders(related, name, candidates) {
+    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
+    const out = [];
+    for (const r of related || []) {
+      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
+      if (!via) {
+        const c = cand.get(r.gid);
+        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
+      }
+      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+    }
+    return out;
+  }
+  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
+    const out = [];
+    for (const rec of recordingsJson && recordingsJson.recordings || []) {
+      for (const c of rec["artist-credit"] || []) {
+        const a = c && c.artist;
+        if (!a || !a.id || a.id === ctxGid) continue;
+        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+      }
+    }
+    return out;
+  }
+
   // src/sources/split-names.js
   function splitCombinedNames(name) {
     if (!name || !/[,&]/.test(name)) return [name];
@@ -3208,8 +3314,41 @@
     // since the original company resolver).
     place: { searchLimit: 8, resultKey: "places", incRels: "place-rels+label-rels" }
   };
+  var toCandidate = (a) => ({
+    id: a.id,
+    name: a.name,
+    disambiguation: a.disambiguation || a["disambiguation-comment"] || "",
+    score: a.score || 0,
+    aliases: (a.aliases || []).map((al) => al && al.name).filter(Boolean)
+  });
+  function contextHit(context, name, candidates) {
+    if (!context || !context.related || !context.related.length) return null;
+    const holders = mbmContextHolders(context.related, name, (candidates || []).map((c) => ({ id: c.id, name: c.name, aliases: (c.aliases || []).map((n) => ({ name: n })) })));
+    if (holders.length === 1) return holders[0];
+    if (holders.length > 1) logDebug(`context: "${name}" is carried by ${holders.length} related artists (${holders.map((h) => h.name).join(", ")}) \u2014 left to review`);
+    return null;
+  }
+  async function coCreditHit(context, name) {
+    if (!context || !context.coCredit || !context.seeds || !context.seeds.length) return null;
+    const tally = /* @__PURE__ */ new Map();
+    for (const seed of context.seeds.slice(0, 4)) {
+      const q = `arid:${seed} AND artistname:"${String(name).replace(/["\\]/g, " ")}"`;
+      const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`);
+      if (!json) continue;
+      for (const h of mbmCoCreditHits(json, seed, name)) {
+        const t = tally.get(h.gid) || { n: 0, name: h.name };
+        t.n++;
+        tally.set(h.gid, t);
+      }
+    }
+    const ranked = [...tally.entries()].sort((a, b) => b[1].n - a[1].n);
+    if (ranked.length === 1 || ranked.length > 1 && ranked[0][1].n > ranked[1][1].n) return { gid: ranked[0][0], name: ranked[0][1].name };
+    if (ranked.length) logDebug(`co-credit: "${name}" \u2192 ${ranked.length} tied candidates \u2014 left to review`);
+    return null;
+  }
   async function resolveEntity(entity, kind, opts) {
     const { bypassIdb } = opts;
+    const context = kind === "artist" ? opts.context || null : null;
     const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
     const parsed = parseSourceEntityUrl(entity.resource_url);
     const key = parsed?.key || entity._cacheKey || null;
@@ -3322,6 +3461,13 @@
       }
       if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
         const attnLinkedIds = Array.isArray(cachedRec.urlLinkedIds) && cachedRec.urlLinkedIds.length === 0 ? void 0 : cachedRec.urlLinkedIds;
+        const ctx = contextHit(context, searchName, cachedRec.nameMatches);
+        if (ctx) {
+          log.info(`Match: ${displayName} \u2192 ${ctx.name} \u2014 via release context (${ctx.rel || "related"}, ${ctx.via})`);
+          const mbUrl = `//musicbrainz.org/artist/${ctx.gid}`;
+          await writeIdbRecord(key, { mbid: ctx.gid, entityType: "artist", name: ctx.name, disambiguation: "", resolvedVia: "ctx", nameMatches: null, mbUrl });
+          return buildResolved(mbUrl, ctx.name, "", "ctx", "artist", false, attnLinkedIds, cachedRec.creditOverride);
+        }
         return buildAttention(cachedRec.nameMatches, false, null, attnLinkedIds, cachedRec.creditOverride);
       }
     }
@@ -3335,18 +3481,16 @@
     ]);
     const nameSearchFailed = nameJson === null;
     const normalized = searchName.toLowerCase().trim();
-    const nameMatches = !nameJson?.[resultKey] ? [] : nameJson[resultKey].filter((a) => a.name.toLowerCase().trim() === normalized || a.score != null && a.score >= 70).map((a) => ({
-      id: a.id,
-      name: a.name,
-      disambiguation: a.disambiguation || a["disambiguation-comment"] || "",
-      score: a.score || 0
-    }));
-    const exactNameMatches = nameMatches.filter((a) => a.name.toLowerCase().trim() === normalized);
+    const isArtist = kind === "artist";
+    const holdsName = (a) => isArtist ? !!mbmHolds(a, searchName) : a.name.toLowerCase().trim() === normalized;
+    const nameMatches = !nameJson?.[resultKey] ? [] : nameJson[resultKey].filter((a) => holdsName(a) || a.score != null && a.score >= 70).map(toCandidate);
+    const exactNameMatches = nameMatches.filter(holdsName);
     const nameHit = exactNameMatches.length === 1 ? {
       kind,
       mbid: exactNameMatches[0].id,
       name: exactNameMatches[0].name,
-      disambiguation: exactNameMatches[0].disambiguation || ""
+      disambiguation: exactNameMatches[0].disambiguation || "",
+      via: isArtist && !(exactNameMatches[0].name.toLowerCase().trim() === normalized) ? "alias" : "name"
     } : null;
     let urlHit = null;
     const urlLinkedIds = urlJson === null ? void 0 : (urlJson.relations || []).map((r) => kind === "place" ? r.place?.id || r.label?.id || null : r[kind]?.id || null).filter(Boolean);
@@ -3396,6 +3540,36 @@
     } else if (urlHit) {
       resolved = urlHit;
       via = "url";
+    } else if (isArtist) {
+      const ctx = contextHit(context, searchName, nameMatches);
+      if (ctx) {
+        resolved = { kind: "artist", mbid: ctx.gid, name: ctx.name, disambiguation: "" };
+        via = "ctx";
+        log.info(`Match: ${displayName} \u2192 ${ctx.name} \u2014 via release context (${ctx.rel || "related"}, ${ctx.via})`);
+      } else if (nameHit) {
+        const idJson = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(mbmIdentityQuery(searchName, "artist"))}&fmt=json&limit=${MBM_EXACT_LIMIT}`);
+        const idn = mbmExactIdentity(idJson, searchName);
+        logDebug(`exact identity "${searchName}": ${idn.status} (${idJson ? (idJson.artists || []).length + " of " + idJson.count : "no response"})`);
+        if (idn.status === "unique" && idn.hit.id === nameHit.mbid) {
+          resolved = nameHit;
+          via = idn.via;
+        } else if (idn.status === "failed") {
+          return buildAttention(nameMatches, true, null, urlLinkedIds);
+        } else {
+          const why = idn.status === "incomplete" ? `not provably unique (${idJson.count} artists match)` : idn.status === "ambiguous" ? `${idn.exact.length} artists carry the name` : "the exact holder did not verify";
+          logDebug(`"${searchName}" left to review \u2014 ${why}`);
+          await cacheAttention(nameMatches);
+          return buildAttention(nameMatches, false, why, urlLinkedIds);
+        }
+      }
+      if (!resolved) {
+        const cc = await coCreditHit(context, searchName);
+        if (cc) {
+          resolved = { kind: "artist", mbid: cc.gid, name: cc.name, disambiguation: "" };
+          via = "cred";
+          log.info(`Match: ${displayName} \u2192 ${cc.name} \u2014 via existing artist credits (co-credit search)`);
+        }
+      }
     } else if (nameHit) {
       resolved = nameHit;
       via = "name";
@@ -3426,7 +3600,7 @@
     return buildAttention(nameMatches, nameSearchFailed, null, urlLinkedIds);
   }
   async function resolveAll(entities, opts) {
-    const { kindOf, progressLi, bypassIdb, progressLabel } = opts;
+    const { kindOf, progressLi, bypassIdb, progressLabel, context } = opts;
     const CONCURRENCY = 5;
     const MIN_GAP_MS = 50;
     let done = 0;
@@ -3471,7 +3645,7 @@
         setProgress();
         const t0 = Date.now();
         logDebug(`${tag} resolving "${displayName}" (${kind})`);
-        results[index] = await resolveEntity(entity, kind, { bypassIdb });
+        results[index] = await resolveEntity(entity, kind, { bypassIdb, context });
         const elapsed = Date.now() - t0;
         const r = results[index];
         const outcome = r?.type === "resolved" ? `resolved via ${r.logEntry?.via || "?"}${r.logEntry?.fromCache ? " (cache)" : ""}` : r?.type === "attention" ? `unresolved (${r.nameMatches?.length || 0} candidates)` : "skipped";
@@ -3489,6 +3663,7 @@
     logDebug(`resolveAll: done`);
     return { allResults: results.filter(Boolean) };
   }
+  var ARTIST_KIND = () => "artist";
   var ENTITY_KIND = (e) => e?.entityType || "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
@@ -3886,6 +4061,12 @@ ${ourBlock}` : ourBlock;
         // high confidence
         url: { text: "url", color: "var(--mbu-accent-text)" },
         name: { text: "name", color: "var(--mbu-accent-text)" },
+        alias: { text: "alias", color: "var(--mbu-accent-text)" },
+        // #613 exact alias of the MB artist (provably unique)
+        ctx: { text: "context", color: "var(--mbu-ok)" },
+        // #612 a related artist of the release artist
+        cred: { text: "co-credit", color: "var(--mbu-accent-text)" },
+        // #613 co-credit search (option)
         user: { text: "user", color: "var(--mbu-text-dim)" },
         cache: { text: "cache", color: "var(--mbu-text-dim)" }
         // legacy: original mechanism unknown
@@ -5269,6 +5450,43 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       panelLi.scrollIntoView({ behavior: "smooth", block: "nearest" });
       _hideBar();
     });
+  }
+
+  // src/match-context.js
+  var SPECIAL = new Set(MBM_SPECIAL_PURPOSE);
+  var _relatedCache = /* @__PURE__ */ new Map();
+  function releaseArtistMbids() {
+    try {
+      const names = pageWindow.MB?.relationshipEditor?.state?.entity?.artistCredit?.names || [];
+      return [...new Set(names.map((n) => n?.artist?.gid).filter(Boolean))];
+    } catch (e) {
+      return [];
+    }
+  }
+  async function buildReleaseContext({ coCredit = false } = {}) {
+    const all = releaseArtistMbids();
+    const seeds = all.filter((g) => !SPECIAL.has(g));
+    if (all.length && !seeds.length) log.info("Matching context: the release artist is special-purpose (e.g. Various Artists) \u2014 no context lookup (#612)");
+    const related = [];
+    for (const gid of seeds.slice(0, 4)) {
+      let list = _relatedCache.get(gid);
+      if (!list) {
+        const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist/${gid}?inc=aliases+artist-rels&fmt=json`);
+        if (!json) {
+          log.warn(`Matching context: could not load release artist ${gid} \u2014 continuing without it`);
+          continue;
+        }
+        list = mbmRelatedArtists(json);
+        _relatedCache.set(gid, list);
+      }
+      for (const r of list) if (!related.some((x) => x.gid === r.gid)) related.push(r);
+    }
+    if (seeds.length) {
+      const kinds = related.filter((r) => r.rel !== "self").reduce((m, r) => (m[r.rel] = (m[r.rel] || 0) + 1, m), {});
+      log.info(`Matching context: ${seeds.length} release artist(s) \u2192 ${related.length - seeds.length} related artist(s)` + (Object.keys(kinds).length ? ` (${Object.entries(kinds).map(([k, n]) => `${n} ${k}`).join(", ")})` : "") + (coCredit ? " \xB7 co-credit search on" : ""));
+      logDebug(`context related: ${related.map((r) => `${r.name}[${r.rel}]`).join(", ")}`);
+    }
+    return { seeds, related, coCredit: !!coCredit };
   }
 
   // src/editor-state.js
@@ -7597,7 +7815,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     optsBtn.type = "button";
     optsBtn.className = "discogs-opts-btn";
     optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">\u25BE</span>';
-    optsBtn.title = "Deduplication options";
+    optsBtn.title = "Deduplication and matching options";
     const optsPanel = document.createElement("div");
     optsPanel.className = "discogs-opts-panel mbu-ui";
     const dedupHd = document.createElement("div");
@@ -7614,6 +7832,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       "Duplicate roles",
       bv("dedupeDuplicateRoles", true),
       "Skip adding a role when the target already has the same role (regardless of task / dates / attributes)."
+    );
+    const matchHd = document.createElement("div");
+    matchHd.className = "discogs-opts-panel-hd";
+    matchHd.textContent = "Matching";
+    optsPanel.appendChild(matchHd);
+    const coCreditCb = makeCheckbox(
+      "Co-credit search",
+      bv("coCredit", false),
+      "For a name still ambiguous after name, alias and release-context matching, search MusicBrainz for a recording that credits it ALONGSIDE the release artist (one extra request per ambiguous name and release artist). Off by default."
     );
     _optsHost = optsWrap;
     optsWrap.appendChild(optsBtn);
@@ -7644,12 +7871,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           createWorksReset421: true,
           // #421 one-time reset already applied — must survive every save
           dedupeEquivalenceSets: dedupeEqCb.checked,
-          dedupeDuplicateRoles: dedupeDupCb.checked
+          dedupeDuplicateRoles: dedupeDupCb.checked,
+          coCredit: coCreditCb.checked
+          // #613
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb, coCreditCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -7969,7 +8198,9 @@ ${lines}
         // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
         createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
         dedupeEquivalenceSets: dedupeEqCb.checked,
-        dedupeDuplicateRoles: dedupeDupCb.checked
+        dedupeDuplicateRoles: dedupeDupCb.checked,
+        coCredit: coCreditCb.checked
+        // #613 co-credit search (off by default)
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
@@ -8479,11 +8710,18 @@ ${lines}
       _logs2.appendChild(companyProgressLi);
       const t0 = performance.now();
       return (async () => {
+        let context = null;
+        try {
+          context = await buildReleaseContext({ coCredit: !!(getOpts && getOpts().coCredit) });
+        } catch (e) {
+          log.warn(`Matching context unavailable: ${e.message}`);
+        }
         const artistResults = await resolveAll(uniqueArtists, {
           progressLi: artistProgressLi,
           progressLabel: "Checking artists against MusicBrainz",
           kindOf: ENTITY_KIND,
-          bypassIdb
+          bypassIdb,
+          context
         });
         const companyResults = await resolveAll(uniqueCompanies, {
           progressLi: companyProgressLi,
@@ -8613,6 +8851,10 @@ ${lines}
   }
 
   // src/credit_hoarder.user.js
+  try {
+    pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids };
+  } catch (e) {
+  }
   if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
     runTidalHarvestPage();
   }

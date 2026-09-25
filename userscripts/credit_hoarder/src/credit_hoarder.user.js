@@ -20,6 +20,13 @@ import { DISCOGS_CHANNEL }       from './constants.js';
 import { runTidalHarvestPage }   from './sources/tidal.js';
 import { runMetalArchivesHarvestPage } from './sources/metal_archives.js';
 import                                './storage.js';   // opens IndexedDB on load
+import { resolveAll, ARTIST_KIND }   from './preflight.js';
+import { buildReleaseContext, releaseArtistMbids } from './match-context.js';
+import { pageWindow }                from './constants.js';
+
+// Test hook (like Apollo's __apolloEditor): lets the verify scripts drive the matching
+// pipeline on a real MB page without walking the whole import UI. Read-only by itself.
+try { pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids }; } catch (e) {}
 
 // ── tidal.com: credits-harvest companion (#193) ──────────────────────────────
 // The script also @matches tidal.com album pages. When the MB side opened
