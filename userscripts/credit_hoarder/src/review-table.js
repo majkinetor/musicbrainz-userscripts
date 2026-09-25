@@ -215,6 +215,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // with them, and the meaning (confident / resolved / weak) survives.
         const VIA_STYLES = {
             both:  { text: 'name+url', color: 'var(--mbu-ok)' },          // high confidence
+            'both-alias': { text: 'alias+url', color: 'var(--mbu-ok)' },  // #613 URL and an exact ALIAS agree
             url:   { text: 'url',      color: 'var(--mbu-accent-text)' },
             name:  { text: 'name',     color: 'var(--mbu-accent-text)' },
             alias: { text: 'alias',    color: 'var(--mbu-accent-text)' },   // #613 exact alias of the MB artist (provably unique)
@@ -1020,6 +1021,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // #613 "+ alias" on a MANUAL pick (this session, or a cached one): the credit isn't the
             // artist's name or any alias → offer to add it. Left click: MB's form, pre-filled,
             // foreground. Right click: submit in the background (no alias type).
+            let aliasPick = null;   // #613: the manual pick (this session or cached) the "+ alias" button is for
             function makeAddAliasBtn(a) {
                 if (!wantsAliasButton(entityType, a, displayName)) return null;
                 const ab = document.createElement('button');
@@ -1031,7 +1033,15 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 • right-click: submit it in the background (no alias type)`;
                 ab.style.cssText = 'font-size:0.72rem;cursor:pointer;padding:0 0.4rem;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-accent-text);white-space:nowrap;flex:0 0 auto;';
                 const note = buildCreateNote(`Added "${displayName}" as an alias — the ${srcName} credit${discogsHref ? ' (' + discogsHref + ')' : ''} —`);
-                ab.addEventListener('click', (ev) => { ev.preventDefault(); openAddAliasForm(a.id, displayName, note); });
+                ab.addEventListener('click', async (ev) => {
+                    ev.preventDefault();
+                    const res = await openAddAliasForm(a.id, displayName, note);
+                    if (res && res.already) {   // carried by now — no form, no duplicate
+                        ab.textContent = '✓ has alias'; ab.disabled = true;
+                        ab.title = `${a.name} already carries "${displayName}" — nothing to add`;
+                        ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                    }
+                });
                 ab.addEventListener('contextmenu', async (ev) => {
                     ev.preventDefault();
                     if (ab.disabled) return;
@@ -1053,6 +1063,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             }
 
             function setRowResolved(a) {
+                aliasPick = a;   // #613: a manual pick — renderActions offers "+ alias" for it
                 // a = { id, name, disambiguation }
                 clearRowCreating();   // #273: drop any background-create placeholder
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
@@ -1112,8 +1123,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // never `(cache)` (this is a fresh pick).
                 const viaBadge = makeViaBadge('user', false);
                 if (viaBadge) selRow.appendChild(viaBadge);
-                const aliasBtn = makeAddAliasBtn(a);   // #613
-                if (aliasBtn) selRow.appendChild(aliasBtn);
                 const mbRolesEl = buildMbRolesEl();
                 if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);
@@ -1125,6 +1134,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             }
 
             function setRowUnresolved() {
+                aliasPick = null;
                 clearRowCreating();   // #273: drop any background-create placeholder
                 rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false, via: null, fromCache: false });
                 // Clear the Credited-as override now that there's no
@@ -1681,6 +1691,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         profileBox.textContent = '(failed to load Discogs profile)';
                     }
                 }
+                // #613: "+ alias" sits with the other ADD actions (link / create), leftmost
+                if (selected && aliasPick && aliasPick.id === selected.id) {
+                    const ab = makeAddAliasBtn(aliasPick);
+                    if (ab) tdAction.insertBefore(ab, tdAction.firstChild);
+                }
             }
 
             function makeCandidateRow(a) {
@@ -1813,11 +1828,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // `(cache)` suffix when the resolution came from IDB.
                 const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
                 if (viaBadge) selRow.appendChild(viaBadge);
-                if (r.logEntry?.via === 'user') { const aliasBtn = makeAddAliasBtn(fakeA); if (aliasBtn) selRow.appendChild(aliasBtn); }   // #613: a cached manual pick
                 const mbRolesEl = buildMbRolesEl();
                 if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
+                if (r.logEntry?.via === 'user') aliasPick = fakeA;   // #613: a cached manual pick
                 renderActions(fakeA);
             } else if (r.nameMatches && r.nameMatches.length > 0) {
                 r.nameMatches.forEach(a => candidateList.appendChild(makeCandidateRow(a)));

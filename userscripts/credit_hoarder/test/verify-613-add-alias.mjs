@@ -60,6 +60,11 @@ if (mine) {
 const again = await page.evaluate(async ([mbid, name]) => { try { return await window.__creditHoarder.submitAliasBackground(mbid, name, 'dup check'); } catch (e) { return { err: e.message }; } }, [SANDBOX_ARTIST, aliasName]);
 ck(again && again.already === true, `submitting the same alias again → "already" and nothing submitted (no duplicate) — ${JSON.stringify(again)}`);
 
+const pagesBefore = ctx.pages().length;
+const leftDup = await page.evaluate(async ([mbid, name]) => { try { return await window.__creditHoarder.openAddAliasForm(mbid, name, 'dup check'); } catch (e) { return { err: e.message }; } }, [SANDBOX_ARTIST, aliasName]);
+await page.waitForTimeout(800);
+ck(leftDup && leftDup.already === true && ctx.pages().length === pagesBefore, `left click on an alias the artist already has → "already", the tab it opened is closed again (${JSON.stringify(leftDup)}, tabs ${pagesBefore}→${ctx.pages().length})`);
+
 // ── B. production: the button in the review table (read-only) ───────────────
 posts.length = 0;
 await page.goto('https://musicbrainz.org/release/aba74013-0e72-4ab9-87ee-7dc82193dc35/edit-relationships', { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -89,11 +94,13 @@ const picked = await page.evaluate(() => {
   return 'ok';
 });
 await page.waitForTimeout(800);
-const btn = await page.evaluate(() => { const b = document.querySelector('.discogs-add-alias'); return b ? { text: b.textContent, title: b.title } : null; });
+const btn = await page.evaluate(() => { const b = document.querySelector('.discogs-add-alias'); if (!b) return null; const td = b.closest('td'), tds = [...td.parentElement.children]; return { text: b.textContent, title: b.title, col: tds.indexOf(td), cols: tds.length }; });
 console.log('pick:', picked, '· button:', JSON.stringify(btn));
 ck(picked === 'ok' && btn && btn.text === '+ alias', '"+ alias" appears after picking George Gershwin by hand for "George & Ira Gershwin"');
+ck(btn && btn.col < btn.cols - 1, `"+ alias" sits in the LEFT (source) column with the other add actions, not the MB-match column (column ${btn && btn.col + 1} of ${btn && btn.cols})`);
 if (btn) {
   const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('.discogs-add-alias')]);
+  await popup.waitForURL(/\/add-alias\?/, { timeout: 20000 });   // it opens blank first, then goes to the form once the live-alias check passes
   await popup.waitForLoadState('domcontentloaded');
   const form = await popup.evaluate(() => ({ url: location.pathname, name: (document.querySelector('[name="edit-alias.name"]') || {}).value, sort: (document.querySelector('[name="edit-alias.sort_name"]') || {}).value, type: (document.querySelector('[name="edit-alias.type_id"]') || {}).value, note: ((document.querySelector('[name="edit-alias.edit_note"]') || {}).value || '').slice(0, 90) }));
   console.log('left click opened:', JSON.stringify(form));
