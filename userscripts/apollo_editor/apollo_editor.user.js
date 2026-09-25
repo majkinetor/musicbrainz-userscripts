@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.25.224320
+// @version      2026.9.25.224911
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1716,7 +1716,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.25.224320';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.25.224911';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2396,7 +2396,6 @@
     #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:nowrap;min-width:0}   /* #280: never wrap → toast / "added link" text can't push the toolbar taller */
     #tc-bar b{color:var(--mbu-accent-text)}#tc-bar .sp{flex:1 1 0;min-width:0}
     #tc-bar > .tc-btn{flex:none;white-space:nowrap}   /* #280: Match / ▾ never shrink → never wrap to 2 lines when toast text appears */
-    .tc-toast{flex:0 1 auto;min-width:0;color:var(--mbu-accent-text);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}   /* #280: shrink (ellipsis) instead of forcing a wrap */
     .tc-globalstat{flex:none;font-size:12px;color:var(--mbu-text-weak);font-style:italic;white-space:nowrap}
     .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}.tc-am-lbl select{font:12px Arial;padding:1px 3px}
     .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#d6342c;padding:1px 8px;border-radius:9px}
@@ -2961,8 +2960,19 @@
   const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend'); e.onclick = null; e.style.cursor = ''; e.title = ''; });
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
-  let _toastTimer = null;
-  const toast = msg => { document.querySelectorAll('.tc-toast').forEach(e => { e.textContent = msg || ''; }); clearTimeout(_toastTimer); if (msg) _toastTimer = setTimeout(() => toast(''), 5000); };
+  // majkinetor: "it doesn't seem like a good idea to show messages in the toolbar as it moves
+  // buttons around" — the old .tc-toast span sat in the toolbar's flex row and took width from
+  // the tool buttons (they wrapped). One-off results now go to the shared floating toast
+  // (mbuToast, #563: bottom centre, fades, same in every script); the toolbar keeps only
+  // fixed status (links badge, match state, unresolved count). Colour follows the text:
+  // failures red, refusals/“try again” amber, ✓ green (mbuToast's own inference), else neutral.
+  const TOAST_ERROR = /\bfailed\b|invalid json/i;
+  const TOAST_WARN = /^(merge|split):|couldn[’']t|unavailable|did not load|disc id|no durations|already used|is empty|needs a |type a search|empty chain/i;
+  const toast = (msg, kind) => {
+    if (!msg) return;
+    const k = kind || (TOAST_ERROR.test(msg) ? 'error' : TOAST_WARN.test(msg) ? 'warn' : null);
+    mbuToast(msg, k ? { kind: k, ms: 4000 } : { ms: 4000 });
+  };
   // #281: "added Discogs link to X" feedback sits right next to the "N links" badge
   // (not in the centre toast), so it reads together with the count it just changed.
   let _discMsgTimer = null;
@@ -5454,7 +5464,7 @@
   }
 
   const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span></div>`
-    + `<span class="tc-toast"></span><span class="tc-disc-msg"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
+    + `<span class="tc-disc-msg"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
