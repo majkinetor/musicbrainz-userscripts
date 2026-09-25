@@ -1,5 +1,15 @@
 # ISRC Scout Changelog
 
+## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
+
+### Features
+
+1. Molla as an alternative Spotify ISRC source ([#603](https://github.com/majkinetor/musicbrainz-userscripts/issues/603))
+
+### Fixes
+
+1. Stale ISRC status button after opening the dialog ([#607](https://github.com/majkinetor/musicbrainz-userscripts/issues/607))
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### Features

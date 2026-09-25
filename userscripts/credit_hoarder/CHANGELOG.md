@@ -1,5 +1,11 @@
 # Credit Hoarder Changelog
 
+## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
+
+### Features
+
+1. Option to split credit ([#605](https://github.com/majkinetor/musicbrainz-userscripts/issues/605))
+
 ## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
 
 - Small improvements

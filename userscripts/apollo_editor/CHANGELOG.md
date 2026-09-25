@@ -1,5 +1,17 @@
 # Apollo Editor Changelog
 
+## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
+
+### Features
+
+1. Merge/Split mediums ([#615](https://github.com/majkinetor/musicbrainz-userscripts/issues/615))
+
+### Fixes
+
+1. Tracks not visible 10s after expanding medium ([#616](https://github.com/majkinetor/musicbrainz-userscripts/issues/616))
+1. Border is not visible on link type ([#609](https://github.com/majkinetor/musicbrainz-userscripts/issues/609))
+1. Click on track puts cursor at the start or end of edit control ([#601](https://github.com/majkinetor/musicbrainz-userscripts/issues/601))
+
 ## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
 
 ### Features

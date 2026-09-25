@@ -1,5 +1,43 @@
 # String Theory Changelog
 
+## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Merge/Split mediums ([#615](https://github.com/majkinetor/musicbrainz-userscripts/issues/615))
+1. Tracks not visible 10s after expanding medium ([#616](https://github.com/majkinetor/musicbrainz-userscripts/issues/616))
+1. Border is not visible on link type ([#609](https://github.com/majkinetor/musicbrainz-userscripts/issues/609))
+1. Click on track puts cursor at the start or end of edit control ([#601](https://github.com/majkinetor/musicbrainz-userscripts/issues/601))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Adding covers from zip archive ([#604](https://github.com/majkinetor/musicbrainz-userscripts/issues/604))
+1. Resizing the "Submit edits" dialog is buggy  ([#595](https://github.com/majkinetor/musicbrainz-userscripts/issues/595))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Option to split credit ([#605](https://github.com/majkinetor/musicbrainz-userscripts/issues/605))
+
+### [Fusion](../fusion/CHANGELOG.md)
+
+1. Match recordings by artist entity (MBID), not just artist credit string ([#594](https://github.com/majkinetor/musicbrainz-userscripts/issues/594))
+1. Parallel merge silently fails because it isn't supported on the server ([#608](https://github.com/majkinetor/musicbrainz-userscripts/issues/608))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Text Pattern/Vertical support for individual tracks ([#597](https://github.com/majkinetor/musicbrainz-userscripts/issues/597))
+1. Concurent background creation fails to return some MBIDs ([#598](https://github.com/majkinetor/musicbrainz-userscripts/issues/598))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Molla as an alternative Spotify ISRC source ([#603](https://github.com/majkinetor/musicbrainz-userscripts/issues/603))
+1. Stale ISRC status button after opening the dialog ([#607](https://github.com/majkinetor/musicbrainz-userscripts/issues/607))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Wikidata lookup performance improvements ([#606](https://github.com/majkinetor/musicbrainz-userscripts/issues/606))
+1.  Wallstream for the Spotify barcode lookup (replaces SAMBL) ([#602](https://github.com/majkinetor/musicbrainz-userscripts/issues/602))
+
 ## [2026.9.15](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.15)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

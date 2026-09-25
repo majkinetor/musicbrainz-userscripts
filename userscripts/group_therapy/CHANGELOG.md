@@ -1,5 +1,15 @@
 # Group Therapy
 
+## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
+
+### Features
+
+1. Text Pattern/Vertical support for individual tracks ([#597](https://github.com/majkinetor/musicbrainz-userscripts/issues/597))
+
+### Fixes
+
+1. Concurent background creation fails to return some MBIDs ([#598](https://github.com/majkinetor/musicbrainz-userscripts/issues/598))
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### Features
