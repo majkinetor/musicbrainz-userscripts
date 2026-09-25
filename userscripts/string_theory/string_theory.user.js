@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.24.212048
+// @version      2026.9.25.144119
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,13 +82,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.24.212048 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.23\n  · Art Station v2026.9.23\n  · Credit Hoarder v2026.9.24.154248\n  · Fusion v2026.9.24\n  · Group Therapy v2026.9.22.222153\n  · ISRC Scout v2026.9.24\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.24");
+  console.log('%c String Theory %c v2026.9.25.144119 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25\n  · Art Station v2026.9.23\n  · Credit Hoarder v2026.9.24.154248\n  · Fusion v2026.9.24\n  · Group Therapy v2026.9.22.222153\n  · ISRC Scout v2026.9.24\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.24");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.23","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.23","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -2476,6 +2476,8 @@ try {
     .tc-addbtn:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text);border-color:var(--mbu-accent)}
     /* #330: pregap/data-track toggles + row markers */
     .tc-medopts{display:inline-flex;align-items:center;gap:12px;margin-left:14px}
+    .tc-mmo{display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px 8px}.tc-mmo label{display:inline-flex;align-items:center;gap:2px;cursor:pointer;font-size:12px}.tc-mmo-lab{font-size:12px;color:var(--mbu-text-dim);margin-right:2px}   /* #615 */
+    .tc-spo{display:inline-flex;align-items:center;gap:6px}   /* #615 */
     .tc-medopt{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--mbu-text-dim);cursor:pointer;white-space:nowrap}
     .tc-medopt:has(input:disabled){color:var(--mbu-text-weak);cursor:default}   /* #330: disc-ID medium — toggle shown but locked */
     .tc-trkkind{flex:none;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mbu-ok);background:var(--mbu-ok-bg);border:1px solid var(--mbu-ok);border-radius:8px;padding:0 5px;margin-right:5px}
@@ -3994,6 +3996,116 @@ try {
   // medium-scoped tools — each acts on one medium (chosen via the inline medium combo)
   async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists on medium', mi + 1); }
   function resetNumbers(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } finally { _selfEdit = false; } rebuild(); }
+
+  /* ── #615 Merge / Split mediums ─────────────────────────────────────────────
+   * majkinetor: "Merge all or subset of mediums (keep only one and move tracks to
+   * it and reset # on it)" and "Split 1 medium on track (add medium, move tracks to
+   * it and reset # on new one)".
+   *
+   * MB's release editor can't move a track between mediums (moveTrackUp/Down and
+   * swapTracks stay inside one medium). What it DOES do, in its own "use the
+   * tracklist of another medium" path (Medium.tracksLoaded), is copy tracks as NEW
+   * tracks — no track id — that keep their recording. That's what happens here, from
+   * the LIVE track values (so unsaved edits come along): title, length, artist
+   * credit, data-track flag and the linked recording. Emptied mediums are removed
+   * with MB's own removeMedium, numbers reset with its resetTrackNumbers. So the
+   * edits are the ones a person doing it by hand produces: Edit medium (tracks
+   * added, existing recordings reused) + Remove medium, or Add medium for a split.
+   * Recordings are untouched; the moved tracks get new track MBIDs, as by hand.
+   *
+   * A medium with a disc ID has its tracklist locked by MB, so it's refused. */
+  const medHasToc = m => { try { return !!(m && typeof m.hasToc === 'function' && m.hasToc()); } catch (e) { return false; } };
+  const medLoaded = m => { try { return typeof m.loaded === 'function' ? !!u(m.loaded) : true; } catch (e) { return true; } };
+  const medLabel = (m, i) => {
+    const n = medLoaded(m) ? u(m.tracks).length : null, nm = (u(m.name) || '').trim();
+    return 'Medium ' + (i + 1) + (nm ? ' — ' + nm : '') + (n == null ? ' (not loaded)' : ' (' + n + ' track' + (n === 1 ? '' : 's') + ')');
+  };
+  // load collapsed mediums' tracks (MB lazy-loads them) and wait until every one reports loaded
+  async function loadMediums(meds) {
+    const pending = meds.filter(m => !medLoaded(m));
+    if (!pending.length) return true;
+    Log.info('#615 loading', pending.length, 'collapsed medium(s) first');
+    pending.forEach(m => { try { if (typeof m.loadTracks === 'function') m.loadTracks(); } catch (e) { Log.warn('loadTracks failed', e.message); } });
+    for (let n = 0; n < 150 && !pending.every(medLoaded); n++) await new Promise(r => setTimeout(r, 200));
+    const ok = pending.every(medLoaded);
+    if (!ok) Log.warn('#615 medium(s) did not finish loading:', pending.filter(m => !medLoaded(m)).map(m => u(m.position)).join(', '));
+    return ok;
+  }
+  // a live KO track → constructor data for a NEW track that keeps the same recording (MB's own copy path)
+  function trackCopyData(t) {
+    const d = { name: u(t.name) || '', length: u(t.length), artistCredit: u(t.artistCredit), isDataTrack: !!u(t.isDataTrack) };
+    const rec = u(t.recording);
+    if (!u(t.hasNewRecording) && rec && rec.gid) d.recording = rec;
+    return d;
+  }
+  async function mergeMediums(indices) {
+    const ed = getEditor(), all = mediums(), F = W.MB && W.MB.releaseEditor && W.MB.releaseEditor.fields;
+    const sel = [...new Set(indices)].filter(i => all[i]).sort((a, b) => a - b);
+    if (sel.length < 2) { toast('Merge: tick at least two mediums'); Log.warn('#615 merge: fewer than two mediums selected', JSON.stringify(indices)); return; }
+    if (!F || !F.Track) { Log.err('#615 merge: MB release-editor fields not available'); toast('Merge failed — see Log'); return; }
+    const meds = sel.map(i => all[i]), target = meds[0], sources = meds.slice(1);
+    const locked = sel.filter(i => medHasToc(all[i]));
+    if (locked.length) { toast('Merge: medium ' + locked.map(i => i + 1).join(', ') + ' has a disc ID — MB locks its tracklist'); Log.warn('#615 merge refused — disc ID on medium(s)', locked.map(i => i + 1).join(', ')); return; }
+    if (!(await loadMediums(meds))) { toast('Merge: a medium did not load — try again'); return; }
+    Log.info('#615 merge: mediums', sel.map(i => i + 1).join(', '), '→ medium', sel[0] + 1, '·', meds.map((m, k) => (sel[k] + 1) + ':' + u(m.tracks).length).join(' '));
+    _selfEdit = true;
+    let moved = 0;
+    try {
+      const own = u(target.tracks), ownAudio = own.filter(t => !u(t.isDataTrack)), ownData = own.filter(t => u(t.isDataTrack));
+      const movAudio = [], movData = [];
+      for (const src of sources) {
+        for (const t of u(src.tracks)) {
+          if (u(t.position) === 0) Log.warn('#615 merge: medium', u(src.position), 'pregap track "' + (u(t.name) || '') + '" becomes a regular track');
+          const nt = new F.Track(trackCopyData(t), target);
+          (u(nt.isDataTrack) ? movData : movAudio).push(nt);
+          Log.debug('#615   ' + u(src.position) + '.' + u(t.number) + ' "' + (u(t.name) || '') + '" → medium ' + (sel[0] + 1) + (nt.recording && u(nt.recording) && u(nt.recording).gid ? ' · recording ' + u(nt.recording).gid : ' · new recording'));
+          moved++;
+        }
+      }
+      // audio stays ahead of data tracks (MB keeps data tracks at the end of a medium)
+      target.tracks([...ownAudio, ...movAudio, ...ownData, ...movData]);
+      for (const src of sources.slice().reverse()) ed.removeMedium(src);   // last first, so MB's renumbering of the rest stays simple
+      ed.resetTrackNumbers(target);
+      try { target.toc(null); } catch (e) {}
+    } catch (e) { Log.err('#615 merge failed:', e.message); toast('Merge failed — see Log'); }
+    finally { _selfEdit = false; }
+    Log.ok('#615 merged', sources.length, 'medium(s) into medium', sel[0] + 1, '—', moved, 'track(s) moved, recordings kept, numbers reset');
+    toast('Merged ' + (sources.length + 1) + ' mediums into medium ' + (sel[0] + 1) + ' (' + moved + ' tracks moved)');
+    _mergeSel = null;
+    await loadAndRender(); renderToolbar();
+  }
+  // split medium `mi` so a NEW medium (right after it, same format) starts at track index `at`
+  async function splitMedium(mi, at) {
+    const ed = getEditor(), rel = release(), m = mediums()[mi], F = W.MB && W.MB.releaseEditor && W.MB.releaseEditor.fields;
+    if (!m) return;
+    if (!F || !F.Track || !F.Medium) { Log.err('#615 split: MB release-editor fields not available'); toast('Split failed — see Log'); return; }
+    if (medHasToc(m)) { toast('Split: medium ' + (mi + 1) + ' has a disc ID — MB locks its tracklist'); Log.warn('#615 split refused — disc ID on medium', mi + 1); return; }
+    if (!(await loadMediums([m]))) { toast('Split: the medium did not load — try again'); return; }
+    const tracks = u(m.tracks);
+    if (!(at > 0 && at < tracks.length)) { toast('Split: pick a track after the first one'); Log.warn('#615 split: bad split index', at, 'of', tracks.length); return; }
+    const moving = tracks.slice(at);
+    Log.info('#615 split: medium', mi + 1, 'at track', u(tracks[at].number), '"' + (u(tracks[at].name) || '') + '" —', moving.length, 'of', tracks.length, 'track(s) to a new medium', mi + 2);
+    _selfEdit = true;
+    try {
+      const nm = new F.Medium({ position: u(m.position) + 1, format_id: u(m.formatID), name: '', tracks: [] }, rel);
+      nm.tracks(moving.map((t, i) => new F.Track(Object.assign(trackCopyData(t), { position: i + 1, number: String(i + 1) }), nm)));
+      m.tracks.removeAll(moving);
+      const list = u(rel.mediums), idx = list.indexOf(m);
+      list.slice(idx + 1).forEach(x => x.position(u(x.position) + 1));   // make room right after the split medium
+      rel.mediums.splice(idx + 1, 0, nm);
+      ed.resetTrackNumbers(m); ed.resetTrackNumbers(nm);
+      try { m.toc(null); } catch (e) {}
+      try { if (typeof nm.loaded === 'function') nm.loaded(true); if (typeof nm.collapsed === 'function') nm.collapsed(false); } catch (e) {}
+    } catch (e) { Log.err('#615 split failed:', e.message); toast('Split failed — see Log'); }
+    finally { _selfEdit = false; }
+    Log.ok('#615 split medium', mi + 1, '→ new medium', mi + 2, 'with', moving.length, 'track(s), recordings kept, numbers reset on both');
+    toast('Split medium ' + (mi + 1) + ': ' + moving.length + ' tracks moved to new medium ' + (mi + 2));
+    await loadAndRender(); renderToolbar();
+  }
+  // params state for the two tools (kept while the toolbar re-renders)
+  let _mergeSel = null;   // Set of medium indexes ticked for Merge (null → all)
+  let _splitAt = null;    // track index the Split tool starts the new medium at (null → middle)
+  let _splitLoading = false;   // a collapsed medium's tracks are being loaded for the Split params
   /* ── #456 pattern Track parser ─────────────────────────────────────────────
    * MB's native parser is rigid, so we roll our own. A one-line PATTERN describes
    * a tracklist line; we compile it to a regex and run every pasted line through
@@ -4574,6 +4686,8 @@ try {
     else if (a === 'guesscase') guessCaseAll();
     else if (a === 'guessfeat') guessFeatAll();
     else if (a === 'cols') colsFit();   // the Columns button's default action is Fit
+    else if (a === 'mergemed') { const all = mediums(); const sel = _mergeSel ? [..._mergeSel].filter(i => all[i]) : all.map((_, i) => i); mergeMediums(sel); }   // #615
+    else if (a === 'splitmed') { const mi = toolMedium(); const m = mediums()[mi]; const n = m && medLoaded(m) ? u(m.tracks).length : 0; Log.debug('#615 split requested: medium', mi + 1, '· chosen index', _splitAt, '· tracks', n); splitMedium(mi, _splitAt != null ? _splitAt : Math.floor(n / 2)); }   // #615
     else if (MEDIUM_TOOLS.has(a)) runMediumTool(a, 0);
     else if (_bridgeMap[a]) fireBridge(_bridgeMap[a]);
   }
@@ -4627,6 +4741,8 @@ try {
     { act: 'lengthparser', label: 'Length parser',     icon: '⏱' },         // ⏱ #455
     { act: 'swap',      label: 'Swap',               icon: '⇅' },           // ⇅
     { act: 'resetnum',  label: 'Reset #',            icon: '#' },
+    { act: 'mergemed',  label: 'Merge mediums',      icon: '⊕', params: true },   // #615
+    { act: 'splitmed',  label: 'Split medium',       icon: '✂', params: true },   // #615
     { act: 'guessfeat', label: 'Guess feat.',        icon: 'ft', instant: true },
     { act: 'guesscase', label: 'Guess case',         icon: 'Aa', params: true },
     { act: 'sr',        label: 'Search and Replace', icon: 'S&R', params: true },
@@ -4635,6 +4751,7 @@ try {
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
   const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'patternparser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
+  const PICK_SHOWS_ONLY = new Set(['mergemed', 'splitmed']);   // #615: structural — picking from the menu must not run them
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
   const hasParams = act => !!(TOOL[act] && TOOL[act].params);
 
@@ -4788,6 +4905,9 @@ try {
     // it returns to the menu next session). Customize is where you make it permanent.
     if (hasInlineParams(act)) {
       if (!cfgOf(act).onBar) { TEMP_BAR.add(act); renderToolbar(); }
+      // #615: Merge / Split restructure the release — picking them only SHOWS their params
+      // (which mediums / which track); they run on their icon/name click, never on the pick.
+      if (PICK_SHOWS_ONLY.has(act)) { Log.info('#615', TD(act).label, '— set it up in the toolbar, then click its name to run'); return; }
       return triggerTool(act);
     }
     if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
@@ -4853,6 +4973,41 @@ try {
         mk('Default', 'reset every column to its default width', colsDefault),
       );
       host.appendChild(box);
+    } else if (act === 'mergemed') {
+      // #615: tick the mediums to merge — they all go into the FIRST ticked one
+      const box = document.createElement('span'); box.className = 'tc-mmo';
+      const all = mediums();
+      if (!_mergeSel) _mergeSel = new Set(all.map((_, i) => i));
+      const lab = document.createElement('span'); lab.className = 'tc-mmo-lab'; lab.textContent = all.length > 1 ? 'into first ticked:' : 'only one medium';
+      box.appendChild(lab);
+      all.forEach((m, i) => {
+        const l = document.createElement('label'); l.title = medLabel(m, i);
+        const c = document.createElement('input'); c.type = 'checkbox'; c.checked = _mergeSel.has(i);
+        c.onchange = () => { if (c.checked) _mergeSel.add(i); else _mergeSel.delete(i); };
+        l.append(c, document.createTextNode(String(i + 1))); box.appendChild(l);
+      });
+      host.appendChild(box);   // no Run button — click the tool's icon/name (same as the other param tools)
+    } else if (act === 'splitmed') {
+      // #615: which medium, and the track the NEW medium starts at
+      const box = document.createElement('span'); box.className = 'tc-medo tc-spo';
+      const all = mediums(); let mi = toolMedium(); if (!all[mi]) mi = 0;
+      if (all.length > 1) {
+        const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
+        all.forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); o.title = medLabel(m, i); sel.appendChild(o); });
+        sel.value = String(mi); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; _splitAt = null; renderToolbar(); };
+        box.appendChild(sel);
+      }
+      const m = all[mi], tr = m && medLoaded(m) ? u(m.tracks) : [];
+      // MB lazy-loads a collapsed medium's tracks — load it, then rebuild these params with its tracks
+      if (m && !medLoaded(m) && !_splitLoading) { _splitLoading = true; loadMediums([m]).then(() => { _splitLoading = false; renderToolbar(); }); }
+      const lab = document.createElement('span'); lab.className = 'tc-mmo-lab'; lab.textContent = m && !medLoaded(m) ? 'loading medium…' : 'new medium from #';
+      const at = document.createElement('select'); at.className = 'tc-medsel tc-spat'; at.title = 'the first track of the new medium';
+      tr.forEach((t, i) => { if (i === 0) return; const o = document.createElement('option'); o.value = String(i); o.textContent = String(u(t.number) || i + 1); o.title = u(t.name) || ''; at.appendChild(o); });
+      if (_splitAt == null || _splitAt <= 0 || _splitAt >= tr.length) _splitAt = Math.floor(tr.length / 2) || null;
+      if (_splitAt != null) at.value = String(_splitAt);
+      at.disabled = tr.length < 2;
+      at.onchange = () => { _splitAt = parseInt(at.value, 10) || null; Log.debug('#615 split: new medium will start at track index', _splitAt, '(#' + at.options[at.selectedIndex].textContent + ')'); };
+      box.append(lab, at); host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
       const box = document.createElement('span'); box.className = 'tc-medo';
       const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
@@ -9536,7 +9691,7 @@ try {
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
