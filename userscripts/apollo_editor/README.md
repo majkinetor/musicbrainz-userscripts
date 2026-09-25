@@ -157,6 +157,7 @@ Apollo supports all native tools and adds new ones:
 1. [Search & Replace](#search--replace)
 1. [Pattern parser](#pattern-parser)
 1. [Length parser](#length-parser)
+1. [Merge & split mediums](#merge--split-mediums)
 1. [Resize columns](#resize-columns)
 1. [External tools](#external-tools)
 
@@ -262,6 +263,23 @@ Whichever source, it detects everything shaped like a time — `5:50`, `1′23�
 **Invalid** times (e.g. `99:99`) are highlighted red and surface a **prominent badge in the panel header** — they **must be fixed or deleted**, and **Apply** stays disabled until the list is clean. A counter shows *N lengths ↔ M tracks*. **Apply** writes the lengths to the medium's tracks in order (nothing is written until then; **Esc** cancels, **Ctrl+Enter** applies). The panel is **centred, draggable by its header, and resizable**; on a multi-medium release, pick the medium in the header.
 
 <!-- source: discussion #451 / issue #455 -->
+
+### Merge & split mediums
+
+Restructure the mediums without redoing the tracklist by hand. Both tools keep every track's **title, length, artist credit and recording** and reset the track numbers.
+
+<img width="420" src="./screenshots/merge_mediums.png" /> <img width="400" src="./screenshots/split_medium.png" />
+
+- **Merge mediums** — tick the mediums to merge (all are ticked by default); they all go into the **first ticked** one, in medium order, and the others are removed. Tick a subset to merge only some of them (e.g. `2` and `4`).
+- **Split medium** — pick the medium and the track the **new medium starts at**; that track and everything after it move to a new medium, inserted right after the original, with the same format. Later mediums shift down by one.
+
+Picking either tool from the **Tools ▾** menu only shows its controls; it runs when you click its name. Nothing is submitted: review the result and enter the edit as usual.
+
+What MusicBrainz records is what doing it by hand produces: an *Edit medium* (tracks added, existing recordings reused) plus a *Remove medium* per merged-away medium, or an *Add medium* for a split. The moved tracks get new track MBIDs; the recordings don't change. For editors without auto-edit privileges, *Remove medium* waits for votes, so until it passes the release briefly shows the old mediums next to the merged one.
+
+A medium with a disc ID is refused: MusicBrainz locks its tracklist.
+
+<!-- source: issue #615 -->
 
 ### External tools
 
