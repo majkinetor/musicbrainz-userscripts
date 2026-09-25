@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.25.165244
+// @version      2026.9.25.170206
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.25.165244 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.164727\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25.165244\n  · Fusion v2026.9.25\n  · Group Therapy v2026.9.25.164727\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.25.170206 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.164727\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25.170206\n  · Fusion v2026.9.25\n  · Group Therapy v2026.9.25.164727\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -14551,7 +14551,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25.165244","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25.165244","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25.170206","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25.170206","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -18424,6 +18424,63 @@ ${stacked}`;
 ${ourBlock}` : ourBlock;
   }
 
+  // src/alias-add.js
+  var SPECIAL = new Set(MBM_SPECIAL_PURPOSE);
+  function aliasHeldBy(artist, credit) {
+    if (!artist || !credit) return true;
+    const aliases = (artist.aliases || []).map((a) => typeof a === "string" ? { name: a } : a).filter(Boolean);
+    return !!mbmHolds({ name: artist.name, aliases }, credit);
+  }
+  function wantsAliasButton(entityType, artist, credit) {
+    if (entityType !== "artist" || !artist || !artist.id || SPECIAL.has(artist.id)) return false;
+    if (!Array.isArray(artist.aliases)) return !aliasHeldBy({ name: artist.name, aliases: [] }, credit);
+    return !aliasHeldBy(artist, credit);
+  }
+  var aliasFormUrl = (mbid) => `${location.origin}/artist/${mbid}/add-alias`;
+  function openAddAliasForm(mbid, name, note) {
+    const q = new URLSearchParams({ "edit-alias.name": name, "edit-alias.sort_name": name });
+    if (note) q.set("edit-alias.edit_note", note);
+    const url = aliasFormUrl(mbid) + "?" + q.toString();
+    log.info(`+ alias: opening MusicBrainz's add-alias form for "${name}" \u2014 ${url.split("?")[0]}`);
+    window.open(url, "_blank");
+  }
+  async function submitAliasBackground(mbid, name, note) {
+    const url = aliasFormUrl(mbid);
+    const live = await fetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }).then((r) => r.ok ? r.json() : null).catch(() => null);
+    if (live && live.id && aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name)) {
+      log.info(`+ alias: "${name}" is already a name/alias of ${live.name} \u2014 nothing submitted`);
+      return { already: true };
+    }
+    const html = await fetch(url, { credentials: "same-origin" }).then((r) => {
+      if (!r.ok) throw new Error(`GET add-alias HTTP ${r.status}`);
+      return r.text();
+    });
+    const form = new DOMParser().parseFromString(html, "text/html").querySelector("form.edit-alias");
+    if (!form) throw new Error("MusicBrainz did not serve an alias form (still logged in?)");
+    const p = new URLSearchParams();
+    form.querySelectorAll("input, select, textarea").forEach((el) => {
+      if (!el.name) return;
+      if (el.type === "checkbox" || el.type === "radio") {
+        if (el.checked) p.set(el.name, el.value || "1");
+        return;
+      }
+      p.set(el.name, el.value || "");
+    });
+    p.set("edit-alias.name", name);
+    p.set("edit-alias.sort_name", name);
+    p.set("edit-alias.type_id", "");
+    p.set("edit-alias.locale", "");
+    p.delete("edit-alias.primary_for_locale");
+    if (note) p.set("edit-alias.edit_note", note);
+    log.info(`+ alias: submitting "${name}" as an alias of ${url.split("/artist/")[1].split("/")[0]} in the background (no type)`);
+    const res = await fetch(url, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: p.toString() });
+    if (!res.ok) throw new Error(`add-alias submit HTTP ${res.status}`);
+    if (!/\/add-alias\b/.test(res.url)) return res.url;
+    const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+    const msg = [...doc.querySelectorAll(".error, .errors li, p.error")].map((n) => (n.textContent || "").trim()).filter(Boolean)[0];
+    throw new Error(msg || "MusicBrainz rejected the alias without saying why");
+  }
+
   // src/split-credit.js
   var SEP_RE2 = /\s*(\bfeat\.?|\bft\.?|\bfeaturing|&|\band\b|\bvs\.?|\bwith\b|×|・|,|;)\s*/gi;
   var stripDiscogsNum = (s) => String(s || "").replace(/\s+\(\d+\)$/, "");
@@ -19178,6 +19235,45 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             renderActions(null);
           }
         }
+        function makeAddAliasBtn(a) {
+          if (!wantsAliasButton(entityType, a, displayName)) return null;
+          const ab = document.createElement("button");
+          ab.type = "button";
+          ab.className = "discogs-add-alias";
+          ab.textContent = "+ alias";
+          ab.title = `Add "${displayName}" as an alias of ${a.name}
+\u2022 click: open MusicBrainz's add-alias form, pre-filled (you submit it)
+\u2022 right-click: submit it in the background (no alias type)`;
+          ab.style.cssText = "font-size:0.72rem;cursor:pointer;padding:0 0.4rem;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-accent-text);white-space:nowrap;flex:0 0 auto;";
+          const note = buildCreateNote(`Added "${displayName}" as an alias \u2014 the ${srcName} credit${discogsHref ? " (" + discogsHref + ")" : ""} \u2014`);
+          ab.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            openAddAliasForm(a.id, displayName, note);
+          });
+          ab.addEventListener("contextmenu", async (ev) => {
+            ev.preventDefault();
+            if (ab.disabled) return;
+            ab.disabled = true;
+            ab.textContent = "\u23F3 alias";
+            try {
+              const res = await submitAliasBackground(a.id, displayName, note);
+              ab.textContent = res && res.already ? "\u2713 has alias" : "\u2713 alias";
+              ab.title = res && res.already ? `${a.name} already carries "${displayName}" \u2014 nothing submitted` : `"${displayName}" submitted as an alias of ${a.name}`;
+              ab.style.color = "var(--mbu-ok)";
+              ab.style.borderColor = "var(--mbu-ok)";
+              a.aliases = [...a.aliases || [], displayName];
+              if (!(res && res.already)) log.info(`+ alias: "${displayName}" submitted as an alias of <a href="${location.origin}/artist/${a.id}/aliases" target="_blank" rel="noopener noreferrer nofollow">${a.name}</a>`);
+            } catch (e2) {
+              ab.disabled = false;
+              ab.textContent = "\u2717 alias";
+              ab.title = `Adding the alias failed: ${e2.message} \u2014 right-click to retry, click to open the form`;
+              ab.style.color = "var(--mbu-error)";
+              ab.style.borderColor = "var(--mbu-error)";
+              log.warn(`+ alias: "${displayName}" \u2192 ${a.name} failed \u2014 ${e2.message}`);
+            }
+          });
+          return ab;
+        }
         function setRowResolved(a) {
           clearRowCreating();
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
@@ -19227,6 +19323,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           selRow.appendChild(selA);
           const viaBadge = makeViaBadge("user", false);
           if (viaBadge) selRow.appendChild(viaBadge);
+          const aliasBtn = makeAddAliasBtn(a);
+          if (aliasBtn) selRow.appendChild(aliasBtn);
           const mbRolesEl = buildMbRolesEl();
           if (mbRolesEl) selRow.appendChild(mbRolesEl);
           selRow.appendChild(undoBtn);
@@ -19696,14 +19794,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const mbid = extractMbid(q);
           if (mbid) {
             candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Looking up MBID\u2026</div>';
-            mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((json) => {
+            mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?inc=aliases&fmt=json`).then((json) => {
               if (!json) return;
               candidateList.innerHTML = "";
               if (json.id) {
                 candidateList.appendChild(makeCandidateRow({
                   id: json.id,
                   name: json.name,
-                  disambiguation: json.disambiguation || ""
+                  disambiguation: json.disambiguation || "",
+                  aliases: json.aliases || []
                 }));
               } else {
                 candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Not found</div>';
@@ -19773,6 +19872,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           selRow.appendChild(selA);
           const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
           if (viaBadge) selRow.appendChild(viaBadge);
+          if (r.logEntry?.via === "user") {
+            const aliasBtn = makeAddAliasBtn(fakeA);
+            if (aliasBtn) selRow.appendChild(aliasBtn);
+          }
           const mbRolesEl = buildMbRolesEl();
           if (mbRolesEl) selRow.appendChild(mbRolesEl);
           selRow.appendChild(undoBtn);
@@ -19974,7 +20077,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   }
 
   // src/match-context.js
-  var SPECIAL = new Set(MBM_SPECIAL_PURPOSE);
+  var SPECIAL2 = new Set(MBM_SPECIAL_PURPOSE);
   var _relatedCache = /* @__PURE__ */ new Map();
   function releaseArtistMbids() {
     try {
@@ -19986,7 +20089,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   }
   async function buildReleaseContext({ coCredit = false } = {}) {
     const all = releaseArtistMbids();
-    const seeds = all.filter((g) => !SPECIAL.has(g));
+    const seeds = all.filter((g) => !SPECIAL2.has(g));
     if (all.length && !seeds.length) log.info("Matching context: the release artist is special-purpose (e.g. Various Artists) \u2014 no context lookup (#612)");
     const related = [];
     for (const gid of seeds.slice(0, 4)) {
@@ -23373,7 +23476,7 @@ ${lines}
 
   // src/credit_hoarder.user.js
   try {
-    pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids };
+    pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids, wantsAliasButton, submitAliasBackground, openAddAliasForm };
   } catch (e) {
   }
   if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
