@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.25.160801
+// @version      2026.9.25.164741
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,13 +82,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.25.160801 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.160636\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25\n  · Fusion v2026.9.25\n  · Group Therapy v2026.9.25\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.25.164741 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.164727\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25.164741\n  · Fusion v2026.9.25\n  · Group Therapy v2026.9.25.164727\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25.160636","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25.160636","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25.164727","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25.164727","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -237,6 +237,84 @@ try {
   const ORIGIN = location.origin;
   const u = v => { try { return typeof v === 'function' ? v() : v; } catch (e) { return undefined; } };
   const getEditor = () => { try { return W.MB && W.MB.releaseEditor; } catch (e) { return null; } };
+  // #613 shared matching (dev/match/artist-match.mjs) — the exact-identity rule, the
+  // special-purpose artist list, and the name folding Apollo, Group Therapy and Credit
+  // Hoarder share. Filled in by dev/match/sync-match.mjs (pre-commit hook).
+  // <ST-MATCH> — generated by dev/match/sync-match.mjs from dev/match/artist-match.mjs — DO NOT EDIT
+  const MBM_EXACT_LIMIT = 100;
+  const MBM_SPECIAL_PURPOSE = new Set(["125ec42a-7229-4250-afc5-e057484327fe","f731ccc4-e22a-43af-a747-64213329e088","33cf029c-63b0-41a0-9855-be2a3665fb3b","314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc","eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61","9be7f096-97ec-4615-8957-8d40b5dcbc41","89ad4ac3-39f7-470e-963a-56509c546377","7e84f845-ac16-41fe-9ff8-df12eb32af55","66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49","a0ef7e1d-44ff-4039-9435-7d5fefdeecc9","90068d37-bae7-4292-be4a-704c145bd616","80a8851f-444c-4539-892b-ad2a49292aa9"]);
+  function mbmFold(s) {
+      return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+  function mbmFoldKeepCase(s) {
+      return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
+  }
+  function mbmSameName(a, b) { return mbmFold(a) === mbmFold(b) && mbmFold(a) !== ''; }
+  function mbmSameNameCase(a, b) { return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== ''; }
+  function mbmHolds(entity, name, caseExact) {
+      if (!entity) return null;
+      const same = caseExact ? mbmSameNameCase : mbmSameName;
+      if (same(entity.name, name)) return 'name';
+      if ((entity.aliases || []).some(al => same(al && (al.name != null ? al.name : al), name))) return 'alias';
+      return null;
+  }
+  function mbmIdentityQuery(name, field) {
+      const q = String(name == null ? '' : name).replace(/["\\]/g, ' ').replace(/\s+/g, ' ').trim();
+      return q ? 'alias:"' + q + '" OR ' + (field || 'artist') + ':"' + q + '"' : '';
+  }
+  function mbmExactIdentity(json, name, opts) {
+      const o = opts || {};
+      if (!json || typeof json !== 'object') return { status: 'failed', exact: [] };
+      const list = json.artists || json.labels || json.places || [];
+      let exact = list.filter(e => mbmHolds(e, name));
+      if (exact.length > 1) {
+          // several case-insensitive holders, exactly one WITH case → that one (#445 "Kasane Teto")
+          const caseExact = exact.filter(e => mbmHolds(e, name, true));
+          if (caseExact.length === 1) exact = caseExact;
+          else if (o.scoreGap) {
+              const scored = exact.filter(e => typeof e.score === 'number').sort((a, b) => b.score - a.score);
+              if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+          }
+      }
+      const offset = typeof json.offset === 'number' ? json.offset : 0;
+      const complete = typeof json.count === 'number' && json.count <= offset + list.length;
+      if (exact.length === 1 && complete) return { status: 'unique', hit: exact[0], via: mbmHolds(exact[0], name) === 'name' ? 'name' : 'alias', exact, complete };
+      if (exact.length > 1) return { status: 'ambiguous', exact, complete };
+      if (!complete) return { status: 'incomplete', exact, complete };
+      return { status: 'none', exact, complete };
+  }
+  function mbmRelatedArtists(artistJson) {
+      if (!artistJson || !artistJson.id) return [];
+      const out = [{ gid: artistJson.id, name: artistJson.name || '', aliases: (artistJson.aliases || []).map(a => a && a.name).filter(Boolean), rel: 'self' }];
+      for (const r of artistJson.relations || []) {
+          const a = r && r.artist;
+          if (!a || !a.id || out.some(x => x.gid === a.id)) continue;
+          out.push({ gid: a.id, name: a.name || '', aliases: [], rel: r.type || '' });
+      }
+      return out;
+  }
+  function mbmContextHolders(related, name, candidates) {
+      const cand = new Map((candidates || []).map(c => [c.id || c.gid, c]));
+      const out = [];
+      for (const r of related || []) {
+          let via = mbmSameName(r.name, name) ? 'name' : (r.aliases || []).some(a => mbmSameName(a, name)) ? 'alias' : null;
+          if (!via) { const c = cand.get(r.gid); if (c && mbmHolds(c, name)) via = mbmHolds(c, name); }
+          if (via && !out.some(x => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+      }
+      return out;
+  }
+  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
+      const out = [];
+      for (const rec of (recordingsJson && recordingsJson.recordings) || []) {
+          for (const c of rec['artist-credit'] || []) {
+              const a = c && c.artist;
+              if (!a || !a.id || a.id === ctxGid) continue;
+              if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some(x => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+          }
+      }
+      return out;
+  }
+  // </ST-MATCH>
   // normalize hyphen/dash look-alikes (MB uses ‐ U+2010, others use - U+002D, en/em
   // dashes, minus…) to a plain '-' so e.g. "Gol‐e Yakh" folds the same as "Gol-e Yakh"
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -434,30 +512,23 @@ try {
   async function resolveByExactAlias(name) {
     const key = fold(name); if (!key) return null;
     if (_aliasMatchCache.has(key)) return _aliasMatchCache.get(key);
-    const q = String(name).replace(/["\\]/g, ' ').trim(); if (!q) return null;
+    const q = mbmIdentityQuery(name, 'artist'); if (!q) return null;
     // a throttled lookup must NOT be cached as "no match" — that would freeze a
     // transient 503 into a permanent auto-match failure for this name (#555)
-    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(`alias:"${q}" OR artist:"${q}"`)}&fmt=json&limit=25`, { label: 'alias search' });
+    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { label: 'alias search' });
     if (!res.json) { Log.warn('alias search failed:', name, '— not cached, a later pass retries'); return null; }
-    const arts = res.json.artists || [];
-    Log.debug('alias search:', JSON.stringify(name), '→', arts.length, 'candidate(s)');
-    let exact = arts.filter(a => sameName(a.name, name) || (a.aliases || []).some(al => sameName(al.name || al, name)));
-    // #445: several case-insensitive matches, but exactly ONE matches WITH case → prefer it
-    // (e.g. credit "Kasane Teto" → the artist whose alias is exactly "Kasane Teto", not the one
-    // merely named "kasane teto"). Case-exact beats case-fold; if it's still not unique, stay ambiguous.
-    if (exact.length > 1) {
-      const caseExact = exact.filter(a => sameNameCase(a.name, name) || (a.aliases || []).some(al => sameNameCase(al.name || al, name)));
-      if (caseExact.length === 1) exact = caseExact;
-    }
+    // #613: unique only when MB returned EVERY match. The search doesn't rank exact holders
+    // first — `artist:"kim"` matches 2,777 artists and the one exact "Kim" among the first 25
+    // was taken as unique. A common name that can't be proven unique stays a candidate.
+    const idn = mbmExactIdentity(res.json, name);
+    Log.debug('alias search:', JSON.stringify(name), '→', (res.json.artists || []).length, 'of', res.json.count, 'match(es),', idn.exact.length, 'exact —', idn.status);
+    if (idn.status === 'incomplete' && idn.exact.length) Log.info('Match:', JSON.stringify(name), '— one exact name/alias seen, but', res.json.count, 'artists match; not provably unique → left to pick (#613)');
     let out = null;   // unambiguous only
-    if (exact.length === 1) {
-      const a = exact[0];
-      // #445: distinguish a real NAME hit (the /ws/js search just under-ranked it below a
-      // fuzzy look-alike) from a true ALIAS hit — so the log/badge doesn't call a name
-      // match "via exact alias" (which confused, since the artist had no aliases).
-      const via = sameName(a.name, name) ? 'name' : 'alias';
-      const ent = await fetchEntity(a.id);
-      if (ent && ent.gid) out = { entity: ent, via };
+    if (idn.status === 'unique') {
+      // #445: 'name' when it's a real NAME hit (the /ws/js search under-ranked it), 'alias' when
+      // only an alias matches — so the log/badge never calls a name match "via exact alias"
+      const ent = await fetchEntity(idn.hit.id);
+      if (ent && ent.gid) out = { entity: ent, via: idn.via };
     }
     _aliasMatchCache.set(key, out);
     return out;
@@ -606,23 +677,10 @@ try {
   // (e.g. [unknown] → '"Gold Diggers of 1937" Chorus'); never surface one as an AKA.
   // Keyed by MBID, not a name pattern — not all are bracketed (Various Artists) and
   // plenty of real artists DO use brackets. (#171, per @chaban-mb)
-  // NB (#428): the same list lives in credit_hoarder/src/data/special-purpose.js and
-  // discogs_credits/src/data/special-purpose.js — single-file scripts can't import,
-  // so keep the three copies in sync by hand.
-  const SPECIAL_PURPOSE_ARTISTS = new Set([
-    '125ec42a-7229-4250-afc5-e057484327fe', // [unknown]
-    'f731ccc4-e22a-43af-a747-64213329e088', // [anonymous]
-    '33cf029c-63b0-41a0-9855-be2a3665fb3b', // [data]
-    '314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc', // [dialogue]
-    'eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61', // [no artist]
-    '9be7f096-97ec-4615-8957-8d40b5dcbc41', // [traditional]
-    '89ad4ac3-39f7-470e-963a-56509c546377', // Various Artists
-    '7e84f845-ac16-41fe-9ff8-df12eb32af55', // MusicBrainz Test Artist
-    '66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49', // [Disney]
-    'a0ef7e1d-44ff-4039-9435-7d5fefdeecc9', // [theatre]
-    '90068d37-bae7-4292-be4a-704c145bd616', // [church chimes]
-    '80a8851f-444c-4539-892b-ad2a49292aa9', // [language instruction]
-  ]);
+  // #613: the list now lives in dev/match/artist-match.mjs (inlined above as
+  // MBM_SPECIAL_PURPOSE) — shared with Group Therapy and Credit Hoarder; only
+  // discogs_credits/src/data/special-purpose.js still keeps its own copy.
+  const SPECIAL_PURPOSE_ARTISTS = MBM_SPECIAL_PURPOSE;
   function aliasStr(c) {
     if (c.gid && SPECIAL_PURPOSE_ARTISTS.has(c.gid)) return null;   // #171 — no AKA for special-purpose artists
     const name = c.name || '', aks = c.aliases || [], diff = s => s && fold(s) !== fold(name);
@@ -1788,7 +1846,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.25.160636';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.25.164727';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -14493,7 +14551,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25.164741","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.25.164741","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -26686,7 +26744,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.25","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.25","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.25.164727","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.25.164727","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -29684,8 +29742,84 @@ try {
   }
 
   // ── artist resolution (ported from apollo_editor.user.js's search + siblings block) ──────
-  // No shared module exists for this between scripts; these three are small and DOM-free
-  // enough to port near-verbatim, renamed txp*.
+  // #613: the exact-identity rule now comes from the shared matching module
+  // (dev/match/artist-match.mjs, inlined below by dev/match/sync-match.mjs); the txp*
+  // folding helpers stay as they were.
+  // <ST-MATCH> — generated by dev/match/sync-match.mjs from dev/match/artist-match.mjs — DO NOT EDIT
+  const MBM_EXACT_LIMIT = 100;
+  const MBM_SPECIAL_PURPOSE = new Set(["125ec42a-7229-4250-afc5-e057484327fe","f731ccc4-e22a-43af-a747-64213329e088","33cf029c-63b0-41a0-9855-be2a3665fb3b","314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc","eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61","9be7f096-97ec-4615-8957-8d40b5dcbc41","89ad4ac3-39f7-470e-963a-56509c546377","7e84f845-ac16-41fe-9ff8-df12eb32af55","66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49","a0ef7e1d-44ff-4039-9435-7d5fefdeecc9","90068d37-bae7-4292-be4a-704c145bd616","80a8851f-444c-4539-892b-ad2a49292aa9"]);
+  function mbmFold(s) {
+      return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+  function mbmFoldKeepCase(s) {
+      return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
+  }
+  function mbmSameName(a, b) { return mbmFold(a) === mbmFold(b) && mbmFold(a) !== ''; }
+  function mbmSameNameCase(a, b) { return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== ''; }
+  function mbmHolds(entity, name, caseExact) {
+      if (!entity) return null;
+      const same = caseExact ? mbmSameNameCase : mbmSameName;
+      if (same(entity.name, name)) return 'name';
+      if ((entity.aliases || []).some(al => same(al && (al.name != null ? al.name : al), name))) return 'alias';
+      return null;
+  }
+  function mbmIdentityQuery(name, field) {
+      const q = String(name == null ? '' : name).replace(/["\\]/g, ' ').replace(/\s+/g, ' ').trim();
+      return q ? 'alias:"' + q + '" OR ' + (field || 'artist') + ':"' + q + '"' : '';
+  }
+  function mbmExactIdentity(json, name, opts) {
+      const o = opts || {};
+      if (!json || typeof json !== 'object') return { status: 'failed', exact: [] };
+      const list = json.artists || json.labels || json.places || [];
+      let exact = list.filter(e => mbmHolds(e, name));
+      if (exact.length > 1) {
+          // several case-insensitive holders, exactly one WITH case → that one (#445 "Kasane Teto")
+          const caseExact = exact.filter(e => mbmHolds(e, name, true));
+          if (caseExact.length === 1) exact = caseExact;
+          else if (o.scoreGap) {
+              const scored = exact.filter(e => typeof e.score === 'number').sort((a, b) => b.score - a.score);
+              if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+          }
+      }
+      const offset = typeof json.offset === 'number' ? json.offset : 0;
+      const complete = typeof json.count === 'number' && json.count <= offset + list.length;
+      if (exact.length === 1 && complete) return { status: 'unique', hit: exact[0], via: mbmHolds(exact[0], name) === 'name' ? 'name' : 'alias', exact, complete };
+      if (exact.length > 1) return { status: 'ambiguous', exact, complete };
+      if (!complete) return { status: 'incomplete', exact, complete };
+      return { status: 'none', exact, complete };
+  }
+  function mbmRelatedArtists(artistJson) {
+      if (!artistJson || !artistJson.id) return [];
+      const out = [{ gid: artistJson.id, name: artistJson.name || '', aliases: (artistJson.aliases || []).map(a => a && a.name).filter(Boolean), rel: 'self' }];
+      for (const r of artistJson.relations || []) {
+          const a = r && r.artist;
+          if (!a || !a.id || out.some(x => x.gid === a.id)) continue;
+          out.push({ gid: a.id, name: a.name || '', aliases: [], rel: r.type || '' });
+      }
+      return out;
+  }
+  function mbmContextHolders(related, name, candidates) {
+      const cand = new Map((candidates || []).map(c => [c.id || c.gid, c]));
+      const out = [];
+      for (const r of related || []) {
+          let via = mbmSameName(r.name, name) ? 'name' : (r.aliases || []).some(a => mbmSameName(a, name)) ? 'alias' : null;
+          if (!via) { const c = cand.get(r.gid); if (c && mbmHolds(c, name)) via = mbmHolds(c, name); }
+          if (via && !out.some(x => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+      }
+      return out;
+  }
+  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
+      const out = [];
+      for (const rec of (recordingsJson && recordingsJson.recordings) || []) {
+          for (const c of rec['artist-credit'] || []) {
+              const a = c && c.artist;
+              if (!a || !a.id || a.id === ctxGid) continue;
+              if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some(x => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+          }
+      }
+      return out;
+  }
+  // </ST-MATCH>
   const txpFold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const txpSameName = (a, b) => txpFold(a) === txpFold(b);
   const txpFoldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
@@ -29730,22 +29864,18 @@ try {
   async function txpResolveByExactAlias(name) {
     const key = txpFold(name); if (!key) return null;
     if (_txpAliasCache.has(key)) return _txpAliasCache.get(key);
-    const q = String(name).replace(/["\\]/g, ' ').trim(); if (!q) return null;
+    const q = mbmIdentityQuery(name, 'artist'); if (!q) return null;
     let arr = null;
-    try { arr = await fetch(`/ws/2/artist?query=${encodeURIComponent(`alias:"${q}" OR artist:"${q}"`)}&fmt=json&limit=25`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    try { arr = await fetch(`/ws/2/artist?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
     catch (e) { return null; }   // transient → don't cache, let a later pass retry
-    const arts = (arr && arr.artists) || [];
-    let exact = arts.filter(a => txpSameName(a.name, name) || (a.aliases || []).some(al => txpSameName(al.name || al, name)));
-    if (exact.length > 1) {
-      const caseExact = exact.filter(a => txpSameNameCase(a.name, name) || (a.aliases || []).some(al => txpSameNameCase(al.name || al, name)));
-      exact = caseExact.length === 1 ? caseExact : txpNarrowByScore(exact);
-    }
+    if (!arr || arr.error || typeof arr.count !== 'number') return null;   // throttled / error envelope — not an answer, don't cache
+    // #613: unique only when MB returned EVERY match (a common name is never provably
+    // unique — the search doesn't rank exact holders first). #522's score-gap tie-break kept.
+    const idn = mbmExactIdentity(arr, name, { scoreGap: 20 });
     let out = null;
-    if (exact.length === 1) {
-      const a = exact[0];
-      const via = txpSameName(a.name, name) ? 'name' : 'alias';
-      const ent = await txpFetchEntity(a.id);
-      if (ent && ent.gid) out = { entity: ent, via };
+    if (idn.status === 'unique') {
+      const ent = await txpFetchEntity(idn.hit.id);
+      if (ent && ent.gid) out = { entity: ent, via: idn.via };
     }
     _txpAliasCache.set(key, out);
     return out;
@@ -29784,22 +29914,18 @@ try {
   async function txpResolveLabelByExactAlias(name) {
     const key = txpFold(name); if (!key) return null;
     if (_txpLabelAliasCache.has(key)) return _txpLabelAliasCache.get(key);
-    const q = String(name).replace(/["\\]/g, ' ').trim(); if (!q) return null;
+    const q = mbmIdentityQuery(name, 'label'); if (!q) return null;
     let arr = null;
-    try { arr = await fetch(`/ws/2/label?query=${encodeURIComponent(`alias:"${q}" OR label:"${q}"`)}&fmt=json&limit=25`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
-    catch (e) { return null; }
-    const labs = (arr && arr.labels) || [];
-    let exact = labs.filter(a => txpSameName(a.name, name) || (a.aliases || []).some(al => txpSameName(al.name || al, name)));
-    if (exact.length > 1) {
-      const caseExact = exact.filter(a => txpSameNameCase(a.name, name) || (a.aliases || []).some(al => txpSameNameCase(al.name || al, name)));
-      exact = caseExact.length === 1 ? caseExact : txpNarrowByScore(exact);
-    }
+    try { arr = await fetch(`/ws/2/label?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    catch (e) { return null; }   // transient → don't cache, let a later pass retry
+    if (!arr || arr.error || typeof arr.count !== 'number') return null;   // throttled / error envelope — not an answer, don't cache
+    // #613: unique only when MB returned EVERY match (a common name is never provably
+    // unique — the search doesn't rank exact holders first). #522's score-gap tie-break kept.
+    const idn = mbmExactIdentity(arr, name, { scoreGap: 20 });
     let out = null;
-    if (exact.length === 1) {
-      const a = exact[0];
-      const via = txpSameName(a.name, name) ? 'name' : 'alias';
-      const ent = await txpFetchEntity(a.id, 'label');
-      if (ent && ent.gid) out = { entity: ent, via };
+    if (idn.status === 'unique') {
+      const ent = await txpFetchEntity(idn.hit.id, 'label');
+      if (ent && ent.gid) out = { entity: ent, via: idn.via };
     }
     _txpLabelAliasCache.set(key, out);
     return out;

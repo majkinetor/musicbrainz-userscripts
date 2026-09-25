@@ -50,6 +50,18 @@ if printf '%s
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared matching (#613) — dev/match/artist-match.mjs is the one source for the exact-
+# identity rule Apollo, Group Therapy and Credit Hoarder use. Re-inline it into every
+# script carrying a `// <ST-MATCH>` marker (Credit Hoarder imports it via esbuild — its
+# rebuild below watches dev/match too).
+if printf '%s\n' "$STAGED" | grep -qE '^dev/match/(artist-match|sync-match)\.mjs$'; then
+    echo "[pre-commit] syncing shared matching…"
+    node dev/match/sync-match.mjs >/dev/null
+    MATCH_FILES=$(grep -rl '// <ST-MATCH>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$MATCH_FILES" ] && git add $MATCH_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # discogs_credits — esbuild bundle
 if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\.mjs)'; then
     echo "[pre-commit] rebuilding userscripts/discogs_credits/dist/…"
@@ -60,7 +72,7 @@ fi
 # credit_hoarder — esbuild bundle, same shape as discogs_credits above. It was
 # missing here, so a shared-component sync (which rewrites src/ui-bar.js) left
 # the committed dist/ — the file people actually install — one build behind.
-if printf '%s\n' "$STAGED" | grep -qE '^userscripts/credit_hoarder/(src/|build\.mjs)'; then
+if printf '%s\n' "$STAGED" | grep -qE '^(userscripts/credit_hoarder/(src/|build\.mjs)|dev/match/artist-match\.mjs$)'; then
     echo "[pre-commit] rebuilding userscripts/credit_hoarder/dist/…"
     (cd userscripts/credit_hoarder && pnpm run build >/dev/null)
     git add userscripts/credit_hoarder/dist/credit_hoarder.user.js
