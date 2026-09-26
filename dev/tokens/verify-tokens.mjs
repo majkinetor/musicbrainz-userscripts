@@ -13,8 +13,8 @@
 //
 //   node dev/tokens/verify-tokens.mjs
 //
-// A runtime companion (does the token resolve on a real page) lives in the
-// per-script suites, e.g. userscripts/art_station/test/verify-562-tokens.mjs.
+// Its runtime companion (does each token resolve on a real page, in every script)
+// is dev/tokens/verify-tokens-live.mjs.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

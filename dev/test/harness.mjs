@@ -9,8 +9,11 @@
 //   inject(name)   — loads userscripts/<name>/<name>.user.js into the page.
 //                    <NAME>_SRC=<file> runs the spec against another build: that
 //                    is how a regression test is shown to fail on the broken one.
-//   the GM shim    — GM_getValue/SetValue (in-memory), GM_info, GM_xmlhttpRequest
-//                    (fetch-backed, or a no-op with gm.xhr: 'none'), unsafeWindow.
+//                    Options: waitFor (a window global), target (another page),
+//                    atStart, transform (code => code, e.g. a default flipped).
+//   the GM shim    — GM_getValue/SetValue (in-memory, or gm.persist), GM_info,
+//                    GM_xmlhttpRequest (fetch-backed, or a no-op with gm.xhr: 'none'),
+//                    value-change listeners, GM_registerMenuCommand, unsafeWindow.
 //   a production write guard, always on — see below.
 //   page errors fail the test (test.use({ pageErrors: 'ignore' }) to opt out, or
 //                    pageErrors: [regex sources] to let only those through).
@@ -82,9 +85,10 @@ export const test = base.extend({
   page: async ({ context }, use) => { await use(context.pages()[0] || await context.newPage()); },
 
   inject: async ({ page }, use) => {
-    await use(async (name, { waitFor, target = page, atStart = false } = {}) => {
+    await use(async (name, { waitFor, target = page, atStart = false, transform } = {}) => {
       const file = sourceOf(name);
-      const code = await readFile(file, 'utf8');
+      let code = await readFile(file, 'utf8');
+      if (transform) code = transform(code);   // e.g. a default flipped for the test
       if (atStart) await target.addInitScript({ content: code });
       else await target.addScriptTag({ content: code });
       if (waitFor && !atStart) await target.waitForFunction(g => !!window[g], waitFor, { timeout: 20000 });
