@@ -1,0 +1,15 @@
+{
+  "name": "mb-userscripts",
+  "private": true,
+  "description": "Repo-level tooling: the shared test runner (#625).",
+  "packageManager": "pnpm@10.11.0",
+  "scripts": {
+    "test": "playwright test",
+    "test:unit": "playwright test --grep @unit",
+    "test:report": "playwright show-report test-results/html"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "eslint": "^10.4.0"
+  }
+}
