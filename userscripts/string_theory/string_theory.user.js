@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.26.002243
+// @version      2026.9.26.111552
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.26.002243 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.235324\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25\n  · Fusion v2026.9.26\n  · Group Therapy v2026.9.25\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.26.111552 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.235324\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25\n  · Fusion v2026.9.26.111241\n  · Group Therapy v2026.9.25\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -23239,12 +23239,12 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.26","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.26","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.26.111241","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.26.111241","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.9.26';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.9.26.111241';
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -25244,7 +25244,7 @@ function fsStyle() {
         + '.fs-gcard-med{border-left-color:var(--fs-amber)}'
         + '.fs-gcard-manual{border-left-color:var(--fs-blue);border-left-style:dashed}'
         + '.fs-gcard.fs-active{outline:2px solid var(--fs-purple);outline-offset:-1px}'
-        + '.fs-ghdr{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,0,0,.025);border-bottom:1px solid var(--fs-border);cursor:pointer}'
+        + '.fs-ghdr{position:relative;display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,0,0,.025);border-bottom:1px solid var(--fs-border);cursor:pointer}'   // relative: anchors the #619 length badge
         // Collapse/expand toggles. Full-size glyph AND a generous hit area (#419,
         // #467, #529 — third recurrence of the same rule). ▶/▼ are the full-size
         // triangles; ▸/▾ are Unicode's *small* ones and read as shrunken however
@@ -25311,8 +25311,16 @@ function fsStyle() {
         // identical outlines — so the fill is 42% and the text near-white.
         + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:transparent;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-weight:500}'
         + '.fs-sig span.warn{background:color-mix(in srgb, var(--mbu-warn) 22%, transparent);border-color:var(--mbu-warn);color:var(--mbu-warn);font-weight:700}'   // #619 lengths past the tolerance
-        + '.fs-grow .fs-len.fs-len-off{color:var(--mbu-warn);font-weight:700;background:color-mix(in srgb, var(--mbu-warn) 16%, transparent);border-radius:3px;text-align:center}'
+        // #619 follow-up (majkinetor): "Highlighted length is not aligned vertically with
+        // normal length". The tint was a centred 44px box, so its digits sat several px right
+        // of the plain lengths above and below. The tint now reaches 4px LEFT into the gap
+        // instead (margin -4 / padding +4 / width +4): same 44px footprint, digits start
+        // exactly where the unhighlighted ones do.
+        + '.fs-grow .fs-len.fs-len-off{color:var(--mbu-warn);font-weight:700;background:color-mix(in srgb, var(--mbu-warn) 16%, transparent);border-radius:3px;margin-left:-4px;padding-left:4px;width:48px}'
         + '.fs-lenwarn{flex:0 0 auto;margin-left:6px;padding:0 6px;border:1px solid var(--mbu-warn);border-radius:9px;color:var(--mbu-warn);background:color-mix(in srgb, var(--mbu-warn) 14%, transparent);font-size:10.5px;font-weight:700;line-height:1.5;white-space:nowrap;cursor:help}'
+        // #619 follow-up: "it should be in len column" — placeLenBadges() lifts it out of
+        // the title track and over the rows' length column (left edge = the amber cells').
+        + '.fs-lenwarn.fs-lenwarn-col{position:absolute;top:50%;transform:translateY(-50%);margin-left:0}'
         + '.fs-sig span.hit{background:color-mix(in srgb, var(--mbu-ok) 42%, transparent);border-color:var(--mbu-ok);color:color-mix(in srgb, var(--mbu-ok) 18%, var(--mbu-text));font-weight:700}'
         + '.fs-sig span.partial{background:color-mix(in srgb, var(--mbu-ok) 16%, transparent);border-style:dashed;border-color:color-mix(in srgb, var(--mbu-ok) 60%, transparent);color:color-mix(in srgb, var(--mbu-ok) 45%, var(--mbu-text))}'
         + '.fs-mergeicon{vertical-align:-2px;margin-right:2px}'
@@ -25954,11 +25962,45 @@ function renderGroups() {
         recs.title = n ? n + ' recording(s) staged across ' + STATE.groups.length + ' group(s)' : '';
     }
     body.innerHTML = STATE.groups.map(groupCardHtml).join('') + '<div class="fs-newgroup" id="fs-newgroup">+ New group — drag a pool recording here, or select one and click here</div>';
+    placeLenBadges(body);
+    // the rows' length column moves whenever the window is resized or maximized
+    if (!body._fsLenObs && typeof ResizeObserver !== 'undefined') {
+        let raf = 0;
+        body._fsLenObs = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => placeLenBadges(body)); });
+        body._fsLenObs.observe(body);
+    }
     renderCollapseAllBtn();
     renderDeepBtn();
     // Groups just changed, so there may be new members to warm the cache for.
     // Fire-and-forget: it must never make rendering wait on the network.
     prefetchGroupReleases();
+}
+// #619 follow-up (majkinetor): "Move ⚠ 31s to the right, it should be in 'len column'".
+// The header is its own grid (title | chips | buttons) and shares no columns with the
+// member rows, so the badge is placed by measurement: its left edge goes to the rows'
+// length column (the edge the amber length cells start at). It stays beside the title
+// when there are no rows to line up with (a collapsed card) or when that column would
+// run into the title, the chips or the buttons (a narrow window).
+function placeLenBadges(root) {
+    (root || document).querySelectorAll('.fs-gcard').forEach(card => {
+        const badge = card.querySelector('.fs-lenwarn'); if (!badge) return;
+        badge.classList.remove('fs-lenwarn-col'); badge.style.left = '';
+        const hdr = card.querySelector('.fs-ghdr');
+        const cell = card.querySelector('.fs-grows .fs-grow .fs-len');
+        if (!hdr || !cell || !cell.offsetParent) return;
+        const h = hdr.getBoundingClientRect(), c = cell.getBoundingClientRect();
+        // an amber cell already reaches 4px left (see .fs-len-off); a plain one doesn't
+        const edge = c.left - (cell.classList.contains('fs-len-off') ? 0 : 4);
+        badge.classList.add('fs-lenwarn-col');
+        badge.style.left = Math.round(edge - h.left - hdr.clientLeft) + 'px';
+        const b = badge.getBoundingClientRect();
+        const clash = ['.fs-gt', '.fs-sig', '.fs-ghr'].some(sel => {
+            const el = card.querySelector(sel); if (!el) return false;
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && b.left < r.right + 4 && b.right > r.left - 4;
+        });
+        if (clash) { badge.classList.remove('fs-lenwarn-col'); badge.style.left = ''; }
+    });
 }
 function renderFooter() {
     const ready = STATE.groups.filter(g => g.state === 'pending' || g.state === 'error').length;
@@ -26705,7 +26747,7 @@ try {
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,
-        toggleCollapseAll, allGroupsCollapsed, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
+        toggleCollapseAll, allGroupsCollapsed, placeLenBadges, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, onAutoMatch, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
