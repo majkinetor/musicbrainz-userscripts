@@ -104,15 +104,21 @@ export async function mbJson(url, { tries = 6 } = {}) {
 }
 
 // A script's pure helpers, evaluated in Node — for @unit specs of functions that
-// need no page. Each name must be a `function name(…) { … }` declaration in the
-// script; they are evaluated together, so one may call another. Anything they use
-// beyond each other and the JS built-ins isn't available, and evaluating fails.
+// need no page. Each name must be a `function name(…) { … }` declaration, or a
+// one-line `const name = …;` helper, in the script; they are evaluated together, so
+// one may call another. Anything they use beyond each other and the JS built-ins
+// isn't available, and evaluating fails.
 //   const { normName } = await loadFunctions('fusion', ['normName']);
 export async function loadFunctions(name, names) {
-  const code = await readFile(sourceOf(name), 'utf8');
+  const code = (await readFile(sourceOf(name), 'utf8')).replace(/\r\n/g, '\n');
   const bodies = names.map(n => {
-    const at = code.search(new RegExp('(^|\\n)[ \\t]*function ' + n + '\\s*\\('));
-    if (at < 0) throw new Error(`loadFunctions: no "function ${n}(" in ${name}`);
+    let at = code.search(new RegExp('(^|\\n)[ \\t]*function ' + n + '\\s*\\('));
+    if (at < 0) {
+      at = code.search(new RegExp('(^|\\n)[ \\t]*const ' + n + '\\s*='));
+      if (at < 0) throw new Error(`loadFunctions: no "function ${n}(" or "const ${n} =" in ${name}`);
+      const line = code.slice(at).replace(/^\n/, '');
+      return line.slice(0, line.indexOf('\n') < 0 ? line.length : line.indexOf('\n'));
+    }
     const open = code.indexOf('{', code.indexOf(')', at));
     let depth = 0, i = open;
     for (; i < code.length; i++) { if (code[i] === '{') depth++; else if (code[i] === '}' && --depth === 0) break; }
