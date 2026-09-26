@@ -413,7 +413,23 @@ async function resolveEntity(entity, kind, opts) {
                 ...(urlLinkedIds !== undefined && { urlLinkedIds }),
             });
         }
-        return buildResolved(mbUrl, finalName, finalDisam || '', via, resolved.kind, false, urlLinkedIds);
+        const out = buildResolved(mbUrl, finalName, finalDisam || '', via, resolved.kind, false, urlLinkedIds);
+        // #613 follow-up (majkinetor, "why didn't I get +alias here?"): an AUTOMATIC match whose
+        // credited name isn't one of the artist's names — typically a Discogs name variation
+        // ("The Rolling Tones" for St. Maarten's The Rolling Tones) — should offer "+ alias" too.
+        // Only when this run's lookups already carried the artist's aliases: the name-search
+        // candidates (toCandidate keeps them) or the release artist's own context entry. Never
+        // fetched for it, never guessed — unknown aliases (a URL-only hit, a related artist, an
+        // IDB-cached row) mean no button, the same rule as a cached manual pick (#613).
+        if (resolved.kind === 'artist') {
+            const cand = nameMatches.find(c => c.id === resolved.mbid);
+            const self = !cand && via === 'ctx' && context && context.related
+                ? context.related.find(x => x.gid === resolved.mbid && x.rel === 'self') : null;
+            if (cand && Array.isArray(cand.aliases)) out.mbAliases = cand.aliases;
+            else if (self && Array.isArray(self.aliases)) out.mbAliases = self.aliases;
+            logDebug(`"${displayName}" → ${finalName}: aliases ${out.mbAliases ? `known (${out.mbAliases.length})` : 'unknown'} for the "+ alias" check`);
+        }
+        return out;
     }
 
     // Nothing resolved.

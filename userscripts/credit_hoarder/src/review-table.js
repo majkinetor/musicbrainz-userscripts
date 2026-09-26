@@ -16,7 +16,7 @@ import { getLogContainer, getReviewContainer } from './log.js';
 import { noPasswordManagers }               from './util.js';
 import { _hideBar }                        from './progress-bar.js';
 import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
-import { log }                             from './log.js';
+import { log, logDebug }                   from './log.js';
 import { splitCreditName, splitKey }       from './split-credit.js';
 
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
@@ -1021,9 +1021,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // #613 "+ alias" on a MANUAL pick (this session, or a cached one): the credit isn't the
             // artist's name or any alias → offer to add it. Left click: MB's form, pre-filled,
             // foreground. Right click: submit in the background (no alias type).
-            // #613: the manual pick made THIS session that "+ alias" is for. Not a cached pick from an
-            // earlier run — its aliases aren't known, so the button came back after the alias had been
-            // added (majkinetor). A fresh pick's candidate carries its aliases; re-pick to get the button.
+            // #613: the manual pick made THIS session that "+ alias" is for — or (follow-up) an automatic
+            // match whose aliases this run's lookups already know. Not a cached row from an earlier run —
+            // its aliases aren't known, so the button came back after the alias had been added
+            // (majkinetor). A fresh pick's candidate carries its aliases; re-pick to get the button.
             let aliasPick = null;
             function makeAddAliasBtn(a) {
                 if (!wantsAliasButton(entityType, a, displayName)) return null;
@@ -1837,6 +1838,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     tr.style.background = 'var(--mbu-warn-bg)';
                 }
                 const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
+                // #613 follow-up: "+ alias" on an AUTOMATIC match too, when this run's lookups
+                // already know the artist's aliases (preflight's mbAliases — never set for an
+                // IDB-cached row, so the #613 "button came back after adding the alias" can't recur).
+                if (entityType === 'artist' && initMbName && Array.isArray(r.mbAliases)) {
+                    fakeA.aliases = r.mbAliases;
+                    aliasPick = fakeA;
+                    if (wantsAliasButton(entityType, fakeA, displayName)) logDebug(`+ alias: offered on the automatic match "${displayName}" → ${initMbName} (not among its ${r.mbAliases.length} alias(es))`);
+                }
                 candidateList.innerHTML = '';
                 const selRow = document.createElement('div');
                 selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid var(--mbu-ok);border-radius:3px;background:var(--mbu-ok-bg);display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;';
