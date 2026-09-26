@@ -24,12 +24,13 @@
 //   { type: 'resolved',  entity, mbUrl, mbName, mbDisambig, logEntry: {...} }
 //   { type: 'attention', entity, nameMatches: [...] }
 
+import { mbmHolds, mbmExactIdentity, mbmIdentityQuery, mbmContextHolders, mbmCoCreditHits, MBM_EXACT_LIMIT } from '../../../dev/match/artist-match.mjs';
 import { mbThrottle }                       from './api-mb.js';
 import { readIdbRecord, writeIdbRecord, deleteIdbRecord } from './storage.js';
 import { parseSourceEntityUrl, idbKeyForEntity } from './sources/registry.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
 import { _setProgressPct }                  from './progress-bar.js';
-import { logDebug }                         from './log.js';
+import { log, logDebug }                    from './log.js';
 
 // `kind`-specific tweaks. Tiny lookup table so the per-strategy code in
 // `resolveEntity` reads as one shared body.
@@ -50,8 +51,44 @@ const KIND_TABLE = {
  *
  * Returns one of the result shapes documented at the top of the file.
  */
+// ── #613 / #612 artist decision helpers ───────────────────────────────────────
+// Candidates keep their aliases (names only) so the review table can tell whether a
+// manual pick already carries the credit (the "+ alias" button) and the context
+// check can use them without another request.
+const toCandidate = a => ({
+    id: a.id, name: a.name,
+    disambiguation: a.disambiguation || a['disambiguation-comment'] || '',
+    score: a.score || 0,
+    aliases: (a.aliases || []).map(al => al && al.name).filter(Boolean),
+});
+// #612: exactly one related artist of the release artist(s) carries the name → that one
+function contextHit(context, name, candidates) {
+    if (!context || !context.related || !context.related.length) return null;
+    const holders = mbmContextHolders(context.related, name, (candidates || []).map(c => ({ id: c.id, name: c.name, aliases: (c.aliases || []).map(n => ({ name: n })) })));
+    if (holders.length === 1) return holders[0];
+    if (holders.length > 1) logDebug(`context: "${name}" is carried by ${holders.length} related artists (${holders.map(h => h.name).join(', ')}) — left to review`);
+    return null;
+}
+// #437-style co-credit (option, off by default): an artist credited as `name` on a
+// recording ALONGSIDE a release artist. One search per release artist; a clear winner only.
+async function coCreditHit(context, name) {
+    if (!context || !context.coCredit || !context.seeds || !context.seeds.length) return null;
+    const tally = new Map();
+    for (const seed of context.seeds.slice(0, 4)) {
+        const q = `arid:${seed} AND artistname:"${String(name).replace(/["\\]/g, ' ')}"`;
+        const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`);
+        if (!json) continue;
+        for (const h of mbmCoCreditHits(json, seed, name)) { const t = tally.get(h.gid) || { n: 0, name: h.name }; t.n++; tally.set(h.gid, t); }
+    }
+    const ranked = [...tally.entries()].sort((a, b) => b[1].n - a[1].n);
+    if (ranked.length === 1 || (ranked.length > 1 && ranked[0][1].n > ranked[1][1].n)) return { gid: ranked[0][0], name: ranked[0][1].name };
+    if (ranked.length) logDebug(`co-credit: "${name}" → ${ranked.length} tied candidates — left to review`);
+    return null;
+}
+
 async function resolveEntity(entity, kind, opts) {
     const { bypassIdb } = opts;
+    const context = kind === 'artist' ? (opts.context || null) : null;
     const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
 
     const parsed     = parseSourceEntityUrl(entity.resource_url);
@@ -151,7 +188,7 @@ async function resolveEntity(entity, kind, opts) {
             // for via='url'/'both' (we know the linked MBID by definition);
             // leave undefined otherwise so review-table falls back to query.
             let cachedLinkedIds = cachedRec.urlLinkedIds;
-            if (cachedLinkedIds === undefined && (via === 'url' || via === 'both')) {
+            if (cachedLinkedIds === undefined && (via === 'url' || via === 'both' || via === 'both-alias')) {
                 cachedLinkedIds = [cachedRec.mbid];
             }
             // Heal records poisoned by the pre-fix code, which wrote [] when
@@ -186,6 +223,15 @@ async function resolveEntity(entity, kind, opts) {
             // Same poisoned-[] heal as above (#193 chip bug).
             const attnLinkedIds = (Array.isArray(cachedRec.urlLinkedIds) && cachedRec.urlLinkedIds.length === 0)
                 ? undefined : cachedRec.urlLinkedIds;
+            // #612: a cached "no single match" can still resolve from THIS release's
+            // context — no request (the context was fetched once for the import).
+            const ctx = contextHit(context, searchName, cachedRec.nameMatches);
+            if (ctx) {
+                log.info(`Match: ${displayName} → ${ctx.name} — via release context (${ctx.rel || 'related'}, ${ctx.via})`);
+                const mbUrl = `//musicbrainz.org/artist/${ctx.gid}`;
+                await writeIdbRecord(key, { mbid: ctx.gid, entityType: 'artist', name: ctx.name, disambiguation: '', resolvedVia: 'ctx', nameMatches: null, mbUrl });
+                return buildResolved(mbUrl, ctx.name, '', 'ctx', 'artist', false, attnLinkedIds, cachedRec.creditOverride);
+            }
             return buildAttention(cachedRec.nameMatches, false, null, attnLinkedIds, cachedRec.creditOverride);
         }
     }
@@ -210,20 +256,20 @@ async function resolveEntity(entity, kind, opts) {
     // exact-match (case-insensitive) as the auto-resolve candidate.
     const nameSearchFailed = nameJson === null;
     const normalized = searchName.toLowerCase().trim();
+    const isArtist = kind === 'artist';
+    // #613: an artist is an exact hit by NAME or ALIAS (the plain search already matches and
+    // returns aliases — no extra request); labels/places keep the name-only comparison.
+    const holdsName = a => isArtist ? !!mbmHolds(a, searchName) : a.name.toLowerCase().trim() === normalized;
     const nameMatches = !(nameJson?.[resultKey]) ? [] : nameJson[resultKey]
-        .filter(a => a.name.toLowerCase().trim() === normalized || (a.score != null && a.score >= 70))
-        .map(a => ({
-            id: a.id,
-            name: a.name,
-            disambiguation: a.disambiguation || a['disambiguation-comment'] || '',
-            score: a.score || 0,
-        }));
-    const exactNameMatches = nameMatches.filter(a => a.name.toLowerCase().trim() === normalized);
+        .filter(a => holdsName(a) || (a.score != null && a.score >= 70))
+        .map(toCandidate);
+    const exactNameMatches = nameMatches.filter(holdsName);
     const nameHit = exactNameMatches.length === 1 ? {
         kind,
         mbid:           exactNameMatches[0].id,
         name:           exactNameMatches[0].name,
         disambiguation: exactNameMatches[0].disambiguation || '',
+        via:            isArtist && !(exactNameMatches[0].name.toLowerCase().trim() === normalized) ? 'alias' : 'name',
     } : null;
 
     // URL relation — extract the first matching rel (kind-specific; places
@@ -284,7 +330,7 @@ async function resolveEntity(entity, kind, opts) {
             // Prefer the URL hit's `kind` (it's authoritative for the
             // place-resolved-as-label case).
             resolved = urlHit;
-            via      = 'both';
+            via      = nameHit.via === 'alias' ? 'both-alias' : 'both';   // #613: say WHICH name agreed
         } else {
             // Disagreement — needs user review. The old code silently picked
             // whichever came first (always name, because the URL lookup was
@@ -300,6 +346,46 @@ async function resolveEntity(entity, kind, opts) {
     } else if (urlHit) {
         resolved = urlHit;
         via      = 'url';
+    } else if (isArtist) {
+        let reviewReason = null;
+        // #612: the release's context first — a related artist carrying the name exactly
+        const ctx = contextHit(context, searchName, nameMatches);
+        if (ctx) {
+            resolved = { kind: 'artist', mbid: ctx.gid, name: ctx.name, disambiguation: '' };
+            via = 'ctx';
+            log.info(`Match: ${displayName} → ${ctx.name} — via release context (${ctx.rel || 'related'}, ${ctx.via})`);
+        } else if (nameHit) {
+            // #613: one exact holder VISIBLE is not proof — MB's search doesn't rank exact
+            // holders first. Accept only when the exact-identity query returns EVERY match
+            // and exactly one artist holds the name (name or alias).
+            const idJson = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(mbmIdentityQuery(searchName, 'artist'))}&fmt=json&limit=${MBM_EXACT_LIMIT}`);
+            const idn = mbmExactIdentity(idJson, searchName);
+            logDebug(`exact identity "${searchName}": ${idn.status} (${idJson ? (idJson.artists || []).length + ' of ' + idJson.count : 'no response'})`);
+            if (idn.status === 'unique' && idn.hit.id === nameHit.mbid) {
+                resolved = nameHit;
+                via = idn.via;
+            } else if (idn.status === 'failed') {
+                return buildAttention(nameMatches, true, null, urlLinkedIds);   // throttled — don't cache a guess
+            } else {
+                reviewReason = idn.status === 'incomplete' ? `not provably unique (${idJson.count} artists match)` : idn.status === 'ambiguous' ? `${idn.exact.length} artists carry the name` : 'the exact holder did not verify';
+                logDebug(`"${searchName}" not resolved by name — ${reviewReason}`);
+            }
+        }
+        // #613: the co-credit step also covers a name the exact-identity check rejected — a
+        // "not provably unique" common name is exactly what it's for
+        if (!resolved) {
+            const cc = await coCreditHit(context, searchName);
+            if (cc) {
+                resolved = { kind: 'artist', mbid: cc.gid, name: cc.name, disambiguation: '' };
+                via = 'cred';
+                log.info(`Match: ${displayName} → ${cc.name} — via existing artist credits (co-credit search)`);
+            }
+        }
+        if (!resolved && reviewReason) {
+            logDebug(`"${searchName}" left to review — ${reviewReason}`);
+            await cacheAttention(nameMatches);
+            return buildAttention(nameMatches, false, reviewReason, urlLinkedIds);
+        }
     } else if (nameHit) {
         resolved = nameHit;
         via      = 'name';
@@ -348,7 +434,7 @@ async function resolveEntity(entity, kind, opts) {
  * Returns `{ allResults: [...] }` with skipped entities filtered out.
  */
 export async function resolveAll(entities, opts) {
-    const { kindOf, progressLi, bypassIdb, progressLabel } = opts;
+    const { kindOf, progressLi, bypassIdb, progressLabel, context } = opts;
     // 5 workers, each emitting up to 2 parallel MB requests (name +
     // URL) per entity. Briefly bumped to 10 per #87, then reverted: a
     // single import calls `resolveAll` twice in parallel (artists +
@@ -418,7 +504,7 @@ export async function resolveAll(entities, opts) {
             setProgress();
             const t0 = Date.now();
             logDebug(`${tag} resolving "${displayName}" (${kind})`);
-            results[index] = await resolveEntity(entity, kind, { bypassIdb });
+            results[index] = await resolveEntity(entity, kind, { bypassIdb, context });   // #612/#613 release context (artists only)
             const elapsed = Date.now() - t0;
             const r = results[index];
             const outcome = r?.type === 'resolved'

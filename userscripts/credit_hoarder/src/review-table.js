@@ -11,6 +11,7 @@ import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId, idbKeyForE
 import { SPECIAL_PURPOSE_ARTISTS }         from './data/special-purpose.js';
 import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
+import { wantsAliasButton, openAddAliasForm, submitAliasBackground, aliasNowHeld } from './alias-add.js';
 import { getLogContainer, getReviewContainer } from './log.js';
 import { noPasswordManagers }               from './util.js';
 import { _hideBar }                        from './progress-bar.js';
@@ -214,8 +215,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // with them, and the meaning (confident / resolved / weak) survives.
         const VIA_STYLES = {
             both:  { text: 'name+url', color: 'var(--mbu-ok)' },          // high confidence
+            'both-alias': { text: 'alias+url', color: 'var(--mbu-ok)' },  // #613 URL and an exact ALIAS agree
             url:   { text: 'url',      color: 'var(--mbu-accent-text)' },
             name:  { text: 'name',     color: 'var(--mbu-accent-text)' },
+            alias: { text: 'alias',    color: 'var(--mbu-accent-text)' },   // #613 exact alias of the MB artist (provably unique)
+            ctx:   { text: 'context',  color: 'var(--mbu-ok)' },            // #612 a related artist of the release artist
+            cred:  { text: 'co-credit', color: 'var(--mbu-accent-text)' },  // #613 co-credit search (option)
             user:  { text: 'user',     color: 'var(--mbu-text-dim)' },
             cache: { text: 'cache',    color: 'var(--mbu-text-dim)' },    // legacy: original mechanism unknown
         };
@@ -1013,7 +1018,79 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 }
             }
 
+            // #613 "+ alias" on a MANUAL pick (this session, or a cached one): the credit isn't the
+            // artist's name or any alias → offer to add it. Left click: MB's form, pre-filled,
+            // foreground. Right click: submit in the background (no alias type).
+            // #613: the manual pick made THIS session that "+ alias" is for. Not a cached pick from an
+            // earlier run — its aliases aren't known, so the button came back after the alias had been
+            // added (majkinetor). A fresh pick's candidate carries its aliases; re-pick to get the button.
+            let aliasPick = null;
+            function makeAddAliasBtn(a) {
+                if (!wantsAliasButton(entityType, a, displayName)) return null;
+                const ab = document.createElement('button');
+                ab.type = 'button';
+                ab.className = 'discogs-add-alias';
+                ab.textContent = '+ alias';
+                ab.title = `Add "${displayName}" as an alias of ${a.name}
+• click: open MusicBrainz's add-alias form, pre-filled (you submit it)
+• right-click: submit it in the background (no alias type)`;
+                ab.style.cssText = 'font-size:0.72rem;cursor:pointer;padding:0 0.4rem;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-accent-text);white-space:nowrap;flex:0 0 auto;';
+                const note = buildCreateNote(`Added "${displayName}" as an alias — the ${srcName} credit${discogsHref ? ' (' + discogsHref + ')' : ''} —`);
+                ab.addEventListener('click', async (ev) => {
+                    ev.preventDefault();
+                    const res = await openAddAliasForm(a.id, displayName, note);
+                    if (res && res.already) {   // carried by now — no form, no duplicate
+                        ab.textContent = '✓ has alias'; ab.disabled = true;
+                        ab.title = `${a.name} already carries "${displayName}" — nothing to add`;
+                        ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                        return;
+                    }
+                    // The form is in another tab and only you know whether you submitted it: when this
+                    // tab is back in front, re-read the artist's live aliases (one lookup per return) —
+                    // the same focus-return re-check the 🔗 link chip uses. Stays armed until it's there.
+                    if (ab._aliasWatch) return;
+                    let checking = false;
+                    const onReturn = async () => {
+                        if (document.visibilityState !== 'visible' || checking || ab.disabled) return;
+                        checking = true;
+                        const held = await aliasNowHeld(a.id, displayName);
+                        checking = false;
+                        if (held !== true) { log.info(`+ alias: "${displayName}" isn't on ${a.name} yet${held === null ? ' (lookup failed)' : ''} — checked on return to this tab`); return; }
+                        document.removeEventListener('visibilitychange', onReturn);
+                        window.removeEventListener('focus', onReturn);
+                        ab._aliasWatch = null;
+                        ab.textContent = '✓ alias'; ab.disabled = true;
+                        ab.title = `"${displayName}" is now an alias of ${a.name}`;
+                        ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                        a.aliases = [...(a.aliases || []), displayName];
+                        log.info(`+ alias: "${displayName}" is now an alias of ${a.name} (added through the form)`);
+                    };
+                    ab._aliasWatch = onReturn;
+                    // armed a moment later, so the focus change of opening the tab doesn't count as a return
+                    setTimeout(() => { document.addEventListener('visibilitychange', onReturn); window.addEventListener('focus', onReturn); }, 600);
+                });
+                ab.addEventListener('contextmenu', async (ev) => {
+                    ev.preventDefault();
+                    if (ab.disabled) return;
+                    ab.disabled = true; ab.textContent = '⏳ alias';
+                    try {
+                        const res = await submitAliasBackground(a.id, displayName, note);
+                        ab.textContent = res && res.already ? '✓ has alias' : '✓ alias';
+                        ab.title = res && res.already ? `${a.name} already carries "${displayName}" — nothing submitted` : `"${displayName}" submitted as an alias of ${a.name}`;
+                        ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                        a.aliases = [...(a.aliases || []), displayName];   // don't offer it again this session
+                        if (!(res && res.already)) log.info(`+ alias: "${displayName}" submitted as an alias of <a href="${location.origin}/artist/${a.id}/aliases" target="_blank" rel="noopener noreferrer nofollow">${a.name}</a>`);
+                    } catch (e) {
+                        ab.disabled = false; ab.textContent = '✗ alias'; ab.title = `Adding the alias failed: ${e.message} — right-click to retry, click to open the form`;
+                        ab.style.color = 'var(--mbu-error)'; ab.style.borderColor = 'var(--mbu-error)';
+                        log.warn(`+ alias: "${displayName}" → ${a.name} failed — ${e.message}`);
+                    }
+                });
+                return ab;
+            }
+
             function setRowResolved(a) {
+                aliasPick = a;   // #613: a manual pick — renderActions offers "+ alias" for it
                 // a = { id, name, disambiguation }
                 clearRowCreating();   // #273: drop any background-create placeholder
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
@@ -1084,6 +1161,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             }
 
             function setRowUnresolved() {
+                aliasPick = null;
                 clearRowCreating();   // #273: drop any background-create placeholder
                 rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false, via: null, fromCache: false });
                 // Clear the Credited-as override now that there's no
@@ -1640,6 +1718,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         profileBox.textContent = '(failed to load Discogs profile)';
                     }
                 }
+                // #613: "+ alias" sits with the other ADD actions (link / create), leftmost
+                if (selected && aliasPick && aliasPick.id === selected.id) {
+                    const ab = makeAddAliasBtn(aliasPick);
+                    if (ab) tdAction.insertBefore(ab, tdAction.firstChild);
+                }
             }
 
             function makeCandidateRow(a) {
@@ -1686,7 +1769,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const mbid = extractMbid(q);
                 if (mbid) {
                     candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Looking up MBID…</div>';
-                    mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`)
+                    // #613: inc=aliases rides on the same lookup — the "+ alias" button needs to know them
+                    mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?inc=aliases&fmt=json`)
                         .then(json => {
                             if (!json) return;
                             candidateList.innerHTML = '';
@@ -1695,6 +1779,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                     id: json.id,
                                     name: json.name,
                                     disambiguation: json.disambiguation || '',
+                                    aliases: json.aliases || [],
                                 }));
                             } else {
                                 candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Not found</div>';
