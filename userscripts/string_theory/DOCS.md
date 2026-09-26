@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-26 12:14 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-26 13:20 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -266,6 +266,7 @@ After invoking a tool, several options are offered:
 - **Enter text** — type or paste a tracklist into the box.
 - **Paste from clipboard** — reads the clipboard directly.
 - **Parse from external link** — a **favicon per page linked on the release**; click one and it **fetches that page and reads its text right away** (no extra picker step). It narrows to the smallest part of the page that still holds at least a full tracklist's worth of durations, so nav/player/footer noise is skipped (e.g. it pulls all 20 lengths straight off a Bandcamp album page). When you Apply, the **source URL is added to the edit note**. (If a favicon can't load, it falls back to a clickable hostname chip.)
+- **Paste a link** — with a link on the clipboard, press **Ctrl+V** anywhere in the window (any page, not only one linked on the release): it is fetched and read exactly like a favicon click, source credited in the edit note. Pasted text that isn't a link goes into the box as usual.
 
 Once you've picked a source, a **‹ Sources** button in the header returns you to the chooser — handy when a fetched page has no parsable text (e.g. Spotify) and you want to try another link:
 
@@ -495,6 +496,14 @@ Applied to **both** tables (Tracklist and Recordings).
 | SHIFT+Tab           | focus cell in the previous column |
 
 By default, moving between cells keeps the **caret column** where it was (clamped to the destination's length) instead of selecting the whole field — so you can keep typing or fix casing at the same spot rather than overwriting. Turn off **Keep caret position on row navigation** (gear → Appearance) to restore the old behavior, where arriving on a cell selects the whole field so the next keystroke replaces it.
+
+#### Length parser
+
+| Key        | Description                                                               |
+| ---------- | ------------------------------------------------------------------------- |
+| Ctrl+V     | with a link on the clipboard: fetch that page and read its track lengths  |
+| Ctrl+Enter | apply                                                                     |
+| Esc        | close without applying                                                    |
 
 #### Enlarge punctuation
 
