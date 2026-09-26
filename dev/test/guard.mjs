@@ -13,8 +13,10 @@ export const hostOf = url => { try { return new URL(url).hostname; } catch { ret
 export const isProd = url => PROD_HOST.test(hostOf(url));
 export const WRITE_ONLY = /\/ws\/js\/edit\/|\/edit\/create\b|\/relationship-editor\b/i;
 // POSTs that change nothing on production: seeding the release editor only renders
-// the form, and the release editor's own edit preview renders what WOULD be submitted.
-export const SAFE_PROD_POSTS = ['/release/add\\b', '^/ws/js/edit/preview$'];
+// the form; the release editor's own edit preview renders what WOULD be submitted;
+// and /__meb_verify is MusicBrainz's "Verifying your browser" challenge, which the
+// page's own script answers before it serves the real page.
+export const SAFE_PROD_POSTS = ['/release/add\\b', '^/ws/js/edit/preview$', '^/__meb_verify$'];
 const READS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 // Runs in every frame before the page's own scripts: the GM shim and guard layer 1.

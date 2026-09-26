@@ -6,7 +6,7 @@
 //
 //   node dev/test/baseline.mjs [--fresh] [--only=<substring>]
 import { spawn } from 'node:child_process';
-import { readdirSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
+import { readdirSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, rmSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -36,6 +36,7 @@ function run({ script, file }) {
   return new Promise(ok => {
     const rel = relative(REPO, file), slug = rel.replace(/[\\/]/g, '__');
     const guardLog = resolve(LOGS, slug + '.guard.jsonl'), log = resolve(LOGS, slug + '.log');
+    rmSync(guardLog, { force: true });   // the preload appends; a rerun must not re-read the last run's lines
     const long = /run\.mjs$|integration|529/.test(file);
     const limit = (long ? 45 : 15) * 60_000, t0 = Date.now();
     const child = spawn(process.execPath, ['--import', GUARD, file], {
