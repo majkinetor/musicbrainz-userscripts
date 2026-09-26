@@ -80,7 +80,8 @@ export const EQUIVALENCE_SETS = [
 // it (from test.musicbrainz.org they used to submit to production). Protocol-relative
 // like the rest of the code, so on production every URL is exactly what it was. On a
 // harvest tab (tidal.com, metal-archives.com) it falls back to production.
-export const MB = /(^|\.)musicbrainz\.org$/.test(location.hostname) ? '//' + location.hostname : '//musicbrainz.org';
+// (No `location` in the pure-Node unit tests: production there.)
+export const MB = typeof location !== 'undefined' && /(^|\.)musicbrainz\.org$/.test(location.hostname) ? '//' + location.hostname : '//musicbrainz.org';
 
 export const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
 // node's BroadcastChannel holds the event loop open, which would hang the pure-node

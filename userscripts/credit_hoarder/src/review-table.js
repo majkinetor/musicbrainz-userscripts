@@ -13,7 +13,7 @@ import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
 import { wantsAliasButton, openAddAliasForm, submitAliasBackground, aliasNowHeld } from './alias-add.js';
 import { getLogContainer, getReviewContainer } from './log.js';
-import { noPasswordManagers }               from './util.js';
+import { noPasswordManagers, hashKey }      from './util.js';
 import { _hideBar }                        from './progress-bar.js';
 import { MB, DISCOGS_CHANNEL, pageWindow }     from './constants.js';
 import { log, logDebug }                   from './log.js';
@@ -1221,7 +1221,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     // Cache result in localStorage for today to avoid repeated checks.
                     // Use session Map as primary cache; fall back to localStorage for cross-session
                     const urlCheckCacheKey = `${selected.id}|${discogsHref}`;
-                    const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${discogsHref.replace(/[^a-z0-9]/gi,'-').substring(0,80)}`;
+                    const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${hashKey(discogsHref)}`;   // #623: a hash, not the URL cut to 80 characters (which could collide)
                     const urlCheckToday = new Date().toISOString().slice(0, 10);
                     const urlCheckExpiry = new Date(); urlCheckExpiry.setDate(urlCheckExpiry.getDate() - 7);
                     const urlCheckExpiryStr = urlCheckExpiry.toISOString().slice(0, 10);

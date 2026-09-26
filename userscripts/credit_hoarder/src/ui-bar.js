@@ -11,13 +11,13 @@
 // They're set when insertDiscogsBar mounts the bar; runImport
 // reads them when populating the run output.
 //
-// One IIFE at the top cleans up stale `discogs-release-*` localStorage
-// entries from old versions on every page load (cheap, idempotent).
+// One IIFE prunes Credit Hoarder's localStorage once a day (#623).
 
 import { pageWindow }   from './constants.js';
 import { writeIdbRecord }                 from './storage.js';
 import {
     log,
+    logDebug,
     setLogContainer,
     setReviewContainer,
     onLogCounts,
@@ -1879,17 +1879,30 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         set(!!findMsg());   // in case a submit is already in flight when the bar mounts
     })();
 }
-(function cleanupLocalStorage() {
+// #623 (sweep, X11): this used to walk EVERY localStorage key on every page load to
+// delete a key format retired long ago (`discogs-release-*`), while the URL-check
+// entries it didn't cover (`discogs-urlcheck-*`, 7 days) were never deleted at all —
+// they only expired when read. Once a day now: drop expired URL checks, and any
+// leftover of the retired format.
+(function pruneLocalStorage() {
     try {
-        const keysToRemove = [];
+        const today = new Date().toISOString().slice(0, 10);
+        if (localStorage.getItem('ch:ls-pruned') === today) return;
+        localStorage.setItem('ch:ls-pruned', today);
+        const cutoff = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+        const drop = [];
         for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
             if (!k) continue;
-            // Remove old full-JSON Discogs release caches
-            if (k.startsWith('discogs-release-')) keysToRemove.push(k);
+            if (k.startsWith('discogs-release-')) drop.push(k);
+            else if (k.startsWith('discogs-urlcheck-')) {
+                let date = null; try { date = JSON.parse(localStorage.getItem(k)).date; } catch (e) { /* unreadable → drop */ }
+                if (!date || date < cutoff) drop.push(k);
+            }
         }
-        keysToRemove.forEach(k => localStorage.removeItem(k));
-    } catch(e) {}
+        drop.forEach(k => localStorage.removeItem(k));
+        if (drop.length) logDebug(`localStorage prune: removed ${drop.length} expired URL-check entr${drop.length === 1 ? 'y' : 'ies'}`);
+    } catch (e) { /* storage blocked */ }
 })();
 function runImport(discogsUrl, getOpts, cancelled, collect) {
     // Initial snapshot — used for the preflight phase (per-track decision is

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.26.200515
+// @version      2026.9.26.201006
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -68,7 +68,7 @@
   var EQUIVALENCE_SETS = [
     ["writer", "composer"]
   ];
-  var MB = /(^|\.)musicbrainz\.org$/.test(location.hostname) ? "//" + location.hostname : "//musicbrainz.org";
+  var MB = typeof location !== "undefined" && /(^|\.)musicbrainz\.org$/.test(location.hostname) ? "//" + location.hostname : "//musicbrainz.org";
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   DISCOGS_CHANNEL.unref?.();
   var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
@@ -2222,6 +2222,14 @@
     if (el.tagName === "INPUT" && (!el.type || el.type === "text")) el.type = "search";
     el.classList.add("ch-nopw");
     return el;
+  }
+  function hashKey(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0).toString(16).padStart(8, "0");
   }
 
   // src/sources/tidal.js
@@ -4986,7 +4994,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             linkSlot.title = `Checking whether MB already has this ${srcName} URL linked`;
             tdAction.appendChild(linkSlot);
             const urlCheckCacheKey = `${selected.id}|${discogsHref}`;
-            const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${discogsHref.replace(/[^a-z0-9]/gi, "-").substring(0, 80)}`;
+            const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${hashKey(discogsHref)}`;
             const urlCheckToday = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
             const urlCheckExpiry = /* @__PURE__ */ new Date();
             urlCheckExpiry.setDate(urlCheckExpiry.getDate() - 7);
@@ -8400,15 +8408,28 @@ ${lines}
       set(!!findMsg());
     })();
   }
-  (function cleanupLocalStorage() {
+  (function pruneLocalStorage() {
     try {
-      const keysToRemove = [];
+      const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+      if (localStorage.getItem("ch:ls-pruned") === today) return;
+      localStorage.setItem("ch:ls-pruned", today);
+      const cutoff = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+      const drop = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (!k) continue;
-        if (k.startsWith("discogs-release-")) keysToRemove.push(k);
+        if (k.startsWith("discogs-release-")) drop.push(k);
+        else if (k.startsWith("discogs-urlcheck-")) {
+          let date = null;
+          try {
+            date = JSON.parse(localStorage.getItem(k)).date;
+          } catch (e) {
+          }
+          if (!date || date < cutoff) drop.push(k);
+        }
       }
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
+      drop.forEach((k) => localStorage.removeItem(k));
+      if (drop.length) logDebug(`localStorage prune: removed ${drop.length} expired URL-check entr${drop.length === 1 ? "y" : "ies"}`);
     } catch (e) {
     }
   })();

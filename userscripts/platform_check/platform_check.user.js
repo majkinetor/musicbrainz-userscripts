@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.26.195418
+// @version      2026.9.26.201004
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -12,7 +12,6 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
-// @grant        GM_listValues
 // @grant        GM_openInTab
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
@@ -51,32 +50,9 @@ const MB_ORIGIN = location.origin;
 // tab and refresh, mirroring Credit Hoarder / Apollo Editor's own add-link channel.
 const PC_CHANNEL = ('BroadcastChannel' in window) ? new BroadcastChannel('platform-check-inject') : null;
 
-// #501 follow-up (majkinetor, live: his script-manager config was visibly
-// cluttered with these): one-time sweep deleting any pc:cache:v2:*/
-// pc:mbdata:*/pc:pending:* entries a PRE-fix install already wrote to GM
-// storage — cacheGet/mbDataGet/the pending-handoff reader all moved to
-// localStorage above, so anything still sitting in GM storage under these
-// prefixes is dead weight riding along in a sync backup for no reason.
-// Best-effort and cheap (a filter over already-tiny key lists); harmless to
-// re-run every load once nothing's left to find.
-try {
-    (GM_listValues() || []).forEach(k => {
-        if (k.startsWith('pc:cache:v2:') || k.startsWith('pc:mbdata:') || k.startsWith('pc:pending:')) GM_deleteValue(k);
-    });
-} catch (e) {}
-// #501 follow-up (majkinetor: "tidy up config prefixes... prov_* belongs to
-// pc and have no prefix") — every other setting here already carries `pc:`;
-// the per-provider toggles were the one holdout. Non-destructive: adopt the
-// old bare-named value under the new pc:prov_<platform> name if it's still
-// unset, old key left in place.
-try {
-    ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'qobuz', 'beatport', 'volumo', 'hdtracks', 'soundcloud'].forEach(p => {
-        if (GM_getValue('pc:prov_' + p, undefined) === undefined) {
-            const old = GM_getValue('prov_' + p, undefined);
-            if (old !== undefined) GM_setValue('pc:prov_' + p, old);
-        }
-    });
-} catch (e) {}
+// (#623: the two one-time #501 migrations that used to run here on every load —
+// sweeping cache entries out of GM storage, and copying the old bare prov_* toggles
+// to pc:prov_* — are retired; every install has long since run them.)
 
 // ─── Release editor sub-pages (/edit, /edit-relationships) ────────────────
 // + click on /release stashes OK URLs in `pc:pending:<mbid>` (localStorage)
@@ -3036,16 +3012,58 @@ function pcUrlKey(u) {
     } catch (e) { return s.toLowerCase().replace(/[?#].*$/, '').replace(/\/+$/, ''); }
 }
 function pcSameUrl(a, b) { return !!a && !!b && pcUrlKey(a) === pcUrlKey(b); }
-function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
-function cacheGet(mbid, platform) {
-    const raw = localStorage.getItem(cacheKey(mbid, platform));
+/* #623 (sweep, X11): both caches below grew by one entry per platform for every
+   release ever visited, and never expired. A cached "no match" was permanent, so a
+   release that reached a platform later was never searched there again; and once
+   musicbrainz.org's ~5 MB of localStorage filled up, every write failed silently —
+   the platform logins' token refreshes included. Entries now carry their time (_t):
+   a "not found" is searched again after 14 days, a found link after 90, the
+   release's MusicBrainz data after 30. A daily prune drops what expired and keeps
+   the newest 500 releases. */
+const PC_TTL = { miss: 14 * 864e5, hit: 90 * 864e5, mbdata: 30 * 864e5 };
+const PC_MAX_RELEASES = 500;
+const pcTtlOf = (key, v) => key.startsWith('pc:mbdata:') ? PC_TTL.mbdata : (v && v.url ? PC_TTL.hit : PC_TTL.miss);
+function pcLsGet(key) {   // the entry, or null when absent, unreadable or expired (then removed)
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    let v; try { v = JSON.parse(raw); } catch { return null; }
+    if (v && v._t && Date.now() - v._t > pcTtlOf(key, v)) { try { localStorage.removeItem(key); } catch (e) {} return null; }
+    return v;
 }
-function cacheSet(mbid, platform, entry) {
+function pcLsSet(key, entry) {
     if (!entry) return;
-    try { localStorage.setItem(cacheKey(mbid, platform), JSON.stringify(entry)); } catch (e) {}
+    try { localStorage.setItem(key, JSON.stringify({ ...entry, _t: Date.now() })); } catch (e) {}
 }
+function pcPruneCache() {
+    try {
+        const now = Date.now(), today = new Date(now).toISOString().slice(0, 10);
+        if (localStorage.getItem('pc:cache:pruned') === today) return;
+        localStorage.setItem('pc:cache:pruned', today);
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && (k.startsWith('pc:cache:v2:') || k.startsWith('pc:mbdata:'))) keys.push(k); }
+        const newest = new Map();   // release mbid → its newest entry's time
+        let expired = 0, stamped = 0, evicted = 0;
+        for (const k of keys) {
+            let v; try { v = JSON.parse(localStorage.getItem(k)); } catch (e) { v = null; }
+            if (!v) { localStorage.removeItem(k); expired++; continue; }
+            // an entry from before #623 has no time: its age starts now, rather than
+            // the whole cache expiring (and being searched again) at once
+            if (!v._t) { v._t = now; localStorage.setItem(k, JSON.stringify(v)); stamped++; }
+            if (now - v._t > pcTtlOf(k, v)) { localStorage.removeItem(k); expired++; continue; }
+            const mbid = k.slice(k.lastIndexOf(':') + 1);
+            newest.set(mbid, Math.max(newest.get(mbid) || 0, v._t));
+        }
+        if (newest.size > PC_MAX_RELEASES) {
+            const oldest = [...newest].sort((a, b) => a[1] - b[1]).slice(0, newest.size - PC_MAX_RELEASES);
+            oldest.forEach(([mbid]) => cacheClear(mbid));
+            evicted = oldest.length;
+        }
+        appendLog('System', `Cache prune: ${keys.length} entr${keys.length === 1 ? 'y' : 'ies'} for ${newest.size} release(s) — ${expired} expired, ${evicted} release(s) over the ${PC_MAX_RELEASES} cap dropped${stamped ? `, ${stamped} older entr${stamped === 1 ? 'y' : 'ies'} dated today` : ''}`);
+    } catch (e) { appendLog('System', `Cache prune failed: ${e.message}`, 'warn'); }
+}
+function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
+function cacheGet(mbid, platform) { return pcLsGet(cacheKey(mbid, platform)); }
+function cacheSet(mbid, platform, entry) { pcLsSet(cacheKey(mbid, platform), entry); }
 function cacheClear(mbid) {
     for (const p of ALL_PROVIDERS) localStorage.removeItem(cacheKey(mbid, p));   // all providers — not a stale hardcoded subset (else ↻ leaves Tidal/Beatport/Volumo cached)
     localStorage.removeItem(mbDataKey(mbid));
@@ -3057,15 +3075,9 @@ function cacheClear(mbid) {
 // previously-scanned release still renders its cached rows instead of
 // halting on "Halted: API status 503".
 function mbDataKey(mbid) { return `pc:mbdata:${mbid}`; }
-function mbDataGet(mbid) {
-    const raw = localStorage.getItem(mbDataKey(mbid));
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
-}
-function mbDataSet(mbid, entry) {
-    if (!entry) return;
-    try { localStorage.setItem(mbDataKey(mbid), JSON.stringify(entry)); } catch (e) {}
-}
+function mbDataGet(mbid) { return pcLsGet(mbDataKey(mbid)); }
+function mbDataSet(mbid, entry) { pcLsSet(mbDataKey(mbid), entry); }
+pcPruneCache();   // once a day (#623)
 
 // Apply a cached row to the UI and log the hit. Preserves the cache entry's
 // original source (e.g. 'MB rels', 'Wikidata', 'search') so updateRow can
@@ -5217,8 +5229,8 @@ async function runScansInner() {
     const spotifyKnown = !!(existing.spotify || spotifyCache?.url);
     const tidalKnown    = !!(existing.tidal    || cacheGet(mbid, 'tidal')?.url);
     const beatportKnown = !!(existing.beatport || cacheGet(mbid, 'beatport')?.url);
-    const tidalWanted    = GM_getValue('prov_tidal', true)    && !tidalKnown;
-    const beatportWanted = GM_getValue('prov_beatport', true) && !beatportKnown;
+    const tidalWanted    = providerEnabled('tidal')    && !tidalKnown;
+    const beatportWanted = providerEnabled('beatport') && !beatportKnown;
     // Non-blocking: the lookup runs alongside the scans instead of in front of
     // them. Only a Wikidata-backed provider that could still USE the answer
     // waits for it (no MB link yet — and for Spotify, no cached URL, which it
@@ -5238,17 +5250,17 @@ async function runScansInner() {
     MB_FORMAT  = format  || null;   // (#182) for the format-confidence check
     const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, barcode, existingDiscogsMaster: existing.discogsMaster || null };
     const tasks = [];
-    if (GM_getValue('prov_spotify', true)) tasks.push(wdFor('spotify', 'spotifyId').then(id => scanSpotify({ ...ctx, existingUrl: existing.spotify, wikidataSpotifyId: id })));
-    if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
-    if (GM_getValue('prov_bandcamp', true)) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
-    if (GM_getValue('prov_deezer',   true)) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
-    if (GM_getValue('prov_apple', true)) tasks.push(wdFor('apple', 'appleId').then(id => scanApple({ ...ctx, existingUrl: existing.apple, wikidataAppleId: id })));
-    if (GM_getValue('prov_tidal', true)) tasks.push(wdFor('tidal', 'tidalId').then(id => scanTidal({ ...ctx, existingUrl: existing.tidal, wikidataTidalId: id })));
-    if (GM_getValue('prov_qobuz',    true)) tasks.push(scanQobuz   ({ ...ctx, existingUrl: existing.qobuz    }));
-    if (GM_getValue('prov_beatport', true)) tasks.push(wdFor('beatport', 'beatportId').then(id => scanBeatport({ ...ctx, existingUrl: existing.beatport, wikidataBeatportId: id })));
-    if (GM_getValue('prov_volumo',   true)) tasks.push(scanVolumo  ({ ...ctx, existingUrl: existing.volumo   }));
-    if (GM_getValue('prov_hdtracks', true)) tasks.push(scanHDtracks({ ...ctx, existingUrl: existing.hdtracks }));
-    if (GM_getValue('prov_soundcloud', true)) tasks.push(scanSoundcloud({ ...ctx, existingUrl: existing.soundcloud }));
+    if (providerEnabled('spotify')) tasks.push(wdFor('spotify', 'spotifyId').then(id => scanSpotify({ ...ctx, existingUrl: existing.spotify, wikidataSpotifyId: id })));
+    if (providerEnabled('discogs')) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
+    if (providerEnabled('bandcamp')) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
+    if (providerEnabled('deezer')) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
+    if (providerEnabled('apple')) tasks.push(wdFor('apple', 'appleId').then(id => scanApple({ ...ctx, existingUrl: existing.apple, wikidataAppleId: id })));
+    if (providerEnabled('tidal')) tasks.push(wdFor('tidal', 'tidalId').then(id => scanTidal({ ...ctx, existingUrl: existing.tidal, wikidataTidalId: id })));
+    if (providerEnabled('qobuz')) tasks.push(scanQobuz   ({ ...ctx, existingUrl: existing.qobuz    }));
+    if (providerEnabled('beatport')) tasks.push(wdFor('beatport', 'beatportId').then(id => scanBeatport({ ...ctx, existingUrl: existing.beatport, wikidataBeatportId: id })));
+    if (providerEnabled('volumo')) tasks.push(scanVolumo  ({ ...ctx, existingUrl: existing.volumo   }));
+    if (providerEnabled('hdtracks')) tasks.push(scanHDtracks({ ...ctx, existingUrl: existing.hdtracks }));
+    if (providerEnabled('soundcloud')) tasks.push(scanSoundcloud({ ...ctx, existingUrl: existing.soundcloud }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
 }

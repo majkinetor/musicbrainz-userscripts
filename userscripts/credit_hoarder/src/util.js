@@ -117,6 +117,14 @@ export function noPasswordManagers(el) {
 }
 
 /** `document.createElement('input')` with the above already applied. */
+/** A short, stable hash of a string (FNV-1a, 32-bit, hex) — for storage keys that
+ *  must identify a long value without truncating it (#623). */
+export function hashKey(str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return (h >>> 0).toString(16).padStart(8, '0');
+}
+
 export function textInput(type = 'text') {
     const el = document.createElement('input');
     el.type = type;
