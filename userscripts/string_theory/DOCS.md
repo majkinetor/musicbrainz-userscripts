@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-25 23:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-26 12:14 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -277,7 +277,7 @@ Whichever source, it detects everything shaped like a time — `5:50`, `1′23�
 - **+** on a row inserts a length below it (everything shifts down) — for a duration the parser couldn't see (e.g. a single-digit-seconds `1:2`); **+ add length** appends;
 - click a value to **edit** it.
 
-**Invalid** times (e.g. `99:99`) are highlighted red and surface a **prominent badge in the panel header** — they **must be fixed or deleted**, and **Apply** stays disabled until the list is clean. A counter shows *N lengths ↔ M tracks*. **Apply** writes the lengths to the medium's tracks in order (nothing is written until then; **Esc** cancels, **Ctrl+Enter** applies). The panel is **centred, draggable by its header, and resizable**; on a multi-medium release, pick the medium in the header.
+**Invalid** times (e.g. `99:99`) are highlighted red and surface a **prominent badge in the panel header** — they **must be fixed or deleted**, and **Apply** stays disabled until the list is clean. An **empty** row is allowed: that track keeps the length it already has (nothing is cleared), so a source that lacks a few lengths can still be applied — insert an empty row with **+** to keep the rest aligned. A counter shows *N lengths ↔ M tracks*. **Apply** writes the lengths to the medium's tracks in order (nothing is written until then; **Esc** cancels, **Ctrl+Enter** applies). The panel is **centred, draggable by its header, and resizable**; on a multi-medium release, pick the medium in the header.
 
 <!-- source: discussion #451 / issue #455 -->
 
