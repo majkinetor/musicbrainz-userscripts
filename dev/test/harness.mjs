@@ -130,6 +130,12 @@ export async function loadFunctions(name, names) {
   return new Function(bodies.join('\n') + `\nreturn { ${names.join(', ')} };`)();
 }
 
+// A screenshot of a page or locator, attached to the test's report. Never fails the
+// test: the element may be gone by the time it's taken.
+export async function attachShot(testInfo, target, name) {
+  try { await testInfo.attach(name, { body: await target.screenshot(), contentType: 'image/png' }); } catch (e) { /* nothing to show */ }
+}
+
 // Skip (not fail) when the profile isn't logged in to the site the page is on.
 export async function requireLogin(page) {
   const out = page.url().includes('/login') || await page.evaluate(() => !document.querySelector('a[href*="/logout"]'));

@@ -61,19 +61,24 @@ export function pageInit(cfg) {
   if (!cfg.gm) return;
   let store = new Map(Object.entries(cfg.gm.values || {}));
   // gm.persist: the values survive a reload and same-tab navigation, as real GM storage
-  // does. They live in the tab's sessionStorage, so unlike real GM storage they are per
-  // tab and per origin; gm.values seeds each new tab once.
+  // does. true: in the tab's sessionStorage, so per tab and per origin; gm.values seeds
+  // each new tab once. 'tabs': in localStorage, shared by every tab of the origin, like
+  // real GM storage across tabs. The profile keeps localStorage between runs, so each
+  // test gets its own namespace and older ones are swept.
   if (cfg.gm.persist) try {
-    const ss = window.sessionStorage, P = '__gm__', INIT = '__gm_seeded__';
+    const shared = cfg.gm.persist === 'tabs';
+    const ss = shared ? window.localStorage : window.sessionStorage;
+    const P = shared ? `__gm_${cfg.gm.run}__` : '__gm__', INIT = shared ? P + ':seeded' : '__gm_seeded__';
+    if (shared) Object.keys(ss).filter(k => k.startsWith('__gm_') && !k.startsWith(P)).forEach(k => ss.removeItem(k));
     if (!ss.getItem(INIT)) { ss.setItem(INIT, '1'); for (const [k, v] of store) ss.setItem(P + k, JSON.stringify(v)); }
     store = {
       has: k => ss.getItem(P + k) !== null,
       get: k => { const v = ss.getItem(P + k); return v === null ? undefined : JSON.parse(v); },
       set: (k, v) => ss.setItem(P + k, JSON.stringify(v === undefined ? null : v)),
       delete: k => ss.removeItem(P + k),
-      keys: () => Object.keys(ss).filter(k => k.startsWith(P)).map(k => k.slice(P.length)),
+      keys: () => Object.keys(ss).filter(k => k.startsWith(P) && k !== INIT).map(k => k.slice(P.length)),
     };
-  } catch (e) { /* no sessionStorage here (about:blank): the values live in the page */ }
+  } catch (e) { /* no storage here (about:blank): the values live in the page */ }
   // value-change listeners hear this page's own writes (remote = false)
   const listeners = new Map(); let nextListener = 1;
   const changed = (k, before, after) => listeners.forEach(l => { if (l.k === k) try { l.fn(k, before, after, false); } catch (e) { /* the script's own error */ } });
@@ -118,6 +123,8 @@ export async function installProdGuard(ctx, { allow = [], gm = null, onRefused =
   const allowed = url => { const p = new URL(url).pathname; return allow.some(s => new RegExp(s, 'i').test(p)); };
   const routed = new Set(), sent = [];
   await ctx.exposeBinding('__harnessProdWrite', (_src, w) => onRefused(w));
+  // a namespace for gm.persist: 'tabs', one per context
+  if (gm) gm = { ...gm, run: Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
   await ctx.addInitScript(pageInit, { allow, gm });
   await ctx.route(u => isProd(u.href) && WRITE_ONLY.test(u.pathname), async route => {
     const req = route.request();
