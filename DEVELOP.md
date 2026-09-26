@@ -61,6 +61,7 @@ at the root.
 |---|---|
 | [`dev/tokens/`](dev/tokens/README.md) | design tokens and themes — the single place the look is configured |
 | [`dev/ui/`](dev/ui/README.md) | the shared components, the platform icons, and the live checks for both |
+| [`dev/test/`](dev/test/README.md) | the shared test harness — `pnpm test` runs every userscript's specs |
 | `dev/screens/ui/` | generated screenshots (see below) |
 | `dev/github-notifications/`, `dev/notif-channel/` | the GH notification → channel pipeline |
 | [`dev/script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database snapshot; runs entirely in Docker (`.\run.ps1`) |

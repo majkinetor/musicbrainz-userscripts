@@ -14,11 +14,11 @@ dev/github-notifications/.notif-poll.log
 dev/notif-channel/.channel.log
 dev/notif-channel/node_modules/
 
-# Repo-root noise from running pnpm install at the root by accident
-# (the real packages live under userscripts/*/).
+# Repo-level tooling (the shared test runner, #625) installs here; the
+# per-script build packages still live under userscripts/*/.
 /node_modules/
-/package.json
-/pnpm-lock.yaml
+# `pnpm test` output: the HTML report and failure screenshots.
+/test-results/
 
 # Per-developer MCP config. Each contributor copies
 # `dev/notif-channel/mcp.json.template` → `.mcp.json` themselves
