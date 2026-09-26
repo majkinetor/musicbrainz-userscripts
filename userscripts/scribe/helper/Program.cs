@@ -23,7 +23,7 @@ namespace Scribe;
 
 internal static class Program
 {
-    public const string Version = "0.3.0";
+    public const string Version = "0.3.1";
     public static int Port = 17999;
     public static string Token = "extedit";
     public static string RunCmd = "";
@@ -146,6 +146,15 @@ internal static class Server
         var body = await sr.ReadToEndAsync();
         var doc = JsonDocument.Parse(body).RootElement;
         var id = doc.TryGetProperty("id", out var idv) ? idv.GetString() ?? Guid.NewGuid().ToString("N") : Guid.NewGuid().ToString("N");
+        // The id becomes part of the temp FILE NAME below. Unchecked, "..\..\" in it wrote the file
+        // anywhere the user can write (outside the temp folder). Every id the userscript makes is
+        // letters/digits/dashes ("rel-<mbid8>-<base36>", or base36), so anything else is refused.
+        if (id.Length == 0 || id.Length > 80 || !id.All(c => char.IsAsciiLetterOrDigit(c) || c == '-'))
+        {
+            Log.Write($"[open] refused a bad session id ({id.Length} chars)");
+            await Json(res, 400, new { error = "bad id" });
+            return;
+        }
 
         if (sessions.TryGetValue(id, out var existing))
         {
@@ -156,9 +165,10 @@ internal static class Server
         }
 
         var content = doc.TryGetProperty("content", out var cv) ? cv.GetString() ?? "" : "";
-        var ext = doc.TryGetProperty("ext", out var ev) ? (ev.GetString() ?? "txt") : "txt";
-        ext = new string(ext.Where(char.IsLetterOrDigit).ToArray());
-        if (ext.Length == 0) ext = "txt";
+        // Always .md. The extension used to come from the request, and with no editor configured the
+        // file is opened by the OS — so a request asking for "bat"/"vbs"/"hta" got that file RUN.
+        // Everything Scribe edits is text; plain text is valid Markdown. Any "ext" sent is ignored.
+        const string ext = "md";
 
         var name = doc.TryGetProperty("name", out var nv) ? (nv.GetString() ?? "") : "";
         var slug = Slug(name);

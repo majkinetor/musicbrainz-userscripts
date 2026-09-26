@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.25
+// @version      2026.9.26
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -23,7 +23,7 @@
   // From the manager (String Theory shadows GM_info per script, so this is Scribe's own
   // @version in the bundle too). The literal is only a fallback — it was the ONLY source
   // before, and had fallen behind: the window title said v2026.7.24 on a 2026.7.29 build.
-  const VERSION = (() => { try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.9.25'; } catch (e) { return '2026.9.25'; } })();
+  const VERSION = (() => { try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.9.26'; } catch (e) { return '2026.9.26'; } })();
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -662,7 +662,9 @@
     t.el.dispatchEvent(new Event('input', { bubbles: true }));
     t.el.dispatchEvent(new Event('change', { bubbles: true }));
   }
-  const extFor = el => (el.classList && (el.classList.contains('edit-note') || /annotation/i.test(el.name || el.id || ''))) ? 'md' : 'txt';
+  // Always .md — the helper (0.3.1+) ignores this and writes .md regardless; still sent so an older
+  // helper opens .md too instead of falling back to .txt. (Plain text is valid Markdown.)
+  const EXT = 'md';
 
   // ── per-field sessions (many fields linked at once) ───────────────────────
   const sessions = new Map();
@@ -685,7 +687,7 @@
     setLinked(t.el, true); renderPanel();
     try {
       const open = await gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' },
-        data: JSON.stringify({ id, content: readVal(t), ext: extFor(t.el), name: s.label }) });
+        data: JSON.stringify({ id, content: readVal(t), ext: EXT, name: s.label }) });
       if (open.status !== 200) { toast(`Open failed (HTTP ${open.status})`, 'err'); disconnect(t.el, true); return; }
     } catch (e) { toast('Open error: ' + e.message, 'err'); disconnect(t.el, true); return; }
     toast(`“${s.label}” opened in your editor — save to apply (stays linked; Esc to disconnect)`, 'ok');
