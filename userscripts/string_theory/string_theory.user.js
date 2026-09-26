@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.26.142552
+// @version      2026.9.26.150126
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.26.142552 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.26.142543\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.26.142250\n  · Fusion v2026.9.26.111241\n  · Group Therapy v2026.9.25.164727\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.26.150126 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.26.142543\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.26.142250\n  · Fusion v2026.9.26.111241\n  · Group Therapy v2026.9.26\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -27286,7 +27286,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.25.164727","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.25.164727","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.26","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.26","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
@@ -28198,6 +28198,10 @@ try {
       .gt-cons-cell.gt-has{color:var(--mbu-ok)}
       .gt-cons-cell.gt-prop{color:var(--mbu-info);outline:1px dashed #9cc2e6;outline-offset:-3px;border-radius:4px}
       .gt-cons-cell.gt-none{color:var(--mbu-info)}
+      .gt-cons-cell.gt-fail{color:var(--mbu-error);cursor:help}
+      .gt-cons-col.gt-fail .gt-cons-coll{color:var(--mbu-error)}
+      .gt-cons-fail{display:flex;align-items:center;gap:8px;margin:4px 0 6px;padding:5px 8px;border:1px solid var(--mbu-error-border);border-radius:5px;background:var(--mbu-error-bg);color:var(--mbu-error);font-size:12px}
+      .gt-cons-retry{margin-left:auto;cursor:pointer}
       .gt-cons-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--mbu-border)}
       .gt-cons-btn{font-weight:600;font-size:13px;font-family:inherit;padding:5px 14px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-info);background:var(--mbu-info-bg);color:var(--mbu-info);cursor:pointer}
       .gt-cons-btn:hover{background:var(--mbu-info-bg)}
@@ -29028,6 +29032,32 @@ try {
     }
     return [];
   }
+  // #624 (majkinetor): "RG Consolidation reports no RG due to error/rate limit" — on a release that
+  // plainly had 3 versions. The WS2 reads here never looked at the response: a throttled 503 is JSON
+  // too ({"error": …}), so it parsed as "no release group" / "no releases". Every WS2 read in the
+  // dialog now goes through the /ws/2 gate (wmGate), retries 429/503 with backoff (Retry-After is a
+  // floor, never a replacement — MB sends "Retry-After: 0"), and THROWS when it gives up, so a
+  // failure is reported as a failure, never as an empty result.
+  async function consWs2(url, tries = 5) {
+    let last = '';
+    for (let i = 0; i < tries; i++) {
+      await wmGate();
+      let r;
+      try { r = await fetch(url, { headers: { Accept: 'application/json' } }); }
+      catch (e) { last = (e && e.message) || 'network error'; console.debug('[Group Therapy] consolidate:', url, 'failed:', last); await sleep(700 * (i + 1)); continue; }
+      if (r.status === 429 || r.status === 503) {
+        const ra = parseFloat(r.headers.get('Retry-After'));
+        const wait = Math.min(15000, Math.max(Number.isFinite(ra) ? ra * 1000 : 0, 1000 * Math.pow(2, i)));
+        last = 'MusicBrainz is rate-limiting (HTTP ' + r.status + ')';
+        console.debug(`[Group Therapy] consolidate: ${url} → ${r.status}` + (i < tries - 1 ? `, retry ${i + 1}/${tries - 1} in ${Math.round(wait / 1000)}s` : ', giving up'));
+        if (i < tries - 1) { await sleep(wait); continue; }
+        break;
+      }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    }
+    throw new Error(last || 'request failed');
+  }
   // run worker over items with a bounded number of concurrent tasks (parallel, but throttled)
   async function throttledMap(items, worker, concurrency = 4) {
     const out = new Array(items.length); let idx = 0;
@@ -29266,6 +29296,14 @@ try {
     }, 0));
     body.appendChild(paste);
 
+    // #624: releases whose credits could not be read — said so, with a Retry; never shown as "no credits"
+    const unread = releases.filter(r => r.selected && r._relsErr);
+    if (unread.length) {
+      const f = el('div', 'gt-cons-fail', `⚠ Could not read ${unread.map(r => r.letter).join(', ')} — ${unread[0]._relsErr}. Shown as “?” and left out of Auto select / Apply.`);
+      const again = el('button', 'gt-cons-btn gt-cons-retry', 'Retry'); again.type = 'button'; again.onclick = () => recompute();
+      f.appendChild(again); body.appendChild(f);
+    }
+
     const cols = releases.filter(r => r.selected);
     // rebuild rows from the selected releases: present is recomputed, propose persists on the row objects
     for (const row of rowsByKey.values()) row.present = new Set();
@@ -29274,11 +29312,11 @@ try {
 
     foot.textContent = '';
     if (!cols.length) { body.appendChild(el('div', 'gt-pop-note', 'Select one or more releases above to build the matrix.')); return; }
-    if (!rows.length) { body.appendChild(el('div', 'gt-pop-note', 'No release-level credits on the selected release(s).')); return; }
+    if (!rows.length) { body.appendChild(el('div', 'gt-pop-note', unread.length && unread.length === cols.length ? 'None of the selected releases could be read — see above.' : 'No release-level credits on the selected release(s).')); return; }
 
     const tbl = el('table', 'gt-cons-tbl'), head = el('tr');
     head.append(el('th', 'gt-cons-role', 'Role'), el('th', 'gt-cons-ent', 'Entity'));
-    const addableFor = rel => rows.filter(row => !row.present.has(rel.gid) && !consExcluded(row, rel));   // not present + not format-specific
+    const addableFor = rel => rel._relsErr ? [] : rows.filter(row => !row.present.has(rel.gid) && !consExcluded(row, rel));   // not present + not format-specific; nothing on an unread release (#624)
     const planLbl = el('span', 'gt-cons-plan');
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     const updatePlan = () => { let e = 0; const rs = new Set(); rows.forEach(row => cols.forEach(rel => { if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { e++; rs.add(rel.gid); } })); planLbl.textContent = e ? `${e} addition${e > 1 ? 's' : ''} across ${rs.size} release${rs.size > 1 ? 's' : ''}` : 'nothing selected'; applyBtn.disabled = !e; };
@@ -29289,6 +29327,10 @@ try {
         tr.appendChild(el('td', 'gt-cons-role', row.label.role));
         const ent = el('td', 'gt-cons-ent'); ent.appendChild(document.createTextNode(row.label.ent)); if (row.label.credit) ent.appendChild(el('span', 'gt-cons-cr', ' “' + row.label.credit + '”')); tr.appendChild(ent);
         for (const rel of cols) {
+          if (rel._relsErr) {   // #624 unread → unknown, not "missing"
+            const tf = el('td', 'gt-cons-cell gt-fail', '?'); tf.title = `Couldn’t read this release’s credits (${rel._relsErr}) — left out; use Retry above`;
+            tr.appendChild(tf); continue;
+          }
           const td = el('td', 'gt-cons-cell'), has = row.present.has(rel.gid), prop = row.propose.has(rel.gid);
           td.classList.add(has ? 'gt-has' : prop ? 'gt-prop' : 'gt-none');
           td.textContent = has || prop ? rel.letter : '·';
@@ -29300,8 +29342,9 @@ try {
       }
     };
     cols.forEach(r => {
-      const th = el('th', 'gt-cons-col gt-cons-colsel'); th.appendChild(el('div', 'gt-cons-coll', r.letter)); th.appendChild(fmtBadges(r.fmt));
-      th.title = `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
+      const th = el('th', 'gt-cons-col gt-cons-colsel' + (r._relsErr ? ' gt-fail' : '')); th.appendChild(el('div', 'gt-cons-coll', r.letter)); th.appendChild(fmtBadges(r.fmt));
+      th.title = r._relsErr ? `${r.title} — couldn’t read its credits (${r._relsErr}); use Retry above`
+        : `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
       th.onclick = () => { const p = addableFor(r); const all = p.length && p.every(row => row.propose.has(r.gid)); p.forEach(row => all ? row.propose.delete(r.gid) : row.propose.add(r.gid)); draw(); updatePlan(); };
       head.appendChild(th);
     });
@@ -29326,26 +29369,52 @@ try {
     document.addEventListener('keydown', onConsKey, true);
     consEl.addEventListener('mousedown', e => { if (e.target === consEl) closeConsolidate(); });
     const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
+    // #624: a failure says so and offers another go — it must never read as "there is nothing"
+    const noteFail = m => {
+      const n = body.querySelector('.gt-pop-note'); if (!n) return;
+      n.textContent = m + ' ';
+      const again = el('button', 'gt-cons-btn gt-cons-retry', 'Try again'); again.type = 'button'; again.onclick = () => openConsolidate();
+      n.appendChild(again);
+    };
     let releases;
     try {
-      const here = RE().state.entity.gid;
-      const rg = await (await fetch('/ws/2/release/' + here + '?inc=release-groups&fmt=json', { headers: { Accept: 'application/json' } })).json();
-      const rgid = rg['release-group'] && rg['release-group'].id;
-      if (!rgid) return note('No release group');
-      // enumerate every release (WS2 caps at 100/page — paginate)
+      const ent = (RE() && RE().state && RE().state.entity) || {};
+      const here = ent.gid;
+      // #624: the release group is already on the page — the relationship editor's state carries it,
+      // and the header links it ("see all versions of this release"). No request, so no rate limit
+      // can lose it. The WS2 lookup is only the last resort.
+      let rgid = (ent.releaseGroup && ent.releaseGroup.gid) || null, rgFrom = rgid ? 'editor state' : '';
+      if (!rgid) {
+        rgid = [...document.querySelectorAll('a[href^="/release-group/"]')].map(a => ((a.getAttribute('href') || '').match(/^\/release-group\/([0-9a-f-]{36})/i) || [])[1]).find(Boolean) || null;
+        if (rgid) rgFrom = 'page link';
+      }
+      if (!rgid && here) {
+        const rg = await consWs2('/ws/2/release/' + here + '?inc=release-groups&fmt=json');
+        rgid = (rg['release-group'] && rg['release-group'].id) || null;
+        if (rgid) rgFrom = 'WS2';
+      }
+      console.debug('[Group Therapy] consolidate: release', here, '→ release group', rgid, rgFrom ? '(from ' + rgFrom + ')' : '');
+      if (!rgid) return note('This release has no release group');
+      // enumerate every release (WS2 caps at 100/page — paginate). A page that still fails after the
+      // retries aborts the whole list: a partial group would look complete and propose the wrong things.
       const all = []; let offset = 0, total = Infinity;
       while (offset < total) {
-        const sib = await (await fetch(`/ws/2/release?release-group=${rgid}&inc=media&limit=100&offset=${offset}&fmt=json`, { headers: { Accept: 'application/json' } })).json();
-        total = sib['release-count'] || (all.length + (sib.releases || []).length);
+        note('Loading the releases in this group…' + (Number.isFinite(total) ? ` ${all.length}/${total}` : ''));
+        const sib = await consWs2(`/ws/2/release?release-group=${rgid}&inc=media&limit=100&offset=${offset}&fmt=json`);
+        total = sib['release-count'] != null ? sib['release-count'] : (all.length + (sib.releases || []).length);
         all.push(...(sib.releases || []));
         if (!(sib.releases || []).length) break;
         offset += 100;
       }
+      console.debug('[Group Therapy] consolidate:', all.length, 'release(s) in the group');
       releases = all.sort((a, b) => (a.date || '~').localeCompare(b.date || '~')).map((r, i) => ({
         gid: r.id, title: r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''), letter: (i < 26 ? '' : String.fromCharCode(64 + Math.floor(i / 26))) + String.fromCharCode(65 + (i % 26)),
         fmt: [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join('+') || '', year: (r.date || '').slice(0, 4), current: r.id === here, selected: false, _rels: null,
       }));
-    } catch (e) { return note('Could not load release group'); }
+    } catch (e) {
+      console.warn('[Group Therapy] consolidate: loading the release group failed —', e && e.message);
+      return noteFail(`Could not load the release group — ${(e && e.message) || 'request failed'}.`);
+    }
     if (!releases || releases.length < 2) return note('Need at least 2 releases in the group to consolidate');
     // auto-include all when the group is small; otherwise start with just the release we're editing (the
     // user picks the rest) — a 100+-release group would be an unusable wall of columns otherwise.
@@ -29355,7 +29424,14 @@ try {
     const ctx = { body, foot, releases, rowsByKey, recompute: null };
     ctx.recompute = async () => {
       const need = releases.filter(r => r.selected && !r._rels);
-      if (need.length) { let d = 0; note(`Reading releases… 0/${need.length}`); await throttledMap(need, async r => { try { r._rels = await consFetchRels(r.gid); } catch (e) { r._rels = []; } note(`Reading releases… ${++d}/${need.length}`); }); }
+      // #624: a release whose credits could not be read stays UNREAD (_rels null + _relsErr), shown as
+      // "?" and left out of Auto select / Apply — not stored as "no credits", which made every credit
+      // look missing on it and proposed adding all of them. Each recompute retries the unread ones.
+      if (need.length) { let d = 0; note(`Reading releases… 0/${need.length}`); await throttledMap(need, async r => {
+        try { r._rels = await consFetchRels(r.gid); r._relsErr = null; }
+        catch (e) { r._rels = null; r._relsErr = (e && e.message) || 'request failed'; console.warn('[Group Therapy] consolidate: could not read release', r.gid, '—', r._relsErr); }
+        note(`Reading releases… ${++d}/${need.length}`);
+      }); }
       renderConsMatrix(ctx);
     };
     await ctx.recompute();
