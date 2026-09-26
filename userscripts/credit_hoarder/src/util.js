@@ -56,47 +56,6 @@ export function doNext(fn, ms = 80) {
     });
 }
 
-/**
- * Set the value of an input element AND notify React that it changed (React
- * tracks values internally via `_valueTracker`, so a plain `.value = …`
- * assignment doesn't update React's controlled-component state). Used by the
- * MB autocomplete inputs which are React-controlled.
- */
-export function setNativeValue(element, value) {
-    if (typeof element === 'string') {
-        element = $(element).get(0);
-    }
-    let lastValue = element.value;
-    element.value = value;
-    let event = new Event('input', { target: element, bubbles: true });
-    // React 15
-    event.simulated = true;
-    // React 16
-    let tracker = element._valueTracker;
-    if (tracker) {
-        tracker.setValue(lastValue);
-    }
-    element.dispatchEvent(event);
-}
-
-/** Same as setNativeValue but dispatches a `change` event instead of `input`. */
-export function selectValue(element, value) {
-    if (typeof element === 'string') {
-        element = $(element).get(0);
-    }
-    let lastValue = element.value;
-    element.value = value;
-    let event = new Event('change', { target: element, bubbles: true });
-    // React 15
-    event.simulated = true;
-    // React 16
-    let tracker = element._valueTracker;
-    if (tracker) {
-        tracker.setValue(lastValue);
-    }
-    element.dispatchEvent(event);
-}
-
 /** Synthetic Enter keydown — used to commit MB's autocomplete inputs. */
 export function makeKeyDownEvent(keyCode) {
     return new KeyboardEvent('keydown', {

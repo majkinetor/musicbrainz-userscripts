@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.26.160549
+// @version      2026.9.26.200101
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -1912,56 +1912,12 @@
     }, []);
   }
   function convertPotentialDJMixers(json) {
-    let djmixers = json.extraartists?.filter((artist) => artist.role === "DJ Mix") || [];
-    djmixers = djmixers.map((artist) => {
-      const tracks = getAllArtistTracks(json.tracklist, artist.tracks);
-      const mediums = json.tracklist.reduce(
-        (mediums2, track, index) => {
-          if (track.type_ === "heading") {
-            if (index > 0) {
-              mediums2.push([]);
-            }
-          } else {
-            mediums2[mediums2.length - 1].push(track);
-          }
-          return mediums2;
-        },
-        [[]]
-      );
-      tracks.forEach((t) => {
-        for (let i = 0; i < mediums.length; i++) {
-          mediums[i] = mediums[i].filter((track) => {
-            return t.position !== track.position;
-          });
-        }
-      });
-      let mediumsDjAppearsOn = mediums.filter((medium) => medium.length === 0);
-      if (mediumsDjAppearsOn.length !== mediums.length) {
-        json.extraartists = json.extraartists?.filter((a) => {
-          return a !== artist;
-        }) || [];
-        return Object.assign({}, ENTITY_TYPE_MAP["DJ Mix"], {
-          artist,
-          attributes: [
-            () => {
-              for (let j = mediums.length - 1; j >= 0; j--) {
-                if (mediums[j].length === 0) {
-                  $(SELECTORS.MediumsInput).click();
-                  $($(SELECTORS.MediumsInputOptions).get(j)).click();
-                }
-              }
-            }
-          ]
-        });
-      } else if (mediumsDjAppearsOn.length === mediums.length) {
-        json.extraartists = json.extraartists?.filter((a) => {
-          return a !== artist;
-        }) || [];
-        return Object.assign({}, ENTITY_TYPE_MAP["DJ Mix"], {
-          artist
-        });
-      }
-      return null;
+    const all = flattenTracklist(json.tracklist || []).filter((t) => t.type_ === "track");
+    const djmixers = (json.extraartists || []).filter((artist) => artist.role === "DJ Mix" && artist.tracks).map((artist) => {
+      const covered = new Set(getAllArtistTracks(json.tracklist, artist.tracks).map((t) => t.position));
+      if (!all.length || !all.every((t) => covered.has(t.position))) return null;
+      json.extraartists = json.extraartists.filter((a) => a !== artist);
+      return Object.assign({}, ENTITY_TYPE_MAP["DJ Mix"], { artist });
     }).filter((role) => role !== null);
     return djmixers;
   }
@@ -5760,11 +5716,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       log.warn(`Attribute "${name}" not found in MB \u2014 dropping attribute but keeping the rel`);
       return null;
     }
-    function extractFnValue(fn) {
-      const src = fn.toString();
-      const m = src.match(/,\s*['"`]([^'"`]+)['"`]\s*\)/);
-      return m ? m[1] : null;
-    }
     const attrObjs = [];
     const seen = /* @__PURE__ */ new Set();
     for (const attr of rawAttributes) {
@@ -5781,8 +5732,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           attrName = attr.value;
         }
         if (attr.creditedAs) creditedAs = attr.creditedAs;
-      } else if (typeof attr === "function") {
-        attrName = extractFnValue(attr);
       }
       if (!attrName) continue;
       const found = findAttrByName(attrName);

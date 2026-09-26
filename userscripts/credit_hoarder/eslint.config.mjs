@@ -66,11 +66,8 @@ export default [
                 GM_xmlhttpRequest:      'readonly',
                 GM_addStyle:            'readonly',
                 GM_openInTab:           'readonly',
-                // jQuery (loaded by the MB page)
-                $:                      'readonly',
-                jQuery:                 'readonly',
-                // MB page object (accessed via unsafeWindow, but referenced directly in legacy code)
-                MB:                     'readonly',
+                // No $, jQuery or bare MB: the page's globals are reached through
+                // unsafeWindow, and whitelisting them hid an undefined $ (#623, C1).
             },
         },
         rules: {
