@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.26.160549
+// @version      2026.9.26.192237
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,13 +82,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.26.160549 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.26.142543\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.26.160549\n  · Fusion v2026.9.26.111241\n  · Group Therapy v2026.9.26\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.26.192237 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.26.192219\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.26.160549\n  · Fusion v2026.9.26.111241\n  · Group Therapy v2026.9.26\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.142543","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.142543","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.192219","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.192219","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -693,12 +693,29 @@ try {
     if (s.length > MAX) { const cut = s.lastIndexOf(', ', MAX); s = (cut > 12 ? s.slice(0, cut) : s.slice(0, MAX - 1)) + '…'; }
     return s;
   }
+  // #626: the release group's editions, with their tracklists and credits — ONE request per
+  // release group, shared by the rg sibling map below, the artist position source and the
+  // Recordings pass's position index (#440), which used to fetch this same URL each on their
+  // own. A failed lookup is not cached (#555), so the next caller retries.
+  // Cached as a promise, so callers that arrive together (the matching lanes) share it.
+  const _rgRelCache = new Map();   // rgGid → Promise<releases[] | null>
+  function rgReleases(rgGid) {
+    if (!rgGid) return Promise.resolve(null);
+    if (_rgRelCache.has(rgGid)) return _rgRelCache.get(rgGid);
+    const p = wsJson(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { label: 'release-group editions' }).then(res => {
+      if (!res.json) { _rgRelCache.delete(rgGid); Log.warn('release-group editions: lookup failed for', rgGid, '— not cached'); return null; }
+      const rels = res.json.releases || [];
+      Log.debug('release-group editions:', rels.length, 'release(s) in', rgGid);
+      return rels;
+    }, e => { _rgRelCache.delete(rgGid); Log.warn('release-group editions failed:', e.message); return null; });
+    _rgRelCache.set(rgGid, p);
+    return p;
+  }
   async function fetchSiblings(rgGid) {
     const map = new Map();
     try {
-      const res = await wsJson(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { label: 'sibling fetch' });
-      const j = res.json; if (!j) return map;
-      (j.releases || []).forEach(rel => (rel.media || []).forEach(med => (med.tracks || []).forEach(t => {
+      const rels = await rgReleases(rgGid); if (!rels) return map;
+      rels.forEach(rel => (rel.media || []).forEach(med => (med.tracks || []).forEach(t => {
         const title = fold(t.title || (t.recording && t.recording.title));
         const ac = (t['artist-credit'] && t['artist-credit'].length) ? t['artist-credit'] : ((t.recording && t.recording['artist-credit']) || []);
         if (!title || map.has(title) || !ac.length || !ac.every(x => x.artist && x.artist.id)) return;
@@ -1015,7 +1032,7 @@ try {
   }
   // slot status from a match result — 'disc' for a confident Discogs-URL match,
   // 'rg' for a release-group sibling, else the name-search confidence.
-  const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : m.source === 'cred' ? 'cred' : m.source === 'alias' ? 'alias' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : m.confidence);
+  const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : m.source === 'pos' ? 'pos' : m.source === 'cred' ? 'cred' : m.source === 'alias' ? 'alias' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : m.confidence);
 
   /* ── add / create the Discogs link for a slot (#227) ──────────────────────────
    * Stash the slot's Discogs artist URL and decide whether a link can be added:
@@ -1378,8 +1395,104 @@ try {
     return sibArr.find(agrees) || null;
   }
 
-  async function matchSlot(creditedAs, sib, discogsUrl, contextGids) {
+  /* ── #626: the artist credited at this track's position on other editions ──────
+     The Recordings pass links a track by the recording at its position on the release
+     group's editions and on the duplicates (#440). The artist credited on that same track
+     is just as good evidence for the track ARTIST, and it catches what the name lookups
+     can't: a spelling variant ("The Revolution of St.Vincent" → "…of St. Vincent", "Juan
+     Formel" → "Juan Formell", "Cedric Im Brooks" → "Cedric “Im” Brooks") and, with no
+     release group linked, a name several MB artists share ("Duke", "Sambo", "Ophelia").
+     A position counts only when its track passes the Recordings test — a similar title and
+     a length within tolerance (an exact title when either length is unknown) — and then
+     the NAME only has to match loosely, because the position has already narrowed the
+     choice to the one to three artists credited on that track. Loose against all of
+     MusicBrainz would be reckless; loose among three is safe. */
+  const posNameKey = s => fold(s).replace(/&/g, ' and ').replace(/^the\s+/, '').replace(/[^\p{L}\p{N}]+/gu, '');
+  function posNameMatch(a, b) {
+    const x = posNameKey(a), y = posNameKey(b); if (!x || !y) return false;
+    return x === y || 1 - recLev(x, y) / Math.max(x.length, y.length) >= 0.85;
+  }
+  // position "<medium>.<track>" → the tracks there on other releases, with their credits.
+  // Every release is kept (unlike the recordings' index, which keeps one entry per
+  // recording), so "N of M editions" counts releases.
+  function addReleaseToArtistPos(rel, idx, skipGid) {
+    if (!rel || !rel.id || rel.id === skipGid) return;   // never the release being edited
+    (rel.media || []).forEach(med => (med.tracks || []).forEach(t => {
+      const ac = (t['artist-credit'] && t['artist-credit'].length) ? t['artist-credit'] : ((t.recording && t.recording['artist-credit']) || []);
+      if (!ac.length) return;
+      const key = (med.position || 1) + '.' + (t.position || 0);
+      if (!idx.has(key)) idx.set(key, []);
+      idx.get(key).push({ rel: rel.id, relTitle: rel.title || '', title: t.title || (t.recording && t.recording.title) || '', length: t.length || (t.recording && t.recording.length) || null, ac });
+    }));
+  }
+  let _artPosRg = { gid: null, self: null, idx: null };
+  let _artPosDup = { key: null, p: null };
+  // the release group's editions (free: the rg source's own request) …
+  async function artistPosRgIndex() {
+    const rel = release(), self = rel ? u(rel.gid) || null : null;
+    const rg = rel && u(rel.releaseGroup), rgGid = rg ? u(rg.gid) : null;
+    if (!rgGid) return null;
+    if (_artPosRg.gid === rgGid && _artPosRg.self === self && _artPosRg.idx) return _artPosRg.idx;
+    const rels = await rgReleases(rgGid); if (!rels) return null;
+    const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self));
+    _artPosRg = { gid: rgGid, self, idx };
+    Log.debug('artist position index: release group', rgGid, '→', rels.length, 'edition(s),', idx.size, 'position(s)');
+    return idx;
+  }
+  // … and, only when those don't settle a credit, the duplicates: first the ones the
+  // Duplicates tab already fetched for its Similarity column (free), else the same search
+  // the Recordings pass makes (shared, so the two passes run it once between them).
+  function artistPosDupIndex() {
+    const rel = release(), self = rel ? u(rel.gid) || null : null;
+    const rg = rel && u(rel.releaseGroup), rgGid = rg ? u(rg.gid) : null;
+    const title = rel ? (u(rel.name) || '') : '';
+    const artistGid = (acArtistGids(u(rel && rel.artistCredit)) || [])[0] || null;
+    const key = [fold(title), artistGid, rgGid, self, _dupRawCache.size].join('|');
+    if (_artPosDup.key === key) return _artPosDup.p;
+    const p = (async () => {
+      let rels = [..._dupRawCache.values()], from = 'the Duplicates tab';
+      if (!rels.length) { rels = await duplicateReleases(title, artistGid, rgGid); from = 'a duplicate search'; }
+      const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self));
+      Log.debug('artist position index: duplicates from', from, '→', rels.length, 'release(s),', idx.size, 'position(s)');
+      return idx;
+    })();
+    _artPosDup = { key, p };
+    return p;
+  }
+  // the artists at this track's position that match the credited name → { artists: [{ gid,
+  // name, votes }], of } — `of` = how many other editions' tracks passed the test there
+  function tallyPosArtists(hits, creditedAs) {
+    const rels = new Set(hits.map(h => h.rel)), by = new Map();
+    hits.forEach(h => h.ac.forEach(a => {
+      const g = a.artist && a.artist.id; if (!g || SPECIAL_PURPOSE_ARTISTS.has(g)) return;
+      if (!posNameMatch(creditedAs, a.name) && !posNameMatch(creditedAs, a.artist.name)) return;
+      const v = by.get(g) || { gid: g, name: a.artist.name || a.name, rels: new Set() };
+      v.rels.add(h.rel); by.set(g, v);
+    }));
+    return { artists: [...by.values()].map(v => ({ gid: v.gid, name: v.name, votes: v.rels.size })).sort((a, b) => b.votes - a.votes), of: rels.size };
+  }
+  async function positionArtists(entry, creditedAs) {
+    if (!entry || !(creditedAs || '').trim()) return null;
+    let key, len;
+    try {
+      const ko = koTrack(entry.mi, entry.ti);
+      key = (u(mediums()[entry.mi].position) || (entry.mi + 1)) + '.' + (u(ko.position) || (entry.ti + 1));
+      len = u(ko.length) || null;
+    } catch (e) { return null; }
+    const agrees = c => recSimilar(c.title, entry.title) && (c.length && len ? recLenGap(c.length, len) === 0 : recFold(c.title) === recFold(entry.title));
+    const at = idx => ((idx && idx.get(key)) || []).filter(agrees);
+    let hits = at(await artistPosRgIndex());
+    let res = tallyPosArtists(hits, creditedAs);
+    if (res.artists.length !== 1) { hits = hits.concat(at(await artistPosDupIndex())); res = tallyPosArtists(hits, creditedAs); }
+    Log.debug('position source:', JSON.stringify(creditedAs), 'at', key, '—', res.of, 'edition(s) agree on the track;', res.artists.length ? res.artists.map(a => a.name + ' ×' + a.votes).join(', ') : 'none credit a matching name');
+    return res.artists.length ? res : null;
+  }
+
+  // `pos` (#626): a function returning positionArtists() for this slot — called only once the
+  // Discogs link and the rg source have had their turn, so a slot they settle costs nothing.
+  async function matchSlot(creditedAs, sib, discogsUrl, contextGids, pos) {
     const who = creditedAs || '(track artist)';
+    let posInfo = null;   // { of, artists: [{ entity, votes }] } — kept on the slot for the picker's section
     // #224: a Discogs artist-link match outranks the name search.
     if (SETTINGS.discogsUrlMatch !== false && discogsUrl) {
       const hits = await resolveByDiscogsUrl(discogsUrl);
@@ -1409,6 +1522,26 @@ try {
       let hit = candidates.find(c => c.gid === sib.gid) || (await fetchEntity(sib.gid));
       if (hit && hit.gid) { entity = hit; source = 'rg'; confidence = 'high'; }
     }
+    // #626: the artist at this track's position on other editions. One artist → confident;
+    // several (the editions disagree) → none is committed, they head the picker instead.
+    const posRes = !entity && typeof pos === 'function' ? await pos() : null;
+    if (posRes && posRes.artists.length) {
+      const ents = [];
+      for (const a of posRes.artists) {
+        const e = candidates.find(c => (c.gid || c.id) === a.gid) || (await fetchEntity(a.gid));
+        if (e && e.gid) ents.push({ entity: e, votes: a.votes });
+      }
+      if (ents.length) posInfo = { of: posRes.of, artists: ents };
+      if (ents.length === 1) {
+        const e = ents[0].entity;
+        Log.info('Match:', who, '→', e.name, `— via the same position on ${ents[0].votes} of ${posRes.of} other edition${posRes.of === 1 ? '' : 's'}`);
+        return { entity: e, source: 'pos', confidence: 'high', candidates: [e, ...candidates.filter(c => (c.gid || c.id) !== e.gid)], pos: posInfo };
+      }
+      if (ents.length > 1) {
+        Log.info('Match:', who, '— other editions credit', ents.length, 'different matching artists at this position (' + ents.map(x => x.entity.name + ' ×' + x.votes).join(', ') + '); pick one');
+        candidates = [...ents.map(x => x.entity), ...candidates.filter(c => !ents.some(x => x.entity.gid === (c.gid || c.id)))];
+      }
+    }
     if (!entity) {
       let top = candidates[0] || null;
       // #445: UNIFIED exact-identity match. An alias is just an alternative name, so name and
@@ -1424,7 +1557,7 @@ try {
       if (idHit && idHit.entity && idHit.entity.gid) {
         const e = idHit.entity, rest = candidates.filter(c => (c.gid || c.id) !== e.gid);
         Log.info('Match:', who, '→', e.name, idHit.via === 'alias' ? '— via exact alias' : '— via name (exact)');
-        return { entity: e, source: idHit.via === 'alias' ? 'alias' : 'search', confidence: 'high', candidates: [e, ...rest] };
+        return { entity: e, source: idHit.via === 'alias' ? 'alias' : 'search', confidence: 'high', candidates: [e, ...rest], pos: posInfo };
       }
       // #437: no unique exact identity → try credit co-occurrence against the release's known
       // artists (the common-name case). A clear winner is confident; a tie seeds the picker.
@@ -1432,15 +1565,15 @@ try {
         const cred = await resolveByCredit(creditedAs, contextGids);
         if (cred.entity) {
           Log.info('Match:', who, '→', cred.entity.name, '— via existing artist credits');
-          return { entity: cred.entity, source: 'cred', confidence: 'high', candidates: [cred.entity, ...candidates.filter(c => (c.gid || c.id) !== cred.entity.gid)] };
+          return { entity: cred.entity, source: 'cred', confidence: 'high', candidates: [cred.entity, ...candidates.filter(c => (c.gid || c.id) !== cred.entity.gid)], pos: posInfo };
         }
         if (cred.candidates.length) { candidates = [...cred.candidates, ...candidates.filter(c => !cred.candidates.some(e => e.gid === (c.gid || c.id)))]; top = candidates[0]; }
       }
-      if (!top) return { entity: null, source: 'none', confidence: 'none', candidates: [] };
+      if (!top) return { entity: null, source: 'none', confidence: 'none', candidates: [], pos: posInfo };
       entity = top;
       confidence = 'low';   // no unique exact identity and no co-occurrence winner → user picks
     }
-    return { entity, source, confidence, candidates: [entity, ...candidates.filter(c => c.gid !== entity.gid)] };
+    return { entity, source, confidence, candidates: [entity, ...candidates.filter(c => c.gid !== entity.gid)], pos: posInfo };
   }
 
   async function buildModel(onProgress) {
@@ -1504,7 +1637,7 @@ try {
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
   // #580: never commit over a slot the user has focused — that is the write that
   // used to replace a half-typed name with the matched artist.
-  const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias');
+  const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias' || s.status === 'pos');
   function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
   function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
@@ -1512,13 +1645,16 @@ try {
     snapshotMissing();   // capture page-load state for any lazily-loaded medium before matching touches it
     // a rebuild re-reads the live model, where every linked artist looks identical — so without this we'd
     // collapse all match badges (rg / name / user) back to "set". Carry the match source forward by gid.
-    const prevStatus = new Map();
-    if (MODEL && MODEL.tracks) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid && s.committed && s.status && s.status !== 'set') prevStatus.set(s.gid, { status: s.status, entity: s.entity, candidates: s.candidates }); }));
+    // #626: per SLOT first — one artist is often matched differently on different tracks ("pos" on
+    // the misspelled one, "rg" on the exact ones), and a gid-only key let the last one relabel them
+    // all. The gid alone stays the fallback, for a slot that moved (track reordered / removed).
+    const prevStatus = new Map(), slotKey = (mi, ti, j, gid) => mi + '.' + ti + '.' + j + '.' + gid;
+    if (MODEL && MODEL.tracks) MODEL.tracks.forEach(t => t.slots.forEach((s, j) => { if (s.gid && s.committed && s.status && s.status !== 'set') { const v = { status: s.status, entity: s.entity, candidates: s.candidates, pos: s._pos || null }; prevStatus.set(slotKey(t.mi, t.ti, j, s.gid), v); prevStatus.set(s.gid, v); } }));
     const tracks = readTracklist().map(t => {
-      const slots = t.names.map(n => {
+      const slots = t.names.map((n, j) => {
         if (!n.artistGid) return { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _pending: true };
-        const carry = prevStatus.get(n.artistGid);   // preserve rg / name / user across the rebuild; genuine page-load links stay "set"
-        return { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: carry ? carry.status : 'set', entity: carry ? carry.entity : null, gid: n.artistGid, name: n.artistName, candidates: carry ? (carry.candidates || []) : [], committed: true };
+        const carry = prevStatus.get(slotKey(t.mi, t.ti, j, n.artistGid)) || prevStatus.get(n.artistGid);   // preserve rg / name / user across the rebuild; genuine page-load links stay "set"
+        return { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: carry ? carry.status : 'set', entity: carry ? carry.entity : null, gid: n.artistGid, name: n.artistName, candidates: carry ? (carry.candidates || []) : [], _pos: carry ? carry.pos : null, committed: true };
       });
       const te = { mi: t.mi, ti: t.ti, number: t.number, title: t.title, length: t.length, slots };
       te.slots.forEach(s => { s._entry = te; }); te.guessTitle = guessTitleStr(te);
@@ -1572,8 +1708,8 @@ try {
             const s = t.slots[i]; if (!s._pending) continue;
             if (s._editing) { Log.debug('match: slot skipped — the user is editing it (#580)'); continue; }   // stays _pending, so leaving the field lets a later pass have it
             const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i));   // #437
-            Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
+            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs));   // #437, #626
+            Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null }); delete s._pending;
             await tagDiscogsAddable(s, dUrl);   // #227
           }
           autoCommitTrack(t); if (!isEditing()) rerender();
@@ -1877,12 +2013,12 @@ try {
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
-  const badgeText = s => ({ rg: 'rg', disc: 'disc', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
+  const badgeText = s => ({ rg: 'rg', disc: 'disc', pos: 'pos', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
   const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
-  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
+  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'pos', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
   const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
@@ -2267,7 +2403,7 @@ try {
   const css = MBU_TOKENS + MBU_UI_CSS + `
     .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap}
     .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}.tc-badge.disc{background:#0a7a8c}
-    .tc-badge.low{background:#e0a800}.tc-badge.user{background:var(--mbu-accent)}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}.tc-badge.alias{background:#1f8a7a}
+    .tc-badge.low{background:#e0a800}.tc-badge.user{background:var(--mbu-accent)}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}.tc-badge.alias{background:#1f8a7a}.tc-badge.pos{background:#a0522d}
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:var(--mbu-text)}
     .tc-btn:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-border)}
     .tc-btn.primary{color:var(--mbu-accent-text);font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,var(--mbu-accent));color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
@@ -2499,6 +2635,8 @@ try {
     .tc-acrow .nm{font-weight:600;color:var(--mbu-text)}.tc-acrow .cmt{color:var(--mbu-text-weak);font-size:11px}
     .tc-acrow .tc-aka{color:var(--mbu-ok);font-size:11px;font-style:italic}
     .tc-acrow.none{color:var(--mbu-text-weak);font-style:italic;cursor:default}
+    .tc-acsec{padding:5px 9px 2px;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-text-weak);cursor:default}.tc-acsec:not(:first-child){border-top:1px solid var(--mbu-border-soft);margin-top:3px}
+    .tc-acrow .tc-acvotes{margin-left:auto;padding-left:10px;font-size:10px;color:var(--mbu-text-weak);white-space:nowrap}
     .tc-acmore{justify-content:center;font-style:italic;color:var(--mbu-accent-text);border-top:1px solid var(--mbu-accent);position:sticky;bottom:0;background:var(--mbu-bg-raised)}
     .tc-acrow.exact{background:var(--mbu-ok-bg)}.tc-acrow.exact .nm{color:var(--mbu-ok)}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:var(--mbu-ok-bg)}
     .tc-toolbar{padding:5px 4px;font-size:12px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:6px}
@@ -3460,7 +3598,7 @@ try {
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i)); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); }
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i), () => positionArtists(entry, on.creditedAs)); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); }
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
@@ -3592,11 +3730,17 @@ try {
     // one the .tc-search.matched rules keep it hidden until the slot has focus.
     const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz  ·  right-click: create silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref);
   }
+  // #626: what a `pos` match rests on, on hover
+  function posBadgeTitle(s) {
+    if (s.status !== 'pos' || !s._pos) return '';
+    const a = s._pos.artists.find(x => x.entity && x.entity.gid === s.gid); if (!a) return '';
+    return ` title="${esc(`matched by position: ${a.entity.name} is credited on this track on ${a.votes} of ${s._pos.of} other edition${s._pos.of === 1 ? '' : 's'} of the release`)}"`;
+  }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
     const changed = trackChanged(track);   // ↺ only makes sense (and only shows) when there's something to revert
     const locked = mediumLocked(track.mi);   // disc-ID medium: no remove button (#125)
-    cell.innerHTML = track.slots.map(s => `<div class="tc-bl">${s.committed ? `<span class="tc-badge ${s.status}">${badgeText(s)}</span>` : ''}</div>`).join('')
+    cell.innerHTML = track.slots.map(s => `<div class="tc-bl">${s.committed ? `<span class="tc-badge ${s.status}"${posBadgeTitle(s)}>${badgeText(s)}</span>` : ''}</div>`).join('')
       + `<div class="tc-trackacts">${changed ? '<button class="trev" title="revert this track">↺</button>' : ''}${locked ? '' : '<button class="rm" title="remove track">✕</button>'}</div>`;
     const trev = cell.querySelector('.trev'); if (trev) trev.onclick = () => revertTrack(track);
     const rm = cell.querySelector('.rm'); if (rm) rm.onclick = () => { removeTrack(track); rebuild(); };
@@ -3684,21 +3828,31 @@ try {
     const akaHtml = c => { const a = aliasStr(c); return a ? `<span class="tc-aka">${esc(a)}</span>` : ''; };
     // a full page of results probably means there are more — offer "Show more…" (like MB's native popup)
     const loadMore = () => { curLimit = curLimit >= 50 ? 100 : curLimit >= 25 ? 50 : 25; const my = ++seq; const more = pop && pop.querySelector('.tc-acmore'); if (more) more.textContent = 'Loading…'; searchArtist(curQuery, curLimit).then(res => { if (my === seq && document.activeElement === inp) showResults(res, curQuery); }); };
-    const draw = arr => {
-      ensure(); list = arr; const q = inp.value.trim() || slot.creditedAs;
-      pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
+    // #626: the artists other editions credit at this track's position lead the list, in a
+    // section of their own, with how many editions back each — also once the slot resolved.
+    const posLead = () => ((slot._pos && slot._pos.artists) || []).filter(x => x.entity && x.entity.gid);
+    const draw = res => {
+      ensure(); const q = inp.value.trim() || slot.creditedAs;
+      const lead = posLead(), leadG = new Set(lead.map(x => x.entity.gid)), votes = new Map(lead.map(x => [x.entity.gid, x.votes]));
+      const arr = lead.length ? [...lead.map(x => x.entity), ...res.filter(c => !leadG.has(c.gid || c.id))] : res;
+      list = arr;
+      const of = lead.length ? slot._pos.of : 0;
+      const sec = (i) => !lead.length ? '' : i === 0 ? '<div class="tc-acsec">On other editions at this position</div>' : i === lead.length ? '<div class="tc-acsec">Search</div>' : '';
+      const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" title="credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
+      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.title = 'click to set · Ctrl-click to set on all unresolved tracks'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
-      if (curQuery && arr.length >= curLimit && curLimit < 100) {   // likely more available → a clickable "Show more…" footer
+      if (curQuery && res.length >= curLimit && curLimit < 100) {   // likely more available → a clickable "Show more…" footer
         const more = document.createElement('div'); more.className = 'tc-acrow tc-acmore'; more.textContent = 'Show more…';
         more.onmousedown = e => { e.preventDefault(); loadMore(); };
         pop.appendChild(more);
       }
       position();
+      return arr;
     };
     // patch in the full aliases (one WS2 search) without a full redraw, so it doesn't reset the keyboard highlight
     const patchAliases = arr => { if (!pop) return; arr.forEach((c, i) => { const a = aliasStr(c); if (!a) return; const row = pop.querySelector(`.tc-acrow[data-i="${i}"]`); if (!row) return; let sp = row.querySelector('.tc-aka'); if (!sp) { sp = document.createElement('span'); sp.className = 'tc-aka'; const nm = row.querySelector('.nm'); nm.parentNode.insertBefore(sp, nm.nextSibling); } sp.textContent = a; }); };
-    const showResults = (arr, q) => {
-      draw(arr);
+    const showResults = (res, q) => {
+      const arr = draw(res);   // #626: the rows actually drawn (position artists first)
       // Fetch aliases for the EXACT result gids (batched, limit 100) — not the old by-name query
       // capped at 12, which left every "Show more" result past the 12th with no alias. Caches into
       // _gidAliases so a pick (and the resolved bar) get the alias too. #128
@@ -5956,6 +6110,9 @@ try {
   }
   // one WS fetch per existing release, shared between the score and the expand view
   const _dupTlCache = new Map();
+  // #626: the same responses, raw — the artist position source reads each listed duplicate's
+  // track-by-track credits from here instead of asking MusicBrainz again
+  const _dupRawCache = new Map();   // release gid → ws/2 release JSON
   async function dupTracklist(gid) {
     if (_dupTlCache.has(gid)) return _dupTlCache.get(gid);
     const m = await fetchDupTracklist(gid); _dupTlCache.set(gid, m); return m;
@@ -6032,7 +6189,11 @@ try {
   }
   function enteredTracklist() {
     const out = [];
-    mediums().forEach(med => (u(med.tracks) || []).forEach(t => out.push({ title: u(t.name) || '', artist: acText(u(t.artistCredit)), len: u(t.length) || null })));
+    mediums().forEach(med => (u(med.tracks) || []).forEach(t => out.push({
+      title: u(t.name) || '', artist: acText(u(t.artistCredit)), len: u(t.length) || null,
+      // #626: each credited name with its artist, when matched — the comparison links those
+      names: liveNames(t).map(n => { const a = u(n.artist) || null; return { name: u(n.name) || (a && u(a.name)) || '', join: u(n.joinPhrase) || '', gid: (a && u(a.gid)) || null }; }),
+    })));
     return out;
   }
   function acJoinJson(ac) { return (ac || []).map(n => (n.name || (n.artist && n.artist.name) || '') + (n.joinphrase || '')).join(''); }
@@ -6050,6 +6211,7 @@ try {
     try {
       const res = await wsJson(`${ORIGIN}/ws/2/release/${gid}?inc=artist-credits+recordings&fmt=json`, { label: 'dup tracklist' });
       const j = res.json; if (!j) return null;
+      _dupRawCache.set(gid, j);
       return (j.media || []).map((m, mi) => ({
         position: m.position || mi + 1, format: m.format || '',
         tracks: (m.tracks || []).map(t => {
@@ -6143,8 +6305,16 @@ try {
     // light keeps its hand-picked #7a0000; only the dark branch is new (#564)
     return { bg: 'rgba(211,47,47,' + a.toFixed(2) + ')', fg: a >= 0.55 ? '#fff' : shadeIsDark() ? shadeSoftFg(211, 47, 47) : '#7a0000' };
   }
+  function seededAcHtml(names, whole) {
+    const h = names.map(n => (n.gid
+      ? `<a href="${ORIGIN}/artist/${n.gid}" target="_blank" rel="noopener">${esc(n.name)}</a>`
+      : `<span class="tc-dd-unres" title="not matched to a MusicBrainz artist yet">${esc(n.name)}</span>`) + esc(n.join)).join('');
+    return whole ? `<span class="tc-dh">${h}</span>` : h;
+  }
   function buildDupDetail(media, entered) {
     let gi = 0, rows = '';
+    // #626: decided for the whole tracklist, so every unmatched name is marked the same way
+    const anyLinked = (entered || []).some(s => (s.names || []).some(n => n.gid));
     media.forEach((med, mi) => {
       rows += `<tr class="tc-dd-medhdr"><td colspan="7">#${med.position || mi + 1}${med.format ? ' ' + esc(med.format) : ''}</td></tr>`;
       med.tracks.forEach(t => {
@@ -6159,7 +6329,9 @@ try {
         // cue when they diverge below the cutoff (partial diffs just show the links).
         const artExLinks = acLinksJson(t.artistAc);
         const artEx   = has && dupWholeDiff(t.artist || '', s.artist || '') ? `<span class="tc-dh">${artExLinks}</span>` : artExLinks;
-        const artSe   = has ? dupDiffOrWhole(t.artist || '', s.artist || '', 1)  : '';
+        // #626: once any seeded artist is matched, the seeded credits are links too — a matched
+        // name links to its artist and an unmatched one stands out. Before that, the char diff.
+        const artSe   = !has ? '' : anyLinked && (s.names || []).length ? seededAcHtml(s.names, dupWholeDiff(t.artist || '', s.artist || '')) : dupDiffOrWhole(t.artist || '', s.artist || '', 1);
         // length: graded shade on both Len cells when the gap is real (#186)
         const sh = (has && t.len && s.len) ? dupLenShade(t.len - s.len) : null;
         const lenSt = sh ? ` style="background:${sh.bg};color:${sh.fg}"` : '';
@@ -6180,6 +6352,7 @@ try {
       .tc-dd-tbl { width: 100%; border-collapse: collapse; font: 12px Arial, sans-serif; }
       .tc-dd-tbl th { text-align: left; font-weight: 600; color: var(--mbu-ok); border-bottom: 1px solid var(--mbu-border); padding: 3px 10px; }
       .tc-dd-tbl td { padding: 2px 10px; vertical-align: top; }
+      .tc-dd-unres { color: var(--mbu-warn); text-decoration: underline dotted; text-underline-offset: 3px; }
       .tc-dd-tbl .tc-dd-medhdr td { font-weight: 700; background: var(--mbu-ok-bg); color: var(--mbu-ok); }
       .tc-dd-tbl .tc-dd-pos { color: var(--mbu-text-weak); text-align: right; width: 34px; }
       .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
@@ -7779,12 +7952,13 @@ try {
       if (!arr.some(c => c.gid === cand.gid)) arr.push(cand);
     }));
   }
-  // RG editions: one request, every edition's tracklist by position.
+  // RG editions: every edition's tracklist by position — from the shared release-group
+  // lookup (#626), so this pass and the artist pass make that request once between them.
   async function fetchRgPositionIndex(rgGid) {
     const idx = new Map();
-    const res = await wsJson(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { label: 'RG position index' });
-    if (res.json) (res.json.releases || []).forEach(rel => addReleaseToPosIndex(rel, idx, rgGid));
-    Log.debug('RG position index:', idx.size, 'position(s) from', ((res.json && res.json.releases) || []).length, 'edition(s)');
+    const rels = await rgReleases(rgGid);
+    if (rels) rels.forEach(rel => addReleaseToPosIndex(rel, idx, rgGid));
+    Log.debug('RG position index:', idx.size, 'position(s) from', (rels || []).length, 'edition(s)');
     return idx;
   }
   // Cross-RG duplicates (#440, majkinetor: "go outside RG too, but consider Similarity").
@@ -7793,28 +7967,50 @@ try {
   // similarity, so a same-named-but-different album can't silently mislink. Bounded to
   // a handful of releases; only worth running when the RG editions came up short.
   async function fetchDuplicatePositionIndex(title, artistGid, rgGid, into) {
-    if (!title) return into;
-    const titleQ = `release:"${String(title).replace(/["\\]/g, '\\$&')}"`;
-    const runQuery = async (q) => {
-      const res = await wsJson(`${ORIGIN}/ws/2/release?query=${encodeURIComponent(q)}&fmt=json&limit=12`, { label: 'duplicate release search' });
-      return (res.json && res.json.releases) || [];
-    };
-    try {
-      // Try title + release artist first, but fall back to TITLE-ONLY when that's empty:
-      // a Various-Artists compilation credits the release to the VA placeholder, and
-      // `arid:<VA>` matches nothing in the search index — so `title AND arid:VA` = 0 hits
-      // and the editions were never found. The per-track similarity + length gate is the
-      // real guard against a same-titled different album, so title-only is safe. #440
-      let releases = artistGid ? await runQuery(`${titleQ} AND arid:${artistGid}`) : [];
-      if (!releases.length) releases = await runQuery(titleQ);
-      const others = releases.filter(rl => !rl['release-group'] || rl['release-group'].id !== rgGid).slice(0, 6);
-      for (const rl of others) {
-        const res = await wsJson(`${ORIGIN}/ws/2/release/${rl.id}?inc=recordings+artist-credits+release-groups&fmt=json`, { label: 'duplicate release detail' });
-        if (res.json) addReleaseToPosIndex(res.json, into, rgGid);
-      }
-      Log.debug('duplicate position index:', others.length, 'outside-RG edition(s) folded in →', into.size, 'position(s)');
-    } catch (e) { Log.warn('duplicate position index failed', e.message); }
+    const rels = await duplicateReleases(title, artistGid, rgGid);
+    rels.forEach(rel => addReleaseToPosIndex(rel, into, rgGid));
+    Log.debug('duplicate position index:', rels.length, 'outside-RG edition(s) folded in →', into.size, 'position(s)');
     return into;
+  }
+  // #626: the search behind it, shared with the artist position source — the Tracklist and
+  // Recordings passes run it once between them per release. The search is cached as a
+  // promise, so parallel callers share one run; a run in which any lookup failed (#555) is
+  // dropped from the cache afterwards, so a throttled one is retried rather than
+  // remembered as "no duplicates".
+  const _dupRelCache = new Map();   // title|artist|rg → Promise<releases[]>
+  function duplicateReleases(title, artistGid, rgGid) {
+    if (!title) return Promise.resolve([]);
+    const key = [fold(title), artistGid || '', rgGid || ''].join('|');
+    if (_dupRelCache.has(key)) return _dupRelCache.get(key);
+    let failed = false;
+    const p = (async () => {
+      const titleQ = `release:"${String(title).replace(/["\\]/g, '\\$&')}"`;
+      const runQuery = async (q) => {
+        const res = await wsJson(`${ORIGIN}/ws/2/release?query=${encodeURIComponent(q)}&fmt=json&limit=12`, { label: 'duplicate release search' });
+        if (!res.json) failed = true;
+        return (res.json && res.json.releases) || [];
+      };
+      const out = [];
+      try {
+        // Try title + release artist first, but fall back to TITLE-ONLY when that's empty:
+        // a Various-Artists compilation credits the release to the VA placeholder, and
+        // `arid:<VA>` matches nothing in the search index — so `title AND arid:VA` = 0 hits
+        // and the editions were never found. The per-track similarity + length gate is the
+        // real guard against a same-titled different album, so title-only is safe. #440
+        let releases = artistGid ? await runQuery(`${titleQ} AND arid:${artistGid}`) : [];
+        if (!releases.length) releases = await runQuery(titleQ);
+        const others = releases.filter(rl => !rl['release-group'] || rl['release-group'].id !== rgGid).slice(0, 6);
+        for (const rl of others) {
+          const res = await wsJson(`${ORIGIN}/ws/2/release/${rl.id}?inc=recordings+artist-credits+release-groups&fmt=json`, { label: 'duplicate release detail' });
+          if (res.json) out.push(res.json); else failed = true;
+        }
+        Log.debug('duplicate releases for "' + title + '":', out.length, 'outside the release group' + (failed ? ' (a lookup failed — not cached)' : ''));
+      } catch (e) { failed = true; Log.warn('duplicate release search failed', e.message); }
+      if (failed) _dupRelCache.delete(key);
+      return out;
+    })();
+    _dupRelCache.set(key, p);
+    return p;
   }
   // similarity gate for a position candidate: titles must be close (≥60% by edit
   // distance) or one contained in the other — enough to bridge "Pt 1"/"Part 1" but
@@ -9837,7 +10033,7 @@ try {
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
