@@ -208,4 +208,18 @@ the same literal key string will otherwise leak state into each other by acciden
 ## Bot identity
 
 AI-driven commits/issues use the **`claude-ai-milic`** account; the token lives in
-`dev/.github-credentials.json` (gitignored). See a per-script DEVELOP for the full setup.
+`dev/.github-credentials.json` (gitignored). Keeping bot activity separate from the
+maintainer's identity makes review easier and prevents accidental impersonation.
+
+Setup (one-time, done by the maintainer):
+
+1. Create the `claude-ai-milic` GitHub account.
+2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with write access; accept the invite from the bot account.
+3. While logged in as the bot, generate a classic Personal Access Token at <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
+4. Save it in `dev/.github-credentials.json` (gitignored — never commit):
+
+   ```jsonc
+   { "username": "claude-ai-milic", "token": "github_pat_..." }
+   ```
+
+The assistant uses that token explicitly (env var or `Authorization` header), never the human's `gh` session.
