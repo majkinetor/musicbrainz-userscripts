@@ -58,8 +58,54 @@ ck(a && a.offRowOff && /−15s against the merge target \(4:53\)/.test(a.offRowT
 ck(a && a.offCells === 1, `…only the off row, not the target (${a && a.offCells})`);
 ck(a && /but its lengths differ by up to 15s \(tolerance 5s\)/.test(a.cardTitle), '…and the card tooltip says so');
 ck(b && !b.chipWarn && !b.badge && b.offCells === 0 && !/lengths differ/.test(b.cardTitle), 'within tolerance (2 s) → no warning anywhere');
+
+// #619 follow-up (majkinetor): "Highlighted length is not aligned vertically with normal
+// length" + "Move ⚠ 31s to the right, it should be in 'len column'". Geometry, measured on
+// the rendered text (a Range), not on our CSS.
+const geo = () => page.evaluate(([id, off]) => {
+  const c = document.querySelector(`.fs-gcard[data-gid="${id}"]`); if (!c) return null;
+  const txt = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
+  const offCell = c.querySelector(`.fs-grow[data-gid="${off}"] .fs-len`);
+  const plain = [...c.querySelectorAll('.fs-grow .fs-len')].find(x => x !== offCell);
+  const badge = c.querySelector('.fs-lenwarn'), hdr = c.querySelector('.fs-ghdr');
+  const b = badge ? badge.getBoundingClientRect() : null, h = hdr.getBoundingClientRect();
+  const rowTop = el => el.closest('.fs-grow').getBoundingClientRect().top;
+  const overlaps = sel => { const el = c.querySelector(sel); if (!el || !b) return false; const r = el.getBoundingClientRect(); return b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top; };
+  return {
+    plainX: plain ? txt(plain).left : null, offX: offCell ? txt(offCell).left : null,
+    plainY: plain ? txt(plain).top - rowTop(plain) : null, offY: offCell ? txt(offCell).top - rowTop(offCell) : null,
+    offL: offCell ? offCell.getBoundingClientRect().left : null,
+    col: !!(badge && badge.classList.contains('fs-lenwarn-col')), badgeL: b ? b.left : null,
+    inHdr: !!b && b.top >= h.top && b.bottom <= h.bottom,
+    clash: overlaps('.fs-gt') || overlaps('.fs-sig') || overlaps('.fs-ghr'),
+    rects: Object.fromEntries(['.fs-lenwarn', '.fs-gt', '.fs-sig', '.fs-ghr', '.fs-ghl', '.fs-ghdr'].map(sel => { const el = c.querySelector(sel); if (!el) return [sel, null]; const r = el.getBoundingClientRect(); return [sel, [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]]; })),
+  };
+}, [ids.g1, ids.off]);
+const g = await geo();
+console.log('geometry  :', JSON.stringify(g));
+ck(g && Math.abs(g.offX - g.plainX) <= 0.5, `the amber length's digits start where the plain length's do (${g && g.offX.toFixed(1)} vs ${g && g.plainX.toFixed(1)})`);
+ck(g && Math.abs(g.offY - g.plainY) <= 0.5, `…on the same line within their rows (${g && g.offY.toFixed(1)} vs ${g && g.plainY.toFixed(1)})`);
+ck(g && g.col && Math.abs(g.badgeL - g.offL) <= 1 && g.inHdr && !g.clash, `the ⚠ badge sits in the length column: left edge ${g && g.badgeL && g.badgeL.toFixed(1)} vs the amber cell's ${g && g.offL.toFixed(1)}, inside the header, clear of title/chips/buttons`);
+
 const box = await page.evaluate(id => { const c = document.querySelector(`.fs-gcard[data-gid="${id}"]`); c.scrollIntoView({ block: 'center' }); const r = c.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }, ids.g1);
 await page.screenshot({ path: join(tmpdir(), '619-length-warning.png'), clip: box });
+
+// a collapsed card has no rows to line up with → the badge stays beside the title
+await page.evaluate(id => { window.__fusion.STATE.collapsedGroups.add(id); window.__fusion.renderAll(); }, ids.g1);
+await page.waitForTimeout(200);
+const gc = await geo();
+ck(gc && !gc.col && gc.inHdr && !gc.clash, `collapsed → badge falls back beside the title (col=${gc && gc.col})`);
+await page.evaluate(id => { window.__fusion.STATE.collapsedGroups.delete(id); window.__fusion.renderAll(); }, ids.g1);
+
+// a narrower window: the length column slides under the chips, so the badge must fall back
+// beside the title rather than sit on the title, the chips or the buttons. (Much narrower —
+// ~900px — and the header itself overflows: the title track collapses to 0 and the buttons
+// spill out of the card, with or without this badge. Nothing to assert there.)
+await page.setViewportSize({ width: 1200, height: 1000 });
+await page.waitForTimeout(400);   // ResizeObserver → rAF → placeLenBadges
+const gn = await geo();
+console.log('narrow    :', JSON.stringify(gn));
+ck(gn && gn.inHdr && !gn.clash, `narrower window (1200px) → badge still clear of title/chips/buttons (col=${gn && gn.col})`);
 ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 2)));
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close(); process.exit(fail ? 1 : 0);
