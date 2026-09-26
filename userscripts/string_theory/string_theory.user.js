@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.25.235354
+// @version      2026.9.26.121412
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,13 +82,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.25.235354 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.25.235324\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25\n  · Fusion v2026.9.25\n  · Group Therapy v2026.9.25\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.26.121412 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.26\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.25\n  · Fusion v2026.9.25\n  · Group Therapy v2026.9.25\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25.235324","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.25.235324","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1788,7 +1788,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.25.235324';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.26';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4520,6 +4520,12 @@ try {
   }
   // A valid MB length: m:ss (ss<60; minutes unbounded) or h:mm:ss (mm<60, ss<60).
   const lpValid = v => /^\d+:[0-5]\d$/.test(String(v).trim()) || /^\d+:[0-5]\d:[0-5]\d$/.test(String(v).trim());
+  // #621 (majkinetor): "I should be able to commit this (3 tracks missing len)". A source that
+  // simply has no length for a track is not an error — the row stays EMPTY and that track keeps
+  // whatever length it already has (nothing is cleared). Only a non-empty value that isn't a
+  // time is invalid.
+  const lpEmpty = v => !String(v == null ? '' : v).trim();
+  const lpBad = v => !lpEmpty(v) && !lpValid(v);
   // #455.1 fetch an external page's HTML (any host — @connect *) via GM.
   function lpFetchHtml(url) {
     return new Promise((resolve, reject) => {
@@ -4645,8 +4651,11 @@ try {
       items.forEach((it, i) => {
         const row = document.createElement('div'); row.className = 'tc-lp-row';
         row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? (trackTitle(i) || '') : 'no track — ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
-        const inp = noPw(document.createElement('input')); inp.type = 'text'; inp.className = 'tc-lp-val' + (lpValid(it.value) ? '' : ' bad'); inp.value = it.value; inp.title = it.raw ? ('detected: ' + it.raw) : '';
-        inp.oninput = () => { it.value = inp.value; inp.classList.toggle('bad', !lpValid(inp.value)); refreshFoot(); };   // clears the red the moment it's valid
+        const inp = noPw(document.createElement('input')); inp.type = 'text'; inp.className = 'tc-lp-val' + (lpBad(it.value) ? ' bad' : ''); inp.value = it.value;
+        inp.placeholder = '—';   // #621 an empty row is allowed: that track keeps its current length
+        const tip = () => { inp.title = lpEmpty(inp.value) ? 'empty — this track keeps its current length' : (it.raw ? ('detected: ' + it.raw) : ''); };
+        tip();
+        inp.oninput = () => { it.value = inp.value; inp.classList.toggle('bad', lpBad(inp.value)); tip(); refreshFoot(); };   // clears the red the moment it's valid (or emptied)
         const add = document.createElement('button'); add.type = 'button'; add.className = 'tc-lp-add'; add.textContent = '+'; add.title = 'insert a length below (rows shift down)';
         add.onclick = () => { items.splice(i + 1, 0, { value: '', raw: '' }); render(); listEl.querySelectorAll('.tc-lp-val')[i + 1]?.focus(); };
         const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.textContent = '✕'; del.title = 'delete (rows below shift up)';
@@ -4662,24 +4671,33 @@ try {
     }
     function refreshFoot() {
       const cntEl = $('.tc-lp-cnt'), okBtn = $('.tc-lp-ok');
-      const nT = tracks().length, n = items.length, bad = items.filter(it => !lpValid(it.value)).length;
+      const nT = tracks().length, n = items.length, bad = items.filter(it => lpBad(it.value)).length;
+      // #621 empty rows are fine; only the ones that land on a track count ("left as is")
+      const mapped = items.slice(0, nT), empty = mapped.filter(it => lpEmpty(it.value)).length, toApply = mapped.length - empty;
       cntEl.className = 'tc-lp-cnt' + (bad ? ' bad' : n === nT ? ' ok' : n ? ' warn' : '');
       cntEl.textContent = (!n ? `${nT} track${nT !== 1 ? 's' : ''} in Medium ${curMi + 1}`
-        : `${n} length${n !== 1 ? 's' : ''} ↔ ${nT} track${nT !== 1 ? 's' : ''}` + (bad ? ` · ${bad} invalid — fix or delete` : n !== nT ? ' · count mismatch' : ''))
+        : `${n} length${n !== 1 ? 's' : ''} ↔ ${nT} track${nT !== 1 ? 's' : ''}` + (bad ? ` · ${bad} invalid — fix or delete` : n !== nT ? ' · count mismatch' : '')
+          + (empty ? ` · ${empty} empty — left as is` : ''))
         + (sourceUrl ? ' · from external link' : '');
-      okBtn.disabled = !n || bad > 0;
-      okBtn.textContent = `Apply ${Math.min(n, nT)} to Medium ${curMi + 1}`;
+      okBtn.disabled = !toApply || bad > 0;
+      okBtn.textContent = `Apply ${toApply} to Medium ${curMi + 1}`;
       if (bad > 0) { errBadge.style.display = ''; errBadge.textContent = `⚠ ${bad} invalid — fix or delete`; }   // #455.3 prominent badge in the header
       else errBadge.style.display = 'none';
     }
     function commit() {
       const nT = tracks().length, n = Math.min(items.length, nT);
-      if (!items.length || items.some(it => !lpValid(it.value))) return;
-      for (let i = 0; i < n; i++) setLength({ mi: curMi, ti: i }, items[i].value);
+      if (!items.length || items.some(it => lpBad(it.value))) return;
+      // #621 an empty row leaves its track's length untouched — it is never written as "clear"
+      let applied = 0; const kept = [];
+      for (let i = 0; i < n; i++) {
+        if (lpEmpty(items[i].value)) { kept.push(i + 1); continue; }
+        setLength({ mi: curMi, ti: i }, items[i].value); applied++;
+      }
+      if (!applied) return;
       if (sourceUrl) lpNoteSource(sourceUrl);   // #455.2 credit the source in the edit note
       rebuild(true);
-      Log.info('length parser: applied', n, 'track length(s) on medium', curMi + 1, sourceUrl ? ('from ' + sourceUrl) : '');
-      toast(`Applied ${n} track length${n !== 1 ? 's' : ''}`);
+      Log.info('length parser: applied', applied, 'track length(s) on medium', curMi + 1, kept.length ? ('· left as is (empty): track ' + kept.join(', ')) : '', sourceUrl ? ('from ' + sourceUrl) : '');
+      toast(`Applied ${applied} track length${applied !== 1 ? 's' : ''}` + (kept.length ? ` · ${kept.length} left as is` : ''));
       close();
     }
     // static header/footer wiring
