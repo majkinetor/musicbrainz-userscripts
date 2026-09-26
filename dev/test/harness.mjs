@@ -14,12 +14,15 @@
 //   a production write guard, always on — see below.
 //   page errors fail the test (test.use({ pageErrors: 'ignore' }) to opt out).
 //
+// The guard itself lives in guard.mjs; see there.
+//
 // Tags: @unit (no network: pure functions, stub pages), @prod (read-only on musicbrainz.org), @sandbox
 // (test.musicbrainz.org, may write), @login (needs the logged-in profile).
 import { test as base, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { installProdGuard, hostOf } from './guard.mjs';
 
 export { expect };
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -31,25 +34,6 @@ export const SANDBOX = 'https://test.musicbrainz.org';
 // the rest (the ck() every old test carried).
 export const check = (cond, msg) => expect.soft(!!cond, msg).toBe(true);
 
-/* ── the production write guard ───────────────────────────────────────────────
-   No test may write to production MusicBrainz. Three layers:
-   1. in the page: fetch, XMLHttpRequest, form submits, sendBeacon and the GM
-      shim refuse any non-GET request to musicbrainz.org / beta.musicbrainz.org;
-   2. on the network: the write-only endpoints are routed and aborted. ONLY
-      those — routing a URL that production navigates to (even with fallback())
-      makes the page load as chrome-error, which silently tests nothing;
-   3. a monitor: any production write that still reached the network fails the
-      test, so a hole in 1–2 can't go unnoticed.
-   A refused write fails the test too, unless the spec says it expects one
-   (test.use({ prodWrites: 'block' })) and then reads the `blockedWrites` fixture. */
-const PROD_HOST = /^(beta\.)?musicbrainz\.org$/i;
-const hostOf = url => { try { return new URL(url).hostname; } catch { return ''; } };
-const isProd = url => PROD_HOST.test(hostOf(url));
-const WRITE_ONLY = /\/ws\/js\/edit\/|\/edit\/create\b|\/relationship-editor\b/i;
-// POSTs that change nothing on production: seeding the release editor only renders the form.
-const SAFE_PROD_POSTS = ['/release/add\\b'];
-const READS = new Set(['GET', 'HEAD', 'OPTIONS']);
-
 // Where each userscript's built source lives (default: userscripts/<name>/<name>.user.js).
 const SOURCES = {
   credit_hoarder: 'userscripts/credit_hoarder/dist/credit_hoarder.user.js',
@@ -60,78 +44,6 @@ const LEGACY_SRC_ENV = { apollo_editor: 'APOLLO_SRC', group_therapy: 'GT_SRC', c
 export function sourceOf(name) {
   const env = process.env[name.toUpperCase() + '_SRC'] || (LEGACY_SRC_ENV[name] && process.env[LEGACY_SRC_ENV[name]]);
   return env ? resolve(env) : resolve(REPO, SOURCES[name] || `userscripts/${name}/${name}.user.js`);
-}
-
-// Runs in every frame before the page's own scripts: the GM shim and guard layer 1.
-function pageInit(cfg) {
-  window.__MBU_TEST__ = true;   // test hooks that are gated on a debug flag look for this
-  const allow = cfg.allow.map(s => new RegExp(s, 'i'));
-  const refuse = (method, url, via) => {
-    let u; try { u = new URL(url, location.href); } catch (e) { return false; }
-    method = String(method || 'GET').toUpperCase();
-    if (method === 'GET' || method === 'HEAD' || !/^(beta\.)?musicbrainz\.org$/i.test(u.hostname) || allow.some(r => r.test(u.pathname))) return false;
-    try { window.__harnessProdWrite({ method, url: u.href, via }); } catch (e) { /* binding not ready in this frame */ }
-    return true;
-  };
-  const refusal = () => new TypeError('test harness: a write to production MusicBrainz was refused');
-
-  const origFetch = window.fetch;
-  window.fetch = function (input, init) {
-    const url = (typeof input === 'string' || input instanceof URL) ? String(input) : input && input.url;
-    const method = (init && init.method) || (input && input.method) || 'GET';
-    if (refuse(method, url, 'fetch')) return Promise.reject(refusal());
-    return origFetch.apply(this, arguments);
-  };
-  const xOpen = XMLHttpRequest.prototype.open, xSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.open = function (method, url) { this.__harness = { method, url }; return xOpen.apply(this, arguments); };
-  XMLHttpRequest.prototype.send = function () {
-    if (this.__harness && refuse(this.__harness.method, this.__harness.url, 'xhr')) throw refusal();
-    return xSend.apply(this, arguments);
-  };
-  const fSubmit = HTMLFormElement.prototype.submit;
-  HTMLFormElement.prototype.submit = function () { if (refuse(this.method, this.action, 'form')) return; return fSubmit.apply(this, arguments); };
-  window.addEventListener('submit', e => {
-    const form = e.target, by = e.submitter;
-    const method = (by && by.hasAttribute('formmethod') && by.formMethod) || form.method;
-    const action = (by && by.hasAttribute('formaction') && by.formAction) || form.action;
-    if (refuse(method, action, 'form')) { e.preventDefault(); e.stopImmediatePropagation(); }
-  }, true);
-  if (navigator.sendBeacon) {
-    const beacon = navigator.sendBeacon;
-    navigator.sendBeacon = function (url) { if (refuse('POST', url, 'beacon')) return false; return beacon.apply(navigator, arguments); };
-  }
-
-  if (!cfg.gm) return;
-  const store = new Map(Object.entries(cfg.gm.values || {}));
-  window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
-  window.GM_setValue = (k, v) => { store.set(k, v); };
-  window.GM_deleteValue = k => { store.delete(k); };
-  window.GM_listValues = () => [...store.keys()];
-  window.GM_info = { script: { name: cfg.gm.name || 'userscript', version: cfg.gm.version || 'test', homepageURL: '' }, scriptHandler: 'test harness' };
-  window.GM_openInTab = () => null;
-  window.GM_setClipboard = () => {};
-  window.unsafeWindow = window;
-  // GM_xmlhttpRequest over fetch: real requests with the real session. Only
-  // same-origin calls carry cookies — credentials:'include' is illegal against
-  // Access-Control-Allow-Origin:*, and the real GM call isn't CORS-bound at all.
-  window.GM_xmlhttpRequest = cfg.gm.xhr === 'none' ? () => {} : (opts) => {
-    const method = opts.method || 'GET';
-    (async () => {
-      try {
-        if (refuse(method, opts.url, 'GM_xmlhttpRequest')) throw refusal();
-        const same = new URL(opts.url, location.href).origin === location.origin;
-        const r = await origFetch(opts.url, { method, headers: opts.headers || {}, body: opts.data, redirect: 'follow', credentials: same ? 'include' : 'omit' });
-        const text = await r.text();
-        const headers = [...r.headers].map(([k, v]) => k + ': ' + v).join('\r\n');
-        let response = text;
-        if (opts.responseType === 'json') { try { response = JSON.parse(text); } catch (e) { response = null; } }
-        const res = { status: r.status, statusText: r.statusText, responseText: text, response, responseHeaders: headers, finalUrl: r.url, readyState: 4 };
-        opts.onload && opts.onload(res);
-        opts.onloadend && opts.onloadend(res);
-      } catch (e) { opts.onerror && opts.onerror(e); opts.onloadend && opts.onloadend({ status: 0, error: e }); }
-    })();
-    return { abort() {} };
-  };
 }
 
 export const test = base.extend({
@@ -147,21 +59,8 @@ export const test = base.extend({
 
   context: async ({ headless, viewport, deviceScaleFactor, profile, gm, prodWrites, prodPostAllow, pageErrors, blockedWrites: refused }, use, testInfo) => {
     const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor });
-    const allow = SAFE_PROD_POSTS.concat(prodPostAllow);
-    const allowed = url => { const p = new URL(url).pathname; return allow.some(s => new RegExp(s, 'i').test(p)); };
-    const routed = new Set(), sent = [], errors = [];
-    await ctx.exposeBinding('__harnessProdWrite', (_src, w) => { refused.push(w); });
-    await ctx.addInitScript(pageInit, { allow, gm: gm === false ? null : gm });
-    await ctx.route(u => isProd(u.href) && WRITE_ONLY.test(u.pathname), async route => {
-      const req = route.request();
-      if (READS.has(req.method())) return route.fallback();
-      routed.add(req); refused.push({ method: req.method(), url: req.url(), via: 'network' });
-      return route.abort('blockedbyclient');
-    });
-    ctx.on('request', req => { if (isProd(req.url()) && !READS.has(req.method()) && !allowed(req.url())) sent.push(req); });
-    // MusicBrainz pages report their errors to Sentry; errors a test provokes
-    // (stub pages, blocked requests) are not theirs to triage.
-    await ctx.route(u => /(^|\.)sentry\.io$/i.test(u.hostname), r => r.abort());
+    const errors = [];
+    const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w) });
     const watch = p => p.on('pageerror', e => errors.push(e.message));
     ctx.pages().forEach(watch); ctx.on('page', watch);
 
@@ -172,7 +71,7 @@ export const test = base.extend({
       try { await testInfo.attach('page ' + p.url(), { body: await p.screenshot(), contentType: 'image/png' }); } catch (e) { /* page already gone */ }
     }
     await ctx.close();
-    const leaked = sent.filter(r => !routed.has(r)).map(r => r.method() + ' ' + r.url());
+    const leaked = guard.leaked();
     expect(leaked, 'writes that reached PRODUCTION MusicBrainz — the guard has a hole').toEqual([]);
     if (prodWrites === 'fail') expect(refused.map(w => `${w.method} ${w.url} (${w.via})`), 'the test tried to write to production MusicBrainz (refused)').toEqual([]);
     if (pageErrors === 'fail') expect(errors, 'page errors').toEqual([]);
