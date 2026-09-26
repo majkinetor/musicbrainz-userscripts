@@ -59,7 +59,21 @@ export function pageInit(cfg) {
   }
 
   if (!cfg.gm) return;
-  const store = new Map(Object.entries(cfg.gm.values || {}));
+  let store = new Map(Object.entries(cfg.gm.values || {}));
+  // gm.persist: the values survive a reload and same-tab navigation, as real GM storage
+  // does. They live in the tab's sessionStorage, so unlike real GM storage they are per
+  // tab and per origin; gm.values seeds each new tab once.
+  if (cfg.gm.persist) try {
+    const ss = window.sessionStorage, P = '__gm__', INIT = '__gm_seeded__';
+    if (!ss.getItem(INIT)) { ss.setItem(INIT, '1'); for (const [k, v] of store) ss.setItem(P + k, JSON.stringify(v)); }
+    store = {
+      has: k => ss.getItem(P + k) !== null,
+      get: k => { const v = ss.getItem(P + k); return v === null ? undefined : JSON.parse(v); },
+      set: (k, v) => ss.setItem(P + k, JSON.stringify(v === undefined ? null : v)),
+      delete: k => ss.removeItem(P + k),
+      keys: () => Object.keys(ss).filter(k => k.startsWith(P)).map(k => k.slice(P.length)),
+    };
+  } catch (e) { /* no sessionStorage here (about:blank): the values live in the page */ }
   // value-change listeners hear this page's own writes (remote = false)
   const listeners = new Map(); let nextListener = 1;
   const changed = (k, before, after) => listeners.forEach(l => { if (l.k === k) try { l.fn(k, before, after, false); } catch (e) { /* the script's own error */ } });

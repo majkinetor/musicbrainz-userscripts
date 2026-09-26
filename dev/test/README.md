@@ -10,6 +10,7 @@ node dev/test/login.mjs           # once: log the test profile in (production an
 pnpm test                         # everything
 pnpm test --project=fusion        # one script
 pnpm test --grep @unit            # only specs that need no network
+pnpm test --grep @critical        # the quick run: each script's core
 pnpm test --headed                # watch the browser
 pnpm test:report                  # open the last HTML report
 ```
@@ -34,17 +35,17 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`inject(name)`** loads `userscripts/<name>/<name>.user.js`. `<NAME>_SRC=<file>` runs the spec against another build, which is how a regression test is shown to fail on the broken one: `FUSION_SRC=old.user.js pnpm test --project=fusion`.
 - **`check(cond, message)`** is a soft assertion: a failed check is reported and the test continues.
 - **`mbJson(url)`** reads the web service from Node, waiting out throttling.
-- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@login` needs the logged-in profile.
+- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run.
 
 ### Options (`test.use`)
 
 | Option | Default | |
 |---|---|---|
 | `profile` | `'logged-in'` | `'fresh'` for a throwaway profile |
-| `gm` | `{}` | GM shim: `{ name, version, values, xhr: 'fetch' \| 'none' }`, or `false` for none |
+| `gm` | `{}` | GM shim: `{ name, version, values, persist, xhr: 'fetch' \| 'none' }`, or `false` for none. `persist: true` keeps the values across a reload |
 | `prodWrites` | `'fail'` | `'block'`: refused writes don't fail the test; read them from `blockedWrites` |
 | `prodPostAllow` | `[]` | extra production paths (regex sources) a POST may reach |
-| `pageErrors` | `'fail'` | `'ignore'` to tolerate page errors |
+| `pageErrors` | `'fail'` | `'ignore'` to tolerate page errors, or a list of regex sources to let only those through |
 
 ## The production write guard
 

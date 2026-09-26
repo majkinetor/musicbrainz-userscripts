@@ -12,12 +12,14 @@
 //   the GM shim    — GM_getValue/SetValue (in-memory), GM_info, GM_xmlhttpRequest
 //                    (fetch-backed, or a no-op with gm.xhr: 'none'), unsafeWindow.
 //   a production write guard, always on — see below.
-//   page errors fail the test (test.use({ pageErrors: 'ignore' }) to opt out).
+//   page errors fail the test (test.use({ pageErrors: 'ignore' }) to opt out, or
+//                    pageErrors: [regex sources] to let only those through).
 //
 // The guard itself lives in guard.mjs; see there.
 //
 // Tags: @unit (no network: pure functions, stub pages), @prod (read-only on musicbrainz.org), @sandbox
-// (test.musicbrainz.org, may write), @login (needs the logged-in profile).
+// (test.musicbrainz.org, may write), @web (another live site, read-only: Bandcamp, Discogs…),
+// @login (needs the logged-in profile), @critical (the quick run: pnpm test --grep @critical).
 import { test as base, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -49,10 +51,10 @@ export function sourceOf(name) {
 export const test = base.extend({
   // options — override per file with test.use({ … })
   profile: ['logged-in', { option: true }],   // 'logged-in' → .pw-profile · 'fresh' → a throwaway profile
-  gm: [{}, { option: true }],                   // { name, version, values, xhr: 'fetch' | 'none' } · false = no GM shim
+  gm: [{}, { option: true }],                   // { name, version, values, persist, xhr: 'fetch' | 'none' } · false = no GM shim
   prodWrites: ['fail', { option: true }],       // 'fail' · 'block' (refused silently; read the blockedWrites fixture)
   prodPostAllow: [[], { option: true }],        // extra production paths (regex sources) a POST may reach
-  pageErrors: ['fail', { option: true }],       // 'fail' · 'ignore'
+  pageErrors: ['fail', { option: true }],       // 'fail' · 'ignore' · [regex sources]: fail on any other
 
   // every production write the guard refused (layer 1 or 2); a spec using 'block' reads it
   blockedWrites: async ({}, use) => { await use([]); },
@@ -74,7 +76,8 @@ export const test = base.extend({
     const leaked = guard.leaked();
     expect(leaked, 'writes that reached PRODUCTION MusicBrainz — the guard has a hole').toEqual([]);
     if (prodWrites === 'fail') expect(refused.map(w => `${w.method} ${w.url} (${w.via})`), 'the test tried to write to production MusicBrainz (refused)').toEqual([]);
-    if (pageErrors === 'fail') expect(errors, 'page errors').toEqual([]);
+    const letThrough = Array.isArray(pageErrors) ? pageErrors.map(r => new RegExp(r)) : [];
+    if (pageErrors !== 'ignore') expect(errors.filter(e => !letThrough.some(r => r.test(e))), 'page errors').toEqual([]);
   },
   page: async ({ context }, use) => { await use(context.pages()[0] || await context.newPage()); },
 
