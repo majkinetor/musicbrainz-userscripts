@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.26.142524
+// @version      2026.9.26.142552
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,13 +82,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.26.142524 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.26.142515\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.26.142250\n  · Fusion v2026.9.26.111241\n  · Group Therapy v2026.9.25.164727\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
+  console.log('%c String Theory %c v2026.9.26.142552 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.26.142543\n  · Art Station v2026.9.25\n  · Credit Hoarder v2026.9.26.142250\n  · Fusion v2026.9.26.111241\n  · Group Therapy v2026.9.25.164727\n  · ISRC Scout v2026.9.25\n  · Mammoth v2026.9.12\n  · Platform Check v2026.9.25");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.142515","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.142515","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.142543","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.26.142543","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1846,7 +1846,7 @@ try {
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.26.142515';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.26.142543';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4651,7 +4651,7 @@ try {
           <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
           <div class="tc-lp-choose">
             <div class="tc-lp-crow"><button type="button" class="tc-lp-cbtn" data-o="text">Enter text</button><button type="button" class="tc-lp-cbtn" data-o="clip">Paste from clipboard</button></div>
-            <div class="tc-lp-clbl">Parse from external link</div>
+            <div class="tc-lp-clbl" title="Copy a link to a page with the tracklist, then press Ctrl+V anywhere in this window">Parse from external link — or paste one (Ctrl+V)</div>
             <div class="tc-lp-favs"><span class="tc-lp-favload">…</span></div>
           </div>
         </div>
@@ -4667,7 +4667,7 @@ try {
     const ta = $('.tc-lp-ta'), listEl = $('.tc-lp-list'), chooser = $('.tc-lp-choose'), errBadge = $('.tc-lp-err'), backBtn = $('.tc-lp-back');
     const tracks = () => u(mediums()[curMi].tracks) || [];
     const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
-    const close = () => p.remove();
+    const close = () => { document.removeEventListener('paste', onPaste, true); p.remove(); };   // onPaste: #622, below
     // the chooser overlays the empty box; the header "‹ Sources" button appears once a
     // source is picked so you can go back and try another (#455: some links, e.g. Spotify,
     // have no parsable text). setChooser(true) forces it back even over fetched content.
@@ -4703,6 +4703,36 @@ try {
     }
 
     ta.oninput = () => { sourceUrl = null; items = lpParse(ta.value); render(); showChooser(); };   // typing overrides an external source
+
+    // #622 (majkinetor): "CTRL+v like in AS so external link is parsed the same way release links
+    // are parsed". A real paste gesture carries its data with no clipboard permission (Art Station
+    // #554), so Ctrl+V of a single URL anywhere in the open parser — the chooser, the box, the list
+    // — goes through fetchLink exactly like clicking one of the release's link icons, edit-note
+    // credit included. Any other text pastes as it always did; on the chooser (where the box is
+    // covered and nothing has focus) it goes into the box, like "Paste from clipboard". A paste
+    // into some other field on the page is none of our business.
+    const LP_URL_RE = /^https?:\/\/\S+$/i;
+    function onPaste(e) {
+      if (!p.isConnected) { document.removeEventListener('paste', onPaste, true); return; }   // replaced by a re-open, which skips close()
+      const t = e.target;
+      const inside = !!(t && t.closest && t.closest('#tc-lppop'));
+      const typing = !!(t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable));
+      if (typing && !inside) return;
+      const txt = ((e.clipboardData && e.clipboardData.getData('text')) || '').trim();
+      if (!txt) return;
+      if (LP_URL_RE.test(txt)) {
+        e.preventDefault(); e.stopPropagation();
+        Log.info('length parser: pasted a link — reading track lengths from', txt);
+        fetchLink(txt);
+        return;
+      }
+      if (!typing && chooser.style.display !== 'none') {
+        e.preventDefault(); e.stopPropagation();
+        Log.debug('length parser: pasted', txt.length, 'chars of text onto the chooser');
+        setChooser(false); ta.value = txt; sourceUrl = null; items = lpParse(txt); render(); showChooser(); ta.focus();
+      }
+    }
+    document.addEventListener('paste', onPaste, true);
 
     function render() {
       const nT = tracks().length; listEl.innerHTML = '';
