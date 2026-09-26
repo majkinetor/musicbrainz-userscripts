@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-26 19:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-26 19:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1534,7 +1534,7 @@ Other Qobuz gotchas:
 
 ## Mammoth
 
-Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit. Mamooth babies let you remember values, add quick buttons, and configure defaults for any form field.
+Reusable edit notes in a panel beside the edit-note field of every edit form, and remembered values for any other field.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/mammoth/mammoth.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/mammoth/mammoth.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -1544,165 +1544,134 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
 
 ### Features
 
-- **[Saved notes](#saved-notes)** — save, pin as quick-buttons, search, sort and reorder edit notes.
-- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls with **[custom fields](#custom-fields)** by CSS selector.
-- **Per-type notes** — keep saved notes and history separate per edit-note type (release / artist / recording…).
-- **History** — remembers the last N submitted edit notes, newest-first and de-duplicated.
-- **Import / export** — batch load/export notes per input type; entity fields (Artist/Label) keep their MBID so a re-import resolves the real entity (see [Settings](#settings-4)).
-- **Replace or Insert** — left-click does your default, right-click the other; append skips a line already present (see [Shortcuts](#shortcuts-4)).
-- **Compact** — one-line rows, full note on hover; choose how many show before the list scrolls.
-- **Resizable** — the edit-note field is widened and centered; drag the separator to resize
-- **Minimized mode** — collapse the panel to a small icon; hover to peek, click to pin; remembered across pages.
+- **[Saved notes](#saved-notes)**: save, pin as buttons, search, sort and reorder edit notes.
+- **[History](#saved-notes)** of the notes you submitted.
+- **[Mammoth babies](#mammoth-babies)**: the same for other fields (catalogue number, label, artist…), and **[any field you choose](#custom-fields)**.
+- **[Import and export](#settings-4)** of notes.
+- **[Integration](#using-mammoth-from-another-userscript)** with other userscripts' edit-note fields.
 
 ### Saved notes
 
-- **＋** saves the current text; in **History**, `★` on a row moves it to saved notes. Reorder by **drag** (the `⠿` handle on the right, shown on hover) and delete with `🗑`.
-- **Note search** — narrows the list to notes containing the typed phrase (see [Shortcuts](#shortcuts-4) for keys).
-- **Quick buttons** — click `★` on a saved note to pin it as a button below the input field.
-- **Sort** — **Manual** (drag & drop, default), **Most used** or **Recent**.
+- **＋** saves the current text. In **History**, ★ moves a note to the saved ones.
+- ★ on a saved note pins it as a **button** under the field.
+- Sort **manually** (drag ⠿), by **most used** or by **recent**. A search box narrows long lists.
+- Click applies a note with your default action (replace or append); right-click does the other. Appending skips a line that's already there.
+
+The field is widened and centred; drag the separator to resize the panel. The panel can be minimized to an icon: hover to peek, click to pin.
+
+> [!TIP]
+> With *Scope per resource* on, each kind of edit note (release, artist, recording…) keeps its own saved notes and history.
 
 ### Mammoth babies
 
-A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The built-in fields — catalogue №, label, artist, status, language, script, country, type, and task fields — are **seeded into the [Babies](#custom-fields) config**, so you can edit, disable, or re-add them (**↺ Defaults**) exactly like your own. 
+A 🦣 pin in a field recalls the values saved for it, shared across releases. The built-in ones cover catalogue number, label, artist, status, language, script, country, type and the task fields.
 
 <img src="../mammoth/screenshots/babies.png" width=600 />
 
-The pin opens a compact panel with a toolbar:
+In the pin's panel, **＋** saves the current value and **✕** clears the field. On a saved value:
 
-- `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity; custom fields do not save MBID automatically but can be added manually by editing a note (MBID remains hidden from menu and buttons).
-- `✕` - clear the field
+| | |
+|---|---|
+| ★ | pin it as a button under the field |
+| ◉ | make it the default, filled in when the field is empty |
+| 🗑 | delete |
+| ⠿ | drag to reorder |
 
-Note actions:
-
- - `★` pins a value as an always-visible **button under the field** 
- - `◉` marks one entry as the **default** (auto-fills the field when it's empty)
- - `🗑` delete note
- - `⠿` drag to reorder
-
-Pinned buttons wrap to new rows, labelled with the value truncated to the configured length — see **[Settings] - "Button label length"**:
+Label and Artist save the selected entity's MBID, so a recalled value is the real entity, not a new search.
 
 <img src="../mammoth/screenshots/big-buttons.png" width=600 />
 
 #### Custom fields
 
-The built-in babies cover several native controls, but you can put a 🦣 on **any** field on **any** MusicBrainz page — open **`⚙` → Babies** tab and **＋ Add field**:
+Put a 🦣 on any field of any MusicBrainz page: **⚙ → Babies → ＋ Add field**. The built-in fields are listed there too, so you can edit, disable or restore them (**↺ Defaults**).
 
 <img src="../mammoth/screenshots/custom-fields.png" width=600 />
 
-| Column | Meaning |
+| Column | |
 |---|---|
-| **Selector** | The field's CSS selector (Inspect the element → *Copy selector*). **Comma-separate** several selectors to cover more than one field with a single row. A live *matches N* / *bad selector* readout tells you if it's right. |
-| **Label** | The popover title, and the **identity** of the field: two fields with the **same label share one saved list**. |
-| **px** | Nudge the pin left/right by N pixels, to clear a field's own icon or arrow (optional). |
-| **lvl** (deltav) | Where the pinned-button bar attaches. `0` (default) = floats below the field (absolute — can overlap UI beneath it). `N` > 0 = injected **in the document flow** right after the field's Nth ancestor, so it takes real space and pushes the UI below it down. Bump it until the buttons sit cleanly (e.g. the artist row's autocomplete wrapper is usually `1`–`2`). |
-| **↵** (submit) | On recall, **submit the field's form** ~200 ms after the value is set — commits a tag, runs a header search, etc. (like pressing Enter). Select it only on fields whose form is safe to submit on recall. |
+| **Selector** | the field's CSS selector (Inspect → *Copy selector*); comma-separate to cover several fields. A *matches N* readout checks it. |
+| **Label** | the panel's title, and the field's identity: fields with the same label share one list |
+| **px** | nudge the pin sideways, clear of the field's own icon |
+| **lvl** | where the button bar attaches: `0` floats under the field; `N` inserts it after the field's Nth ancestor, pushing the page down |
+| **↵** | submit the field's form after a recall, like pressing Enter (tags, header search) |
 
-Changes apply live (the page is re-scanned), and your list is remembered across sessions. Works on `<input>`, `<select>`, and `<textarea>`.
+Changes apply live. Works on `<input>`, `<select>` and `<textarea>`.
 
-**Resolving autocompletes:** on an entity autocomplete (artist, instrument, …), save the value **with its MBID** appended — e.g. `handclaps b8d84cec-…` — and recalling it resolves the real entity (MB reads the id straight from the pasted text, no search needed).
+> [!TIP]
+> On an entity autocomplete (instrument, artist…), save the value with its MBID appended, e.g. `handclaps b8d84cec-…`. Recalling it then selects that entity directly.
 
-**Fields that commit on Enter (tags, search):** Check the row's **↵** box (or JSON `"submit": true`) and recall **submits the field's form** ~200 ms after filling it, exactly like clicking its submit button. Works for the tag box (`<form id="tag-form">`) and the header search.
-
-The **`{ } JSON`** button (top-right of the section) switches the editor to a JSON text box — the same list as an editable, copy-pasteable blob, so it doubles as **export** (copy the box) and **import** (paste + **Apply**). Keys: `selector` (required), `label`, `deltax`, `deltav`, `submit`, `mbid`, and `enable`; trailing commas and empty `{}` entries are tolerated:
+**`{ } JSON`** switches the list to editable JSON, which is also the export (copy) and import (paste + **Apply**):
 
 ```json
 [
   { "selector": "div.instrument div.autocomplete2 input", "label": "Instrument", "deltax": 16 },
-  { "selector": "input[id^=\"label-\"]", "label": "Label", "mbid": true },
-  { "selector": "input.tag-input", "label": "Tags", "submit": true }
+  { "selector": "input.tag-input", "label": "Tags", "submit": true },
+  { "selector": "#some-field", "label": "Off for now", "enable": false }
 ]
 ```
 
-**`enable`** defaults to `true`; set `"enable": false` (or click the **◉/○** toggle that appears when you hover a row) to **disable** a field — it's kept in the list (shown dimmed) but gets no pin. Handy for switching a built-in off without deleting it.
+Keys: `selector` (required), `label`, `deltax` (px), `deltav` (lvl), `submit`, `enable`, and `mbid`, which only means something on the built-in Label and Artist fields.
 
-**`mbid`** is **JSON-only** (no column in the grid). It enables entity-MBID capture and is meaningful **only on the built-in Label and Artist fields** — there it reads the release editor's model so a saved value keeps the real entity; on any other field it does nothing (falls back to text). It's shipped on for those two built-ins; you normally won't set it yourself.
+### Settings
 
-### Settings 
-
-Accessed using the `⚙` button. 
+**⚙** opens three tabs: **Settings**, **[Babies](#custom-fields)**, and **Import / Export** (paste many notes, or *Export all*, one note per line or separated by empty lines).
 
 <img src="../mammoth/screenshots/options.png" width=350/>
 
-| Setting | Default | Notes |
+| Setting | Default | |
 |---|---|---|
-| **Scope per resource** | off | Keep notes separate per edit-note type (release / artist / …). |
-| **Hide help text** | off | Hides MusicBrainz's help paragraphs above the field. |
-| **Default click action** | `replace` | What a left-click does (`replace`, or `append`). Right-click does the other. |
-| **Insert new line when appending** | on | Append a blank line before note. |
-| **Show note search** | off | Show the search box above the note list (for big lists). |
-| **Sort saved notes** | `Manual` | `Manual` (drag order), `Most used`, or `Recent`. |
-| **Button label length** | `24` | Character length of the pinned quick-buttons' labels (4–80), for both the main and baby pins. |
-| **Items shown** | `6` | How many list rows to render before the list scrolls. |
-| **History size** | `10` | How many submitted notes to remember (1–50). |
-| **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
+| Scope per resource | off | separate notes per edit-note type |
+| Hide help text | off | hide MusicBrainz's help above the field |
+| Default click action | replace | or append; right-click does the other |
+| Insert new line when appending | on | |
+| Show note search | off | |
+| Sort saved notes | Manual | or Most used, Recent |
+| Button label length | 24 | characters on pinned buttons (4–80) |
+| Items shown | 6 | rows before the list scrolls |
+| History size | 10 | submitted notes to remember (1–50) |
+| Show mammoth babies | on | |
 
-The `⚙` window has three tabs: **Settings** (above), **[Babies](#custom-fields)** (the built-in + your own baby fields), and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
+### Shortcuts
+
+In the edit-note field:
+
+| Key | |
+|---|---|
+| Ctrl + Enter | submit the edit |
+| Ctrl + ↑ / ↓ | cycle through saved notes |
+| Ctrl + B / I | bold / italic around the selection or the word at the caret |
+| Ctrl + , | focus the note search |
+
+On a saved note or a pinned button:
+
+| | |
+|---|---|
+| click | apply with the default action |
+| right-click | apply the other way |
+| Ctrl + click | replace the field and submit the edit |
+
+In a baby field, **Ctrl + ,** opens its panel with the filter focused; ↑ / ↓ and Enter pick a value. (Ctrl is ⌘ on a Mac.)
 
 ### Using Mammoth from another userscript
 
-Integration is done by convention:
+Mammoth enhances **any** `textarea.edit-note` on the page, including fields another script adds later, so another script can host the panel with no API:
 
-- Panel: any `textarea.edit-note` on the page gets the full Mammoth panel automatically.
-- Baby: use `class="mmth-pin"`
-
-Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz's own — a `MutationObserver` picks up fields added dynamically too. So another userscript that has its own edit-note field (e.g. [Art Station](../art_station)'s "Enter edit" dialog) can host the full Mammoth panel **with no API and no changes to Mammoth**:
-
-1. **Give your edit-note field `class="edit-note"`.** Mammoth wraps it (`.mmth-wrap`) and attaches the saved-notes / history panel.
-
-   ```html
-   <textarea class="edit-note"></textarea>
-   ```
-
-2. **History capture is automatic** if your submit button matches Mammoth's heuristic — a document-wide click on a button whose text starts with `enter edit` / `submit` / `add edit` / `save`, or that has class `submit`, records the field into history.
-
-3. **You own the layout.** Mammoth lays the field out beside a ~300px panel (`.mmth-side`) with a drag splitter (`.mmth-vsep`); scope your own CSS to fit it into your container — e.g. hide the splitter and give the wrap a bottom margin inside a modal:
+1. Give your edit-note field `class="edit-note"`.
+2. History is recorded when a button whose text starts with *Enter edit*, *Submit*, *Add edit* or *Save* (or with class `submit`) is clicked.
+3. Fit the layout with CSS scoped to your container, for example:
 
    ```css
    #your-dialog .mmth-wrap { margin: 0 0 12px; max-width: none; gap: 10px; }
    #your-dialog .mmth-vsep { display: none; }
    ```
 
-To get a Mammoth baby on your own field, add the `mmth-pin` class:
+For a baby on your own field, add `class="mmth-pin"`:
 
 ```html
 <input class="mmth-pin" data-mmth-key="my-cat-no" data-mmth-label="Catalogue №">
 ```
 
-- `data-mmth-key` (optional) — storage key; fields sharing a key share their saved values. Omit it and Mammoth derives one from the element's id/name/label (keyFor, :996).
-- `data-mmth-label` (optional) — the popover title.
-- `data-mmth-dx="<px>"` (optional) — nudge the pin (e.g. past a custom affordance).
-
-The popover always carries a filter box for the saved values. `Ctrl`/`Cmd`+`,` while the field is focused opens the popover at the field, with the filter focused; `↑`/`↓` move and `Enter` picks.
-
-Works on `<input>`, `<select>`, `<textarea>`. Stored under its own key mammoth-fields:data (separate from edit-note history).
-
-### Shortcuts
-
-In the edit-note field (and Mammoth's panel):
-
-| Key | Action |
-|---|---|
-| `Ctrl`/`⌘` + `Enter` | Submit the edit (clicks the page's *Enter edit* / submit button) |
-| `Ctrl`/`⌘` + `↑` / `↓` | Cycle through your saved notes, replacing the field |
-| `Ctrl`/`⌘` + `B` | Wrap the selection — or the word at the caret — in **bold** markup |
-| `Ctrl`/`⌘` + `I` | Wrap the selection — or the word at the caret — in *italic* markup |
-| `Ctrl`/`⌘` + `,` | Focus the note search box |
-
-On a saved-note row or a pinned quick-button:
-
-| Action | Result |
-|---|---|
-| click | apply with your default (replace / append) |
-| right-click | apply the other way |
-| `Ctrl`/`⌘` + click | replace the field **and submit** the edit (parity with `Ctrl`/`⌘` + `Enter`) |
-
-In the note search box:
-
-| Key | Action |
-|---|---|
-| `↑` / `↓` | Move the highlighted match |
-| `Enter` | Apply the highlighted match (or the first if none) |
-| `Esc` | Clear the search |
+`data-mmth-key` (fields sharing a key share values), `data-mmth-label` (the panel title) and `data-mmth-dx` (pin nudge, px) are optional.
 
 ---
 
