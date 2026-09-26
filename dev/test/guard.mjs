@@ -12,8 +12,9 @@ export const PROD_HOST = /^(beta\.)?musicbrainz\.org$/i;
 export const hostOf = url => { try { return new URL(url).hostname; } catch { return ''; } };
 export const isProd = url => PROD_HOST.test(hostOf(url));
 export const WRITE_ONLY = /\/ws\/js\/edit\/|\/edit\/create\b|\/relationship-editor\b/i;
-// POSTs that change nothing on production: seeding the release editor only renders the form.
-export const SAFE_PROD_POSTS = ['/release/add\\b'];
+// POSTs that change nothing on production: seeding the release editor only renders
+// the form, and the release editor's own edit preview renders what WOULD be submitted.
+export const SAFE_PROD_POSTS = ['/release/add\\b', '^/ws/js/edit/preview$'];
 const READS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 // Runs in every frame before the page's own scripts: the GM shim and guard layer 1.
@@ -98,7 +99,7 @@ export async function installProdGuard(ctx, { allow = [], gm = null, onRefused =
   await ctx.addInitScript(pageInit, { allow, gm });
   await ctx.route(u => isProd(u.href) && WRITE_ONLY.test(u.pathname), async route => {
     const req = route.request();
-    if (READS.has(req.method())) return route.fallback();
+    if (READS.has(req.method()) || allowed(req.url())) return route.fallback();
     routed.add(req); onRefused({ method: req.method(), url: req.url(), via: 'network' });
     return route.abort('blockedbyclient');
   });
