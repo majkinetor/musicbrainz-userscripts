@@ -50,6 +50,7 @@ export default [
                 HTMLElement:            'readonly',
                 Image:                  'readonly',
                 getComputedStyle:       'readonly',
+                matchMedia:             'readonly',   // the shared ST-UI block (theme detection)
                 CSS:                    'readonly',
                 NodeFilter:             'readonly',
                 Highlight:              'readonly',

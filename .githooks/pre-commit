@@ -1,15 +1,16 @@
 #!/bin/sh
-# Pre-commit: rebuild dist/ for any userscript whose source is being committed.
+# Pre-commit: refuse a staged userscript that doesn't parse or lint clean, then
+# rebuild dist/ and the bundles for any userscript whose source is being committed.
 #
 # Why: dist/<userscript>.user.js is the install vector (the README links the
 # raw GitHub URL of the latest release), so the committed dist/ has to match
 # the committed src/. Without this hook, "I forgot to rebuild" silently ships
 # a stale userscript.
 #
-# Activation: `pnpm install` at the repo root runs the `prepare` script in
-# package.json, which sets `core.hooksPath` to .githooks/ for the local
-# clone. New contributors get the hook automatically the first time they
-# install dependencies.
+# Activation: `pnpm install` at the repo root runs the `prepare` script in the
+# root package.json (dev/install-hook.mjs), which sets `core.hooksPath` to
+# .githooks/ for the local clone. New contributors get the hook automatically
+# the first time they install dependencies.
 #
 # Bypass: `git commit --no-verify`. Use sparingly (e.g. doc-only commits
 # where you're sure src/ didn't change).
@@ -17,6 +18,28 @@
 set -e
 
 STAGED=$(git diff --cached --name-only)
+
+# lint + syntax gate (#623) — a staged monolithic userscript must parse and lint
+# clean (errors only; warnings are for a later look). Runs before any rebuild, so a
+# broken script never reaches the bundle. The bundle and the frozen discogs_credits
+# are not linted; Credit Hoarder's src/ has its own gate, right after.
+USER_JS=$(printf '%s\n' "$STAGED" | grep -E '^userscripts/.+\.user\.js$' | grep -vE '^userscripts/(string_theory|discogs_credits)/|/dist/' || true)
+if [ -n "$USER_JS" ]; then
+    PRESENT=""
+    for f in $USER_JS; do
+        [ -f "$f" ] || continue
+        node --check "$f" || { echo "[pre-commit] $f does not parse — nothing committed"; exit 1; }
+        PRESENT="$PRESENT $f"
+    done
+    if [ -n "$PRESENT" ] && [ -f node_modules/eslint/bin/eslint.js ]; then
+        node node_modules/eslint/bin/eslint.js --quiet $PRESENT || { echo "[pre-commit] lint errors above — nothing committed"; exit 1; }
+    elif [ -n "$PRESENT" ]; then
+        echo "[pre-commit] eslint is not installed at the repo root (pnpm install) — lint skipped"
+    fi
+fi
+if printf '%s\n' "$STAGED" | grep -qE '^userscripts/credit_hoarder/src/'; then
+    (cd userscripts/credit_hoarder && pnpm run lint >/dev/null) || { echo "[pre-commit] Credit Hoarder lint errors (pnpm --dir userscripts/credit_hoarder run lint) — nothing committed"; exit 1; }
+fi
 
 # platform icons (#404) — when the shared icon set changes, re-inline it into every
 # script carrying a `// <ST-ICONS>` marker and re-stage them. Runs FIRST so the bundle
@@ -62,14 +85,9 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/match/(artist-match|sync-match)\.mjs
     STAGED=$(git diff --cached --name-only)
 fi
 
-# discogs_credits — esbuild bundle
-if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\.mjs)'; then
-    echo "[pre-commit] rebuilding userscripts/discogs_credits/dist/…"
-    (cd userscripts/discogs_credits && pnpm run build >/dev/null)
-    git add userscripts/discogs_credits/dist/discogs_credits.user.js
-fi
+# (discogs_credits is frozen — no longer developed — so its bundle is not rebuilt here.)
 
-# credit_hoarder — esbuild bundle, same shape as discogs_credits above. It was
+# credit_hoarder — esbuild bundle. It was
 # missing here, so a shared-component sync (which rewrites src/ui-bar.js) left
 # the committed dist/ — the file people actually install — one build behind.
 if printf '%s\n' "$STAGED" | grep -qE '^(userscripts/credit_hoarder/(src/|build\.mjs)|dev/match/artist-match\.mjs$)'; then

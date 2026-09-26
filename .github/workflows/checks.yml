@@ -1,0 +1,34 @@
+# The repo's gates (#623): every userscript parses and lints clean, Credit
+# Hoarder's own lint passes, the design tokens resolve, and the specs that need
+# no network (@unit) pass. The MusicBrainz specs need a logged-in profile, so
+# they run locally (pnpm test), not here.
+name: checks
+on:
+  push:
+    branches: [main, stable]
+  pull_request:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Every userscript parses
+        run: for f in userscripts/*/*.user.js userscripts/art_station/as_picker/*.user.js; do node --check "$f" || exit 1; done
+      - name: Lint
+        run: pnpm lint --quiet
+      - name: Credit Hoarder lint
+        run: |
+          pnpm --dir userscripts/credit_hoarder install --frozen-lockfile
+          pnpm --dir userscripts/credit_hoarder run lint
+      - name: Design tokens
+        run: node dev/tokens/verify-tokens.mjs
+      - name: Specs that need no network
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm test --grep @unit
