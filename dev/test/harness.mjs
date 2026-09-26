@@ -103,6 +103,24 @@ export async function mbJson(url, { tries = 6 } = {}) {
   }
 }
 
+// A script's pure helpers, evaluated in Node — for @unit specs of functions that
+// need no page. Each name must be a `function name(…) { … }` declaration in the
+// script; they are evaluated together, so one may call another. Anything they use
+// beyond each other and the JS built-ins isn't available, and evaluating fails.
+//   const { normName } = await loadFunctions('fusion', ['normName']);
+export async function loadFunctions(name, names) {
+  const code = await readFile(sourceOf(name), 'utf8');
+  const bodies = names.map(n => {
+    const at = code.search(new RegExp('(^|\\n)[ \\t]*function ' + n + '\\s*\\('));
+    if (at < 0) throw new Error(`loadFunctions: no "function ${n}(" in ${name}`);
+    const open = code.indexOf('{', code.indexOf(')', at));
+    let depth = 0, i = open;
+    for (; i < code.length; i++) { if (code[i] === '{') depth++; else if (code[i] === '}' && --depth === 0) break; }
+    return code.slice(at, i + 1);
+  });
+  return new Function(bodies.join('\n') + `\nreturn { ${names.join(', ')} };`)();
+}
+
 // Skip (not fail) when the profile isn't logged in to the site the page is on.
 export async function requireLogin(page) {
   const out = page.url().includes('/login') || await page.evaluate(() => !document.querySelector('a[href*="/logout"]'));

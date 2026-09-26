@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.25
+// @version      2026.9.26.195418
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -314,8 +314,12 @@
     return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : null;
   }
   function norm(s) {
-    return String(s || '').toLowerCase().normalize('NFD')
-      .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ')
+    // #623 (sweep, X10): any script — keeping only [a-z0-9] reduced a mixed-script title to
+    // its Latin fragments ("Love ~夜~" = "Love ~朝~"). Diacritics still fold on Latin, Greek
+    // and Cyrillic letters; other scripts keep their marks.
+    return String(s || '').toLowerCase().normalize('NFKD')
+      .replace(/(?<=[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}])\p{M}+/gu, '').normalize('NFC')
+      .replace(/[^\p{L}\p{N}\p{M} ]/gu, ' ')
       .replace(/\s+/g, ' ').trim();
   }
   function normCI(s) { return norm(s); }
@@ -5079,15 +5083,46 @@
     let byPos = true;
     let idx = RELEASE.tracks.findIndex(t =>
       (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
-    if (idx < 0) { byPos = false; idx = RELEASE.tracks.findIndex(t => t.title && isGoodMatch(s.title, s.artist, t.title, t.artist)); }
+    let loose = false;
+    if (idx < 0) {
+      byPos = false;
+      const p = pickTrackByTitle(s, RELEASE.tracks);
+      if (p.ambiguous) { Log.warn(label + ': ' + p.ambiguous + ' tracks match "' + s.title + '" by title — not guessing which one gets ' + s.isrc); return 'unmatched'; }
+      idx = p.idx; loose = p.loose;
+    }
     if (idx < 0) { Log.warn(label + ': no track matched ' + s.isrc + ' "' + s.title + '" (disc ' + s.disc + ' pos ' + s.pos + ')'); return 'unmatched'; }
     const t = RELEASE.tracks[idx];
     if (t.existing.includes(s.isrc)) return 'already';
     if (t.pending) return 'skipped';
     setPending(idx, s.isrc, true, label);   // fills the input box right now
-    if (byPos) flagImplausibleFill(idx, s, label);   // #431 — title-matched rows already validated themselves
+    if (byPos) flagImplausibleFill(idx, s, label);   // #431
+    else if (loose) flagLooseTitleFill(idx, s, label);   // #623
     updateSummary();
     return 'filled';
+  }
+  // #623 (sweep): the title fallback took the FIRST track passing titleClose, which
+  // tolerates two trailing words — so "Song (Live)" landed on "Song", and a second
+  // "Intro" on the first one. An exact title wins; several equally good tracks are
+  // not guessed between; a single match on a looser title is filled, but flagged.
+  // → { idx, loose } or { idx: -1, ambiguous: N }
+  function pickTrackByTitle(s, tracks) {
+    const good = [], exact = [];
+    tracks.forEach((t, i) => {
+      if (!t.title || !isGoodMatch(s.title, s.artist, t.title, t.artist)) return;
+      good.push(i);
+      if (norm(t.title) === norm(s.title)) exact.push(i);
+    });
+    if (exact.length === 1) return { idx: exact[0], loose: false };
+    if (exact.length > 1 || good.length > 1) return { idx: -1, ambiguous: exact.length || good.length };
+    return good.length ? { idx: good[0], loose: true } : { idx: -1 };
+  }
+  function flagLooseTitleFill(idx, s, label) {
+    const t = RELEASE.tracks[idx], input = rowInput(idx); if (!input) return;
+    input.classList.add('ii-in-suspect');
+    input.title = '⚠ matched by a similar title only ("' + s.title + '" → "' + t.title + '") — verify before submitting';
+    if (_stream) (_stream.suspects = _stream.suspects || []).push(idx);
+    Log.warn(label + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": filled by a similar title only ("' + s.title + '")');
+    updateSuspectBadge();
   }
 
   const errText = e => (e && (e.message || e.stack)) || String(e) || '(no detail)';
