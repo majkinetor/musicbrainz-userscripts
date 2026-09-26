@@ -8,7 +8,7 @@
 // release there is no context and no request.
 import { mbThrottle } from './api-mb.js';
 import { log, logDebug } from './log.js';
-import { pageWindow } from './constants.js';
+import { MB, pageWindow } from './constants.js';
 import { MBM_SPECIAL_PURPOSE, mbmRelatedArtists } from '../../../dev/match/artist-match.mjs';
 
 const SPECIAL = new Set(MBM_SPECIAL_PURPOSE);
@@ -34,7 +34,7 @@ export async function buildReleaseContext({ coCredit = false } = {}) {
     for (const gid of seeds.slice(0, 4)) {
         let list = _relatedCache.get(gid);
         if (!list) {
-            const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist/${gid}?inc=aliases+artist-rels&fmt=json`);
+            const json = await mbThrottle.fetchJson(`${MB}/ws/2/artist/${gid}?inc=aliases+artist-rels&fmt=json`);
             if (!json) { log.warn(`Matching context: could not load release artist ${gid} — continuing without it`); continue; }
             list = mbmRelatedArtists(json);
             _relatedCache.set(gid, list);

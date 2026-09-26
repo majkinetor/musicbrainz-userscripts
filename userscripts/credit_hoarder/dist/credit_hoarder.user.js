@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.26.200101
+// @version      2026.9.26.200357
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -68,6 +68,7 @@
   var EQUIVALENCE_SETS = [
     ["writer", "composer"]
   ];
+  var MB = /(^|\.)musicbrainz\.org$/.test(location.hostname) ? "//" + location.hostname : "//musicbrainz.org";
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   DISCOGS_CHANNEL.unref?.();
   var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
@@ -220,7 +221,7 @@
     const REQUEST_TIMEOUT_MS = 1e4;
     async function _run(item) {
       const tag = `req#${++_diagReqSeq}`;
-      const shortUrl = item.url.replace("//musicbrainz.org", "").replace(/^https:/, "");
+      const shortUrl = item.url.replace(MB, "").replace(/^https:/, "");
       for (let attempt = 0; attempt <= item.retries; attempt++) {
         await _waitForPause();
         _totalRequests++;
@@ -300,7 +301,7 @@
     if (!mbid) return null;
     if (_relTypeCache.has(mbid)) return _relTypeCache.get(mbid);
     const json = await mbThrottle.fetchJson(
-      `//musicbrainz.org/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
+      `${MB}/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
     );
     if (!json) return null;
     const types = relRoleLabels(json.relations);
@@ -438,7 +439,7 @@
     }
   };
   function mbUrlOf(entityType, mbid) {
-    return `//musicbrainz.org/${entityType}/${mbid}`;
+    return `${MB}/${entityType}/${mbid}`;
   }
   function readIdbRecord(key) {
     return new Promise((resolve) => {
@@ -3289,7 +3290,7 @@
     const tally = /* @__PURE__ */ new Map();
     for (const seed of context.seeds.slice(0, 4)) {
       const q = `arid:${seed} AND artistname:"${String(name).replace(/["\\]/g, " ")}"`;
-      const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`);
+      const json = await mbThrottle.fetchJson(`${MB}/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`);
       if (!json) continue;
       for (const h of mbmCoCreditHits(json, seed, name)) {
         const t = tally.get(h.gid) || { n: 0, name: h.name };
@@ -3370,7 +3371,7 @@
       };
     }
     async function fetchMbEntityInfo(et, mbid) {
-      const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
+      const json = await mbThrottle.fetchJson(`${MB}/ws/2/${et}/${mbid}?fmt=json`);
       return json ? { name: json.name || null, disambiguation: json.disambiguation || "" } : { name: null, disambiguation: "" };
     }
     if (bypassIdb && key) {
@@ -3420,7 +3421,7 @@
         const ctx = contextHit(context, searchName, cachedRec.nameMatches);
         if (ctx) {
           log.info(`Match: ${displayName} \u2192 ${ctx.name} \u2014 via release context (${ctx.rel || "related"}, ${ctx.via})`);
-          const mbUrl = `//musicbrainz.org/artist/${ctx.gid}`;
+          const mbUrl = `${MB}/artist/${ctx.gid}`;
           await writeIdbRecord(key, { mbid: ctx.gid, entityType: "artist", name: ctx.name, disambiguation: "", resolvedVia: "ctx", nameMatches: null, mbUrl });
           return buildResolved(mbUrl, ctx.name, "", "ctx", "artist", false, attnLinkedIds, cachedRec.creditOverride);
         }
@@ -3429,10 +3430,10 @@
     }
     const [nameJson, urlJson] = await Promise.all([
       mbThrottle.fetchJson(
-        `//musicbrainz.org/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
+        `${MB}/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
       ),
       parsed ? mbThrottle.fetchJson404(
-        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
+        `${MB}/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
       ) : Promise.resolve({ notFound: true })
     ]);
     const nameSearchFailed = nameJson === null;
@@ -3504,7 +3505,7 @@
         via = "ctx";
         log.info(`Match: ${displayName} \u2192 ${ctx.name} \u2014 via release context (${ctx.rel || "related"}, ${ctx.via})`);
       } else if (nameHit) {
-        const idJson = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(mbmIdentityQuery(searchName, "artist"))}&fmt=json&limit=${MBM_EXACT_LIMIT}`);
+        const idJson = await mbThrottle.fetchJson(`${MB}/ws/2/artist?query=${encodeURIComponent(mbmIdentityQuery(searchName, "artist"))}&fmt=json&limit=${MBM_EXACT_LIMIT}`);
         const idn = mbmExactIdentity(idJson, searchName);
         logDebug(`exact identity "${searchName}": ${idn.status} (${idJson ? (idJson.artists || []).length + " of " + idJson.count : "no response"})`);
         if (idn.status === "unique" && idn.hit.id === nameHit.mbid) {
@@ -3535,7 +3536,7 @@
       via = "name";
     }
     if (resolved) {
-      const mbUrl = `//musicbrainz.org/${resolved.kind}/${resolved.mbid}`;
+      const mbUrl = `${MB}/${resolved.kind}/${resolved.mbid}`;
       let finalName = resolved.name;
       let finalDisam = resolved.disambiguation;
       if (!finalName) {
@@ -4011,7 +4012,7 @@ ${ourBlock}` : ourBlock;
         const mbid = (r.mbUrl || "").split("/").pop().replace(/[^a-f0-9-]/g, "").substring(0, 36);
         if (!mbid) continue;
         const et = r.entityType || "artist";
-        const data = await mbThrottle.fetchJson(`https://musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
+        const data = await mbThrottle.fetchJson(`https:${MB}/ws/2/${et}/${mbid}?fmt=json`);
         if (data?.name) {
           _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || "" });
           if (idbKey) {
@@ -4139,8 +4140,8 @@ ${ourBlock}` : ourBlock;
       const existingCreditByMbid = computeExistingCreditByMbid();
       function computeExistingCreditByMbid() {
         const counts = /* @__PURE__ */ new Map();
-        const MB = pageWindow?.MB;
-        const iterate = MB?.tree?.iterate;
+        const MB2 = pageWindow?.MB;
+        const iterate = MB2?.tree?.iterate;
         if (!iterate) return counts;
         const valueOf = (yielded) => Array.isArray(yielded) ? yielded[1] : yielded;
         const isTree = (x) => x && typeof x === "object" && x.size != null && (x.left !== void 0 || x.right !== void 0 || x.value !== void 0);
@@ -4188,11 +4189,11 @@ ${ourBlock}` : ourBlock;
           }
         }
         try {
-          walkSource(MB.relationshipEditor?.state?.existingRelationshipsBySource);
+          walkSource(MB2.relationshipEditor?.state?.existingRelationshipsBySource);
         } catch (e) {
         }
         try {
-          walkSource(MB.relationshipEditor?.state?.relationshipsBySource);
+          walkSource(MB2.relationshipEditor?.state?.relationshipsBySource);
         } catch (e) {
         }
         const out = /* @__PURE__ */ new Map();
@@ -4277,7 +4278,7 @@ ${ourBlock}` : ourBlock;
           if (!pool.length) {
             via = "search";
             try {
-              const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(name)}&fmt=json&limit=8`);
+              const json = await mbThrottle.fetchJson(`${MB}/ws/2/artist?query=${encodeURIComponent(name)}&fmt=json&limit=8`);
               const all = json?.artists || [];
               const exact2 = all.filter((a) => norm2(a.name) === norm2(name));
               pool = exact2.length ? exact2 : all;
@@ -4290,7 +4291,7 @@ ${ourBlock}` : ourBlock;
           log.info(`#605 split part "${name}": ${pool.length} candidate(s) via ${via}, ${exact.length} exact`);
           const base = { entityType: "artist", entity, displayName: name, discogsHref: "", _roles: r._roles };
           if (exact.length === 1) {
-            const a = exact[0], mbUrl = `//musicbrainz.org/artist/${a.id}`;
+            const a = exact[0], mbUrl = `${MB}/artist/${a.id}`;
             subs.push({
               ...base,
               type: "resolved",
@@ -4782,7 +4783,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         function setRowResolved(a) {
           aliasPick = a;
           clearRowCreating();
-          const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
+          const mbUrl = `${MB}/${entityType}/${a.id}`;
           rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user", fromCache: false });
           if (r._credInput) {
             const oldUrl = r._credInput._activeMbUrl;
@@ -4877,7 +4878,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               } catch (e2) {
               }
               queuedUrlCheck(
-                () => fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`).then((json) => {
+                () => fetchWithRetry(`${MB}/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`).then((json) => {
                   const linkedIds = (json.relations || []).filter((r2) => r2[entityType]).map((r2) => r2[entityType].id);
                   const result = linkedIds.includes(selected.id) ? "linked" : linkedIds.length > 0 ? "other" : "none";
                   _urlCheckSessionCache.set(urlCheckCacheKey, result);
@@ -4925,7 +4926,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                   if (!n) return;
                   p.set(`edit-${entityType}.edit_note`, buildCreateNote(n > 1 ? `Added ${n} source links` : `Added ${srcName} link`));
                   const mbid = selected.id.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
-                  const editUrl = `https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`;
+                  const editUrl = `https:${MB}/${entityType}/${mbid}/edit?${p}`;
                   if (background && typeof GM_openInTab === "function") {
                     const editTab = GM_openInTab(`${editUrl}#ch-autocommit`, { active: false, insert: true });
                     const onCommitted = (evt) => {
@@ -5021,7 +5022,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               applyUrlCheckResult(result);
             } else {
               queuedUrlCheck(
-                () => fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`).then((json) => {
+                () => fetchWithRetry(`${MB}/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`).then((json) => {
                   const linkedIds = (json.relations || []).filter((r2) => r2[entityType]).map((r2) => r2[entityType].id);
                   const result = linkedIds.includes(selected.id) ? "linked" : linkedIds.length > 0 ? "other" : "none";
                   _urlCheckSessionCache.set(urlCheckCacheKey, result);
@@ -5061,7 +5062,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               seedUrls(createParams, "artist");
               if (disambiguation) createParams["edit-artist.comment"] = disambiguation;
               createParams["edit-artist.edit_note"] = buildCreateNote();
-              createUrl = "https://musicbrainz.org/artist/create";
+              createUrl = `https:${MB}/artist/create`;
             } else {
               createParams = {
                 [`edit-${entityType}.name`]: finalName
@@ -5069,7 +5070,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               seedUrls(createParams, entityType);
               if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
               createParams[`edit-${entityType}.edit_note`] = buildCreateNote();
-              createUrl = `https://musicbrainz.org/${entityType}/create`;
+              createUrl = `https:${MB}/${entityType}/create`;
             }
             const p = new URLSearchParams(createParams);
             const pendingKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || displayName}`;
@@ -5103,7 +5104,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
               } else {
                 setRowResolved({ id: evt.data.id, name: finalName || displayName || "", disambiguation: "" });
-                fetchWithRetry(`//musicbrainz.org/ws/2/${entityType}/${evt.data.id}?fmt=json`).then((json) => {
+                fetchWithRetry(`${MB}/ws/2/${entityType}/${evt.data.id}?fmt=json`).then((json) => {
                   if (json && json.name) setRowResolved({ id: evt.data.id, name: json.name, disambiguation: json.disambiguation || "" });
                 }).catch(() => {
                 });
@@ -5274,7 +5275,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const info = document.createElement("span");
           info.style.flex = "1";
           const nameA = document.createElement("a");
-          nameA.href = `https://musicbrainz.org/${entityType}/${a.id}`;
+          nameA.href = `https:${MB}/${entityType}/${a.id}`;
           nameA.target = "_blank";
           nameA.rel = "noopener noreferrer nofollow";
           nameA.style.fontWeight = "bold";
@@ -5303,7 +5304,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const mbid = extractMbid(q);
           if (mbid) {
             candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Looking up MBID\u2026</div>';
-            mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?inc=aliases&fmt=json`).then((json) => {
+            mbThrottle.fetchJson(`${MB}/ws/2/${entityType}/${mbid}?inc=aliases&fmt=json`).then((json) => {
               if (!json) return;
               candidateList.innerHTML = "";
               if (json.id) {
@@ -5322,7 +5323,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             return;
           }
           candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);font-style:italic;">Searching\u2026</div>';
-          mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`).then((json) => {
+          mbThrottle.fetchJson(`${MB}/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`).then((json) => {
             if (!json) {
               candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-error);">Search failed \u2014 MB unavailable</div>';
               return;
@@ -5355,7 +5356,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         searchBtn.addEventListener("click", () => doSearch(searchInput.value.trim()));
         if (isResolved && initMbUrl) {
           const mbid = initMbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
-          const correctedMbUrl = `//musicbrainz.org/${entityType}/${mbid}`;
+          const correctedMbUrl = `${MB}/${entityType}/${mbid}`;
           const displayName2 = initMbName || mbid;
           if (!initMbName) {
             rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: "", confirmed: true, via: r.logEntry?.via || null, fromCache: r.logEntry?.fromCache || false });
@@ -5605,7 +5606,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     for (const gid of seeds.slice(0, 4)) {
       let list = _relatedCache.get(gid);
       if (!list) {
-        const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist/${gid}?inc=aliases+artist-rels&fmt=json`);
+        const json = await mbThrottle.fetchJson(`${MB}/ws/2/artist/${gid}?inc=aliases+artist-rels&fmt=json`);
         if (!json) {
           log.warn(`Matching context: could not load release artist ${gid} \u2014 continuing without it`);
           continue;
@@ -5628,15 +5629,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     log.info("Waiting for MB relationship editor\u2026");
     let waited = 0;
     while (waited < timeoutMs) {
-      const MB = pageWindow.MB;
-      const re = MB?.relationshipEditor;
+      const MB2 = pageWindow.MB;
+      const re = MB2?.relationshipEditor;
       const st = re?.state;
       if (st?.entity) {
         log.info(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
         return re;
       }
       if (waited % 2e3 === 0 && waited > 0) {
-        const mbKeys = MB ? Object.keys(MB).join(", ") : "undefined";
+        const mbKeys = MB2 ? Object.keys(MB2).join(", ") : "undefined";
         const reKeys = re ? Object.keys(re).join(", ") : "undefined";
         const stKeys = st ? Object.keys(st).join(", ") : "undefined";
         log.info(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
@@ -5690,11 +5691,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   }
   function buildAttributes(rawAttributes, linkTypeID) {
     if (!rawAttributes || rawAttributes.length === 0) return null;
-    const MB = pageWindow.MB;
-    const tree = MB?.tree;
-    const lat = MB?.linkedEntities?.link_attribute_type;
+    const MB2 = pageWindow.MB;
+    const tree = MB2?.tree;
+    const lat = MB2?.linkedEntities?.link_attribute_type;
     if (!tree || !lat) return null;
-    const linkType = linkTypeID != null ? MB?.linkedEntities?.link_type?.[linkTypeID] : null;
+    const linkType = linkTypeID != null ? MB2?.linkedEntities?.link_type?.[linkTypeID] : null;
     const supportedRoots = linkType && linkType.attributes ? new Set(Object.keys(linkType.attributes)) : null;
     const attrSupported = (found) => {
       if (!supportedRoots) return true;
@@ -5822,14 +5823,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     const creditOverrides = dedupOpts.creditOverrides || /* @__PURE__ */ new Map();
     const re = await waitForMBEditor();
     if (!re) return;
-    const MB = pageWindow.MB;
-    const isIdentifyingAttr = makeIdentifyingClassifier(MB?.linkedEntities?.link_attribute_type);
+    const MB2 = pageWindow.MB;
+    const isIdentifyingAttr = makeIdentifyingClassifier(MB2?.linkedEntities?.link_attribute_type);
     const equivalenceLookup = (() => {
       const m = /* @__PURE__ */ new Map();
-      if (!dedupeEquivalenceSets || !MB?.linkedEntities?.link_type) return m;
+      if (!dedupeEquivalenceSets || !MB2?.linkedEntities?.link_type) return m;
       for (const set of EQUIVALENCE_SETS) {
         const byPair = /* @__PURE__ */ new Map();
-        for (const [id, lt] of Object.entries(MB.linkedEntities.link_type)) {
+        for (const [id, lt] of Object.entries(MB2.linkedEntities.link_type)) {
           if (!lt?.name) continue;
           if (!set.includes(String(lt.name).toLowerCase())) continue;
           const key = `${lt.type0}|${lt.type1}`;
@@ -5890,11 +5891,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     let trackCount = 0;
     try {
       let mediumIndex = 0;
-      for (const [mediumKey, medium] of MB.tree.iterate(re.state.mediums)) {
+      for (const [mediumKey, medium] of MB2.tree.iterate(re.state.mediums)) {
         mediumIndex++;
         const tracks = medium?.tracks ?? medium;
         let trackIndex = 0;
-        for (const rawTrack of MB.tree.iterate(tracks)) {
+        for (const rawTrack of MB2.tree.iterate(tracks)) {
           const trackObj = Array.isArray(rawTrack) ? rawTrack[1] : rawTrack;
           const trackKey = Array.isArray(rawTrack) ? rawTrack[0] : null;
           const rec = trackObj?.recording ?? trackObj;
@@ -5906,7 +5907,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             const rw = trackObj?.relatedWorks;
             if (rw && rw.size > 0) {
               try {
-                for (const entry of MB.tree.iterate(rw)) {
+                for (const entry of MB2.tree.iterate(rw)) {
                   const raw = Array.isArray(entry) ? entry[1] : entry;
                   const work = raw?.work ?? raw;
                   if (work?.gid || work?.id) {
@@ -5940,7 +5941,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     }
     const checkedRecGids = /* @__PURE__ */ new Set();
     try {
-      for (const raw of MB.tree.iterate(re.state.selectedRecordings)) {
+      for (const raw of MB2.tree.iterate(re.state.selectedRecordings)) {
         const rec = Array.isArray(raw) ? raw[1] : raw;
         if (rec?.gid) checkedRecGids.add(rec.gid);
       }
@@ -6275,7 +6276,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
       function getWorkFromEditorState(recEntity) {
         try {
-          for (const rel of MB.tree.iterate(recEntity.relationships)) {
+          for (const rel of MB2.tree.iterate(recEntity.relationships)) {
             if (rel._status === 1 && rel.linkTypeID === recordingOfLinkTypeId) {
               return rel.entity0?.entityType === "work" ? rel.entity0 : rel.entity1;
             }
@@ -6326,8 +6327,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             name: trackTitle,
             typeID: null
           };
-          if (MB.mergeLinkedEntities) {
-            MB.mergeLinkedEntities({ work: { [newWorkId]: workEntity } });
+          if (MB2.mergeLinkedEntities) {
+            MB2.mergeLinkedEntities({ work: { [newWorkId]: workEntity } });
           }
           re.dispatch({
             type: "update-relationship-state",
@@ -9064,7 +9065,7 @@ ${lines}
     const CLOSE_DELAY_MS = 50;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), NAME_FETCH_TIMEOUT_MS);
-    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }).then((r) => r.json()).then((json) => ({ name: json.name || "", disambiguation: json.disambiguation || "" })).catch(() => ({ name: "", disambiguation: "" })).then(({ name, disambiguation }) => {
+    fetch(`${MB}/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }).then((r) => r.json()).then((json) => ({ name: json.name || "", disambiguation: json.disambiguation || "" })).catch(() => ({ name: "", disambiguation: "" })).then(({ name, disambiguation }) => {
       clearTimeout(timer);
       DISCOGS_CHANNEL.postMessage({
         type: "artist-created",

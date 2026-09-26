@@ -75,6 +75,13 @@ export const EQUIVALENCE_SETS = [
  * export, review-table.js referenced a free `DISCOGS_CHANNEL` symbol that
  * only existed in the entry module's scope → ReferenceError at runtime.
  */
+// #623 (sweep, X2): the MusicBrainz server this page belongs to — production, beta or
+// the test server — so lookups, entity links and above all the create/edit tabs stay on
+// it (from test.musicbrainz.org they used to submit to production). Protocol-relative
+// like the rest of the code, so on production every URL is exactly what it was. On a
+// harvest tab (tidal.com, metal-archives.com) it falls back to production.
+export const MB = /(^|\.)musicbrainz\.org$/.test(location.hostname) ? '//' + location.hostname : '//musicbrainz.org';
+
 export const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
 // node's BroadcastChannel holds the event loop open, which would hang the pure-node
 // unit tests after they finish; browsers have no unref, hence the optional call.
