@@ -60,10 +60,16 @@ export function pageInit(cfg) {
 
   if (!cfg.gm) return;
   const store = new Map(Object.entries(cfg.gm.values || {}));
+  // value-change listeners hear this page's own writes (remote = false)
+  const listeners = new Map(); let nextListener = 1;
+  const changed = (k, before, after) => listeners.forEach(l => { if (l.k === k) try { l.fn(k, before, after, false); } catch (e) { /* the script's own error */ } });
   window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
-  window.GM_setValue = (k, v) => { store.set(k, v); };
-  window.GM_deleteValue = k => { store.delete(k); };
+  window.GM_setValue = (k, v) => { const before = store.get(k); store.set(k, v); changed(k, before, v); };
+  window.GM_deleteValue = k => { const before = store.get(k); store.delete(k); changed(k, before, undefined); };
   window.GM_listValues = () => [...store.keys()];
+  window.GM_addValueChangeListener = (k, fn) => { const id = nextListener++; listeners.set(id, { k, fn }); return id; };
+  window.GM_removeValueChangeListener = id => { listeners.delete(id); };
+  window.GM_registerMenuCommand = () => 0;
   window.GM_info = { script: { name: cfg.gm.name || 'userscript', version: cfg.gm.version || 'test', homepageURL: '' }, scriptHandler: 'test harness' };
   window.GM_openInTab = () => null;
   window.GM_setClipboard = () => {};
@@ -71,7 +77,7 @@ export function pageInit(cfg) {
   // GM_xmlhttpRequest over fetch: real requests with the real session. Only
   // same-origin calls carry cookies — credentials:'include' is illegal against
   // Access-Control-Allow-Origin:*, and the real GM call isn't CORS-bound at all.
-  window.GM_xmlhttpRequest = cfg.gm.xhr === 'none' ? () => {} : (opts) => {
+  window.GM_xmlhttpRequest = cfg.gm.xhr === 'none' ? () => ({ abort() {} }) : (opts) => {
     const method = opts.method || 'GET';
     (async () => {
       try {
