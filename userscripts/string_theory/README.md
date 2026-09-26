@@ -23,6 +23,8 @@ Most of this repo's MusicBrainz userscripts in one install. Each keeps its own s
 | [Mammoth](../mammoth) | saved edit notes and field values |
 | [Platform Check](../platform_check) | find, verify and add a release's platform links |
 
+[Falcon](../falcon) and the [Art Station Picker](../art_station/as_picker/README.md) are separate installs. They also run outside MusicBrainz (Harmony, any page with images), where the whole bundle would otherwise load for one script.
+
 The list lives in [`members.txt`](./members.txt). In edit notes, a bundled script is marked with `*` (`Apollo Editor*`). The browser console prints the versions:
 
 ```

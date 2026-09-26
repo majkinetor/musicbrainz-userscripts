@@ -7,7 +7,9 @@
 # script — is committed).
 #
 # Intentionally NOT bundled:
-#   as_picker       — Art Station's picker helper (separate companion)
+#   falcon          — also runs on Harmony; the bundle's @match is the union of its
+#                     members', so all of it would load there for one script
+#   as_picker       — runs on every site (*://*/*), for the same reason
 #   scribe          — separate workflow
 #   discogs_credits — parallel twin of credit_hoarder; would double-run
 
