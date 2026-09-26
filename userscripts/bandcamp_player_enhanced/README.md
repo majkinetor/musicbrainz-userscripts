@@ -1,6 +1,6 @@
 # Bandcamp Player Enhanced <img src="icon.svg" align="left" width="48">
 
-Bandcamp album player with keyboard shortcuts, preview and various customizations.
+A Bandcamp album player with keyboard shortcuts, an album preview, and a few customizations.
 
 - Install: [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/bandcamp_player_enhanced/bandcamp_player_enhanced.user.js)
 - [Changelog](./CHANGELOG.md)
@@ -9,36 +9,24 @@ Bandcamp album player with keyboard shortcuts, preview and various customization
 
 ## Shortcuts
 
-Control bandcamp player with keyboard:
+| Key | |
+|---|---|
+| Space | play / pause |
+| ↑ / ↓ | previous / next track; with Shift, volume up / down |
+| ← / → | back / forward 5 s; with Shift, 30 s |
+| P | album preview (30 s of each track) |
 
-| Key        | Function                                                       |
-| ---------- | -------------------------------------------------------------- |
-| Space      | Toggle play/pause                                              |
-| ArrowUp    | Prevous song, with SHIFT volume up                             |
-| ArrowDown  | Next song, with SHIFT volume down                              |
-| ArrowLeft  | Rewind 5 or 30 (with SHIFT) seconds, mouse scroll over player  |
-| ArrowRight | Forward 5 or 30 (with SHIFT) seconds, mouse scroll over player |
-| P          | Album preview (30s per song)                                   |
-
-Mouse wheel over the player bar seeks the same way. Exceptions: wheel over an open track list
-scrolls the list, and wheel over the volume control adjusts volume instead.
+The mouse wheel over the player bar seeks too; over the open track list it scrolls, over the volume control it sets the volume.
 
 ## Settings
 
-Click the ⚙ button on the player bar to open its settings:
+**⚙** on the player bar:
 
-- **Theme** — Light (default) or Dark
-- **Scale** — 70%–130% (default 100%)
-- **Playback** — **Start from track 1** (default on): Bandcamp sometimes defaults a fresh page
-  load to a random/"featured" track instead of track 1. This positions the player to track 1
-  without loading or playing anything, so it doesn't affect other Bandcamp tabs or interfere
-  with fast track-switching.
-- **Hide on page** — which native page elements get hidden: the native Bandcamp player (hidden
-  by default, since this bar replaces it), the track list, and the tags row (both visible by
-  default).
-
-Choices apply immediately and persist across page loads.
+| Setting | Default | |
+|---|---|---|
+| Theme | Light | or Dark |
+| Scale | 100% | 70–130% |
+| Start from track 1 | on | Bandcamp sometimes starts a page on a "featured" track; this moves the player to track 1 without playing it |
+| Hide on page | the native player | also the track list and the tags row |
 
 <img width="300" src="./screenshots/config.png" />
-
-
