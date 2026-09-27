@@ -24,7 +24,8 @@
 // (test.musicbrainz.org, may write), @web (another live site, read-only: Bandcamp, Discogs…),
 // @login (needs the logged-in profile), @critical (the quick run: pnpm test --grep @critical).
 import { test as base, expect, chromium } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
+import { gzipSync, gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { installProdGuard, hostOf } from './guard.mjs';
@@ -108,6 +109,59 @@ export async function mbJson(url, { tries = 6 } = {}) {
     const after = Number(r.headers.get('retry-after')) || 0;
     await new Promise(z => setTimeout(z, Math.max(after * 1000, 1000 * 2 ** i)));
   }
+}
+
+// Answers the page's MusicBrainz web-service reads (/ws/2/ GETs) from a fixture
+// recorded once from production, so a spec that depends on MusicBrainz's data (names,
+// aliases, who is related to whom) gets the same answers every run, and is never
+// throttled. The page itself can be any server; requests are keyed by path. /ws/js/
+// (MusicBrainz's own UI data) comes from the page's server unless `paths` says so.
+//
+//   const ws = await replayWs(page, new URL('./fixtures/ws-613.json.gz', import.meta.url));
+//   … the test …
+//   await ws.done();   // saves when recording; reports reads the fixture didn't have
+//
+// RECORD_WS=1 records: each read is fetched from production (paced, throttling waited
+// out) and the file is rewritten at done(). A read missing from the fixture is answered
+// 503, as a throttled server would, and done() fails the test naming it. A fixture
+// named *.gz is gzipped (a search for a common name can be 100 kB of JSON).
+export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\// } = {}) {
+  const record = !!process.env.RECORD_WS;
+  const gz = String(file).endsWith('.gz');
+  const store = record ? {} : JSON.parse(gz ? gunzipSync(await readFile(file)).toString('utf8') : await readFile(file, 'utf8'));
+  const missing = [];
+  let last = 0;
+  await page.route(u => paths.test(u.pathname) && /(^|\.)musicbrainz\.org$/.test(u.hostname), async route => {
+    const req = route.request();
+    if (req.method() !== 'GET') return route.fallback();
+    const u = new URL(req.url());
+    const key = u.pathname + u.search;
+    if (record) {
+      if (!store[key]) {
+        const wait = last + 1100 - Date.now();   // one request a second, as MusicBrainz asks
+        if (wait > 0) await new Promise(z => setTimeout(z, wait));
+        last = Date.now();
+        let r;
+        for (let i = 0; i < 6; i++) {
+          r = await fetch(from + key, { headers: { Accept: 'application/json', 'User-Agent': 'mb-userscripts-tests/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )' } });
+          if (r.status !== 503 && r.status !== 429) break;
+          await new Promise(z => setTimeout(z, 1000 * 2 ** i));
+        }
+        store[key] = { status: r.status, body: await r.text() };
+      }
+      const hit = store[key];
+      return route.fulfill({ status: hit.status, contentType: 'application/json', body: hit.body }).catch(() => {});
+    }
+    const hit = store[key];
+    if (!hit) { missing.push(key); return route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"not in the fixture"}' }).catch(() => {}); }
+    return route.fulfill({ status: hit.status, contentType: 'application/json', body: hit.body }).catch(() => {});
+  });
+  return {
+    async done() {
+      if (record) { const json = JSON.stringify(store, null, 1) + '\n'; await writeFile(file, gz ? gzipSync(json, { level: 9 }) : json); return; }
+      expect(missing, 'web-service reads the fixture has no answer for (RECORD_WS=1 to re-record)').toEqual([]);
+    },
+  };
 }
 
 // A script's pure helpers, evaluated in Node — for @unit specs of functions that

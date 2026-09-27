@@ -128,8 +128,8 @@ const css = MBU_TOKENS + `
   outside world, in `dev/ui/platform-icons.mjs`. Someone will eventually "fix" them otherwise.
 - **Adopting tokens is a refactor: nothing may render differently.** Prove it rather than eyeball
   it — expand every `var(--mbu-*)` in the new stylesheet back to its literal and compare to the old
-  one, and diff computed style over the live UI. See `userscripts/art_station/test/verify-562-tokens.mjs`,
-  which does both. Deliberate exceptions (two scripts disagreeing, one having to give) get called
+  one, and diff computed style over the live UI (#562 did both for Art Station; the proof is in git
+  history). Afterwards `dev/tokens/verify-tokens.mjs` and `verify-tokens-live.mjs` guard it. Deliberate exceptions (two scripts disagreeing, one having to give) get called
   out in the commit, with a screenshot.
 - **A script with more than one `<style>` element must prepend `MBU_TOKENS` to every one of them.**
   Apollo has three and Platform Check two; either can mount without the other, and only the sheet

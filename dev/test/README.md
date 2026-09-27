@@ -35,6 +35,9 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`inject(name)`** loads `userscripts/<name>/<name>.user.js`. `<NAME>_SRC=<file>` runs the spec against another build, which is how a regression test is shown to fail on the broken one: `FUSION_SRC=old.user.js pnpm test --project=fusion`.
 - **`check(cond, message)`** is a soft assertion: a failed check is reported and the test continues.
 - **`mbJson(url)`** reads the web service from Node, waiting out throttling.
+- **`attachShot(testInfo, pageOrLocator, name)`** attaches a screenshot to the report.
+- **`loadFunctions(name, [names])`** evaluates a script's pure helpers in Node, for `@unit` specs.
+- **`replayWs(page, fixture)`** answers the page's `/ws/2/` reads from answers recorded on production, so a spec that depends on who is called what gets the same data every run and is never throttled. `RECORD_WS=1` re-records; `await ws.done()` saves, or fails on a read the fixture lacks.
 - **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run.
 
 ### Options (`test.use`)
@@ -42,10 +45,17 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 | Option | Default | |
 |---|---|---|
 | `profile` | `'logged-in'` | `'fresh'` for a throwaway profile |
-| `gm` | `{}` | GM shim: `{ name, version, values, persist, xhr: 'fetch' \| 'none' }`, or `false` for none. `persist: true` keeps the values across a reload |
+| `gm` | `{}` | GM shim: `{ name, version, values, persist, xhr: 'fetch' \| 'none' }`, or `false` for none. `persist: true` keeps the values across a reload; `'tabs'` also shares them between the test's tabs |
 | `prodWrites` | `'fail'` | `'block'`: refused writes don't fail the test; read them from `blockedWrites` |
 | `prodPostAllow` | `[]` | extra production paths (regex sources) a POST may reach |
 | `pageErrors` | `'fail'` | `'ignore'` to tolerate page errors, or a list of regex sources to let only those through |
+
+## Sandbox fixtures
+
+Specs run on test.musicbrainz.org. Its data is an older copy of production, so a fixture can be missing there, or be missing a link added since.
+
+- `node dev/test/copy-to-sandbox.mjs <mbid>` copies a production release to the sandbox: title, credits, tracklist, links. Artists the sandbox lacks are created first. The new MBID is recorded in [`sandbox-copies.json`](sandbox-copies.json).
+- `node dev/test/sandbox-add-links.mjs <mbid>` adds the links production has and the sandbox's copy lacks, keeping the release's other relationships.
 
 ## The production write guard
 
