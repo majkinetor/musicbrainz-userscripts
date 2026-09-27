@@ -2,22 +2,30 @@
   "aba74013-0e72-4ab9-87ee-7dc82193dc35": {
     "sandbox": "e91b84a9-6b98-4d64-b4fc-753a9c674c4c",
     "title": "Bad Boys!",
-    "copied": "2026-09-26"
+    "copied": "2026-09-26",
+    "rg": "5668a267-dda2-4181-a095-80b5d10eb75f",
+    "prodRg": "a56167bc-a2a8-4c3b-b5c2-8481d4034292"
   },
   "a69b5a78-a4de-4e81-ade9-d59ebf6b23d8": {
     "sandbox": "093f5502-53b7-4311-b9dd-4848bc3eaf72",
     "title": "The Miraculous Mandarin Suite / Symphony No. 1",
-    "copied": "2026-09-26"
+    "copied": "2026-09-26",
+    "rg": "7e1d6024-7ca3-414b-9d59-8d953afb461b",
+    "prodRg": "09f291a0-93ed-4d2e-b1d3-5bad8d4db07c"
   },
   "784efcaa-e0a6-4117-9c05-0997fedd89e3": {
     "sandbox": "6891e302-55a9-4b1b-ae07-0a3b96a5b01c",
     "title": "Krabat",
-    "copied": "2026-09-26"
+    "copied": "2026-09-26",
+    "rg": "aa7c82d5-eab8-4fb1-a348-6f1470d4094c",
+    "prodRg": "35c00151-a2ee-4252-8617-735377d709d6"
   },
   "ad4287f9-c658-45bb-b0c6-4d71f79d3fdd": {
     "sandbox": "aa3cbe43-46f7-4527-be62-66f71aa2e315",
     "title": "Never Ever Ever",
-    "copied": "2026-09-27"
+    "copied": "2026-09-27",
+    "rg": "da95224e-b32c-4428-81e6-2062ddd6f2cb",
+    "prodRg": "d3aad802-61f6-4d5c-b7f3-a7474920e247"
   },
   "artists": {
     "8416a630-6acf-4e88-84c5-752288940ed4": "05aef2c6-cba2-481f-a917-04411953cbc2",
@@ -37,31 +45,57 @@
   "e78fb896-05d9-403d-aca1-6e79ab6c4219": {
     "sandbox": "97c9a05d-d391-4391-8e35-109c519b76a6",
     "title": "Distances",
-    "copied": "2026-09-27"
+    "copied": "2026-09-27",
+    "rg": "18619c27-5cd4-4138-a15e-67478e9cc9ba",
+    "prodRg": "db121bcf-173e-4437-a572-45b69fdfc882"
   },
   "ec2449a8-3dc5-461c-80a1-e43d96345613": {
     "sandbox": "e342a7cb-7c8a-457c-8799-fb06d2faf9bc",
     "title": "Kawaiitrap Nitecore ʢᵕᴗᵕʡ",
-    "copied": "2026-09-27"
+    "copied": "2026-09-27",
+    "rg": "6214f51e-9b72-4e67-9fa9-5adb56c4bee1",
+    "prodRg": "4b780c27-c135-42c2-b4ea-d0f6f4009988"
   },
   "6e569b63-124b-47a6-ba2f-e8af96d2d1bc": {
     "sandbox": "881d2f9d-ef3f-43a4-9532-2ac5a5fcfff7",
     "title": "Ice Punch!",
-    "copied": "2026-09-27"
+    "copied": "2026-09-27",
+    "rg": "a0819e44-51fc-4d13-b085-107fa1bbd2c5",
+    "prodRg": "50d8e61e-2380-4c0a-bc44-b4914cc340c1"
   },
   "311818ee-cbfd-4ab7-a6c2-bf2873234c02": {
     "sandbox": "6c919022-6423-4c7d-8510-5cf7a71a2298",
     "title": "Flos et Error",
-    "copied": "2026-09-27"
+    "copied": "2026-09-27",
+    "rg": "b8700380-5ff3-411d-bbc2-2470416ebedb",
+    "prodRg": "952d4eb8-2660-4734-ba12-3b69fce1706d"
   },
   "b0a00236-e218-47ae-9d38-ec96f3fe9fff": {
     "sandbox": "ec296d81-9c00-44a3-bc67-20970af6b2bd",
     "title": "Vol.1: 6 Kammern - 5 Kugeln",
-    "copied": "2026-09-27"
+    "copied": "2026-09-27",
+    "rg": "1d43974e-ab38-4f58-b877-c1f79448df86",
+    "prodRg": "168648c7-a465-4c3c-bc43-6fff6b28ecb0"
   },
   "603bf0b9-df73-431c-8047-f2d8a1d108ee": {
     "sandbox": "c334d1c2-135e-4e5f-878a-3a5f80e3d936",
     "title": "Get Litty?",
-    "copied": "2026-09-27"
+    "copied": "2026-09-27",
+    "rg": "4ba117d8-0aaf-4424-a5e4-93de23399d72",
+    "prodRg": "9e635829-682a-4262-ae7b-9dc3b2b26779"
+  },
+  "f53176c9-5e90-4de2-aa0d-8bf66b8b01cc": {
+    "sandbox": "bebf8b2b-8ab0-4b8f-a7da-d36de7cbc3e4",
+    "title": "Philip Cohran and the Artistic Heritage Ensemble",
+    "copied": "2026-09-27",
+    "rg": "72338e5b-8fc4-491e-9e0f-b1fc1e3198da",
+    "prodRg": "edaf20fe-c4cc-3a63-bd80-e95948045db7"
+  },
+  "3be1b732-9331-477d-9878-734c31a4704b": {
+    "sandbox": "e4145dad-b6b3-42e5-8187-0e60d6079fa0",
+    "title": "Crash Test",
+    "copied": "2026-09-27",
+    "rg": "2776049b-c802-466f-8efb-32f7f2a9760e",
+    "prodRg": "3b668a8d-03b5-41cc-916a-2ea306fc455f"
   }
 }

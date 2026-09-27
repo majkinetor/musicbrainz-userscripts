@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.27.061629
+// @version      2026.9.27.210400
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.27.061629 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.27.060520\n  · Art Station v2026.9.27\n  · Credit Hoarder v2026.9.27.061629\n  · Fusion v2026.9.27\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.27\n  · Mammoth v2026.9.27\n  · Platform Check v2026.9.27");
+  console.log('%c String Theory %c v2026.9.27.210400 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.27.060520\n  · Art Station v2026.9.27\n  · Credit Hoarder v2026.9.27.061629\n  · Fusion v2026.9.27\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.27\n  · Mammoth v2026.9.27\n  · Platform Check v2026.9.27.210137");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -40681,7 +40681,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27.210137","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27.210137","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -40995,13 +40995,15 @@ function pcWaitFor(predicate, timeoutMs = 10000) {
 // of the page. The URL is unchanged, so the inject helper would run against the
 // challenge, find no "Add another link" input, and burn the queued payload. Falcon
 // hit exactly this and had to add the same guard (#551). Detected the same way.
-const PC_VERIFY_TITLE_RE = /^\s*Verifying your browser\s*$/i;
-const PC_VERIFY_NOSCRIPT_RE = /JavaScript is required to access this page/i;
+// ⚠ The patterns live inside the function. This runs on the editor page, above the
+// script's early return, where a const declared out here is never initialised: as
+// module consts they threw, the catch below answered "no", and the guard never fired.
 function pcIsVerifyInterstitial(doc) {
     const d = doc || document;
+    const TITLE = /^\s*Verifying your browser\s*$/i, NOSCRIPT = /JavaScript is required to access this page/i;
     try {
-        if (PC_VERIFY_TITLE_RE.test(d.title || '')) return true;
-        return [...d.querySelectorAll('noscript')].some(n => PC_VERIFY_NOSCRIPT_RE.test(n.textContent || ''));
+        if (TITLE.test(d.title || '')) return true;
+        return [...d.querySelectorAll('noscript')].some(n => NOSCRIPT.test(n.textContent || ''));
     } catch (e) { return false; }
 }
 
@@ -43670,10 +43672,15 @@ function pcSameUrl(a, b) { return !!a && !!b && pcUrlKey(a) === pcUrlKey(b); }
    the platform logins' token refreshes included. Entries now carry their time (_t):
    a "not found" is searched again after 14 days, a found link after 90, the
    release's MusicBrainz data after 30. A daily prune drops what expired and keeps
-   the newest 500 releases. */
-const PC_TTL = { miss: 14 * 864e5, hit: 90 * 864e5, mbdata: 30 * 864e5 };
-const PC_MAX_RELEASES = 500;
-const pcTtlOf = (key, v) => key.startsWith('pc:mbdata:') ? PC_TTL.mbdata : (v && v.url ? PC_TTL.hit : PC_TTL.miss);
+   the newest 500 releases.
+   ⚠ Functions, not consts: the release editor's helper reads the cache (injectInto →
+   cacheGet, #423) and runs above the script's early return, where a const declared down
+   here is still in its temporal dead zone — the trap PC_URL_ID fell into (#556). */
+function pcTtlOf(key, v) {
+    const TTL = { miss: 14 * 864e5, hit: 90 * 864e5, mbdata: 30 * 864e5 };
+    return key.startsWith('pc:mbdata:') ? TTL.mbdata : (v && v.url ? TTL.hit : TTL.miss);
+}
+function pcMaxReleases() { return 500; }
 function pcLsGet(key) {   // the entry, or null when absent, unreadable or expired (then removed)
     const raw = localStorage.getItem(key);
     if (!raw) return null;
@@ -43704,12 +43711,12 @@ function pcPruneCache() {
             const mbid = k.slice(k.lastIndexOf(':') + 1);
             newest.set(mbid, Math.max(newest.get(mbid) || 0, v._t));
         }
-        if (newest.size > PC_MAX_RELEASES) {
-            const oldest = [...newest].sort((a, b) => a[1] - b[1]).slice(0, newest.size - PC_MAX_RELEASES);
+        if (newest.size > pcMaxReleases()) {
+            const oldest = [...newest].sort((a, b) => a[1] - b[1]).slice(0, newest.size - pcMaxReleases());
             oldest.forEach(([mbid]) => cacheClear(mbid));
             evicted = oldest.length;
         }
-        appendLog('System', `Cache prune: ${keys.length} entr${keys.length === 1 ? 'y' : 'ies'} for ${newest.size} release(s) — ${expired} expired, ${evicted} release(s) over the ${PC_MAX_RELEASES} cap dropped${stamped ? `, ${stamped} older entr${stamped === 1 ? 'y' : 'ies'} dated today` : ''}`);
+        appendLog('System', `Cache prune: ${keys.length} entr${keys.length === 1 ? 'y' : 'ies'} for ${newest.size} release(s) — ${expired} expired, ${evicted} release(s) over the ${pcMaxReleases()} cap dropped${stamped ? `, ${stamped} older entr${stamped === 1 ? 'y' : 'ies'} dated today` : ''}`);
     } catch (e) { appendLog('System', `Cache prune failed: ${e.message}`, 'warn'); }
 }
 function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)

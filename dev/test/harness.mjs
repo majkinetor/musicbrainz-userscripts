@@ -25,6 +25,7 @@
 // @login (needs the logged-in profile), @critical (the quick run: pnpm test --grep @critical).
 import { test as base, expect, chromium } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -111,6 +112,19 @@ export async function mbJson(url, { tries = 6 } = {}) {
   }
 }
 
+// Production releases copied to the sandbox (dev/test/copy-to-sandbox.mjs).
+const COPIES = JSON.parse(readFileSync(resolve(REPO, 'dev/test/sandbox-copies.json'), 'utf8'));
+// The sandbox page for a production release: its copy, or the release itself when the
+// sandbox has it already (test.musicbrainz.org's data is an older copy of production's).
+export const onSandbox = mbid => (COPIES[mbid] && COPIES[mbid].sandbox) || mbid;
+// replayWs's `as` for a release: its copy's MBIDs (the release, and its release group
+// when known) → production's.
+export function sandboxAs(mbid) {
+  const c = COPIES[mbid];
+  if (!c || !c.sandbox) return {};
+  return { [c.sandbox]: mbid, ...(c.rg && c.prodRg ? { [c.rg]: c.prodRg } : {}) };
+}
+
 // Answers the page's MusicBrainz web-service reads (/ws/2/ GETs) from a fixture
 // recorded once from production, so a spec that depends on MusicBrainz's data (names,
 // aliases, who is related to whom) gets the same answers every run, and is never
@@ -127,18 +141,28 @@ export async function mbJson(url, { tries = 6 } = {}) {
 // named *.gz is gzipped (a search for a common name can be 100 kB of JSON).
 //
 // `as: { <sandbox mbid>: <production mbid> }` answers a sandbox copy's reads with its
-// production original's data (copy-to-sandbox.mjs makes such copies).
-export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, as = {} } = {}) {
+// production original's data (copy-to-sandbox.mjs makes such copies; sandboxAs() reads
+// the map for one).
+//
+// `web: true` (or a RegExp of host names) replays the other sites a script asks through
+// GM_xmlhttpRequest as well — Spotify, Discogs, a search engine — recorded once from the
+// live site, so a spec about matching gets the same candidates every run. Access tokens
+// in a recorded reply are replaced, and an HTML page is recorded without its styles, SVG
+// and comments (never data, and most of a page's weight); `trim: (key, body) => body`
+// cuts a reply further (a 3 MB script read for one id). A request the fixture lacks
+// fails as a network error would, and done() names it.
+export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, as = {}, web = false, trim = null } = {}) {
   const record = !!process.env.RECORD_WS;
   const gz = String(file).endsWith('.gz');
   const store = record ? {} : JSON.parse(gz ? gunzipSync(await readFile(file)).toString('utf8') : await readFile(file, 'utf8'));
   const missing = [];
   let last = 0;
-  const covers = u => paths.test(u.pathname) && /(^|\.)musicbrainz\.org$/.test(u.hostname);
+  const isMb = u => /(^|\.)musicbrainz\.org$/.test(u.hostname);
+  const covers = u => paths.test(u.pathname) && isMb(u);
+  const mapped = key => { for (const [copy, orig] of Object.entries(as)) key = key.split(copy).join(orig); return key; };
   // the answer for one read: recorded now, or from the fixture
   const answer = async u => {
-    let key = u.pathname + u.search;
-    for (const [copy, orig] of Object.entries(as)) key = key.split(copy).join(orig);
+    const key = mapped(u.pathname + u.search);
     if (record && !store[key]) {
       const wait = last + 1100 - Date.now();   // one request a second, as MusicBrainz asks
       if (wait > 0) await new Promise(z => setTimeout(z, wait));
@@ -160,14 +184,47 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
     const a = await answer(new URL(route.request().url()));
     return route.fulfill({ status: a.status, contentType: 'application/json', body: a.body }).catch(() => {});
   });
+  // another site, asked through GM_xmlhttpRequest: keyed by method, url and body
+  const context = page.context();
+  const coversWeb = u => !!web && !isMb(u) && (web === true || web.test(u.hostname));
+  const answerWeb = async ({ url, method = 'GET', headers, data }) => {
+    const key = mapped((method === 'GET' ? '' : method + ' ') + url + (data ? ' ' + data : ''));
+    const reply = a => ({ status: a.status, url: a.url, headers: 'content-type: ' + a.type, body: a.b64 ? Buffer.from(a.b64, 'base64') : a.body });
+    if (record && !store[key]) {
+      let live;
+      try {
+        const r = await context.request.fetch(url, { method, headers, data, maxRedirects: 20, failOnStatusCode: false, timeout: 60000 });
+        const bytes = await r.body(), type = r.headers()['content-type'] || '';
+        const text = !type || /json|text|xml|html|javascript/i.test(type);
+        let body = text ? bytes.toString('utf8') : undefined;
+        if (text && /html/i.test(type)) {
+          body = body.replace(/<style[\s>][\s\S]*?<\/style>|<svg[\s>][\s\S]*?<\/svg>|<!--[\s\S]*?-->/gi, '');
+          if (r.status() >= 400) body = body.slice(0, 2000);   // a refusal page: what it says is enough
+        }
+        if (text && trim) body = trim(key, body);
+        live = { status: r.status(), type, ...(r.url() !== url ? { url: r.url() } : {}), ...(text ? { body } : { b64: bytes.toString('base64') }) };
+        // the fixture keeps no working token; the script, still talking to the live site, gets the real one
+        store[key] = text ? { ...live, body: body.replace(/"(access_token|refresh_token|id_token)"(\s*:\s*)"[^"]*"/g, '"$1"$2"recorded"') } : live;
+      } catch (e) { store[key] = { error: String(e.message || e).split('\n')[0] }; throw new Error(store[key].error); }
+      return reply(live);
+    }
+    const a = store[key];
+    if (!a) { missing.push(key); throw new Error('not in the fixture: ' + key); }
+    if (a.error) throw new Error(a.error);
+    return reply(a);
+  };
   // GM_xmlhttpRequest is made from Node and never meets a page route
-  answerGm(page.context(), ({ url, method }) => { const u = new URL(url); return method === 'GET' && covers(u) ? answer(u) : null; });
+  answerGm(context, o => {
+    const u = new URL(o.url);
+    if (o.method === 'GET' && covers(u)) return answer(u);
+    return coversWeb(u) ? answerWeb(o) : null;
+  });
   return {
     // the answer for a url, to build on: a spec's answerGm() that adjusts a replayed reply
-    answer: url => answer(new URL(url)),
+    answer: url => (isMb(new URL(url)) ? answer(new URL(url)) : answerWeb({ url })),
     async done() {
       if (record) { const json = JSON.stringify(store, null, 1) + '\n'; await writeFile(file, gz ? gzipSync(json, { level: 9 }) : json); return; }
-      expect(missing, 'web-service reads the fixture has no answer for (RECORD_WS=1 to re-record)').toEqual([]);
+      expect(missing, 'reads the fixture has no answer for (RECORD_WS=1 to re-record)').toEqual([]);
     },
   };
 }
@@ -183,26 +240,38 @@ export function answerGm(context, handler) {
 
 // A script's pure helpers, evaluated in Node — for @unit specs of functions that
 // need no page. Each name must be a `function name(…) { … }` declaration, or a
-// one-line `const name = …;` helper, in the script; they are evaluated together, so
-// one may call another. Anything they use beyond each other and the JS built-ins
-// isn't available, and evaluating fails.
+// `const name = …;` in the script; they are evaluated together, so one may call
+// another. Anything they use beyond each other and the JS built-ins isn't available,
+// and evaluating fails.
 //   const { normName } = await loadFunctions('fusion', ['normName']);
 export async function loadFunctions(name, names) {
+  return new Function(await functionSource(name, names) + `\nreturn { ${names.join(', ')} };`)();
+}
+
+// The same declarations as source text, for a helper that needs a page (the DOM, timers):
+//   const src = await functionSource('platform_check', ['pcWaitFor']);
+//   await page.evaluate(src => new Function(src + '; return pcWaitFor;')()(…), src);
+export async function functionSource(name, names) {
   const code = (await readFile(sourceOf(name), 'utf8')).replace(/\r\n/g, '\n');
-  const bodies = names.map(n => {
-    let at = code.search(new RegExp('(^|\\n)[ \\t]*function ' + n + '\\s*\\('));
+  return names.map(n => {
+    let at = code.search(new RegExp('(^|\\n)[ \\t]*(async[ \\t]+)?function ' + n + '\\s*\\('));
     if (at < 0) {
       at = code.search(new RegExp('(^|\\n)[ \\t]*const ' + n + '\\s*='));
-      if (at < 0) throw new Error(`loadFunctions: no "function ${n}(" or "const ${n} =" in ${name}`);
-      const line = code.slice(at).replace(/^\n/, '');
-      return line.slice(0, line.indexOf('\n') < 0 ? line.length : line.indexOf('\n'));
+      if (at < 0) throw new Error(`functionSource: no "function ${n}(" or "const ${n} =" in ${name}`);
+      // to the end of the statement: a ; or line end outside any bracket
+      let depth = 0, i = code.indexOf('=', at) + 1;
+      for (; i < code.length; i++) {
+        const ch = code[i];
+        if ('([{'.includes(ch)) depth++; else if (')]}'.includes(ch)) depth--;
+        else if (depth === 0 && (ch === ';' || ch === '\n')) break;
+      }
+      return code.slice(at, i).replace(/^\n/, '') + ';';
     }
     const open = code.indexOf('{', code.indexOf(')', at));
     let depth = 0, i = open;
     for (; i < code.length; i++) { if (code[i] === '{') depth++; else if (code[i] === '}' && --depth === 0) break; }
-    return code.slice(at, i + 1);
-  });
-  return new Function(bodies.join('\n') + `\nreturn { ${names.join(', ')} };`)();
+    return code.slice(at, i + 1).replace(/^\n/, '');
+  }).join('\n');
 }
 
 // A screenshot of a page or locator, attached to the test's report. Never fails the

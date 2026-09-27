@@ -133,6 +133,8 @@ await ctx.close();
 if (!created) { console.error('the release editor did not submit'); process.exit(1); }
 
 const reg = JSON.parse(await readFile(REGISTRY, 'utf8').catch(() => '{}'));
-reg[mbid] = { sandbox: created, title: rel.title, copied: new Date().toISOString().slice(0, 10) };
+// the copy's release group is a new one too: a spec's replay maps it back to production's
+const rg = await mbJson(`${SANDBOX}/ws/2/release/${created}?inc=release-groups&fmt=json`).then(j => j['release-group'].id).catch(() => null);
+reg[mbid] = { sandbox: created, title: rel.title, copied: new Date().toISOString().slice(0, 10), ...(rg ? { rg, prodRg: rel['release-group'].id } : {}) };
 await writeFile(REGISTRY, JSON.stringify(reg, null, 2) + '\n');
 console.log(`sandbox copy: ${SANDBOX}/release/${created}`);

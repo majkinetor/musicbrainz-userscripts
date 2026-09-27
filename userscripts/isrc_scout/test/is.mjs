@@ -1,12 +1,7 @@
 // Shared setup for ISRC Scout's specs.
-import { readFileSync } from 'node:fs';
-import { replayWs, answerGm, SANDBOX, REPO } from '../../../dev/test/harness.mjs';
+import { replayWs, answerGm, onSandbox, sandboxAs, SANDBOX } from '../../../dev/test/harness.mjs';
 
-// production release → its sandbox copy (dev/test/copy-to-sandbox.mjs)
-const COPIES = JSON.parse(readFileSync(`${REPO}/dev/test/sandbox-copies.json`, 'utf8'));
-// The sandbox page for a production release: its copy, or the release itself when the
-// sandbox has it already.
-export const onSandbox = mbid => (COPIES[mbid] && COPIES[mbid].sandbox) || mbid;
+export { onSandbox };
 
 // A release on the sandbox with ten tracks, each with its ISRC: for specs about the
 // dialog itself, where which release it is doesn't matter.
@@ -22,7 +17,7 @@ export const ANY_RELEASE = 'bef3dc66-8cfc-4ff1-9053-0d0a5f30f2b3';
 // Returns the replay (or null), for its answer() and done().
 export async function openScout(page, inject, { release = ANY_RELEASE, replay = null, edit = null, before = null, open = true } = {}) {
   const sandboxId = onSandbox(release);
-  const ws = replay ? await replayWs(page, replay, { as: sandboxId !== release ? { [sandboxId]: release } : {} }) : null;
+  const ws = replay ? await replayWs(page, replay, { as: sandboxAs(release) }) : null;
   if (edit) editRelease(page.context(), ws, edit);
   if (before) await before();   // after the replay, before the page: an answerGm registered here is asked first
   await inject('isrc_scout', { atStart: true, target: page });   // @run-at document-start, as a manager runs it

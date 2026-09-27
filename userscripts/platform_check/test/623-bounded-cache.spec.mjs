@@ -15,7 +15,7 @@ test('the platform cache expires and stays bounded', { tag: '@unit' }, async () 
   const ls = fakeStorage(), logs = [];
   globalThis.localStorage = ls; globalThis.appendLog = (p, msg) => logs.push(msg);
   try {
-    const F = await loadFunctions('platform_check', ['ALL_PROVIDERS', 'PC_TTL', 'PC_MAX_RELEASES', 'pcTtlOf', 'pcLsGet', 'pcLsSet', 'pcPruneCache', 'cacheKey', 'cacheGet', 'cacheSet', 'cacheClear', 'mbDataKey', 'mbDataGet', 'mbDataSet']);
+    const F = await loadFunctions('platform_check', ['ALL_PROVIDERS', 'pcTtlOf', 'pcMaxReleases', 'pcLsGet', 'pcLsSet', 'pcPruneCache', 'cacheKey', 'cacheGet', 'cacheSet', 'cacheClear', 'mbDataKey', 'mbDataGet', 'mbDataSet']);
     const day = 864e5, put = (k, v) => ls.setItem(k, JSON.stringify(v));
 
     F.cacheSet('m1', 'spotify', { url: 'https://open.spotify.com/album/x', tracks: 10 });

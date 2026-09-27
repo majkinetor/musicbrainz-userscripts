@@ -36,9 +36,10 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`check(cond, message)`** is a soft assertion: a failed check is reported and the test continues.
 - **`mbJson(url)`** reads the web service from Node, waiting out throttling.
 - **`attachShot(testInfo, pageOrLocator, name)`** attaches a screenshot to the report.
-- **`loadFunctions(name, [names])`** evaluates a script's pure helpers in Node, for `@unit` specs.
+- **`loadFunctions(name, [names])`** evaluates a script's pure helpers in Node, for `@unit` specs. **`functionSource(name, [names])`** returns their source instead, to run in the page (`new Function(src + '; return fn;')()`) or to read.
+- **`onSandbox(mbid)`** is the sandbox copy of a production release (itself when it has none); **`sandboxAs(mbid)`** maps that copy and its release group back to production, for `replayWs(…, { as })`.
 - **`answerGm(context, handler)`** answers `GM_xmlhttpRequest` calls in place of the network, as `page.route()` does for the page's own requests: `answerGm(context, ({ url }) => /soundexchange/.test(url) ? { status: 202, body: '…' } : null)`.
-- **`replayWs(page, fixture)`** answers the page's `/ws/2/` reads from answers recorded on production, so a spec that depends on who is called what gets the same data every run and is never throttled. `RECORD_WS=1` re-records; `await ws.done()` saves, or fails on a read the fixture lacks.
+- **`replayWs(page, fixture)`** answers the page's `/ws/2/` reads from answers recorded on production, so a spec that depends on who is called what gets the same data every run and is never throttled. `RECORD_WS=1` re-records; `await ws.done()` saves, or fails on a read the fixture lacks. `web: true` (or a RegExp of hosts) also replays the other sites the script asks through `GM_xmlhttpRequest`; tokens are redacted and HTML pages stripped of styles, SVG and comments before they are stored, and `trim: (key, body) => body` cuts what else a spec doesn't need.
 - **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run.
 
 ### Options (`test.use`)
