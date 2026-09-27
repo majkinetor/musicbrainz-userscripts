@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.26.201347
+// @version      2026.9.27
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -755,7 +755,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -791,7 +795,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);

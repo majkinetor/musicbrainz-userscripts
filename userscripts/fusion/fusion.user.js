@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.26.195418
+// @version      2026.9.27
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1894,7 +1894,11 @@ function mbuTheme() {
         return t;
     } catch (e) { return 'light'; }
 }
-try {
+// A document-start script runs before the document is parsed: documentElement can
+// still be null, and <head> and <body> don't exist. Observing a null root threw, the
+// catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+// so such a script never read the theme at all (#625). It starts on the parsed page.
+function mbuThemeStart() { try {
     mbuTheme();
     // Stylus and friends inject after us often enough that a one-shot read is
     // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -1930,7 +1934,9 @@ try {
     } catch (e) {}
     setTimeout(mbuTheme, 400);
     setTimeout(mbuTheme, 2000);
-} catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+} catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+else mbuThemeStart();
 
 try {
     var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.26.195418
+// @version      2026.9.27
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -13,7 +13,6 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
-// @grant        GM_listValues
 // @grant        GM_openInTab
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
@@ -755,7 +754,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -791,7 +794,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -5739,8 +5744,11 @@
     }
   });
 
+  // The button's own status span, found through the button: at document-start a load can
+  // settle before the button is on the page, where getElementById finds nothing (#625).
+  const btnStatus = () => btn.querySelector('#ii-btn-status');
   function updateBtnStatus() {
-    const statusEl = document.getElementById('ii-btn-status');
+    const statusEl = btnStatus();
     if (!statusEl || !RELEASE) return;
     let total = RELEASE.tracks.length, missing = 0;
     RELEASE.tracks.forEach(t => { if (!t.existing.length) missing++; });
@@ -5758,7 +5766,7 @@
   // initial status fetch (also primes RELEASE for the modal) — overview page only
   if (IS_OVERVIEW) {
     fetchRelease().catch(e => {
-      const s = document.getElementById('ii-btn-status'); if (s) s.textContent = '?';
+      const s = btnStatus(); if (s) s.textContent = '?';
       btn.title = 'Could not load the release (' + ((e && e.message) || 'error') + ') — open ISRC Scout to retry; the count updates once it loads';
       Log.warn('page button: release load failed — showing "?" until a later load succeeds (#607)');
     });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.26.200354
+// @version      2026.9.27
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -4110,7 +4110,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -4146,7 +4150,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);

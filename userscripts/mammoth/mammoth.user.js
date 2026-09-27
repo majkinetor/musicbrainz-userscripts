@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.26.201127
+// @version      2026.9.27
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -569,7 +569,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -605,7 +609,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
