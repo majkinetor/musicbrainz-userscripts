@@ -144,8 +144,8 @@ export function sandboxAs(mbid) {
 // production original's data (copy-to-sandbox.mjs makes such copies; sandboxAs() reads
 // the map for one).
 //
-// `web: true` (or a RegExp of host names) replays the other sites a script asks through
-// GM_xmlhttpRequest as well — Spotify, Discogs, a search engine — recorded once from the
+// `web: true` (or a RegExp of host names) replays the other sites a script asks, through
+// GM_xmlhttpRequest or the page's fetch — Spotify, Discogs, a search engine — recorded once from the
 // live site, so a spec about matching gets the same candidates every run. Access tokens
 // in a recorded reply are replaced, and an HTML page is recorded without its styles, SVG
 // and comments (never data, and most of a page's weight); `trim: (key, body) => body`
@@ -160,9 +160,12 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
   const isMb = u => /(^|\.)musicbrainz\.org$/.test(u.hostname);
   const covers = u => paths.test(u.pathname) && isMb(u);
   const mapped = key => { for (const [copy, orig] of Object.entries(as)) key = key.split(copy).join(orig); return key; };
+  // a search whose terms are OR-ed in whatever order the script gathered them is one
+  // search: keyed with its terms sorted
+  const canon = key => key.replace(/([?&]query=)([^&]*%20OR%20[^&]*)/, (m, p, q) => p + q.split('%20OR%20').sort().join('%20OR%20'));
   // the answer for one read: recorded now, or from the fixture
   const answer = async u => {
-    const key = mapped(u.pathname + u.search);
+    const path = mapped(u.pathname + u.search), key = canon(path);
     if (record && !store[key]) {
       const wait = last + 1100 - Date.now();   // one request a second, as MusicBrainz asks
       if (wait > 0) await new Promise(z => setTimeout(z, wait));
@@ -218,6 +221,14 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
     const u = new URL(o.url);
     if (o.method === 'GET' && covers(u)) return answer(u);
     return coversWeb(u) ? answerWeb(o) : null;
+  });
+  // …and the page's own requests to those sites (a fetch to api.discogs.com), the same way
+  if (web) await page.route(coversWeb, async route => {
+    const q = route.request();
+    try {
+      const a = await answerWeb({ url: q.url(), method: q.method(), data: q.postData() || undefined });
+      return await route.fulfill({ status: a.status, headers: { 'content-type': a.headers.replace(/^content-type: /, ''), 'access-control-allow-origin': '*' }, body: a.body });
+    } catch (e) { return route.abort('failed').catch(() => {}); }
   });
   return {
     // the answer for a url, to build on: a spec's answerGm() that adjusts a replayed reply

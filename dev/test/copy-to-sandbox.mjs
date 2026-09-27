@@ -1,12 +1,14 @@
 // Copies a production release to test.musicbrainz.org, so a spec that needs it can run
 // on the sandbox (#625). The copy has the release's title, artist credits, type, date,
 // labels, tracklist (titles, lengths, track artists) and URL relationships (so a Discogs
-// link comes along); not its recordings' relationships, which are what the scripts add.
+// link comes along), and a video recording is marked as one; not its recordings'
+// relationships, which are what the scripts add.
 //
-//   node dev/test/copy-to-sandbox.mjs <production release mbid> [--dry]
+//   node dev/test/copy-to-sandbox.mjs <production release mbid> [--dry] [--videos]
 //
 // Artists and labels are linked by MBID where the sandbox has them. An artist it lacks
-// is created there first (name, sort name, type); a missing label is left as text.
+// is created there first (name, sort name, type); a label it lacks is left out
+// (a label typed but not selected blocks the submission); its catalogue number stays.
 // Production is only read, through the web service. The new sandbox MBID is printed
 // and recorded in dev/test/sandbox-copies.json.
 import { readFile, writeFile } from 'node:fs/promises';
@@ -17,7 +19,7 @@ import { installProdGuard } from './guard.mjs';
 
 const [mbid] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const dry = process.argv.includes('--dry');
-if (!/^[0-9a-f-]{36}$/.test(mbid || '')) { console.error('usage: node dev/test/copy-to-sandbox.mjs <production release mbid> [--dry]'); process.exit(2); }
+if (!/^[0-9a-f-]{36}$/.test(mbid || '')) { console.error('usage: node dev/test/copy-to-sandbox.mjs <production release mbid> [--dry] [--videos]'); process.exit(2); }
 const REGISTRY = resolve(REPO, 'dev/test/sandbox-copies.json');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -45,6 +47,12 @@ for (const li of rel['label-info'] || []) {
   labels.push({ name: l ? l.name : '', mbid: l && await onSandbox('label', l.id) ? l.id : '', catno: li['catalog-number'] || '' });
 }
 if (dry) { console.log('dry run: nothing created'); process.exit(0); }
+if (process.argv.includes('--videos')) {
+  const copy = (JSON.parse(await readFile(REGISTRY, 'utf8'))[mbid] || {}).sandbox;
+  if (!copy) { console.error('no sandbox copy of ' + mbid + ' in the registry'); process.exit(1); }
+  await markVideos(copy);
+  process.exit(0);
+}
 
 const ctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1500, height: 1000 } });
 await installProdGuard(ctx);   // this writes to the sandbox only
@@ -100,7 +108,7 @@ add('status', rel.status);
 add('barcode', rel.barcode);
 add('packaging', rel.packaging);
 if (rel.date) { const [y, m, d] = rel.date.split('-'); add('events.0.date.year', y); add('events.0.date.month', m); add('events.0.date.day', d); }
-labels.forEach((l, i) => { add(`labels.${i}.mbid`, l.mbid); if (!l.mbid) add(`labels.${i}.name`, l.name); add(`labels.${i}.catalog_number`, l.catno); });
+labels.forEach((l, i) => { add(`labels.${i}.mbid`, l.mbid); if (!l.mbid && l.name) console.log(`  label missing on the sandbox, left out: ${l.name}`); add(`labels.${i}.catalog_number`, l.catno); });
 rel.media.forEach((m, i) => {
   add(`mediums.${i}.format`, m.format);
   add(`mediums.${i}.name`, m.title);
@@ -124,6 +132,15 @@ await page.waitForTimeout(1000);
 // the editor keeps every message in the page; only the shown ones are about this release
 const errors = await page.evaluate(() => [...new Set([...document.querySelectorAll('.error, .field-error')].filter(e => e.offsetParent && e.textContent.trim()).map(e => e.textContent.trim()))].slice(0, 10));
 if (errors.length) console.log('  editor says:', errors.join(' | '));
+if (await page.locator('#enter-edit[disabled]').count()) {
+  const why = await page.evaluate(() => {
+    // an error the editor shows: not hidden by its binding, on whichever tab it sits
+    const shown = e => { for (let n = e; n && n.id !== 'release-editor'; n = n.parentElement) if (n.style && n.style.display === 'none' && !n.classList.contains('ui-tabs-panel')) return false; return true; };
+    return [...document.querySelectorAll('#release-editor .error, #release-editor .field-error')].filter(shown)
+      .map(e => `${(e.closest('.ui-tabs-panel') || {}).id}: ${e.textContent.trim().slice(0, 120)}`).filter(s => !/: $/.test(s)).slice(0, 8);
+  });
+  console.log('  "Enter edit" is disabled:', JSON.stringify(why));
+}
 await Promise.all([
   page.waitForURL(/\/release\/[0-9a-f-]{36}$/, { timeout: 120000 }).catch(() => {}),
   page.click('button:has-text("Enter edit")'),
@@ -138,3 +155,33 @@ const rg = await mbJson(`${SANDBOX}/ws/2/release/${created}?inc=release-groups&f
 reg[mbid] = { sandbox: created, title: rel.title, copied: new Date().toISOString().slice(0, 10), ...(rg ? { rg, prodRg: rel['release-group'].id } : {}) };
 await writeFile(REGISTRY, JSON.stringify(reg, null, 2) + '\n');
 console.log(`sandbox copy: ${SANDBOX}/release/${created}`);
+await markVideos(created);
+
+// The release editor makes every recording a plain audio one; a production recording
+// that is a video is marked so on the copy, one recording edit each. --videos does only
+// this, for a copy made before.
+async function markVideos(copy) {
+  const videos = [];
+  rel.media.forEach((m, i) => (m.tracks || []).forEach((t, j) => { if (t.recording && t.recording.video) videos.push([i, j]); }));
+  if (!videos.length) return;
+  const sb = await mbJson(`${SANDBOX}/ws/2/release/${copy}?inc=recordings&fmt=json`);
+  const vctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1500, height: 1000 } });
+  await installProdGuard(vctx);
+  const vpage = vctx.pages()[0] || await vctx.newPage();
+  for (const [i, j] of videos) {
+    const rec = sb.media[i].tracks[j].recording;
+    if (rec.video) continue;
+    await vpage.goto(`${SANDBOX}/recording/${rec.id}/open_edits`, { waitUntil: 'load' });
+    if (!(await vpage.locator('a[href*="/test/accept-edit/"]').count())) {   // not asked before
+      await vpage.goto(`${SANDBOX}/recording/${rec.id}/edit`, { waitUntil: 'load' });
+      await vpage.check('[id="id-edit-recording.video"]');
+      await vpage.fill('[id="id-edit-recording.edit_note"]', `Test fixture: a video on ${PROD}/release/${mbid}, as on production (#625).`);
+      await Promise.all([vpage.waitForURL(/\/recording\/[0-9a-f-]{36}$/, { timeout: 60000 }), vpage.click('button[type=submit]:has-text("Enter edit")')]);
+      await vpage.goto(`${SANDBOX}/recording/${rec.id}/open_edits`, { waitUntil: 'load' });
+    }
+    // an edit to a recording waits for votes; the sandbox lets its editor accept it
+    for (const href of await vpage.$$eval('a[href*="/test/accept-edit/"]', as => as.map(a => a.href))) await vpage.goto(href, { waitUntil: 'load' });
+    console.log(`  marked a video: ${rec.title} (${rec.id})`);
+  }
+  await vctx.close();
+}
