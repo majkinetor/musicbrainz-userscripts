@@ -96,21 +96,42 @@ export function pageInit(cfg) {
   // GM_xmlhttpRequest over fetch: real requests with the real session. Only
   // same-origin calls carry cookies — credentials:'include' is illegal against
   // Access-Control-Allow-Origin:*, and the real GM call isn't CORS-bound at all.
+  // GM_xmlhttpRequest as a manager does it by default ('node'): from outside the page, so
+  // not bound by CORS, with the browser context's cookies. 'fetch' uses the page's own
+  // fetch (same-origin cookies only, CORS applies); 'none' never answers.
+  const response = (opts, r) => {
+    let response = r.text;
+    const rt = opts.responseType;
+    if (rt === 'json') { try { response = JSON.parse(r.text); } catch (e) { response = null; } }
+    else if (rt === 'arraybuffer') response = r.bytes.buffer;
+    else if (rt === 'blob') response = new Blob([r.bytes], { type: (r.headers.match(/^content-type:\s*(.+)$/im) || [])[1] || '' });
+    return { status: r.status, statusText: r.statusText, responseText: r.text, response, responseHeaders: r.headers, finalUrl: r.url, readyState: 4 };
+  };
+  const viaFetch = async (opts, method) => {
+    const same = new URL(opts.url, location.href).origin === location.origin;
+    const r = await origFetch(opts.url, { method, headers: opts.headers || {}, body: opts.data, redirect: 'follow', credentials: same ? 'include' : 'omit' });
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    return { status: r.status, statusText: r.statusText, url: r.url, headers: [...r.headers].map(([k, v]) => k + ': ' + v).join('\r\n'), bytes, text: new TextDecoder().decode(bytes) };
+  };
+  const viaNode = async (opts, method) => {
+    const r = await window.__harnessGmXhr({ url: new URL(opts.url, location.href).href, method, headers: opts.headers || {}, data: opts.data, timeout: opts.timeout || 0 });
+    const bytes = Uint8Array.from(atob(r.b64), c => c.charCodeAt(0));
+    return { ...r, bytes, text: new TextDecoder().decode(bytes) };
+  };
   window.GM_xmlhttpRequest = cfg.gm.xhr === 'none' ? () => ({ abort() {} }) : (opts) => {
     const method = opts.method || 'GET';
     (async () => {
       try {
         if (refuse(method, opts.url, 'GM_xmlhttpRequest')) throw refusal();
-        const same = new URL(opts.url, location.href).origin === location.origin;
-        const r = await origFetch(opts.url, { method, headers: opts.headers || {}, body: opts.data, redirect: 'follow', credentials: same ? 'include' : 'omit' });
-        const text = await r.text();
-        const headers = [...r.headers].map(([k, v]) => k + ': ' + v).join('\r\n');
-        let response = text;
-        if (opts.responseType === 'json') { try { response = JSON.parse(text); } catch (e) { response = null; } }
-        const res = { status: r.status, statusText: r.statusText, responseText: text, response, responseHeaders: headers, finalUrl: r.url, readyState: 4 };
+        // a FormData or Blob body can't cross into Node: those go through the page
+        const node = cfg.gm.xhr !== 'fetch' && (opts.data == null || typeof opts.data === 'string');
+        const res = response(opts, node ? await viaNode(opts, method) : await viaFetch(opts, method));
         opts.onload && opts.onload(res);
         opts.onloadend && opts.onloadend(res);
-      } catch (e) { opts.onerror && opts.onerror(e); opts.onloadend && opts.onloadend({ status: 0, error: e }); }
+      } catch (e) {
+        const err = { status: 0, statusText: String(e && e.message || e), error: e, finalUrl: opts.url, readyState: 4 };
+        opts.onerror && opts.onerror(err); opts.onloadend && opts.onloadend(err);
+      }
     })();
     return { abort() {} };
   };
@@ -125,6 +146,25 @@ export async function installProdGuard(ctx, { allow = [], gm = null, onRefused =
   await ctx.exposeBinding('__harnessProdWrite', (_src, w) => onRefused(w));
   // a namespace for gm.persist: 'tabs', one per context
   if (gm) gm = { ...gm, run: Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
+  // the GM_xmlhttpRequest bridge: the request is made by Node, through the context
+  if (gm && gm.xhr !== 'fetch' && gm.xhr !== 'none') {
+    await ctx.exposeBinding('__harnessGmXhr', async (_src, o) => {
+      if (isProd(o.url) && !READS.has(String(o.method).toUpperCase()) && !allowed(o.url)) {
+        onRefused({ method: o.method, url: o.url, via: 'GM_xmlhttpRequest (node)' });
+        throw new Error('test harness: a write to production MusicBrainz was refused');
+      }
+      // page routes don't see a request made from Node; answerGm() and replayWs() register
+      // here: ({ url, method, headers, data }) => { status, body, headers? } or nothing.
+      // The latest registration is asked first, as page routes are.
+      for (const answer of [...(ctx.__harnessGmAnswers || [])].reverse()) {
+        const a = await answer({ ...o, method: String(o.method).toUpperCase() });
+        if (a) return { status: a.status || 200, statusText: a.statusText || '', url: a.url || o.url, headers: a.headers || 'content-type: application/json', b64: Buffer.from(a.body == null ? '' : a.body).toString('base64') };
+      }
+      const r = await ctx.request.fetch(o.url, { method: o.method, headers: o.headers, data: o.data, maxRedirects: 20, failOnStatusCode: false, timeout: o.timeout || 60000 });
+      const body = await r.body();
+      return { status: r.status(), statusText: r.statusText(), url: r.url(), headers: r.headersArray().map(h => h.name + ': ' + h.value).join('\r\n'), b64: body.toString('base64') };
+    });
+  }
   await ctx.addInitScript(pageInit, { allow, gm });
   await ctx.route(u => isProd(u.href) && WRITE_ONLY.test(u.pathname), async route => {
     const req = route.request();

@@ -12,7 +12,7 @@
 //                    Options: waitFor (a window global), target (another page),
 //                    atStart, transform (code => code, e.g. a default flipped).
 //   the GM shim    — GM_getValue/SetValue (in-memory, or gm.persist), GM_info,
-//                    GM_xmlhttpRequest (fetch-backed, or a no-op with gm.xhr: 'none'),
+//                    GM_xmlhttpRequest (made from Node like a manager's: no CORS; or gm.xhr: 'fetch' / 'none'),
 //                    value-change listeners, GM_registerMenuCommand, unsafeWindow.
 //   a production write guard, always on — see below.
 //   page errors fail the test (test.use({ pageErrors: 'ignore' }) to opt out, or
@@ -55,7 +55,7 @@ export function sourceOf(name) {
 export const test = base.extend({
   // options — override per file with test.use({ … })
   profile: ['logged-in', { option: true }],   // 'logged-in' → .pw-profile · 'fresh' → a throwaway profile
-  gm: [{}, { option: true }],                   // { name, version, values, persist, xhr: 'fetch' | 'none' } · false = no GM shim
+  gm: [{}, { option: true }],                   // { name, version, values, persist, xhr: 'node' | 'fetch' | 'none' } · false = no GM shim
   prodWrites: ['fail', { option: true }],       // 'fail' · 'block' (refused silently; read the blockedWrites fixture)
   prodPostAllow: [[], { option: true }],        // extra production paths (regex sources) a POST may reach
   pageErrors: ['fail', { option: true }],       // 'fail' · 'ignore' · [regex sources]: fail on any other
@@ -125,43 +125,60 @@ export async function mbJson(url, { tries = 6 } = {}) {
 // out) and the file is rewritten at done(). A read missing from the fixture is answered
 // 503, as a throttled server would, and done() fails the test naming it. A fixture
 // named *.gz is gzipped (a search for a common name can be 100 kB of JSON).
-export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\// } = {}) {
+//
+// `as: { <sandbox mbid>: <production mbid> }` answers a sandbox copy's reads with its
+// production original's data (copy-to-sandbox.mjs makes such copies).
+export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, as = {} } = {}) {
   const record = !!process.env.RECORD_WS;
   const gz = String(file).endsWith('.gz');
   const store = record ? {} : JSON.parse(gz ? gunzipSync(await readFile(file)).toString('utf8') : await readFile(file, 'utf8'));
   const missing = [];
   let last = 0;
-  await page.route(u => paths.test(u.pathname) && /(^|\.)musicbrainz\.org$/.test(u.hostname), async route => {
-    const req = route.request();
-    if (req.method() !== 'GET') return route.fallback();
-    const u = new URL(req.url());
-    const key = u.pathname + u.search;
-    if (record) {
-      if (!store[key]) {
-        const wait = last + 1100 - Date.now();   // one request a second, as MusicBrainz asks
-        if (wait > 0) await new Promise(z => setTimeout(z, wait));
-        last = Date.now();
-        let r;
-        for (let i = 0; i < 6; i++) {
-          r = await fetch(from + key, { headers: { Accept: 'application/json', 'User-Agent': 'mb-userscripts-tests/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )' } });
-          if (r.status !== 503 && r.status !== 429) break;
-          await new Promise(z => setTimeout(z, 1000 * 2 ** i));
-        }
-        store[key] = { status: r.status, body: await r.text() };
+  const covers = u => paths.test(u.pathname) && /(^|\.)musicbrainz\.org$/.test(u.hostname);
+  // the answer for one read: recorded now, or from the fixture
+  const answer = async u => {
+    let key = u.pathname + u.search;
+    for (const [copy, orig] of Object.entries(as)) key = key.split(copy).join(orig);
+    if (record && !store[key]) {
+      const wait = last + 1100 - Date.now();   // one request a second, as MusicBrainz asks
+      if (wait > 0) await new Promise(z => setTimeout(z, wait));
+      last = Date.now();
+      let r;
+      for (let i = 0; i < 6; i++) {
+        r = await fetch(from + key, { headers: { Accept: 'application/json', 'User-Agent': 'mb-userscripts-tests/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )' } });
+        if (r.status !== 503 && r.status !== 429) break;
+        await new Promise(z => setTimeout(z, 1000 * 2 ** i));
       }
-      const hit = store[key];
-      return route.fulfill({ status: hit.status, contentType: 'application/json', body: hit.body }).catch(() => {});
+      store[key] = { status: r.status, body: await r.text() };
     }
-    const hit = store[key];
-    if (!hit) { missing.push(key); return route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"not in the fixture"}' }).catch(() => {}); }
-    return route.fulfill({ status: hit.status, contentType: 'application/json', body: hit.body }).catch(() => {});
+    if (store[key]) return store[key];
+    missing.push(key);
+    return { status: 503, body: '{"error":"not in the fixture"}' };
+  };
+  await page.route(covers, async route => {
+    if (route.request().method() !== 'GET') return route.fallback();
+    const a = await answer(new URL(route.request().url()));
+    return route.fulfill({ status: a.status, contentType: 'application/json', body: a.body }).catch(() => {});
   });
+  // GM_xmlhttpRequest is made from Node and never meets a page route
+  answerGm(page.context(), ({ url, method }) => { const u = new URL(url); return method === 'GET' && covers(u) ? answer(u) : null; });
   return {
+    // the answer for a url, to build on: a spec's answerGm() that adjusts a replayed reply
+    answer: url => answer(new URL(url)),
     async done() {
       if (record) { const json = JSON.stringify(store, null, 1) + '\n'; await writeFile(file, gz ? gzipSync(json, { level: 9 }) : json); return; }
       expect(missing, 'web-service reads the fixture has no answer for (RECORD_WS=1 to re-record)').toEqual([]);
     },
   };
+}
+
+// Answers GM_xmlhttpRequest calls in place of the network, as page.route() does for the
+// page's own requests (which GM_xmlhttpRequest, made from Node, never meets). The handler
+// gets { url, method, headers, data } and returns { status, body, headers? } to answer,
+// or nothing to let the request through. The latest one registered is asked first.
+//   answerGm(context, ({ url }) => /soundexchange/.test(url) ? { status: 202, body: '{"searchCaptcha":true}' } : null);
+export function answerGm(context, handler) {
+  (context.__harnessGmAnswers = context.__harnessGmAnswers || []).push(handler);
 }
 
 // A script's pure helpers, evaluated in Node — for @unit specs of functions that

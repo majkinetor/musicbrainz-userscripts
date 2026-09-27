@@ -37,6 +37,7 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`mbJson(url)`** reads the web service from Node, waiting out throttling.
 - **`attachShot(testInfo, pageOrLocator, name)`** attaches a screenshot to the report.
 - **`loadFunctions(name, [names])`** evaluates a script's pure helpers in Node, for `@unit` specs.
+- **`answerGm(context, handler)`** answers `GM_xmlhttpRequest` calls in place of the network, as `page.route()` does for the page's own requests: `answerGm(context, ({ url }) => /soundexchange/.test(url) ? { status: 202, body: '…' } : null)`.
 - **`replayWs(page, fixture)`** answers the page's `/ws/2/` reads from answers recorded on production, so a spec that depends on who is called what gets the same data every run and is never throttled. `RECORD_WS=1` re-records; `await ws.done()` saves, or fails on a read the fixture lacks.
 - **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run.
 
@@ -45,7 +46,7 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 | Option | Default | |
 |---|---|---|
 | `profile` | `'logged-in'` | `'fresh'` for a throwaway profile |
-| `gm` | `{}` | GM shim: `{ name, version, values, persist, xhr: 'fetch' \| 'none' }`, or `false` for none. `persist: true` keeps the values across a reload; `'tabs'` also shares them between the test's tabs |
+| `gm` | `{}` | GM shim: `{ name, version, values, persist, xhr }`, or `false` for none. `persist: true` keeps the values across a reload; `'tabs'` also shares them between the test's tabs. `xhr: 'node'` (the default) makes `GM_xmlhttpRequest` from Node, as a manager does (no CORS, the context's cookies; page routes don't see it); `'fetch'` uses the page's fetch; `'none'` never answers |
 | `prodWrites` | `'fail'` | `'block'`: refused writes don't fail the test; read them from `blockedWrites` |
 | `prodPostAllow` | `[]` | extra production paths (regex sources) a POST may reach |
 | `pageErrors` | `'fail'` | `'ignore'` to tolerate page errors, or a list of regex sources to let only those through |

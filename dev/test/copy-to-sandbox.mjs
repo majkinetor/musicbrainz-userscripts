@@ -31,7 +31,10 @@ collect(rel['artist-credit']);
 rel.media.forEach(m => (m.tracks || []).forEach(t => collect(t['artist-credit'])));
 const onSandbox = async (kind, id) => { await sleep(1100); try { await mbJson(`${SANDBOX}/ws/2/${kind}/${id}?fmt=json`, { tries: 3 }); return true; } catch (e) { return false; } };
 const idMap = new Map();   // production artist id → sandbox artist id
+// artists an earlier copy created (a new MBID each) are reused, not created again
+const createdBefore = JSON.parse(await readFile(REGISTRY, 'utf8').catch(() => '{}')).artists || {};
 for (const [id, a] of artists) {
+  if (createdBefore[id]) { idMap.set(id, createdBefore[id]); continue; }
   if (await onSandbox('artist', id)) { idMap.set(id, id); continue; }
   idMap.set(id, null);
   console.log(`  artist missing on the sandbox: ${a.name} (${id})`);
@@ -67,8 +70,18 @@ for (const [id, a] of artists) {
   await Promise.all([page.waitForURL(/\/artist\/[0-9a-f-]{36}$/, { timeout: 60000 }), page.click('button.submit, button[type=submit]:has-text("Enter edit")')]);
   const newId = page.url().match(/artist\/([0-9a-f-]{36})/)[1];
   idMap.set(id, newId);
+  const reg0 = JSON.parse(await readFile(REGISTRY, 'utf8').catch(() => '{}'));
+  (reg0.artists = reg0.artists || {})[id] = newId;
+  await writeFile(REGISTRY, JSON.stringify(reg0, null, 2) + '\n');
   console.log(`  created ${full.name} on the sandbox: ${newId}`);
 }
+
+// Each url needs its link type, by numeric id. The web service names types by gid; the
+// release editor's page maps one to the other.
+await page.goto(`${SANDBOX}/release/add`, { waitUntil: 'domcontentloaded' });
+await page.waitForFunction(() => window.MB && MB.linkedEntities && Object.keys(MB.linkedEntities.link_type || {}).length, null, { timeout: 60000 }).catch(() => {});
+const urlRels = (rel.relations || []).filter(r => r.url);
+const typeIds = await page.evaluate(gids => gids.map(g => { const t = Object.values((window.MB && MB.linkedEntities && MB.linkedEntities.link_type) || {}).find(x => x.gid === g); return t ? t.id : null; }), urlRels.map(r => r['type-id']));
 
 // seed the release editor
 const f = [];
@@ -98,7 +111,7 @@ rel.media.forEach((m, i) => {
     acFields(`mediums.${i}.track.${j}.artist_credit`, t['artist-credit']);
   });
 });
-(rel.relations || []).filter(r => r.url).forEach((r, i) => add(`urls.${i}.url`, r.url.resource));
+urlRels.forEach((r, i) => { add(`urls.${i}.url`, r.url.resource); add(`urls.${i}.link_type`, typeIds[i]); });
 add('edit_note', `Test fixture: a copy of ${PROD}/release/${mbid} for the mb-userscripts test suite (#625).`);
 await submitForm(`${SANDBOX}/release/add`, f);
 await page.waitForURL(/\/release\/add/, { timeout: 60000 });

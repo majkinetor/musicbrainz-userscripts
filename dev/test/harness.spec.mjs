@@ -50,3 +50,25 @@ test('the sandbox may be written to', { tag: ['@sandbox', '@unit'] }, async ({ p
   expect(res).toBe('sent 200');
   expect(blockedWrites).toEqual([]);
 });
+
+test('GM_xmlhttpRequest goes through Node: no CORS, binary answers, and production writes refused', { tag: ['@prod', '@unit'] }, async ({ page, blockedWrites }) => {
+  await page.route(u => u.href.startsWith(PROBE), r => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><p>stub</p>' }));
+  await page.goto(PROBE + '/gm');
+  const gm = opts => page.evaluate(o => new Promise(ok => GM_xmlhttpRequest({
+    ...o,
+    onload: r => ok({ status: r.status, type: Object.prototype.toString.call(r.response), size: r.response && (r.response.size || r.response.byteLength || r.response.length) }),
+    onerror: e => ok({ error: e.statusText || 'error' }),
+  })), opts);
+  // a cross-origin read the page's own fetch would be refused by CORS
+  const read = await gm({ url: 'https://test.musicbrainz.org/ws/2/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d?fmt=json' });
+  expect(read.status).toBe(200);
+  const img = await gm({ url: 'https://static.metabrainz.org/MB/header-logo-1f7dc2a.svg', responseType: 'blob' });
+  expect(img.type, 'a blob answer is a Blob').toBe('[object Blob]');
+  expect(img.size).toBeGreaterThan(100);
+  // a production write, through the shim and straight at the bridge
+  const post = await gm({ method: 'POST', url: 'https://musicbrainz.org/__mbu_harness_selftest__/gm', data: 'x' });
+  expect(post.error).toMatch(/refused/);
+  const direct = await page.evaluate(() => window.__harnessGmXhr({ url: 'https://musicbrainz.org/__mbu_harness_selftest__/bridge', method: 'POST', headers: {}, data: 'x' }).then(() => 'sent', e => 'refused: ' + e.message));
+  expect(direct).toMatch(/^refused/);
+  expect(blockedWrites.map(w => w.via)).toEqual(['GM_xmlhttpRequest', 'GM_xmlhttpRequest (node)']);
+});
