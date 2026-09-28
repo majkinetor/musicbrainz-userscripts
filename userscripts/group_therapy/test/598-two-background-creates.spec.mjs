@@ -165,10 +165,15 @@ test('two background creates at once both submit, post their MBID back, and clos
   // And both rows really resolved — read the entity cell's link, which only
   // exists once a real MBID is bound. Asserting on row TEXT would pass on the
   // pasted line alone, since it already contains the name.
-  const bound = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].slice(0, 2).map(row => {
+  // Wait for it: the post-back closes the tab FIRST and only then fetches the
+  // new entity and binds the row, so "no tabs left" comes a moment before the
+  // last row resolves. Reading at once failed a full run on row 2 alone.
+  const readBound = () => page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].slice(0, 2).map(row => {
     const a = [...row.querySelectorAll('a[href*="/artist/"]')].pop();
     return a ? { href: a.getAttribute('href'), text: a.textContent.trim() } : null;
   }));
+  let bound = await readBound();
+  for (let i = 0; i < 30 && !bound.every(Boolean); i++) { await page.waitForTimeout(1000); bound = await readBound(); }
   console.log('resolved cells: ' + JSON.stringify(bound, null, 1));
   check(bound.every(b => b && /\/artist\/[0-9a-f-]{36}/.test(b.href)), 'both rows are bound to a real MBID, not just showing the pasted text');
   check(bound[0] && bound[1] && bound[0].href !== bound[1].href, 'the two rows got DIFFERENT MBIDs — neither create overwrote the other');
