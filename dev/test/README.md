@@ -7,6 +7,7 @@ Every userscript's tests run under one runner, [Playwright Test](https://playwri
 ```sh
 pnpm install                      # once, at the repo root
 node dev/test/login.mjs           # once: log the test profile in (production and sandbox)
+node dev/test/login.mjs sandbox --auto   # the sandbox only, headless, as CI does
 pnpm test                         # everything
 pnpm test --project=fusion        # one script
 pnpm test --grep @unit            # only specs that need no network
@@ -17,6 +18,13 @@ pnpm test:report                  # open the last HTML report
 ```
 
 One test runs at a time: all of them share the logged-in profile, and MusicBrainz rate-limits per IP.
+
+## CI
+
+- **[checks](../../.github/workflows/checks.yml)**, on every push to main or stable and every pull request: parse, lint, design tokens, and the `@unit` specs. For main and pull requests it then runs the `@critical` specs on the sandbox, signed in by `login.mjs sandbox --auto` (the sandbox account is public, so there is no secret).
+- **[suite](../../.github/workflows/suite.yml)**, nightly and from Actions → suite → Run workflow: every spec but `@web`, since other live sites often block cloud machines.
+
+Both keep the HTML report as a download on the run page, for 14 days, and only one of them uses the sandbox at a time.
 
 ## Writing a spec
 
