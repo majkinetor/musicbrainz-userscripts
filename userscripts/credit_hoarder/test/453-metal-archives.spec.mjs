@@ -14,14 +14,17 @@ import { join } from 'node:path';
 import { test, check, REPO, sourceOf } from '../../../dev/test/harness.mjs';
 
 const CH = join(REPO, 'userscripts/credit_hoarder');
-const esbuild = createRequire(join(CH, 'package.json'))('esbuild');
+// esbuild comes with Credit Hoarder's own packages (pnpm --dir userscripts/credit_hoarder
+// install). Loaded in the test, not here: every spec file is loaded to list the tests,
+// so a top-level require broke every run of every script where those aren't installed.
+const esbuildOf = () => createRequire(join(CH, 'package.json'))('esbuild');
 test.use({ gm: { name: 'Credit Hoarder', xhr: 'none' }, pageErrors: 'ignore' });   // a third-party site's own errors
 
 test('Metal Archives lineups parse, scope to their tracks, and harvest through the built script', { tag: ['@web'] }, async ({ page, inject }) => {
   test.setTimeout(10 * 60_000);
   const stub = join(tmpdir(), 'ch-ma-mappers-stub.js');
   await writeFile(stub, "export function getArtistRoles(a){ if(!a||!a.role) return []; return [{linkType:'ROLE:'+a.role, entityType:'artist', attributes:[], artist:a}]; }");
-  const modBundle = (await esbuild.build({
+  const modBundle = (await esbuildOf().build({
     entryPoints: [join(CH, 'src/sources/metal_archives.js')], bundle: true, format: 'iife', globalName: 'MA', write: false,
     plugins: [{ name: 'stub', setup(b) { b.onResolve({ filter: /mappers\.js$/ }, () => ({ path: stub })); } }],
   })).outputFiles[0].text;
