@@ -20,7 +20,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --with-deps chromium firefox
+      - run: sudo apt-get install -y libarchive-tools   # bsdtar, for Art Station's zip spec
       - name: Sign in to the sandbox
         run: node dev/test/login.mjs sandbox --auto
       - name: All specs but @web
