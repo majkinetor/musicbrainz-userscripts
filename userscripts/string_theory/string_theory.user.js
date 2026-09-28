@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.28.210613
+// @version      2026.9.28.210810
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.28.210613 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.210612\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
+  console.log('%c String Theory %c v2026.9.28.210810 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.210809\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -1716,31 +1716,7 @@ try {
   }
 
   /* ════════════════════════ UI ════════════════════════ */
-  /* ── shared corner-slot convention (#468) ───────────────────────────────
-     Every floating launcher across these scripts (Apollo Editor, Art
-     Station, Scribe, Falcon) tags its element with data-mb-corner (which
-     screen corner) + data-mb-corner-order (priority — lower sits closest to
-     the actual corner) and calls mbRestackCorner() right after it shows /
-     hides / creates / removes its own element. No MutationObserver needed:
-     whichever script's state just changed triggers a full recompute that
-     repositions every element sharing that corner, regardless of load
-     order — so two independent scripts' buttons never land on the same
-     pixel. Duplicated per-script on purpose (no shared file to import).
-     Apollo and Art Station share the same order (never both mount at once —
-     different page types) and keep their historical closest-to-the-corner spot
-     (order 10); Falcon stacks above them (order 20). */
-  function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
-      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(el => {
-      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-      el.style[right ? 'right' : 'left'] = '14px';
-      pos += el.getBoundingClientRect().height + 8;
-    });
-  }
+  // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
   const VERSION = '2026.9.27.060520';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -1879,6 +1855,28 @@ try {
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
   }
 
   // Activity log: the session's log lines plus the floating window that shows them
@@ -10020,31 +10018,7 @@ try {
   const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
   if (!M) return;
 
-  /* ── shared corner-slot convention (#468) ───────────────────────────────
-     Every floating launcher across these scripts (Apollo Editor, Art
-     Station, Scribe, Falcon) tags its element with data-mb-corner (which
-     screen corner) + data-mb-corner-order (priority — lower sits closest to
-     the actual corner) and calls mbRestackCorner() right after it shows /
-     hides / creates / removes its own element. No MutationObserver needed:
-     whichever script's state just changed triggers a full recompute that
-     repositions every element sharing that corner, regardless of load
-     order — so two independent scripts' buttons never land on the same
-     pixel. Duplicated per-script on purpose (no shared file to import).
-     Apollo and Art Station share the same order (never both mount at once —
-     different page types) and keep their historical closest-to-the-corner spot
-     (order 10); Falcon stacks above them (order 20). */
-  function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
-      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(el => {
-      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-      el.style[right ? 'right' : 'left'] = '14px';
-      pos += el.getBoundingClientRect().height + 8;
-    });
-  }
+  // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
   const IS_EVENT = M[1].toLowerCase() === 'event';
   const MBID = M[2];
@@ -13793,6 +13767,28 @@ try {
       return html + '</div>';
   }
 
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
   // Activity log: the session's log lines plus the floating window that shows them
   // (#283's viewer, shared since X12 of #623). A script makes its log once:
   //
@@ -14840,7 +14836,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.210612","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.210612","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.210809","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.210809","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -21845,6 +21841,20 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       html += mbuHelpHtml(o.script);
       return html + "</div>";
     }
+    function mbRestackCorner(corner) {
+      var bottom = corner[0] === "b", right = corner[1] === "r";
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]')).filter(function(el) {
+        return getComputedStyle(el).display !== "none";
+      }).sort(function(a, b) {
+        return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
+      });
+      var pos = 14;
+      els.forEach(function(el) {
+        el.style[bottom ? "bottom" : "top"] = pos + "px";
+        el.style[right ? "right" : "left"] = "14px";
+        pos += el.getBoundingClientRect().height + 8;
+      });
+    }
     function mbuLog(o) {
       o = o || {};
       var max = o.max || 2e3, buf = [], dropped = 0, warn = 0, error = 0, win = null;
@@ -24502,21 +24512,7 @@ function loadSettings() {
 function saveSettings() { try { GM_setValue(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {} }
 let SETTINGS = loadSettings();
 
-/* ── shared corner-slot convention (#468), duplicated per-script on purpose —
-   see apollo_editor.user.js for the canonical comment. Fusion stacks above
-   Falcon (order 20) since it can share a page with it. ── */
-function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-        .filter(e => getComputedStyle(e).display !== 'none')
-        .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(e => {
-        e.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-        e.style[right ? 'right' : 'left'] = '14px';
-        pos += e.getBoundingClientRect().height + 8;
-    });
-}
+// mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
 /* ── matching / normalization (ported from platform_check's tokenMatch/scoreCandidate
    normalization stack — same token-overlap approach, reused rather than reinvented) ── */
@@ -25840,6 +25836,28 @@ function mbuCfgHeader(o) {
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
+}
+
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+// Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+        el.style[right ? 'right' : 'left'] = '14px';
+        pos += el.getBoundingClientRect().height + 8;
+    });
 }
 
 // Activity log: the session's log lines plus the floating window that shows them
@@ -28473,6 +28491,28 @@ try {
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
   }
 
   // Activity log: the session's log lines plus the floating window that shows them
@@ -34258,6 +34298,28 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       return html + '</div>';
   }
 
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
   // Activity log: the session's log lines plus the floating window that shows them
   // (#283's viewer, shared since X12 of #623). A script makes its log once:
   //
@@ -40041,6 +40103,28 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       return html + '</div>';
   }
 
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
   // Activity log: the session's log lines plus the floating window that shows them
   // (#283's viewer, shared since X12 of #623). A script makes its log once:
   //
@@ -42944,6 +43028,28 @@ function mbuCfgHeader(o) {
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
+}
+
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+// Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+        el.style[right ? 'right' : 'left'] = '14px';
+        pos += el.getBoundingClientRect().height + 8;
+    });
 }
 
 // Activity log: the session's log lines plus the floating window that shows them

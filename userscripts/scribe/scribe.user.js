@@ -40,7 +40,8 @@
      whichever script's state just changed triggers a full recompute that
      repositions every element sharing that corner, regardless of load
      order — so two independent scripts' buttons never land on the same
-     pixel. Duplicated per-script on purpose (no shared file to import). */
+     pixel. The other scripts share it through the ST-UI block
+     (dev/ui/ui-components.mjs); Scribe is not on that block, so this is a copy. */
   function mbRestackCorner(corner) {
     const bottom = corner[0] === 'b', right = corner[1] === 'r';
     const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]

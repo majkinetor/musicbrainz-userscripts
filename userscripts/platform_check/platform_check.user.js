@@ -1061,6 +1061,28 @@ function mbuCfgHeader(o) {
     return html + '</div>';
 }
 
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+// Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+        el.style[right ? 'right' : 'left'] = '14px';
+        pos += el.getBoundingClientRect().height + 8;
+    });
+}
+
 // Activity log: the session's log lines plus the floating window that shows them
 // (#283's viewer, shared since X12 of #623). A script makes its log once:
 //
