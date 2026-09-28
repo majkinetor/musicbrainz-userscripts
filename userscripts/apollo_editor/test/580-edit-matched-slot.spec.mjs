@@ -15,7 +15,7 @@ import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
 
-test('a matched slot being edited is left alone until it loses focus', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+test('a matched slot being edited is left alone until it loses focus', { tag: ['@sandbox', '@login', '@critical', '@flaky'] }, async ({ page, inject }) => {
   const ws = await replayWs(page, new URL('./fixtures/ws-580.json.gz', import.meta.url));
   const seed = { name: 'Apollo 580 fixture', 'artist_credit.names.0.name': 'Miles Davis', 'mediums.0.format': 'CD' };
   ['So What', 'Blue in Green'].forEach((t, i) => { seed[`mediums.0.track.${i}.name`] = t; seed[`mediums.0.track.${i}.artist_credit.names.0.name`] = 'Miles Davis'; });

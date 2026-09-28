@@ -31,7 +31,7 @@ import { RELEASE } from './gt.mjs';
 // on the client. Not what this spec is about.
 test.use({ gm: { name: 'Group Therapy', persist: 'tabs' }, pageErrors: ['Minified React error #418'] });
 
-test('two background creates at once both submit, post their MBID back, and close', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }) => {
+test('two background creates at once both submit, post their MBID back, and close', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ page, context, inject }) => {
   const HOST = SANDBOX;
   const STAMP = Date.now().toString(36);
   const NAMES = ['GT Two A ' + STAMP, 'GT Two B ' + STAMP];

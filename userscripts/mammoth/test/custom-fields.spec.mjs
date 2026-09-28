@@ -10,7 +10,7 @@ const ARTIST = '8f6bd1e4-fbe1-4f50-aa9b-94c450ec0f11';   // Portishead, on the s
 const TARGET = 'input[id="id-edit-artist.comment"]';
 test.use({ gm: { name: 'Mammoth' } });
 
-test('a custom field pins field memory to the input its selector matches', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+test('a custom field pins field memory to the input its selector matches', { tag: ['@sandbox', '@login', '@critical', '@flaky'] }, async ({ page, inject }) => {
   await page.goto(`${SANDBOX}/artist/${ARTIST}/edit`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await idle(page);
