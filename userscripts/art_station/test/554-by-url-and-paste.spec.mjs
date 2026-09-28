@@ -12,7 +12,7 @@
 //
 // test.musicbrainz.org: nothing is uploaded or submitted (write requests are counted).
 import { readFile } from 'node:fs/promises';
-import { test, check, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, sourceOf, until } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -35,27 +35,25 @@ test('"By URL" unrolls, Escape rolls it up, a pasted URL imports; Ctrl+V imports
   check(!(await page.locator('.as-src-url-inp').isVisible()), 'its input is hidden until clicked');
 
   await page.click('.as-src-url-btn');
-  await page.waitForTimeout(150);
-  check(await page.locator('.as-src-url-inp').isVisible(), 'clicking it unrolls the input');
+  check(await until(() => page.locator('.as-src-url-inp').isVisible()), 'clicking it unrolls the input');
   check(!(await page.locator('.as-src-htxt').isVisible()) && !(await page.locator('.as-src-url-btn').isVisible()), 'which takes the place of the title and the toggle');
-  check(await page.evaluate(() => document.activeElement === document.querySelector('.as-src-url-inp')), 'and is focused');
+  check(await until(() => page.evaluate(() => document.activeElement === document.querySelector('.as-src-url-inp'))), 'and is focused');
 
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await until(() => page.locator('.as-src-url-btn').isVisible());
   check(await page.locator('.as-src-pop').count() === 1, 'Escape rolls the input up, and leaves the popover open');
   check(!(await page.locator('.as-src-url-inp').isVisible()) && await page.locator('.as-src-url-btn').isVisible(), 'the toggle is back');
 
   await page.click('.as-src-url-btn');
-  await page.waitForTimeout(150);
+  await until(() => page.locator('.as-src-url-inp').isVisible());
   await page.evaluate(() => {
     const inp = document.querySelector('.as-src-url-inp');
     const dt = new DataTransfer(); dt.setData('text/plain', 'https://example.com/some-cover.jpg');
     inp.value = 'https://example.com/some-cover.jpg';
     inp.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }));
   });
-  await page.waitForTimeout(400);
-  check(!(await page.locator('.as-src-pop').count()), 'pasting a URL imports it and closes the popover, no Fetch click');
-  check(await page.locator('.as-srcing-thumb, .as-dmeta').count() > 0, 'a sourcing slot was created for it');
+  check(!(await until(() => page.locator('.as-src-pop').count(), n => n === 0)), 'pasting a URL imports it and closes the popover, no Fetch click');
+  check(await until(() => page.locator('.as-srcing-thumb, .as-dmeta').count(), n => n > 0) > 0, 'a sourcing slot was created for it');
 
   // ── Ctrl+V anywhere (#554), with no clipboard reading ──
   check(!/navigator\.clipboard\.readText/.test(code) && !/pasteUrlAndGo|clipboardGranted/.test(code), 'the script never reads the clipboard, so no permission prompt can be raised');
@@ -64,8 +62,7 @@ test('"By URL" unrolls, Escape rolls it up, a pasted URL imports; Ctrl+V imports
     let target = document.body;
     if (into) { target = document.createElement('input'); document.body.appendChild(target); target.focus(); }
     const dt = new DataTransfer(); dt.setData('text', t);
-    target.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-    await new Promise(r => setTimeout(r, 350));
+    target.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));   // handled as it is dispatched
     if (into) target.remove();
     return (window.__asTest && window.__asTest.lastSource) || null;
   }, [text, into]);

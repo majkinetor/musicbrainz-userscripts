@@ -1,7 +1,7 @@
 // The harness's production write guard, proven (#625). Every write here targets a
 // path that does not exist on musicbrainz.org, so even a hole in the guard could
 // only ever produce a 404 — never an edit.
-import { test, expect } from './harness.mjs';
+import { test, expect, until } from './harness.mjs';
 
 const PROBE = 'https://musicbrainz.org/__mbu_harness_selftest__';
 test.use({ prodWrites: 'block' });
@@ -20,7 +20,7 @@ test('page-level writes to production are refused before they leave', { tag: ['@
   });
   await page.click('button');   // a real form submit
   await page.evaluate(() => document.querySelector('form').submit());   // and the scripted one
-  await page.waitForTimeout(300);
+  await until(() => blockedWrites.length, n => n >= 5, { timeout: 10000 });   // both submits refused and recorded
   expect(out.fetch).toMatch(/^refused/);
   expect(out.xhr).toMatch(/^refused/);
   expect(out.beacon).toBe('refused');

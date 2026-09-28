@@ -48,14 +48,10 @@ test('a manual Repeat keeps auto-repeat going; the countdown never sticks at 0; 
   console.log(`Repeat handler — cancelPending+again: ${cancels} · stop+again: ${abandons}`);
   check(cancels && !abandons, 'the Repeat button cancels the pending wait, it does not abandon the schedule');
 
-  await context.addInitScript(() => {
-    /* A clock the test can push forward. The script reads Date.now() for the
-       countdown, the budget and the give-up decision, so this is what makes a
-       60-second wait testable in a second. */
-    const realNow = Date.now.bind(Date);
-    window.__clock = { skew: 0 };
-    Date.now = () => realNow() + window.__clock.skew;
-  });
+  /* A clock the test can push forward. The script reads Date.now() for the
+     countdown, the budget and the give-up decision, and ticks it every second, so
+     this is what makes a 60-second wait testable at once. */
+  await page.clock.install();
   const posted = [];
   /* POSTs only. A first version routed every archive.org URL and counted 22 "uploads"
      — they were the cover-art thumbnails the page itself loads, and blocking them
@@ -77,7 +73,8 @@ test('a manual Repeat keeps auto-repeat going; the countdown never sticks at 0; 
   });
   const label = () => page.evaluate(() => (document.querySelector('#fake-ov .as-cm-ar') || {}).textContent || '');
   const state = () => page.evaluate(() => { const st = window.__asAutoRepeat.state(window.__ov); return st ? { n: st.n, abandoned: st.abandoned, gen: st.gen, running: st.running, hasTimer: !!st.timer, hasTick: !!st.tick } : null; });
-  const advance = ms => page.evaluate(m => { window.__clock.skew += m; }, ms);
+  // a jump fires each due timer once, late, as in a throttled tab
+  const advance = ms => page.clock.fastForward(ms);
 
   /* ── 1. the reported bug: a manual Repeat must not end auto-repeat ────────── */
   await page.evaluate(() => window.__asAutoRepeat.schedule(window.__ov, window.__go));
@@ -112,12 +109,12 @@ test('a manual Repeat keeps auto-repeat going; the countdown never sticks at 0; 
   /* Nine seconds short of the ~59s delay. 59000 was the first try: it left 16ms,
      which renders as "due", so the check was aimed at the wrong state. */
   await advance(50000);
-  await page.waitForTimeout(1200);           // let a tick render
+  await page.clock.runFor(1100);             // one tick renders
   const nearly = await label();
   console.log('\nnear due:', nearly);
   check(/in \d+s/.test(nearly) && !/in 0s/.test(nearly), `still counting down, not stuck on 0 (${nearly})`);
   await advance(20000);                      // now past due — the timer is late, as in a throttled tab
-  await page.waitForTimeout(1400);
+  await page.clock.runFor(1100);
   const due = await label();
   const fired = await page.evaluate(() => window.__again);
   console.log('past due:', due, '· again() calls:', fired);
@@ -132,7 +129,7 @@ test('a manual Repeat keeps auto-repeat going; the countdown never sticks at 0; 
   await page.evaluate(() => {   // three more rows start failing after the schedule
     [1, 2, 3].forEach(i => document.querySelector(`#fake-ov .as-cm-op[data-i="${i}"]`).classList.add('err'));
   });
-  await page.waitForTimeout(1200);
+  await page.clock.runFor(1100);             // the next tick reads the count
   const after = await label();
   console.log('\nerr count — before:', before, '\n              after:', after);
   check(/1 failing/.test(before), `starts from the real count (${before})`);

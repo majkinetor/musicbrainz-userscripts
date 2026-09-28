@@ -18,7 +18,7 @@
 // rendered page. Nothing is uploaded — write endpoints are asserted unused.
 //
 // test.musicbrainz.org, read-only.
-import { test, check, expect } from '../../../dev/test/harness.mjs';
+import { test, check, expect, frames } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -80,7 +80,7 @@ test('card borders stay single, concentric and unbroken at every size and state'
 
   /* ── 1. concentric corners: inner radius = outer − border ──────────────────── */
   await setTile('175px');
-  await page.waitForTimeout(400);
+  await frames(page);
   const base = await measure();
   console.log('\nfirst card:', JSON.stringify(base[0]));
   check(base.length > 0, `fixture: ${base.length} card(s) measured`);
@@ -90,7 +90,7 @@ test('card borders stay single, concentric and unbroken at every size and state'
   /* ── 2. nothing overflows the card, at any tile size ───────────────────────── */
   for (const tile of TILES) {
     await setTile(tile);
-    await page.waitForTimeout(350);
+    await frames(page);
     const m = await measure();
     const bad = m.filter(c => c.over > 0.5 || c.scroll > c.client);
     check(bad.length === 0,
@@ -100,7 +100,7 @@ test('card borders stay single, concentric and unbroken at every size and state'
   /* ── 3. one bottom edge, not two ───────────────────────────────────────────── */
   for (const tile of ['120px', '380px']) {
     await setTile(tile);
-    await page.waitForTimeout(350);
+    await frames(page);
     const m = await measure();
     const doubled = m.filter(c => c.bottomLines.length);
     check(doubled.length === 0,
@@ -112,11 +112,11 @@ test('card borders stay single, concentric and unbroken at every size and state'
 
   /* ── 4. the states his screenshots were taken in ───────────────────────────── */
   await setTile('380px');
-  await page.waitForTimeout(300);
+  await frames(page);
   for (const [name, cls] of [['hovered', null], ['selected', 'sel'], ['pending', 'pending'], ['new', 'new']]) {
     if (cls) await page.evaluate(c => document.querySelector('.as-card').classList.add(c), cls);
     else await page.hover('.as-card');
-    await page.waitForTimeout(300);
+    await frames(page);
     const m = (await measure())[0];
     check(m.over <= 0.5 && m.bottomLines.length === 0 && m.thumbRadius === m.cardRadius - m.border,
       `${name}: still one clean border, concentric, nothing overflowing (over ${m.over}, lines ${m.bottomLines.length})`);

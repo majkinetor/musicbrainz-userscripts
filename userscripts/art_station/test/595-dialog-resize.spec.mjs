@@ -23,7 +23,7 @@
 // both write endpoints are routed to a local stub that records any attempt.
 //
 // test.musicbrainz.org.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, frames } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -39,17 +39,15 @@ test('a drag that starts inside the commit window never closes it, and its size 
     await page.evaluate(() => document.getElementById('as-commit')?.remove());
     await page.click('.as-commit');
     await page.waitForSelector('#as-commit .as-cm-box', { timeout: 10000 });
-    await page.waitForTimeout(350);
+    await frames(page);   // sized (a remembered size is applied as it opens)
   };
   // the first card that can be edited (one with an open edit can't), by position
   const idx = await page.evaluate(() => [...document.querySelectorAll('.as-card')].findIndex(c => c.querySelector('.as-pencil')));
   const card = page.locator('.as-card').nth(idx);
   await card.locator('.as-pencil').click();
-  await page.waitForTimeout(250);
   await card.locator('.as-cmt').fill('as595-' + Date.now());
   await card.locator('.as-cmt').blur();
-  await page.waitForTimeout(350);
-  check(await page.evaluate(() => !document.querySelector('.as-commit').disabled), 'a staged change enables the commit button');
+  check(await until(() => page.evaluate(() => !document.querySelector('.as-commit').disabled)), 'a staged change enables the commit button');
   await openDialog();
   check(await page.evaluate(() => !!document.getElementById('as-commit')), 'the Submit edits dialog opens');
 
@@ -71,7 +69,7 @@ test('a drag that starts inside the commit window never closes it, and its size 
   await page.mouse.down();
   await page.mouse.move(r.right + 120, note.y + 10, { steps: 12 });   // out over the backdrop
   await page.mouse.up();
-  await page.waitForTimeout(350);
+  await frames(page);   // the click the release makes has been handled
   let open = await isOpen();
   console.log('after dragging a selection out of the edit note and releasing on the backdrop: open=' + open);
   check(open, 'THE BUG: a drag that STARTS inside the dialog must not close it when released on the backdrop');
@@ -85,7 +83,7 @@ test('a drag that starts inside the commit window never closes it, and its size 
   await page.mouse.down();
   await page.mouse.move(r.right + 180, r.bottom + 90, { steps: 16 });
   await page.mouse.up();
-  await page.waitForTimeout(400);
+  await frames(page);
   open = await isOpen();
   const after = open ? await boxRect() : null;
   console.log(`resize drag: ${JSON.stringify(before)} -> ${JSON.stringify(after && { w: after.w, h: after.h })}  open=${open}`);
@@ -117,8 +115,7 @@ test('a drag that starts inside the commit window never closes it, and its size 
   if (!await isOpen()) await openDialog();
   r = await boxRect();
   await page.mouse.click(Math.max(8, r.x / 2), Math.max(8, r.y / 2));
-  await page.waitForTimeout(350);
-  check(!await isOpen(), 'a real click on the backdrop — down AND up outside — still closes it');
+  check(!await until(isOpen, o => !o), 'a real click on the backdrop — down AND up outside — still closes it');
 
   check(posts === 0, `nothing was submitted (${posts} write attempts)`);
 });

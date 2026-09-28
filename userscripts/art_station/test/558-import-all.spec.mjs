@@ -12,7 +12,7 @@
 // test.musicbrainz.org, with the "Hazy Dreams" links served as the release's (several
 // platforms). Every POST is aborted; each source's hidden seed page is counted, not
 // loaded.
-import { test, check, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, attachShot, until, frames } from '../../../dev/test/harness.mjs';
 import { openArtStation, serveLinks } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -40,7 +40,6 @@ test('"Import all" counts every source, reads on hover, and right-click runs it'
   });
   check(registered, 'a custom provider is registered through the public API (#250)');
   await page.waitForFunction(() => /\(\d+\)/.test((document.querySelector('.as-src-n') || {}).textContent || ''), null, { timeout: 20000 }).catch(() => {});
-  await page.waitForTimeout(1500);
 
   const btn = await page.evaluate(() => { const b = document.querySelector('.as-src'); return { n: ((b.querySelector('.as-src-n') || {}).textContent || '').trim(), title: b.title }; });
   const total = parseInt((btn.n.match(/\((\d+)\)/) || [])[1], 10);
@@ -50,12 +49,12 @@ test('"Import all" counts every source, reads on hover, and right-click runs it'
   // the popover's "Import all" agrees with the button
   await page.click('.as-src');
   await page.waitForSelector('.as-src-pop', { timeout: 5000 });
-  await page.waitForTimeout(1200);
-  const pop = await page.evaluate(() => {
+  // until every source has its button above "Import all"
+  const pop = await until(() => page.evaluate(() => {
     const all = document.querySelector('.as-src-all');
     return { label: all ? all.textContent.trim() : '(none)', inWrap: !!(all && all.closest('.as-src-allwrap')),
       prov: document.querySelectorAll('.as-src-prov .as-src-prov-b').length, custom: document.querySelectorAll('.as-src-custom .as-src-prov-b').length };
-  });
+  }), p => p.prov + p.custom === total && p.custom > 0);
   check(new RegExp(`Import all ${total} sources`).test(pop.label), `"Import all" counts platforms and providers (${JSON.stringify(pop.label)} vs ${total})`);
   check(pop.inWrap, 'it sits below both lists');
   check(pop.prov + pop.custom === total && pop.custom > 0, `one button per source above it, the provider among them (${pop.prov}+${pop.custom})`);
@@ -64,21 +63,20 @@ test('"Import all" counts every source, reads on hover, and right-click runs it'
   // #502: readable on hover
   const box = await page.locator('.as-src-all').boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.waitForTimeout(150);
+  await frames(page);
   const hovered = await page.evaluate(() => { const s = getComputedStyle(document.querySelector('.as-src-all')); return { color: s.color, background: s.backgroundColor }; });
   check(hovered.color === 'rgb(255, 255, 255)' && hovered.background === 'rgb(78, 50, 159)', `on hover: white on the dark accent, not the generic pale hover (${JSON.stringify(hovered)})`);
   await attachShot(testInfo, page.locator('.as-src-pop'), 'popover');
 
   // right-click: every source at once, no popover
   await page.evaluate(() => document.querySelectorAll('.as-pop').forEach(p => p.remove()));
-  await page.waitForTimeout(200);
   seeded = 0;
   const prevented = await page.evaluate(() => { const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true }); document.querySelector('.as-src').dispatchEvent(ev); return ev.defaultPrevented; });
   check(prevented, "the browser's context menu is suppressed");
   // sampled promptly: a slot goes as soon as its source resolves empty
   await page.waitForFunction(() => document.querySelectorAll('.as-srcing-lbl').length > 0, null, { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(600);
-  const after = await page.evaluate(() => ({ popOpen: !!document.querySelector('.as-src-pop'), slots: [...document.querySelectorAll('.as-srcing-lbl')].map(e => e.textContent.trim()), runs: window.__probe558Run }));
+  // until every platform has its slot and seed page, and the provider has run
+  const after = await until(() => page.evaluate(() => ({ popOpen: !!document.querySelector('.as-src-pop'), slots: [...document.querySelectorAll('.as-srcing-lbl')].map(e => e.textContent.trim()), runs: window.__probe558Run })), a => a.slots.length === pop.prov && seeded === pop.prov && a.runs === 1);
   check(!after.popOpen, 'the popover does not open');
   // platforms seed a hidden uploader page and keep their slot while it loads; the probe
   // provider returns nothing, so its slot goes at once and its run count is what shows it ran
@@ -87,7 +85,6 @@ test('"Import all" counts every source, reads on hover, and right-click runs it'
   check(after.slots.every(s => /sourcing/i.test(s)), `each slot names what it is sourcing (${JSON.stringify(after.slots.slice(0, 3))})`);
 
   await page.click('.as-src');
-  await page.waitForTimeout(600);
-  check(await page.locator('.as-src-pop').count() > 0, 'a left click still opens the popover');
+  check(await until(() => page.locator('.as-src-pop').count(), n => n > 0) > 0, 'a left click still opens the popover');
   check(!posts.some(u => /\/(edit|add-cover-art|add-event-art|ws\/js)/.test(u)), `nothing was submitted (${posts.length} POSTs, all aborted)`);
 });
