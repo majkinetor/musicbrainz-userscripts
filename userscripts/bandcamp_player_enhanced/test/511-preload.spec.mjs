@@ -3,7 +3,7 @@
 // even muted, so opening a second album tab stopped the first one's playback. The
 // preload now calls Bandcamp's own gplaylist.set_initial_track(0), which picks the
 // track a later Play starts from without touching the <audio> element.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 
 const ALBUM = 'https://phoebebridgers.bandcamp.com/album/stranger-in-the-alps';
 const PLAY_ABORT = 'play\\(\\) request was interrupted by a call to pause\\(\\)';
@@ -18,20 +18,19 @@ const playerState = page => page.evaluate(() => {
 test('a second tab picks track 1 without playing, so the first tab keeps playing', { tag: ['@web', '@critical'] }, async ({ context, page, inject }) => {
   // tab A really plays
   await page.goto(ALBUM, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
-  await page.evaluate(() => { const b = document.querySelector('.playbutton'); if (b) b.click(); });
-  await page.waitForTimeout(1200);
-  check(await page.evaluate(() => !document.querySelector('audio')?.paused), 'tab A is playing before tab B opens');
+  await page.waitForFunction(() => window.gplaylist && document.querySelector('.playbutton'), null, { timeout: 30000 });
+  await page.evaluate(() => document.querySelector('.playbutton').click());
+  check(await until(() => page.evaluate(() => { const a = document.querySelector('audio'); return !!a && !a.paused; })), 'tab A is playing before tab B opens');
 
   // tab B loads the same album with the script
   const tabB = await context.newPage();
   await tabB.goto(ALBUM, { waitUntil: 'domcontentloaded' });
-  await tabB.waitForTimeout(500);
+  await idle(tabB);
   await inject('bandcamp_player_enhanced', { target: tabB });
   await tabB.waitForSelector('#bc-sticky-player', { timeout: 15000 });
-  await tabB.waitForTimeout(800);
 
-  const b = await playerState(tabB);
+  // the preload has run once track 1 is picked; "nothing played" is read then
+  const b = await until(() => playerState(tabB), b => b.track === 0);
   check(b.track === 0, `tab B picked the first track (${b.track})`);
   check(b.state === 'IDLE' && !b.src, `tab B never started playing, nor loaded audio (${b.state}, src ${b.src})`);
   check(await page.evaluate(() => !document.querySelector('audio')?.paused), 'tab A is STILL playing');
@@ -45,11 +44,14 @@ test.describe('with "Start from track 1" off', () => {
   test.use({ gm: { ...GM, values: { bcp_preload: '0' } } });
   test("Bandcamp's own track choice is left alone", { tag: ['@web'] }, async ({ page, inject }) => {
     await page.goto(ALBUM, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
+    await page.waitForFunction(() => window.gplaylist, null, { timeout: 30000 });
+    await idle(page);
     const own = await page.evaluate(() => window.gplaylist?._track);
     await inject('bandcamp_player_enhanced');
     await page.waitForSelector('#bc-sticky-player', { timeout: 15000 });
-    await page.waitForTimeout(500);
+    // the script has read its settings once the box shows them; the track is read then
+    await page.waitForFunction(() => document.getElementById('bcp-opt-preload'), null, { timeout: 15000 });
+    await idle(page);
     const s = await playerState(page);
     check(await page.evaluate(() => document.getElementById('bcp-opt-preload')?.checked === false), 'the box shows the saved "off"');
     check(s.track === own, `the track stays Bandcamp's own (${own} → ${s.track})`);

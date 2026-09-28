@@ -1,6 +1,6 @@
 // #501: the settings moved from localStorage to GM storage. When GM storage has no
 // value yet, the old localStorage one is adopted once; the old key stays in place.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 
 const ALBUM = 'https://phoebebridgers.bandcamp.com/album/punisher';
 const PLAY_ABORT = 'play\\(\\) request was interrupted by a call to pause\\(\\)';
@@ -15,13 +15,12 @@ test('old localStorage settings are adopted into GM storage', { tag: ['@web'] },
   });
   await inject('bandcamp_player_enhanced');
   await page.waitForSelector('#bc-sticky-player', { timeout: 15000 });
-  await page.waitForTimeout(500);
 
-  const m = await page.evaluate(() => ({
+  const m = await until(() => page.evaluate(() => ({
     theme: GM_getValue('bcp_theme'), scale: GM_getValue('bcp_scale'), hide: JSON.parse(GM_getValue('bcp_hide_opts') || 'null'),
     oldKept: localStorage.getItem('bcp_theme') !== null,
     bg: getComputedStyle(document.getElementById('bc-sticky-player')).backgroundColor,
-  }));
+  })), m => m.theme === 'dark' && m.bg === 'rgb(20, 20, 20)');
   check(m.theme === 'dark' && m.scale === '85', `the theme and the scale are adopted (${m.theme}, ${m.scale})`);
   check(m.hide && m.hide.tracklist === true, `the hidden parts are adopted (${JSON.stringify(m.hide)})`);
   check(m.bg === 'rgb(20, 20, 20)', `the adopted theme is applied (${m.bg})`);
