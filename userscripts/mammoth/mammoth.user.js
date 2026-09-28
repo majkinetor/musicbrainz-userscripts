@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.27
+// @version      2026.9.28
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -850,6 +850,9 @@
         const above = r.top - H - 6;                       // try above if it fits, else clamp
         top = above >= 6 ? above : (vh - H - 6);
       }
+      // …and never below the viewport: an anchor already off screen (the page grew, or was
+      // scrolled, since it was clicked) put "above it" off screen too, out of reach.
+      top = Math.min(top, vh - H - 6);
       p.style.left = left + 'px'; p.style.top = Math.max(6, top) + 'px';
     }
     setTimeout(() => { document.addEventListener('click', onPopDown, true); document.addEventListener('keydown', onPopKey, true); }, 0);

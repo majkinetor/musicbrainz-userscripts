@@ -17,7 +17,12 @@ test('a custom field pins field memory to the input its selector matches', { tag
   await inject('mammoth');
 
   await page.click('button[title="Settings"]');
+  // MusicBrainz's form can keep growing after load and push the Settings button far
+  // below the screen; the Fields tab then widened the window and re-placed it "above"
+  // that button, off screen and out of reach. Grow the page here so it happens every run.
+  await page.evaluate(() => { const d = document.createElement('div'); d.style.height = '3000px'; document.body.prepend(d); });
   await page.click('.mmth-cfgtab[data-tab="fields"]');
+  check(await page.evaluate(() => { const r = document.querySelector('.mmth-cfg').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }), 'the widened Settings window stays on screen');
   // a new row goes on top
   const typeInto = (cls, v) => page.evaluate(([cls, v]) => {
     const inp = document.querySelector('.mmth-cf-row ' + cls);
