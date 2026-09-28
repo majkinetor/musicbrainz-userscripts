@@ -93,7 +93,9 @@ test("#467: item popup", { tag: ['@sandbox', '@login'] }, async ({ context, page
     const iframeBefore = await page.evaluate(() => {
       const iframe = document.querySelector('.falcon-worker-card[data-item-id="rej"] iframe');
       let bodyLen = null, url = null;
-      try { bodyLen = iframe?.contentDocument?.body?.innerHTML?.length; url = iframe?.contentDocument?.location?.href; } catch (e) {}
+      // a mark on the loaded page's window: a reload would give a fresh window without it
+      // (the page's size is no witness, MusicBrainz keeps rendering into it)
+      try { bodyLen = iframe?.contentDocument?.body?.innerHTML?.length; url = iframe?.contentDocument?.location?.href; iframe.contentWindow.__fixtureMark = 'before'; } catch (e) {}
       return { exists: !!iframe, bodyLen, url };
     });
     console.log('iframe before focusing:', JSON.stringify(iframeBefore));
@@ -105,11 +107,11 @@ test("#467: item popup", { tag: ['@sandbox', '@login'] }, async ({ context, page
 
     const afterFocus = await page.evaluate(() => {
       const iframe = document.querySelector('.falcon-worker-card[data-item-id="rej"] iframe');
-      let bodyLen = null, url = null;
-      try { bodyLen = iframe?.contentDocument?.body?.innerHTML?.length; url = iframe?.contentDocument?.location?.href; } catch (e) {}
+      let bodyLen = null, url = null, mark = null;
+      try { bodyLen = iframe?.contentDocument?.body?.innerHTML?.length; url = iframe?.contentDocument?.location?.href; mark = iframe.contentWindow.__fixtureMark; } catch (e) {}
       const card = document.querySelector('.falcon-worker-card[data-item-id="rej"]');
       return {
-        iframeStillSameElement: !!iframe, bodyLen, url,
+        iframeStillSameElement: !!iframe, bodyLen, url, mark,
         activeTab: document.getElementById('falcon-body-workers')?.style.display,
         cardWidth: card?.style.width,
         cardOpacity: card ? getComputedStyle(card).opacity : null,
@@ -122,7 +124,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login'] }, async ({ context, page
     ck(afterFocus.activeTab === 'block', `clicking the status label switches to the Workers tab (display="${afterFocus.activeTab}")`);
     ck(afterFocus.cardWidth === '100%', 'the real card is zoomed (maximized), not shown in a separate popup');
     ck(afterFocus.cardOpacity === '1', 'the zoomed retired card is shown at full opacity, not dimmed, so it is actually readable');
-    ck(afterFocus.iframeStillSameElement && afterFocus.bodyLen === iframeBefore.bodyLen && afterFocus.url === iframeBefore.url, `the iframe is the SAME element with the SAME loaded content — never reloaded (before bodyLen=${iframeBefore.bodyLen}, after=${afterFocus.bodyLen})`);
+    ck(afterFocus.iframeStillSameElement && afterFocus.mark === 'before' && afterFocus.url === iframeBefore.url, `the iframe is the SAME element with the SAME loaded page — never reloaded (mark ${afterFocus.mark}, bodyLen ${iframeBefore.bodyLen} → ${afterFocus.bodyLen})`);
     ck(afterFocus.bannerVisible && /already present on the entity/i.test(afterFocus.bannerText || ''), `the real error is shown as a banner right on the card (got "${afterFocus.bannerText}")`);
     ck(afterFocus.zoomBtnText === '❐', 'the card keeps its own maximize/restore toggle, now showing "restore"');
   }
