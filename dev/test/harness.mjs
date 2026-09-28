@@ -55,6 +55,11 @@ export async function until(read, ok = Boolean, { timeout = 20_000, every = 100 
   }
 }
 
+// Until the page has drawn `n` more frames: for what a script lays out on a later frame
+// (a ResizeObserver, then requestAnimationFrame), where the state before the change would
+// satisfy the check too, so waiting for the check's condition proves nothing.
+export const frames = (page, n = 3) => page.evaluate(n => new Promise(r => { const f = k => (k ? requestAnimationFrame(() => f(k - 1)) : r()); f(n); }), n);
+
 // Until the page has finished starting: its scripts have run and its main thread has
 // nothing queued (MusicBrainz's React is hydrated). Where a spec used to sleep after
 // loading a page before putting a script in, so as not to meet React #418.

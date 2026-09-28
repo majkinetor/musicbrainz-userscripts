@@ -7,7 +7,7 @@
 // tolerance pair (3:20 / 3:22). The first must show the amber Length chip, the "⚠ 15s" badge,
 // the off row's amber length cell and the tooltip note; the second none of it.
 // FUSION_SRC=<old build> to watch it stay silent.
-import { test, check, requireLogin, mbJson } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, mbJson, until, frames } from '../../../dev/test/harness.mjs';
 
 test.use({ viewport: { width: 1500, height: 1000 }, deviceScaleFactor: 2, gm: { name: 'Fusion' } });
 
@@ -31,14 +31,13 @@ test('lengths outside tolerance warn in the chip, the badge, the row and the too
     F.renderAll();
     return { g1: g1.id, g2: g2.id, off: recs[1].gid };
   }, gids);
-  await page.waitForTimeout(800);
   const card = id => page.evaluate(([id, off]) => {
     const c = document.querySelector(`.fs-gcard[data-gid="${id}"]`); if (!c) return null;
     const chip = [...c.querySelectorAll('.fs-sig span')].find(s => /Length/.test(s.textContent));
     const offRow = c.querySelector(`.fs-grow[data-gid="${off}"] .fs-len`);
     return { chipWarn: !!(chip && chip.classList.contains('warn')), chipTitle: chip ? chip.title : '', badge: (c.querySelector('.fs-lenwarn') || {}).textContent || null, offCells: c.querySelectorAll('.fs-len-off').length, offRowOff: !!(offRow && offRow.classList.contains('fs-len-off')), offRowTitle: offRow ? offRow.title : '', cardTitle: c.title };
   }, [id, ids.off]);
-  const a = await card(ids.g1), b = await card(ids.g2);
+  const a = await until(() => card(ids.g1), a => a && a.badge), b = await card(ids.g2);
   console.log('15s group :', JSON.stringify(a)); console.log('2s group  :', JSON.stringify(b));
   check(a && a.chipWarn && /15s/.test(a.chipTitle), 'lengths 15 s apart → the Length chip is amber, with the spread in its tooltip');
   check(a && a.badge === '⚠ 15s', `…a "⚠ 15s" badge next to the title (${a && a.badge})`);
@@ -69,6 +68,7 @@ test('lengths outside tolerance warn in the chip, the badge, the row and the too
       rects: Object.fromEntries(['.fs-lenwarn', '.fs-gt', '.fs-sig', '.fs-ghr', '.fs-ghl', '.fs-ghdr'].map(sel => { const el = c.querySelector(sel); if (!el) return [sel, null]; const r = el.getBoundingClientRect(); return [sel, [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]]; })),
     };
   }, [ids.g1, ids.off]);
+  await frames(page);   // the badge is placed in a later frame (ResizeObserver → rAF)
   const g = await geo();
   console.log('geometry  :', JSON.stringify(g));
   check(g && Math.abs(g.offX - g.plainX) <= 0.5, `the amber length's digits start where the plain length's do (${g && g.offX.toFixed(1)} vs ${g && g.plainX.toFixed(1)})`);
@@ -80,7 +80,7 @@ test('lengths outside tolerance warn in the chip, the badge, the row and the too
 
   // a collapsed card has no rows to line up with → the badge stays beside the title
   await page.evaluate(id => { window.__fusion.STATE.collapsedGroups.add(id); window.__fusion.renderAll(); }, ids.g1);
-  await page.waitForTimeout(200);
+  await frames(page);
   const gc = await geo();
   check(gc && !gc.col && gc.inHdr && !gc.clash, `collapsed → badge falls back beside the title (col=${gc && gc.col})`);
   await page.evaluate(id => { window.__fusion.STATE.collapsedGroups.delete(id); window.__fusion.renderAll(); }, ids.g1);
@@ -90,7 +90,7 @@ test('lengths outside tolerance warn in the chip, the badge, the row and the too
   // ~900px — and the header itself overflows: the title track collapses to 0 and the buttons
   // spill out of the card, with or without this badge. Nothing to assert there.)
   await page.setViewportSize({ width: 1200, height: 1000 });
-  await page.waitForTimeout(400);   // ResizeObserver → rAF → placeLenBadges
+  await frames(page);   // ResizeObserver → rAF → placeLenBadges
   const gn = await geo();
   console.log('narrow    :', JSON.stringify(gn));
   check(gn && gn.inHdr && !gn.clash, `narrower window (1200px) → badge still clear of title/chips/buttons (col=${gn && gn.col})`);
