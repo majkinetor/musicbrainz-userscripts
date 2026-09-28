@@ -10,7 +10,7 @@
 // refuses to spin up any workers, with a clear alert instead of N silent
 // 15s timeouts.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false, profile: 'fresh' });   // a profile that is logged out, which is what #476 is about
@@ -27,7 +27,7 @@ test("#476: unauthenticated", { tag: ['@sandbox'] }, async ({ context, page }) =
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   const dialogs = [];
   page.on('dialog', async d => { dialogs.push(d.message()); await d.dismiss(); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });

@@ -10,7 +10,7 @@
 //
 // Nothing is submitted: every POST is aborted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -30,7 +30,7 @@ test("#573: batch note", { tag: ['@sandbox', '@login'] }, async ({ context, page
     window.GM_deleteValue = k => s.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.route(() => true, r => r.request().method() === 'POST' ? r.abort() : r.fallback());
 
   for (let a = 1; ; a++) {

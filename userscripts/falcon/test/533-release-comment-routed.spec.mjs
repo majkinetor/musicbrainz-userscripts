@@ -13,7 +13,7 @@
 //
 // Nothing is submitted: every POST is aborted, and counted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -33,7 +33,7 @@ test("#533: release comment routed", { tag: ['@sandbox', '@login'] }, async ({ c
     window.GM_deleteValue = k => s.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
 
   // ⚠ Match on the METHOD, not a url glob. A glob that stops matching once the
   // url grows a query string is how six real edits once escaped onto production

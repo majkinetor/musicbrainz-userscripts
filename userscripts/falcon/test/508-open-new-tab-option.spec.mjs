@@ -4,7 +4,7 @@
 // one" being the Harmony tab itself, navigated away to MusicBrainz instead
 // of a new window.open()'d tab.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -28,7 +28,7 @@ test("#508: open new tab option", { tag: ['@sandbox', '@login'] }, async ({ cont
 
   async function clickHarmonyButton({ openInNewTab }) {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const openedUrls = [];
     await page.exposeFunction('__recordOpen', (url) => openedUrls.push(url));
     await page.addInitScript((openInNewTab) => {

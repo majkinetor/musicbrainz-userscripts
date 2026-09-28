@@ -17,7 +17,7 @@
 // The structural half is what this test attacks, by deleting a pre-existing row
 // behind Falcon's back and requiring it to refuse to commit.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -34,7 +34,7 @@ test("#467: no deletions", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   let posts = 0;
   await page.route('**/*', route => {
     const r = route.request();

@@ -9,7 +9,7 @@
 // exactly when the pulse matters most. Moved to #falcon-progress-track,
 // the always-full-width backdrop behind it.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -27,7 +27,7 @@ test("#519: progress pulse", { tag: ['@sandbox', '@login'] }, async ({ context, 
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // hold every worker mid-flight — stalled forever — so `running` stays true
   // long enough to observe the class instead of racing to completion.
   await page.route('**/artist/*/edit*', route => new Promise(() => {}));

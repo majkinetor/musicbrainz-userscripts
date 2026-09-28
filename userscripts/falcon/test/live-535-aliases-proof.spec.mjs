@@ -12,7 +12,7 @@
 //
 // Sandbox only: refuses to run against any host but test.musicbrainz.org.
 import { readFile, writeFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -75,7 +75,7 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context
     window.GM_deleteValue = k => s.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   for (let a = 1; ; a++) {
     try { await page.goto(`${HOST}/release/${RELEASE}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
@@ -174,7 +174,7 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context
     window.GM_deleteValue = k => s.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs2 = []; p2.on('pageerror', e => errs2.push(e.message));
+  const errs2 = []; p2.on('pageerror', e => { if (!mbNoise(e.message)) errs2.push(e.message); });
   for (let a = 1; ; a++) {
     try { await p2.goto(`${HOST}/artist/${ARTIST}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
     catch (e) { if (a >= 3) throw e; await p2.waitForTimeout(5000); }

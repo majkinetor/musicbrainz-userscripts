@@ -30,6 +30,7 @@ test('Merge All submits one merge at a time, and only reports what MusicBrainz c
           if (!recs.length) break;
           for (const r of recs) {
               if (out.length >= need) break;
+              if (r.video) continue;   // other specs flag sandbox recordings as videos; one never merges with audio
               const j = await fetch('/ws/js/entity/' + r.id).then(x => x.ok ? x.json() : null).catch(() => null);
               if (j && j.gid === r.id && !j.editsPending) out.push(r.id);
               await new Promise(z => setTimeout(z, 250));

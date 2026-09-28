@@ -14,7 +14,10 @@ import { readFile } from 'node:fs/promises';
 import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
-test.use({ gm: false });
+// React #418: the page can still be hydrating when the script goes in; MusicBrainz
+// recovers by rendering on the client. Not what this spec is about (as in 467-mvp).
+const HYDRATION = /Minified React error #418/;
+test.use({ gm: false, pageErrors: [HYDRATION.source] });
 
 test("#467: item popup", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
@@ -28,7 +31,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ con
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!HYDRATION.test(e.message)) errs.push(e.message); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
   await idle(page);

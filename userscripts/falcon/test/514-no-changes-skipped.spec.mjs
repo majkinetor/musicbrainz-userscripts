@@ -11,7 +11,7 @@
 // (nothing was wrong, nothing needed to change), same as the existing
 // pre-submit "MB shows no pending change" noop path.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -58,7 +58,7 @@ test("#514: no changes skipped", { tag: ['@sandbox', '@login'] }, async ({ conte
   // runs it against a worker IFRAME for exactly this reason; match that here.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.route(`**/recording/${RECORDING}/edit*`, async (route, request) => {
       if (request.method() === 'POST') {
         return route.fulfill({

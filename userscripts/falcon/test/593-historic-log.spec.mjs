@@ -19,7 +19,7 @@
 // Runs on a real MusicBrainz page because the code under test reads
 // localStorage on that origin, but no run is started and nothing is submitted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -29,7 +29,7 @@ test("#593: historic log", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   const code = await readFile(sourceOf('falcon'), 'utf8');
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   const wrote = [];
   page.on('request', r => { if ((r.method() === 'POST' || r.method() === 'PUT') && /musicbrainz\.org/.test(r.url())) wrote.push(r.url()); });
 

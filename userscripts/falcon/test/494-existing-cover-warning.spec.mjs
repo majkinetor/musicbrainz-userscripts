@@ -9,7 +9,7 @@
 // MB's own /ws/2/release endpoint instead, no cross-origin call at all.
 // renderRowDetail/renderQueue surface the result as a warning.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, until, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -56,7 +56,7 @@ test("#494: existing cover warning", { tag: ['@sandbox', '@login'] }, async ({ c
   //    collapsed summary once existingCount is known and > 0; absent when 0.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });

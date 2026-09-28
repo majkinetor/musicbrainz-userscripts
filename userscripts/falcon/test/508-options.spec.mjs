@@ -4,7 +4,7 @@
 // icon+name+version+Help), adapted to Falcon's own tab-based panel instead of
 // a popup — a new "Options" (⚙) tab holds that header plus the two toggles.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -22,7 +22,7 @@ test("#508: options", { tag: ['@sandbox', '@login'] }, async ({ context, page })
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = [];
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });

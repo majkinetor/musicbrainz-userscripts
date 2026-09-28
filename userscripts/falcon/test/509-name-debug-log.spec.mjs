@@ -4,7 +4,7 @@
 // whether its name came straight from the source (Harmony-scraped) or had to
 // be fetched from MB — so this is checkable from the log instead of assumed.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -26,7 +26,7 @@ test("#509: name debug log", { tag: ['@sandbox', '@login'] }, async ({ context, 
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.route('**/ws/2/recording/**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ title: 'Fetched From MB' }) }));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page.addScriptTag({ content: code });

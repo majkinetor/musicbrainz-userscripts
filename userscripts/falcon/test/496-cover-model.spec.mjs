@@ -15,7 +15,7 @@
 //   4. runCoverItem resolves add-cover-art.type_id from the entry's OWN
 //      `type`, not always "front" regardless of what was asked for.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -37,7 +37,7 @@ test("#496: cover model", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   //     url/type-select/comment inputs, and editing one doesn't touch the other. ---
   {
     const page = context.pages()[0] || await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
@@ -96,7 +96,7 @@ test("#496: cover model", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   //     hardcoded "front". ---
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const calls = [];
     await page.route('**/ws/js/cover-art-upload/**', route => { calls.push('sign'); route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ action: 'https://fake-archive.invalid/upload3', image_id: 42, nonce: 'n3', formdata: {} }) }); });
     await page.route('https://fake-archive.invalid/upload3', route => { calls.push('upload'); route.fulfill({ status: 200, body: 'ok' }); });

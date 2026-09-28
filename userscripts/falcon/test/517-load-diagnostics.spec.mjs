@@ -7,7 +7,7 @@
 // NEXT occurrence's log says which check kept failing instead of needing
 // another live repro.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, until, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -26,7 +26,7 @@ test("#517: load diagnostics", { tag: ['@sandbox', '@login'] }, async ({ context
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // serve a response that STAYS on /edit but never renders the rows Falcon
   // looks for — a controlled way to force the "still waiting" diagnostic path
   // without needing a real 3+ second wait against a live MB page.

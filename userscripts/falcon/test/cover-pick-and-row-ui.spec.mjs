@@ -14,7 +14,7 @@
 //
 // Nothing is submitted: every POST is aborted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames, idle, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, until, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -32,7 +32,7 @@ test("cover pick and row ui", { tag: ['@sandbox', '@login'] }, async ({ context,
     window.GM_deleteValue = k => s.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // ⚠ Falcon measures covers through GM_xmlhttpRequest, which bypasses CORS. A
   // page-context fetch cannot — so without a real shim every measurement fails,
   // the code silently falls back to the (wrong) caption numbers, and this test

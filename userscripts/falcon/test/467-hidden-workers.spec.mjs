@@ -12,7 +12,7 @@
 // This test is the regression guard: run a batch while the Queue tab is the
 // active one (i.e. Workers pane hidden) and require it to commit normally.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -30,7 +30,7 @@ test("#467: hidden workers", { tag: ['@sandbox', '@login'] }, async ({ context, 
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   let posts = 0;
   await page.route('**/artist/*/edit*', async (route, request) => {
     if (request.method() === 'POST') { posts++; const m = request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/); return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/artist/${m[1]}` } }); }

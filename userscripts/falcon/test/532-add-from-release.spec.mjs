@@ -12,7 +12,7 @@
 //
 // Runs against the sandbox and never submits: every POST to /edit is aborted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -30,7 +30,7 @@ test("#532: add from release", { tag: ['@sandbox', '@login'] }, async ({ context
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const ck = check;
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
 
   let posts = 0;
   await page.route('**/*', route => {

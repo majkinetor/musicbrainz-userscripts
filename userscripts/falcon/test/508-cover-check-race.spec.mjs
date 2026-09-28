@@ -7,7 +7,7 @@
 // (_coverCheckPromise) and runCoverItem awaits it before deciding, but only
 // when the option is actually on.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -25,7 +25,7 @@ test("#508: cover check race", { tag: ['@sandbox', '@login'] }, async ({ context
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // The worker reaches the item before the cover-art check answers: runCoverItem is
   // called in the same task that starts the check, so no answer can come first.
   await page.route('**/ws/2/release/**', async route => {
