@@ -14,18 +14,20 @@ npm install -g pnpm
 winget install GitHub.cli                  # for filing issues/discussions/PRs
 gh auth login                              # follow prompts
 
-# 2. one-time setup of this project
-cd C:\path\to\mb-userscripts\userscripts\discogs_credits
-pnpm install                               # ~50 MB, installs eslint + playwright
+# 2. one-time setup
+cd C:\path\to\mb-userscripts
+pnpm install                               # the repo's test runner (Playwright Test)
 pnpm exec playwright install chromium      # ~150 MB browser binary
-pnpm run login                             # opens MB once for manual sign-in
+node dev/test/login.mjs                    # sign the shared test profile in to MB, once
+cd userscripts\credit_hoarder
+pnpm install                               # this project's build tools (esbuild, eslint)
 
 # 3. day-to-day
 pnpm run dev                               # watches src/, rebuilds dist/, serves it on http://127.0.0.1:8765 for VM/TM live-update
 pnpm run watch                             # same watcher, no HTTP server
 pnpm run verify                            # lint + build + node --check
-pnpm test                                  # headless test on 7 fixtures
-pnpm test:headed -- --only=18cae3db        # show the browser, one fixture
+pnpm test                                  # Credit Hoarder's specs, headless
+pnpm test:headed -- --grep Frontera        # show the browser, one fixture
 ```
 
 ---
@@ -179,37 +181,24 @@ What it catches:
 
 ### Browser gate — `pnpm test`
 
-Drives a real Chromium with your stored MB session, runs the import on each fixture in `test/fixtures.json`, snapshots `MB.relationshipEditor.state` directly, and asserts the staged relationships against the Discogs JSON + MB's own validity rules. **Never submits.**
+Credit Hoarder's specs run in the repo's one test runner, beside every other script's; [`dev/test/README.md`](../../dev/test/README.md) covers the runner, the tags and the production write guard. `pnpm test` here is `pnpm test --project=credit_hoarder` at the repo root.
+
+`test/fixtures.spec.mjs` drives a real Chromium on test.musicbrainz.org: it runs the import on each release in `test/fixtures.json`, snapshots `MB.relationshipEditor.state` directly, and asserts the staged relationships against the Discogs JSON and MusicBrainz's own validity rules (`test/lib/verify.js`). **Never submits.**
 
 ```powershell
-pnpm test                                  # all fixtures, headless
+pnpm test                                  # every spec, headless
 pnpm test:headed                           # show the browser
-pnpm test -- --pause                       # pause after each fixture for visual inspection
-                                           # (implies --headed; Enter to continue, Ctrl-C to abort)
-
-# Filtering (combine freely; AND across flags, OR within --tags list):
-pnpm test -- --only=18cae3db               # URL or MBID substring (also accepts 0-based index)
-pnpm test -- --name=street                 # case-insensitive name substring
-pnpm test -- --tags=small,ep               # any of these tags (comma- or space-separated)
-pnpm test -- --name=bosporus --tags=small  # AND across flags
+pnpm test -- --grep Frontera               # one fixture, by name
+pnpm test -- --grep "@fixture.*@small"     # fixtures with a tag
 ```
 
-Each fixture in `test/fixtures.json` is an object with `name`, `url`, and `tags` (space- or comma-separated). Add tags freely as new patterns emerge; the runner treats unknown tags as ignorable.
+Each fixture in `test/fixtures.json` is an object with `name`, `url` (a release on the sandbox; `node dev/test/copy-to-sandbox.mjs <mbid>` copies one from production) and `tags`, which become the test's `@tags`. Fixtures tagged `debug` reproduce bug reports and run only with `CH_DEBUG=1`.
 
 ### Per-run output
 
-Each `pnpm test` invocation creates its own directory:
+The run's HTML report (`pnpm test:report` at the repo root) keeps, for each fixture, the userscript's import log, the browser console and a screenshot of the editor.
 
-```
-test/logs/<ISO8601-timestamp>/
-├── README.md                  the command, start/finish time, results table
-├── <fixture-slug>.log         userscript import-bar log + browser console + page errors
-└── <fixture-slug>.png         full-page screenshot of MB just before close
-```
-
-Useful for comparing runs (e.g. before vs after a fix), correlating a UI regression to a specific run, and archiving evidence. Gitignored.
-
-**Persistent profile.** `.pw-profile/` lives in this directory and holds the MB login cookies + the IDB entity cache the userscript builds up. **Don't delete it casually** — its loss means re-running `pnpm run login` *and* re-paying the cold-cache preflight cost (a few minutes per release for many-entity ones).
+**Persistent profile.** The shared `.pw-profile/` at the repo root holds the MB login cookies and the IDB entity cache the userscript builds up. **Don't delete it casually**: its loss means signing in again (`node dev/test/login.mjs`) *and* re-paying the cold-cache preflight cost (a few minutes per release for many-entity ones).
 
 **First-run cost.** Cold-cache fixtures with many entities (e.g. Midwest Funk has 230) can take ~10 min — the userscript serially looks them up against MB under rate limits. The `confirmReviewTable` Playwright timeout in `test/lib/browser.js` is 20 min for this reason. Subsequent runs reuse the cache and are <30s per fixture.
 
@@ -250,25 +239,21 @@ pnpm run verify
 ### "I want to see what the script does on a specific MB release"
 
 ```powershell
-pnpm test:headed -- --only=<substring-of-MB-release-mbid-or-index>
+pnpm test:headed -- --grep "<fixture name>"
 ```
 
 The Chromium window opens, the script's import bar appears at the top, you watch.
 
 ### "I want to test against a release that isn't in the fixtures"
 
-Edit `test/fixtures.json` and add the URL. Or run `pnpm test -- --only=<your-url-substring>` after appending it.
+Copy it to the sandbox (`node dev/test/copy-to-sandbox.mjs <mbid>` at the repo root), add the copy's URL to `test/fixtures.json`, and run `pnpm test -- --grep "<its name>"`.
 
 ### "I want to clear the entity cache"
 
 ```powershell
-Remove-Item -Recurse -Force .pw-profile
-pnpm run login
+Remove-Item -Recurse -Force ..\..\.pw-profile
+node ..\..\dev\test\login.mjs
 ```
-
-### "I want the runner to re-fetch a fixture's logs even if assertions pass"
-
-Already does — logs save every run to `test/logs/<ISO8601>_<mbid>.log`.
 
 ### "Auto-react to GH notifs via a channel into a running Claude session"
 
@@ -290,9 +275,9 @@ You need to be in an elevated terminal — nvm-windows requires admin to update 
 
 Run `pnpm exec playwright install chromium` again. The first install can be flaky on slow connections.
 
-### `pnpm run login` opens a browser but never closes
+### `node dev/test/login.mjs` opens a browser but never closes
 
-The login-detection polls for the `/user/<your-name>` link in the MB header. If you log in but stay on `/login`, click anywhere on MB to navigate. The browser auto-closes within 1s of detecting the post-login URL.
+It waits (up to 5 minutes per site) for MB's "Log out" link to appear, first on musicbrainz.org, then on test.musicbrainz.org; the two have separate accounts. If you signed in but are still on the sign-in page, click anywhere on MB to navigate.
 
 ### Tests pass on some fixtures and time out on others
 
@@ -300,7 +285,7 @@ First-run on a many-entity release legitimately takes minutes (rate-limited pref
 
 ### A fixture stalls forever in headed mode
 
-Open `test/logs/<latest>_<mbid>.log`. The last line in "Userscript import log" tells you the last thing the script did before stalling. Browser console + page errors are below.
+Open the fixture's "import log" in the run's HTML report (`pnpm test:report` at the repo root). Its last line is the last thing the script did before stalling; the "browser log" beside it has the console and page errors.
 
 ## Implementation details
 

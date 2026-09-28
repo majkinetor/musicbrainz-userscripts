@@ -21,9 +21,6 @@ Thumbs.db
 npm-debug.log*
 pnpm-debug.log*
 
-# Per-fixture import logs from `pnpm test`
-test/logs/
-
 # NB: GH credentials, notification-pipeline state/logs, and the
 # notif-channel server's node_modules now live under the repo-root
 # `/dev/` and are gitignored from the repo-root `.gitignore`. The

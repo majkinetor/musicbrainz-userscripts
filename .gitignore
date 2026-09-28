@@ -32,10 +32,7 @@ dev/notif-channel/node_modules/
 # userscript test. Populate once with `node dev/test/login.mjs` (production and
 # sandbox). Never commit — it holds session cookies.
 /.pw-profile/
-userscripts/falcon/test/_535-aliases.json
 userscripts/credit_hoarder/_rp.mjs
-userscripts/*/test/*.png
-userscripts/*/test/logs/
 
 # Working screenshots taken while iterating on an issue. Throwaway by
 # definition — the ones that are meant to last live in dev/screens/, which is
