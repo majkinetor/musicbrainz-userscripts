@@ -143,8 +143,35 @@ export function mbmCoCreditHits(recordingsJson, ctxGid, name) {
     return out;
 }
 
+/**
+ * A first guess at a new artist's sort name, for the create-artist form (Apollo, Credit
+ * Hoarder; #623). MB's own "guess" button has the same limits; the editor reviews it.
+ *
+ *   The Rolling Stones → Rolling Stones, The     (a leading The / A / An moves to the end)
+ *   John Smith         → Smith, John             (last word first)
+ *   John Smith Jr.     → Smith, John Jr.         (a suffix stays with the given names)
+ *   Björk Guðmundsdóttir → Guðmundsdóttir, Björk
+ *   Madonna, 坂本龍一, Кино → unchanged           (one word, or letters outside Latin)
+ */
+export function mbmGuessSortName(name) {
+    if (!name || !name.trim()) return name;
+    name = name.trim().replace(/\s+/g, ' ');
+    // names in other scripts are not "given family" in Latin order: leave them to the editor
+    if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+    const words = name.split(' ');
+    if (words.length === 1) return name;
+    const article = name.match(/^(the|a|an)\s+(.+)$/i);
+    if (article) return article[2] + ', ' + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+    let base = name, suffix = '';
+    const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+    if (sfx) { base = sfx[1].trim(); suffix = ' ' + sfx[2]; }
+    const parts = base.split(' ');
+    if (parts.length === 1) return name;
+    return parts[parts.length - 1] + ', ' + parts.slice(0, -1).join(' ') + suffix;
+}
+
 // what sync-match.mjs inlines, in order (constants first)
 export const MBM_INLINE = {
     consts: { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE },
-    fns: [mbmFold, mbmFoldKeepCase, mbmSameName, mbmSameNameCase, mbmHolds, mbmIdentityQuery, mbmExactIdentity, mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits],
+    fns: [mbmFold, mbmFoldKeepCase, mbmSameName, mbmSameNameCase, mbmHolds, mbmIdentityQuery, mbmExactIdentity, mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmGuessSortName],
 };

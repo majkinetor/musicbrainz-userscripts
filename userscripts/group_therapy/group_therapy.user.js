@@ -3417,6 +3417,22 @@
       }
       return out;
   }
+  function mbmGuessSortName(name) {
+      if (!name || !name.trim()) return name;
+      name = name.trim().replace(/\s+/g, ' ');
+      // names in other scripts are not "given family" in Latin order: leave them to the editor
+      if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+      const words = name.split(' ');
+      if (words.length === 1) return name;
+      const article = name.match(/^(the|a|an)\s+(.+)$/i);
+      if (article) return article[2] + ', ' + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+      let base = name, suffix = '';
+      const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+      if (sfx) { base = sfx[1].trim(); suffix = ' ' + sfx[2]; }
+      const parts = base.split(' ');
+      if (parts.length === 1) return name;
+      return parts[parts.length - 1] + ', ' + parts.slice(0, -1).join(' ') + suffix;
+  }
   // </ST-MATCH>
   const txpFold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const txpSameName = (a, b) => txpFold(a) === txpFold(b);

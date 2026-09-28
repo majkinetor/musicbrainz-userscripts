@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.28.210809
+// @version      2026.9.28.210958
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -1833,37 +1833,134 @@
     "Wobble Board": null
   };
 
+  // ../../dev/match/artist-match.mjs
+  var MBM_EXACT_LIMIT = 100;
+  var MBM_SPECIAL_PURPOSE = [
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ];
+  function mbmFold(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  function mbmFoldKeepCase(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
+  }
+  function mbmSameName(a, b) {
+    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
+  }
+  function mbmSameNameCase(a, b) {
+    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
+  }
+  function mbmHolds(entity, name, caseExact) {
+    if (!entity) return null;
+    const same = caseExact ? mbmSameNameCase : mbmSameName;
+    if (same(entity.name, name)) return "name";
+    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
+    return null;
+  }
+  function mbmIdentityQuery(name, field) {
+    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
+    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
+  }
+  function mbmExactIdentity(json, name, opts) {
+    const o = opts || {};
+    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
+    const list = json.artists || json.labels || json.places || [];
+    let exact = list.filter((e) => mbmHolds(e, name));
+    if (exact.length > 1) {
+      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
+      if (caseExact.length === 1) exact = caseExact;
+      else if (o.scoreGap) {
+        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
+        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+      }
+    }
+    const offset = typeof json.offset === "number" ? json.offset : 0;
+    const complete = typeof json.count === "number" && json.count <= offset + list.length;
+    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
+    if (exact.length > 1) return { status: "ambiguous", exact, complete };
+    if (!complete) return { status: "incomplete", exact, complete };
+    return { status: "none", exact, complete };
+  }
+  function mbmRelatedArtists(artistJson) {
+    if (!artistJson || !artistJson.id) return [];
+    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
+    for (const r of artistJson.relations || []) {
+      const a = r && r.artist;
+      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
+      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
+    }
+    return out;
+  }
+  function mbmContextHolders(related, name, candidates) {
+    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
+    const out = [];
+    for (const r of related || []) {
+      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
+      if (!via) {
+        const c = cand.get(r.gid);
+        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
+      }
+      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+    }
+    return out;
+  }
+  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
+    const out = [];
+    for (const rec of recordingsJson && recordingsJson.recordings || []) {
+      for (const c of rec["artist-credit"] || []) {
+        const a = c && c.artist;
+        if (!a || !a.id || a.id === ctxGid) continue;
+        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+      }
+    }
+    return out;
+  }
+  function mbmGuessSortName(name) {
+    if (!name || !name.trim()) return name;
+    name = name.trim().replace(/\s+/g, " ");
+    if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+    const words = name.split(" ");
+    if (words.length === 1) return name;
+    const article = name.match(/^(the|a|an)\s+(.+)$/i);
+    if (article) return article[2] + ", " + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+    let base = name, suffix = "";
+    const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+    if (sfx) {
+      base = sfx[1].trim();
+      suffix = " " + sfx[2];
+    }
+    const parts = base.split(" ");
+    if (parts.length === 1) return name;
+    return parts[parts.length - 1] + ", " + parts.slice(0, -1).join(" ") + suffix;
+  }
+
   // src/mappers.js
   var INSTRUMENTS_CI = Object.fromEntries(
     Object.entries(INSTRUMENTS).map(([k, v]) => [k.toLowerCase(), v])
   );
-  function guessSortName(name) {
-    if (!name || !name.trim()) return name;
-    name = name.trim();
-    const articleRe = /^(the|a|an)\s+(.+)$/i;
-    const honorifics = /^(dr\.?|prof\.?|sir|lady|lord|rev\.?|st\.?|dj|mc|mc\.?)\s+/i;
-    const suffixRe = /^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i;
-    const words = name.split(/\s+/);
-    if (words.length === 1) return name;
-    const articleMatch = name.match(articleRe);
-    if (articleMatch) {
-      const article = articleMatch[1];
-      const rest = articleMatch[2];
-      return `${rest}, ${article.charAt(0).toUpperCase() + article.slice(1).toLowerCase()}`;
-    }
-    let suffix = "";
-    let baseName = name;
-    const suffixMatch = name.match(suffixRe);
-    if (suffixMatch) {
-      baseName = suffixMatch[1].trim();
-      suffix = " " + suffixMatch[2];
-    }
-    const baseWords = baseName.split(/\s+/);
-    if (baseWords.length === 1) return name;
-    const familyName = baseWords[baseWords.length - 1];
-    const givenPart = baseWords.slice(0, -1).join(" ");
-    return `${familyName}, ${givenPart}${suffix}`;
-  }
   function flattenTracklist(tracklist) {
     if (!Array.isArray(tracklist)) return [];
     return tracklist.flatMap((t) => {
@@ -2080,112 +2177,6 @@
       }
       return rolesArr;
     }, []) || [];
-  }
-
-  // ../../dev/match/artist-match.mjs
-  var MBM_EXACT_LIMIT = 100;
-  var MBM_SPECIAL_PURPOSE = [
-    "125ec42a-7229-4250-afc5-e057484327fe",
-    // [unknown]
-    "f731ccc4-e22a-43af-a747-64213329e088",
-    // [anonymous]
-    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
-    // [data]
-    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
-    // [dialogue]
-    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
-    // [no artist]
-    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
-    // [traditional]
-    "89ad4ac3-39f7-470e-963a-56509c546377",
-    // Various Artists
-    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
-    // MusicBrainz Test Artist
-    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
-    // [Disney]
-    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
-    // [theatre]
-    "90068d37-bae7-4292-be4a-704c145bd616",
-    // [church chimes]
-    "80a8851f-444c-4539-892b-ad2a49292aa9"
-    // [language instruction]
-  ];
-  function mbmFold(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
-  }
-  function mbmFoldKeepCase(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
-  }
-  function mbmSameName(a, b) {
-    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
-  }
-  function mbmSameNameCase(a, b) {
-    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
-  }
-  function mbmHolds(entity, name, caseExact) {
-    if (!entity) return null;
-    const same = caseExact ? mbmSameNameCase : mbmSameName;
-    if (same(entity.name, name)) return "name";
-    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
-    return null;
-  }
-  function mbmIdentityQuery(name, field) {
-    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
-    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
-  }
-  function mbmExactIdentity(json, name, opts) {
-    const o = opts || {};
-    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
-    const list = json.artists || json.labels || json.places || [];
-    let exact = list.filter((e) => mbmHolds(e, name));
-    if (exact.length > 1) {
-      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
-      if (caseExact.length === 1) exact = caseExact;
-      else if (o.scoreGap) {
-        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
-        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
-      }
-    }
-    const offset = typeof json.offset === "number" ? json.offset : 0;
-    const complete = typeof json.count === "number" && json.count <= offset + list.length;
-    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
-    if (exact.length > 1) return { status: "ambiguous", exact, complete };
-    if (!complete) return { status: "incomplete", exact, complete };
-    return { status: "none", exact, complete };
-  }
-  function mbmRelatedArtists(artistJson) {
-    if (!artistJson || !artistJson.id) return [];
-    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
-    for (const r of artistJson.relations || []) {
-      const a = r && r.artist;
-      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
-      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
-    }
-    return out;
-  }
-  function mbmContextHolders(related, name, candidates) {
-    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
-    const out = [];
-    for (const r of related || []) {
-      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
-      if (!via) {
-        const c = cand.get(r.gid);
-        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
-      }
-      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
-    }
-    return out;
-  }
-  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
-    const out = [];
-    for (const rec of recordingsJson && recordingsJson.recordings || []) {
-      for (const c of rec["artist-credit"] || []) {
-        const a = c && c.artist;
-        if (!a || !a.id || a.id === ctxGid) continue;
-        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
-      }
-    }
-    return out;
   }
 
   // src/sources/split-names.js
@@ -5064,7 +5055,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             if (entityType === "artist") {
               createParams = {
                 "edit-artist.name": finalName,
-                "edit-artist.sort_name": guessSortName(finalName),
+                "edit-artist.sort_name": mbmGuessSortName(finalName),
                 "edit-artist.type_id": "1"
               };
               seedUrls(createParams, "artist");

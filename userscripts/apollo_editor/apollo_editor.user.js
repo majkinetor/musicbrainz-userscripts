@@ -147,6 +147,22 @@
       }
       return out;
   }
+  function mbmGuessSortName(name) {
+      if (!name || !name.trim()) return name;
+      name = name.trim().replace(/\s+/g, ' ');
+      // names in other scripts are not "given family" in Latin order: leave them to the editor
+      if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+      const words = name.split(' ');
+      if (words.length === 1) return name;
+      const article = name.match(/^(the|a|an)\s+(.+)$/i);
+      if (article) return article[2] + ', ' + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+      let base = name, suffix = '';
+      const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+      if (sfx) { base = sfx[1].trim(); suffix = ' ' + sfx[2]; }
+      const parts = base.split(' ');
+      if (parts.length === 1) return name;
+      return parts[parts.length - 1] + ', ' + parts.slice(0, -1).join(' ') + suffix;
+  }
   // </ST-MATCH>
   // normalize hyphen/dash look-alikes (MB uses ‐ U+2010, others use - U+002D, en/em
   // dashes, minus…) to a plain '-' so e.g. "Gol‐e Yakh" folds the same as "Gol-e Yakh"
@@ -1560,12 +1576,8 @@
   }
 
   /* ── create artist ── */
-  function guessSortName(name) {
-    const n = (name || '').trim();
-    if (!/^[\x00-\x7F]+$/.test(n)) return n;
-    const p = n.split(/\s+/); if (p.length < 2) return n;
-    const last = p.pop(); return last + ', ' + p.join(' ');
-  }
+  // the sort-name guess is shared with Credit Hoarder (mbmGuessSortName, the ST-MATCH block)
+  const guessSortName = name => mbmGuessSortName(name);
   // open MB's create-artist form; when it's saved, the new artist page posts the MBID back over the
   // channel (handshake via sessionStorage token) and closes itself, and we drop it into the slot.
   function createArtist(name, slot, discogsUrl, background) {
