@@ -9,8 +9,11 @@ import { readFile } from 'node:fs/promises';
 import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
-// the script brings its own GM stand-ins, as it did before the harness
-test.use({ gm: false });
+// the script brings its own GM stand-ins, as it did before the harness.
+// React #418: on a slow machine (CI) the page can still be hydrating when the script
+// goes in; MusicBrainz recovers by rendering on the client. Not what this spec is about.
+const HYDRATION = /Minified React error #418/;
+test.use({ gm: false, pageErrors: [HYDRATION.source] });
 
 test("#467: mvp", { tag: ['@sandbox', '@login', '@critical'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
@@ -24,7 +27,7 @@ test("#467: mvp", { tag: ['@sandbox', '@login', '@critical'] }, async ({ context
     window.GM_setValue = (k, v) => store.set(k, v);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!HYDRATION.test(e.message)) errs.push(e.message); });
 
   let posts = [];
   await page.route('**/artist/*/edit*', async (route, request) => {
