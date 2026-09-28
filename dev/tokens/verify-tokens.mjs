@@ -17,9 +17,14 @@
 // is dev/tokens/verify-tokens-live.mjs.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join, relative } from 'node:path';
 import { TOKENS, tokensCss } from './design-tokens.mjs';
+
+// ESLint's own parser, reached through eslint (a root dev dependency) since
+// pnpm does not expose its dependencies at the top level.
+const espree = createRequire(createRequire(import.meta.url).resolve('eslint/package.json'))('espree');
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');   // dev/<subsystem>/ -> repo root
@@ -92,23 +97,41 @@ for (const f of files) {
     // window.MBU — populated from inside that very function — while the scripts use
     // the bare names.
     //
-    // Decided by brace balance, not indentation: sync-ui.mjs preserves the marker's
-    // own indent, so a nested block can sit at the same column as its enclosing
-    // function and look top-level.
-    {
-        const ls = src.split(/\r?\n/);
-        const blk = ls.findIndex(l => l.includes('// <ST-UI>'));
+    // Decided by parsing, not indentation or brace counting: sync-ui.mjs preserves
+    // the marker's own indent, so a nested block can sit at the same column as its
+    // enclosing function and look top-level; and counting braces line by line was
+    // thrown off by `//` inside strings ('https://…'), which it took for a comment.
+    // Module scope is the top level, or the body of the script's own wrapper (a
+    // function called right where it is written, at the top level).
+    //
+    // Only for single-file scripts. An ES module (Credit Hoarder's src/) shares no
+    // scope with its siblings anyway; a bare use from another module is an
+    // undefined name, which that project's own lint (no-undef) already fails on.
+    const isModule = /^\s*(import|export)\s/m.test(src);
+    if (!isModule) {
+        const blk = src.indexOf('// <ST-UI>');
         let enclosing = null;
-        for (let i = 0; blk >= 0 && i < blk; i++) {
-            if (!/^\s*(async\s+)?function\s+\w+\s*\(/.test(ls[i])) continue;
-            let depth = 0, closedAt = -1;
-            for (let j = i; j < ls.length; j++) {
-                for (const ch of ls[j].replace(/\/\/.*$/, '')) { if (ch === '{') depth++; else if (ch === '}') depth--; }
-                if (depth === 0 && j > i) { closedAt = j; break; }
-            }
-            if (closedAt > blk) enclosing = ls[i].trim().slice(0, 48);
+        if (blk >= 0) {
+            let ast = null;
+            try { ast = espree.parse(src, { ecmaVersion: 'latest', sourceType: 'module', range: true, loc: true }); }
+            catch (e) { ck(false, `${rel}: parses, so its block scope can be checked (${e.message})`); }
+            const isWrapper = (fn, parent, grand) => parent && parent.type === 'CallExpression' && parent.callee === fn
+                && grand && grand.type === 'ExpressionStatement' && ast.body.includes(grand);
+            const visit = (n, parent, grand) => {
+                if (!n || typeof n.type !== 'string' || enclosing || !(n.range[0] <= blk && blk <= n.range[1])) return;
+                if (/Function/.test(n.type) && !isWrapper(n, parent, grand)) {
+                    enclosing = (n.id ? `function ${n.id.name}` : 'a function') + ` (line ${n.loc.start.line})`;
+                    return;
+                }
+                for (const k of Object.keys(n)) {
+                    const v = n[k];
+                    if (Array.isArray(v)) v.forEach(c => visit(c, n, parent));
+                    else if (v && typeof v.type === 'string' && k !== 'parent') visit(v, n, parent);
+                }
+            };
+            if (ast) visit(ast, null, null);
         }
-        ck(!enclosing, `${rel}: the generated blocks are at module scope${enclosing ? ` (INSIDE ${JSON.stringify(enclosing)} — its helpers are invisible everywhere else)` : ''}`);
+        ck(!enclosing, `${rel}: the generated blocks are at module scope${enclosing ? ` (INSIDE ${enclosing} — its helpers are invisible everywhere else)` : ''}`);
     }
     // 3. every stylesheet-producing site that uses a token must also emit the block.
     // A script with several <style> elements (Apollo has three, Platform Check two)
