@@ -8,7 +8,7 @@
 //   Merge (all ticked) → one medium, 7 tracks numbered 1–7, each on its original recording.
 //   Split at track 5 → 4 + 3, the new medium numbered from 1, the same recordings.
 // "Remove medium" waits for votes, as for anyone; the sandbox's own Accept applies it.
-import { test, check, mbJson, SANDBOX, requireLogin } from '../../../dev/test/harness.mjs';
+import { test, check, mbJson, SANDBOX, requireLogin, until, idle } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -27,7 +27,7 @@ async function makeRelease(page) {
     document.body.appendChild(form); form.submit();
   }, f);
   await page.waitForFunction(() => { try { const n = MB.releaseEditor.rootField.release().artistCredit().names; return n[0].artist && n[0].artist.id; } catch (e) { return false; } }, null, { timeout: 60000 });
-  await page.waitForTimeout(2000);
+  await idle(page);
   await page.evaluate(() => MB.releaseEditor.submitEdits());
   await page.waitForURL(/\/release\/[0-9a-f-]{36}(\?|$|#)/, { timeout: 120000 });
   return page.url().match(/\/release\/([0-9a-f-]{36})/)[1];
@@ -59,8 +59,7 @@ test('merge all media, then split one, and MusicBrainz agrees', { tag: ['@sandbo
   await openApollo(page, inject, { release: rel, tab: 'tracklist', submit: true });
   await useTool(page, 'mergemed');
   await page.waitForFunction(() => MB.releaseEditor.rootField.release().mediums().length === 1, null, { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(1500);
-  let ed = await inEditor(page);
+  let ed = await until(() => inEditor(page), e => e.length === 1 && e[0].tracks.length === 7 && e[0].tracks.every((t, i) => t.num === String(i + 1)));
   check(ed.length === 1 && ed[0].tracks.length === 7, `merged in the editor: one medium of 7 (${ed.map(m => m.tracks.length).join('+')})`);
   check(ed[0] && ed[0].tracks.every((t, i) => t.num === String(i + 1)), 'numbered 1–7');
   check(ed[0] && JSON.stringify(ed[0].tracks.map(t => t.rec)) === JSON.stringify(recs), 'each on its original recording, in order');
@@ -72,8 +71,7 @@ test('merge all media, then split one, and MusicBrainz agrees', { tag: ['@sandbo
   // by value (the track index): the label "4" is index 3
   await useTool(page, 'splitmed', () => page.selectOption('.tc-opt[data-tool="splitmed"] .tc-spat', { value: '4' }));
   await page.waitForFunction(() => MB.releaseEditor.rootField.release().mediums().length === 2, null, { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(1500);
-  ed = await inEditor(page);
+  ed = await until(() => inEditor(page), e => e.length === 2 && e[1].tracks.length === 3 && e[1].pos === 2);
   check(ed.length === 2 && ed[0].tracks.length === 4 && ed[1].tracks.length === 3, `split in the editor: 4 + 3 (${ed.map(m => m.tracks.length).join('+')})`);
   check(ed[1] && ed[1].pos === 2 && ed[1].tracks.every((t, i) => t.num === String(i + 1)), 'the new medium is #2, numbered from 1');
   check(JSON.stringify(ed.flatMap(m => m.tracks.map(t => t.rec))) === JSON.stringify(recs), 'the same recordings, in order');

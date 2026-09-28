@@ -10,7 +10,7 @@
 //
 // A seeded release whose artist auto-matches; MusicBrainz's search answers replayed from
 // production (RECORD_WS=1), so the match is the same every run. Nothing is submitted.
-import { test, check, replayWs } from '../../../dev/test/harness.mjs';
+import { test, check, replayWs, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -19,6 +19,7 @@ test('a matched slot being edited is left alone until it loses focus', { tag: ['
   const ws = await replayWs(page, new URL('./fixtures/ws-580.json.gz', import.meta.url));
   const seed = { name: 'Apollo 580 fixture', 'artist_credit.names.0.name': 'Miles Davis', 'mediums.0.format': 'CD' };
   ['So What', 'Blue in Green'].forEach((t, i) => { seed[`mediums.0.track.${i}.name`] = t; seed[`mediums.0.track.${i}.artist_credit.names.0.name`] = 'Miles Davis'; });
+  await page.clock.install();   // "well past the 400 ms rebuild" is run out on it, below
   const submitted = await openApollo(page, inject, { seed, tab: 'tracklist' });
   await page.waitForSelector('.tc-search input.nm', { state: 'visible', timeout: 60000 });
   const matched = await page.waitForFunction(() => window.__apolloEditor.model?.tracks[0]?.slots[0].committed, null, { timeout: 120000 }).then(() => true).catch(() => false);
@@ -28,12 +29,11 @@ test('a matched slot being edited is left alone until it loses focus', { tag: ['
   await page.evaluate(() => { document.querySelector('.tc-search input.nm').dataset.fixtureMark = 'original'; });
   check(!(await mkShown()), 'settled and matched: no ＋');
   await page.locator('.tc-search input.nm').first().click();
-  await page.waitForTimeout(150);
-  check(await mkShown(), 'focused: ＋ is offered (to create a same-named artist)');
+  check(await until(mkShown), 'focused: ＋ is offered (to create a same-named artist)');
 
   await page.keyboard.press('Control+A');
   await page.keyboard.type('M');   // one letter over the name: the reported gesture
-  await page.waitForTimeout(2000);   // well past the 400 ms rebuild
+  await page.clock.runFor(2000);   // well past the 400 ms rebuild
   const after = await page.evaluate(() => {
     const live = document.querySelector('.tc-search input.nm'), s = window.__apolloEditor.model.tracks[0].slots[0];
     return { value: live && live.value, same: !!live && live.dataset.fixtureMark === 'original', focused: document.activeElement === live, committed: !!s.committed, pending: !!s._pending };

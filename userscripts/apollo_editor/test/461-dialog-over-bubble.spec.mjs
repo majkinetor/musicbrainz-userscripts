@@ -9,8 +9,7 @@ import { openApollo, apolloGm } from './ap.mjs';
 test.use({ gm: apolloGm() });
 
 test('the add-entity dialog sits above the artist-credit bubble', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
-  await openApollo(page, inject, { release: '35e0c3ca-1130-4cfb-911d-c275ab31100e' });
-  await page.waitForTimeout(2000);
+  await openApollo(page, inject, { release: '35e0c3ca-1130-4cfb-911d-c275ab31100e' });   // settled when it returns
   const r = await page.evaluate(() => {
     const bub = document.createElement('div'); bub.className = 'bubble'; bub.style.position = 'absolute'; bub.innerHTML = '<input>';
     const back = document.createElement('div'); back.className = 'modal-backdrop'; back.style.position = 'fixed';

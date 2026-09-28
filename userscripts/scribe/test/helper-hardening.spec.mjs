@@ -53,8 +53,9 @@ test('the helper writes only .md files, and only inside its temp folder', { tag:
     check(!existsSync(PROBE), 'nothing was written outside the temp folder: ' + PROBE);
 
     // edit → save → /result → /close still works
+    // /result answers a change against the time the file was opened, so the order of
+    // the request and the write does not matter
     const pending = req('GET', '/result?id=rel-abcd1234-kx9q');
-    await sleep(600);
     writeFileSync(a.json.file, 'hello, edited');
     const res = await pending;
     check(res.status === 200 && res.json && res.json.content === 'hello, edited', `a save comes back through /result ("${res.json && res.json.content}")`);

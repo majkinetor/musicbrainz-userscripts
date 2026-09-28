@@ -7,7 +7,7 @@
 //   auto-match waited up to 15 s for every medium to load (collapsed ones never do) and
 //   held the tracklist back meanwhile. A medium's tracks now show as soon as MusicBrainz
 //   has them.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.describe('#149', () => {
@@ -36,10 +36,12 @@ test.describe('#149', () => {
 
 test.describe('#616', () => {
   test.use({ gm: apolloGm({ autoMatchRec: true }) });   // his setup: that pass held the tracklist
-  test('an expanded medium shows at once', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  // @timing: a budget in milliseconds is what this asserts, so CI (slower, shared) leaves it out
+  test('an expanded medium shows at once', { tag: ['@sandbox', '@login', '@timing'] }, async ({ page, inject }) => {
     const BUDGET = 3000;   // ms from MusicBrainz having the tracks to Apollo showing them
     await openApollo(page, inject, { release: 'ade2956c-8d7e-4ab3-b359-b55b5ef603e9', tab: 'tracklist' });   // 14 one-track media
-    await page.waitForTimeout(1200);   // the recording auto-match has started waiting by now
+    // the recording auto-match is waiting for media (it says "reading tracklist…" as it starts to)
+    await until(() => page.evaluate(() => (document.querySelector('#tc-recwrap .tc-rec-amstatus') || {}).textContent || ''), t => /reading tracklist/i.test(t), { timeout: 30000 });
     const state = () => page.evaluate(() => ({ rows: document.querySelectorAll('.tc-mirror tbody tr').length, loaded: MB.releaseEditor.rootField.release().mediums().filter(m => m.loaded()).length, total: MB.releaseEditor.rootField.release().mediums().length }));
     const s0 = await state();
     check(s0.total > 3 && s0.loaded < s0.total, `collapsed media (${s0.loaded}/${s0.total} loaded)`);

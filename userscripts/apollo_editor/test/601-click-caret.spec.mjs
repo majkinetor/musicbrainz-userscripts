@@ -20,16 +20,24 @@
 //
 // Read-only: every MusicBrainz write endpoint is aborted, and the only thing
 // this does to the page is click in a text field.
-import { test, check } from '../../../dev/test/harness.mjs';
-import { openApollo, apolloGm } from './ap.mjs';
+import { test, check, idle, frames } from '../../../dev/test/harness.mjs';
+import { openApollo, matchDone, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
 const MBID = '55530bc0-97ec-4256-97fc-e6058958c251';
 
 test('a click puts the caret where it lands', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await page.clock.install();   // to run Apollo's debounced re-renders out, below
   const posted = await openApollo(page, inject, { release: MBID });
   await page.evaluate(() => { const b = [...document.querySelectorAll('#tc-nav-bar button, #tc-nav-bar a')].find(e => e.textContent.trim().toLowerCase().startsWith('tracklist')); if (b) b.click(); });
-  await page.waitForTimeout(3000);
+  await page.waitForSelector('.tc-mirror tr[data-tk]', { state: 'attached', timeout: 30000 });
+  // Apollo re-renders the rows a debounce after MusicBrainz's DOM changes (its bridge
+  // refresh), and matching rebuilds them as it finishes: both are run out before the
+  // row is marked, or the mark goes with the old row
+  await matchDone(page);
+  await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});   // the medium's tracks have come in
+  await page.clock.runFor(3000);
+  await idle(page);
 
   // The overlay only exists while enlargement is on. Assert the EFFECTIVE state
   // rather than trusting the default — a stored 0 would silently make every
@@ -43,7 +51,9 @@ test('a click puts the caret where it lands', { tag: ['@sandbox', '@login'] }, a
       const inp = r.querySelector('.t-title');
       if (inp && (!best || (inp.value || '').length > (best.v || '').length)) best = { r, v: inp.value };
     }
-    if (best) best.r.dataset.t601 = '1';
+    // found again by its track key on every read: Apollo can re-render the rows, and an
+    // attribute put on the old row would go with it
+    if (best) window.__t601 = best.r.dataset.tk;
     return { rows: rows.length, withDisp: withDisp.length, title: best && best.v };
   });
   check(setup.withDisp > 0, 'title enlargement is on, so the rich display span is what gets clicked');
@@ -53,7 +63,7 @@ test('a click puts the caret where it lands', { tag: ['@sandbox', '@login'] }, a
   // Pixel box of character k, measured with a Range over the span's own text —
   // independent of how the script maps a point to an index.
   const charBox = (k) => page.evaluate((i) => {
-    const disp = document.querySelector('tr[data-t601] .t-title-disp');
+    const disp = document.querySelector('.tc-mirror tr[data-tk="' + window.__t601 + '"] .t-title-disp');
     const walkText = [];
     (function w(n) { for (const c of n.childNodes) { if (c.nodeType === 3) walkText.push(c); else w(c); } })(disp);
     let seen = 0;
@@ -76,13 +86,13 @@ test('a click puts the caret where it lands', { tag: ['@sandbox', '@login'] }, a
   // two of these checks until the rects were printed.
   const rest = async () => {
     await page.evaluate(() => { const a = document.activeElement; if (a && a.blur) a.blur(); });
-    await page.waitForTimeout(200);
+    await frames(page);
   };
   const caretAfterClick = async (x, y) => {
     await page.mouse.click(x, y);
-    await page.waitForTimeout(200);
+    await frames(page);   // the click, and what Apollo does with it, drawn
     return page.evaluate(() => {
-      const inp = document.querySelector('tr[data-t601] .t-title');
+      const inp = document.querySelector('.tc-mirror tr[data-tk="' + window.__t601 + '"] .t-title');
       return { start: inp.selectionStart, end: inp.selectionEnd, focused: document.activeElement === inp, value: inp.value };
     });
   };
@@ -109,7 +119,7 @@ test('a click puts the caret where it lands', { tag: ['@sandbox', '@login'] }, a
 
   // and the resting/editing swap still works
   const swapped = await page.evaluate(() => {
-    const row = document.querySelector('tr[data-t601]');
+    const row = document.querySelector('.tc-mirror tr[data-tk="' + window.__t601 + '"]');
     return { editing: row.querySelector('.t-title').classList.contains('tc-editing'), dispHidden: row.querySelector('.t-title-disp').classList.contains('tc-hidden') };
   });
   check(swapped.editing && swapped.dispHidden, 'the input takes over and the display span hides, as before');

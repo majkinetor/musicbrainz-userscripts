@@ -1,6 +1,6 @@
 // #152: Search & Replace has an RE toggle (regex, with $N) and saved patterns (★: save,
 // load, remove; #375). The real S&R tool on a seeded release.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openApollo, toTab, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -28,21 +28,23 @@ test('Search & Replace: literal and regex modes, and templates', { tag: ['@sandb
   const R = {};
 
   // (1) literal mode: "$1" in replace is literal, not a backref
-  await setFR('Song', '$1'); await page.waitForTimeout(120);
-  R.literalDollar = await t0();           // expect "Artist - $1"
+  await setFR('Song', '$1');
+  R.literalDollar = await until(t0, t => t === 'Artist - $1');
 
   // (2) regex mode with $N
-  if (!await reOn()) await toggleRE(); await page.waitForTimeout(80);
-  await setFR('^(.+?) - (.+)$', '$2 ($1)'); await page.waitForTimeout(150);
-  R.regexBackref = await t0();            // expect "Song (Artist)"
+  if (!await reOn()) await toggleRE();
+  await until(reOn);
+  await setFR('^(.+?) - (.+)$', '$2 ($1)');
+  R.regexBackref = await until(t0, t => t === 'Song (Artist)');
 
   // (3) invalid regex → field flagged, no throw, title unchanged from prior valid state
-  await setFR('(', 'x'); await page.waitForTimeout(150);
-  R.invalidFlagged = await page.evaluate(() => document.querySelector('.tc-sr-find').classList.contains('tc-sr-bad'));
+  await setFR('(', 'x');
+  R.invalidFlagged = await until(() => page.evaluate(() => document.querySelector('.tc-sr-find').classList.contains('tc-sr-bad')));
   R.invalidTitle = await t0();
 
   // (4) saved patterns (★, #375): save the current regex pattern as "Spotify ETI"
-  await setFR('^(.+?) - (.+)$', '$2 ($1)'); await page.waitForTimeout(120);
+  await setFR('^(.+?) - (.+)$', '$2 ($1)');
+  await until(() => page.evaluate(() => !document.querySelector('.tc-sr-find').classList.contains('tc-sr-bad')));
   const star = () => page.evaluate(() => document.querySelector('.tc-sr-star').click());
   await star();
   await page.waitForSelector('.tc-srtpl', { timeout: 5000 });
@@ -51,26 +53,24 @@ test('Search & Replace: literal and regex modes, and templates', { tag: ['@sandb
     const n = document.querySelector('.tc-srtpl-name'); n.value = 'Spotify ETI'; n.dispatchEvent(new Event('input', { bubbles: true }));
     n.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
   });
-  await page.waitForTimeout(150);
-  R.savedTemplates = await page.evaluate(() => (window.__apolloEditor.settings.srTemplates || []).map(t => ({ name: t.name, find: t.find, replace: t.replace, re: t.re })));
+  R.savedTemplates = await until(() => page.evaluate(() => (window.__apolloEditor.settings.srTemplates || []).map(t => ({ name: t.name, find: t.find, replace: t.replace, re: t.re }))), l => l.some(t => t.name === 'Spotify ETI'));
 
   // (5) load: empty fields and RE off, then the saved row restores and applies them
   await page.keyboard.press('Escape');
   await page.evaluate(() => { const p = document.querySelector('.tc-srtpl'); if (p) p.remove(); });
-  await setFR('', ''); if (await reOn()) await toggleRE(); await page.waitForTimeout(100);
+  await setFR('', ''); if (await reOn()) await toggleRE();
+  await until(reOn, on => !on);
   await star();
   await page.waitForSelector('.tc-srtpl', { timeout: 5000 });
   await page.evaluate(() => { const r = [...document.querySelectorAll('.tc-srtpl-row')].find(x => x.querySelector('.tc-srtpl-nm')?.textContent === 'Spotify ETI'); if (r) r.click(); });
-  await page.waitForTimeout(200);
-  R.afterLoad = await page.evaluate(() => ({ find: document.querySelector('.tc-sr-find').value, rep: document.querySelector('.tc-sr-rep').value, re: document.querySelector('.tc-sr-re').classList.contains('on') }));
-  R.afterLoad.title = await t0();
+  R.afterLoad = await until(() => page.evaluate(() => ({ find: document.querySelector('.tc-sr-find').value, rep: document.querySelector('.tc-sr-rep').value, re: document.querySelector('.tc-sr-re').classList.contains('on') })), a => a.find !== '' && a.re);
+  R.afterLoad.title = await until(t0, t => t === 'Song (Artist)');
 
   // (6) remove it
   if (!(await page.$('.tc-srtpl'))) await star();
   await page.waitForSelector('.tc-srtpl', { timeout: 5000 });
   await page.evaluate(() => { const r = [...document.querySelectorAll('.tc-srtpl-row')].find(x => x.querySelector('.tc-srtpl-nm')?.textContent === 'Spotify ETI'); if (r) r.querySelector('.tc-srtpl-x').click(); });
-  await page.waitForTimeout(120);
-  R.afterRemove = await page.evaluate(() => (window.__apolloEditor.settings.srTemplates || []).map(t => t.name));
+  R.afterRemove = await until(() => page.evaluate(() => (window.__apolloEditor.settings.srTemplates || []).map(t => t.name)), l => !l.includes('Spotify ETI'));
 
   check(R.literalDollar === 'Artist - $1', `literal mode: "$1" is literal (${R.literalDollar})`);
   check(R.regexBackref === 'Song (Artist)', `regex mode: $N back-references (${R.regexBackref})`);

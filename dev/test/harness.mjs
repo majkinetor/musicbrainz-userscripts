@@ -55,6 +55,13 @@ export async function until(read, ok = Boolean, { timeout = 20_000, every = 100 
   }
 }
 
+// idle(), and first until the page's network has gone quiet: for MusicBrainz's release
+// editor, which loads a medium's tracks when its tab opens and re-renders as they arrive.
+export async function settled(page, { timeout = 30_000 } = {}) {
+  await page.waitForLoadState('networkidle', { timeout }).catch(() => {});
+  await idle(page, { timeout });
+}
+
 // Until the page has drawn `n` more frames: for what a script lays out on a later frame
 // (a ResizeObserver, then requestAnimationFrame), where the state before the change would
 // satisfy the check too, so waiting for the check's condition proves nothing.

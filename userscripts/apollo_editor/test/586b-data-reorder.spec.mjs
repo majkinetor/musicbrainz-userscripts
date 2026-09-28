@@ -12,7 +12,7 @@
 //
 // The drag is driven through real DragEvents with a DataTransfer, so the
 // handlers under test are the ones the browser would call.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -25,14 +25,14 @@ test('data tracks reorder among themselves', { tag: ['@sandbox', '@login'] }, as
     if (b) b.click();
   });
   await page.waitForSelector('.tc-mirror tr[data-tk]', { state: 'attached', timeout: 20000 });
-  await page.waitForTimeout(1200);
+  await idle(page);
 
   // open a data section of three: ⤓ on track 11
   await page.evaluate(() => {
     const tr = [...document.querySelectorAll('.tc-mirror tr[data-tk]')].find(r => r.dataset.ti === '10');
     tr.querySelector('.tc-dtmv.down').click();
   });
-  await page.waitForTimeout(1200);
+  await until(() => page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks().filter(t => t.isDataTrack()).length), n => n === 3);
 
   const state = () => page.evaluate(() => {
     const m = window.MB.releaseEditor.rootField.release().mediums()[0];
@@ -74,7 +74,7 @@ test('data tracks reorder among themselves', { tag: ['@sandbox', '@login'] }, as
 
   // move the LAST data track above the first one — inside the section
   const r1 = await drag(12, 10, false);
-  await page.waitForTimeout(1200);
+  await frames(page);
   const s1 = await state();
   check(r1 === 'accepted', 'the drop target inside the section accepted the drag');
   check(s1.flags === '..........DDD', `the section is unchanged in size and still trailing (${s1.flags})`);
@@ -82,14 +82,14 @@ test('data tracks reorder among themselves', { tag: ['@sandbox', '@login'] }, as
 
   // a drag from the data section onto an AUDIO row must be refused outright
   const r2 = await drag(12, 5, false);
-  await page.waitForTimeout(900);
+  await frames(page);
   const s2 = await state();
   check(r2 === 'refused', 'a drag out of the data section is refused — no drop marker, no drop');
   check(s2.flags === '..........DDD' && s2.titles === s1.titles, `nothing changed (${s2.flags})`);
 
   // and the reverse: an audio row dragged into the section
   const r3 = await drag(3, 11, false);
-  await page.waitForTimeout(900);
+  await frames(page);
   const s3 = await state();
   check(r3 === 'refused', 'a drag into the data section is refused too — ⤓ is the way in');
   check(s3.flags === '..........DDD' && s3.titles === s1.titles, `nothing changed (${s3.flags})`);
@@ -99,8 +99,7 @@ test('data tracks reorder among themselves', { tag: ['@sandbox', '@login'] }, as
     const rows = [...document.querySelectorAll('.tc-mirror tr.tc-row-data')];
     rows[rows.length - 1].querySelector('.tc-dtmv.up').click();
   });
-  await page.waitForTimeout(900);
-  const s4 = await state();
+  const s4 = await until(state, s => s.flags.indexOf('D') < 0);
   check(s4.flags.indexOf('D') < 0, `restored: no data tracks left (${s4.flags})`);
 
   check(!posted.some(u => /\/edit\/create/.test(u)), `nothing was submitted (${posted.length} blocked, none of them create)`);

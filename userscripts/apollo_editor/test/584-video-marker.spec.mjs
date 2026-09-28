@@ -14,7 +14,7 @@
 //
 // Pre-fix build: the tracklist has zero markers, and the recordings table's sit
 // after the title — both halves fail.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, settled, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -24,7 +24,8 @@ test('the video marker leads the title, in both tables', { tag: ['@sandbox', '@l
   const posted = await openApollo(page, inject, { release: MBID });
   const tab = async n => {
     await page.evaluate(x => { const b = [...document.querySelectorAll('#tc-nav-bar button, #tc-nav-bar a')].find(e => e.textContent.trim().toLowerCase().startsWith(x)); if (b) b.click(); }, n);
-    await page.waitForTimeout(3000);
+    await settled(page);   // the tab has loaded what it shows, and rendered
+    await frames(page);
   };
 
   // how many of this release's recordings really are videos — the number to expect

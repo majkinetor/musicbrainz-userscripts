@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SANDBOX, requireLogin, onSandbox } from '../../../dev/test/harness.mjs';
+import { SANDBOX, requireLogin, onSandbox, settled, frames } from '../../../dev/test/harness.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SETTINGS = 'apolloEditor.settings.v1';
@@ -32,7 +32,7 @@ export async function seedOf(name) {
 //   before    run after the page has loaded, before Apollo is injected
 // Returns what the page submitted (always empty unless the spec lets submissions
 // through with submit: true): every /ws/js/edit/create is stopped here.
-export async function openApollo(page, inject, { seed, release, tab = null, before = null, submit = false, settle = 3000 } = {}) {
+export async function openApollo(page, inject, { seed, release, tab = null, before = null, submit = false, settle = true } = {}) {
   const submitted = [];
   if (!submit) await page.route(/\/ws\/js\/edit\/create/, r => { submitted.push(r.request().url()); return r.abort(); });
   if (seed) {
@@ -51,12 +51,26 @@ export async function openApollo(page, inject, { seed, release, tab = null, befo
     await requireLogin(page);
   }
   await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().length > 0; } catch (e) { return false; } }, null, { timeout: 120000 });
-  if (settle) await page.waitForTimeout(settle);   // MusicBrainz binds late and wipes early writes
+  // MusicBrainz binds late and wipes early writes: Apollo goes in once the model is
+  // loaded, the network is quiet and the page has nothing left queued
+  if (settle) await settled(page);
   if (before) await before();
   await inject('apollo_editor', { waitFor: '__apolloEditor' });
   if (tab) await toTab(page, tab);
   return submitted;
 }
+
+// Until Apollo's matching pass has ended: its button is back from Stop to Match, and
+// either nothing is left to match or the pass has logged its summary. (The button says
+// Match before a pass starts too, and slots that cannot resolve stay pending for good.)
+export const matchDone = page => page.waitForFunction(() => {
+  const A = window.__apolloEditor, b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]');
+  if (!A || !b || /Stop/.test(b.textContent)) return false;
+  if (A.settings && A.settings.autoMatch === false) return true;   // no pass runs by itself
+  const m = A.model;
+  if (m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending))) return true;
+  return /tracklist match: \d+|matching stopped/.test(A.logMarkdown ? A.logMarkdown() : '');
+}, null, { timeout: 120000 }).catch(() => {});
 
 // Apollo's own tab bar.
 export async function toTab(page, name) {
@@ -65,7 +79,8 @@ export async function toTab(page, name) {
     if (b) b.click();
   }, name.toLowerCase());
   if (/^track/i.test(name)) await page.waitForSelector('.tc-mirror', { state: 'attached', timeout: 30000 });
-  await page.waitForTimeout(800);
+  await settled(page);   // the tab has loaded what it shows (a medium's tracks) and rendered
+  await frames(page);
 }
 
 // MusicBrainz's own release model, read in the page.

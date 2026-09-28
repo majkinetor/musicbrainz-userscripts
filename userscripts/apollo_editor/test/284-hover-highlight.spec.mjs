@@ -15,7 +15,7 @@ const artists = page => page.evaluate(() => {
 });
 const hover = (page, id) => page.evaluate(async id => {
   [...document.querySelectorAll('.tc-aslot')].find(s => s.dataset.art === id).dispatchEvent(new MouseEvent('mouseenter'));
-  await new Promise(r => setTimeout(r, 30));
+  await new Promise(r => requestAnimationFrame(r));
   return document.querySelectorAll('.tc-aslot.tc-arthl').length;
 }, id);
 

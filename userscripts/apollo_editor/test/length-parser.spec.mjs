@@ -10,7 +10,7 @@
 //   left alone. The "external page" is answered here and never reaches the network.
 //
 // Seeded releases on the sandbox; nothing is submitted.
-import { test, check, answerGm } from '../../../dev/test/harness.mjs';
+import { test, check, answerGm, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 const seed = (titles, lengths = {}) => {
@@ -49,8 +49,7 @@ test.describe('#621', () => {
     await row2.fill('');
     check(!(await state()).disabled, 'emptied again, Apply is back');
     await page.locator('#tc-lppop .tc-lp-ok').click();
-    await page.waitForTimeout(600);
-    const after = await lengths(page);
+    const after = await until(() => lengths(page), a => a[0] === '3:01');
     check(after[0] === '3:01' && after[2] === '3:03' && after[4] === '3:05', `tracks 1, 3, 5 get the pasted lengths (${JSON.stringify(after)})`);
     check(after[1] === '1:11' && after[3] === '2:22', 'tracks 2 and 4 keep theirs');
     check(!(await page.$('#tc-lppop')), 'the parser closes');
@@ -94,8 +93,7 @@ test.describe('#622', () => {
     check(JSON.stringify(s1.vals) === '["3:01","3:02","3:03"]', `its lengths, the nav and footer skipped (${JSON.stringify(s1.vals)})`);
     check(/from external link/.test(s1.foot) && !s1.chooser, `read as an external source (${s1.foot})`);
     await page.locator('#tc-lppop .tc-lp-ok').click();
-    await page.waitForTimeout(500);
-    check(JSON.stringify(await lengths(page)) === '["3:01","3:02","3:03"]', 'applied');
+    check(JSON.stringify(await until(() => lengths(page), a => JSON.stringify(a) === '["3:01","3:02","3:03"]')) === '["3:01","3:02","3:03"]', 'applied');
     check((await page.evaluate(() => document.getElementById('edit-note-text')?.value || '')).includes('Track lengths from ' + FAKE), 'the edit note credits the link');
 
     await openIt();
@@ -105,7 +103,7 @@ test.describe('#622', () => {
     const before = hits;
     check(!(await paste(FAKE, '#name')) && hits === before, 'a link pasted into the release title is left alone');
     await page.evaluate(() => document.querySelector('#tc-lppop .tc-lp-x')?.click());
-    await page.waitForTimeout(200);
+    await until(() => page.$('#tc-lppop'), p => !p);
     check(!(await paste(FAKE)) && hits === before && !(await page.$('#tc-lppop')), 'closed, a paste does nothing');
     check(submitted.length === 0, 'nothing submitted');
   });

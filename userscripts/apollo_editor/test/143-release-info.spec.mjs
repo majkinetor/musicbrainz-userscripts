@@ -9,7 +9,7 @@
 //   row; a long date wraps inside its cell without overlapping its neighbour.
 //
 // Sandbox copies of the releases he reviewed; nothing is submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm({ apolloEnabled: true, replaceReleaseInfo: true }) });
@@ -17,7 +17,8 @@ test.use({ gm: apolloGm({ apolloEnabled: true, replaceReleaseInfo: true }) });
 async function releaseInfo(page) {
   await page.evaluate(() => { const t = [...document.querySelectorAll('a,button,li')].find(e => /^\s*release information\s*$/i.test(e.textContent || '')); if (t) (t.querySelector('a') || t).click(); });
   await page.waitForFunction(() => document.body.classList.contains('tc-ri-on'), null, { timeout: 15000 });
-  await page.waitForTimeout(700);
+  await idle(page);
+  await frames(page);
 }
 
 test('an entity field shows its link when focused', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
@@ -56,7 +57,7 @@ test("the favicon fits, checkbox labels aren't bold, and switching leaves no str
   check(s.boxes > 0 && s.bold.length === 0, `checkbox labels are not bold (${s.boxes} checked) (${JSON.stringify(s.bold)})`);
   await page.evaluate(() => document.querySelector('#tc-launch .tc-launch-lbl')?.click());
   await page.waitForFunction(() => !document.body.classList.contains('tc-ri-on'), null, { timeout: 8000 });
-  await page.waitForTimeout(150);
+  await frames(page);
   const bubbles = await page.evaluate(() => { const d = document.querySelector('#information > div.documentation'); return d ? [...d.querySelectorAll('.bubble')].filter(b => b.offsetParent !== null).length : 0; });
   check(bubbles === 0, `switched to the original: no native bubble left showing (${bubbles})`);
 });
@@ -72,12 +73,12 @@ test('dated relationships share a row, and dates wrap in their cell', { tag: ['@
       return true;
     }, n);
     if (!ok) return false;
-    await page.waitForTimeout(450);
     const dlg = page.locator('.dialog.popover, .bubble, [role="dialog"]').filter({ has: page.locator('input[name="period.begin_date.year"]') }).filter({ visible: true }).first();
+    await dlg.waitFor({ timeout: 10000 }).catch(() => {});
     for (const [k, v] of Object.entries(parts)) await dlg.locator(`input[name="period.${k}"]`).fill(v).catch(() => {});
-    await page.waitForTimeout(120);
     await dlg.locator('button').filter({ hasText: /^\s*Done\s*$/ }).first().click().catch(() => {});
-    await page.waitForTimeout(650);
+    await dlg.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});   // closed, and the date is on the row
+    await frames(page);
     return true;
   };
   check(await addDate(0, { 'begin_date.year': '1111', 'begin_date.month': '11', 'begin_date.day': '11', 'end_date.year': '1112', 'end_date.month': '11', 'end_date.day': '11' }), 'a date on the first type');

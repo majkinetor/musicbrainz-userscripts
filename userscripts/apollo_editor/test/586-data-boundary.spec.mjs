@@ -11,7 +11,7 @@
 // This drives the RENDERED BUTTON, not the function behind it, so a button that
 // never got wired would fail here. Nothing is submitted — every write endpoint
 // is blocked, and the flags are restored at the end.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm({ colWidths: { mv: 80 } }) });
@@ -24,7 +24,7 @@ test('one click moves the data-track boundary', { tag: ['@sandbox', '@login'] },
     const t = all.find(x => x.textContent.trim().toLowerCase().startsWith('tracklist')); if (t) t.click();
   });
   await page.waitForSelector('.tc-mirror tr[data-tk]', { state: 'attached', timeout: 20000 });
-  await page.waitForTimeout(1200);
+  await idle(page);
 
   const state = () => page.evaluate(() => {
     const ed = window.MB.releaseEditor;
@@ -63,8 +63,7 @@ test('one click moves the data-track boundary', { tag: ['@sandbox', '@login'] },
     if (!b) return 'no button on track 11';
     b.click(); return 'clicked';
   });
-  await page.waitForTimeout(900);
-  const after = await state();
+  const after = await until(state, s => s.flags === '..........DDD');
   check(after.flags === '..........DDD', `#11–13 became data tracks in one click (${after.flags})`);
   check(after.audio === 10 && after.data === 3, `medium reports 10 audio / 3 data (${after.audio}/${after.data})`);
   check(after.hasDataTracks === true, 'the medium now reports hasDataTracks');
@@ -78,8 +77,7 @@ test('one click moves the data-track boundary', { tag: ['@sandbox', '@login'] },
     const b = tr && tr.querySelector('.tc-dtmv.up'); if (!b) return 'no ⤒';
     b.click(); return 'clicked';
   });
-  await page.waitForTimeout(900);
-  const afterUp = await state();
+  const afterUp = await until(state, s => s.flags === '...........DD');
   check(afterUp.flags === '...........DD', `only #11 came back (${afterUp.flags})`);
 
   // ⤒ on the LAST data row must bring back the whole block — otherwise the data
@@ -89,8 +87,7 @@ test('one click moves the data-track boundary', { tag: ['@sandbox', '@login'] },
     const b = rows[rows.length - 1] && rows[rows.length - 1].querySelector('.tc-dtmv.up'); if (!b) return 'no ⤒';
     b.click(); return 'clicked';
   });
-  await page.waitForTimeout(900);
-  const afterUp2 = await state();
+  const afterUp2 = await until(state, s => s.flags.indexOf('D') < 0);
   check(afterUp2.flags === '.............', `the section closed cleanly, nothing stranded (${afterUp2.flags})`);
   check(afterUp2.data === 0 && afterUp2.hasDataTracks === false, 'medium is back to no data tracks');
 

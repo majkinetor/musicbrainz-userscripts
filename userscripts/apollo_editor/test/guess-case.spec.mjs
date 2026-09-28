@@ -4,7 +4,7 @@
 //   it really changes the guess.
 // #153: a title's Aa / feat in-cell buttons overlay the input instead of taking width
 //   from it (they clipped long titles after "Fit").
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -20,7 +20,10 @@ test('#156: "Keep uppercased" changes the guess', { tag: ['@sandbox', '@login'] 
     const m = document.cookie.match(/guesscase_keepuppercase=([^;]*)/);
     return { guess: t ? t.guessTitle : null, checked: chk ? chk.checked : null, cookie: m ? m[1] : null };
   });
-  const toggle = async () => { await page.evaluate(() => document.querySelector('.tc-gco label input[type=checkbox]').click()); await page.waitForTimeout(300); };
+  // the box flips as it is clicked; the toggle has been handled once MusicBrainz's cookie
+  // and the guess follow it
+  const settled = r => r.cookie === String(r.checked) && (r.checked ? /QUICK BROWN/ : /Quick Brown/).test(r.guess || '');
+  const toggle = async () => { await page.evaluate(() => document.querySelector('.tc-gco label input[type=checkbox]').click()); await until(read, settled); };
   const before = await read();
   if (before.checked === false) { await toggle(); Object.assign(before, await read()); }   // start from ON
   await toggle();
@@ -40,9 +43,9 @@ test('#153: the in-cell title buttons take no width from the title', { tag: ['@s
     inp.value = (inp.value || 'Test Title').toLowerCase();
     inp.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  await page.waitForTimeout(600);
+  await until(() => page.evaluate(() => !!document.querySelector('.tc-mirror tbody tr .t-gc')));
   await page.evaluate(() => { try { window.__apolloEditor.colsFit && window.__apolloEditor.colsFit(); } catch (e) {} });
-  await page.waitForTimeout(400);
+  await frames(page);
   const r = await page.evaluate(() => {
     const rows = [...document.querySelectorAll('.tc-mirror tbody tr')].filter(r => r.querySelector('input.t-title'));
     const withBtn = rows.find(r => r.querySelector('.t-gc')), plain = rows.find(r => !r.querySelector('.t-gc'));

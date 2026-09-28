@@ -10,7 +10,7 @@
 // Beck" (one Portishead). The sandbox has two labels named exactly Mercury and three
 // artists named exactly Beck, but only one of each is in the first 8 results, so the
 // old rule linked them. The unique ones must be linked, the ambiguous ones left unset.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Apollo Editor' } });
 
@@ -31,7 +31,7 @@ test('a seeded release links its unique label and artist, and leaves ambiguous o
     document.body.appendChild(f); f.submit();
   });
   await page.waitForURL(/\/release\/add/, { timeout: 30000 });
-  await page.waitForTimeout(3000);
+  await settled(page);
   await inject('apollo_editor', { waitFor: '__apolloEditor' });
 
   const state = () => page.evaluate(() => {
@@ -50,7 +50,7 @@ test('a seeded release links its unique label and artist, and leaves ambiguous o
       return !!(l && l.gid && a && a.gid);
     } catch (e) { return false; }
   }, null, { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(3000);
+  await settled(page);   // the other matches, and their lookups, have finished
   const s = await state();
   console.log(JSON.stringify(s));
   check(s.labels[0].gid === '9ba9a0fb-d617-4906-9c1d-7bfa78087ff9', `"Strut" is linked to the one Strut (${s.labels[0].gid})`);

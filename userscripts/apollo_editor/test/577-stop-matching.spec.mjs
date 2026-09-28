@@ -5,7 +5,7 @@
 // (#545's "the button shows the run is going" is this: it reads Stop while it runs.)
 //
 // A seeded 24-track release, so a pass lasts long enough to interrupt; nothing is submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm, toTab } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -27,8 +27,7 @@ test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@s
   const idle = await label(page, btn);
   check(/Match/.test(idle.text) && !idle.disabled, `at rest: Match (${idle.text})`);
   await click(page, btn);
-  await page.waitForTimeout(4500);
-  const running = await label(page, btn);
+  const running = await until(() => label(page, btn), l => /Stop/.test(l.text));
   check(/Stop/.test(running.text) && !running.disabled && running.stopping, `running: Stop, clickable (${JSON.stringify(running)})`);
   const before = await matched(page);
   await click(page, btn);
@@ -37,8 +36,7 @@ test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@s
   check(await matched(page) >= before, `nothing matched before the stop is lost (${before} → ${await matched(page)})`);
   check(/stopped/i.test(await page.textContent('#tc-bar')), 'it says it stopped');
   await click(page, btn);
-  await page.waitForTimeout(2500);
-  check(/Stop/.test((await label(page, btn)).text), 'and a new pass starts: the stop is not latched');
+  check(/Stop/.test((await until(() => label(page, btn), l => /Stop/.test(l.text))).text), 'and a new pass starts: the stop is not latched');
   await click(page, btn);
   await backToMatch(page, btn);
   check(submitted.length === 0, 'nothing submitted');
@@ -46,7 +44,8 @@ test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@s
 
 test('the Recordings pass can be stopped', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const submitted = await openApollo(page, inject, { seed, tab: 'tracklist' });
-  await page.waitForTimeout(3000);
+  // the tracklist's own matching has finished
+  await page.waitForFunction(() => { const m = window.__apolloEditor.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 120000 }).catch(() => {});
   await page.evaluate(() => {
     [...document.querySelectorAll('a')].find(a => /^\s*Recordings\s*$/.test(a.textContent) || (a.getAttribute('href') || '').includes('recordings'))?.click();
     try { window.__apolloEditor.showRecMirror(); } catch (e) {}
@@ -58,8 +57,7 @@ test('the Recordings pass can be stopped', { tag: ['@sandbox', '@login'] }, asyn
   const idle = await label(page, btn);
   check(/Match/.test(idle.text) && !idle.disabled, `at rest: Match (${idle.text})`);
   await click(page, btn);
-  await page.waitForTimeout(4000);
-  const running = await label(page, btn);
+  const running = await until(() => label(page, btn), l => l && /Stop/.test(l.text));
   check(running && /Stop/.test(running.text) && !running.disabled, `running: Stop, clickable (${JSON.stringify(running)})`);
   await click(page, btn);
   check(await backToMatch(page, btn), 'stopped: back to Match');

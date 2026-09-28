@@ -2,7 +2,7 @@
 // as an inline group (its trigger, then its parameters); there is no ⋯ button; the Tools
 // label opens a menu of the off-bar tools and Customize; Customize has no pin, and each
 // tool keeps at least one of icon and name.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });   // no toolCfg: the default bar
@@ -37,6 +37,6 @@ test('the default Tools bar, its menu and Customize', { tag: ['@sandbox', '@logi
   check(await page.evaluate(() => !/\bicon\b|\btext\b/i.test(document.querySelector('#tc-toolcfg .tc-tc-dens').textContent)), 'no "icon"/"text" words in its density control');
   // Guess case is icon-only: its one "on" part cannot be switched off
   await page.click('#tc-toolcfg .tc-tc-row[data-act="guesscase"] .cb-icon').catch(() => {});
-  await page.waitForTimeout(150);
+  await frames(page);   // the click has been handled and drawn
   check(await page.evaluate(() => { const r = document.querySelector('#tc-toolcfg .tc-tc-row[data-act="guesscase"]'); return r.querySelector('.cb-icon').classList.contains('on') || r.querySelector('.cb-text').classList.contains('on'); }), 'a tool keeps its icon or its name');
 });

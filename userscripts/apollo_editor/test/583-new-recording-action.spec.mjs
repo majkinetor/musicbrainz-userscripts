@@ -18,7 +18,7 @@
 //   · ↺ still reverts the row afterwards
 //
 // The click is a real click on the rendered button. Nothing is submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -31,7 +31,7 @@ test('＋ on a row makes it a new recording, and stays put', { tag: ['@sandbox',
     if (b) b.click();
   });
   await page.waitForSelector('#tc-recwrap tbody tr.tc-recrow', { state: 'attached', timeout: 30000 });
-  await page.waitForTimeout(1500);
+  await idle(page);
 
   const state = () => page.evaluate(() => {
     const r = window.__apolloEditor.readRecordings();
@@ -66,9 +66,8 @@ test('＋ on a row makes it a new recording, and stays put', { tag: ['@sandbox',
     const tr = [...document.querySelectorAll('#tc-recwrap tr.tc-recrow')].find(r => r.dataset.ti === '10');
     tr.querySelector('.tc-rec-new-btn').click();
   });
-  await page.waitForTimeout(800);
-  const s1 = await state();
   const want = s0.linked.split('').map((c, i) => (i === 10 ? 'N' : c)).join('');
+  const s1 = await until(state, s => s.linked === want);
   check(s1.linked === want, `only that row was unset (${s1.linked}, wanted ${want})`);
   check(s1.revs === 1, `the unset row now offers ↺ (${s1.revs})`);
   check(s1.plus === s0.plus - 1, `the unset row no longer offers ＋ — it is already new (${s1.plus})`);
@@ -86,8 +85,7 @@ test('＋ on a row makes it a new recording, and stays put', { tag: ['@sandbox',
     const t = m.tracks();
     t[0].setRecordingValue(t[1].recording());
   });
-  await page.waitForTimeout(2500);
-  const s2 = await state();
+  const s2 = await until(state, s => s.plusRightOfRev.length > 0);
   check(s2.plusRightOfRev.length > 0, `there is now a row showing BOTH ＋ and ↺ (${s2.plusRightOfRev.length}) — the case the fixed position is for`);
   check(s2.plusRightOfRev.every(gap => gap >= 1), `on those rows ＋ holds the first position on the right, clear of ↺ (gaps ${JSON.stringify(s2.plusRightOfRev)})`);
   check(s2.plusX.length === 1 && s2.plusX[0] === before, `＋ still at the same x with ↺ beside it (${JSON.stringify(s2.plusX)} vs ${before})`);
@@ -97,8 +95,7 @@ test('＋ on a row makes it a new recording, and stays put', { tag: ['@sandbox',
     const tr = [...document.querySelectorAll('#tc-recwrap tr.tc-recrow')].find(r => r.dataset.ti === '10');
     tr.querySelector('.tc-rec-rev').click();
   });
-  await page.waitForTimeout(800);
-  const s3 = await state();
+  const s3 = await until(state, s => s.linked[10] === 'L');
   check(s3.linked[10] === 'L', `↺ restored the original link on that row (${s3.linked})`);
 
   // and the selection machinery is gone

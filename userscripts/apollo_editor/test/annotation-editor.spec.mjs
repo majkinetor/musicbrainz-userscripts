@@ -11,7 +11,7 @@
 // History: the release's annotation versions, each viewable and revertable in place.
 //
 // On the sandbox; nothing is submitted (the History fixture's versions are made once).
-import { test, check, functionSource, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, functionSource, SANDBOX, until, idle, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.describe('in the release editor', () => {
@@ -19,6 +19,7 @@ test.describe('in the release editor', () => {
 
   test('Markdown in, MusicBrainz markup out, and the toolbar', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
     page.on('dialog', d => d.accept());   // Clear confirms
+    await page.clock.install();   // "not rebuilt by the polls" runs the polls on a fake clock
     const submitted = await openApollo(page, inject, { seed: 'seed-saigon' });
     await page.waitForSelector('#annotation', { state: 'attached', timeout: 20000 });
     await page.waitForSelector('#tc-anno-mdinput', { state: 'visible', timeout: 20000 });
@@ -32,12 +33,11 @@ test.describe('in the release editor', () => {
     check(await page.$('#tc-anno-md .tc-mk-ico') && !(await page.$('#tc-anno-md .tc-mk-mb')), 'the toggle shows the Markdown logo');
     check(/mono/i.test(await page.$eval('#tc-anno-mdinput', e => getComputedStyle(e).fontFamily)) && (await page.$eval('#tc-anno-mdinput', e => e.getBoundingClientRect().height)) >= 220, 'monospace, and tall');
     await page.evaluate(() => { document.getElementById('tc-anno-wrap').dataset.tcMark = 'orig'; });
-    await page.waitForTimeout(1700);
+    await page.clock.runFor(3000);   // several polls
     check((await page.$eval('#tc-anno-wrap', e => e.dataset.tcMark)) === 'orig', 'not rebuilt by the polls (no flicker)');
 
     await page.fill('#tc-anno-mdinput', '## Notes\n\n- a\n- b\n\nSee [the label](https://example.com/x).');
-    await page.waitForTimeout(150);
-    const m1 = await model();
+    const m1 = await until(model, m => (m || '').includes('== Notes =='));
     check(m1.includes('== Notes ==\n\n    * a\n    * b') && m1.includes('[https://example.com/x|the label]'), `MusicBrainz's model holds MusicBrainz markup (${JSON.stringify(m1)})`);
     await page.click('#tc-anno-md');
     check((await vis('#annotation')) && (await page.inputValue('#annotation')).includes('== Notes ==') && await page.$('#tc-anno-md .tc-mk-mb'), 'the toggle shows the raw field, in MusicBrainz markup');
@@ -45,12 +45,11 @@ test.describe('in the release editor', () => {
     check((await vis('#tc-anno-mdinput')) && (await md()).includes('## Notes'), 'and back');
 
     await page.click('#tc-anno-preview-btn');
-    await page.waitForTimeout(150);
     const html = () => page.$eval('#tc-anno-preview', e => e.innerHTML);
+    await until(async () => (await vis('#tc-anno-preview')) && /<li>a<\/li>/.test(await html()));
     check((await vis('#tc-anno-preview')) && (await vis('#tc-anno-mdinput')) && /<h2 class="tc-anno-h">Notes<\/h2>/.test(await html()) && /<li>a<\/li>/.test(await html()), 'Preview renders beside the editor');
     await page.fill('#tc-anno-mdinput', '### Live');
-    await page.waitForTimeout(200);
-    check(/<h3 class="tc-anno-h">Live<\/h3>/.test(await html()), 'and follows the typing');
+    check(/<h3 class="tc-anno-h">Live<\/h3>/.test(await until(html, h => /Live/.test(h))), 'and follows the typing');
     await page.click('#tc-anno-preview-btn');
     check(!(await vis('#tc-anno-preview')), 'Preview off');
 
@@ -75,30 +74,27 @@ test.describe('in the release editor', () => {
     check((await md()) === 'make bold', 'Ctrl+Z undoes it');
 
     await page.click('#tc-anno-max');
-    await page.waitForTimeout(150);
-    const max = await page.evaluate(() => { const w = document.getElementById('tc-anno-wrap'), r = w.getBoundingClientRect(); return w.classList.contains('tc-anno-max') && getComputedStyle(w).position === 'fixed' && r.width > 800 && r.height > 500; });
+    const max = await until(() => page.evaluate(() => { const w = document.getElementById('tc-anno-wrap'), r = w.getBoundingClientRect(); return w.classList.contains('tc-anno-max') && getComputedStyle(w).position === 'fixed' && r.width > 800 && r.height > 500; }));
     check(max, 'maximize fills the window');
     await page.click('#tc-anno-max');
-    await page.waitForTimeout(150);
+    await until(() => page.evaluate(() => !document.getElementById('tc-anno-wrap').classList.contains('tc-anno-max')));
 
     await page.fill('#tc-anno-mdinput', 'Recorded at Some Studio, mixed by Another Person over a long\nsentence that wraps onto several physical lines\nin the imported source.');
     await page.$eval('#tc-anno-mdinput', el => { el.focus(); el.setSelectionRange(0, el.value.length); });
     await page.click('#tc-anno-join');
-    await page.waitForTimeout(150);
+    await until(md, v => !v.includes('\n'));
     check((await md()) === 'Recorded at Some Studio, mixed by Another Person over a long sentence that wraps onto several physical lines in the imported source.', 'Join lines makes the wrapped lines one');
     check((await page.inputValue('#annotation')) === await md(), 'and the real field follows');
 
     await page.click('#tc-anno-clear');
-    await page.waitForTimeout(120);
+    await until(async () => (await md()) === '' && (await model()) === '');
     check((await md()) === '' && (await model()) === '', 'Clear empties the surface and the model');
 
     await page.click('#tc-launch .tc-launch-lbl');   // Apollo off
-    await page.waitForTimeout(400);
-    const off = await page.evaluate(() => { const ta = document.getElementById('annotation'); return { wrap: !!document.querySelector('#tc-anno-wrap'), riOn: document.body.classList.contains('tc-ri-on'), native: !!ta && ta.offsetParent !== null }; });
+    const off = await until(() => page.evaluate(() => { const ta = document.getElementById('annotation'); return { wrap: !!document.querySelector('#tc-anno-wrap'), riOn: document.body.classList.contains('tc-ri-on'), native: !!ta && ta.offsetParent !== null }; }), o => !o.wrap && !o.riOn && o.native);
     check(!off.wrap && !off.riOn && off.native, `Apollo off: the editor is gone, the native field back (${JSON.stringify(off)})`);
     await page.click('#tc-launch .tc-launch-lbl');
-    await page.waitForTimeout(400);
-    check(await page.$('#tc-anno-bar #tc-anno-join'), 'on again: it comes back');
+    check(await until(() => page.$('#tc-anno-bar #tc-anno-join')), 'on again: it comes back');
     check(submitted.length === 0, 'nothing submitted');
   });
 });
@@ -120,8 +116,7 @@ test.describe('on edit_annotation', () => {
     check(await page.$('#tc-anno-history-btn') && await page.$('#tc-anno-max'), 'History and maximize are there');
     check(await page.evaluate(() => { const cl = document.querySelector('input[name="edit-annotation.changelog"]').closest('.row'), an = document.querySelector('#tc-anno-wrap').closest('.row'), rows = [...an.parentElement.children]; return rows.indexOf(cl) < rows.indexOf(an); }), 'the changelog is above the annotation');
     await page.fill('#tc-anno-mdinput', '## Hi\n\n- a\n- b');
-    await page.waitForTimeout(150);
-    const raw = await page.inputValue(ANNO);
+    const raw = await until(() => page.inputValue(ANNO), r => r.includes('== Hi =='));
     check(raw.includes('== Hi ==') && raw.includes('    * a'), `the field gets MusicBrainz markup (${JSON.stringify(raw)})`);
     check(await page.evaluate(() => { const h = [...document.querySelectorAll('#content h3')].find(e => /annotation formatting/i.test(e.textContent)); return !h || !h.offsetParent; }), 'the formatting guide is hidden');
     check(!(await page.isVisible('textarea[name="edit-annotation.edit_note"]')), 'the edit note is hidden');
@@ -137,18 +132,18 @@ test.describe('on edit_annotation', () => {
     check(await page.$('#tc-launch') && await page.$('#tc-anno-fouc') === null, 'the Apollo switch is there; the load guard is gone');
     check(await page.evaluate(() => { const r = document.getElementById('tc-anno-wrap').getBoundingClientRect(); return r.bottom >= window.innerHeight - 40 && r.height > 300; }), 'the editor fills the window height');
     const pop = () => page.evaluate(() => document.getElementById('tc-anno-help-pop').classList.contains('on'));
-    await page.hover('#tc-anno-help'); await page.waitForTimeout(250);
+    await page.hover('#tc-anno-help'); await frames(page);   // a hover is handled as the mouse moves
     check(!(await pop()), '#521: hovering ? shows nothing');
-    await page.click('#tc-anno-help'); await page.waitForTimeout(50);
-    check(await pop(), 'a click opens the help');
-    await page.click('#tc-anno-help'); await page.waitForTimeout(50);
-    check(!(await pop()), 'another closes it');
-    await page.click('#tc-anno-help'); await page.waitForTimeout(50);
+    await page.click('#tc-anno-help');
+    check(await until(pop), 'a click opens the help');
+    await page.click('#tc-anno-help');
+    check(!(await until(pop, o => !o)), 'another closes it');
+    await page.click('#tc-anno-help'); await until(pop);
     await page.evaluate(() => document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })));
-    check(!(await pop()), 'a click elsewhere closes it');
-    await page.click('#tc-anno-help'); await page.waitForTimeout(50);
+    check(!(await until(pop, o => !o)), 'a click elsewhere closes it');
+    await page.click('#tc-anno-help'); await until(pop);
     await page.keyboard.press('Escape');
-    check(!(await pop()), 'and Escape');
+    check(!(await until(pop, o => !o)), 'and Escape');
   });
 });
 
@@ -156,7 +151,7 @@ test.describe('"Modify annotations" off', () => {
   test.use({ gm: apolloGm({ modifyAnnotation: false }) });
   test('the page is left alone', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
     await editAnnotationPage(page, inject);
-    await page.waitForTimeout(1000);
+    await idle(page);   // Apollo has read its setting and decided
     check(await page.$('#tc-anno-wrap') === null && await page.isVisible(ANNO), 'no editor; the native field shows');
   });
 });
@@ -193,7 +188,8 @@ test.describe('History', () => {
     check(await page.evaluate(() => [...document.querySelectorAll('#tc-anno-history .tc-hist-card')].every(c => c.querySelector('.tc-hist-revert'))), 'every card can revert');
     check((await page.evaluate(() => getComputedStyle(document.getElementById('tc-anno-history-btn')).marginLeft)) !== 'auto', 'History is not pushed right');
     await page.click('#tc-anno-history .tc-hist-card:not(:first-child)');
-    await page.waitForTimeout(200);
+    await until(() => page.evaluate(() => !!document.querySelector('#tc-anno-history .tc-hist-card.on:not(:first-child)')));
+    await frames(page);
     check(await page.evaluate(() => { const r = document.querySelector('#tc-anno-history .tc-hist-card.on .tc-hist-revert'), l = document.querySelector('#tc-anno-history .tc-hist-list'); return !r || r.getBoundingClientRect().right <= l.getBoundingClientRect().right + 1; }), 'its revert is inside the list');
     await page.hover('#tc-anno-history .tc-hist-card:not(:first-child)');
     await page.click('#tc-anno-history .tc-hist-card:not(:first-child) .tc-hist-revert', { force: true });
