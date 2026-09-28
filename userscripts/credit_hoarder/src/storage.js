@@ -66,6 +66,8 @@
 // stays in the user's browser doing nothing; deleting it is left to the
 // browser's normal IDB GC.
 
+import { MB } from './constants.js';
+
 const DB_NAME    = 'mblink';
 const DB_VERSION = 2;
 const STORE      = 'entity_cache';
@@ -96,7 +98,7 @@ _request.onupgradeneeded = function (event) {
  * `mbUrl` so reads don't have to recompute.)
  */
 export function mbUrlOf(entityType, mbid) {
-    return `//musicbrainz.org/${entityType}/${mbid}`;
+    return `${MB}/${entityType}/${mbid}`;   // #623 X2
 }
 
 /**

@@ -1,5 +1,7 @@
 # Musicbrainz Toolset
 
+[![checks](https://github.com/majkinetor/musicbrainz-userscripts/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/majkinetor/musicbrainz-userscripts/actions/workflows/checks.yml?query=branch%3Amain) [![suite](https://github.com/majkinetor/musicbrainz-userscripts/actions/workflows/suite.yml/badge.svg)](https://github.com/majkinetor/musicbrainz-userscripts/actions/workflows/suite.yml)
+
 This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides/Userscripts), [picard plugins](https://picard-docs.musicbrainz.org/en/latest/extending/plugins.html) and [shell scripts](./scripts)) to be used with [MusicBrainz](https://musicbrainz.org).
 
 [Statistics](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md)

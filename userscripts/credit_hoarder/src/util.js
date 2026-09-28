@@ -56,47 +56,6 @@ export function doNext(fn, ms = 80) {
     });
 }
 
-/**
- * Set the value of an input element AND notify React that it changed (React
- * tracks values internally via `_valueTracker`, so a plain `.value = …`
- * assignment doesn't update React's controlled-component state). Used by the
- * MB autocomplete inputs which are React-controlled.
- */
-export function setNativeValue(element, value) {
-    if (typeof element === 'string') {
-        element = $(element).get(0);
-    }
-    let lastValue = element.value;
-    element.value = value;
-    let event = new Event('input', { target: element, bubbles: true });
-    // React 15
-    event.simulated = true;
-    // React 16
-    let tracker = element._valueTracker;
-    if (tracker) {
-        tracker.setValue(lastValue);
-    }
-    element.dispatchEvent(event);
-}
-
-/** Same as setNativeValue but dispatches a `change` event instead of `input`. */
-export function selectValue(element, value) {
-    if (typeof element === 'string') {
-        element = $(element).get(0);
-    }
-    let lastValue = element.value;
-    element.value = value;
-    let event = new Event('change', { target: element, bubbles: true });
-    // React 15
-    event.simulated = true;
-    // React 16
-    let tracker = element._valueTracker;
-    if (tracker) {
-        tracker.setValue(lastValue);
-    }
-    element.dispatchEvent(event);
-}
-
 /** Synthetic Enter keydown — used to commit MB's autocomplete inputs. */
 export function makeKeyDownEvent(keyCode) {
     return new KeyboardEvent('keydown', {
@@ -158,6 +117,14 @@ export function noPasswordManagers(el) {
 }
 
 /** `document.createElement('input')` with the above already applied. */
+/** A short, stable hash of a string (FNV-1a, 32-bit, hex) — for storage keys that
+ *  must identify a long value without truncating it (#623). */
+export function hashKey(str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return (h >>> 0).toString(16).padStart(8, '0');
+}
+
 export function textInput(type = 'text') {
     const el = document.createElement('input');
     el.type = type;

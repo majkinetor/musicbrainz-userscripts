@@ -68,7 +68,7 @@ Newest entries at the bottom. Grep-friendly. Future contributors (human or AI) r
 
 Column-align tables by padding cells with spaces so columns line up. Fall back to **compact** form (`| cell | cell |` with a minimal `| --- | --- |` separator) when any row's cumulative cell content exceeds **200 characters** — past that, alignment makes the line so long it hurts readability more than it helps.
 
-A small enforcer lives at `userscripts/discogs_credits/dev/align-md-tables.mjs` (generic, takes any markdown files as args).
+A small enforcer lives at [`dev/align-md-tables.mjs`](dev/align-md-tables.mjs) (generic, takes any markdown files as args).
 
 <a id="standard-6"></a>
 

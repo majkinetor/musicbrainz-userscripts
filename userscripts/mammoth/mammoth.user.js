@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.12
+// @version      2026.9.27
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -569,7 +569,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -605,7 +609,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -1427,7 +1433,15 @@
   };
   const acObs = new MutationObserver(syncAc);
   const watchAcMenus = () => { document.querySelectorAll('ul.ui-autocomplete').forEach(u => { if (!u._mmthfAc) { u._mmthfAc = 1; acObs.observe(u, { attributes: true, attributeFilter: ['style', 'class'] }); } }); syncAc(); };
-  new MutationObserver(() => { injectAll(); syncDialog(); watchAcMenus(); }).observe(document.documentElement, { childList: true, subtree: true });
+  // #623 (sweep, M1): this observer sees every node on every MusicBrainz page, and each
+  // mutation re-queried the edit notes, dialogs and autocomplete menus (a
+  // getComputedStyle per menu) — hundreds of times while a page renders in bursts. Now a
+  // burst runs it once: the first mutation schedules a run 60 ms later, the rest join
+  // it. A timer, not requestAnimationFrame, which never fires in a background tab — and
+  // background edit tabs (other scripts' "add in the background") need the defaults too.
+  let _mmthPending = 0;
+  const onPageMutation = () => { if (_mmthPending) return; _mmthPending = setTimeout(() => { _mmthPending = 0; injectAll(); syncDialog(); watchAcMenus(); }, 60); };
+  new MutationObserver(onPageMutation).observe(document.documentElement, { childList: true, subtree: true });
   syncDialog(); watchAcMenus();
 
   // #252 Ctrl/Cmd+Enter submits the edit. The submit control differs per page, so

@@ -345,9 +345,9 @@ export async function fetchDiscogsJson(page, discogsUrl) {
     return fetchJsonWithRetry(page, `https://api.discogs.com/releases/${m[1]}`, 'Discogs');
 }
 
-/** Fetch the MB release WS2 JSON (with recordings + media). */
+/** Fetch the MB release WS2 JSON (with recordings + media), from the server the page is on. */
 export async function fetchMbReleaseJson(page, mbid) {
-    return fetchJsonWithRetry(page, `https://musicbrainz.org/ws/2/release/${mbid}?inc=recordings+media&fmt=json`, 'MB WS2');
+    return fetchJsonWithRetry(page, `${new URL(page.url()).origin}/ws/2/release/${mbid}?inc=recordings+media&fmt=json`, 'MB WS2');
 }
 
 /** Read MB.linkedEntities.{link_type, link_attribute_type} from the page. */
@@ -398,7 +398,7 @@ export async function getDetectedDiscogsUrl(page) {
     // relationships instead — the same source of truth the script imports from.
     const mbid = (page.url().match(/release\/([0-9a-f-]{36})/i) || [])[1];
     if (!mbid) return null;
-    const j = await fetchJsonWithRetry(page, `https://musicbrainz.org/ws/2/release/${mbid}?inc=url-rels&fmt=json`, 'MB url-rels').catch(() => null);
+    const j = await fetchJsonWithRetry(page, `${new URL(page.url()).origin}/ws/2/release/${mbid}?inc=url-rels&fmt=json`, 'MB url-rels').catch(() => null);
     const rel = j && (j.relations || []).find(r => r.url && /discogs\.com\/(?:[a-z]{2}\/)?(?:release|master)\//i.test(r.url.resource || ''));
     return rel ? rel.url.resource : null;
 }

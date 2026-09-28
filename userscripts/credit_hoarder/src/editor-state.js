@@ -155,14 +155,6 @@ export function buildAttributes(rawAttributes, linkTypeID) {
         return null;
     }
 
-    // Extract string value from a legacy function attribute by inspecting its source
-    function extractFnValue(fn) {
-        const src = fn.toString();
-        // Match: setValueOnAutocomplete(SELECTORS.X, 'value') or setNativeValue(el, 'value')
-        const m = src.match(/,\s*['"`]([^'"`]+)['"`]\s*\)/);
-        return m ? m[1] : null;
-    }
-
     const attrObjs = [];
     const seen = new Set();
     for (const attr of rawAttributes) {
@@ -183,9 +175,6 @@ export function buildAttributes(rawAttributes, linkTypeID) {
             }
             // #233: per-attribute credited-as (e.g. a vocal credited "spoken vocals [Michal]")
             if (attr.creditedAs) creditedAs = attr.creditedAs;
-        } else if (typeof attr === 'function') {
-            // Legacy function attribute — extract quoted string from source
-            attrName = extractFnValue(attr);
         }
         if (!attrName) continue;
         const found = findAttrByName(attrName);

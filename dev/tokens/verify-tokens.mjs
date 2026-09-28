@@ -13,8 +13,8 @@
 //
 //   node dev/tokens/verify-tokens.mjs
 //
-// A runtime companion (does the token resolve on a real page) lives in the
-// per-script suites, e.g. userscripts/art_station/test/verify-562-tokens.mjs.
+// Its runtime companion (does each token resolve on a real page, in every script)
+// is dev/tokens/verify-tokens-live.mjs.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -36,8 +36,10 @@ function walk(dir, out = []) {
     return out;
 }
 
+// discogs_credits is frozen (no longer developed): it never adopted the token
+// block, and its three permanent FAILs only buried real ones (#623).
 const files = walk(resolve(ROOT, 'userscripts'))
-    .filter(f => !f.includes('string_theory') && !/[\\/]test[\\/]/.test(f));
+    .filter(f => !f.includes('string_theory') && !f.includes('discogs_credits') && !/[\\/]test[\\/]/.test(f));
 
 const carriers = files.filter(f => readFileSync(f, 'utf8').includes('// <ST-TOKENS>'));
 console.log(`${carriers.length} file(s) carry the token block\n`);

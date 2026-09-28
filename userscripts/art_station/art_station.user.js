@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.25
+// @version      2026.9.27
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -355,7 +355,7 @@
     if (!_booted) {   // first two log lines: the script + version, then the MB entity
       _booted = true;
       asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : '') + (_mgr ? ' · ' + _mgr : ''));
-      try { const ri = releaseInfo(); const t = (ri.title || '').trim(); asLog.info('Release: ' + (t ? t + ' — ' : '') + (ri.url || ('https://musicbrainz.org/' + ENT.kind + '/' + MBID))); } catch (e) { asLog.info('Release: https://musicbrainz.org/release/' + MBID); }
+      try { const ri = releaseInfo(); const t = (ri.title || '').trim(); asLog.info('Release: ' + (t ? t + ' — ' : '') + (ri.url || (location.origin + '/' + ENT.kind + '/' + MBID))); } catch (e) { asLog.info('Release: ' + location.origin + '/release/' + MBID); }
       if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
     }
     const pageArt = parsePageArt();
@@ -1425,7 +1425,7 @@
   const dlUrl = it => it._new ? it._file : (it._img || imgUrl(it.id));
   function dlExt(it) {
     if (it._new) { const n = (it._fileObj && it._fileObj.name) || ''; const m = n.match(/\.([a-z0-9]+)$/i); return (m ? m[1] : ((it._fileObj && it._fileObj.type || '').split('/')[1] || 'jpg')).toLowerCase().replace('jpeg', 'jpg'); }
-    return ((it._img || imgUrl(it.id)).match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
+    return ((it._img || imgUrl(it.id)).match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || ['', 'jpg'])[1].toLowerCase();
   }
   async function dlOne(it, size) {
     const orig = !size || size === 'original' || it._new;   // new covers only have their local blob
@@ -1728,7 +1728,7 @@
     const slot = addSourcingSlot(`Sourcing ${prov.name}…`);   // show the in-grid spinner placeholder, same as URL/provider sourcing
     try {
       const blob = await gmFetch(url, (l, t) => setSourcingLabel(slot, `Fetching ${prov.name}… ${Math.round(l / t * 100)}%`));
-      const ext = (String(url).match(/\.(jpe?g|png|gif|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
+      const ext = (String(url).match(/\.(jpe?g|png|gif|webp)(?:$|\?)/i) || ['', 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
       const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
       const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
       dropSourcingSlot(slot);
@@ -2078,7 +2078,7 @@
     for (let attempt = 1; ; attempt++) {
       let r = null;
       try {
-        r = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+        r = await fetch(`${location.origin}/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
       } catch (e) {
         if (attempt >= 4) { asLog.warn(`Links: could not reach MusicBrainz (${e.message}) — sourcing left unknown, not "no links"`); return null; }
       }
@@ -3656,8 +3656,8 @@
     const sub = document.querySelector('p.subheader') || document.querySelector('.subheader');
     const artists = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')]
       .filter(a => !/\/create(\?|$)/.test(a.getAttribute('href')))
-      .map(a => ({ name: a.textContent.trim(), url: 'https://musicbrainz.org' + a.getAttribute('href').split(/[?#]/)[0] })) : [];
-    return { title, url: `https://musicbrainz.org${ENT.base}`, artists };
+      .map(a => ({ name: a.textContent.trim(), url: location.origin + a.getAttribute('href').split(/[?#]/)[0] })) : [];
+    return { title, url: `${location.origin}${ENT.base}`, artists };   // #623 X2: this server, not always production
   }
   const pad2 = n => String(n).padStart(2, '0');
   // the logged-in MB user, for the export manifest ("Exported by"). Read the name from
@@ -4110,7 +4110,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -4146,7 +4150,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);

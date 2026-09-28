@@ -15,7 +15,7 @@
     "test":       "node test/run.mjs",
     "test:headed": "node test/run.mjs --headed",
     "login":      "node test/login.mjs",
-    "align-md":   "node dev/align-md-tables.mjs dev/ANALYSIS.md dev/DECISIONS.md"
+    "align-md":   "node ../../dev/align-md-tables.mjs dev/ANALYSIS.md dev/DECISIONS.md"
   },
   "devDependencies": {
     "esbuild":    "^0.28.0",

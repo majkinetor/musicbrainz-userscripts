@@ -5,7 +5,6 @@
 
 import { ENTITY_TYPE_MAP } from './data/entity-map.js';
 import { INSTRUMENTS }     from './data/instruments.js';
-import { SELECTORS }       from './constants.js';
 
 // Case-insensitive view of INSTRUMENTS so Discogs role variants like
 // "Conga Drum" / "conga drum" / "CONGA DRUM" all hit the same entry.
@@ -153,68 +152,30 @@ export function getAllArtistTracks(tracklist, artistTracks) {
 }
 
 /**
- * Detect Discogs "DJ Mix" credits and turn them into release- or medium-level
- * dj-mixer relationships depending on whether the credit spans whole mediums.
+ * Detect Discogs "DJ Mix" credits that cover the whole release and turn them into
+ * release-level dj-mixer relationships.
  *
- * Mutates `json.extraartists` (removes any DJ Mix credits we've handled).
- * Returns an array of role objects ready to feed back into the dispatcher.
+ * #623 (sweep, C1): a DJ Mix credit that covers only some tracks — or only some of
+ * the mediums — used to become a release-level DJ-mixer too. Its scope was meant to
+ * ride along as a legacy jQuery "attribute" clicking the old dialog's medium
+ * selector, which the dispatcher can't read, so the credit went release-wide
+ * ("tracks 1–3 of 12" → "mixed the release"). Such a credit now stays in
+ * `json.extraartists` with its `tracks`, and the per-track path turns it into
+ * recording relationships. A credit without `tracks` is release-level already
+ * (the main path maps it); it isn't touched here.
+ *
+ * Mutates `json.extraartists` (removes the credits it turns release-level).
+ * Returns the role objects for those, ready for the dispatcher.
  */
 export function convertPotentialDJMixers(json) {
-    let djmixers = json.extraartists?.filter(artist => artist.role === 'DJ Mix') || [];
-    djmixers = djmixers
+    const all = flattenTracklist(json.tracklist || []).filter(t => t.type_ === 'track');
+    const djmixers = (json.extraartists || [])
+        .filter(artist => artist.role === 'DJ Mix' && artist.tracks)
         .map(artist => {
-            const tracks = getAllArtistTracks(json.tracklist, artist.tracks);
-            const mediums = json.tracklist.reduce(
-                (mediums, track, index) => {
-                    if (track.type_ === 'heading') {
-                        if (index > 0) {
-                            mediums.push([]);
-                        }
-                    } else {
-                        mediums[mediums.length - 1].push(track);
-                    }
-                    return mediums;
-                },
-                [[]]
-            );
-            // now see if we can empty all our mediums
-            tracks.forEach(t => {
-                for (let i = 0; i < mediums.length; i++) {
-                    mediums[i] = mediums[i].filter(track => {
-                        return t.position !== track.position;
-                    });
-                }
-            });
-            // if some mediums are empty then we know that the artist has tracks on that medium
-            let mediumsDjAppearsOn = mediums.filter(medium => medium.length === 0);
-            if (mediumsDjAppearsOn.length !== mediums.length) {
-                // remove them from the extraartists list
-                json.extraartists = json.extraartists?.filter(a => {
-                    return a !== artist;
-                }) || [];
-                return Object.assign({}, ENTITY_TYPE_MAP['DJ Mix'], {
-                    artist: artist,
-                    attributes: [
-                        () => {
-                            for (let j = mediums.length - 1; j >= 0; j--) {
-                                if (mediums[j].length === 0) {
-                                    $(SELECTORS.MediumsInput).click();
-                                    $($(SELECTORS.MediumsInputOptions).get(j)).click();
-                                }
-                            }
-                        },
-                    ],
-                });
-            } else if (mediumsDjAppearsOn.length === mediums.length) {
-                // they're on all tracks so remove
-                json.extraartists = json.extraartists?.filter(a => {
-                    return a !== artist;
-                }) || [];
-                return Object.assign({}, ENTITY_TYPE_MAP['DJ Mix'], {
-                    artist: artist,
-                });
-            }
-            return null;
+            const covered = new Set(getAllArtistTracks(json.tracklist, artist.tracks).map(t => t.position));
+            if (!all.length || !all.every(t => covered.has(t.position))) return null;   // partial: a track credit
+            json.extraartists = json.extraartists.filter(a => a !== artist);
+            return Object.assign({}, ENTITY_TYPE_MAP['DJ Mix'], { artist });
         })
         .filter(role => role !== null);
     return djmixers;

@@ -1,0 +1,64 @@
+# The repo's gates (#623): every userscript parses and lints clean, Credit
+# Hoarder's own lint passes, the design tokens resolve, and the specs that need
+# no network (@unit) pass. Then, for main and pull requests into it, each
+# script's core specs (@critical) run on test.musicbrainz.org. The whole suite
+# runs nightly (suite.yml).
+name: checks
+on:
+  push:
+    branches: [main, stable]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Every userscript parses
+        run: for f in userscripts/*/*.user.js userscripts/art_station/as_picker/*.user.js; do node --check "$f" || exit 1; done
+      - name: Lint
+        run: pnpm lint --quiet
+      - name: Credit Hoarder lint
+        run: |
+          pnpm --dir userscripts/credit_hoarder install --frozen-lockfile
+          pnpm --dir userscripts/credit_hoarder run lint
+      - name: Design tokens
+        run: node dev/tokens/verify-tokens.mjs
+      - name: Specs that need no network
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm test --grep @unit
+
+  critical:
+    needs: checks
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # one run at a time on the sandbox: two would edit the same fixture releases
+    concurrency: { group: sandbox, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Sign in to the sandbox
+        run: node dev/test/login.mjs sandbox --auto
+      # @web reads other live sites, which often block cloud machines
+      - name: Core specs (@critical)
+        run: pnpm test --grep @critical --grep-invert @web
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: critical-report
+          path: test-results/html
+          retention-days: 14
