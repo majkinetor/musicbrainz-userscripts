@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.27.060520
+// @version      2026.9.28
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -42,53 +42,14 @@
   // #283 every Log.* call is captured into an in-page buffer and surfaced in a
   // dedicated log viewer — opened from a Log button next to "? Help" —
   // copy/pastable as a Markdown <details> block, like the other scripts. (The
-  // console output was dropped: it just duplicated this buffer.)
-  const LOG = [];
-  const _logListeners = new Set();
-  const _lpad = (n, w = 2) => String(n).padStart(w, '0');
-  const _logTs = d => `${_lpad(d.getHours())}:${_lpad(d.getMinutes())}:${_lpad(d.getSeconds())}.${_lpad(d.getMilliseconds(), 3)}`;
-  const _logStr = v => {
-    if (typeof v === 'string') return v;
-    if (v instanceof Error) return v.message || String(v);
-    if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
-    try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
-  };
-  function _logRecord(sev, args) {
-    const msg = args.map(_logStr).join(' ').replace(/\s+/g, ' ').trim();
-    if (!msg) return;
-    LOG.push({ t: new Date(), sev, msg });
-    _logListeners.forEach(f => { try { f(); } catch (e) {} });
-  }
-  const Log = {
-    info:  (...a) => _logRecord('info', a),
-    warn:  (...a) => _logRecord('warn', a),
-    err:   (...a) => _logRecord('error', a),
-    ok:    (...a) => _logRecord('ok', a),
-    debug: (...a) => _logRecord('debug', a),
-  };
-  const _logCounts = () => LOG.reduce((acc, e) => { if (e.sev === 'warn') acc.warn++; else if (e.sev === 'error') acc.error++; return acc; }, { warn: 0, error: 0 });
-  // escape, then turn http(s) URLs into clickable links for the log viewer
-  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, (m) => {
-    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
-    const url = m.slice(0, m.length - t.length);
-    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${t}`;
+  // console output was dropped: it just duplicated this buffer.) The buffer and
+  // window are the shared mbuLog (ST-UI block), since X12 of #623.
+  const Log = mbuLog({
+    name: 'Apollo Editor', version: () => scriptVersion(), key: 'apolloEditor.logwin',
+    load: k => gmLoad(k), save: (k, v) => gmSave(k, v), before: () => style(),
   });
-  // copy/pastable Markdown — collapsed <details> wrapping a fenced log block.
-  function logMarkdown() {
-    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
-    const body = LOG.length ? LOG.map(e => `${_logTs(e.t)}  ${PRE[e.sev] || ''}${e.msg}`).join('\n') : '(no activity logged)';
-    const c = _logCounts();
-    let title = 'Apollo Editor';
-    try { title += ' v' + scriptVersion(); } catch (e) {}
-    const tally = (c.warn || c.error) ? ` (${c.warn} warning${c.warn === 1 ? '' : 's'}, ${c.error} error${c.error === 1 ? '' : 's'})` : '';
-    return `<details><summary>${title} — session log${tally}</summary>\n\n` + '```log\n' + body + '\n```' + `\n\n</details>`;
-  }
-  async function copyLog(btn) {
-    const md = logMarkdown(); let ok = false;
-    try { await navigator.clipboard.writeText(md); ok = true; }
-    catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
-    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
-  }
+  const logMarkdown = () => Log.markdown();
+  const openLog = () => Log.open();
   // #501: settings persistence lives in GM storage (backed up/synced by the script
   // manager) instead of localStorage (browser-profile-only — invisible to a script
   // manager backup/restore or a move to another browser). One-time migration: if GM
@@ -101,62 +62,6 @@
     return undefined;
   };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
-  // #283 remember the log window across sessions: open?/minimized?/position
-  const LOGWIN_KEY = 'apolloEditor.logwin';
-  const loadLogWin = () => { try { return JSON.parse(gmLoad(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
-  const saveLogWin = (patch) => { try { gmSave(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
-  // the Log button opens this popup: the full session log + a Copy control.
-  function openLog() {
-    document.getElementById('mbu-logpop')?.remove();
-    style();   // ensure the popup CSS is injected (e.g. on auto-open before settings is opened)
-    saveLogWin({ open: true });
-    const st = loadLogWin();
-    const pop = document.createElement('div'); pop.id = 'mbu-logpop';
-    pop.innerHTML = `<div class="mbu-logpop-h"><b>Activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>`
-      + `<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
-      + `<button class="mbu-logpop-min" type="button" title="Minimize">–</button>`
-      + `<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="mbu-log-list"></div>`;
-    document.body.appendChild(pop);
-    // restore saved open position (used when not minimized, and remembered for restore)
-    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-    const renderList = () => {
-      const list = pop.querySelector('.mbu-log-list');
-      list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="mbu-log-li mbu-log-${e.sev}"><span class="mbu-log-t">${_logTs(e.t)}</span><span class="mbu-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
-        : '<div class="mbu-log-empty">No activity yet.</div>';
-      const c = _logCounts();
-      pop.querySelector('.mbu-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
-      list.scrollTop = list.scrollHeight;
-    };
-    renderList();
-    _logListeners.add(renderList);
-    const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
-    const minBtn = pop.querySelector('.mbu-logpop-min');
-    const setMin = (m) => {
-      minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-      if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
-      else if (pop._restore) { Object.assign(pop.style, pop._restore); }
-    };
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
-    if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
-    pop.querySelector('.mbu-logpop-x').onclick = close;
-    // floating, non-modal window — draggable by its header
-    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', (e) => {
-      if (e.target.closest('button')) return;
-      e.preventDefault();
-      const r = pop.getBoundingClientRect();
-      pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
-      const ox = e.clientX - r.left, oy = e.clientY - r.top;
-      const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
-      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWin({ left: pop.style.left, top: pop.style.top }); } };
-      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
-    });
-    document.addEventListener('keydown', onKey);
-  }
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
   Log.info('Apollo Editor' + (() => { try { return ' v' + GM_info.script.version; } catch (e) { return ''; } })());
@@ -1903,6 +1808,205 @@
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
   }
 
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -9808,7 +9912,7 @@
     // that panel is showing. One delegated listener, self-guarded by the
     // #external-links-editor check inside it.
     installMultiLinkPaste();
-    if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
+    setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
