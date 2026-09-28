@@ -10,7 +10,7 @@
 //
 // test.musicbrainz.org, with production's data (fixtures/ws-458.json.gz,
 // ws-463.json.gz). The providers are live. Nothing is submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
@@ -23,8 +23,7 @@ test('#458: Spotify track links resolve from the album embed', { tag: ['@sandbox
   await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.cand[data-code="sp"]').length > 0, null, { timeout: 20000 });
   await page.click('#ii-links-btn');
   await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.new[data-code="sp"], #ii-modal .ii-tl.absent[data-code="sp"]').length > 0, null, { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(800);
-  const r = await page.evaluate(() => ({ n: document.querySelectorAll('#ii-modal .ii-tl.new[data-code="sp"]').length, href: (document.querySelector('#ii-modal .ii-tl.new[data-code="sp"]') || {}).href || '' }));
+  const r = await until(() => page.evaluate(() => ({ n: document.querySelectorAll('#ii-modal .ii-tl.new[data-code="sp"]').length, href: (document.querySelector('#ii-modal .ii-tl.new[data-code="sp"]') || {}).href || '' })), r => r.n >= 1);
   check(r.n >= 1, `per-track Spotify links resolve as addable (${r.n})`);
   check(/open\.spotify\.com\/(?:intl-[a-z-]+\/)?track\//.test(r.href), `a track URL, not the album's ("${r.href}")`);
   await ws.done();
@@ -39,11 +38,10 @@ test('#463: a Cyrillic title still gets its link', { tag: ['@sandbox', '@web'] }
   await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.cand').length > 0, null, { timeout: 20000 });
   await page.click('#ii-links-btn');
   await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.new, #ii-modal .ii-tl.absent').length > 0, null, { timeout: 90000 }).catch(() => {});
-  await page.waitForTimeout(1500);
-  const r = await page.evaluate(() => {
+  const r = await until(() => page.evaluate(() => {
     const row = document.querySelector('#ii-modal tr[data-idx="9"]');   // track 10
     return { links: row ? [...row.querySelectorAll('.ii-tl.new')].map(a => a.dataset.code) : [], total: document.querySelectorAll('#ii-modal .ii-tl.new').length };
-  });
+  }), r => r.links.length >= 1 && r.total >= 10, { timeout: 60000 });
   check(r.links.length >= 1, `track 10, "слезы завтра", resolves a link (${r.links.join(',') || 'none'})`);
   check(r.total >= 10, `most tracks resolve links (${r.total})`);
   await ws.done();

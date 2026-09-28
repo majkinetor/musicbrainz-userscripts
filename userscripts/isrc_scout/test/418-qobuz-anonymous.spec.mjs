@@ -14,7 +14,7 @@
 // fixture-418-albumget.json (the real response from the #418 HAR).
 import { readFileSync } from 'node:fs';
 import { test, check, answerGm } from '../../../dev/test/harness.mjs';
-import { openScout, logText } from './is.mjs';
+import { openScout, logText, ended } from './is.mjs';
 
 const ALBUM_GET = readFileSync(new URL('./fixture-418-albumget.json', import.meta.url), 'utf8');
 const REPLAY = new URL('./fixtures/ws-418.json.gz', import.meta.url);
@@ -32,10 +32,8 @@ async function run(page, context, inject, { anon, token = 200, withToken = false
   // Platform Check's shared session, or none
   await page.addInitScript(t => { if (t) localStorage.setItem('mbtools:qobuz', JSON.stringify({ token: t })); else localStorage.removeItem('mbtools:qobuz'); }, withToken ? 'fake-session-token' : '');
   const ws = await openScout(page, inject, { release: 'bb10044f-d50e-4d76-b3cc-ec7edd1a9704', replay: REPLAY });
-  await page.waitForTimeout(800);
   await page.click('#ii-qz-all');
-  await page.waitForFunction(() => /Qobuz album|Qobuz failed|Qobuz \d+/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(800);
+  await ended(page, 'Qobuz', 30000);
   await page.evaluate(() => localStorage.removeItem('mbtools:qobuz'));
   await ws.done();
   return { log: await logText(page), albumGets: calls.filter(c => /album\/get/.test(c.url)) };

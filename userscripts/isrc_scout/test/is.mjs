@@ -1,5 +1,5 @@
 // Shared setup for ISRC Scout's specs.
-import { replayWs, answerGm, onSandbox, sandboxAs, SANDBOX } from '../../../dev/test/harness.mjs';
+import { replayWs, answerGm, onSandbox, sandboxAs, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 export { onSandbox };
 
@@ -57,3 +57,11 @@ export async function openStub(page, context, inject) {
 
 // The log pane's text.
 export const logText = page => page.evaluate(() => document.getElementById('ii-log-out')?.textContent || '');
+
+// Until a provider's import has ended: its status says "<label> done — …" or
+// "⚠ <label> failed — see Log", its last line either way. Returns the log.
+export async function ended(page, label, timeout = 60000) {
+  const re = new RegExp(label + ' (done|failed)');
+  await until(() => page.evaluate(() => document.getElementById('ii-prog')?.textContent || ''), t => re.test(t), { timeout });
+  return logText(page);
+}

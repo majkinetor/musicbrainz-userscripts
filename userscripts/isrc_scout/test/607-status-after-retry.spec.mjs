@@ -5,7 +5,7 @@
 //
 // test.musicbrainz.org (a copy of the release from the issue), with production's data
 // (fixtures/ws-607.json.gz); the first release lookup is answered 503.
-import { test, check, answerGm } from '../../../dev/test/harness.mjs';
+import { test, check, answerGm, until } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
@@ -22,8 +22,7 @@ test('the button shows the real count once the dialog has loaded the release', {
   check(before === '?', `the throttled page load leaves "?" (${before})`);
   await page.evaluate(() => document.getElementById('ii-btn').click());
   await page.waitForFunction(() => !/Loading release/.test(document.getElementById('ii-modal')?.innerText || 'Loading release'), null, { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(1000);
-  const after = await page.evaluate(() => ({ status: document.getElementById('ii-btn-status').textContent, title: document.getElementById('ii-btn').title, rows: document.querySelectorAll('#ii-modal tbody tr').length }));
+  const after = await until(() => page.evaluate(() => ({ status: document.getElementById('ii-btn-status').textContent, title: document.getElementById('ii-btn').title, rows: document.querySelectorAll('#ii-modal tbody tr').length })), a => a.rows > 1 && /^[✓⚠] \d+\/\d+$/.test(a.status));
   check(after.rows > 1, `the dialog loaded the release (${after.rows} rows)`);
   check(/^[✓⚠] \d+\/\d+$/.test(after.status) && !/Could not load/.test(after.title), `the button shows the count now ("${after.status}")`);
   await ws.done();

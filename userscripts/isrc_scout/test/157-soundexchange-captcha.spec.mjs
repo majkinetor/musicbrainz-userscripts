@@ -5,7 +5,7 @@
 //
 // test.musicbrainz.org, read-only. SoundExchange's answer is faked (the captcha reply),
 // and every call to it counted.
-import { test, check, answerGm } from '../../../dev/test/harness.mjs';
+import { test, check, answerGm, until, idle } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
@@ -31,21 +31,23 @@ test('SoundExchange is asked only on blur or [SX], and its captcha reply is reco
   // typing a valid ISRC, without leaving the field: no call, [SX] enabled
   const sel = states.sel;
   await page.evaluate(s => { const i = document.querySelector(s + ' input.ii-input'); i.focus(); i.value = 'USRC17607830'; i.dispatchEvent(new Event('input', { bubbles: true })); }, sel);
-  await page.waitForTimeout(600);
+  // the input has been handled once [SX] is enabled; no call by then, nor once the page is idle
+  check(await until(() => page.evaluate(s => !document.querySelector(s + ' button.ii-sx').disabled, sel)), 'a valid ISRC enables [SX]');
+  await idle(page);
   check(sx === 0, `typing doesn't call SoundExchange (${sx} calls)`);
-  check(await page.evaluate(s => !document.querySelector(s + ' button.ii-sx').disabled, sel), 'a valid ISRC enables [SX]');
 
   // leaving the field: one call, and the captcha is recognised
   await page.evaluate(s => document.querySelector(s + ' input.ii-input').dispatchEvent(new Event('blur', { bubbles: true })), sel);
-  await page.waitForTimeout(900);
+  await until(() => sx, n => n >= 1);
   check(sx === 1, `leaving the field calls it once (${sx})`);
-  const state = await page.evaluate(s => ({ bullet: (document.querySelector(s + ' .ii-lookup')?.textContent || '').trim(), prog: (document.getElementById('ii-prog')?.textContent || '').trim(), link: !!document.querySelector('#ii-prog a') }), sel);
+  const state = await until(() => page.evaluate(s => ({ bullet: (document.querySelector(s + ' .ii-lookup')?.textContent || '').trim(), prog: (document.getElementById('ii-prog')?.textContent || '').trim(), link: !!document.querySelector('#ii-prog a') }), sel), s => /captcha/i.test(s.bullet) && /captcha/i.test(s.prog) && s.link);
   check(/captcha/i.test(state.bullet) && /captcha/i.test(state.prog) && state.link, `the captcha shows on the row and in the status, with a link (${JSON.stringify(state)})`);
 
   // [SX]: one lookup by ISRC, and no refine panel
   const before = sx;
   await page.evaluate(s => document.querySelector(s + ' button.ii-sx').click(), sel);
-  await page.waitForTimeout(800);
+  await until(() => sx - before, n => n >= 1);
+  await idle(page);   // the answer has been handled: a refine panel would be open by now
   check(sx - before === 1, `[SX] makes one lookup (${sx - before})`);
   check(!(await page.evaluate(() => { const p = document.getElementById('ii-sxpanel'); return !!(p && p.offsetParent !== null); })), '…without opening the refine panel');
 });
