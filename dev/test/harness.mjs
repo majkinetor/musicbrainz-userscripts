@@ -135,8 +135,8 @@ export function sandboxAs(mbid) {
 //   … the test …
 //   await ws.done();   // saves when recording; reports reads the fixture didn't have
 //
-// RECORD_WS=1 records: each read is fetched from production (paced, throttling waited
-// out) and the file is rewritten at done(). A read missing from the fixture is answered
+// RECORD_WS=1 records: each read the fixture lacks is fetched from production (paced,
+// throttling waited out) and the file is rewritten at done() (RECORD_WS=fresh: all of them). A read missing from the fixture is answered
 // 503, as a throttled server would, and done() fails the test naming it. A fixture
 // named *.gz is gzipped (a search for a common name can be 100 kB of JSON).
 //
@@ -145,7 +145,7 @@ export function sandboxAs(mbid) {
 // the map for one).
 //
 // `web: true` (or a RegExp of host names) replays the other sites a script asks, through
-// GM_xmlhttpRequest or the page's fetch — Spotify, Discogs, a search engine — recorded once from the
+// GM_xmlhttpRequest (and, for a RegExp, the page's own requests) — Spotify, Discogs, a search engine — recorded once from the
 // live site, so a spec about matching gets the same candidates every run. Access tokens
 // in a recorded reply are replaced, and an HTML page is recorded without its styles, SVG
 // and comments (never data, and most of a page's weight); `trim: (key, body) => body`
@@ -154,7 +154,10 @@ export function sandboxAs(mbid) {
 export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, as = {}, web = false, trim = null } = {}) {
   const record = !!process.env.RECORD_WS;
   const gz = String(file).endsWith('.gz');
-  const store = record ? {} : JSON.parse(gz ? gunzipSync(await readFile(file)).toString('utf8') : await readFile(file, 'utf8'));
+  // RECORD_WS=1 adds what is missing to the recording (a read that happens on some runs
+  // only is collected over a few); RECORD_WS=fresh starts it over
+  const load = async () => JSON.parse(gz ? gunzipSync(await readFile(file)).toString('utf8') : await readFile(file, 'utf8'));
+  const store = record ? (process.env.RECORD_WS === 'fresh' ? {} : await load().catch(() => ({}))) : await load();
   const missing = [];
   let last = 0;
   const isMb = u => /(^|\.)musicbrainz\.org$/.test(u.hostname);
@@ -163,6 +166,7 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
   // a search whose terms are OR-ed in whatever order the script gathered them is one
   // search: keyed with its terms sorted
   const canon = key => key.replace(/([?&]query=)([^&]*%20OR%20[^&]*)/, (m, p, q) => p + q.split('%20OR%20').sort().join('%20OR%20'));
+  for (const k of Object.keys(store)) if (canon(k) !== k && !store[canon(k)]) store[canon(k)] = store[k];   // recordings made before keys were sorted
   // the answer for one read: recorded now, or from the fixture
   const answer = async u => {
     const path = mapped(u.pathname + u.search), key = canon(path);
@@ -222,8 +226,9 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
     if (o.method === 'GET' && covers(u)) return answer(u);
     return coversWeb(u) ? answerWeb(o) : null;
   });
-  // …and the page's own requests to those sites (a fetch to api.discogs.com), the same way
-  if (web) await page.route(coversWeb, async route => {
+  // …and the page's own requests to the hosts named (a fetch to api.discogs.com), the same
+  // way. Only for named hosts: with web: true the page's images and fonts would be caught too.
+  if (web instanceof RegExp) await page.route(coversWeb, async route => {
     const q = route.request();
     try {
       const a = await answerWeb({ url: q.url(), method: q.method(), data: q.postData() || undefined });
@@ -235,7 +240,7 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
     answer: url => (isMb(new URL(url)) ? answer(new URL(url)) : answerWeb({ url })),
     async done() {
       if (record) { const json = JSON.stringify(store, null, 1) + '\n'; await writeFile(file, gz ? gzipSync(json, { level: 9 }) : json); return; }
-      expect(missing, 'reads the fixture has no answer for (RECORD_WS=1 to re-record)').toEqual([]);
+      expect(missing, 'reads the fixture has no answer for (RECORD_WS=1 to add them)').toEqual([]);
     },
   };
 }
