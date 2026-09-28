@@ -12,6 +12,7 @@ pnpm test --project=fusion        # one script
 pnpm test --grep @unit            # only specs that need no network
 pnpm test --grep @critical        # the quick run: each script's core
 pnpm test --headed                # watch the browser
+TEST_LOG=1 pnpm test              # also print what specs log
 pnpm test:report                  # open the last HTML report
 ```
 
