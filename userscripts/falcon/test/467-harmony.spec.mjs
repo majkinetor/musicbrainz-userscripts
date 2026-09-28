@@ -1,0 +1,157 @@
+// #467/#459 (majkinetor) — the Harmony bridge. Harmony's "Link external IDs" actions
+// are already standard MB seed URLs; parseHarmonySeedUrl decodes them directly (no
+// scraping of rendered text needed), and running Falcon ON a Harmony actions page
+// surfaces a "Send N to Falcon" button that combines them into one ?falcon= payload.
+// Also covers the real-world case Harmony produces: the SAME url needing TWO
+// relationship types (e.g. a Bandcamp track as both "stream for free" and "purchase
+// for download"), via MB's own "Add another relationship" row.
+import { readFile } from 'node:fs/promises';
+import { harmonyReplay } from './fc.mjs';
+import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+
+// the script brings its own GM stand-ins, as it did before the harness
+test.use({ gm: false });
+
+test("#467: harmony", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+  const code = await readFile(sourceOf('falcon'), 'utf8');
+
+  // Real hrefs captured live from
+  // https://harmony.pulsewidth.org.uk/release/actions?release_mbid=...20b03c7d-9e8a-42b9-8a96-bcc9564de034
+  const HREF_ARTIST = 'https://test.musicbrainz.org/artist/b31113ab-205d-461b-b431-5d5c52635117/edit?edit-artist.url.0.text=https%3A%2F%2Ftidal.com%2Fartist%2F7388291&edit-artist.url.0.link_type_id=978&edit-artist.edit_note=Matched+artist+while+importing+https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-9e8a-42b9-8a96-bcc9564de034+with+Harmony';
+  const HREF_LABEL = 'https://test.musicbrainz.org/label/04201e6d-c430-4a53-a9a0-56170825fbde/edit?edit-label.url.0.text=https%3A%2F%2Fwww.discogs.com%2Flabel%2F741917&edit-label.url.0.link_type_id=217&edit-label.url.1.text=https%3A%2F%2Fbrightestdarkplace.bandcamp.com%2F&edit-label.url.1.link_type_id=719&edit-label.edit_note=Matched+label+while+importing+https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-9e8a-42b9-8a96-bcc9564de034+with+Harmony';
+  const HREF_RECORDING_DUAL = 'https://test.musicbrainz.org/recording/e42f8e08-3150-4c6c-be5b-4030c29b1bf7/edit?edit-recording.url.0.text=https%3A%2F%2Fwww.deezer.com%2Ftrack%2F3702424332&edit-recording.url.0.link_type_id=268&edit-recording.url.1.text=https%3A%2F%2Fbrightestdarkplace.bandcamp.com%2Ftrack%2Fdusk&edit-recording.url.1.link_type_id=268&edit-recording.url.2.text=https%3A%2F%2Fbrightestdarkplace.bandcamp.com%2Ftrack%2Fdusk&edit-recording.url.2.link_type_id=254&edit-recording.url.3.text=https%3A%2F%2Ftidal.com%2Ftrack%2F120024260&edit-recording.url.3.link_type_id=979&edit-recording.edit_note=Matched+recording+while+importing+https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-9e8a-42b9-8a96-bcc9564de034+with+Harmony';
+
+  await context.addInitScript(() => {
+    const store = new Map();
+    window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
+    window.GM_setValue = (k, v) => store.set(k, v);
+    window.GM_info = { script: { name: 'Falcon', version: 't' } };
+  });
+  const ck = check;
+
+  // 1. parseHarmonySeedUrl on the 3 real captured shapes.
+  {
+    const page = context.pages()[0] || await context.newPage();
+    await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
+    await page.addScriptTag({ content: code });
+    await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+    const [artist, label, recDual] = await page.evaluate(([a, l, r]) => {
+      const { parseHarmonySeedUrl } = window.__falconTest;
+      return [parseHarmonySeedUrl(a), parseHarmonySeedUrl(l), parseHarmonySeedUrl(r)];
+    }, [HREF_ARTIST, HREF_LABEL, HREF_RECORDING_DUAL]);
+    console.log('artist:', JSON.stringify(artist));
+    console.log('label:', JSON.stringify(label));
+    console.log('recDual:', JSON.stringify(recDual));
+    ck(artist.length === 1 && artist[0].entityType === 'artist' && artist[0].mbid === 'b31113ab-205d-461b-b431-5d5c52635117' && artist[0].url === 'https://tidal.com/artist/7388291' && artist[0].linkTypeId === '978', 'single-url artist href decoded correctly');
+    ck(/Matched artist while importing/.test(artist[0].note), 'edit_note decoded from the query param');
+    ck(label.length === 2 && label[0].entityType === 'label' && label.every(t => t.mbid === '04201e6d-c430-4a53-a9a0-56170825fbde'), `label href decodes BOTH urls (got ${label.length})`);
+    ck(label[1].url === 'https://brightestdarkplace.bandcamp.com/' && label[1].linkTypeId === '719', 'second label url + its link_type_id decoded');
+    ck(recDual.length === 4 && recDual[0].entityType === 'recording', `recording href decodes all 4 url entries (got ${recDual.length})`);
+    const bandcampEntries = recDual.filter(t => t.url.includes('bandcamp'));
+    ck(bandcampEntries.length === 2 && bandcampEntries[0].url === bandcampEntries[1].url && bandcampEntries[0].linkTypeId !== bandcampEntries[1].linkTypeId, `the SAME bandcamp url appears twice with DIFFERENT link_type_id (268 vs 254) (${JSON.stringify(bandcampEntries.map(t => t.linkTypeId))})`);
+
+    // 2. encodeFalconPayload -> parseUrlParam round-trip (what actually crosses the tab boundary).
+    const roundtrip = await page.evaluate((tuples) => {
+      const { encodeFalconPayload } = window.__falconTest;
+      const payload = encodeFalconPayload(tuples);
+      const url = new URL('https://test.musicbrainz.org/?falcon=' + encodeURIComponent(payload));
+      history.replaceState(null, '', url.pathname + url.search);
+      return window.__falconTest.parseUrlParam();
+    }, [...artist, ...label]);
+    console.log('roundtrip:', JSON.stringify(roundtrip));
+    ck(roundtrip && roundtrip.length === 3, `payload round-trips through encode -> URL -> parseUrlParam (got ${roundtrip?.length})`);
+    ck(roundtrip?.some(t => t.entityType === 'label' && t.linkTypeId === '719'), 'linkTypeId survives the round-trip');
+  }
+
+  // 3. Live Harmony page: the button appears, finds real actions (recordings included
+  // again, majkinetor #467), and clicking it opens MB with a SHORT token in the URL —
+  // the full batch (including recordings) lives in GM storage, not the URL, so there's
+  // no length ceiling to hit regardless of batch size. window.open is stubbed for the
+  // duration of the click so this never opens a real tab.
+  {
+    const page = await context.newPage();
+    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const hw = await harmonyReplay(page, '467');
+    await page.goto('https://harmony.pulsewidth.org.uk/release/actions?release_mbid=https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-9e8a-42b9-8a96-bcc9564de034', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
+    await page.waitForTimeout(4000);
+    await page.addScriptTag({ content: code });
+    await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+    await page.waitForTimeout(1500);
+    const info = await page.evaluate(() => {
+      const items = window.__falconTest.scrapeHarmonyActions();
+      const cover = window.__falconTest.scrapeHarmonyCover();
+      const btn = document.getElementById('falcon-harmony-btn');
+      return {
+        count: items.length, coverCount: cover ? 1 : 0, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, btnTitle: btn?.title,
+        byType: items.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {}),
+      };
+    });
+    console.log('live harmony scrape:', JSON.stringify(info));
+    ck(info.btnExists, 'the "Send to Falcon" button is injected on a real Harmony actions page');
+    ck(info.count > 10, `scrapeHarmonyActions() returns everything, recordings included (got ${info.count})`);
+    // this release's real, live action mix can shift over time (edits happen on MB) —
+    // just check it found SOME actions of some kind, not a specific type breakdown.
+    ck(Object.values(info.byType).some(n => n > 0), `scrape found real actions of at least one type (${JSON.stringify(info.byType)})`);
+    // #494: the button's count also includes +1 when this release has cover art.
+    const total = info.count + info.coverCount;
+    ck(new RegExp(`Send ${total} to Falcon`).test(info.btnText || ''), `button label shows the FULL count, recordings + cover included (label="${info.btnText}", total=${total})`);
+    ck(!/skipped/.test(info.btnTitle || ''), `tooltip no longer mentions skipping anything now that the token transport removed the URL-length ceiling (title="${info.btnTitle}")`);
+
+    const clicked = await page.evaluate(() => new Promise(resolveClick => {
+      const origOpen = window.open;
+      window.open = url => { window.open = origOpen; resolveClick(url); return { closed: false }; };   // capture, don't actually open a tab
+      document.getElementById('falcon-harmony-btn').click();
+    }));
+    const token = new URL(clicked).searchParams.get('falcon');
+    console.log('captured window.open target:', clicked);
+    ck(!!token && clicked.length < 200, `the button opens a URL carrying only a short token, not the whole payload (token="${token}", url length=${clicked.length})`);
+    const storedArr = await page.evaluate(tok => JSON.parse(window.GM_getValue('falcon:pending:' + tok)), token);
+    console.log('stored payload count:', storedArr.length, 'by type:', JSON.stringify(storedArr.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {})));
+    ck(storedArr.length === total, `GM storage holds the FULL batch, recordings + cover (${storedArr.length} vs ${total})`);
+    ck(storedArr.some(t => t.entityType === 'recording'), 'recordings are present in the stored payload — no longer excluded');
+    ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
+    await hw.done();
+    await page.close();
+  }
+
+  // 4. Dual relationship type on the SAME url, end-to-end on the real recording page —
+  // the submit POST is intercepted+faked so nothing real is submitted.
+  {
+    const page = await context.newPage();
+    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    let posts = 0;
+    await page.route('**/recording/*/edit*', async (route, request) => {
+      if (request.method() === 'POST') { posts++; const mbid = (request.url().match(/\/recording\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/recording/${mbid}` } }); }
+      return route.fallback();
+    });
+    await page.goto('https://test.musicbrainz.org/recording/e42f8e08-3150-4c6c-be5b-4030c29b1bf7', { waitUntil: 'load' });
+    await requireLogin(page);
+    await page.waitForTimeout(500);
+    await page.addScriptTag({ content: code });
+    await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+    await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
+    await page.click('#falcon-launcher');
+    await page.waitForSelector('#falcon-panel', { timeout: 5000 });
+    await page.evaluate((tuples) => {
+      window.__falconTest.setQueue([{
+        id: 'dual', entityType: 'recording', mbid: 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7',
+        urls: tuples.map(t => ({ url: t.url, linkTypeId: t.linkTypeId })),
+        note: tuples[0].note, urlResults: null, status: 'queued', error: '',
+      }]);
+    }, /* only the deezer(268) + bandcamp(268) + bandcamp(254) entries, skip tidal to keep this focused */
+       [
+         { url: 'https://www.deezer.com/track/3702424332', linkTypeId: '268', note: 'test' },
+         { url: 'https://brightestdarkplace.bandcamp.com/track/dusk', linkTypeId: '268', note: 'test' },
+         { url: 'https://brightestdarkplace.bandcamp.com/track/dusk', linkTypeId: '254', note: 'test' },
+       ]);
+    await page.evaluate(() => window.__falconTest.start());
+    await page.waitForFunction(() => window.__falconTest.getQueue()[0]?.status !== 'queued' && window.__falconTest.getQueue()[0]?.status !== 'active', null, { timeout: 20000 }).catch(() => {});
+    const result = await page.evaluate(() => window.__falconTest.getQueue()[0]);
+    console.log('dual-type result:', JSON.stringify(result, null, 1));
+    ck(result?.status === 'done', `dual-relationship-type item commits as done (status=${result?.status})`);
+    ck(result?.urlResults?.every(r => r.ok), `all 3 entries (2 distinct urls, one with 2 types) succeeded (${JSON.stringify(result?.urlResults)})`);
+    ck(posts === 1, `still exactly ONE submit despite the 2nd bandcamp entry being a second relationship on an existing row (got ${posts})`);
+    ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
+    await page.close();
+  }
+});
