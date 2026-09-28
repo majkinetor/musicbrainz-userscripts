@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 import { readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test, check, REPO, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, REPO, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 const CH = join(REPO, 'userscripts/credit_hoarder');
 // esbuild comes with Credit Hoarder's own packages (pnpm --dir userscripts/credit_hoarder
@@ -28,7 +28,7 @@ test('Metal Archives lineups parse, scope to their tracks, and harvest through t
     entryPoints: [join(CH, 'src/sources/metal_archives.js')], bundle: true, format: 'iife', globalName: 'MA', write: false,
     plugins: [{ name: 'stub', setup(b) { b.onResolve({ filter: /mappers\.js$/ }, () => ({ path: stub })); } }],
   })).outputFiles[0].text;
-  const load = async url => { await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 }); await page.waitForTimeout(2200); await page.addScriptTag({ content: modBundle }); };
+  const load = async url => { await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 }); await idle(page); await page.addScriptTag({ content: modBundle }); };
 
   // ── 1. extraction and mapping ──
   for (const [tag, url] of [
@@ -84,7 +84,7 @@ test('Metal Archives lineups parse, scope to their tracks, and harvest through t
 
   // ── 2. the tab-side harvest, with the built script ──
   await page.goto('https://www.metal-archives.com/albums/Nightwish/Once/39218#ch-req=t1', { waitUntil: 'domcontentloaded', timeout: 45000 });
-  await page.waitForTimeout(2500);
+  await idle(page);
   await inject('credit_hoarder');
   await page.waitForFunction(() => GM_getValue('ch-ma-result:t1'), null, { timeout: 15000 }).catch(() => {});
   const h = await page.evaluate(() => GM_getValue('ch-ma-result:t1') || { none: true });

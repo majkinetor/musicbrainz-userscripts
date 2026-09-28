@@ -3,7 +3,7 @@
 //
 // test.musicbrainz.org: Midwest Funk (many entities, so a slow preflight); the import
 // is started and the status sampled for 15 s. Nothing is staged or submitted.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, until } from '../../../dev/test/harness.mjs';
 import { openReleasePage, clickImport } from './lib/browser.js';
 
 const GM_INFO = "window.GM_info = window.GM_info || { script: { name: 'Credit Hoarder (test)', version: 'test' }, scriptHandler: 'Playwright', version: 'test' };\n";
@@ -16,12 +16,13 @@ test('the status line follows the artist checks as they progress', { tag: ['@san
   await page.waitForSelector('.discogs-bar', { timeout: 30_000 });
   await clickImport(page);
 
+  // the status changes quickly: sampled until it has shown the progress line
   const seen = new Set();
-  for (let i = 0; i < 30; i++) {
+  await until(async () => {
     const txt = await page.evaluate(() => { const e = document.querySelector('.discogs-bar-status'); return e && e.style.display !== 'none' ? (e.textContent || '').trim() : ''; });
     if (txt) seen.add(txt);
-    await page.waitForTimeout(500);
-  }
+    return [...seen].some(t => /Checking .*\d+\/\d+ done/.test(t));
+  }, Boolean, { timeout: 15000 });
   const checking = [...seen].filter(t => /Checking .*\d+\/\d+ done/.test(t));
   check(checking.length > 0, `the status showed "Checking … N/M done" (${checking.slice(0, 3).join(' | ') || [...seen].slice(0, 3).join(' | ') || 'nothing'})`);
   await page.close();

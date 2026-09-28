@@ -10,7 +10,7 @@
 //
 // test.musicbrainz.org, read-only, under kellnerd's current stylesheet (fetched, not
 // vendored: a stale copy would test a stylesheet nobody runs).
-import { test, check, expect, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, expect, requireLogin, SANDBOX, until } from '../../../dev/test/harness.mjs';
 import { openReleasePage } from './lib/browser.js';
 
 test.use({ gm: { name: 'Credit Hoarder' } });
@@ -26,15 +26,15 @@ test('the Log menu stays readable under a dark userstyle', { tag: ['@sandbox', '
   await page.addStyleTag({ content: css });
   await inject('credit_hoarder', { target: page });
   await page.waitForSelector('.discogs-log-menu', { timeout: 25000, state: 'attached' });
-  await page.waitForTimeout(1500);
 
-  const seen = await page.evaluate(() => {
+  // until the userstyle has been recognised (the theme is read after the bar mounts)
+  const seen = await until(() => page.evaluate(() => {
     const menu = document.querySelector('.discogs-log-menu');
     menu.classList.add('open');   // only laid out when open
     const btn = menu.querySelector('button');
     const cs = getComputedStyle(btn), ms = getComputedStyle(menu);
     return { theme: document.documentElement.getAttribute('data-mbu-theme'), invertVar: ms.getPropertyValue('--invert-value').trim(), btnFilter: cs.filter, btnColor: cs.color, menuBg: ms.backgroundColor };
-  });
+  }), s => s.theme === 'dark');
   check(seen.theme === 'dark', `the userstyle is recognised as dark (${seen.theme})`);
   // the bug: the filter is what made correct colours unreadable
   check(seen.invertVar === 'none' && seen.btnFilter === 'none', `the menu's items are not inverted (--invert-value ${JSON.stringify(seen.invertVar)}, filter ${seen.btnFilter})`);

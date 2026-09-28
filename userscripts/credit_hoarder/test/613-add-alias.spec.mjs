@@ -10,7 +10,7 @@
 //    a new tab, which is closed unsubmitted; back on the page it turns to "✓ alias" once
 //    MusicBrainz has the alias. B's web-service answers are production's
 //    (fixtures/ws-613-add-alias.json.gz, RECORD_WS=1 to refresh).
-import { test, check, expect, replayWs, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, expect, replayWs, SANDBOX, until, frames } from '../../../dev/test/harness.mjs';
 import { withShim, openEditor } from './ch.mjs';
 
 const UA = { 'User-Agent': 'mb-userscripts-tests/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )', Accept: 'application/json' };
@@ -38,8 +38,9 @@ test('the button rule, and a background "+ alias" that really lands, once', { ta
 
   const sub = await page.evaluate(async ([mbid, name]) => { try { return { ok: true, url: await window.__creditHoarder.submitAliasBackground(mbid, name, 'Credit Hoarder #613 "+ alias" test (test.musicbrainz.org)') }; } catch (e) { return { ok: false, err: e.message }; } }, [MOCKY, aliasName]);
   check(sub.ok, `MusicBrainz accepted the background submit (${JSON.stringify(sub)})`);
-  await page.waitForTimeout(1500);
-  const aliases = await fetch(`${SANDBOX}/ws/2/artist/${MOCKY}?inc=aliases&fmt=json&_=${Date.now()}`, { headers: UA }).then(r => r.json()).then(j => j.aliases || []).catch(() => []);
+  // until MusicBrainz shows it (every 2 s); if it isn't applied for this account, the edit is open instead
+  const aliasesNow = () => fetch(`${SANDBOX}/ws/2/artist/${MOCKY}?inc=aliases&fmt=json&_=${Date.now()}`, { headers: UA }).then(r => r.json()).then(j => j.aliases || []).catch(() => []);
+  const aliases = await until(aliasesNow, a => a.some(x => x.name === aliasName), { timeout: 15000, every: 2000 });
   const mine = aliases.find(a => a.name === aliasName);
   if (mine) {
     check(mine.type == null && !mine['type-id'], `the alias is on the artist, with no type (${JSON.stringify(mine.type)})`);
@@ -52,7 +53,7 @@ test('the button rule, and a background "+ alias" that really lands, once', { ta
   check(again && again.already === true, `the same alias again: "already", nothing submitted (${JSON.stringify(again)})`);
   const tabs = context.pages().length;
   const leftDup = await page.evaluate(async ([mbid, name]) => { try { return await window.__creditHoarder.openAddAliasForm(mbid, name, 'dup check'); } catch (e) { return { err: e.message }; } }, [MOCKY, aliasName]);
-  await page.waitForTimeout(800);
+  await until(() => context.pages().length === tabs, Boolean, { timeout: 10000 });
   check(leftDup && leftDup.already === true && context.pages().length === tabs, `a left click on an alias it already has: "already", and the tab it opened is closed (${JSON.stringify(leftDup)})`);
 });
 
@@ -63,13 +64,12 @@ test('"+ alias" appears after a manual pick, opens the form, and turns to "✓ a
   const ws = await replayWs(page, new URL('./fixtures/ws-613-add-alias.json.gz', import.meta.url));
   await inject('credit_hoarder', { transform: withShim });
   await page.waitForSelector('.discogs-bar', { timeout: 30000 });
-  await page.waitForTimeout(1000);
-  const coDefault = await page.evaluate(() => { const l = [...document.querySelectorAll('label')].find(x => /Co-credit search/.test(x.textContent)); const i = l && l.querySelector('input'); return i ? i.checked : null; });
+  const coDefault = await until(() => page.evaluate(() => { const l = [...document.querySelectorAll('label')].find(x => /Co-credit search/.test(x.textContent)); const i = l && l.querySelector('input'); return i ? i.checked : null; }), v => v !== null);
   check(coDefault === true, `Options › Matching › "Co-credit search" is ticked by default (${coDefault})`);
 
   await page.click('.discogs-src-ico[data-src="Discogs"]').catch(() => page.click('.discogs-src-ico'));
   await page.waitForFunction(() => /Preflight done/.test(document.body.innerText), null, { timeout: 180000 });
-  await page.waitForTimeout(1500);
+  await page.waitForFunction(() => [...document.querySelectorAll('tbody tr')].some(x => [...x.querySelectorAll('a,span')].some(a => a.textContent.trim() === 'George & Ira Gershwin')), null, { timeout: 30000 });
   // a manual pick cached by an earlier run shows no "+ alias" (its aliases are unknown)
   const cached = await page.evaluate(() => {
     const tr = [...document.querySelectorAll('tbody tr')].find(x => [...x.querySelectorAll('a,span')].some(a => a.textContent.trim() === 'George & Ira Gershwin'));
@@ -79,17 +79,16 @@ test('"+ alias" appears after a manual pick, opens the form, and turns to "✓ a
   // "Refresh from MB" re-resolves without the cache, so the row can be picked by hand
   await page.evaluate(() => [...document.querySelectorAll('button')].find(b => /Refresh from MB/.test(b.textContent)).click());
   await page.waitForFunction(() => { const tr = [...document.querySelectorAll('tbody tr')].find(x => [...x.querySelectorAll('a,span')].some(a => a.textContent.trim() === 'George & Ira Gershwin')); return tr && !/\(cache\)/.test(tr.innerText) && /George Gershwin/.test(tr.innerText); }, null, { timeout: 180000 });
-  await page.waitForTimeout(1500);
-  const picked = await page.evaluate(() => {
+  // a candidate is clicked only once it is there, so asking again is safe
+  const picked = await until(() => page.evaluate(() => {
     const tr = [...document.querySelectorAll('tbody tr')].find(x => [...x.querySelectorAll('a,span')].some(a => a.textContent.trim() === 'George & Ira Gershwin'));
     if (!tr) return 'no row';
     const cand = [...tr.querySelectorAll('div')].find(d => d.querySelector('button') && /^George Gershwin/.test((d.querySelector('a') || {}).textContent || ''));
     if (!cand) return 'no candidate: ' + tr.innerText.replace(/\s+/g, ' ').slice(0, 300);
     cand.querySelector('button').click();
     return 'ok';
-  });
-  await page.waitForTimeout(800);
-  const btn = await page.evaluate(() => { const b = document.querySelector('.discogs-add-alias'); if (!b) return null; const td = b.closest('td'), tds = [...td.parentElement.children]; return { text: b.textContent, col: tds.indexOf(td), cols: tds.length }; });
+  }), p => p === 'ok');
+  const btn = await until(() => page.evaluate(() => { const b = document.querySelector('.discogs-add-alias'); if (!b) return null; const td = b.closest('td'), tds = [...td.parentElement.children]; return { text: b.textContent, col: tds.indexOf(td), cols: tds.length }; }), b => b && b.text === '+ alias');
   expect(picked, 'George Gershwin can be picked for "George & Ira Gershwin"').toBe('ok');
   check(btn && btn.text === '+ alias', `"+ alias" appears after the pick (${JSON.stringify(btn)})`);
   check(btn && btn.col < btn.cols - 1, 'in the source column, with the other add actions, not the match column');
@@ -102,8 +101,15 @@ test('"+ alias" appears after a manual pick, opens the form, and turns to "✓ a
     check(/\/artist\/[0-9a-f-]{36}\/add-alias$/.test(form.url) && form.name === 'George & Ira Gershwin', `a left click opens the add-alias form, name filled in (${JSON.stringify(form)})`);
     check(form.type === '' || form.type == null, 'with no alias type chosen');
     await popup.close();   // never submitted
+    // Coming back re-checks the artist's aliases; "still + alias" is read once that check
+    // has answered, counted on the page's fetch.
+    await page.evaluate(() => {
+      const real = window.fetch; window.__aliasChecks = 0;
+      window.fetch = (u, o) => { const p = real(u, o); if (/\/ws\/2\/artist\/[0-9a-f-]{36}\?inc=aliases/.test(String(u))) p.finally(() => { window.__aliasChecks++; }); return p; };
+    });
     await page.bringToFront(); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await page.waitForTimeout(2500);
+    await until(() => page.evaluate(() => window.__aliasChecks), n => n > 0);
+    await frames(page);
     check(await page.evaluate(() => document.querySelector('.discogs-add-alias').textContent) === '+ alias', 'back without submitting: still "+ alias"');
     // as if the form had been submitted: MusicBrainz now has the alias
     await page.evaluate(() => {
@@ -113,8 +119,7 @@ test('"+ alias" appears after a manual pick, opens the form, and turns to "✓ a
         : real(u, o);
     });
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await page.waitForTimeout(1500);
-    const after = await page.evaluate(() => { const b = document.querySelector('.discogs-add-alias'); return { text: b.textContent, disabled: b.disabled }; });
+    const after = await until(() => page.evaluate(() => { const b = document.querySelector('.discogs-add-alias'); return { text: b.textContent, disabled: b.disabled }; }), a => a.text === '✓ alias');
     check(after.text === '✓ alias' && after.disabled, `after submitting the form, returning to the tab shows "✓ alias" (${JSON.stringify(after)})`);
   }
   check(!posts.some(u => /\/(artist\/[^/]+\/add-alias|ws\/js\/edit)/.test(u)), 'no alias or relationship edit was submitted');
