@@ -176,7 +176,8 @@ test('two background creates at once both submit, post their MBID back, and clos
 
   // …and MusicBrainz has it as seeded: the name, and type Person
   const gid = bound[0] && (bound[0].href.match(/\/artist\/([0-9a-f-]{36})/) || [])[1];
-  const ws = gid && await page.evaluate(async g => { const r = await fetch(`/ws/2/artist/${g}?fmt=json`, { headers: { Accept: 'application/json' } }); return r.ok ? r.json() : null; }, gid);
+  // the API can lag the new artist, or turn a read away (503): ask until it answers
+  const ws = gid && await until(() => page.evaluate(async g => { const r = await fetch(`/ws/2/artist/${g}?fmt=json`, { headers: { Accept: 'application/json' }, cache: 'no-store' }); return r.ok ? r.json() : null; }, gid), Boolean, { timeout: 30000, every: 1500 });
   check(ws && ws.name === NAMES[0] && ws.type === 'Person', `MusicBrainz has row 1's artist under the seeded name and type (${JSON.stringify(ws && { name: ws.name, type: ws.type })})`);
 
   // Nothing may be left behind: a pending record that outlives its create makes
