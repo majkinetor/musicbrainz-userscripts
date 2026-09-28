@@ -61,6 +61,23 @@ export const test = base.extend({
   prodPostAllow: [[], { option: true }],        // extra production paths (regex sources) a POST may reach
   pageErrors: ['fail', { option: true }],       // 'fail' · 'ignore' · [regex sources]: fail on any other
 
+  // A spec's console.log/info goes to its report (a "log" attachment), not the
+  // terminal, so a run prints only pass/fail lines. TEST_LOG=1 prints it too.
+  // Only the Node side is captured: code run in the page logs to the page.
+  _log: [async ({}, use, testInfo) => {
+    const lines = [], saved = { log: console.log, info: console.info };
+    const keep = (...a) => {
+      lines.push(a.map(x => typeof x === 'string' ? x : JSON.stringify(x, null, 1)).join(' '));
+      if (process.env.TEST_LOG) saved.log(...a);
+    };
+    console.log = console.info = keep;
+    try { await use(); }
+    finally {
+      Object.assign(console, saved);
+      if (lines.length) await testInfo.attach('log', { body: lines.join('\n'), contentType: 'text/plain' });
+    }
+  }, { auto: true }],
+
   // every production write the guard refused (layer 1 or 2); a spec using 'block' reads it
   blockedWrites: async ({}, use) => { await use([]); },
 

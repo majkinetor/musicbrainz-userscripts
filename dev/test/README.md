@@ -33,6 +33,7 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 ```
 
 - **`inject(name)`** loads `userscripts/<name>/<name>.user.js`. `<NAME>_SRC=<file>` runs the spec against another build, which is how a regression test is shown to fail on the broken one: `FUSION_SRC=old.user.js pnpm test --project=fusion`.
+- **`console.log`** in a spec goes to the test's report (a `log` attachment), not the terminal, so a run shows only pass and fail lines. `TEST_LOG=1` prints it as well. Code run in the page logs to the page, as before.
 - **`check(cond, message)`** is a soft assertion: a failed check is reported and the test continues.
 - **`mbJson(url)`** reads the web service from Node, waiting out throttling.
 - **`attachShot(testInfo, pageOrLocator, name)`** attaches a screenshot to the report.
