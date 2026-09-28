@@ -1061,6 +1061,14 @@ function mbuCfgHeader(o) {
     return html + '</div>';
 }
 
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
 // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
 // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
 // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -5648,10 +5656,10 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
 // Test hook only (#464) — no behavior change; lets verify-464.mjs exercise the
 // tab-open decision + background-commit channel without driving the full row UI
 // (which would mean faking a live ✓ match render for no added coverage).
-window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
+if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
-window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
+if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
 function addSingleUrl(platform, background) {
     const cached = cacheGet(mbid, platform);

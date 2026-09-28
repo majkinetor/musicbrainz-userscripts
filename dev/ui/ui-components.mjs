@@ -379,6 +379,14 @@ function mbuCfgHeader(o) {
     return html + '</div>';
 }
 
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
 // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
 // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
 // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and

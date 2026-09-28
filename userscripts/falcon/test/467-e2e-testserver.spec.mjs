@@ -42,6 +42,7 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({}) => {
   await installProdGuard(context);   // Firefox, its own profile: the harness guard is added by hand
   const page = context.pages()[0] || await context.newPage();
   await context.addInitScript(() => {
+    window.__mbuTest = true;   // Falcon builds its test hook only on a marked page (#623)
     const store = new Map();
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
     window.GM_setValue = (k, v) => store.set(k, v);

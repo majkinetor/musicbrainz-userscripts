@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.28.215220
+// @version      2026.9.28.220719
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.28.215220 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.214753\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.28");
+  console.log('%c String Theory %c v2026.9.28.220719 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.220718\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.28");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -1841,6 +1841,14 @@ try {
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
   }
 
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
@@ -11600,10 +11608,10 @@ try {
     if (txt && !ECAU_UNRELATED_ERROR.test(txt) && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
     return null;
   }
-  if (typeof window !== 'undefined') window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
+  if (mbuTestHooks()) window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
   // #566 test hook — the auto-repeat state machine, so its semantics can be
   // driven without provoking real archive.org failures. No behaviour change.
-  if (typeof window !== 'undefined') window.__asAutoRepeat = {
+  if (mbuTestHooks()) window.__asAutoRepeat = {
     get schedule() { return arSchedule; }, get stop() { return arStop; },
     get cancelPending() { return arCancelPending; }, get delayMs() { return arDelayMs; },
     state: ov => ov && ov._ar,
@@ -11756,7 +11764,7 @@ try {
     // test breadcrumb, same idea as window.__asAutoRepeat: an import leaves no
     // other trace a test can read (asLog is in-memory, nothing reaches console),
     // and "did one actually start" is the check #554 turns on.
-    try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
+    if (mbuTestHooks()) try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
     // known provider → its name+icon; otherwise fall back to the URL's host so a
     // pasted link from anywhere (e.g. nugs.net) still gets a favicon badge. #249
@@ -13706,6 +13714,14 @@ try {
       return html + '</div>';
   }
 
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
   // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
   // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -14775,7 +14791,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.214753","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.214753","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.220718","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.220718","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -21771,6 +21787,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       html += mbuHelpHtml(o.script);
       return html + "</div>";
     }
+    function mbuTestHooks() {
+      try {
+        return typeof window !== "undefined" && window.__mbuTest === true;
+      } catch (e) {
+        return false;
+      }
+    }
     function mbRestackCorner(corner) {
       var bottom = corner[0] === "b", right = corner[1] === "r";
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]')).filter(function(el) {
@@ -25737,6 +25760,14 @@ function mbuCfgHeader(o) {
     return html + '</div>';
 }
 
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
 // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
 // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
 // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -28388,6 +28419,14 @@ try {
       return html + '</div>';
   }
 
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
   // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
   // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -29760,7 +29799,7 @@ try {
   // apart. has_dates is missing from the cache when the type hasn't loaded yet — default true (unknown)
   // rather than silently hiding a genuinely datable row.
   const ltHasDates = id => { const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id]; return !lt || lt.has_dates !== false; };
-  if (typeof window !== 'undefined') window.__gtTest = Object.assign(window.__gtTest || {}, { ltHasDates });   // test hook only (#491) — no behaviour change
+  if (mbuTestHooks()) window.__gtTest = Object.assign(window.__gtTest || {}, { ltHasDates });   // test hook only (#491) — no behaviour change
   // grouping key for a copy spec: link type + its attribute typeIDs (so drums ≠ shakers ≠ vocals)
   const roleKeyOfSpec = s => { let a = ''; try { if (s.attributes) a = [...W.MB.tree.iterate(s.attributes)].map(x => x.typeID).sort((p, q) => p - q).join(','); } catch (e) {} return s.linkTypeID + '#' + a; };
   // display label for a copy spec — MB's own rendered role label when the rel is on the page
@@ -33927,7 +33966,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     set: (k, v) => { try { localStorage.setItem('ii:' + k, JSON.stringify(v)); } catch (e) {} },
     del: (k)    => { try { localStorage.removeItem('ii:' + k); } catch (e) {} },
   };
-  if (typeof window !== 'undefined') window.__isrcScoutTestStore = { store, localStore };   // test hook only (#501) — no behaviour change
+  if (mbuTestHooks()) window.__isrcScoutTestStore = { store, localStore };   // test hook only (#501) — no behaviour change
 
   /* ═══════════════════════════════════════════════════════════════════════
      GENERIC HTTP (GM_xmlhttpRequest promisified)
@@ -34199,6 +34238,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
   }
 
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
@@ -35635,7 +35682,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
     return { refreshToken, apiSearch, apiSearchByIsrc, fields, classify };
   })();
-  if (typeof window !== 'undefined') window.__isrcScoutTestSX = SX;   // test hook only (#486) — no behaviour change
+  if (mbuTestHooks()) window.__isrcScoutTestSX = SX;   // test hook only (#486) — no behaviour change
 
   /* ═══════════════════════════════════════════════════════════════════════
      TRACK ISRC PROVIDER (#181) — each per-track [SX] button is a by-ISRC lookup:
@@ -37973,7 +38020,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // Test hook only (#466) — no behavior change; lets verify-466.mjs call a single
     // provider's resolveProvider directly instead of the aggregate Find-links button,
     // so the test doesn't also have to mock every other provider's network calls.
-    if (typeof window !== 'undefined') window.__isrcScoutTest466 = { PROV, resolveProvider, normalizeProviderUrl };
+    if (mbuTestHooks()) window.__isrcScoutTest466 = { PROV, resolveProvider, normalizeProviderUrl };
 
     return { linkedHtml, addHtml, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
@@ -39040,7 +39087,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   // test hook only — no behaviour change. The affordance below is a contract of
   // setProg (an error offers the log, a plain message doesn't), so a test should
   // drive that function rather than poke classes onto the element.
-  if (typeof window !== 'undefined') window.__isrcScoutTestProg = { setProg: (m, e) => setProg(m, e), showPane: (id) => showPane(id) };
+  if (mbuTestHooks()) window.__isrcScoutTestProg = { setProg: (m, e) => setProg(m, e), showPane: (id) => showPane(id) };
   const setProgContinue = (msg, onClick) => {
     if (!progEl) return;
     progEl.textContent = msg; progEl.classList.remove('err'); progEl.classList.add('continue');
@@ -40001,6 +40048,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
   }
 
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
@@ -42925,6 +42980,14 @@ function mbuCfgHeader(o) {
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
+}
+
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
 }
 
 // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
@@ -47514,10 +47577,10 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
 // Test hook only (#464) — no behavior change; lets verify-464.mjs exercise the
 // tab-open decision + background-commit channel without driving the full row UI
 // (which would mean faking a live ✓ match render for no added coverage).
-window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
+if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
-window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
+if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
 function addSingleUrl(platform, background) {
     const cached = cacheGet(mbid, platform);

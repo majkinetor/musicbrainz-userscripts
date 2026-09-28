@@ -256,7 +256,7 @@
     set: (k, v) => { try { localStorage.setItem('ii:' + k, JSON.stringify(v)); } catch (e) {} },
     del: (k)    => { try { localStorage.removeItem('ii:' + k); } catch (e) {} },
   };
-  if (typeof window !== 'undefined') window.__isrcScoutTestStore = { store, localStore };   // test hook only (#501) — no behaviour change
+  if (mbuTestHooks()) window.__isrcScoutTestStore = { store, localStore };   // test hook only (#501) — no behaviour change
 
   /* ═══════════════════════════════════════════════════════════════════════
      GENERIC HTTP (GM_xmlhttpRequest promisified)
@@ -528,6 +528,14 @@
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
   }
 
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
@@ -1964,7 +1972,7 @@
 
     return { refreshToken, apiSearch, apiSearchByIsrc, fields, classify };
   })();
-  if (typeof window !== 'undefined') window.__isrcScoutTestSX = SX;   // test hook only (#486) — no behaviour change
+  if (mbuTestHooks()) window.__isrcScoutTestSX = SX;   // test hook only (#486) — no behaviour change
 
   /* ═══════════════════════════════════════════════════════════════════════
      TRACK ISRC PROVIDER (#181) — each per-track [SX] button is a by-ISRC lookup:
@@ -4302,7 +4310,7 @@
     // Test hook only (#466) — no behavior change; lets verify-466.mjs call a single
     // provider's resolveProvider directly instead of the aggregate Find-links button,
     // so the test doesn't also have to mock every other provider's network calls.
-    if (typeof window !== 'undefined') window.__isrcScoutTest466 = { PROV, resolveProvider, normalizeProviderUrl };
+    if (mbuTestHooks()) window.__isrcScoutTest466 = { PROV, resolveProvider, normalizeProviderUrl };
 
     return { linkedHtml, addHtml, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
@@ -5369,7 +5377,7 @@
   // test hook only — no behaviour change. The affordance below is a contract of
   // setProg (an error offers the log, a plain message doesn't), so a test should
   // drive that function rather than poke classes onto the element.
-  if (typeof window !== 'undefined') window.__isrcScoutTestProg = { setProg: (m, e) => setProg(m, e), showPane: (id) => showPane(id) };
+  if (mbuTestHooks()) window.__isrcScoutTestProg = { setProg: (m, e) => setProg(m, e), showPane: (id) => showPane(id) };
   const setProgContinue = (msg, onClick) => {
     if (!progEl) return;
     progEl.textContent = msg; progEl.classList.remove('err'); progEl.classList.add('continue');

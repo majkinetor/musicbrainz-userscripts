@@ -123,6 +123,14 @@
       return html + '</div>';
   }
 
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
   // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
   // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -6376,8 +6384,8 @@
     });
   }
 
-  // Test hook only (#467) — no behavior change.
-  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs, harmonyIsrcFallback, resolveIsrcFallback,
+  // Test hook only (#467) — no behavior change; built only on a test page (#623).
+  if (mbuTestHooks()) window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs, harmonyIsrcFallback, resolveIsrcFallback,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, coverEditNote, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495

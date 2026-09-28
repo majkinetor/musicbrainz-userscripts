@@ -1642,10 +1642,10 @@
     if (txt && !ECAU_UNRELATED_ERROR.test(txt) && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
     return null;
   }
-  if (typeof window !== 'undefined') window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
+  if (mbuTestHooks()) window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
   // #566 test hook — the auto-repeat state machine, so its semantics can be
   // driven without provoking real archive.org failures. No behaviour change.
-  if (typeof window !== 'undefined') window.__asAutoRepeat = {
+  if (mbuTestHooks()) window.__asAutoRepeat = {
     get schedule() { return arSchedule; }, get stop() { return arStop; },
     get cancelPending() { return arCancelPending; }, get delayMs() { return arDelayMs; },
     state: ov => ov && ov._ar,
@@ -1798,7 +1798,7 @@
     // test breadcrumb, same idea as window.__asAutoRepeat: an import leaves no
     // other trace a test can read (asLog is in-memory, nothing reaches console),
     // and "did one actually start" is the check #554 turns on.
-    try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
+    if (mbuTestHooks()) try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
     // known provider → its name+icon; otherwise fall back to the URL's host so a
     // pasted link from anywhere (e.g. nugs.net) still gets a favicon badge. #249
@@ -3746,6 +3746,14 @@
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
   }
 
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,

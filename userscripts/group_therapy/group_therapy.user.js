@@ -526,6 +526,14 @@
       return html + '</div>';
   }
 
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
   // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
   // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -1898,7 +1906,7 @@
   // apart. has_dates is missing from the cache when the type hasn't loaded yet — default true (unknown)
   // rather than silently hiding a genuinely datable row.
   const ltHasDates = id => { const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id]; return !lt || lt.has_dates !== false; };
-  if (typeof window !== 'undefined') window.__gtTest = Object.assign(window.__gtTest || {}, { ltHasDates });   // test hook only (#491) — no behaviour change
+  if (mbuTestHooks()) window.__gtTest = Object.assign(window.__gtTest || {}, { ltHasDates });   // test hook only (#491) — no behaviour change
   // grouping key for a copy spec: link type + its attribute typeIDs (so drums ≠ shakers ≠ vocals)
   const roleKeyOfSpec = s => { let a = ''; try { if (s.attributes) a = [...W.MB.tree.iterate(s.attributes)].map(x => x.typeID).sort((p, q) => p - q).join(','); } catch (e) {} return s.linkTypeID + '#' + a; };
   // display label for a copy spec — MB's own rendered role label when the rel is on the page
