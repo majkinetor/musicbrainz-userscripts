@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.28.211234
+// @version      2026.9.28.214753
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -15,6 +15,7 @@
 // @grant        GM_openInTab
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // @connect      *
 // @match        *://*.musicbrainz.org/release/*/cover-art*
 // @match        *://*.musicbrainz.org/release/*/add-cover-art*
@@ -27,7 +28,6 @@
 // @match        https://tidal.com/album/*
 // @match        https://listen.tidal.com/album/*
 // @match        https://www.metal-archives.com/albums/*
-// @grant        unsafeWindow
 // @connect      qobuz.com
 // @connect      www.qobuz.com
 // @connect      deezer.com
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.28.211234 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.210958\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
+  console.log('%c String Theory %c v2026.9.28.214753 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.214753\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.28");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -121,17 +121,9 @@ try {
   });
   const logMarkdown = () => Log.markdown();
   const openLog = () => Log.open();
-  // #501: settings persistence lives in GM storage (backed up/synced by the script
-  // manager) instead of localStorage (browser-profile-only — invisible to a script
-  // manager backup/restore or a move to another browser). One-time migration: if GM
-  // storage is empty but an old localStorage value exists, adopt it once and write
-  // through to GM storage from then on; the old localStorage key is left in place,
-  // unused, so nothing is destructively deleted.
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
+  // #501: settings live in GM storage (backed up and synced by the script manager).
+  // The one-time adoption of an older localStorage copy is retired (#623).
+  const gmLoad = (key) => { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
@@ -239,10 +231,6 @@ try {
   // dashes, minus…) to a plain '-' so e.g. "Gol‐e Yakh" folds the same as "Gol-e Yakh"
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
-  // #445 case-preserving fold (diacritics/dashes/whitespace normalized, CASE kept) — so casing is
-  // the only discriminator when breaking a tie between several case-insensitive name/alias matches.
-  const foldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
-  const sameNameCase = (a, b) => foldKeepCase(a) === foldKeepCase(b);
   // gid → artist disambiguation, harvested from every WS2/js artist-credit the
   // script fetches (search results, recording lookups). The MB page (KO) model
   // doesn't carry disambiguations for freshly-picked entities, so the recordings
@@ -536,14 +524,6 @@ try {
   const _aliasCache = new Map();        // query → { gid: aliases }
   const _gidAliases = new Map();        // gid → aliases — survives table rebuilds (so the bar keeps its alias)
   const cacheAliases = (gid, aks) => { if (gid && aks) _gidAliases.set(gid, aks); };
-  async function fetchAliases(name) {
-    const k = fold(name); if (!k) return {}; if (_aliasCache.has(k)) return _aliasCache.get(k);
-    const map = {};
-    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { label: 'alias fetch' });
-    if (!res.json) { Log.warn('alias fetch failed', name, '— not cached, retried on the next pass'); return map; }   // don't cache a throttled miss (#555)
-    (res.json.artists || []).forEach(a => { map[a.id] = a.aliases || []; cacheAliases(a.id, a.aliases || []); });
-    _aliasCache.set(k, map); return map;
-  }
   // aliases for already-resolved artists (existing releases / auto-matched) WITHOUT a fetch each —
   // one batched WS2 query per ~90 gids (arid:g1 OR arid:g2 …), cached by gid
   async function fetchAliasesByGids(gids) {
@@ -1417,7 +1397,6 @@ try {
   // #580: never commit over a slot the user has focused — that is the write that
   // used to replace a half-typed name with the matched artist.
   const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias');
-  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
   function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
@@ -1730,7 +1709,7 @@ try {
   /* ════════════════════════ UI ════════════════════════ */
   // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.27.060520';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1759,15 +1738,10 @@ try {
     { label: '/', value: ' / ' }, { label: '·', value: ' · ' }, { label: 'presents', value: ' presents ' },
   ];
 
-  const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
   const badgeText = s => ({ rg: 'rg', disc: 'disc', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
-  const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
-  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
-  const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
   // inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never in this block.
@@ -3146,7 +3120,6 @@ try {
     row.scrollIntoView({ block: 'center', behavior: 'smooth' });
     const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
   }
-  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
     // #281: Discogs API unreachable → an amber, clickable "retry" badge instead of a
     // blank that reads as "nothing to do". (It also auto-retries once on its own.)
@@ -4462,7 +4435,6 @@ try {
     let rows = [];         // [{ raw, override }]
     let _splitLast = false;   // #456 v2 ‹first|last›: which separator instance a text field splits on
     const tracks = () => u(mediums()[curMi].tracks) || [];
-    const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
     // the current medium's tracklist rendered in the #. T - A (L) format, to seed the paste box
     const acStr = t => (liveNames(t) || []).map(n => (u(n.name) || (u(n.artist) && u(u(n.artist).name)) || '') + (u(n.joinPhrase) || '')).join('').trim();
     const currentText = () => tracks().map((t, i) => { const num = u(t.number) || (i + 1); const title = u(t.name) || ''; const artist = acStr(t); const len = u(t.formattedLength) || ''; return `${num}. ${title}` + (artist ? ` - ${artist}` : '') + (len ? ` (${len})` : ''); }).join('\n');
@@ -4991,7 +4963,6 @@ try {
     { act: 'cols',      label: 'Resize columns',     icon: '↔', params: true }, // ↔
   ];
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
-  const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'patternparser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const PICK_SHOWS_ONLY = new Set(['mergemed', 'splitmed']);   // #615: structural — picking from the menu must not run them
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
@@ -5115,9 +5086,6 @@ try {
       const disp = row.querySelector('.t-title-disp');
       if (disp) { disp.innerHTML = dhRun(val); disp.classList.toggle('gcpreview', on); }
     });
-  }
-  function wireToolHover() {
-    document.querySelectorAll('.tc-toolbtn[data-act="guesscase"]').forEach(b => { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); });
   }
 
   // #280: render every on-bar tool inline at its position — a plain button when it
@@ -5964,7 +5932,6 @@ try {
   function recWant() { return apolloEnabled() && SETTINGS.replaceRecordings !== false; }
   function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
-  function curWant() { return apolloEnabled(); }
   function apolloOn() { return apolloEnabled(); }
   // #569: guarded. Assigning textContent replaces the child text node whether or
   // not the string changed, so this was dispatching a childList record twice a
@@ -7523,7 +7490,6 @@ try {
   async function autoMatchRecordings() {
     if (_autoMatching) return; _autoMatching = true;   // #577
     if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
-    const wrap = document.getElementById('tc-recwrap');
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
     // happened". Re-queried on each use rather than captured: the recordings
@@ -7734,14 +7700,6 @@ try {
   function setCopy(field, entry, on) {
     try { const t = koTrack(entry.mi, entry.ti); if (field === 'title') t.updateRecordingTitle(on); else t.updateRecordingArtist(on); }
     catch (e) { Log.warn('set copy ' + field + ' failed', e.message); }
-  }
-  function setCopyAll(field) {
-    const flag = field === 'title' ? 'copyTitle' : 'copyArtist';
-    // only the rows where this field actually differs (or is already flagged) — copying a matching value is a no-op
-    const rows = readRecordings().filter(r => r.recGid && ((r.diffs && r.diffs[field]) || r[flag]));
-    const allOn = rows.length && rows.every(r => r[flag]);   // toggle: if every eligible row is on, turn all off
-    rows.forEach(r => setCopy(field, r, !allOn));
-    Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
   }
   function rerenderRec() { renderRecBody(); }   // body only — keeps the toolbar (status / inputs) intact
 
@@ -10066,17 +10024,9 @@ try {
   const footerStyle = document.createElement('style');
   footerStyle.textContent = '#content div.buttons.ui-helper-clearfix{display:none!important}';
   appendEl(footerStyle);
-  // #501: settings persistence lives in GM storage (backed up/synced by the script
-  // manager) instead of localStorage (browser-profile-only — invisible to a script
-  // manager backup/restore or a move to another browser). One-time migration: if GM
-  // storage is empty but an old localStorage value exists, adopt it once and write
-  // through to GM storage from then on; the old localStorage key is left in place,
-  // unused, so nothing is destructively deleted.
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
+  // #501: settings live in GM storage (backed up and synced by the script manager).
+  // The one-time adoption of an older localStorage copy is retired (#623).
+  const gmLoad = (key) => { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // saved prefs read directly here (the SETTINGS object is built later) so the initial
   // Original/footer state is applied flash-free, before first paint.
@@ -10381,10 +10331,7 @@ try {
   let _resortT = null;
   function scheduleResort() { if (_resortT) return; _resortT = setTimeout(() => { _resortT = null; render(); }, 120); }
 
-  const changed = it => it._del || it._new || it.comment !== it._origComment || it.order !== it._origOrder || it.types.join('|') !== it._origTypes.join('|');
-  const stagedCount = () => MODEL.filter(changed).length;
   const selectable = () => MODEL.filter(it => !it._del);
-  const allSelected = () => { const s = selectable(); return s.length > 0 && s.every(it => it._sel); };
   // reorder (drag) only in the canonical Position view — ungrouped + sorted by position.
   // Grouping is view-only; other sorts don't map to the committed order.
   const canReorder = () => !SETTINGS.group && !SETTINGS.detailed && SETTINGS.sort === 'type';
@@ -10544,7 +10491,6 @@ try {
   function openSetup() {
     document.getElementById('as-setup')?.remove();
     const ver = (_gm && _gm.version) || '';
-    const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = mbuCfgHeader({ script: 'art_station', name: 'Art Station', version: ver,
         icon: `<img src="${ICON_URL}" alt="">`, log: true, logClass: 'as-setup-logbtn' })
@@ -11215,24 +11161,6 @@ try {
     // so this is the same arithmetic, now named once for every script.
     mbuFitToolbar(bar, { spacer: '.as-sp' });
   }
-  // the list of pending MB operations behind "N staged changes"
-  function pendingOps() {
-    const label = it => it.types[0] || (it._new ? 'new image' : ITEM);
-    const ops = [];
-    MODEL.filter(it => it._new && !it._del && !it._sourcing).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
-    MODEL.filter(it => it._del && !it._new).forEach(it => ops.push(`🗑 Remove ${label(it)}`));
-    MODEL.filter(it => !it._del && !it._new).forEach(it => {
-      if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || ITEM} → ${it.types.join(', ') || '(none)'}`);
-      if (it.comment !== it._origComment) ops.push(`✎ Comment on ${label(it)} → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
-    });
-    // reorder = the EXISTING covers' relative order changed. Inserting new covers
-    // shifts indices but is positioned by the add op itself (not a separate reorder).
-    const ex = MODEL.filter(it => !it._del && !it._new);
-    const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
-    const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-    if (now !== orig) ops.push('↕ Reorder ' + ITEMS);
-    return ops;
-  }
   // the count shown on "Enter edit (N)" = the number of real MB edits we'll submit
   // (buildPlan merges a cover's type+comment change into one edit), so it matches
   // the panel's operation list exactly. #234
@@ -11566,7 +11494,6 @@ try {
   // standard shape for a caught error: "<context> — <message>"
   const logErr = (ctx, e) => asLog('error', ctx + ' — ' + ((e && e.message) || e || 'unknown error'));
   const fmtBytes = n => (n == null) ? '?' : n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
-  const logMarkdown = () => LOG.markdown();
 
   let _toastT;
   // #563: the shared toast. Art Station's log-mirroring was the behaviour worth
@@ -14848,7 +14775,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.210958","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.210958","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.214753","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.214753","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -22998,19 +22925,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     }
     const gmLoad = (key) => {
       try {
-        const v = GM_getValue(key, void 0);
-        if (v !== void 0) return v;
+        return GM_getValue(key, void 0);
       } catch (e) {
+        return void 0;
       }
-      try {
-        const raw = localStorage.getItem(key);
-        if (raw != null) {
-          GM_setValue(key, raw);
-          return raw;
-        }
-      } catch (e) {
-      }
-      return void 0;
     };
     const gmSave = (key, raw) => {
       try {
@@ -24310,7 +24228,7 @@ ${lines}
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.9.26.111241';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -24484,32 +24402,10 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, settingsVersion: 0, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
-// Stored settings win over defaults, so simply RAISING a default is invisible to
-// anyone who ever opened the config window (that saves every key, including the
-// ones they never touched). The old 60 cap dated from one-request-per-recording;
-// now that list_by_mbid batches 50 at a time it only served to leave big pools
-// with no AcoustID data at all. Lift that specific stale value — but only when
-// it's still exactly the retired default, so a cap someone deliberately chose
-// stays theirs.
-const RETIRED_ACOUSTID_CAP = 60;
-// Bumped when a migration below needs to run once and then never again. Without
-// the stamp, "turn the prefetch off" could not tell a value the user chose from
-// one that was merely the old default, and would keep undoing their choice.
-const SETTINGS_VERSION = 2;
-function migrateSettings(s) {
-    if (s.acoustidPoolCap === RETIRED_ACOUSTID_CAP) s.acoustidPoolCap = SETTINGS_DEFAULTS.acoustidPoolCap;
-    // v2: the group release prefetch shipped defaulting ON, and every install
-    // that opened the config window has that `true` persisted — so flipping the
-    // default alone would change nothing. Nobody could have deliberately enabled
-    // it while it was already on, so a stored `true` from before this version is
-    // the old default rather than a preference, and is turned off once.
-    if ((s.settingsVersion || 0) < 2 && s.prefetchGroupReleases === true) s.prefetchGroupReleases = false;
-    s.settingsVersion = SETTINGS_VERSION;
-    return s;
-}
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
 function loadSettings() {
-    try { return migrateSettings(Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}')))); }
+    // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
+    try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
     catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
 }
 function saveSettings() { try { GM_setValue(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {} }
@@ -26984,7 +26880,6 @@ function groupCardHtml(group) {
     const lenOffBy = m => (lenRefRec && m !== lenRefRec && typeof m.length === 'number' && m.length > 0 && Math.abs(m.length - lenRefRec.length) > lenTol) ? m.length - lenRefRec.length : null;
     const secs = ms => Math.round(Math.abs(ms) / 1000);
     const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
-    const confLabel = group.confidence === 'high' ? 'HIGH' : group.confidence === 'medium' ? 'MEDIUM' : 'MANUAL';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
     const sigChips = Object.keys(sigNames).map(k => {
@@ -27306,7 +27201,6 @@ function cancelBackground() {
 }
 function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
 function busyEnd() { _busyCount = Math.max(0, _busyCount - 1); if (_busyCount === 0) _busyLabel = ''; renderBusy(); }
-async function withBusy(label, fn) { busyStart(label); try { return await fn(); } finally { busyEnd(); } }
 
 // #529 (majkinetor): "acoustic id still not fully fetched … no dot in the pool
 // is lighted". AcoustIDs used to be looked up ONLY inside Auto-match, so a
@@ -27922,6 +27816,7 @@ async function seedFromScope() {
 async function maybeAutoMatchOnOpen() {
     if (!SETTINGS.autoMatchOnOpen) return;
     if (!STATE.poolOrder.length) { Log.info('Auto-match on open: nothing in the pool'); return; }
+    // eslint-disable-next-line no-unmodified-loop-condition -- busyEnd() lowers it while this awaits
     for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
     if (!FUSION_OPEN) return;
     Log.info('Auto-match on open: starting');
@@ -27962,7 +27857,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        migrateSettings, presenceDots, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,   // SETTINGS_DEFAULTS is listed above
+        presenceDots,   // SETTINGS_DEFAULTS is listed above
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,
@@ -27982,12 +27877,12 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.27","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.27","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.28","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.28","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.7.7';   // from the @version header at runtime
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // from the @version header at runtime
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -28006,8 +27901,6 @@ try {
   const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
   // MB renders each rel as <tr class="<role-kebab>"> … <div class="relationship-item"> <button class="icon remove-item">×</button> <a href="/artist|work|…/<mbid>">name</a> …
   const REMOVE_SEL = 'button.icon.remove-item';
-  const ROLE_STOP = new Set(['odd', 'even', 'highlighted', 'selected', 'subrow', 'rel-add', 'rel-edit', 'rel-remove']);
-  const pickRoleClass = tr => { if (!tr) return null; for (const c of tr.classList) if (!ROLE_STOP.has(c) && /^[a-z][a-z0-9-]*$/.test(c)) return c; return null; };
   const pickRoleLabel = tr => { const l = tr && tr.querySelector('th.link-phrase label'); return l ? (l.textContent || '').replace(/:\s*$/, '').trim() : 'role'; };
   // medium number a track row belongs to — the nearest preceding `tr.subh` ("1▼CD" → 1). Each medium
   // is its own <tbody>, so we scan the table's rows in document order (not just siblings). Cached per row.
@@ -28051,7 +27944,6 @@ try {
   };
   const targetHref = item => { const a = item && item.querySelector('a[href*="/artist/"], a[href*="/work/"], a[href*="/label/"], a[href*="/place/"], a[href*="/recording/"], a[href*="/url/"], a[href*="/event/"], a[href*="/instrument/"]'); return a ? a.getAttribute('href') : null; };
   const targetLabel = item => { const a = item && item.querySelector('a[href*="/"]'); return a ? (a.textContent || '').trim() : 'target'; };
-  const rowHasClass = (tr, cls) => !!(tr && cls && tr.classList.contains(cls));
   const itemHasHref = (item, href) => !!(href && item.querySelector(`a[href="${CSS.escape(href)}"]`));
 
   // a rel's "role" for grouping = its link type PLUS its attributes — because e.g. every instrument rel
@@ -29616,7 +29508,6 @@ try {
     }
   }
 
-  let toastEl = null, toastTimer = null;
   function toast(msg) { return mbuToast(msg); }   // #563: the shared toast
 
   // build an MB attribute ImmutableTree from a /ws/js rel's attribute array (they carry typeIDs directly)
@@ -31404,8 +31295,6 @@ try {
   // </ST-MATCH>
   const txpFold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const txpSameName = (a, b) => txpFold(a) === txpFold(b);
-  const txpFoldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
-  const txpSameNameCase = (a, b) => txpFoldKeepCase(a) === txpFoldKeepCase(b);
   // resolve an MBID to a full entity (incl. the numeric id dispatchRelationship needs)
   async function txpFetchEntity(gid, fallbackType) {
     try {
@@ -32879,10 +32768,6 @@ try {
         if (disamb) row.appendChild(el('span', 'gt-tp-disamb', ` (${disamb})`));
         return row;
       };
-      const wirePick = (row, entity) => {
-        row.addEventListener('click', () => pick(entity, true));                                  // #544: all rows with this text
-        row.addEventListener('contextmenu', e => { e.preventDefault(); pick(entity, false); });   // #544: this row only
-      };
       const runSearch = async () => {
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;
         const gid = (term.match(GID_RE) || [])[0];
@@ -34108,7 +33993,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       .replace(/[^\p{L}\p{N}\p{M} ]/gu, ' ')
       .replace(/\s+/g, ' ').trim();
   }
-  function normCI(s) { return norm(s); }
   function wordsMatch(needle, haystack) {
     const nw = norm(needle).split(' ').filter(Boolean), hw = norm(haystack);
     return nw.length > 0 && nw.every(w => hw.includes(w));
@@ -36113,7 +35997,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     else Log.warn('molla: the album has ' + n + ' track(s) but this release has ' + mb + ' — molla gives no track numbers, so ISRCs are placed by title/artist match only');
     tracks.forEach((t, i) => {
       const isrc = normalizeIsrc(t.isrc || '');
-      const title = t.track_name || '', artist = (t.artists || []).join(', ');
+      const title = t.track_name || '';
       // Spotify puts featured artists in the title ("Get Lucky (feat. Pharrell Williams
       // and Nile Rodgers)"); MB keeps them in the artist credit. molla has no durations,
       // so the title is the only plausibility check — without this every feat. track
@@ -39789,7 +39673,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28.214729","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28.214729","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -39816,8 +39700,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
-  const VERSION = '2026.7.23';   // keep in sync with @version (fallback when GM_info is unavailable)
-  const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // #308: the 🦣 emoji (U+1F9A3) renders as a tofu box in Chrome on systems whose
@@ -39868,8 +39751,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     { match: '#ac-source-single-artist, input[id^="ac-source-artist-"]', label: 'Artist', mbid: true },
     { match: '.attribute-container.text.task input[type="text"]', label: 'Task' },
   ];
-  // one-time migration: old PREDEF/built-in keys → the new label-derived keys, so saved values carry over
-  const KEY_RELABEL = { 'release.catno': 'cf:Catalog number', 'release.primary_type': 'cf:Primary type', 'release.packaging': 'cf:Packaging', 'release.status': 'cf:Status', 'release.language': 'cf:Language', 'release.script': 'cf:Script', 'release.country': 'cf:Country', 'release.label': 'cf:Label', 'release.artist': 'cf:Artist', 'rel.task': 'cf:Task' };
 
   let SET = loadSet();
   // seed the built-ins once (merge-in any not already present by selector; never re-adds after you delete one)
@@ -41543,8 +41424,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();
-    // migrate saved values from the old built-in keys (release.* / rel.task) to the new label-derived keys
-    { let moved = false; for (const oldK in KEY_RELABEL) { const newK = KEY_RELABEL[oldK]; if (FDATA[oldK] && !FDATA[newK]) { FDATA[newK] = FDATA[oldK]; delete FDATA[oldK]; moved = true; } } if (moved) saveF(); }
 
     const listFor = key => (FDATA[key] = FDATA[key] || []);
     function rememberValue(key, rec) {
@@ -42024,7 +41903,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27.210137","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27.210137","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.28","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.28","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -42583,7 +42462,6 @@ async function injectInto(urls, storageKey) {
         // the blocked submission, not the choice of type.
         { test: u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
     ];
-    const wait = pcWait;
     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     const setSel = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
     const reports = [];
@@ -44504,8 +44382,8 @@ function md5(str) {
     const gg = (a, b, c, d, x, s, t) => cmn((b & d) | (c & ~d), a, b, x, s, t);
     const hh = (a, b, c, d, x, s, t) => cmn(b ^ c ^ d, a, b, x, s, t);
     const ii = (a, b, c, d, x, s, t) => cmn(c ^ (b | ~d), a, b, x, s, t);
-    const bytes = unescape(encodeURIComponent(str)), n = bytes.length, x = [];
-    for (let i = 0; i < n; i++) x[i >> 2] |= (bytes.charCodeAt(i) & 0xFF) << ((i % 4) * 8);
+    const bytes = new TextEncoder().encode(str), n = bytes.length, x = [];   // UTF-8
+    for (let i = 0; i < n; i++) x[i >> 2] |= bytes[i] << ((i % 4) * 8);
     x[n >> 2] |= 0x80 << ((n % 4) * 8);
     x[(((n + 8) >> 6) * 16) + 14] = n * 8;
     let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;

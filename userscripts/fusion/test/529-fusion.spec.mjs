@@ -877,15 +877,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
      'the AcoustID cap no longer excludes ordinary artist-sized pools');
   check(await page.evaluate(() => window.__fusion.ACOUSTID_BATCH === undefined ? 50 : window.__fusion.ACOUSTID_BATCH) > 1,
      'AcoustIDs are fetched in batches, not one request per recording');
-
-  // The assertion above passes on DEFAULTS — which is exactly why it stayed green
-  // while a real install still ran at 60: stored settings shadow defaults, and
-  // opening the config window once saves every key. Assert the migration itself.
-  check(await page.evaluate(() => window.__fusion.migrateSettings({ acoustidPoolCap: window.__fusion.RETIRED_ACOUSTID_CAP }).acoustidPoolCap
-                               === window.__fusion.SETTINGS_DEFAULTS.acoustidPoolCap),
-     'a stored copy of the retired 60 cap is lifted to the new default on load');
-  check(await page.evaluate(() => window.__fusion.migrateSettings({ acoustidPoolCap: 250 }).acoustidPoolCap === 250),
-     'a cap the user deliberately chose is left alone by the migration');
+  // (the one-time migration of a stored 60 cap is retired, #623)
 
   // #529: "2 dots in the pool are gone (isrc/accousticId)" — removing the legend
   // took the dots it described with it. They carry their own meaning now, and

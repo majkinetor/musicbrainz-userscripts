@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.27
+// @version      2026.9.28
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -12,6 +12,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_openInTab
+// @grant        unsafeWindow
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
@@ -19,7 +20,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.7.7';   // from the @version header at runtime
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // from the @version header at runtime
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -38,8 +39,6 @@
   const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
   // MB renders each rel as <tr class="<role-kebab>"> … <div class="relationship-item"> <button class="icon remove-item">×</button> <a href="/artist|work|…/<mbid>">name</a> …
   const REMOVE_SEL = 'button.icon.remove-item';
-  const ROLE_STOP = new Set(['odd', 'even', 'highlighted', 'selected', 'subrow', 'rel-add', 'rel-edit', 'rel-remove']);
-  const pickRoleClass = tr => { if (!tr) return null; for (const c of tr.classList) if (!ROLE_STOP.has(c) && /^[a-z][a-z0-9-]*$/.test(c)) return c; return null; };
   const pickRoleLabel = tr => { const l = tr && tr.querySelector('th.link-phrase label'); return l ? (l.textContent || '').replace(/:\s*$/, '').trim() : 'role'; };
   // medium number a track row belongs to — the nearest preceding `tr.subh` ("1▼CD" → 1). Each medium
   // is its own <tbody>, so we scan the table's rows in document order (not just siblings). Cached per row.
@@ -83,7 +82,6 @@
   };
   const targetHref = item => { const a = item && item.querySelector('a[href*="/artist/"], a[href*="/work/"], a[href*="/label/"], a[href*="/place/"], a[href*="/recording/"], a[href*="/url/"], a[href*="/event/"], a[href*="/instrument/"]'); return a ? a.getAttribute('href') : null; };
   const targetLabel = item => { const a = item && item.querySelector('a[href*="/"]'); return a ? (a.textContent || '').trim() : 'target'; };
-  const rowHasClass = (tr, cls) => !!(tr && cls && tr.classList.contains(cls));
   const itemHasHref = (item, href) => !!(href && item.querySelector(`a[href="${CSS.escape(href)}"]`));
 
   // a rel's "role" for grouping = its link type PLUS its attributes — because e.g. every instrument rel
@@ -1648,7 +1646,6 @@
     }
   }
 
-  let toastEl = null, toastTimer = null;
   function toast(msg) { return mbuToast(msg); }   // #563: the shared toast
 
   // build an MB attribute ImmutableTree from a /ws/js rel's attribute array (they carry typeIDs directly)
@@ -3436,8 +3433,6 @@
   // </ST-MATCH>
   const txpFold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const txpSameName = (a, b) => txpFold(a) === txpFold(b);
-  const txpFoldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
-  const txpSameNameCase = (a, b) => txpFoldKeepCase(a) === txpFoldKeepCase(b);
   // resolve an MBID to a full entity (incl. the numeric id dispatchRelationship needs)
   async function txpFetchEntity(gid, fallbackType) {
     try {
@@ -4910,10 +4905,6 @@
         row.appendChild(el('span', 'gt-tp-resname', name));
         if (disamb) row.appendChild(el('span', 'gt-tp-disamb', ` (${disamb})`));
         return row;
-      };
-      const wirePick = (row, entity) => {
-        row.addEventListener('click', () => pick(entity, true));                                  // #544: all rows with this text
-        row.addEventListener('contextmenu', e => { e.preventDefault(); pick(entity, false); });   // #544: this row only
       };
       const runSearch = async () => {
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;

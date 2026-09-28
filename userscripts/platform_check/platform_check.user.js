@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.27.210137
+// @version      2026.9.28
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -13,6 +13,7 @@
 // @grant        GM_getValue
 // @grant        GM_deleteValue
 // @grant        GM_openInTab
+// @grant        unsafeWindow
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      query.wikidata.org
@@ -595,7 +596,6 @@ async function injectInto(urls, storageKey) {
         // the blocked submission, not the choice of type.
         { test: u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
     ];
-    const wait = pcWait;
     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     const setSel = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
     const reports = [];
@@ -2516,8 +2516,8 @@ function md5(str) {
     const gg = (a, b, c, d, x, s, t) => cmn((b & d) | (c & ~d), a, b, x, s, t);
     const hh = (a, b, c, d, x, s, t) => cmn(b ^ c ^ d, a, b, x, s, t);
     const ii = (a, b, c, d, x, s, t) => cmn(c ^ (b | ~d), a, b, x, s, t);
-    const bytes = unescape(encodeURIComponent(str)), n = bytes.length, x = [];
-    for (let i = 0; i < n; i++) x[i >> 2] |= (bytes.charCodeAt(i) & 0xFF) << ((i % 4) * 8);
+    const bytes = new TextEncoder().encode(str), n = bytes.length, x = [];   // UTF-8
+    for (let i = 0; i < n; i++) x[i >> 2] |= bytes[i] << ((i % 4) * 8);
     x[n >> 2] |= 0x80 << ((n % 4) * 8);
     x[(((n + 8) >> 6) * 16) + 14] = n * 8;
     let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;

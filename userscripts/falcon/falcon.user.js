@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.28
+// @version      2026.9.28.214729
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -13,12 +13,13 @@
 // @grant        GM_deleteValue
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
+// @grant        unsafeWindow
 // @connect      *
 // @noframes
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.192332';
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
 
@@ -1649,7 +1650,8 @@
   //      different userscripts, only within one script's own tabs — hence keeping
   //      scheme 1 as the general contract.
   function tryDecodeBase64Json(raw) {
-    let text; try { text = decodeURIComponent(escape(atob(raw))); } catch (e) { return null; }
+    // fatal: bytes that are not UTF-8 throw, as decodeURIComponent(escape(…)) did
+    let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))); } catch (e) { return null; }
     try { JSON.parse(text); return text; } catch (e) { return null; }
   }
   function parseUrlParam() {
@@ -1741,7 +1743,8 @@
   }
   function encodeFalconPayload(tuples) {
     const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined })));
-    return btoa(unescape(encodeURIComponent(json)));
+    let bin = ''; for (const b of new TextEncoder().encode(json)) bin += String.fromCharCode(b);   // UTF-8 bytes, one char each, for btoa
+    return btoa(bin);
   }
 
   /* ── Harmony bridge (#467, #459) ─────────────────────────────────────────
@@ -3372,7 +3375,7 @@
         dbg(tag, '  not seeded — falling back to typing it');
         const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
         if (!input) { dbg(tag, '  no "Add another link" input appeared within 12s'); results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
-        const d2 = frameDoc(iframe), w2 = frameWin(iframe);
+        const w2 = frameWin(iframe);
         const setVal = Object.getOwnPropertyDescriptor(w2.HTMLInputElement.prototype, 'value').set;
         input.focus();
         setVal.call(input, url);

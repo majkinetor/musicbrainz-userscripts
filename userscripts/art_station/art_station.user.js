@@ -13,6 +13,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // @connect      *
 // @run-at       document-start
 // ==/UserScript==
@@ -65,17 +66,9 @@
   const footerStyle = document.createElement('style');
   footerStyle.textContent = '#content div.buttons.ui-helper-clearfix{display:none!important}';
   appendEl(footerStyle);
-  // #501: settings persistence lives in GM storage (backed up/synced by the script
-  // manager) instead of localStorage (browser-profile-only — invisible to a script
-  // manager backup/restore or a move to another browser). One-time migration: if GM
-  // storage is empty but an old localStorage value exists, adopt it once and write
-  // through to GM storage from then on; the old localStorage key is left in place,
-  // unused, so nothing is destructively deleted.
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
+  // #501: settings live in GM storage (backed up and synced by the script manager).
+  // The one-time adoption of an older localStorage copy is retired (#623).
+  const gmLoad = (key) => { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // saved prefs read directly here (the SETTINGS object is built later) so the initial
   // Original/footer state is applied flash-free, before first paint.
@@ -380,10 +373,7 @@
   let _resortT = null;
   function scheduleResort() { if (_resortT) return; _resortT = setTimeout(() => { _resortT = null; render(); }, 120); }
 
-  const changed = it => it._del || it._new || it.comment !== it._origComment || it.order !== it._origOrder || it.types.join('|') !== it._origTypes.join('|');
-  const stagedCount = () => MODEL.filter(changed).length;
   const selectable = () => MODEL.filter(it => !it._del);
-  const allSelected = () => { const s = selectable(); return s.length > 0 && s.every(it => it._sel); };
   // reorder (drag) only in the canonical Position view — ungrouped + sorted by position.
   // Grouping is view-only; other sorts don't map to the committed order.
   const canReorder = () => !SETTINGS.group && !SETTINGS.detailed && SETTINGS.sort === 'type';
@@ -543,7 +533,6 @@
   function openSetup() {
     document.getElementById('as-setup')?.remove();
     const ver = (_gm && _gm.version) || '';
-    const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = mbuCfgHeader({ script: 'art_station', name: 'Art Station', version: ver,
         icon: `<img src="${ICON_URL}" alt="">`, log: true, logClass: 'as-setup-logbtn' })
@@ -1214,24 +1203,6 @@
     // so this is the same arithmetic, now named once for every script.
     mbuFitToolbar(bar, { spacer: '.as-sp' });
   }
-  // the list of pending MB operations behind "N staged changes"
-  function pendingOps() {
-    const label = it => it.types[0] || (it._new ? 'new image' : ITEM);
-    const ops = [];
-    MODEL.filter(it => it._new && !it._del && !it._sourcing).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
-    MODEL.filter(it => it._del && !it._new).forEach(it => ops.push(`🗑 Remove ${label(it)}`));
-    MODEL.filter(it => !it._del && !it._new).forEach(it => {
-      if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || ITEM} → ${it.types.join(', ') || '(none)'}`);
-      if (it.comment !== it._origComment) ops.push(`✎ Comment on ${label(it)} → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
-    });
-    // reorder = the EXISTING covers' relative order changed. Inserting new covers
-    // shifts indices but is positioned by the add op itself (not a separate reorder).
-    const ex = MODEL.filter(it => !it._del && !it._new);
-    const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
-    const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-    if (now !== orig) ops.push('↕ Reorder ' + ITEMS);
-    return ops;
-  }
   // the count shown on "Enter edit (N)" = the number of real MB edits we'll submit
   // (buildPlan merges a cover's type+comment change into one edit), so it matches
   // the panel's operation list exactly. #234
@@ -1565,7 +1536,6 @@
   // standard shape for a caught error: "<context> — <message>"
   const logErr = (ctx, e) => asLog('error', ctx + ' — ' + ((e && e.message) || e || 'unknown error'));
   const fmtBytes = n => (n == null) ? '?' : n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
-  const logMarkdown = () => LOG.markdown();
 
   let _toastT;
   // #563: the shared toast. Art Station's log-mirroring was the behaviour worth

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.28
+// @version      2026.9.28.214729
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -9,6 +9,7 @@
 // @match        https://*.musicbrainz.org/*
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        unsafeWindow
 // @run-at       document-idle
 // ==/UserScript==
 //
@@ -36,8 +37,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
-  const VERSION = '2026.7.23';   // keep in sync with @version (fallback when GM_info is unavailable)
-  const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // #308: the 🦣 emoji (U+1F9A3) renders as a tofu box in Chrome on systems whose
@@ -88,8 +88,6 @@
     { match: '#ac-source-single-artist, input[id^="ac-source-artist-"]', label: 'Artist', mbid: true },
     { match: '.attribute-container.text.task input[type="text"]', label: 'Task' },
   ];
-  // one-time migration: old PREDEF/built-in keys → the new label-derived keys, so saved values carry over
-  const KEY_RELABEL = { 'release.catno': 'cf:Catalog number', 'release.primary_type': 'cf:Primary type', 'release.packaging': 'cf:Packaging', 'release.status': 'cf:Status', 'release.language': 'cf:Language', 'release.script': 'cf:Script', 'release.country': 'cf:Country', 'release.label': 'cf:Label', 'release.artist': 'cf:Artist', 'rel.task': 'cf:Task' };
 
   let SET = loadSet();
   // seed the built-ins once (merge-in any not already present by selector; never re-adds after you delete one)
@@ -1763,8 +1761,6 @@
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();
-    // migrate saved values from the old built-in keys (release.* / rel.task) to the new label-derived keys
-    { let moved = false; for (const oldK in KEY_RELABEL) { const newK = KEY_RELABEL[oldK]; if (FDATA[oldK] && !FDATA[newK]) { FDATA[newK] = FDATA[oldK]; delete FDATA[oldK]; moved = true; } } if (moved) saveF(); }
 
     const listFor = key => (FDATA[key] = FDATA[key] || []);
     function rememberValue(key, rec) {

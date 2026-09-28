@@ -14,6 +14,7 @@
 // @grant        GM_getValue
 // @grant        GM_deleteValue
 // @grant        GM_openInTab
+// @grant        unsafeWindow
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      isrc-api.soundexchange.com
@@ -321,7 +322,6 @@
       .replace(/[^\p{L}\p{N}\p{M} ]/gu, ' ')
       .replace(/\s+/g, ' ').trim();
   }
-  function normCI(s) { return norm(s); }
   function wordsMatch(needle, haystack) {
     const nw = norm(needle).split(' ').filter(Boolean), hw = norm(haystack);
     return nw.length > 0 && nw.every(w => hw.includes(w));
@@ -2326,7 +2326,7 @@
     else Log.warn('molla: the album has ' + n + ' track(s) but this release has ' + mb + ' — molla gives no track numbers, so ISRCs are placed by title/artist match only');
     tracks.forEach((t, i) => {
       const isrc = normalizeIsrc(t.isrc || '');
-      const title = t.track_name || '', artist = (t.artists || []).join(', ');
+      const title = t.track_name || '';
       // Spotify puts featured artists in the title ("Get Lucky (feat. Pharrell Williams
       // and Nile Rodgers)"); MB keeps them in the artist credit. molla has no durations,
       // so the title is the only plausibility check — without this every feat. track

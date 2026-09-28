@@ -13,6 +13,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        unsafeWindow
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      api.acoustid.org
@@ -21,7 +22,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.9.26.111241';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -195,32 +196,10 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, settingsVersion: 0, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
-// Stored settings win over defaults, so simply RAISING a default is invisible to
-// anyone who ever opened the config window (that saves every key, including the
-// ones they never touched). The old 60 cap dated from one-request-per-recording;
-// now that list_by_mbid batches 50 at a time it only served to leave big pools
-// with no AcoustID data at all. Lift that specific stale value — but only when
-// it's still exactly the retired default, so a cap someone deliberately chose
-// stays theirs.
-const RETIRED_ACOUSTID_CAP = 60;
-// Bumped when a migration below needs to run once and then never again. Without
-// the stamp, "turn the prefetch off" could not tell a value the user chose from
-// one that was merely the old default, and would keep undoing their choice.
-const SETTINGS_VERSION = 2;
-function migrateSettings(s) {
-    if (s.acoustidPoolCap === RETIRED_ACOUSTID_CAP) s.acoustidPoolCap = SETTINGS_DEFAULTS.acoustidPoolCap;
-    // v2: the group release prefetch shipped defaulting ON, and every install
-    // that opened the config window has that `true` persisted — so flipping the
-    // default alone would change nothing. Nobody could have deliberately enabled
-    // it while it was already on, so a stored `true` from before this version is
-    // the old default rather than a preference, and is turned off once.
-    if ((s.settingsVersion || 0) < 2 && s.prefetchGroupReleases === true) s.prefetchGroupReleases = false;
-    s.settingsVersion = SETTINGS_VERSION;
-    return s;
-}
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
 function loadSettings() {
-    try { return migrateSettings(Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}')))); }
+    // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
+    try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
     catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
 }
 function saveSettings() { try { GM_setValue(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {} }
@@ -2695,7 +2674,6 @@ function groupCardHtml(group) {
     const lenOffBy = m => (lenRefRec && m !== lenRefRec && typeof m.length === 'number' && m.length > 0 && Math.abs(m.length - lenRefRec.length) > lenTol) ? m.length - lenRefRec.length : null;
     const secs = ms => Math.round(Math.abs(ms) / 1000);
     const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
-    const confLabel = group.confidence === 'high' ? 'HIGH' : group.confidence === 'medium' ? 'MEDIUM' : 'MANUAL';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
     const sigChips = Object.keys(sigNames).map(k => {
@@ -3017,7 +2995,6 @@ function cancelBackground() {
 }
 function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
 function busyEnd() { _busyCount = Math.max(0, _busyCount - 1); if (_busyCount === 0) _busyLabel = ''; renderBusy(); }
-async function withBusy(label, fn) { busyStart(label); try { return await fn(); } finally { busyEnd(); } }
 
 // #529 (majkinetor): "acoustic id still not fully fetched … no dot in the pool
 // is lighted". AcoustIDs used to be looked up ONLY inside Auto-match, so a
@@ -3633,6 +3610,7 @@ async function seedFromScope() {
 async function maybeAutoMatchOnOpen() {
     if (!SETTINGS.autoMatchOnOpen) return;
     if (!STATE.poolOrder.length) { Log.info('Auto-match on open: nothing in the pool'); return; }
+    // eslint-disable-next-line no-unmodified-loop-condition -- busyEnd() lowers it while this awaits
     for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
     if (!FUSION_OPEN) return;
     Log.info('Auto-match on open: starting');
@@ -3673,7 +3651,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        migrateSettings, presenceDots, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,   // SETTINGS_DEFAULTS is listed above
+        presenceDots,   // SETTINGS_DEFAULTS is listed above
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,

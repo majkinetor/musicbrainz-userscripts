@@ -14,6 +14,7 @@
 // @grant        GM_openInTab
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // @connect      *
 // @run-at       document-start
 // ==/UserScript==
@@ -50,17 +51,9 @@
   });
   const logMarkdown = () => Log.markdown();
   const openLog = () => Log.open();
-  // #501: settings persistence lives in GM storage (backed up/synced by the script
-  // manager) instead of localStorage (browser-profile-only — invisible to a script
-  // manager backup/restore or a move to another browser). One-time migration: if GM
-  // storage is empty but an old localStorage value exists, adopt it once and write
-  // through to GM storage from then on; the old localStorage key is left in place,
-  // unused, so nothing is destructively deleted.
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
+  // #501: settings live in GM storage (backed up and synced by the script manager).
+  // The one-time adoption of an older localStorage copy is retired (#623).
+  const gmLoad = (key) => { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
@@ -168,10 +161,6 @@
   // dashes, minus…) to a plain '-' so e.g. "Gol‐e Yakh" folds the same as "Gol-e Yakh"
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
-  // #445 case-preserving fold (diacritics/dashes/whitespace normalized, CASE kept) — so casing is
-  // the only discriminator when breaking a tie between several case-insensitive name/alias matches.
-  const foldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
-  const sameNameCase = (a, b) => foldKeepCase(a) === foldKeepCase(b);
   // gid → artist disambiguation, harvested from every WS2/js artist-credit the
   // script fetches (search results, recording lookups). The MB page (KO) model
   // doesn't carry disambiguations for freshly-picked entities, so the recordings
@@ -465,14 +454,6 @@
   const _aliasCache = new Map();        // query → { gid: aliases }
   const _gidAliases = new Map();        // gid → aliases — survives table rebuilds (so the bar keeps its alias)
   const cacheAliases = (gid, aks) => { if (gid && aks) _gidAliases.set(gid, aks); };
-  async function fetchAliases(name) {
-    const k = fold(name); if (!k) return {}; if (_aliasCache.has(k)) return _aliasCache.get(k);
-    const map = {};
-    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { label: 'alias fetch' });
-    if (!res.json) { Log.warn('alias fetch failed', name, '— not cached, retried on the next pass'); return map; }   // don't cache a throttled miss (#555)
-    (res.json.artists || []).forEach(a => { map[a.id] = a.aliases || []; cacheAliases(a.id, a.aliases || []); });
-    _aliasCache.set(k, map); return map;
-  }
   // aliases for already-resolved artists (existing releases / auto-matched) WITHOUT a fetch each —
   // one batched WS2 query per ~90 gids (arid:g1 OR arid:g2 …), cached by gid
   async function fetchAliasesByGids(gids) {
@@ -1346,7 +1327,6 @@
   // #580: never commit over a slot the user has focused — that is the write that
   // used to replace a half-typed name with the matched artist.
   const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias');
-  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
   function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
@@ -1659,7 +1639,7 @@
   /* ════════════════════════ UI ════════════════════════ */
   // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.27.060520';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1688,15 +1668,10 @@
     { label: '/', value: ' / ' }, { label: '·', value: ' · ' }, { label: 'presents', value: ' presents ' },
   ];
 
-  const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
   const badgeText = s => ({ rg: 'rg', disc: 'disc', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
-  const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
-  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
-  const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
   // inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never in this block.
@@ -3075,7 +3050,6 @@
     row.scrollIntoView({ block: 'center', behavior: 'smooth' });
     const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
   }
-  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
     // #281: Discogs API unreachable → an amber, clickable "retry" badge instead of a
     // blank that reads as "nothing to do". (It also auto-retries once on its own.)
@@ -4391,7 +4365,6 @@
     let rows = [];         // [{ raw, override }]
     let _splitLast = false;   // #456 v2 ‹first|last›: which separator instance a text field splits on
     const tracks = () => u(mediums()[curMi].tracks) || [];
-    const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
     // the current medium's tracklist rendered in the #. T - A (L) format, to seed the paste box
     const acStr = t => (liveNames(t) || []).map(n => (u(n.name) || (u(n.artist) && u(u(n.artist).name)) || '') + (u(n.joinPhrase) || '')).join('').trim();
     const currentText = () => tracks().map((t, i) => { const num = u(t.number) || (i + 1); const title = u(t.name) || ''; const artist = acStr(t); const len = u(t.formattedLength) || ''; return `${num}. ${title}` + (artist ? ` - ${artist}` : '') + (len ? ` (${len})` : ''); }).join('\n');
@@ -4920,7 +4893,6 @@
     { act: 'cols',      label: 'Resize columns',     icon: '↔', params: true }, // ↔
   ];
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
-  const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'patternparser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const PICK_SHOWS_ONLY = new Set(['mergemed', 'splitmed']);   // #615: structural — picking from the menu must not run them
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
@@ -5044,9 +5016,6 @@
       const disp = row.querySelector('.t-title-disp');
       if (disp) { disp.innerHTML = dhRun(val); disp.classList.toggle('gcpreview', on); }
     });
-  }
-  function wireToolHover() {
-    document.querySelectorAll('.tc-toolbtn[data-act="guesscase"]').forEach(b => { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); });
   }
 
   // #280: render every on-bar tool inline at its position — a plain button when it
@@ -5893,7 +5862,6 @@
   function recWant() { return apolloEnabled() && SETTINGS.replaceRecordings !== false; }
   function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
-  function curWant() { return apolloEnabled(); }
   function apolloOn() { return apolloEnabled(); }
   // #569: guarded. Assigning textContent replaces the child text node whether or
   // not the string changed, so this was dispatching a childList record twice a
@@ -7452,7 +7420,6 @@
   async function autoMatchRecordings() {
     if (_autoMatching) return; _autoMatching = true;   // #577
     if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
-    const wrap = document.getElementById('tc-recwrap');
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
     // happened". Re-queried on each use rather than captured: the recordings
@@ -7663,14 +7630,6 @@
   function setCopy(field, entry, on) {
     try { const t = koTrack(entry.mi, entry.ti); if (field === 'title') t.updateRecordingTitle(on); else t.updateRecordingArtist(on); }
     catch (e) { Log.warn('set copy ' + field + ' failed', e.message); }
-  }
-  function setCopyAll(field) {
-    const flag = field === 'title' ? 'copyTitle' : 'copyArtist';
-    // only the rows where this field actually differs (or is already flagged) — copying a matching value is a no-op
-    const rows = readRecordings().filter(r => r.recGid && ((r.diffs && r.diffs[field]) || r[flag]));
-    const allOn = rows.length && rows.every(r => r[flag]);   // toggle: if every eligible row is on, turn all off
-    rows.forEach(r => setCopy(field, r, !allOn));
-    Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
   }
   function rerenderRec() { renderRecBody(); }   // body only — keeps the toolbar (status / inputs) intact
 
