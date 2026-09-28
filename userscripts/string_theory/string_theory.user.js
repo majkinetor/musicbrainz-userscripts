@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.28.150054
+// @version      2026.9.28.220509
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.28.150054 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.27.060520\n  · Art Station v2026.9.27\n  · Credit Hoarder v2026.9.27.061629\n  · Fusion v2026.9.27\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.27\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
+  console.log('%c String Theory %c v2026.9.28.220509 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.27.060520\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.27.061629\n  · Fusion v2026.9.27\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.27\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -9901,7 +9901,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.27","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.27","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -10097,15 +10097,26 @@ try {
     return { types: [], comment: '' };
   }
 
-  let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, _del, _new, _file }]
+  let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, fmt, _del, _new, _file }]
   let _booted = false;  // #283 emit the name+version / release log lines once
   const SIZES = new Map(); // CAA image id -> original file size in bytes (from archive.org metadata)
+  const FORMATS = new Map(); // CAA image id -> the original's format, 'PNG' (same metadata, #630)
   const fmtSize = b => b >= 1048576 ? (b / 1048576).toFixed(1) + 'Mb' : Math.max(1, Math.round(b / 1024)) + 'Kb';
-  // footer line under the image: "1.2Mb   600 × 600" — size first, then resolution,
-  // each half shown once known, separated by a wide gap (em-space).
+  // #630 (chaban-mb, upgrading covers from JPEG to PNG): the file's format, as the native
+  // uploader shows it — from a MIME type ("image/png") or a name or URL ("…-123.png").
+  const FMT_NAMES = { jpg: 'JPEG', jpeg: 'JPEG', png: 'PNG', gif: 'GIF', webp: 'WEBP', avif: 'AVIF', bmp: 'BMP', tif: 'TIFF', tiff: 'TIFF', pdf: 'PDF' };
+  function fileFormat(v) {
+    const t = String(v || '').toLowerCase();
+    const m = t.match(/^(?:image|application)\/(?:x-)?([a-z0-9+.-]+)$/) || t.match(/\.([a-z0-9]+)(?:[?#]|$)/);
+    return m ? (FMT_NAMES[m[1]] || '') : '';
+  }
+  // the size, followed by the format when the option is on and it is known
+  const sizeText = it => [it.bytes ? fmtSize(it.bytes) : '', SETTINGS.showFileType && it.fmt ? it.fmt : ''].filter(Boolean).join(' ');
+  // footer line under the image: "1.2Mb   600 × 600" ("1.2Mb PNG   600 × 600" with #630's
+  // option) — size first, then resolution, each half shown once known.
   function dimText(it) {
     const parts = [];
-    if (it.bytes) parts.push(fmtSize(it.bytes));
+    if (sizeText(it)) parts.push(sizeText(it));
     if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
     return parts.length ? parts.join(' ') : '…';
   }
@@ -10113,7 +10124,7 @@ try {
   // narrow card instead of overflowing the tile.
   function dimHtml(it) {
     const parts = [];
-    if (it.bytes) parts.push(`<span class="as-dim-sz">${fmtSize(it.bytes)}</span>`);
+    if (sizeText(it)) parts.push(`<span class="as-dim-sz">${sizeText(it)}</span>`);
     if (it.w && it.h) parts.push(`<span class="as-dim-px">${it.w} × ${it.h}</span>`);
     return parts.join('') || '<span class="as-dim-sz">…</span>';
   }
@@ -10131,9 +10142,9 @@ try {
       for (const f of j.files) {
         if (f.source !== 'original' || !f.size) continue;
         const m = String(f.name).match(/-(\d+)\.[a-z0-9]+$/i);
-        if (m) SIZES.set(m[1], +f.size);
+        if (m) { SIZES.set(m[1], +f.size); if (fileFormat(f.name)) FORMATS.set(m[1], fileFormat(f.name)); }   // #630 the original's format
       }
-      MODEL.forEach(it => { const b = SIZES.get(String(it.id)); if (b) { it.bytes = b; refreshDim(it); } });
+      MODEL.forEach(it => { const b = SIZES.get(String(it.id)), t = FORMATS.get(String(it.id)); if (t) it.fmt = t; if (b) it.bytes = b; if (b || t) refreshDim(it); });
       asLog.debug(`archive.org: loaded original file sizes (${SIZES.size})`);
     } catch (e) { asLog.debug('archive.org: metadata unavailable — ' + ((e && e.message) || e)); }   // size is a nicety — never block the gallery
   }
@@ -10147,7 +10158,7 @@ try {
   // timeout (currently visible as IA is slow) while it passes in native uploader.
   // Let's make timeout configurable in minutes, and make default double the
   // current value." Was a hardcoded 5 minutes; the default is 10 now.
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10 }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10, showFileType: false }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
   /* #566 follow-up (majkinetor): "change defaults to 10/10 and enable the option
      by default". Raising the defaults alone reaches nobody who already has
      settings stored — save() persists every key, so a stored 20 shadows the new
@@ -10266,7 +10277,7 @@ try {
     }
     MODEL = source.map((s, i) => ({
       id: s.id, types: s.types.slice(), comment: s.comment,
-      order: i, w: 0, h: 0, _del: false, _new: false, _pending: !!s.pending, _pdf: !!s.pdf || /\.pdf(\?|$)/i.test(s.img || ''), _img: s.img,
+      order: i, w: 0, h: 0, fmt: fileFormat((byId.get(String(s.id)) || {}).image), _del: false, _new: false, _pending: !!s.pending, _pdf: !!s.pdf || /\.pdf(\?|$)/i.test(s.img || ''), _img: s.img,
       _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();
@@ -10465,6 +10476,7 @@ try {
       + `<div class="as-setup-opt"><label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autofront"${SETTINGS.autoFront ? ' checked' : ''}> Set type to “Front” on first import</label>`
       + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-clearsel"${SETTINGS.clearSelAfterOp ? ' checked' : ''}> Clear the selection after a batch action (type, comment, download, report)</label>`
+      + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-filetype"${SETTINGS.showFileType ? ' checked' : ''}> Show each ${ITEM}'s file type next to its size (PNG, JPEG…)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-followpan"${SETTINGS.followPan ? ' checked' : ''}> Full-screen: pan a zoomed image by moving the mouse (no dragging)</label>`
       // #560 — a big PDF booklet against a slow Internet Archive needs more than
       // the old fixed 5 minutes; the native uploader sets no timeout at all.
@@ -10477,6 +10489,7 @@ try {
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
+    panel.querySelector('.as-setup-filetype').onchange = e => { SETTINGS.showFileType = e.target.checked; save(); render(); asLog.info(`File type next to the size: ${SETTINGS.showFileType ? 'on' : 'off'}`); };   // #630
     panel.querySelector('.as-setup-autotype').onchange = e => { SETTINGS.autoType = e.target.checked; save(); };
     panel.querySelector('.as-setup-autocomment').onchange = e => { SETTINGS.autoComment = e.target.checked; save(); };
     panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
@@ -12276,7 +12289,7 @@ try {
       if (SETTINGS.autoComment && !comment && p.comment) comment = p.comment;
     }
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
-      bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
+      bytes: f.size, fmt: fileFormat(f.type) || fileFormat(f.name), _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
       _provImageUrl: (meta && meta.provImageUrl) || '',   // #260 direct image URL when the provider exposes one (e.g. Discogs)
       _ecauNote: !!(meta && meta.ecauNote),   // #364 its source is already in the seeded commit note → don't add a per-cover source line too

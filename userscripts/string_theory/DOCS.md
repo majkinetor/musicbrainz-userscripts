@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-28 15:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-28 22:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -571,6 +571,7 @@ It runs on a release's **Cover art** tab and an **Event art** tab, replacing the
 ### Features
 
 - **Gallery** — adjustable thumbnail size, grid or detailed view, group by [type](https://beta.musicbrainz.org/doc/Cover_Art/Types), and sort by position / type / dimensions / newest.
+  Each cover shows its file size and resolution. The file type can go with the size, as in `3.2Mb PNG` (⚙ setup, off by default; [#630](https://github.com/majkinetor/musicbrainz-userscripts/issues/630)).
 - **Reorder** by dragging a single cover or a whole selection together.
 - **Select** with right-click or right-drag.
 - **[Single or bulk actions](#single-or-bulk-actions)** — set type, set comment, remove, download (zip) and reports, on one cover or the whole selection.
