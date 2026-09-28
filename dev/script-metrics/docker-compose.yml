@@ -1,7 +1,8 @@
 # docker compose run --rm metrics            full run against the latest dump
 # docker compose run --rm metrics --report-only
 #
-# The dump cache is a named volume, not a bind mount: it holds ~15 GB and lives
+# The dump cache is a named volume, not a bind mount: it holds the current
+# dump (~15 GB; a newer one replaces it) and the database (~7 GB), and lives
 # inside the Docker VM, where reads are far faster than across the Windows
 # filesystem boundary. Only the small outputs cross back to the host.
 services:

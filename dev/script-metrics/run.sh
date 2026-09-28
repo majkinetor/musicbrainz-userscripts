@@ -5,7 +5,7 @@
 #   ./run.sh                      full run against the latest dump
 #   ./run.sh --report-only        re-render from the existing database
 #   ./run.sh --dump-id 20260905-002519
-#   ./run.sh --clean              drop the cached dumps (frees ~15 GB)
+#   ./run.sh --clean              drop the cached dump and the database (frees ~22 GB)
 set -euo pipefail
 cd "$(dirname "$0")"
 
