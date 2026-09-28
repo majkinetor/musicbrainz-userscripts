@@ -563,6 +563,12 @@ function Invoke-MBWeb {
     # which sets a cookie. This does the same, then repeats the request; the session keeps the
     # cookie, so it is once per session. majkinetor chose this on #629.
     param([Parameter(Mandatory)][hashtable] $Params)
+    if ($Params.Method -eq 'POST' -and -not $Params.Headers.Contains('Origin')) {
+        # a form post without Referer/Origin is answered with the usual redirect but not saved
+        # (seen 2026-09 on a collection's description): send them as a browser does
+        $Params = $Params.Clone()
+        $Params.Headers = $Params.Headers + @{ 'Referer' = [string]$Params.Uri; 'Origin' = ([uri]$Params.Uri).GetLeftPart('Authority') }
+    }
     $resp = Invoke-WebRequest @Params
     if ($resp.Content -notmatch '/__meb_verify') { return $resp }
     $m = [regex]::Match($resp.Content, 'const c="([0-9a-f]+)",t="(\d+)",d=(\d+)')
