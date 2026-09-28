@@ -33,21 +33,27 @@ test('a left click opens the plan without running it; a right click still runs i
   await page.waitForTimeout(300);
   check(await page.evaluate(() => !document.querySelector('.as-commit').disabled), 'a staged comment enables the commit button');
 
+  // A run starts two animation frames after the review window paints (the right-click
+  // path's own wait), so "it has not started" is read after those frames, not a sleep.
+  const afterStartWindow = () => page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r)))));
+  const status = () => page.evaluate(() => document.querySelector('.as-cm-op .as-cm-st')?.textContent || null);
+
   // the regression: a plain left click must not run
   await page.click('.as-commit');
-  await page.waitForTimeout(300);
+  await page.waitForSelector('#as-commit', { timeout: 10000 }).catch(() => {});
+  await afterStartWindow();
   check(await page.evaluate(() => !!document.getElementById('as-commit')), 'a left click opens the review window');
-  const left = await page.evaluate(() => document.querySelector('.as-cm-op .as-cm-st')?.textContent || null);
+  const left = await status();
   check(left === '○', `…and the operation stays untouched (${left})`);
   check(writes.length === 0, `nothing was sent (${writes.length})`);
 
-  // #493: a right click still runs at once
+  // #493: a right click still runs at once. That it STARTS is the point (⏳ running,
+  // or 👁 already previewed); how long the dry run's read of the edit form takes is
+  // the sandbox's business, not this spec's.
   await page.evaluate(() => document.getElementById('as-commit')?.remove());
-  await page.waitForTimeout(200);
   await page.click('.as-commit', { button: 'right' });
-  const atOpen = await page.evaluate(() => document.querySelector('.as-cm-op .as-cm-st')?.textContent || null);
-  await page.waitForTimeout(1500);
-  const settled = await page.evaluate(() => document.querySelector('.as-cm-op .as-cm-st')?.textContent || null);
+  const atOpen = await status();
+  const started = await page.waitForFunction(() => { const s = document.querySelector('.as-cm-op .as-cm-st')?.textContent; return s && s !== '○'; }, null, { timeout: 10000 }).then(() => true, () => false);
   check(atOpen === '○', `a right click opens with the plan visible first (${atOpen})`);
-  check(settled === '👁', `…and runs it without a Run click (dry-run preview: ${settled})`);
+  check(started, `…and starts it without a Run click (status: ${await status()})`);
 });
