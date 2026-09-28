@@ -13,7 +13,7 @@
 //
 // Nothing is submitted: every POST is aborted, and counted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -55,9 +55,9 @@ test("#533: release comment routed", { tag: ['@sandbox', '@login'] }, async ({ c
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
 

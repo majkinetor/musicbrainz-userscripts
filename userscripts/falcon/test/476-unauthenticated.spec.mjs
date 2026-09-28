@@ -10,7 +10,7 @@
 // refuses to spin up any workers, with a clear alert instead of N silent
 // 15s timeouts.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false, profile: 'fresh' });   // a profile that is logged out, which is what #476 is about
@@ -31,7 +31,7 @@ test("#476: unauthenticated", { tag: ['@sandbox'] }, async ({ context, page }) =
   const dialogs = [];
   page.on('dialog', async d => { dialogs.push(d.message()); await d.dismiss(); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
-  await page.waitForTimeout(400);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
   await page.click('#falcon-launcher');
@@ -48,7 +48,7 @@ test("#476: unauthenticated", { tag: ['@sandbox'] }, async ({ context, page }) =
     { id: 'x1', entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50', urls: [{ url: 'https://myspace.com/x' }], status: 'queued', name: null, urlResults: null, error: '' },
   ]));
   await page.evaluate(() => window.__falconTest.start());
-  await page.waitForTimeout(200);
+  await frames(page);
   const workersAfterRefusal = await page.evaluate(() => document.querySelectorAll('.falcon-worker-card').length);
   console.log('dialogs shown:', JSON.stringify(dialogs));
   ck(dialogs.length === 1 && /not logged into MusicBrainz/i.test(dialogs[0]), `a clear alert explains the problem (got: ${JSON.stringify(dialogs[0])})`);

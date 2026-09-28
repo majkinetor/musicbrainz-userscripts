@@ -7,7 +7,7 @@
 // the card, so MB always lays out the page correctly and the card just shows a
 // shrunk, legible thumbnail.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, until } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -25,13 +25,14 @@ test("#467: worker scale", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   const ck = check;
 
   const errs = []; page.on('pageerror', e => errs.push(e.message));
+  // #467's hide-idle-workers feature hides a card the instant it has nothing left to
+  // do, so the "submit" is held open until the card has been inspected: the item
+  // stays genuinely 'active' for exactly as long as the checks need it.
+  let releaseSubmit;
+  const heldSubmit = new Promise(r => { releaseSubmit = r; });
   async function fakeSubmit(route, request, type) {
     if (request.method() === 'POST') {
-      // hold the "submit" open for a while — #467's hide-idle-workers feature
-      // hides a card the instant it has nothing left to do, so a fast fake
-      // route made this test's card disappear before it could be inspected.
-      // Keeping the item genuinely 'active' this long guarantees a real window.
-      await new Promise(r => setTimeout(r, 8000));
+      await heldSubmit;
       const m = request.url().match(new RegExp(`/${type}/([0-9a-f-]{36})/edit`));
       return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/${type}/${m[1]}` } });
     }
@@ -40,7 +41,7 @@ test("#467: worker scale", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   await page.route('**/artist/*/edit*', (route, request) => fakeSubmit(route, request, 'artist'));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.click('#falcon-launcher');
@@ -54,7 +55,8 @@ test("#467: worker scale", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   });
   await page.evaluate(() => window.__falconTest.start());
   await page.waitForFunction(() => document.querySelector('.falcon-worker-card iframe'), null, { timeout: 10000 });
-  await page.waitForTimeout(2000);
+  await page.waitForFunction(() => { const d = document.querySelector('.falcon-worker-card iframe')?.contentDocument; return !!d && d.readyState === 'complete'; }, null, { timeout: 30000 }).catch(() => {});
+  await frames(page);   // scaled to its card
 
   // 1. The iframe renders at MB's natural desktop width and is scaled down visually
   // to exactly fill its small card — not stretched to the card's own narrow width.
@@ -77,7 +79,8 @@ test("#467: worker scale", { tag: ['@sandbox', '@login'] }, async ({ context, pa
 
   // 2. The actual rendered pixels show real, non-blank MB page content — the bug
   // this fixes: previously the DOM had content but it rendered entirely off-screen.
-  const visualCheck = await page.evaluate(() => {
+  // until the worker's page has painted into the scaled card
+  const visualCheck = await until(() => page.evaluate(() => {
     const iframe = document.querySelector('.falcon-worker-card iframe');
     const doc = iframe.contentDocument;
     // sample what's actually at the visual center of the SCALED-DOWN card, in the
@@ -88,14 +91,14 @@ test("#467: worker scale", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     const cx = (cardRect.width / 2) / scale, cy = (cardRect.height / 2) / scale;
     const el = doc.elementFromPoint(cx, cy);
     return { hasElementAtCenter: !!el, elTag: el?.tagName, nearbyText: (el?.closest('body')?.innerText || '').slice(0, 60) };
-  });
+  }), v => v.hasElementAtCenter && v.nearbyText.trim().length > 0, { timeout: 30000 });
   console.log('visual check at card center:', JSON.stringify(visualCheck));
   ck(visualCheck.hasElementAtCenter, 'the scaled card actually has a real element at its visual center (not empty space)');
   ck(visualCheck.nearbyText.trim().length > 0, `real page text is present near the visible area (got "${visualCheck.nearbyText.replace(/\n/g, ' ')}")`);
 
   // 3. Zooming a worker card (bigger view) rescales the iframe to match the new size.
   await page.click('.falcon-worker-zoom');
-  await page.waitForTimeout(300);
+  await frames(page);
   const zoomedSizing = await page.evaluate(() => {
     const card = document.querySelector('.falcon-worker-card');
     const iframe = card.querySelector('iframe');
@@ -106,5 +109,6 @@ test("#467: worker scale", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   console.log('zoomed sizing:', JSON.stringify(zoomedSizing));
   ck(Math.abs(zoomedSizing.renderedWidth - zoomedSizing.cardWidth) <= 2, `zooming the card rescales the iframe to fill the new (larger) size too (rendered=${zoomedSizing.renderedWidth}, card=${zoomedSizing.cardWidth})`);
 
+  releaseSubmit();
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 });

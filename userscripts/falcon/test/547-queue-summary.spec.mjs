@@ -12,7 +12,7 @@
 // Read-only: nothing is submitted, and every POST is aborted and asserted at
 // zero.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -43,12 +43,12 @@ test("#547: queue summary", { tag: ['@sandbox', '@login'] }, async ({ context, p
     catch (e) { if (a >= 4) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(600);
+  await idle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
-  await page.waitForTimeout(400);
+  await frames(page);
 
   /* ── half one: the queue row summary ───────────────────────────────────────
      His screenshot's exact case is `alias` — a row carrying an alias and nothing

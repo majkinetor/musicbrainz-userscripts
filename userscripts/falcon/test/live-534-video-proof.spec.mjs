@@ -15,7 +15,7 @@
 //
 // Sandbox only: refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -66,9 +66,9 @@ test("live 534 video proof", { tag: ['@sandbox', '@login'] }, async ({ context, 
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(600);
+  await idle(page);
 
   // the seed url carries it, and ONLY when asked for
   const seeds = await page.evaluate(() => ({
@@ -83,7 +83,7 @@ test("live 534 video proof", { tag: ['@sandbox', '@login'] }, async ({ context, 
   // The workers live in the panel, so it has to be open.
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  await frames(page);
 
   await page.evaluate(({ target, videoRec, stamp }) => {
     const mk = (mbid, extra) => Object.assign({
@@ -110,7 +110,7 @@ test("live 534 video proof", { tag: ['@sandbox', '@login'] }, async ({ context, 
       try { await epage.goto(`${HOST}/recording/${mbid}/open_edits`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
       catch (e) { if (a >= 3) return false; await epage.waitForTimeout(5000); }
     }
-    await epage.waitForTimeout(1200);
+    await idle(epage);
     return await epage.evaluate(() => [...document.querySelectorAll('.edit-header')]
       .filter(h => h.classList.contains('edit-recording'))
       .some(h => {
@@ -135,7 +135,7 @@ test("live 534 video proof", { tag: ['@sandbox', '@login'] }, async ({ context, 
       try { await epage.goto(`${HOST}/recording/${VIDEO_REC.id}/open_edits`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
       catch (e) { if (a >= 3) return false; await epage.waitForTimeout(5000); }
     }
-    await epage.waitForTimeout(1200);
+    await idle(epage);
     return await epage.evaluate(s => (document.body.innerText || '').includes(s), STAMP);
   })();
   console.log(`already-video AFTER: video=${JSON.stringify(afterOther && afterOther.video)}  disambiguation=${JSON.stringify(afterOther && afterOther.disambiguation)}  falcon-edited=${otherEdited}`);

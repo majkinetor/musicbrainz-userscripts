@@ -7,7 +7,7 @@
 // to the same starting state a fresh import would give it — so the next
 // Start naturally picks it up again.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -52,7 +52,7 @@ test("#517: retry failed", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   ck(disabled === false, `enabled once there's a failed/partial item (got ${disabled})`);
 
   await page.click('#falcon-retry-failed');
-  await page.waitForTimeout(150);
+  await frames(page);
   const after = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ id: i.id, status: i.status, error: i.error, urlResults: i.urlResults, timing: i.timing })));
   console.log('queue after retry:', JSON.stringify(after));
   ck(after.find(i => i.id === '1').status === 'done', 'the already-done item is untouched');

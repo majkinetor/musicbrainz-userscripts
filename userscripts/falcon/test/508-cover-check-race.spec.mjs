@@ -26,10 +26,9 @@ test("#508: cover check race", { tag: ['@sandbox', '@login'] }, async ({ context
   });
   const errs = []; 
   page.on('pageerror', e => errs.push(e.message));
-  // slow down the MB cover-art-archive check so the worker would normally
-  // reach the item well before it resolves — reproduces the race directly.
+  // The worker reaches the item before the cover-art check answers: runCoverItem is
+  // called in the same task that starts the check, so no answer can come first.
   await page.route('**/ws/2/release/**', async route => {
-    await new Promise(r => setTimeout(r, 600));
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ 'cover-art-archive': { count: 2 } }) });
   });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });

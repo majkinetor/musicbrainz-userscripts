@@ -13,7 +13,7 @@
 //
 // Nothing is submitted: every POST is aborted, and counted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -47,9 +47,9 @@ test("#572: series", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(600);
+  await idle(page);
 
   // ── a series page is a place Falcon can seed from ───────────────────────────
   const pctx = await page.evaluate(() => window.__falconTest.pageEntityContext());
@@ -70,7 +70,7 @@ test("#572: series", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   // ── the button offers it ────────────────────────────────────────────────────
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
-  await page.waitForTimeout(400);
+  await frames(page);
   const btnVisible = await page.isVisible('#falcon-add-page');
   const btnLabel = (await page.textContent('#falcon-add-page .falcon-bt') || '').trim();
   console.log('add button: visible=' + btnVisible + ' label=' + JSON.stringify(btnLabel));
@@ -88,7 +88,7 @@ test("#572: series", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   // ── adding them fills the queue ─────────────────────────────────────────────
   await page.click('.falcon-addmenu [data-a="ok"]');
   await page.waitForFunction(() => window.__falconTest.getQueue().length > 0, null, { timeout: 120000 });
-  await page.waitForTimeout(500);
+  await frames(page);
   const queue = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ t: i.entityType, mbid: i.mbid, name: i.name, rename: i.rename, status: i.status })));
   console.log(`queued ${queue.length} row(s); first: ` + JSON.stringify(queue[0]));
   ck(queue.length === info.members.length, `every member is queued (${queue.length}/${info.members.length})`);
@@ -98,7 +98,7 @@ test("#572: series", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
 
   // ── #571 meets #572: those rows can be renamed ──────────────────────────────
   await page.click('#falcon-expand-all');
-  await page.waitForTimeout(600);
+  await frames(page);
   const renameBoxes = await page.evaluate(() => {
     const els = [...document.querySelectorAll('.falcon-rename-input')];
     return { count: els.length, firstValue: els[0] && els[0].value };

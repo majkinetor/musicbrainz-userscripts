@@ -7,7 +7,7 @@
 // instead of MB's bare homepage.
 import { readFile } from 'node:fs/promises';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -32,10 +32,10 @@ test("#498: harmony release target", { tag: ['@sandbox', '@login'] }, async ({ c
     const errs = []; page.on('pageerror', e => errs.push(e.message));
     const hw = await harmonyReplay(page, '498-by-mbid');
     await page.goto(`https://harmony.pulsewidth.org.uk/release/actions?deezer=873204812&spotify=1SzNfUgYfuebR9knynZSqz&qobuz=g1zmwqqsmmbeq&gtin=199945053117&itunes=&tidal=&region=GB&release_mbid=${RELEASE_MBID}`, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(4000);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await frames(page);
     const clicked = await page.evaluate(() => new Promise(resolveClick => {
       const origOpen = window.open;
       window.open = url => { window.open = origOpen; resolveClick(url); return { closed: false }; };
@@ -54,10 +54,10 @@ test("#498: harmony release target", { tag: ['@sandbox', '@login'] }, async ({ c
     const page = await context.newPage();
     const hw2 = await harmonyReplay(page, '498-url-form');
     await page.goto('https://harmony.pulsewidth.org.uk/release/actions?release_mbid=https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-9e8a-42b9-8a96-bcc9564de034', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(4000);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await frames(page);
     const clicked = await page.evaluate(() => new Promise(resolveClick => {
       const origOpen = window.open;
       window.open = url => { window.open = origOpen; resolveClick(url); return { closed: false }; };

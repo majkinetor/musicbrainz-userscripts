@@ -17,7 +17,7 @@
 // Harmony actions page. That is one line, it uses the same helper asserted
 // below, and standing up a fake Harmony DOM would test the fake.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -91,7 +91,7 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   // missing when it is only unbuilt.
   await page.evaluate(() => { const l = document.getElementById('falcon-launcher'); if (l) l.click(); });
   await page.waitForSelector('#falcon-panel', { timeout: 15000, state: 'attached' });
-  await page.waitForTimeout(500);
+  await frames(page);
   const ui = await page.evaluate(() => {
     const cb = document.getElementById('falcon-opt-picard');
     const port = document.getElementById('falcon-opt-picard-port');

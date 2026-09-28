@@ -18,7 +18,7 @@
 // database from production; the sandbox login is majkinetor/mb.
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, REPO, idle, frames, settled } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 
@@ -59,7 +59,7 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({}) => {
 
   await page.goto(TEST_MB + '/', { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
-  await page.waitForTimeout(800);
+  await idle(page);
   await page.evaluate(() => {
     window.__stalls = [];
     let last = performance.now();
@@ -73,7 +73,7 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({}) => {
   ck(target === TEST_MB, `edit urls are built against the server the panel is open on, NOT pinned to production (got ${target})`);
 
   await page.evaluate(() => document.getElementById('falcon-launcher').click());
-  await page.waitForTimeout(600);
+  await frames(page);
 
   // fresh urls per run so MB has a genuine edit to make every time
   const rnd = Math.floor(Math.random() * 1e6);
@@ -110,7 +110,7 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({}) => {
 
   // The actual point: read the entities back and require the relationships to be
   // there. "status: done" only means MB redirected off /edit.
-  await page.waitForTimeout(3000);
+  await settled(page);
   const shortfalls = [];
   for (let i = 0; i < RECS.length; i++) {
     const types = await page.evaluate(async ({ mbid, want, base }) => {

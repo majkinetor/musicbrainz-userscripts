@@ -14,7 +14,7 @@
 //
 // Nothing is submitted: every POST is aborted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, until } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -68,9 +68,9 @@ test("cover pick and row ui", { tag: ['@sandbox', '@login'] }, async ({ context,
     try { await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 }); break; }
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
   }
-  await page.waitForTimeout(800);
+  await frames(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
 
@@ -97,7 +97,7 @@ test("cover pick and row ui", { tag: ['@sandbox', '@login'] }, async ({ context,
     window.__falconTest.setQueue(window.__falconTest.getQueue());
     document.querySelector('.falcon-row-expand').click();
   });
-  await page.waitForTimeout(400);
+  await frames(page);
   const ui = await page.evaluate(() => ({
     disambig: !!document.querySelector('.falcon-disambiguation-input'),
     coverUrl: !!document.querySelector('.falcon-cover-input'),
@@ -115,11 +115,10 @@ test("cover pick and row ui", { tag: ['@sandbox', '@login'] }, async ({ context,
     const c = window.__falconTest.getQueue()[0].cover[0];
     return c.candidates.every(x => x.measured !== undefined) || c.url;
   }, null, { timeout: 120000 }).catch(() => {});
-  await page.waitForTimeout(1500);
-  const after = await page.evaluate(() => {
+  const after = await until(() => page.evaluate(() => {
     const c = window.__falconTest.getQueue()[0].cover[0];
     return { picked: c.url, cands: c.candidates.map(x => `${x.provider} ${x.width}×${x.height} ${(x.size / 1024).toFixed(0)}KB`) };
-  });
+  }), a => !!a.picked);
   console.log('after measuring:');
   after.cands.forEach(c => console.log('   ' + c));
   console.log('picked: ' + after.picked);

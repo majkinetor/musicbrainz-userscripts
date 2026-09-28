@@ -8,7 +8,7 @@
 //    and w2" — per-row "; N links, disambiguation, isrc" breakdown in the
 //    run summary table, not just the aggregate line.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join, resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -42,10 +42,10 @@ test("#512: followup fixes", { tag: ['@sandbox', '@login'] }, async ({ context, 
     const RECORDING = 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7';
     const b64 = Buffer.from(JSON.stringify([{ entityType: 'recording', mbid: RECORDING, url: 'https://example.com/fresh-seed' }])).toString('base64');
     await page.goto('https://test.musicbrainz.org/?falcon=' + encodeURIComponent(b64), { waitUntil: 'load' });
-    await page.waitForTimeout(300);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    await page.waitForTimeout(300);
+    await frames(page);
     const log = await page.evaluate(() => window.__falconTest.getLog());
     console.log('log after a fresh seed on a new page:', JSON.stringify(log));
     ck(!log.some(l => l.includes('an old, unrelated run')), 'the old, unrelated session\'s lines are NOT present in the new page\'s log');

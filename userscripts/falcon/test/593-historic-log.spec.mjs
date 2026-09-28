@@ -81,7 +81,7 @@ test("#593: historic log", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     F.populateLogHistory();
     F.setViewingSession(id);
     document.getElementById('falcon-log-copy').click();
-    await new Promise(r => setTimeout(r, 400));
+    for (let i = 0; i < 400 && !grabbed; i++) await new Promise(r => setTimeout(r, 25));   // until the copy has written
     navigator.clipboard.writeText = real;
     F.setViewingSession(null);
     return grabbed.split(String.fromCharCode(10))[0];
@@ -187,7 +187,7 @@ test("#593: historic log", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     navigator.clipboard.writeText = async t => { grabbed = t; };
     F.setViewingSession(F.getSessionId());
     document.getElementById('falcon-log-copy').click();
-    await new Promise(r => setTimeout(r, 400));
+    for (let i = 0; i < 400 && !grabbed; i++) await new Promise(r => setTimeout(r, 25));   // until the copy has written
     navigator.clipboard.writeText = real;
     return grabbed.split(String.fromCharCode(10))[0];
   });

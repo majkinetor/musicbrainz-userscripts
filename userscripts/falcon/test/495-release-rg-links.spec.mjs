@@ -14,7 +14,7 @@
 // test.musicbrainz.org (sanctioned sandbox, real submits are fine there),
 // never production.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -76,12 +76,12 @@ test("#495: release rg links", { tag: ['@sandbox', '@login'] }, async ({ context
     const page = await context.newPage();
     await page.goto(`https://test.musicbrainz.org/release/${TEST_RELEASE}/edit`, { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(1500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     const before = await page.evaluate(() => { const b = document.querySelector('#enter-edit'); return b ? getComputedStyle(b).display : null; });
     const activated = await page.evaluate(() => window.__falconTest.activateReleaseEditNoteTab(document));
-    await page.waitForTimeout(300);
+    await frames(page);
     const after = await page.evaluate(() => { const b = document.querySelector('#enter-edit'); return b ? { display: getComputedStyle(b).display, visible: b.offsetParent !== null } : null; });
     console.log('tab activation:', JSON.stringify({ before, activated, after }));
     ck(before === 'none', `sanity: the submit button starts hidden on the release editor's default tab (got "${before}")`);
@@ -101,7 +101,7 @@ test("#495: release rg links", { tag: ['@sandbox', '@login'] }, async ({ context
     const marker = 'falcon495-' + Date.now();
     await page.goto(`https://test.musicbrainz.org/release/${TEST_RELEASE}`, { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     await page.click('#falcon-launcher');

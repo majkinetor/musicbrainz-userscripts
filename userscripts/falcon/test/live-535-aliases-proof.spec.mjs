@@ -6,20 +6,18 @@
 // edits on test.musicbrainz and every alias is read back from the API
 // afterwards. Nothing is intercepted.
 //
-// The JSON it builds is written to test/_535-aliases.json so it can be handed
-// over as the worked example.
+// The JSON it builds is written to the test's output folder (test-results/…/
+// _535-aliases.json) and attached to its report, so it can be handed over as the
+// worked example.
 //
 // Sandbox only: refuses to run against any host but test.musicbrainz.org.
 import { readFile, writeFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-const HERE = dirname(fileURLToPath(import.meta.url));
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context, page }, testInfo) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   const HOST = 'https://test.musicbrainz.org';
@@ -57,7 +55,7 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context
       ],
     })),
   };
-  const SAMPLE = resolve(HERE, '_535-aliases.json');
+  const SAMPLE = testInfo.outputPath('_535-aliases.json');
   await writeFile(SAMPLE, JSON.stringify(payload, null, 2), 'utf8');
   console.log(`wrote ${SAMPLE} — ${payload.items.length} item(s), ${payload.items.length * 2} alias(es)`);
 
@@ -83,9 +81,9 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(600);
+  await idle(page);
 
   // the JSON really is the interface: import the file as written
   const imported = await page.evaluate(t => window.__falconTest.importQueueJson(t, '_535-aliases.json'), JSON.stringify(payload));
@@ -96,7 +94,7 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context
 
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  await frames(page);
   await page.evaluate(() => window.__falconTest.start());
   await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 300000 }).catch(() => {});
   const outcome = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ n: i.name, s: i.status, a: i.aliasResults, e: i.error })));
@@ -144,9 +142,9 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context
       try { await rp.goto(`${HOST}/release/${RELEASE}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
       catch (e) { if (a >= 3) throw e; await rp.waitForTimeout(5000); }
     }
-    await rp.waitForTimeout(1000);
+    await frames(rp);
     await rp.addScriptTag({ content: code });
-    await rp.waitForTimeout(500);
+    await idle(rp);
     await rp.evaluate(t => window.__falconTest.importQueueJson(t, 'rerun'), JSON.stringify(payload));
     await rp.click('#falcon-launcher');
     await rp.waitForSelector('#falcon-panel', { timeout: 15000 });
@@ -181,9 +179,9 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context
     try { await p2.goto(`${HOST}/artist/${ARTIST}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
     catch (e) { if (a >= 3) throw e; await p2.waitForTimeout(5000); }
   }
-  await p2.waitForTimeout(1000);
+  await frames(p2);
   await p2.addScriptTag({ content: code });
-  await p2.waitForTimeout(500);
+  await idle(p2);
 
   // "Legal name" exists for an artist and does NOT for a recording
   const typeProbe = await p2.evaluate(async (mbid) => {

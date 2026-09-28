@@ -15,7 +15,7 @@
 import { readFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, until, settled } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -46,12 +46,11 @@ test("live 578 picard harmony proof", { tag: ['@sandbox', '@login'] }, async ({ 
     console.log('INCONCLUSIVE: Harmony did not load —', e.message.split('\n')[0]);
     throw new Error('stopped: see the log above');
   }
-  await page.waitForTimeout(6000);
+  await settled(page);   // live Harmony has rendered
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 20000 });
-  await page.waitForTimeout(4000);
 
-  const mbid = await page.evaluate(() => window.__falconTest.harmonyReleaseMbid());
+  const mbid = await until(() => page.evaluate(() => window.__falconTest.harmonyReleaseMbid()));
   log('release mbid Falcon reads off the page:', mbid);
   ck(mbid === R, `Falcon finds the release mbid on the actions page (got ${mbid})`);
 
@@ -86,7 +85,7 @@ test("live 578 picard harmony proof", { tag: ['@sandbox', '@login'] }, async ({ 
   const SB = 'e3e7446a-71fd-43b9-8cbb-b48066a8b566';
   for (const [k, u] of [['without', `https://test.musicbrainz.org/release/${SB}`], ['with', `https://test.musicbrainz.org/release/${SB}?${(on || '?').split('?')[1]}`]]) {
     await cp.goto(u, { waitUntil: 'domcontentloaded' });
-    await cp.waitForTimeout(2500);
+    await idle(cp);
     seen[k] = await cp.evaluate(() => { const a = document.querySelector('a[href*="openalbum"]'); return a ? a.getAttribute('href') : null; });
   }
   await clean.close();

@@ -6,7 +6,7 @@
 // general external contract any script/user can hand Falcon, not something
 // Harmony specifically vouches for.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, until } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -50,11 +50,13 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
       window.GM_setValue('falcon:pending:' + token, JSON.stringify(tuples));
       history.replaceState(null, '', '/?falcon=' + token);
     }, { token, tuples });
-    await page.waitForTimeout(200);
+    await frames(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    await page.waitForTimeout(1500);
-    const state = await page.evaluate(() => window.__falconTest.getQueue().map(i => i.status));
+    // on: until start() has taken the item; off: until it is seeded and the page idle
+    const queueState = () => page.evaluate(() => window.__falconTest.getQueue().map(i => i.status));
+    let state = await until(queueState, s => s.length > 0 && (!autoStart || s[0] !== 'queued'));
+    if (!autoStart) { await idle(page); state = await queueState(); }
     return { state, errs, page };
   }
 
@@ -87,7 +89,7 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
       window.GM_info = { script: { name: 'Falcon', version: 't' } };
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
-    await page.waitForTimeout(300);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     const payload = await page.evaluate((RECORDING) => window.__falconTest.encodeFalconPayload([{ entityType: 'recording', mbid: RECORDING, url: 'https://example.com/base64-test', linkTypeId: null }]), RECORDING);
@@ -104,10 +106,10 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
       window.GM_info = { script: { name: 'Falcon', version: 't' } };
     });
     await page2.goto('https://test.musicbrainz.org/?falcon=' + encodeURIComponent(payload), { waitUntil: 'load' });
-    await page2.waitForTimeout(400);
+    await idle(page2);
     await page2.addScriptTag({ content: code });
     await page2.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    await page2.waitForTimeout(1000);
+    await frames(page2);
     const state = await page2.evaluate(() => window.__falconTest.getQueue().map(i => i.status));
     console.log('autoStart=ON, base64 scheme (not Harmony), item status after boot:', JSON.stringify(state));
     ck(state.length === 1 && state[0] === 'queued', `a base64-scheme seed never auto-starts, even with the option on (got "${state[0]}")`);

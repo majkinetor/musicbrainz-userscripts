@@ -13,7 +13,7 @@
 //
 // Read-only: every POST is aborted and asserted at zero.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -85,7 +85,7 @@ test("#551: verify challenge", { tag: ['@sandbox', '@login'] }, async ({ context
   const seedUrl = `https://test.musicbrainz.org/release/${RELEASE}?falcon=${TOKEN}`;
   await goto(seedUrl);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(1200);
+  await idle(page);
 
   const onChallenge = await page.evaluate(() => ({
     title: document.title,
@@ -107,7 +107,7 @@ test("#551: verify challenge", { tag: ['@sandbox', '@login'] }, async ({ context
   // ── load 2: the challenge clears and the real page is served ────────────────
   await goto(seedUrl);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(1500);
+  await idle(page);
 
   const onReal = await page.evaluate(() => ({
     title: document.title.slice(0, 40),
@@ -131,7 +131,7 @@ test("#551: verify challenge", { tag: ['@sandbox', '@login'] }, async ({ context
   for (const u of [`https://test.musicbrainz.org/release/${RELEASE}`, 'https://test.musicbrainz.org/', `https://test.musicbrainz.org/release/${RELEASE}/edit`]) {
     await goto(u);
     await page.addScriptTag({ content: code });
-    await page.waitForTimeout(600);
+    await idle(page);
     const r = await page.evaluate(() => ({ t: document.title.slice(0, 30), c: window.__falconTest.isVerifyInterstitial() }));
     if (r.c) falsePositives.push(u + ' (' + r.t + ')');
   }

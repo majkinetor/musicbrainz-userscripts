@@ -12,7 +12,7 @@
 // So: ask MB whether anything is actually staged before submitting, and report
 // "already up to date" instead of a bogus timeout+failure.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -33,11 +33,11 @@ test("#467: noop submit", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   const REC = '66d4cbcc-f78f-4f03-ae33-62fb4b20c565';   // a sandbox copy's recording (his was 297fc936, on production)
   await page.goto(`https://test.musicbrainz.org/recording/${REC}`, { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(600);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
   await page.evaluate(() => document.getElementById('falcon-launcher').click());
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => document.getElementById('falcon-panel')?.style.display === 'flex', null, { timeout: 10000 });
 
   // the links go on once, for real, so that the run below has nothing left to do
   await page.evaluate((rec) => {

@@ -14,7 +14,7 @@
 // test did — a real gap in coverage) through GM storage and a fresh
 // "new tab" parseUrlParam() consumption, the exact path that was broken.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -69,7 +69,7 @@ test("#509: harmony name roundtrip", { tag: ['@sandbox', '@login', '@critical'] 
   await page1.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page1.waitForSelector('#falcon-harmony-btn', { timeout: 5000 });
   await page1.click('#falcon-harmony-btn');
-  await page1.waitForTimeout(600);
+  await frames(page1);
 
   const write = await page1.evaluate(() => window.__gmWrites.find(([k]) => k.startsWith('falcon:pending:')));
   console.log('what got written to GM storage:', JSON.stringify(write));
@@ -98,7 +98,7 @@ test("#509: harmony name roundtrip", { tag: ['@sandbox', '@login', '@critical'] 
   await page2.goto('https://test.musicbrainz.org/?falcon=' + token, { waitUntil: 'load' });
   await page2.addScriptTag({ content: code });
   await page2.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-  await page2.waitForTimeout(500);
+  await frames(page2);
 
   const queue = await page2.evaluate(() => window.__falconTest.getQueue().map(i => ({ mbid: i.mbid, name: i.name })));
   console.log('queue on the receiving tab:', JSON.stringify(queue));

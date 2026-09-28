@@ -7,7 +7,7 @@
 // recording, once the item is already queued (same shape as #494's cover
 // candidates) — Falcon has no synchronous view of the tracklist otherwise.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -58,7 +58,7 @@ test("#500: isrc no links", { tag: ['@sandbox', '@login'] }, async ({ context, p
     await page.evaluate(() => window.__falconTest.setQueue([]));
     await page.evaluate(({ release, isrcs, note }) => window.__falconTest.resolveIsrcFallback(release, isrcs, note),
       { release: RELEASE, isrcs: ['NLTH62000001', 'NLTH62000002', 'NLTH62000003', 'NLTH62000004'], note: 'test note' });
-    await page.waitForTimeout(500);
+    await frames(page);
     const queue = await page.evaluate(() => window.__falconTest.getQueue());
     console.log('resolved queue:', JSON.stringify(queue, null, 1));
     ck(queue.length === 4, `4 recording items created, one per isrc (got ${queue.length})`);

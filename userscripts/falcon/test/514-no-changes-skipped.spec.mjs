@@ -11,7 +11,7 @@
 // (nothing was wrong, nothing needed to change), same as the existing
 // pre-submit "MB shows no pending change" noop path.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -73,7 +73,7 @@ test("#514: no changes skipped", { tag: ['@sandbox', '@login'] }, async ({ conte
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(400);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     // spawnWorkerCard() needs the panel's own #falcon-workers strip to exist.

@@ -17,7 +17,7 @@
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 // Run: node test/live-571-rename-proof.mjs
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -80,13 +80,13 @@ test("live 571 rename proof", { tag: ['@sandbox', '@login'] }, async ({ context,
       catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
     }
     await requireLogin(page);
-    await page.waitForTimeout(1200);
+    await idle(page);
     await page.addScriptTag({ content: code });
-    await page.waitForTimeout(600);
+    await idle(page);
     // The workers live in the panel, so it has to be open or the queue just sits.
     await page.click('#falcon-launcher');
     await page.waitForSelector('#falcon-panel', { timeout: 15000 });
-    await page.waitForTimeout(500);
+    await frames(page);
 
     await page.evaluate(r => window.__falconTest.setBatchNote(r), REASON);
     await page.evaluate(({ targets, renames, note }) => {
@@ -129,7 +129,7 @@ test("live 571 rename proof", { tag: ['@sandbox', '@login'] }, async ({ context,
       try { await epage.goto(`${HOST}/${seg}/${mbid}/open_edits`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
       catch (e) { if (a >= 3) return false; await epage.waitForTimeout(5000); }
     }
-    await epage.waitForTimeout(1200);
+    await idle(epage);
     return await epage.evaluate(({ stamp, cls }) => {
       const heads = [...document.querySelectorAll('.edit-header')].filter(h => h.classList.contains(cls));
       return heads.some(h => {

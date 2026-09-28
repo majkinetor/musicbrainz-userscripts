@@ -11,7 +11,7 @@
 // card's own maximize/restore toggle. Falls back to a plain text popup
 // (url list + error) only when the item was never picked up by any worker.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -31,7 +31,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login'] }, async ({ context, page
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.click('#falcon-launcher');
@@ -88,7 +88,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login'] }, async ({ context, page
     await page.click('#falcon-tab-workers');
     await page.evaluate(() => window.__falconTest.start());
     await page.waitForFunction(() => window.__falconTest.getQueue()[0]?.status === 'failed', null, { timeout: 20000 });
-    await page.waitForTimeout(500);
+    await frames(page);
 
     const iframeBefore = await page.evaluate(() => {
       const iframe = document.querySelector('.falcon-worker-card[data-item-id="rej"] iframe');
@@ -101,7 +101,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login'] }, async ({ context, page
 
     await page.click('#falcon-tab-queue');
     await page.click('.falcon-row-status[data-id="rej"]');
-    await page.waitForTimeout(300);
+    await frames(page);
 
     const afterFocus = await page.evaluate(() => {
       const iframe = document.querySelector('.falcon-worker-card[data-item-id="rej"] iframe');

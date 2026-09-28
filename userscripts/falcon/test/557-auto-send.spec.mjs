@@ -10,7 +10,7 @@
 // unattended send that guesses wrong is worse than no send at all.
 import { readFile } from 'node:fs/promises';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, settled } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -47,6 +47,7 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     replays.push(await harmonyReplay(page, '557-' + (replays.length + 1)));
     page.on('pageerror', e => { console.log('PAGEERROR ' + e.message); });
     await page.addInitScript(initScript, opts || {});
+    await page.clock.install();   // the settle poll, the countdown and the grace period are run out on it
     for (let a = 1; ; a++) {
       try { await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 40000 }); break; }
       catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
@@ -56,9 +57,9 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
         () => [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || '')).length > 5,
         null, { timeout: 45000 }).then(() => true).catch(() => false);
       ck(rendered, 'fixture: Harmony rendered its action list (otherwise the checks below prove nothing)');
-      await page.waitForTimeout(1500);          // let the count settle before Falcon starts polling
+      await settled(page);          // let the count settle before Falcon starts polling
     } else {
-      await page.waitForTimeout(3000);
+      await settled(page);
     }
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 8000 });
@@ -71,7 +72,7 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     const page = await openHarmony(ACTIONS, {}, true);
     const off = await page.evaluate(() => window.__falconTest.cfg.autoSendFromHarmony);
     ck(off === false, '#557: "Auto send" is OFF by default');
-    await page.waitForTimeout(9000);            // past the settle poll AND any countdown
+    await page.clock.runFor(9000);            // past the settle poll AND any countdown
     const st = await page.evaluate(() => ({ opened: window.__opened.length, pending: window.__falconTest.autoSendPending(), lbl: (document.getElementById('falcon-harmony-lbl') || {}).textContent }));
     console.log('with the option off: ' + JSON.stringify(st));
     ck(st.opened === 0, 'with it off nothing is sent (' + st.opened + ' tabs opened)');
@@ -120,18 +121,18 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     const armed = await page.waitForFunction(() => window.__falconTest.autoSendPending(), null, { timeout: 20000 }).then(() => true).catch(() => false);
     ck(armed, 'a countdown is running to cancel');
     await page.evaluate(() => document.getElementById('falcon-harmony-btn').click());
-    await page.waitForTimeout(300);
+    await frames(page);
     const afterCancel = await page.evaluate(() => ({ pending: window.__falconTest.autoSendPending(), opened: window.__opened.length, lbl: (document.getElementById('falcon-harmony-lbl') || {}).textContent }));
     console.log('after clicking mid-countdown: ' + JSON.stringify(afterCancel));
     ck(!afterCancel.pending, 'clicking the button cancels the countdown');
     ck(afterCancel.opened === 0, 'and does NOT also send — the click is the cancel, not a second send');
     ck(/^Send \d+ to Falcon$/.test(afterCancel.lbl || ''), 'the label goes back to normal — ' + JSON.stringify(afterCancel.lbl));
-    await page.waitForTimeout(10000);
+    await page.clock.runFor(10000);
     const later = await page.evaluate(() => window.__opened.length);
     ck(later === 0, 'and it does not re-arm afterwards (' + later + ' sends)');
     // a SECOND click is an ordinary manual send again
     await page.evaluate(() => document.getElementById('falcon-harmony-btn').click());
-    await page.waitForTimeout(6500);            // allows for the name-resolution grace period
+    await page.clock.runFor(6500);            // allows for the name-resolution grace period
     const manual = await page.evaluate(() => window.__opened.length);
     ck(manual === 1, 'clicking again performs the ordinary manual send (' + manual + ')');
     await page.close();
@@ -140,7 +141,7 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
   // ── D. a Harmony page that is NOT a completed import must never fire ────────
   {
     const page = await openHarmony('https://harmony.pulsewidth.org.uk/', { 'falcon:autoSendFromHarmony': true, 'falcon:autoSendDelayMs': 1000 });
-    await page.waitForTimeout(9000);
+    await page.clock.runFor(9000);
     const st = await page.evaluate(() => ({
       mbid: window.__falconTest.harmonyReleaseMbid(),
       opened: window.__opened.length,
@@ -166,7 +167,7 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     await page.click('#falcon-launcher');
     await page.waitForSelector('#falcon-panel', { timeout: 8000 });
     await page.click('#falcon-tab-options');
-    await page.waitForTimeout(300);
+    await frames(page);
     const ui = await page.evaluate(() => {
       const cb = document.getElementById('falcon-opt-auto-send-harmony');
       if (!cb) return { missing: true };

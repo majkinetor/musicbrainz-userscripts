@@ -17,7 +17,7 @@
 // Read only — every POST is aborted. Sandbox.
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, REPO, idle, frames, until } from '../../../dev/test/harness.mjs';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -85,7 +85,7 @@ test("#564: alias chip", { tag: ['@sandbox', '@login'] }, async ({}) => {
 
   await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
   await page.goto(`${B}/`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1200);
+  await idle(page);
   // ⚠ ORDER MATTERS, and getting it wrong makes this check worthless. Our shared
   // default and kellnerd's rule have the SAME specificity (0,1,1), so whichever
   // stylesheet comes LAST wins — and in a real browser Stylus is last, because
@@ -96,7 +96,7 @@ test("#564: alias chip", { tag: ['@sandbox', '@login'] }, async ({}) => {
   // So: script, panel open (which is when Falcon's CSS lands), and only then the
   // userstyle.
   await page.addScriptTag({ content: src });
-  await page.waitForTimeout(2500);
+  await idle(page);
 
   // seed the queue through Falcon's own hook and open the row
   const opened = await page.evaluate(() => {
@@ -112,13 +112,13 @@ test("#564: alias chip", { tag: ['@sandbox', '@login'] }, async ({}) => {
       return 'ok';
   });
   ck(opened === 'ok', `the panel opened and the queue was seeded (${opened})`);
-  await page.waitForTimeout(800);
+  await frames(page);
   await page.evaluate(() => document.querySelector('.falcon-row-expand')?.click());
-  await page.waitForTimeout(800);
+  await frames(page);
 
   // NOW the userstyle, the way Stylus arrives: after everything of ours.
   await page.addStyleTag({ content: styleCss });
-  await page.waitForTimeout(1200);
+  await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), t => t === 'dark');   // recognised
 
   // the fixture: is the userstyle's color:initial rule actually winning anywhere?
   // Without this the whole check passes on a page where nothing fought us.

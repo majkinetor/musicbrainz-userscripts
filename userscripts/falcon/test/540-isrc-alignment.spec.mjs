@@ -16,7 +16,7 @@
 // the right recording. Read-only: no MusicBrainz page is opened, nothing is
 // submitted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, replayWs } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, replayWs, idle } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -64,7 +64,7 @@ test("#540: isrc alignment", { tag: ['@sandbox', '@login', '@critical'] }, async
     route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }));
   await page.goto('https://harmony.pulsewidth.org.uk/release/actions?x=1', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(600);
+  await idle(page);
 
   const scraped = await page.evaluate(() => {
     const t = window.__falconTest;
@@ -101,7 +101,7 @@ test("#540: isrc alignment", { tag: ['@sandbox', '@login', '@critical'] }, async
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
   }
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(500);
+  await idle(page);
   const placed = await page.evaluate(async (fb) => {
     const t = window.__falconTest;
     t.setQueue([]);

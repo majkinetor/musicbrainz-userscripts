@@ -17,7 +17,7 @@
 // The structural half is what this test attacks, by deleting a pre-existing row
 // behind Falcon's back and requiring it to refuse to commit.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -45,9 +45,10 @@ test("#467: no deletions", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   const ARTIST = 'd31f76d2-1d8e-4271-8027-148f375979d7';   // Der Zirkel, has several real links
   await page.goto(`https://test.musicbrainz.org/artist/${ARTIST}/edit`, { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(2500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
+  await page.waitForFunction(() => [...document.querySelectorAll('#external-links-editor input')].some(i => /add (another )?link|add another url/i.test(i.placeholder || '')), null, { timeout: 30000 });   // the links editor is up
 
   // 1. Falcon must not remove a PRE-EXISTING row even when MB rejects the url.
   const dupResult = await page.evaluate(async () => {
@@ -65,16 +66,17 @@ test("#467: no deletions", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   // 2. If a pre-existing link disappears anyway (markup change, MB quirk, a bug
   // we haven't found), the submit gate must catch it structurally and refuse.
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(2500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
+  await page.waitForFunction(() => [...document.querySelectorAll('#external-links-editor input')].some(i => /add (another )?link|add another url/i.test(i.placeholder || '')), null, { timeout: 30000 });   // the links editor is up
   const guard = await page.evaluate(async () => {
     const baseline = [...document.querySelectorAll('tr.external-link-item a[href]')].map(a => a.getAttribute('href'));
     // sabotage: delete a real, pre-existing relationship behind Falcon's back
     const victimRow = [...document.querySelectorAll('tr.external-link-item')].find(tr => tr.querySelector('a[href]'));
     const victim = victimRow.querySelector('a[href]').getAttribute('href');
     victimRow.querySelector('button.remove-item')?.click();
-    await new Promise(r => setTimeout(r, 800));
+    for (let i = 0; i < 400 && [...document.querySelectorAll('tr.external-link-item a[href]')].some(a => a.getAttribute('href') === victim) && !document.querySelector('.rel-remove'); i++) await new Promise(r => setTimeout(r, 25));   // until MusicBrainz has taken it out
     const r = await window.__falconTest.fillAndSubmit(window, {
       urls: [{ url: 'https://myspace.com/falcon-guard-probe', linkTypeId: null }], note: '',
     }, { tag: '[guard]', baseline });

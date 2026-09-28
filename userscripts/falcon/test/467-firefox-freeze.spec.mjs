@@ -28,7 +28,7 @@
 // this. Submits are intercepted and faked, so nothing is committed for real.
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, REPO, idle, frames } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 
@@ -65,7 +65,7 @@ test("#467: firefox freeze", { tag: ['@sandbox', '@login'] }, async ({}) => {
 
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(800);
+  await idle(page);
 
   // heartbeat in the HOST page: the freeze is a main-thread block, so a plain
   // interval that fails to fire on time is the most direct evidence there is.
@@ -82,7 +82,7 @@ test("#467: firefox freeze", { tag: ['@sandbox', '@login'] }, async ({}) => {
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
   await page.evaluate(() => document.getElementById('falcon-launcher').click());
-  await page.waitForTimeout(600);
+  await frames(page);
 
   const RECS = [
     'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', '119d10fc-988a-40c7-95be-ed1138ed7e40',

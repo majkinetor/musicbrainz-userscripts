@@ -18,7 +18,7 @@
 //
 // Nothing is submitted: every POST is aborted, and counted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, until } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -55,9 +55,9 @@ test("#571: rename", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(500);
+  await idle(page);
 
   // ── which types can be renamed, and which route each takes ──────────────────
   const sets = await page.evaluate(() => ({
@@ -110,7 +110,7 @@ test("#571: rename", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   // chip, the per-item breakdown in the summary table, and the aggregate
   // "worked on" line are three separate lists of the same categories — adding a
   // field to one of them and not the others is the easy mistake here.
-  await page.waitForTimeout(1800);
+  await until(() => page.evaluate(() => window.__falconTest.getLog().map(String).some(l => l.includes('run summary'))));
   // getLog() hands back formatted STRINGS, not {sev,msg} objects.
   const summary = await page.evaluate(() => window.__falconTest.getLog().map(String).find(l => l.includes('run summary')) || '');
   console.log('--- run summary (first lines) ---');

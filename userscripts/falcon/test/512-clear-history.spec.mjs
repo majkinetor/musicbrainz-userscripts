@@ -3,7 +3,7 @@
 // #falcon-log-history deletes every OTHER persisted session — the live one
 // keeps its own pre-existing "Clear" button, untouched here.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -39,7 +39,7 @@ test("#512: clear history", { tag: ['@sandbox', '@login'] }, async ({ context, p
 
   // open the Log tab so populateLogHistory() runs and the button/select render.
   await page.click('#falcon-tab-log');
-  await page.waitForTimeout(100);
+  await frames(page);
 
   const before = await page.evaluate(() => ({
     options: [...document.getElementById('falcon-log-history').options].map(o => o.value),
@@ -52,7 +52,7 @@ test("#512: clear history", { tag: ['@sandbox', '@login'] }, async ({ context, p
   // view one of the historic sessions first, to confirm clearing snaps back to "live".
   await page.evaluate(() => window.__falconTest.setViewingSession('20260101100000-1'));
   await page.click('#falcon-log-clear-history');
-  await page.waitForTimeout(100);
+  await frames(page);
 
   const after = await page.evaluate((sid) => ({
     options: [...document.getElementById('falcon-log-history').options].map(o => o.value),

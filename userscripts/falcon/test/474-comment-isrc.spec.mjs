@@ -10,7 +10,7 @@
 // positional to track order. scrapeHarmonyActions() zips those onto the
 // recording tuples it already builds, by the order recordings first appear.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +33,7 @@ test("#474: comment isrc", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(400);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
 

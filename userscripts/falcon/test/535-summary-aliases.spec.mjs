@@ -16,7 +16,7 @@
 // valid here (the assertions accept either), and it keeps repeated test runs
 // from littering the sandbox with aliases.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, until } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -44,9 +44,9 @@ test("#535: summary aliases", { tag: ['@sandbox', '@login'] }, async ({ context,
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1000);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(400);
+  await idle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
 
@@ -60,7 +60,7 @@ test("#535: summary aliases", { tag: ['@sandbox', '@login'] }, async ({ context,
   }, RECS);
   await page.evaluate(() => window.__falconTest.start());
   await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 180000 }).catch(() => {});
-  await page.waitForTimeout(1500);
+  await until(() => page.evaluate(() => window.__falconTest.getLog().some(x => /run summary/.test(String(x)))));
 
   const summary = await page.evaluate(() => {
     const l = window.__falconTest.getLog().find(x => /run summary/.test(String(x)));

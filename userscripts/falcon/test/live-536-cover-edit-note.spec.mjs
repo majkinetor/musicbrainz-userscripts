@@ -7,7 +7,7 @@
 //
 // Sandbox only: refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -64,9 +64,9 @@ test("live 536 cover edit note", { tag: ['@sandbox', '@login', '@web'] }, async 
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1000);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
 
@@ -109,10 +109,9 @@ test("live 536 cover edit note", { tag: ['@sandbox', '@login', '@web'] }, async 
   const outcome = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ s: i.status, e: i.error })));
   console.log('run outcome: ' + JSON.stringify(outcome) + ` (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
   ck(outcome[0].s === 'done', 'the cover upload succeeded');
-  await page.waitForTimeout(3000);
 
   await page.goto(`${HOST}/release/${RELEASE}/edits`, { waitUntil: 'domcontentloaded', timeout: 90000 });
-  await page.waitForTimeout(1500);
+  await idle(page);
   const landed = await page.evaluate((nl) => {
     const heads = [...document.querySelectorAll('.edit-header')].filter(h => /Add cover art/i.test(h.innerText || ''));
     if (!heads.length) return null;

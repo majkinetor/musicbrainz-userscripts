@@ -4,7 +4,7 @@
 // icon+name+version+Help), adapted to Falcon's own tab-based panel instead of
 // a popup — a new "Options" (⚙) tab holds that header plus the two toggles.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -38,7 +38,7 @@ test("#508: options", { tag: ['@sandbox', '@login'] }, async ({ context, page })
 
   // 2. Options tab exists and opens.
   await page.click('#falcon-tab-options');
-  await page.waitForTimeout(150);
+  await frames(page);
   const optionsVisible = await page.evaluate(() => getComputedStyle(document.getElementById('falcon-body-options')).display !== 'none');
   ck(optionsVisible, 'Options tab opens');
 
@@ -53,29 +53,29 @@ test("#508: options", { tag: ['@sandbox', '@login'] }, async ({ context, page })
   const launcherVisibleBefore = await page.evaluate(() => !!document.getElementById('falcon-launcher'));
   ck(launcherVisibleBefore, 'launcher icon exists before toggling the option');
   await page.click('#falcon-opt-hide-launcher');
-  await page.waitForTimeout(150);
+  await frames(page);
   const launcherGone = await page.evaluate(() => !document.getElementById('falcon-launcher'));
   ck(launcherGone, 'checking "Hide Falcon icon" removes the launcher immediately, live');
   const persisted = await page.evaluate(() => window.GM_getValue('falcon:hideLauncher', false));
   ck(persisted === true, `the choice is persisted via GM storage (got ${persisted})`);
   // Ctrl+Alt+F must still reach the panel even with the icon hidden.
   await page.evaluate(() => { document.getElementById('falcon-close').click(); });
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.keyboard.press('Control+Alt+F');
-  await page.waitForTimeout(200);
+  await frames(page);
   const panelReopened = await page.evaluate(() => document.getElementById('falcon-panel')?.style.display !== 'none');
   ck(panelReopened, 'Ctrl+Alt+F still opens the panel with the launcher icon hidden');
   // toggle back off — launcher must reappear live too.
   await page.click('#falcon-tab-options');
   await page.click('#falcon-opt-hide-launcher');
-  await page.waitForTimeout(150);
+  await frames(page);
   const launcherBack = await page.evaluate(() => !!document.getElementById('falcon-launcher'));
   ck(launcherBack, 'unchecking "Hide Falcon icon" brings the launcher back immediately, live');
 
   // 5. "Add covers only when there aren't any" — persists, and runCoverItem
   // actually skips (not fails) when the release already has cover art.
   await page.click('#falcon-opt-cover-only-if-none');
-  await page.waitForTimeout(150);
+  await frames(page);
   const coverOnlyPersisted = await page.evaluate(() => window.GM_getValue('falcon:coverOnlyIfNone', false));
   ck(coverOnlyPersisted === true, `"Add covers only when there aren't any" persists via GM storage (got ${coverOnlyPersisted})`);
 
@@ -91,7 +91,7 @@ test("#508: options", { tag: ['@sandbox', '@login'] }, async ({ context, page })
   // with the option OFF, the same release (existing covers) still gets a real upload attempt.
   await page.click('#falcon-tab-options');
   await page.click('#falcon-opt-cover-only-if-none');
-  await page.waitForTimeout(150);
+  await frames(page);
   const attemptResult = await page.evaluate(async () => {
     const item = { mbid: 'aaaaaaaa-5080-0000-0000-000000000000', note: '', coverExistingCount: 2, cover: [{ url: 'https://test.musicbrainz.org/still-should-fail-fast.jpg', comment: '', type: 'Front', candidates: [] }] };
     await window.__falconTest.runCoverItem(item, '[test]', { querySelector: () => null, dataset: {} });
@@ -105,14 +105,14 @@ test("#508: options", { tag: ['@sandbox', '@login'] }, async ({ context, page })
   const workerNotInFooter = await page.evaluate(() => !document.querySelector('#falcon-queue-bottom #falcon-worker-count'));
   ck(workerNotInFooter, 'the worker-count control is no longer in the queue footer');
   await page.click('#falcon-tab-options');
-  await page.waitForTimeout(150);
+  await frames(page);
   const workerInOptions = await page.evaluate(() => !!document.querySelector('#falcon-body-options #falcon-worker-count'));
   ck(workerInOptions, 'the worker-count control now lives in the Options tab');
   const workerVal = await page.evaluate(() => document.getElementById('falcon-worker-count').value);
   ck(String(+workerVal) === workerVal && +workerVal > 0, `worker-count still shows a real value after relocating (got "${workerVal}")`);
   await page.fill('#falcon-worker-count', '3');
   await page.dispatchEvent('#falcon-worker-count', 'change');
-  await page.waitForTimeout(100);
+  await frames(page);
   const workersPersisted = await page.evaluate(() => window.__falconTest.cfg.workers);
   ck(workersPersisted === '3' || workersPersisted === 3, `changing it in its new home still updates cfg.workers (got ${JSON.stringify(workersPersisted)})`);
 

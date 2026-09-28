@@ -8,7 +8,7 @@
 import zlib from 'node:zlib';
 import { readFile } from 'node:fs/promises';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -81,10 +81,10 @@ test("#494: cover art", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     const errs = []; page.on('pageerror', e => errs.push(e.message));
     const hw = await harmonyReplay(page, '494');
     await page.goto('https://harmony.pulsewidth.org.uk/release/actions?deezer=373923127&spotify=13fYK0LOJBzdfLw5DLCGSg&qobuz=kh245e77ftrlb&gtin=4018939599782&itunes=&tidal=&region=GB&release_mbid=3b60d941-e4c7-4dca-9b4d-7a11d0268383', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(4000);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await frames(page);
     const info = await page.evaluate(() => {
       const items = window.__falconTest.scrapeHarmonyActions();
       const cover = window.__falconTest.scrapeHarmonyCover();

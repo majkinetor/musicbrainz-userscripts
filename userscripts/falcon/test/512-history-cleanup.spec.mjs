@@ -10,7 +10,7 @@
 //    entry with the release name if the session resolved one (reusing
 //    #509's own [names] debug line, no new logging needed).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -70,7 +70,7 @@ test("#512: history cleanup", { tag: ['@sandbox', '@login'] }, async ({ context,
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 5000 });
   await page.evaluate(() => window.__falconTest.start());
-  await page.waitForTimeout(300);
+  await frames(page);
   const survived = await page.evaluate(() => localStorage.getItem('falcon:session:20260101090000-1'));
   console.log('noise session after a real run starts:', JSON.stringify(survived));
   ck(survived === null, 'the noise-only session is deleted once a real session starts, not left to clutter history');

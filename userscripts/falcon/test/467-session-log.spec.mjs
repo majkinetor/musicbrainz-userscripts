@@ -21,7 +21,7 @@
 // "Click buttons across tabs", which injects into Falcon's worker iframes and
 // closes the tab after a successful edit.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, settled } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -48,7 +48,7 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
   await page.evaluate(() => { try { Object.keys(localStorage).filter(k => k.startsWith('falcon:')).forEach(k => localStorage.removeItem(k)); } catch (e) {} });
-  await page.waitForTimeout(400);
+  await frames(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
   await page.click('#falcon-launcher');
@@ -76,7 +76,7 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   // Settle first. The queue reaching a terminal status is not the same as the
   // worker coroutine having unwound — a straggler line from run 1 landing after
   // run 2 opened its session is a race in the TEST, not a session that leaked.
-  await page.waitForTimeout(2000);
+  await settled(page);
   await page.evaluate(() => {
     window.__falconTest.setQueue([{ id: 's2', entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50', urls: [{ url: 'https://myspace.com/session-log-2', linkTypeId: null }], name: null, urlResults: null, status: 'queued', error: '' }]);
   });
@@ -95,7 +95,7 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
     window.__falconTest.setQueue([{ id: 's3', entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50', urls: [{ url: 'https://myspace.com/session-log-3', linkTypeId: null }], name: null, urlResults: null, status: 'queued', error: '' }]);
   });
   await page.evaluate(() => { window.__falconTest.start(); });
-  await page.waitForTimeout(150);          // catch it with work genuinely in flight
+  await frames(page);
   await page.evaluate(() => window.__falconTest.noteUnload());
   const s3id = await page.evaluate(() => window.__falconTest.getSessionId());
   const marked = await page.evaluate(id => {
@@ -107,10 +107,10 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
 
   // reload: the killed session's log must still be there when you go looking
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
-  await page.waitForTimeout(500);
+  await frames(page);
   const restored = await page.evaluate(() => {
     document.getElementById('falcon-launcher').click();
     document.getElementById('falcon-tab-log').click();

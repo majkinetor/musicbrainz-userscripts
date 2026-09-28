@@ -7,7 +7,7 @@
 // for download"), via MB's own "Add another relationship" row.
 import { readFile } from 'node:fs/promises';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -73,10 +73,10 @@ test("#467: harmony", { tag: ['@sandbox', '@login'] }, async ({ context, page })
     const errs = []; page.on('pageerror', e => errs.push(e.message));
     const hw = await harmonyReplay(page, '467');
     await page.goto('https://harmony.pulsewidth.org.uk/release/actions?release_mbid=https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-9e8a-42b9-8a96-bcc9564de034', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(4000);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    await page.waitForTimeout(1500);
+    await page.waitForSelector('#falcon-harmony-btn', { timeout: 15000 }).catch(() => {});
     const info = await page.evaluate(() => {
       const items = window.__falconTest.scrapeHarmonyActions();
       const cover = window.__falconTest.scrapeHarmonyCover();
@@ -126,7 +126,7 @@ test("#467: harmony", { tag: ['@sandbox', '@login'] }, async ({ context, page })
     });
     await page.goto('https://test.musicbrainz.org/recording/e42f8e08-3150-4c6c-be5b-4030c29b1bf7', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });

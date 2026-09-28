@@ -9,7 +9,7 @@
 // unresolvable row (so it can't block the rest of the group), and reports it as
 // a specific, actionable failure instead of a bare "form invalid?" on submit.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -34,7 +34,7 @@ test("#467: ambiguous type", { tag: ['@sandbox', '@login'] }, async ({ context, 
     const errs = []; page.on('pageerror', e => errs.push(e.message));
     await page.goto('https://test.musicbrainz.org/recording/e42f8e08-3150-4c6c-be5b-4030c29b1bf7/edit', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     const result = await page.evaluate(async () => {
@@ -70,7 +70,7 @@ test("#467: ambiguous type", { tag: ['@sandbox', '@login'] }, async ({ context, 
       return route.fallback();
     });
     await page.goto('https://test.musicbrainz.org/recording/e42f8e08-3150-4c6c-be5b-4030c29b1bf7', { waitUntil: 'load' });
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
