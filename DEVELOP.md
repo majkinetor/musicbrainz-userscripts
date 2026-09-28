@@ -1,225 +1,117 @@
 # Developing mb-userscripts
 
-Repo-wide development and release procedure. Per-userscript dev guides live next to each script
-(e.g. [`userscripts/discogs_credits/DEVELOP.md`](userscripts/discogs_credits/DEVELOP.md)).
+How the repo is worked on and released. A script with its own build has a guide beside it: [Credit Hoarder](userscripts/credit_hoarder/DEVELOP.md).
 
-## Branching
-
-- **Substantial work goes on a feature branch** (`feat/<name>`). Only **trivial / small** updates go
-  straight to `main`.
-- **`main` must always be releasable.** The release model is `merge main → stable`, which ships the
-  *entire* `main` history at that moment — so anything committed to `main` is implicitly queued for the
-  next stable release. Keeping non-trivial work on branches means a release can never leak unfinished work.
-- Land a feature branch into `main` only when it's ready to ship; merge `main → stable` (or run the
-  publish script below) to release.
-
-## Channels
-
-- **`main`** — latest. The *latest* install links point here.
-- **`stable`** — official releases. The *stable* install links point here; userscript managers auto-update
-  from whichever branch the user installed from. Each script carries its own `@version`.
-
-## Releasing — `dev/publish.mjs`
-
-Date-based releases (one GitHub Release per publish, tagged `YYYY.M.D`), since each script keeps its own
-`@version`.
-
-```bash
-node dev/publish.mjs            # DRY RUN — print the plan, write/push nothing
-node dev/publish.mjs --yes      # execute
+```sh
+pnpm install          # once: the test runner, the linter, and the pre-commit hook
+pnpm test             # every script's specs (see dev/test)
+pnpm lint
 ```
 
-What a run does:
+## Branches and channels
 
-1. Collects **closed issues** that are not yet labelled **`released`**, carry an **`area | <script>`**
-   label and a **`bug`** or **`enhancement`** label, and are **not** `skip changelog` / `wontfix`.
-2. Groups them per script (`enhancement` → *Features*, `bug` → *Fixes*) and prepends a dated section to
-   each script's `CHANGELOG.md`.
-3. Determines which scripts' `.user.js` changed since `stable` — those get two install links in the
-   release: one **pinned** to the merge commit (frozen) and one tracking `stable` (**auto-updates** to
-   future releases). Scripts with issues but no code change are still changelogged.
-4. With `--yes`: commits the changelogs on `main`, merges `main → stable`, pushes both, creates the dated
-   GitHub Release, and labels every included issue **`released`**.
+- **`main`** is latest; the *latest* install links point at it. It must always be releasable, because a release ships all of it.
+- **`stable`** is the official release; the *stable* install links point at it. Userscript managers update from whichever branch the script was installed from.
+- Substantial work goes on a feature branch named after the issue (`<topic>-<issue>`) and is merged when it's ready to ship. Small fixes go straight to `main`.
+- Each script has its own `@version`: the date of the change (`2026.9.28`), with the time appended for a second change the same day (`2026.9.28.214729`).
 
-Run the dry run first and read the plan. `--yes` must be run on a clean `main`.
+## Checks
 
-### Labels used
+- **Pre-commit hook** (`.githooks/`, set up by `pnpm install`): a staged userscript must parse and lint clean; then Credit Hoarder's `dist/` and the String Theory bundle are rebuilt from what's being committed, and the shared blocks re-synced.
+- **CI** (`.github/workflows/`): `checks.yml` on every push and pull request runs the syntax check, the linters, the design-token check and the `@unit` specs, then the `@critical` specs on test.musicbrainz.org. `suite.yml` runs the whole suite nightly.
+- **Tests** are in [`dev/test`](dev/test/README.md): one Playwright runner for every script, on test.musicbrainz.org, with a guard that refuses any write to production.
 
-- `area | <script>` — which userscript an issue belongs to (maps to `userscripts/<script>/`).
-- `bug` → *Fixes*, `enhancement` → *Features*.
-- `skip changelog`, `wontfix` — excluded from the changelog.
-- `released` — applied by the publish run so an issue is only ever changelogged once.
+## Releasing
 
-## What lives in `dev/`
+Releases are dated (tag `YYYY.M.D`), one GitHub Release per publish.
 
-Shared tooling for the whole repo. Nothing here ships to users. **`dev/` is not
-a scratch directory**: a script that belongs to a subsystem lives in that
-subsystem's folder, with a README of its own, and only repo-wide operations sit
-at the root.
+```sh
+node dev/publish.mjs            # dry run: prints the plan, changes nothing
+node dev/publish.mjs --yes      # on a clean main
+```
 
-| Folder | What it is |
+A run:
+
+1. collects the closed issues not yet labelled `released` that have an `area | <script>` label and `bug` or `enhancement` (not `skip changelog` or `wontfix`);
+2. prepends a dated section to each script's `CHANGELOG.md` (*Features* from `enhancement`, *Fixes* from `bug`);
+3. lists the scripts whose `.user.js` changed since `stable`, each with a pinned install link and one that follows `stable`;
+4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, creates the release, attaches String Theory's `DOCS.pdf` to it, and labels the issues `released`.
+
+Changelogs are only ever written by this run.
+
+## What's in `dev/`
+
+Nothing here ships. A script belongs in its subsystem's folder, next to that folder's README; only repo-wide operations sit at the root.
+
+| | |
 |---|---|
-| [`dev/tokens/`](dev/tokens/README.md) | design tokens and themes — the single place the look is configured |
-| [`dev/ui/`](dev/ui/README.md) | the shared components, the platform icons, and the live checks for both |
-| [`dev/test/`](dev/test/README.md) | the shared test harness — `pnpm test` runs every userscript's specs |
-| `dev/screens/ui/` | generated screenshots (see below) |
-| `dev/github-notifications/`, `dev/notif-channel/` | the GH notification → channel pipeline |
-| [`dev/script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database snapshot; runs entirely in Docker (`.\run.ps1`) |
-
-Each subsystem README carries its own detail — the marker blocks and how a new
-script adopts them, the four theme worlds the contrast check runs in, the ROOTS
-scoping list, and the reasoning behind the choices that look arbitrary.
-
-### At the root — repo operations only
-
-| Script | Purpose |
-|---|---|
-| `publish.mjs` | the release — changelog, `main → stable`, dated GH release (see above) |
-| `gh-inbox.mjs` | every issue comment newer than my last reply, printed in full |
+| [`tokens/`](dev/tokens/README.md) | design tokens and themes, the one place the look is set |
+| [`ui/`](dev/ui/README.md) | the shared components and platform icons, with their live checks |
+| `match/` | the shared artist matcher (Apollo, Group Therapy, Credit Hoarder) |
+| [`test/`](dev/test/README.md) | the test runner and harness |
+| `screens/ui/` | generated screenshots; numbers are stable, so never renumber, only append |
+| `github-notifications/`, `notif-channel/` | GitHub notifications into the assistant's channel |
+| [`script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database dump, in Docker |
+| `site-proposals/`, `reports/` | design proposals and measurement reports kept for reference |
+| `publish.mjs` | the release |
+| `gh-inbox.mjs` | every issue comment newer than the bot's last reply |
+| `align-md-tables.mjs` | pads Markdown tables so their columns line up |
 | `install-hook.mjs` | points `core.hooksPath` at `.githooks/` |
 
-### Two habits the checkers encode
+Screenshots taken while working on an issue go to `dev/_*.png`, which is ignored; they are never committed.
 
-Both learned the hard way, and both worth keeping in mind well beyond CSS:
+Two rules the checkers are built on:
 
-- **a check that measured nothing must FAIL, not pass.** `verify-contrast-live`
-  takes a census of how many of our elements were actually on screen; two
-  scripts were scoring "ok" on empty pages for days.
-- **don't reason about CSS, render it.** MusicBrainz's stylesheet is
-  cross-origin and invisible to `document.styleSheets`, and a `filter` is
-  applied after the cascade — so reading our own CSS proves nothing about what
-  reaches the screen.
-
-### Screenshots
-
-`dev/screens/ui/` is generated and tracked — its numbers are stable, so "31 dark
-is wrong" means the same picture in every future run. **Never renumber**; append.
-
-Working screenshots taken while iterating on an issue go to `dev/_*.png`, which
-is gitignored and disposable. They are not documentation and must not be
-committed; 29 of them had accumulated in the repo before #561.
+- **A check that measured nothing fails.** `verify-contrast-live` counts how many of our elements were on screen, after two scripts scored "ok" on empty pages for days.
+- **Render CSS, don't reason about it.** MusicBrainz's stylesheet is cross-origin and invisible to `document.styleSheets`, and a `filter` applies after the cascade.
 
 ## Conventions
 
-### Design tokens — `dev/tokens/design-tokens.mjs`
+### Shared blocks
 
-**Colour, font, radius, shadow and z-index values belong in `dev/tokens/design-tokens.mjs`, not in a
-script's CSS.** That file is the single place the look is configured (#562); everything else
-consumes it as `var(--mbu-…)`.
+Code several scripts need is written once and copied into each between marker comments, which a sync script fills in. The pre-commit hook re-syncs them; never edit inside the markers.
 
-A script opts in by carrying a marker pair once, which `dev/tokens/sync-tokens.mjs` fills in:
+| Marker | Source | |
+|---|---|---|
+| `// <ST-TOKENS>` | `dev/tokens/design-tokens.mjs` | colours, fonts, radii, shadows, z-indexes as `var(--mbu-…)` |
+| `// <ST-UI>` | `dev/ui/ui-components.mjs` | components (`mbu-` classes): help link, toast, log window, corner stacking, … |
+| `// <ST-ICONS>` | `dev/ui/platform-icons.mjs` | platform icons and brand colours |
+| `// <ST-MATCH>` | `dev/match/artist-match.mjs` | the artist matcher and sort-name guess |
 
-```js
-// <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-const MBU_TOKENS = ':root{--mbu-bg:#fff;…}';
-// </ST-TOKENS>
+**Tokens**
 
-const css = MBU_TOKENS + `
-  .x-panel{background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border)}
-`;
-```
+- Colours and the rest belong in the tokens, not in a script's CSS. Names are semantic: `--mbu-ok`, never `--mbu-green`. Brand colours stay literal, in the platform icons.
+- Every `<style>` a script makes starts with `MBU_TOKENS`: an undefined `var()` doesn't fall back, it drops the whole declaration.
+- Moving a script onto tokens must not change a pixel: expand the `var()`s and compare with the old sheet, and diff computed styles on the live page. `node dev/tokens/verify-tokens.mjs` (static) and `verify-tokens-live.mjs` (on the sandbox) guard it afterwards.
 
-- Run `node dev/tokens/sync-tokens.mjs` after editing values — the pre-commit hook does it for you when
-  `dev/tokens/design-tokens.mjs` changes. Never hand-edit a generated block. Same mechanism as the shared
-  platform icons (`// <ST-ICONS>`, #404).
-- **Semantic names only.** `--mbu-ok`, never `--mbu-green`; a name that describes the appearance
-  can't be re-themed without lying about what it is.
-- **Brand colours are exempt** and stay literal — Spotify green and the rest are facts about the
-  outside world, in `dev/ui/platform-icons.mjs`. Someone will eventually "fix" them otherwise.
-- **Adopting tokens is a refactor: nothing may render differently.** Prove it rather than eyeball
-  it — expand every `var(--mbu-*)` in the new stylesheet back to its literal and compare to the old
-  one, and diff computed style over the live UI (#562 did both for Art Station; the proof is in git
-  history). Afterwards `dev/tokens/verify-tokens.mjs` and `verify-tokens-live.mjs` guard it. Deliberate exceptions (two scripts disagreeing, one having to give) get called
-  out in the commit, with a screenshot.
-- **A script with more than one `<style>` element must prepend `MBU_TOKENS` to every one of them.**
-  Apollo has three and Platform Check two; either can mount without the other, and only the sheet
-  carrying the `:root` rule would resolve. An undefined `var()` does **not** fall back to the old
-  colour — the whole declaration is discarded — and that is invisible to the textual proof above,
-  because the substitution itself is faithful. Two checks guard it:
-  - `node dev/tokens/verify-tokens.mjs` — static: every referenced token exists, every carrier's block is
-    in sync, every style sink is wired.
-  - `node dev/tokens/verify-tokens-live.mjs` — loads each script on a real sandbox page and asserts that
-    every token referenced by a live rule actually resolves.
-- Several scripts on one page — or all of them, via String Theory — each emit the same `:root`
-  rule. The duplicates are byte-identical, so the last one wins harmlessly.
+**Components**
 
-### Shared UI components — `dev/ui/ui-components.mjs`
-
-**The standard widgets — help link, toast, and the rest as they land — are defined once in
-`dev/ui/ui-components.mjs`, not per script** (#563). Companion to the design tokens: tokens say what
-things look like, this says what they *are*.
-
-A script opts in with a `// <ST-UI>` marker pair, which `dev/ui/sync-ui.mjs` fills in with
-`MBU_UI_CSS` plus the component helpers. Concatenate `MBU_UI_CSS` into the same sheets as
-`MBU_TOKENS`, and reach the helpers directly (`mbuHelpEl`, `mbuToast`) or via `window.MBU`.
-
-- **One class prefix — `mbu-`.** A userstyle targets a component once instead of once per script.
-- **Interaction is part of the contract**, not just appearance. "Looks the same but `Esc` doesn't
-  work" is the drift this exists to stop, so keyboard/mouse behaviour lives in the component too.
-- **Delete the per-script rule you're replacing.** A leftover with higher specificity silently wins
-  and the script never actually adopts the component.
-- **Adopting a component may change how a script looks** — that's the point when it was the odd one
-  out (Fusion's help link was Spotify green). Say which one won, and why, in the commit.
-- `node dev/ui/verify-ui-live.mjs` drives each component in every adopting script on a real page and
-  asserts the contract — markup, computed style, and behaviour.
+- Behaviour is part of a component (keys, clicks), not only its look.
+- Delete the script's own rule when adopting a component; a leftover with higher specificity silently wins.
+- If adopting one changes how a script looks, say which one won, and why, in the commit. `node dev/ui/verify-ui-live.mjs` checks every adopting script.
 
 ### Settings storage
 
-**User-facing settings/preferences use `GM_setValue`/`GM_getValue`, never `localStorage`.**
-GM storage is covered by the userscript manager's own backup/restore and cross-browser sync;
-`localStorage` is scoped to the browser profile and isn't — a user restoring a manager backup or
-moving to a new browser silently loses every localStorage-based setting (#501). It's also
-per-script, unlike `localStorage` which every script on the same origin shares — two scripts using
-the same literal key string will otherwise leak state into each other by accident, not by design.
+Settings go in `GM_setValue` / `GM_getValue`, never `localStorage`: the manager backs them up and syncs them, and they're private to the script (#501). `localStorage` is for what isn't a setting: caches with a lifetime, tokens several scripts share on MusicBrainz's origin, and `sessionStorage` for state that belongs to one tab.
 
-- Declare `// @grant GM_getValue` and `// @grant GM_setValue` in the userscript header.
-- `localStorage`/`sessionStorage` are still the right tool for things that are genuinely NOT a
-  setting: TTL caches (e.g. a resolved-link cache), shared auth/session tokens read by more than
-  one script off the same MB origin, and tab-scoped ephemeral state (`sessionStorage` only — a
-  volume level mid-playback, not a durable preference).
-- When migrating an existing script off `localStorage`, use a one-time, non-destructive shim —
-  adopt the old localStorage value into GM storage if GM storage is empty, then write through to
-  GM storage from then on; leave the old localStorage key in place (unused) rather than deleting
-  it, so a bug in the migration never loses data:
-  ```js
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
-  const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
-  ```
-- A script that needs page-context globals (e.g. reading a variable another page script attached
-  to `window`) can't combine that with `@grant none` once it also needs `GM_setValue`/`GM_getValue`
-  — `@grant none` runs the script unsandboxed in the page's own context, which is mutually
-  exclusive with declaring real grants. Use `@grant unsafeWindow` instead and read page globals off
-  a `pageWindow` that falls through to plain `window` when `unsafeWindow` isn't defined (Playwright
-  / test mode):
-  ```js
-  const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
-      : (typeof window !== 'undefined') ? window : globalThis;
-  ```
-- Playwright tests must mock `GM_getValue`/`GM_setValue` with something that actually stores a
-  value (a `Map`, or — if the test does a real `page.reload()` and needs the value to survive it —
-  namespaced `localStorage` keys via `page.addInitScript`), not a no-op (`() => {}` / `() => d`).
-  A no-op silently swallows every save, which reads as "it works" right up until a persistence
-  test's assertions quietly stop meaning anything.
+A script that also reads the page's own globals uses `@grant unsafeWindow`, not `@grant none` (which can't be combined with GM grants):
+
+```js
+const pageWindow = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+```
+
+Specs get a working GM store from the harness (`test.use({ gm: … })`); a no-op mock would swallow every save.
 
 ## Bot identity
 
-AI-driven commits/issues use the **`claude-ai-milic`** account; the token lives in
-`dev/.github-credentials.json` (gitignored). Keeping bot activity separate from the
-maintainer's identity makes review easier and prevents accidental impersonation.
+Assistant commits, comments and releases use the **`claude-ai-milic`** account, so they're told apart from the maintainer's. Its token is in `dev/.github-credentials.json` (ignored by Git) and is used explicitly, never through the maintainer's `gh` login.
 
-Setup (one-time, done by the maintainer):
+One-time setup, by the maintainer:
 
-1. Create the `claude-ai-milic` GitHub account.
-2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with write access; accept the invite from the bot account.
-3. While logged in as the bot, generate a classic Personal Access Token at <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
-4. Save it in `dev/.github-credentials.json` (gitignored — never commit):
+1. Create the account and add it as a collaborator with write access; accept the invite as the bot.
+2. As the bot, create a classic token at <https://github.com/settings/tokens> with `repo` and `write:discussion`.
+3. Save it:
 
    ```jsonc
    { "username": "claude-ai-milic", "token": "github_pat_..." }
    ```
-
-The assistant uses that token explicitly (env var or `Authorization` header), never the human's `gh` session.
