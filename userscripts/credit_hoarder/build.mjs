@@ -75,6 +75,15 @@ function stampVersion(meta) {
     return meta.replace(/^(\/\/\s*@version\s+)\S+/m, (_m, lead) => `${lead}${ver}`);
 }
 
+/**
+ * esbuild prints a `'\x01'` escape as the raw control character, which editors
+ * strip (#623). A control character can only sit inside a literal or a comment,
+ * where `\xNN` means the same, so escape them back.
+ */
+function escapeControls(code) {
+    return code.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, c => '\\x' + c.charCodeAt(0).toString(16).padStart(2, '0'));
+}
+
 const esbuildOptions = {
     entryPoints: [ENTRY],
     bundle:      true,
@@ -95,7 +104,7 @@ async function build() {
         readFile(META_SRC, 'utf8'),
         esBuild(esbuildOptions),
     ]);
-    const bundle = result.outputFiles[0].text;
+    const bundle = escapeControls(result.outputFiles[0].text);
     const out = stampVersion(meta).trimEnd() + '\n\n' + bundle;
     await mkdir('dist', { recursive: true });
     await writeFile(OUT, out);

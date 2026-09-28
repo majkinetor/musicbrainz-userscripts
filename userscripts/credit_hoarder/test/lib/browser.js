@@ -1,44 +1,7 @@
-// Playwright helpers used by test/run.mjs.
-//
-// Responsibilities:
-//   - Launch persistent context (reuses .pw-profile/ with your logged-in MB cookies + IDB cache).
-//   - Inject the built userscript into the MB edit-relationships page.
-//   - Drive the import button + review-table confirm button.
-//   - Snapshot MB.relationshipEditor.state.relationships before/after.
-//   - Provide a no-op for unresolved entities (we don't open creation tabs in tests).
-
-import { chromium }       from 'playwright';
-import { readFile }       from 'node:fs/promises';
-import { fileURLToPath }  from 'node:url';
-import { dirname, resolve } from 'node:path';
-
-const HERE         = dirname(fileURLToPath(import.meta.url));
-// Shared repo-level Playwright profile (logged-in MB session), reused by every
-// userscript's test harness. From userscripts/discogs_credits/test/lib → repo root.
-const PROFILE_DIR  = resolve(HERE, '..', '..', '..', '..', '.pw-profile');
-const SCRIPT_PATH  = resolve(HERE, '..', '..', 'dist', 'credit_hoarder.user.js');
-
-/**
- * Launches a persistent context. Headless by default; pass {headed:true} when debugging.
- */
-export async function launchTestContext({ headed = false } = {}) {
-    const context = await chromium.launchPersistentContext(PROFILE_DIR, {
-        headless: !headed,
-        viewport: { width: 1400, height: 900 },
-        // 2x pixel density — full-page screenshots come out crisp instead of
-        // ~1400px-wide blurry. Doubles PNG size (typically ~1 MB per shot)
-        // but small text on the MB editor stays legible when zoomed in.
-        deviceScaleFactor: 2,
-    });
-    // Block creation-flow popups (we don't want to open MB entity-creation tabs in tests).
-    context.on('page', async (page) => {
-        const url = page.url();
-        if (url && url !== 'about:blank' && /\/(artist|label|place)\/(add|create)/.test(url)) {
-            await page.close().catch(() => {});
-        }
-    });
-    return context;
-}
+// Playwright helpers for Credit Hoarder's specs (fixtures.spec.mjs and friends): open a
+// release's relationship editor, drive the import and its review table, and snapshot
+// MB.relationshipEditor's relationships before and after. The browser context, the GM
+// shim and the injection come from dev/test/harness.mjs.
 
 /**
  * Opens the release's edit-relationships page and waits for it to be ready.
@@ -103,7 +66,7 @@ export async function openReleasePage(context, releaseUrl) {
 
     // Check we're logged in: MB shows /login if not.
     if (page.url().includes('/login')) {
-        throw new Error('Not logged in. Run `node test/login.mjs` first.');
+        throw new Error('Not logged in. Run `node dev/test/login.mjs` first.');
     }
     // Wait for MB's relationship editor to mount. MB's edit-relationships page
     // loads a fair amount of JS; on a cold cache 30-60s isn't always enough.
@@ -151,29 +114,6 @@ export function getCapturedLog(page) {
         }
     }
     return lines.join('\n');
-}
-
-/**
- * Injects the userscript file into the page (runs in main world).
- * The script's `pageWindow` shim sees plain `window` (no Tampermonkey sandbox).
- */
-export async function injectUserscript(page) {
-    const code = await readFile(SCRIPT_PATH, 'utf8');
-    // Tampermonkey provides `GM_info` and `unsafeWindow`; the script falls back
-    // to plain `window` for the latter but expects `GM_info.script.{name,version}`
-    // to exist (used in `buildEditNote` and `updateSummary`). Shim it before injecting.
-    const shim = `
-        window.GM_info = window.GM_info || {
-            script: { name: 'Import Discogs Credits (test)', version: 'test' },
-            scriptHandler: 'Playwright',
-            version: 'test',
-        };
-    `;
-    await page.addScriptTag({ content: shim + code });
-    // Wait for the script's import bar to appear (means it's bootstrapped). The
-    // pre-#272 single "Import from Discogs" button is now per-source icons, so the
-    // bar itself is the bootstrap signal.
-    await page.waitForSelector('.discogs-bar', { timeout: 30_000 });
 }
 
 /**

@@ -31,6 +31,7 @@ import { parseSourceEntityUrl, idbKeyForEntity } from './sources/registry.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
 import { _setProgressPct }                  from './progress-bar.js';
 import { log, logDebug }                    from './log.js';
+import { MB } from './constants.js';
 
 // `kind`-specific tweaks. Tiny lookup table so the per-strategy code in
 // `resolveEntity` reads as one shared body.
@@ -76,7 +77,7 @@ async function coCreditHit(context, name) {
     const tally = new Map();
     for (const seed of context.seeds.slice(0, 4)) {
         const q = `arid:${seed} AND artistname:"${String(name).replace(/["\\]/g, ' ')}"`;
-        const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`);
+        const json = await mbThrottle.fetchJson(`${MB}/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`);
         if (!json) continue;
         for (const h of mbmCoCreditHits(json, seed, name)) { const t = tally.get(h.gid) || { n: 0, name: h.name }; t.n++; tally.set(h.gid, t); }
     }
@@ -156,7 +157,7 @@ async function resolveEntity(entity, kind, opts) {
 
     /** Fetch MB entity name/disambiguation for a known MB type+MBID (display only). */
     async function fetchMbEntityInfo(et, mbid) {
-        const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
+        const json = await mbThrottle.fetchJson(`${MB}/ws/2/${et}/${mbid}?fmt=json`);
         return json
             ? { name: json.name || null, disambiguation: json.disambiguation || '' }
             : { name: null, disambiguation: '' };
@@ -228,7 +229,7 @@ async function resolveEntity(entity, kind, opts) {
             const ctx = contextHit(context, searchName, cachedRec.nameMatches);
             if (ctx) {
                 log.info(`Match: ${displayName} → ${ctx.name} — via release context (${ctx.rel || 'related'}, ${ctx.via})`);
-                const mbUrl = `//musicbrainz.org/artist/${ctx.gid}`;
+                const mbUrl = `${MB}/artist/${ctx.gid}`;
                 await writeIdbRecord(key, { mbid: ctx.gid, entityType: 'artist', name: ctx.name, disambiguation: '', resolvedVia: 'ctx', nameMatches: null, mbUrl });
                 return buildResolved(mbUrl, ctx.name, '', 'ctx', 'artist', false, attnLinkedIds, cachedRec.creditOverride);
             }
@@ -245,10 +246,10 @@ async function resolveEntity(entity, kind, opts) {
     // until the focus-return recheck corrected it.
     const [nameJson, urlJson] = await Promise.all([
         mbThrottle.fetchJson(
-            `//musicbrainz.org/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
+            `${MB}/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
         ),
         parsed ? mbThrottle.fetchJson404(
-            `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
+            `${MB}/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
         ) : Promise.resolve({ notFound: true }),
     ]);
 
@@ -358,7 +359,7 @@ async function resolveEntity(entity, kind, opts) {
             // #613: one exact holder VISIBLE is not proof — MB's search doesn't rank exact
             // holders first. Accept only when the exact-identity query returns EVERY match
             // and exactly one artist holds the name (name or alias).
-            const idJson = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(mbmIdentityQuery(searchName, 'artist'))}&fmt=json&limit=${MBM_EXACT_LIMIT}`);
+            const idJson = await mbThrottle.fetchJson(`${MB}/ws/2/artist?query=${encodeURIComponent(mbmIdentityQuery(searchName, 'artist'))}&fmt=json&limit=${MBM_EXACT_LIMIT}`);
             const idn = mbmExactIdentity(idJson, searchName);
             logDebug(`exact identity "${searchName}": ${idn.status} (${idJson ? (idJson.artists || []).length + ' of ' + idJson.count : 'no response'})`);
             if (idn.status === 'unique' && idn.hit.id === nameHit.mbid) {
@@ -392,7 +393,7 @@ async function resolveEntity(entity, kind, opts) {
     }
 
     if (resolved) {
-        const mbUrl = `//musicbrainz.org/${resolved.kind}/${resolved.mbid}`;
+        const mbUrl = `${MB}/${resolved.kind}/${resolved.mbid}`;
         let finalName  = resolved.name;
         let finalDisam = resolved.disambiguation;
         if (!finalName) {

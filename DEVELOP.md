@@ -61,6 +61,7 @@ at the root.
 |---|---|
 | [`dev/tokens/`](dev/tokens/README.md) | design tokens and themes — the single place the look is configured |
 | [`dev/ui/`](dev/ui/README.md) | the shared components, the platform icons, and the live checks for both |
+| [`dev/test/`](dev/test/README.md) | the shared test harness — `pnpm test` runs every userscript's specs |
 | `dev/screens/ui/` | generated screenshots (see below) |
 | `dev/github-notifications/`, `dev/notif-channel/` | the GH notification → channel pipeline |
 | [`dev/script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database snapshot; runs entirely in Docker (`.\run.ps1`) |
@@ -127,8 +128,8 @@ const css = MBU_TOKENS + `
   outside world, in `dev/ui/platform-icons.mjs`. Someone will eventually "fix" them otherwise.
 - **Adopting tokens is a refactor: nothing may render differently.** Prove it rather than eyeball
   it — expand every `var(--mbu-*)` in the new stylesheet back to its literal and compare to the old
-  one, and diff computed style over the live UI. See `userscripts/art_station/test/verify-562-tokens.mjs`,
-  which does both. Deliberate exceptions (two scripts disagreeing, one having to give) get called
+  one, and diff computed style over the live UI (#562 did both for Art Station; the proof is in git
+  history). Afterwards `dev/tokens/verify-tokens.mjs` and `verify-tokens-live.mjs` guard it. Deliberate exceptions (two scripts disagreeing, one having to give) get called
   out in the commit, with a screenshot.
 - **A script with more than one `<style>` element must prepend `MBU_TOKENS` to every one of them.**
   Apollo has three and Platform Check two; either can mount without the other, and only the sheet
@@ -207,4 +208,18 @@ the same literal key string will otherwise leak state into each other by acciden
 ## Bot identity
 
 AI-driven commits/issues use the **`claude-ai-milic`** account; the token lives in
-`dev/.github-credentials.json` (gitignored). See a per-script DEVELOP for the full setup.
+`dev/.github-credentials.json` (gitignored). Keeping bot activity separate from the
+maintainer's identity makes review easier and prevents accidental impersonation.
+
+Setup (one-time, done by the maintainer):
+
+1. Create the `claude-ai-milic` GitHub account.
+2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with write access; accept the invite from the bot account.
+3. While logged in as the bot, generate a classic Personal Access Token at <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
+4. Save it in `dev/.github-credentials.json` (gitignored — never commit):
+
+   ```jsonc
+   { "username": "claude-ai-milic", "token": "github_pat_..." }
+   ```
+
+The assistant uses that token explicitly (env var or `Authorization` header), never the human's `gh` session.

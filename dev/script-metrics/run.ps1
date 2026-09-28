@@ -11,7 +11,7 @@
   .\run.ps1                       # full run against the latest dump
   .\run.ps1 -ReportOnly           # re-render reports from the existing database
   .\run.ps1 -DumpId 20260905-002519
-  .\run.ps1 -Clean                # drop the cached dumps (frees ~15 GB)
+  .\run.ps1 -Clean                # drop the cached dump and the database (frees ~22 GB)
 #>
 [CmdletBinding()]
 param(

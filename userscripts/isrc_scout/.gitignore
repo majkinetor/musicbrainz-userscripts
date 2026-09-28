@@ -1,9 +1,6 @@
 # Dependencies
 node_modules/
 
-# Per-run test logs
-test/logs/
-
 # Editor / OS
 .DS_Store
 Thumbs.db

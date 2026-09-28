@@ -9,7 +9,7 @@ Postgres, no Python packages, no MusicBrainz account, no browser.
 ```powershell
 .\run.ps1                  # full run against the latest dump
 .\run.ps1 -ReportOnly      # re-render the reports from the existing database
-.\run.ps1 -Clean           # drop the cached dump (frees ~15 GB)
+.\run.ps1 -Clean           # drop the cached dump and the database (frees ~22 GB)
 ```
 
 ```bash
@@ -126,7 +126,8 @@ which sits behind the enormous `edit_data`. Hence:
 
 The dump is cached (a Docker named volume) and verified against the published
 `SHA256SUMS`, so the two passes cost no extra network, and re-running on a day
-when MetaBrainz has not rotated the dump costs no network at all.
+when MetaBrainz has not rotated the dump costs no network at all. Only the
+current dump is kept: fetching a newer one deletes the older ones first (#628).
 
 > **Rows come out in Postgres heap order, not primary-key order.** The first row
 > of `edit` in a real dump is id 38125306, not 1, because edits get rewritten
@@ -199,6 +200,7 @@ templates/dashboard.html
 tools/gen_mbmeta.py     regenerate mbmeta.py from MusicBrainz Constants.pm
 tools/selftest.py       full pipeline against a synthetic dump
 tools/test_fetch_stall.py  download stall -> resume, against a local server
+tools/test_prune.py        only the current dump stays cached
 ```
 
 ### Self-test

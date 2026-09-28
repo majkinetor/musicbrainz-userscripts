@@ -15,6 +15,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 import time
@@ -142,10 +144,31 @@ def download(dump_id: str, name: str, dest_dir: Path, expected: str | None) -> P
     return target
 
 
+DUMP_DIR_NAME = re.compile(r'^\d{8}-\d{6}$')
+
+
+def prune_old_dumps(data_dir: Path, keep: str) -> None:
+    """Delete every cached dump but `keep` (#628).
+
+    Each dump id gets its own ~15 GB directory, and MetaBrainz publishes twice a
+    week, so kept dumps filled 98 GB in three weeks. An ingest reads one whole
+    dump and the database holds what it needs, so an older dump is never read
+    again. Pruning happens before the download, so the disk never holds two.
+    """
+    if not data_dir.is_dir():
+        return
+    for entry in sorted(data_dir.iterdir()):
+        if entry.is_dir() and entry.name != keep and DUMP_DIR_NAME.match(entry.name):
+            size = sum(f.stat().st_size for f in entry.rglob('*') if f.is_file())
+            shutil.rmtree(entry)
+            print(f'  removed old dump {entry.name} ({size / 2**30:,.1f} GiB)', file=sys.stderr)
+
+
 def ensure_dumps(data_dir: Path, dump_id: str | None = None) -> dict:
     """Make sure both tarballs are present and verified. Returns run metadata."""
     dump_id = dump_id or latest_dump_id()
     print(f'Dump: {dump_id}', file=sys.stderr)
+    prune_old_dumps(data_dir, keep=dump_id)
 
     try:
         sums = checksums(dump_id)

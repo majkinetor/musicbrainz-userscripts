@@ -42,7 +42,7 @@ test/                      tests (see below)
 ## Gates
 
 - **`pnpm run verify`**: ESLint (`eslint.config.mjs`), the build, and `node --check` on the bundle. The pre-commit hook runs the lint on any commit touching `src/`.
-- **Tests** run under the repo's shared runner: `pnpm test --project=credit_hoarder` from the root ([dev/test](../../dev/test/README.md)). They drive a real browser with the logged-in profile and never submit.
+- **Tests** run under the repo's shared runner: `pnpm test --project=credit_hoarder` from the root ([dev/test](../../dev/test/README.md)). They drive a real browser with the logged-in profile and never submit. `test/fixtures.spec.mjs` imports each release in `test/fixtures.json` on test.musicbrainz.org and checks the staged relationships against the source and MusicBrainz's own rules (`test/lib/verify.js`). `node dev/test/copy-to-sandbox.mjs <mbid>` copies a production release to the sandbox for a new fixture; fixtures tagged `debug` reproduce bug reports and run only with `CH_DEBUG=1`.
 
 ## How it works
 

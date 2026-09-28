@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.26
+// @version      2026.9.26.195610
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -170,7 +170,14 @@
   const escTitle = s => esc(s).replace(/ — /g, ' \\— ');
   const unesc = s => String(s == null ? '' : s).replace(/\\(.)/g, '$1');
   const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const ms2len = ms => ms ? `${Math.floor(ms / 60000)}:${String(Math.round(ms % 60000 / 1000)).padStart(2, '0')}` : '';
+  // #623 (sweep, S3): round the TOTAL first — 239.6 s is 4:00, not 3:60 — and show
+  // hours the way MusicBrainz does (1:02:03, not 62:03). Anything else differs from the
+  // editor's own value, so every save reported (and wrote) length changes.
+  function ms2len(ms) {
+    if (!ms) return '';
+    const t = Math.round(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = String(t % 60).padStart(2, '0');
+    return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+  }
   const hostName = u => { for (const [re, n] of HOST) if (re.test(u)) return n; try { return new URL(u).host.replace(/^www\./, ''); } catch (e) { return u; } };
   const mbidFromUrl = u => (String(u).match(/\/([0-9a-f-]{36})\b/i) || [])[1] || null;
 
@@ -249,6 +256,15 @@
     return L.join('\n');
   }
   const splitDelim = s => { const m = s.match(/(^|[^\\]) — /); if (!m) return [s, null]; const at = m.index + m[1].length; return [s.slice(0, at), s.slice(at + 3)]; };
+  // #623 (sweep, S2): an event is emitted as "- <date>, <country>" with either part left
+  // out, so "- Germany" is a country-only event — but the parser took the first comma
+  // part as the date, and a save cleared the country of every date-less event. Read it
+  // by shape: a leading date (YYYY, YYYY-MM, YYYY-MM-DD, or -MM-DD when the year is
+  // unknown) is the date, the rest is the country, which may contain ", " itself.
+  function parseEvent(s) {
+    const m = String(s).match(/^(\d{4}(?:-\d{1,2}){0,2}|(?:-\d{1,2}){1,2})(?:, (.*))?$/);
+    return m ? { date: m[1], country: unesc(m[2] || '') } : { date: '', country: unesc(s) };
+  }
   function parse(md) {
     const lines = md.split('\n'); const m = { mbid: null, h1: '', info: {}, events: [], labels: [], annotation: '', links: [], media: [], refs: new Map() };
     const idm = md.match(/<!-- release (\S+) · format/); if (idm) m.mbid = idm[1];
@@ -266,7 +282,7 @@
         if (key === 'Title') m.info.title = unesc(v); else if (key === 'Disambiguation') m.info.disambiguation = unesc(v); else if (key === 'Status') m.info.status = unesc(v);
         else if (key === 'Packaging') m.info.packaging = unesc(v); else if (key === 'Barcode') m.info.barcode = v; else if (key === 'Language') m.info.language = unesc(v);
         else if (key === 'Script') m.info.script = unesc(v); else if (key === 'Artist') m.info.artist = parseCredit(v); else if (key === 'Release group') m.info.releaseGroup = reflbl(v);
-      } else if (sec === 'Release events') { const r = ln.match(/^- (.*)$/); if (r) { const c = r[1].split(', '); m.events.push({ date: c[0] || '', country: unesc(c.slice(1).join(', ')) }); } }
+      } else if (sec === 'Release events') { const r = ln.match(/^- (.*)$/); if (r) m.events.push(parseEvent(r[1])); }
       else if (sec === 'Labels') { const r = ln.match(/^- (.*)$/); if (r) { const sp = splitDelim(r[1]); m.labels.push({ label: reflbl(sp[0]), catno: sp[1] ? unesc(sp[1]) : '' }); } }
       else if (sec === 'External links') {
         let r = ln.match(/^- \[((?:\\.|[^\]])*)\](?:\(([^)]*)\))?\s*$/); if (r) { m.links.push({ label: unesc(r[1]), url: (r[2] || '').trim(), type: '', begin: '', end: '', ended: false }); continue; }   // [label](url) inline notation (url optional)

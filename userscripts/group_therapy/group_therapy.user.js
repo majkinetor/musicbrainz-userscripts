@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.26
+// @version      2026.9.27
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -43,30 +43,42 @@
   const pickRoleLabel = tr => { const l = tr && tr.querySelector('th.link-phrase label'); return l ? (l.textContent || '').replace(/:\s*$/, '').trim() : 'role'; };
   // medium number a track row belongs to — the nearest preceding `tr.subh` ("1▼CD" → 1). Each medium
   // is its own <tbody>, so we scan the table's rows in document order (not just siblings). Cached per row.
-  const _medCache = new WeakMap();
+  // #623 (sweep): one pass over the table fills both caches for every row, instead of
+  // re-scanning all its rows once per row asked about (O(rows²) on a big box set — the
+  // hover highlight asks for every hit, and the format lookup was never cached at all).
+  const _medCache = new WeakMap(), _fmtCache = new WeakMap();
+  const indexMedia = tbl => {
+    let med = null, fmt = '';
+    for (const row of tbl.querySelectorAll('tr')) {
+      if (row.classList && row.classList.contains('subh')) {
+        const t = row.textContent || '', m = t.match(/(\d+)/);
+        med = m ? m[1] : null;
+        fmt = t.replace(/^\s*\d+\s*/, '').replace(/^[^A-Za-z0-9]+/, '').trim();
+      } else { _medCache.set(row, med); _fmtCache.set(row, fmt); }
+    }
+  };
   const mediumNumberOf = tr => {
     if (!tr) return null;
-    if (_medCache.has(tr)) return _medCache.get(tr);
-    let med = null; const tbl = tr.closest && tr.closest('table');
-    if (tbl) { const all = [...tbl.querySelectorAll('tr')], idx = all.indexOf(tr); for (let i = idx - 1; i >= 0; i--) { if (all[i].classList && all[i].classList.contains('subh')) { const m = (all[i].textContent || '').match(/(\d+)/); med = m ? m[1] : null; break; } } }
-    _medCache.set(tr, med); return med;
+    if (!_medCache.has(tr)) { const tbl = tr.closest && tr.closest('table'); if (!tbl) return null; indexMedia(tbl); }
+    return _medCache.has(tr) ? _medCache.get(tr) : null;
   };
   // medium FORMAT label for a track row (from the nearest preceding tr.subh, e.g. "1▼CD" → "CD", "2▼12″ Vinyl" → "12″ Vinyl")
   const mediumFormatOf = tr => {
-    const tbl = tr && tr.closest && tr.closest('table'); if (!tbl) return '';
-    const all = [...tbl.querySelectorAll('tr')], idx = all.indexOf(tr);
-    for (let i = idx - 1; i >= 0; i--) { if (all[i].classList && all[i].classList.contains('subh')) return (all[i].textContent || '').replace(/^\s*\d+\s*/, '').replace(/^[^A-Za-z0-9]+/, '').trim(); }
-    return '';
+    if (!tr) return '';
+    if (!_fmtCache.has(tr)) { const tbl = tr.closest && tr.closest('table'); if (!tbl) return ''; indexMedia(tbl); }
+    return _fmtCache.get(tr) || '';
   };
   // track position label from the row's position cell — handles vinyl/multi-disc numbers ("D5", "A1")
   // as well as plain "5". On multi-medium releases, a plain number is prefixed with the medium so
   // "1" on CD 1 vs CD 2 read as "1.1" / "2.1". Returns a string (or null for non-track rows).
-  const posLabel = tr => {
+  // `multi` (optional): whether the release has several media, when the caller already
+  // knows — the highlight asks once, not once per hit (#623)
+  const posLabel = (tr, multi) => {
     if (!tr || !tr.querySelector) return null;
     const c = tr.querySelector('td.pos'); let t = c ? (c.textContent || '').trim() : '';
     if (!t) { const m = (tr.textContent || '').match(/^\s*(\d+)\b/); t = m ? m[1] : ''; }
     if (!t) return null;
-    if (/^\d+$/.test(t) && document.querySelectorAll('tr.subh').length > 1) { const med = mediumNumberOf(tr); if (med) t = med + '.' + t; }
+    if (/^\d+$/.test(t) && (multi != null ? multi : document.querySelectorAll('tr.subh').length > 1)) { const med = mediumNumberOf(tr); if (med) t = med + '.' + t; }
     return t;
   };
   const targetHref = item => { const a = item && item.querySelector('a[href*="/artist/"], a[href*="/work/"], a[href*="/label/"], a[href*="/place/"], a[href*="/recording/"], a[href*="/url/"], a[href*="/event/"], a[href*="/instrument/"]'); return a ? a.getAttribute('href') : null; };
@@ -345,7 +357,18 @@
     const segs = rm.id.split('-'), last = segs[segs.length - 1];
     return (segs[segs.length - 2] === '' && /^\d+$/.test(last)) || /^-\d+$/.test(last);
   }
-  const trackPosOf = node => { const tr = node.parentNode && node.parentNode.closest ? node.parentNode.closest('tr.track') : null; return posLabel(tr); };
+  const trackPosOf = (node, multi) => { const tr = node.parentNode && node.parentNode.closest ? node.parentNode.closest('tr.track') : null; return posLabel(tr, multi); };
+  // #623 (sweep): where `lower` occurs in `lt` as a whole word — hovering "Bob" used to light up
+  // "Bobby" too. An edge of the needle that isn't a letter or digit needs no boundary there.
+  function wordHits(lt, lower) {
+    const w = c => !!c && /[\p{L}\p{N}]/u.test(c);
+    const needStart = w(lower[0]), needEnd = w(lower[lower.length - 1]), out = [];
+    let i = 0;
+    while ((i = lt.indexOf(lower, i)) !== -1) {
+      if (!(needStart && w(lt[i - 1])) && !(needEnd && w(lt[i + lower.length]))) { out.push(i); i += lower.length; } else i += 1;
+    }
+    return out;
+  }
   function highlightPage(needle) {
     if (!needle || !window.CSS?.highlights || typeof Highlight === 'undefined') return { n: 0 };
     const lower = needle.toLowerCase(); if (lower.length < 2) return { n: 0 };
@@ -354,12 +377,14 @@
     // notes, sidebar, etc., which were inflating the tooltip counts.
     const root = document.querySelector('div.release-relationship-editor') || document.body;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode(x) { const p = x.parentNode; if (!p) return NodeFilter.FILTER_REJECT; const t = p.tagName; return (t === 'STYLE' || t === 'SCRIPT' || t === 'NOSCRIPT' || t === 'TEXTAREA' || t === 'INPUT') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
+    const multi = document.querySelectorAll('tr.subh').length > 1;   // once, not per hit (#623)
     let node;
     while ((node = walker.nextNode())) {
       const lt = node.nodeValue.toLowerCase(); if (lt.length < lower.length) continue;
-      let i = 0, hit = false;
-      while ((i = lt.indexOf(lower, i)) !== -1) { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + lower.length); (isNewRow(node) ? neu : exist).push(r); n++; hit = true; i += lower.length; }
-      if (hit) { const p = trackPosOf(node); if (p != null) tracks.add(p); else if (node.parentNode && node.parentNode.closest && node.parentNode.closest('.relationship-item')) release = true; }
+      const at = wordHits(lt, lower); if (!at.length) continue;
+      const isNew = isNewRow(node);
+      for (const i of at) { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + lower.length); (isNew ? neu : exist).push(r); n++; }
+      const p = trackPosOf(node, multi); if (p != null) tracks.add(p); else if (node.parentNode && node.parentNode.closest && node.parentNode.closest('.relationship-item')) release = true;
     }
     try { window.CSS.highlights.set('gt-hl-existing', new Highlight(...exist)); window.CSS.highlights.set('gt-hl-new', new Highlight(...neu)); } catch (e) {}
     return { n, tracks, release };
@@ -730,7 +755,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -766,7 +795,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
