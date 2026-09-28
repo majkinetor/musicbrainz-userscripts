@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-29 01:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-29 01:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -17,540 +17,251 @@
 
 ## Apollo Editor
 
-UI and tools for advanced adding and editing of a MusicBrainz release.
+A faster release editor for MusicBrainz: artists and recordings matched in one pass, clean tables for the tracklist and recordings, and tools for everything MusicBrainz's own editor makes slow.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](../apollo_editor/CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.1.field=edit_note_content&conditions.1.operator=includes&conditions.1.args.0=Apollo+Editor)
 
-When you add a release, each track's artist may be set as **plain text with no MBID**, and the recordings are unset. Linking them one by one — searching, picking, occasionally splitting *A feat. B* into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist and recording set in one pass and lets you apply the confident matches with one click.
-
-It replaces the native **Tracklist** and **Recordings** editors with two clean, consistent tables with dozens of features. It also makes the **Release Information** tab more functional by suppressing help bubbles and moving external icons to the right column. When adding new releases, the **Duplicates** tab provides a similarity check.
-
-Each takeover is optional and you can flip back to the native editor at any time with the **Original / Apollo** switcher button.
+<img width="1200" src="../apollo_editor/screenshots/tracklist.png" />
 
 ### Features
 
-- **[Tracklist](#tracklist)** — clean artist-picker table with confidence highlighting, change-all-matching scope, split/alias-aware credits, track actions, reordering and keyboard navigation.
-- **[Recordings](#recordings)** — side-by-side *Track ↔ Recording* comparison with per-row confidence, character-level diff highlighting, and a suggestion/ISRC-aware recording picker.
-- **[Matching](#matching)** — one-click auto-match of artists, recordings and the release label, using the whole release group, with configurable tolerance.
-- **[Tools](#tools)** — configurable **Tools** bar (choose/reorder, icon or text, hover-flyout params) plus extra tools, and Revert/Clear for one track or all.
-- **[Release Information](#release-information)** — Markdown annotation editor, external links in a right column with a dead-link checker, and a front-cover thumbnail.
-- **[Duplicates](#duplicates)** — a red→green **Similarity** score per existing release, expandable to a track-by-track comparison.
-- **[Customization](#settings)** — resizable columns, alternate row colours, grid, layouts and match tolerance.
-- **Original / Apollo switcher** — every takeover is optional; flip back to the native editor at any time.
+- **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
+- **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
+- **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
+- **[Matching](#matching)**: artists, recordings, the release label and the release artist matched automatically.
+- **[Tools](#tools)**: a configurable toolbar with the native tools and Apollo's own.
+- **[Duplicates](#duplicates)**: a similarity score for each existing release, with a track-by-track comparison.
+- **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
+- **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
 
-### Release Information
+Each part is optional, and the **Original / Apollo** button switches back to MusicBrainz's own editor at any time.
 
-**[Settings](#settings)**: *Modify Release information*
-
-Beautification of native page, external links redesign, markdown annotation editor, release cover and array batch removal tools.
+### Release information
 
 <img width="1200" src="../apollo_editor/screenshots/release.png" />
 
-- **External links** moved to a right column with a **dead-link checker**
-    - **Right-click** a favicon/type to edit it.
-    - **Add link (+)** stays a compact **[+]** until clicked, then reads *Paste one or more links*: it accepts **several links at once** and mines URLs out of whatever you paste including full HTML, sorting out duplicates, and setting a link type
-- **[Markdown annotation editor](#annotation-editor)** in *Additional information*.
-- A **front-cover thumbnail** is positioned under the external links, linking to the release's cover-art page
-- Batch removal of array elements - date and labels - using right click on (x) button
-- Help bubbles removed
+- **External links** sit in a right column, checked for dead links. Right-click a favicon or type to edit it.
+- **+** takes several links at once and pulls URLs out of anything pasted, HTML included, dropping duplicates and setting each link's type.
+- A **front-cover thumbnail** under the links opens the cover-art page.
+- Right-click a date's or label's ✕ to remove all of them.
+- The help bubbles are gone.
 
 ### Tracklist
 
-**[Settings](#settings)**: *Modify Tracklist*
-
-Extremely fast and confident artist matching via multiple mechanisms, advanced tool setup, detailed highlighting, reverting inputs etc.
-
 <img width="1200" src="../apollo_editor/screenshots/tracklist.png" />
 
-- **[Auto match artist](#artist-matching)** based on release group, Discogs URL or name
-- **Artist selection**
-  - Picker with a **confidence** highlight
-  - Option to apply pick to **all matching tracks or a single one** (the [Change](#toolbar) in toolbar)
-  - **Ctrl-click** a search result to set that artist on every unresolved track
-  - Paste an **MBID or a MusicBrainz artist URL** to resolve straight to that artist
-  - **Create** unresolved artist (in the background) with multiple fields pre-set (sort, type, external link)
-  - **Hover actions**
-    - **Split** an artist with a **join-phrase selector**
-    - **Delete** split artist
-    - **Reorder** artist within split
-  - **Aliases** and disambiguation shown in search results and selection
-  - **Artist type** icon with a direct link to the artist
-  - **Discogs links checking** (with option *Discogs artist link matching*) with quick actions to add them
-  - **N unresolved artist** badge with click that positions to the first one
-- **Tracks**
-  - **Hover actions** - Split & Guess case - left-click to apply to a single track, right-click to apply to every track
-  - **Reorder** tracks within a medium with the ⠿ handle — audio tracks among audio tracks, data tracks among data tracks (a drag never crosses the boundary; the ⤓/⤒ buttons do that).
-  - **Data tracks** — ⤓ on a track moves it *and everything below it on that medium* into the data section; ⤒ on a data track moves it *and every data track above it* back. Both are in the move column, on hover. Not offered on a disc-ID medium, which MusicBrainz doesn't allow.
-  - **Keyboard navigation**
-- [Tools](#tools) toolbar with native and new tools
-- **Highlighting**
-  - Changed tracks (left border color)
-  - Artist instances in the tracklist
-  - All changed artists after picker
-  - Pending changes (recordings, artists)
-  - [Enlarge Punctuation](#enlarge-punctuation)
-  - [Join-phrase spacing](#join-phrase-spacing)
-  - Split and splittable tracks
-  - Tracks that "Guess case" can affect
-- **Expand all media** when release has them collapsed
-  - left-click expands single media
-  - right-click expands all media
-- Table appearance customization: layout, alternate row colors, grid lines
-- Pregap, data track and disc id support
-- Revert/Clear all inputs
+**Artists**
+
+- The picker colours each artist by [match confidence](#artist-matching), and shows aliases, disambiguation and a type icon linking to the artist.
+- **Change** in the toolbar sets whether an edit applies to one track or to every track with the same credit.
+- Ctrl-click a search result to set it on every unresolved track. Paste an MBID or artist URL to resolve it directly.
+- **＋** creates an unresolved artist in the background, with sort name, type and Discogs link filled in.
+- On hover: **split** an artist (with a join-phrase picker), remove a split artist, or reorder artists within a credit.
+- The **N unresolved** badge jumps to the first unresolved artist.
+
+**Tracks**
+
+- On hover: **Split** and **Guess case**; left-click for one track, right-click for all.
+- **⠿** drags a track within its medium. **⤓** moves a track and everything below it into the data section; **⤒** moves it back. A medium with a disc ID can't have data tracks.
+- Changed tracks get a coloured left border; pending changes, splittable tracks and tracks Guess case would change are highlighted.
+- Left-click a collapsed medium to expand it, right-click to expand all.
+- Pregap and data tracks and disc IDs are supported.
 
 ### Recordings
 
-**[Settings](#settings)**: *Modify Recordings*
-
-Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
-
 <img width="1200" src="../apollo_editor/screenshots/recordings.png" />
 
+- Each row shows the track and its recording, a [confidence](#recording-matching) circle, and the characters that differ.
+- The picker offers MusicBrainz's suggestions, a search, and the releases each candidate appears on. Paste a recording MBID or URL, or an ISRC: one match is linked at once, several are listed.
+- **＋** on hover unlinks a recording, so the track gets a new one; **↺** restores the link the page loaded with.
+- Videos have a camera marker before their name.
+- Right-click a title or artist cell to copy it to the other side:
 
-- **[Auto match artist](#recording-matching)** based on release group or name and Cutoff settings
-- **Recording picker**
-  - MusicBrainz suggestions, free-form search, linked "appears on" releases and confidence highlights
-  - Paste a **recording MBID** or a MusicBrainz recording URL into the search field
-  - Paste an **ISRC** (with or without separators) to resolve it via MusicBrainz — a single match links immediately, several are listed to choose from
-- [Update track and recording](#updating-tracks-and-recordings)
-  - **Track to recording** — right-click a recording Title/Artist cell (applied on commit)
-  - **Recording to track** — right-click a track Title/Artist cell (applied immediately)
-- **Highlighting**
-  - [Enlarge Punctuation](#enlarge-punctuation)
-  - [Join-phrase spacing](#join-phrase-spacing)
-- **Expand all media** — a release with many media loads with most collapsed; left-click expands single media, right-click all of them
-- **Unset a link from the row** — hover a recording and click **＋** to drop the link; the track then creates a **new recording** on submit. It sits in the first position on the right, with ↺ (revert to the page-load link) beside it.
-- Revert/Clear all inputs
-- Video recordings show a small video-camera marker **before** the name, so videos are easy to spot down a column of ragged titles
+| Gesture | Copies |
+|---|---|
+| Right-click | that cell |
+| Ctrl + right-click | both fields of the row |
+| Alt + right-click | that field in every row |
+| Ctrl + Alt + right-click | both fields in every row |
 
-### Duplicates
+On the recording side the copy is applied when you submit, like MusicBrainz's own checkboxes; the cell shows `→ New` and the old value struck through. On the track side it's applied at once. A copy is offered wherever MusicBrainz would show its checkbox, including case-only differences.
 
-**[Settings](#settings)**: *Modify Duplicates*
+### Matching
 
-When release is added, MusicBrainz's **Duplicates** tab lists existing releases you might want to *base your release on* (which means that tracklist and recording mapping will be reused). Apollo augments that native table with **Similarity** attribute.
+**⚡ Match** matches everything still unresolved, or it runs when the page loads (see [Settings](#settings)). The best candidate is applied when it's confident enough; anything uncertain is left for you, as a candidate to confirm.
 
-<img width="1200" src="../apollo_editor/screenshots/duplicates.png" />
+#### Artist matching
 
-- A **Similarity** column scores how closely each existing release matches the one you're entering — a folded-title ratio, softened by an **artist** mismatch (×0.75) and a **track-count** gap
-- **Click a score** to expand a **track-by-track comparison** beneath the row: each track's *Release* (the existing release) vs *Seeded* (what you're entering) **artist**, **title** and **length**, grouped by medium and with [detailed highlighting](#enable-detailed-highlighting).
+Stages, most confident first:
 
-The score is computed from the data shown in the native row (no extra requests); the comparison fetches the existing release's tracklist on demand when you open it.
+1. **Release group.** The same track on other releases in the group, with its credited artists. This settles most tracks, compilations included.
+2. **Discogs link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**.
+3. **Exact name or alias.** Linked only when exactly one artist has the credited name as its name or an alias, among all of MusicBrainz's matches, not only the first page. Badge: **NAME** or **ALIAS**.
+4. **Co-credit.** For a shared name, an artist credited with that name next to an artist already on this release. Exactly one such artist is linked; a tie is offered to pick from. Badge: **CRED**.
 
-### Annotation editor
+Green means matched confidently; a white search box means unresolved, counted by **N unresolved**.
 
-**[Settings](#settings)**: *Modify annotations with Markdown*
+**Discogs links.** When the Discogs link is known, the type icon offers what's missing: **🔗** creates the artist with the link, or adds the link to the matched artist. **⚠** warns that the link belongs to a different artist, or that the artist links a different Discogs page (often a wrong match). **🔗 N links** in the toolbar counts them and steps through them.
 
-Edits the [annotation](https://musicbrainz.org/doc/Annotation) as **Markdown** with a live preview. It runs both in the release editor's *Additional information* section and on the standalone **Edit annotation** page for all supported entities.
+The release **Label** and release **Artist** are linked on load under the same exact-name rule.
 
-<img width="1200" src="../apollo_editor/screenshots/annotation.png" />
+#### Recording matching
 
-**Toolbar options**
+All the release group's recordings come in one request and are matched by title, artist and length. Tracks the group can't answer are looked up one by one. When a title is worded differently (*Part 1* / *Pt. 1*), the same position on other editions, and then on releases of the same title and artist in other groups, is used if the title is similar and the length agrees.
 
-- **Preview** — a live split view: editor on the left, the annotation rendered updating in real time on the right
-- **Clear** — remove all markup from text area
-- **Markup** —  switch between editing as Markdown and the MusicBrainz markup
-- **Help** — hover for a syntax and shortcut cheatsheet.
-- **Maximize** — expand the editor to fill the screen (Esc restores)
-- **History** — the annotation's previous versions; select one to display its rendered annotation, with a **↶ revert** button that loads that version back into the editor with markup reconstructed from the rendered HTML
+| Colour | Confidence | |
+|:---:|---|---|
+| 🔵 | Exact | every field the same |
+| 🟢 | Tolerance | within the [tolerances](#settings) |
+| 🟡 | Near | one field differs, or lengths 3–15 s apart |
+| 🟠 | Low | two fields differ, or lengths over 15 s apart |
+| 🔴 | Very low | all three differ, lengths over 10 s apart |
 
-**Editing**
-
-- **Unnamed MusicBrainz entity links are named automatically** — MB `[url]`/`[url|]`, Markdown `[]()`, or a bare URL get the entity name (fetched from the API).
-- **Enter** continues the current list; **Tab** on a selection makes a bullet list (Tab again → numbered, again → bullet…); **Shift+Tab** removes the list marker.
-- **Ctrl/Cmd+B / +I** bold/italic — wraps the selection, or surrounds the word under the cursor.
-- All edits are **undoable** (`Ctrl+Z`).
-
-The Markdown ↔ MB conversion covers links, bold/italic, headings, nested bullet/numbered lists, fenced ` ``` ` ↔ 8‑space code, rules, and encodes a non‑link `[x]` so MusicBrainz doesn't read it as a broken link.
+**Cutoff** in the toolbar sets the lowest confidence that's linked. *Credited as* doesn't affect matching.
 
 ### Tools
 
-Apollo supports all native tools and adds new ones:
-
-1. Native tools: [Track parser](https://musicbrainz.org/doc/How_to_Add_a_Release#The_Track_Parser_(Manual_entry)), Swamp, Reorder, Guess feat, [Guess case](https://musicbrainz.org/doc/Guess_Case)
-1. [Search & Replace](#search--replace)
-1. [Pattern parser](#pattern-parser)
-1. [Length parser](#length-parser)
-1. [Merge & split mediums](#merge--split-mediums)
-1. [Resize columns](#resize-columns)
-1. [External tools](#external-tools)
-
-#### Customization
-
-Native tools are hidden and replaced by a configurable **Tools** bar. It is highly customizable, supports all native tools, some 3rd party tools and adds few new ones.
-
 <img width="1200" src="../apollo_editor/screenshots/tools.png" />
 
-The **Tools ▾** label opens a menu of the tools that *haven't* been put on the bar. Picking a tool from that menu uses it right away; a tool with parameters joins the bar **for the current session** so its controls are reachable — it returns to the menu next time (use Customize to keep it). Parameterless tools (e.g. *Guess feat.*) just fire on click.
+The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Customize…** to pick, reorder and show each tool as icon, text or both. A tool with settings picked from the menu joins the bar until the page closes. Right-click a tool's name to fold its settings into a hover flyout.
 
-**Customization** lets you:
+| Tool | |
+|---|---|
+| Track parser, Swap, Reset #, Guess feat., Guess case | MusicBrainz's own |
+| [Search and Replace](#search-and-replace) | replace text in titles, with saved patterns |
+| [Pattern parser](#pattern-parser) | a tracklist from text, by a pattern |
+| [Length parser](#length-parser) | track lengths from any text or page |
+| [Merge mediums, Split medium](#merge-and-split-mediums) | restructure the mediums, keeping the recordings |
+| Resize columns | Fit, Centered or Default widths |
+| Guess punctuation | kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation), when installed |
+| **↺ Revert all**, **✕ Clear all** (under ▾) | back to the loaded page, or empty |
 
-- **Show tool on the bar** — select which tools sit on the bar and leave the rest in the **Tools ▾** menu
-- **Reorder** — drag the handle to set the order
-- **Icon / text** — toggle the `[icon]` and `[text]` segments to show either or both
-
-> [!TIP]
-> **Collapsing a tool's parameters** — right-click a tool's name to collapse it to just the name (dotted underline); its parameters then **fly out on hover** (and stay open while you're typing in them). Right-click again to pin them back inline. The collapsed/expanded choice is remembered per tool.
-
-#### Search & Replace
-
-Search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared. Save common patterns under a name and reuse them from the **★** popup. Last 5 historic items are saved automatically. Each saved pattern row has hover actions: **⛓** add/remove it in a chain, **✎** rename, **✕** delete.
-
-- **Chains** — combine several saved patterns into a named **chain** that runs them all in one click, in order (e.g. *All Quotes* = *Quotes* then *Single quote*). Use **＋ Add chain** to create one, then **⛓** on a pattern to add it (a pattern can belong to several chains).
-- **Default** — mark one pattern **or** chain as the default with **◉**; it's shown highlighted in the list and is applied automatically the first time you open the Tracklist in a session (with the usual "N titles replaced" toast).
-- **Import / Export** — the button in the popup header opens a JSON view of your saved patterns + chains + the default marker (history excluded); paste and **✓ Import** to replace the set. The **History** section (recent patterns) is collapsed by default — click it to expand.
+#### Search and Replace
 
 <img width="600" src="../apollo_editor/screenshots/search.png" />
 
-#### Resize Columns
-
-Set column sizes to predefined variants (Fit, Centered, Default).
+Replaces text in track titles. **★** saves patterns under a name; the last five are kept as history. **⛓** puts patterns in a **chain** run in order; **◉** marks one pattern or chain as the default, applied when the tracklist first opens. **Import / Export** is the whole set as JSON.
 
 #### Pattern parser
 
-Fill a medium's tracklist from pasted text using a **pattern**. Type a pattern, paste the list, review the live preview, apply. Like the native parser it **opens seeded with the current tracklist** (using pattern `#. T - A (L)`), so you can also use it to bulk-edit what's already there.
-
 <img src="../apollo_editor/screenshots/pattern_parser.png" />
 
-##### Tokens
+Fills a medium from pasted text, by a pattern. It opens with the current tracklist, so it also bulk-edits.
 
-The following tokens can be used in constructing pattern (case sensitive):
+| Token | | Token | |
+|---|---|---|---|
+| `#` | track number | `M` | medium |
+| `T` | title | `-` | separator: any of `- – — / :` |
+| `A` | artist | `_` | skip the rest |
+| `L` | length | | |
 
-| Token |   Meaning    |
-| ----- | ------------ |
-| `#`   | Track number |
-| `T`   | Title        |
-| `A`   | Artist       |
-| `L`   | Length       |
-| `M`   | Medium       |
-| `-`   | Separator    |
-| `_`   | Skip noise   |
+Anything else is literal and whitespace is elastic. A capital is a token only standing alone; `$T` forces one. Fields split at the first separator; **split: last** splits at the last. Examples: `#. T`, `# A - T (L)`, `# A - T (_`.
 
-Anything else is a literal, whitespace is elastic, and a separator (`-` `–` `—` `/` `:`) matches any one of the set (so `# A - T` also parses an en-dash or slash). A capital letter is a token only when it stands alone; prefix with `$` to force it (`Track: $T`) or to spell one out.
-Text fields split on the **first** separator (`A - T` → artist = up to the first `-`, title = the rest) — flip the **split: first / last** toggle to split on the last instead.
+For fixed-width text a token takes a range: `T[6-]`, `T[6-20]`, `T[-5]`, `T[~3-]` (last 3), or `[from:to]` up to a character, such as `#[1:.]` or `L[(:)]`. `~` before a character means its last occurrence: `L[~(:)]`.
 
-**Examples:**
-
-- `#. T` → `1. So What`
-- `# A - T (L)` → `1 Miles Davis - So What (9:22)`
-- `# A - T (_` → drops a trailing `(original edit)`.
-
-**Slices**
-
-For delimiter-free fixed-width text.
-
-A token can carry a 1-based char range — `T[6-]` (6th char to end), `T[6-20]`, `T[-5]` (first 5), `T[~3-]` (last 3) — or a **`[from:to]`** form that runs from `from` up to (excluding) the first `to` character. `from` is a position or a character; `to` is a character:
-- `#[1:.]` = position 1 to the first `.` (`12. Title` → `12`), also `#[1:-]`, `#[1: ]`
-- `L[(:)]` = from the first `(` to the first `)` (`So What (9:22)` → `9:22`)
-- Prefix a character with `~` for the **last** occurrence instead of the first — `L[~(:)]` on `Hide Me (Bop remix) - Stillhead (4:20)` still finds the real length (`4:20`), where plain `L[(:)]` would grab the title's own `(Bop remix)` first
-
-The preview is one row per pasted line: a **match dot** (green = matched · amber = matched via a per-row pattern · red = no match), the raw text, and the extracted **# / artist / title / length**. A messy line can get its **own pattern** in the row's `pattern` cell without disturbing the rest. **Apply** writes only the fields the pattern produced (so a title-only pattern won't touch lengths); its **▾ menu** applies a single field (only titles / artists / lengths / #s) or adds the missing tracks first when you pasted more lines than the medium has.
-
-##### Freezing
-
-For a tracklist where no single pattern fits every line, **🔒 Freeze matched** locks the current pattern onto every row that's still on `«default»` and already matches — those rows keep that pattern from then on. Then adjust the pattern to solve more rows and freeze again; repeat until everything's matched, without the earlier fixes coming undone.
-
-For a one-off messy line you don't want to write a pattern for, **select the span** in its **raw** cell — a little bar pops up (`#` · `A` · `T` · `L` · `✕`); click a field to bind that span to it (it writes a `T[a-b]`-style slice into the row's pattern), or `✕` to clear the row. Both the main pattern box and each row's pattern cell carry a small **✕** to clear them.
+Each line's dot shows whether it matched (amber: by its own pattern). A row can get its own pattern, or you select part of its raw text and bind it to a field. **🔒 Freeze matched** keeps the current pattern on every row it matches, so you can change the pattern for the rest. **Apply** writes only the fields the pattern has; its ▾ applies one field, or adds missing tracks first.
 
 #### Length parser
 
-Fill a medium's track **lengths** from any text — the native track parser wants a specific format, but lengths copied off a site (Bandcamp, foobar2000, …) rarely fit (track numbers land on their own lines, etc.). It **greps every duration out of the text** and lets you review the result before writing anything.
-
-After invoking a tool, several options are offered:
-
-<img width="300" src="../apollo_editor/screenshots/len_parser_init.png" />
-
-- **Enter text** — type or paste a tracklist into the box.
-- **Paste from clipboard** — reads the clipboard directly.
-- **Parse from external link** — a **favicon per page linked on the release**; click one and it **fetches that page and reads its text right away** (no extra picker step). It narrows to the smallest part of the page that still holds at least a full tracklist's worth of durations, so nav/player/footer noise is skipped (e.g. it pulls all 20 lengths straight off a Bandcamp album page). When you Apply, the **source URL is added to the edit note**. (If a favicon can't load, it falls back to a clickable hostname chip.)
-- **Paste a link** — with a link on the clipboard, press **Ctrl+V** anywhere in the window (any page, not only one linked on the release): it is fetched and read exactly like a favicon click, source credited in the edit note. Pasted text that isn't a link goes into the box as usual.
-
-Once you've picked a source, a **‹ Sources** button in the header returns you to the chooser — handy when a fetched page has no parsable text (e.g. Spotify) and you want to try another link:
-
 <img width="600" src="../apollo_editor/screenshots/len_parser.png" />
 
-Whichever source, it detects everything shaped like a time — `5:50`, `1′23″`, `1'23"`, `1:02:03` — and **ignores** track numbers, titles, years and other noise. The detected times appear as an **editable list**, each next to the track it will fill (item 1 → track 1, …). Because alignment is by order:
+Reads every duration (`5:50`, `1′23″`, `1:02:03`) out of text and ignores the rest. The source is typed or pasted text, the clipboard, a page linked on the release (one favicon each), or a link pasted with **Ctrl+V**; a fetched page's URL goes into the edit note.
 
-- **✕** deletes a row (everything below shifts up);
-- **+** on a row inserts a length below it (everything shifts down) — for a duration the parser couldn't see (e.g. a single-digit-seconds `1:2`); **+ add length** appends;
-- click a value to **edit** it.
+The lengths line up with the tracks by order: **✕** removes a row, **+** inserts one, click a value to edit it. An invalid time blocks **Apply**; an empty row leaves that track's length alone. On a release with several mediums, pick the medium in the header.
 
-**Invalid** times (e.g. `99:99`) are highlighted red and surface a **prominent badge in the panel header** — they **must be fixed or deleted**, and **Apply** stays disabled until the list is clean. An **empty** row is allowed: that track keeps the length it already has (nothing is cleared), so a source that lacks a few lengths can still be applied — insert an empty row with **+** to keep the rest aligned. A counter shows *N lengths ↔ M tracks*. **Apply** writes the lengths to the medium's tracks in order (nothing is written until then; **Esc** cancels, **Ctrl+Enter** applies). The panel is **centred, draggable by its header, and resizable**; on a multi-medium release, pick the medium in the header.
-
-<!-- source: discussion #451 / issue #455 -->
-
-#### Merge & split mediums
-
-Restructure the mediums without redoing the tracklist by hand. Both tools keep every track's **title, length, artist credit and recording** and reset the track numbers.
-
-**Merge mediums** — all 14 one-track media of a release ticked, about to become one medium:
+#### Merge and split mediums
 
 <img width="900" src="../apollo_editor/screenshots/merge_mediums.png" />
 
-**Split medium** — pick the medium and the track the new medium starts at:
+- **Merge mediums**: the ticked mediums go into the first of them, in order; the others are removed.
+- **Split medium**: the chosen track and the ones after it become a new medium after it, in the same format.
 
-<img width="900" src="../apollo_editor/screenshots/split_medium.png" />
+Titles, lengths, credits and recordings are kept and tracks are renumbered. Nothing is submitted until you enter the edit. A medium with a disc ID is refused.
 
-- **Merge mediums** — tick the mediums to merge (all are ticked by default); they all go into the **first ticked** one, in medium order, and the others are removed. Tick a subset to merge only some of them (e.g. `2` and `4`).
-- **Split medium** — pick the medium and the track the **new medium starts at**; that track and everything after it move to a new medium, inserted right after the original, with the same format. Later mediums shift down by one.
+> [!NOTE]
+> MusicBrainz records this as an *Edit medium* plus a *Remove medium* per merged-away medium, or an *Add medium* for a split. The moved tracks get new track MBIDs. Without auto-edit rights, *Remove medium* waits for votes, so the old mediums show beside the merged one until then.
 
-Picking either tool from the **Tools ▾** menu only shows its controls; it runs when you click its name. Nothing is submitted: review the result and enter the edit as usual.
+#### Other scripts' tools
 
-What MusicBrainz records is what doing it by hand produces: an *Edit medium* (tracks added, existing recordings reused) plus a *Remove medium* per merged-away medium, or an *Add medium* for a split. The moved tracks get new track MBIDs; the recordings don't change. For editors without auto-edit privileges, *Remove medium* waits for votes, so until it passes the release briefly shows the old mediums next to the merged one.
-
-A medium with a disc ID is refused: MusicBrainz locks its tracklist.
-
-<!-- source: issue #615 -->
-
-#### External tools
-
-Those tools need 3rd party userscript:
-
-- **Guess punctuation** — runs kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation) (curly quotes, dashes, ellipses…) over the release. **Requires that script installed** — the tool only appears when it is.
-
-#### Tools integration
-
-Apollo can surface a fire-and-forget button that *another* userscript adds to the page, so you can use it without leaving the Apollo view. Such a tool behaves like any built-in one: it shows in the **Tools ▾** menu and in **Customize…**, where you can pin it to the bar, reorder it, and choose icon/text (the choice persists). It only appears while the providing script is present. Two ways in:
-
-**Recognised buttons** — Apollo adopts a known button *unmodified*, matched by its visible text (e.g. **Guess punctuation** above). Adopting another is a one-line registry entry in Apollo.
-
-**Convention (for script authors)** — tag any element `class="apollo-tool"` and Apollo offers it, no Apollo change needed:
+Apollo lists a button another userscript adds to the page like one of its own. A few are recognised by their text; any element with `class="apollo-tool"` is offered too:
 
 ```html
 <button class="apollo-tool" data-apollo-label="My tool" data-apollo-icon="★">…</button>
 ```
 
-- `data-apollo-label` *(optional)* — menu/button label (falls back to the element's text).
-- `data-apollo-icon` *(optional)* — a short text glyph **or** a `data:` / `http(s)` image URL (rendered as a small image); default 🔧.
-- `data-apollo-id` *(optional)* — stable id for the saved bar/menu placement (falls back to the element's `id`, then a slug of the label).
+`data-apollo-icon` is a glyph or an image URL (default 🔧); `data-apollo-id` keeps its place on the bar. Apollo clicks the element and re-reads the tracklist, so this suits tools without inline settings.
 
-Activating either kind **clicks the element**, then Apollo re-reads the tracklist so its grid reflects the change. This fits tools that are **parameterless or pop their own settings on click** (e.g. a Track parser); tools that need their controls rendered *inline* in Apollo's bar aren't supported.
+### Duplicates
 
-### Matching
+<img width="1200" src="../apollo_editor/screenshots/duplicates.png" />
 
-Apollo can automatically match unresolved **artists** and **recordings**. Both work the same way: a *Match* button, a per-row **confidence**, and the single best candidate applied automatically while anything uncertain is left out.
+On the Add release *Duplicates* tab, a **Similarity** score for each existing release, from the titles, the artist and the track count. Click a score for a track-by-track comparison.
 
-If _Auto-match on start_ is enabled in the [settings](#matching-options), matching will be automatically started on entering add/edit release page.
+### Annotation editor
 
-#### Artist matching
+<img width="1200" src="../apollo_editor/screenshots/annotation.png" />
 
-Apollo resolves each unmatched track artist in stages, most-confident first:
+Edits the annotation as Markdown, in the release editor and on every entity's *Edit annotation* page. The toolbar has **Preview** (side by side, live), **Clear**, **Markup** (Markdown or MusicBrainz's own), **Help**, **Maximize** and **History**, which shows earlier versions and loads one back.
 
-1. **Releases from same release group** — it pulls the per-track credits (with MBIDs) from other versions of the album and matches by track title. Other editions usually credit the same songs to the same artists, so this resolves most cases at the highest confidence — especially various-artists compilations.
-2. **Exact identity (name or alias)** — an alias is just an alternative name, so name and alias are resolved by **one** check: the artist is linked confidently only when **exactly one** MB artist carries the credited string as its name *or* an alias. This is alias-aware, mirroring MusicBrainz's own [duplicate-artist](https://musicbrainz.org/report/DuplicateArtists) check — so a name that is *also* another artist's alias counts as **ambiguous** and is left for you to pick, not guessed. The badge shows **NAME** or **ALIAS** to say which matched (same confidence either way). It also catches an exact name the fast search under-ranks below a look-alike (*Tee Vee* below *Tee-vee*) and an alias-only credit (*Don Abi* → the artist named *Abiodun*), neither of which the plain name index resolves on its own. "Exactly one" is only trusted when MusicBrainz returns **every** artist matching the name: its search doesn't rank exact matches first, so for a common name (*Kim* matches 2,777 artists) a single exact match among the results proves nothing — such a name is left for you to pick (or for the co-credit step below).
-3. **Existing artist credits (co-occurrence)** — when there's *no* unique exact identity (a common name several artists share, a featured "Joni", "Eva", …), Apollo asks MusicBrainz for a recording that credits that name **alongside an artist already known on this release** — a split co-artist or the release artist (never *Various Artists* or another special-purpose artist). If exactly one artist has been co-credited that way, it's the answer, applied with a magenta **CRED** badge. Only an exact credited-as / name hit counts — no fuzzy matching — and a tie is surfaced as candidates to pick from rather than guessed.
+- An unnamed MusicBrainz link gets the entity's name.
+- Enter continues a list; Tab on a selection makes a list and cycles bullets and numbers; Shift+Tab removes it.
+- Links, emphasis, headings, nested lists, code blocks and rules convert both ways.
 
-Anything none of these resolve is left as a low-confidence top candidate for you to confirm or change.
+### Highlighting
 
-Each resolved artist is tagged by how it matched (release-group, exact name, exact alias, credit co-occurrence, pre-existing, or manual).
+With *Enable detailed highlighting* on:
 
-**Confidence levels**:
+- the differing characters of a title or artist are marked, and a length gap is shaded by its size. A different artist is boxed whole; a *credited as* difference on the same artist marks only its characters;
+- confusable characters (`'` `’` `"` `-` `–` `—`) are enlarged, and invisible ones (no-break, zero-width, tab) are drawn, with their Unicode name in the tooltip;
+- a join phrase missing a space shows `␣`, and a missing join phrase `␣?␣`.
 
-1. 🟢 Green colored artist box means the artist was matched confidently (release-group, unambiguous exact name or alias, or credit co-occurrence).
-1. ⚪ White search box means artist is unresolved or low-confidence, for user to pick; these are what the "N unresolved" counter counts and what clicking that badge jumps to.
+A tracklist title shows styled until you click it, then becomes the input with the caret where you clicked.
 
-#### Discogs artist links
+<img src="../apollo_editor/screenshots/tracklist-dark.png" />
 
-When the release carries a **Discogs link** (read from the page), Apollo uses it for artists — controlled by the *Discogs artist link matching* [setting](#matching-options) (on by default).
-
-##### Match by URL
-
-Before the name search, each track artist is matched by its Discogs URL (taken from the release's Discogs tracklist) against MusicBrainz's URL relationships — a strong, human-verified signal. A single linked MB artist is applied directly with a teal **DISC** badge; several linked artists are offered as candidates to pick from.
-
-This includes **featured artists** split out of the title. Discogs credits them as an extra-artist (not a main track artist) whose role varies — *Featuring* on some releases, *Vocals* / *Backing Vocals* / *Rap* / *MC* on others — so Apollo reads **any performing role** (vocals, rap, voice, performer, narration…; not producers, remixers or instrumentalists) and matches a feat slot by its Discogs artist link, keyed to the slot's credited name, by title or (when titles differ but the track counts agree) by position. That link is often the only reliable bridge, since the split name is frequently just an alias of the MB artist.
-
-##### Adding link
-
-For a slot whose Discogs URL is known, the artist-type icon becomes an actionable Discogs icon when there's something to do — click it to act:
-  - unresolved slot → **teal 🔗**: creates the artist seeded with the Discogs link (same as `＋`);
-  - matched artist with **no** Discogs link → **teal 🔗**: adds it (opens the artist's edit form pre-seeded, confirmed on return);
-  - the Discogs URL already links a **different** MB artist (conflict) → **amber ⚠**: clicking still adds it to this artist, but you're warned which artist it currently points to;
-  - the artist already links a **different** Discogs page than the release credits (mismatch) → **amber ⚠**: the tooltip names both pages, and clicking adds the release's link to the artist anyway. A mismatch often means the wrong artist was matched, so it's worth a look first.
-- **Badge.** A teal **🔗 N links** badge in the toolbar counts the artists whose Discogs link needs attention — **missing + mismatched** (the tooltip breaks it down). It stays until they're resolved; each click steps to the next such track and focuses its credit field. Adding a link updates every track crediting that same artist at once.
-
-Already-linked artists are verified for free via MusicBrainz's internal entity endpoint, so the rate-limited URL lookup only runs for artists actually missing a link — a fully-linked release is near-instant. Clearing or reverting all artists doesn't trigger a re-check (it runs again when you Match).
-
-#### Recording matching
-
-Apollo fetches **every recording in the release group in one request**, indexes them by title, and matches each track **locally** — choosing the highest-confidence candidate (title + artist + length). It only falls back to a per-track MusicBrainz lookup for the tracks the release group can't satisfy. A full release therefore matches in roughly one fetch rather than one request per track.
-
-**Matching by duplicates (position + similarity).** A title-only match misses when editions word the same track differently (*Salongo Part 1* vs *Salongo, Pt. 1*, *Part 1* vs *Pt 1*). So when the title match doesn't clear the cutoff, Apollo also looks at the **same position** across the release's other editions — and, if those come up short, across releases MB holds under the *same title + artist* in **other release groups** (possible duplicates). A candidate from that slot links only when its title is **similar enough** to the track (≈60% by edit distance, or one contained in the other) *and* its length agrees — so a differently-worded duplicate resolves while an unrelated song that merely shares a slot in a divergent edition does not. It reads each edition's tracklist by position in one request and only reaches outside the RG when the editions don't answer.
-
-*Credited as* values on track and recording don't influence matching.
-
-**Confidence levels**:
-
-| Color |     Meaning      |                               Description                               |
-| :---: | ---------------- | ----------------------------------------------------------------------- |
-|   🔵   | Exact            | All fields are the same                                                 |
-|   🟢   | Tolerance        | Matches within tolerance defined in [settings](#matching-options)       |
-|   🟡   | Near             | A single field differs, or the length gap is 3–15s (a near-miss)        |
-|   🟠   | Low              | Two fields differ or the length gap alone is >15s (substantially wrong) |
-|   🔴   | Very low         | All three differ and the length gap is >10s (almost certainly wrong)    |
-
-The *Cutoff* option in the recording toolbar sets the acceptable confidence.
-
-#### Updating tracks and recordings
-
-When a track's title or artist differs from its linked recording, you can copy the track's value down to the recording (applied when you submit the release — the same as the native checkboxes). Right-click the recording-side **Title** or **Artist** cell:
-
-| Gesture | Action |
-|---|---|
-| **Right-click** | Toggle copy for that one cell |
-| **Ctrl + right-click** | Toggle both fields (that differ) on the row |
-| **Alt + right-click** | Toggle that field down the whole column (every differing row) |
-| **Ctrl + Alt + right-click** | Toggle both fields on **every row** — the whole side of the table (#443) |
-
-While a copy is on, the cell previews `→ New ` followed by the recording's ~~original~~ value, struck through. Cells that offer a copy carry a subtle underline; a real mismatch stays red.
-
-This mirrors MusicBrainz's **native** update checkboxes exactly — so a copy is offered whenever the native editor would show its checkbox, **including casing-only differences** that Apollo's match tolerance / *Ignore casing* setting would otherwise treat as a match. The tolerance settings still drive the confidence colouring; they no longer hide the copy. Right-clicking a recording cell with no difference does nothing (the browser's context menu is suppressed there).
-
-The same gestures work on the **track side** too (setting the track from its recording), applied immediately. Because the two sides copy in opposite directions, **Ctrl + Alt** covers one side per gesture — run it once on a recording cell and once on a track cell to sweep the whole table.
-
-### Toolbar
-
-| Control | Default | What it does |
-|---|---|---|
-| **Change** | all matching tracks | Scope of **every** artist action (pick, *Credited as*, join, add/remove/reorder/split): apply to just the edited track, or propagate to every track sharing the same artist credit (whole-credit match, like MB's native "change all matching tracks") |
-| **⚡ Match** | — | Match all still-unresolved track artists or recordings (used when *Auto-match on start* is off)|
-| **▾** | — | **↺ Revert all** — every track back to page-load state<br>**✕ Clear all** — empty all artists in tracklist or set new recordings|
-| **Tools** | — | The tools you choose, each shown at its place on the bar. Tools you don't put on the bar live under the **Tools ▾** menu, which also holds **Customize…** |
-| **Cutoff** | 🟡 near | Matches only records at or above the chosen confidence level and leave other unmatched |
+Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://github.com/kellnerd/userstyles#musicbrainz).
 
 ### Settings
 
-Accessed using the **⚙** button on the interface switcher button **Original / Apollo**. Settings are saved via the userscript manager's own storage — covered by its backup/restore and cross-browser sync, unlike a plain browser localStorage save — and persist across releases.
+**⚙** on the **Original / Apollo** button. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
 
-#### General
-
-If any of the following options is on, script replaces the native interface elements for the Apollo versions:
-
-- [Modify Release Information](#release-information)
-- [Modify Tracklist](#tracklist)
-- [Modify Recordings](#recordings)
-- [Modify Duplicates](#duplicates)
-- [Modify annotations with Markdown](#annotation-editor)
-- [Modify header and footer](#modify-header-and-footer)
-- [Zen editing](#zen-editing)
-- [Auto confirm release submissions](#auto-confirm-release-submissions)
-
-##### Modify header and footer
-
-Hide the native step-tab row and footer and show a compact step switcher instead.
-
-##### Zen editing
-
-Hides MusicBrainz header and footer for minimal distraction.
-
-Hide everything above the Apollo nav bar - the site header, release title and entity tabs and the page footer — leaving just the Apollo interface.
-
-The release title / artist (with version count) is shown in the navigation bar.
-
-##### Auto confirm release submissions
-
-When another site *seeds* the Add/Edit-release form, MusicBrainz shows a confirmation page before opening the editor; Apollo clicks its submit button so you skip that step (integrating [chaban's *Auto click confirm form submission*](https://greasyfork.org/en/scripts/536999) script). Acts only on that seed-confirmation page; add `?skip_confirmation` to a seed URL to bypass it once.
-
-The interface modifications (everything above except *Auto confirm*) are toggled on/off together using the switcher button.
-
-#### Matching options
-
-| Option | Default | What it does |
+| Setting | Default | |
 |---|---|---|
-| **Auto-match on start**| Off<br>Off<br>On<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads<br>**Label** - When the release's label name has exactly **one** exact MusicBrainz match, selects it automatically on load. Ambiguous names (e.g. *Columbia* → several labels) and names with no exact hit are left for you to pick<br>**Artist** - Same for the release **Artist** field: a seeded/typed release artist with exactly **one** exact MusicBrainz match is selected automatically on load; ambiguous or no-hit names are left for you to pick|
-| **Discogs artist link matching**| On | When the release has a Discogs link, match track artists by their [Discogs URL](#discogs-artist-links) (before the name search) and offer to add/create missing links|
-|**Length tolerance**|5| Allow a length gap within N seconds (use `0` for exact)|
-|**Title tolerance**|1| Allow up to N differing characters in the title (use `0` for exact)|
-|**Ignore casing** |On|Case / accent / spacing-only differences don't count|
-|**Ignore punctuation**|On| *& → and*, brackets, quotes, dashes and dots are stripped before comparing|
-|**Enable detailed highlighting**| On | Highlights the exact differing characters|
+| Modify Release information, Tracklist, Recordings, Duplicates | on | replace that part of the editor |
+| Modify annotations with Markdown | on | the [annotation editor](#annotation-editor) |
+| Modify header and footer | on | a compact step switcher instead of the tabs and footer |
+| Zen editing | on | hide the site header, title and footer; the title moves into Apollo's bar |
+| Auto confirm release submissions | on | skip the confirmation page when a site seeds a release (`?skip_confirmation` bypasses it once) |
+| Auto-match on start: Tracklist, Recordings | off | match on load |
+| Auto-match on start: Label, Artist | on | link a release label or artist with exactly one exact match |
+| Discogs artist link matching | on | match by [Discogs link](#artist-matching) and offer missing links |
+| Length tolerance | 5 s | `0` for exact |
+| Title tolerance | 1 | differing characters allowed |
+| Ignore casing | on | case, accents and spacing don't count |
+| Ignore punctuation | on | `&`/*and*, brackets, quotes, dashes and dots don't count |
+| Enable detailed highlighting | on | see [Highlighting](#highlighting) |
+| Row layout | normal | compact, normal or cozy |
+| Alternate row colors | off | |
+| Show grid | rows | lines between rows and/or columns |
+| Enlarge punctuation by | 3 px | `0` stops the enlarging; the markers stay |
+| Keep caret position on row navigation | on | off: a cell is selected whole on arrival |
+| Highlight all instances of an artist on hover | off | |
 
-##### Enable detailed highlighting
+### Shortcuts
 
- Highlights the exact **differing characters** in a mismatching **title and artist** (including a casing- or punctuation-only difference the match would otherwise tolerate), instead of the whole field, and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
-
-For artists this works at two levels: a **different linked artist** is boxed whole, while a **credited-as** difference on the *same* artist (e.g. *DJ Vadim* vs *Vadim*) has just its differing characters highlighted — the link is kept and matching is unaffected (credited-as never influences matching), so you can *see* the difference without it being treated as a mismatch (#444).
-
-#### Appearance
-
-Applied to **both** tables (Tracklist and Recordings).
-
-| Option | Default | What it does |
+| Where | Key | |
 |---|---|---|
-| **Row layout** | normal | Row density: `compact` (tight) · `normal` · `cozy` (airy). |
-| **Alternate row colors** | Off | Tints every other row (and deepens the matched-box green on alternate rows). |
-| **Show grid** | Off | Toggle grid lines on rows and/or columns |
-| **Enlarge punctuation** | 3px | How much to enlarge confusable characters, in pixels (`0` = no enlargement; the invisible-char / missing-space markers still show under [detailed highlighting](#enable-detailed-highlighting)) |
-
-### Keyboard
-
-#### Tracklist
-
-|         Key         |            Description            |
-| ------------------- | --------------------------------- |
-| Down, \<ENTER\>     | focus cell in the next row        |
-| Up, SHIFT+\<ENTER\> | focus cell in the previous row    |
-| Tab                 | focus cell in the next column     |
-| SHIFT+Tab           | focus cell in the previous column |
-
-By default, moving between cells keeps the **caret column** where it was (clamped to the destination's length) instead of selecting the whole field — so you can keep typing or fix casing at the same spot rather than overwriting. Turn off **Keep caret position on row navigation** (gear → Appearance) to restore the old behavior, where arriving on a cell selects the whole field so the next keystroke replaces it.
-
-#### Length parser
-
-| Key        | Description                                                               |
-| ---------- | ------------------------------------------------------------------------- |
-| Ctrl+V     | with a link on the clipboard: fetch that page and read its track lengths  |
-| Ctrl+Enter | apply                                                                     |
-| Esc        | close without applying                                                    |
-
-#### Enlarge punctuation
-
-When [detailed highlighting](#enable-detailed-highlighting) is on:
-
-- Every character that is confusable (a straight `'` `"` `-`, a curly `’`, an en/em dash) is **enlarged**.
-- Every invisible character (a no-break or zero-width space, a tab etc.) is rendered as a **visible glyph** with a highlight — so a missing / wrong space can never hide.
-- Tooltip shows its Unicode name and exact codepoint.
-
-The _Appearance → Enlarge punctuation by N px_ setting controls **only the enlargement size** — `0` means *no enlargement*, **not** off: the invisible glyphs and missing-space markers still show (they're part of detailed highlighting). To turn the marking off entirely, uncheck **Enable detailed highlighting** (#443).
-
-On the **Tracklist** tab the **Title** can't be styled while it's an editable `<input>`, so it's shown as styled read-only text that **drops into the native input the moment you click or tab into it** — with the caret landing on the character you clicked, so positioning it takes one click and not two ([#601](https://github.com/majkinetor/musicbrainz-userscripts/issues/601)).
-
-##### Join-phrase spacing
-
-A join phrase between two artists should have a space on both sides (`" & "`). Where one is **missing** a highlighted `␣` is drawn (`Gandhabba &␣Render`), and a join phrase **missing entirely** between two artists shows `␣?␣`
-
-Feature works on both the [Recordings](#recordings) and the [Tracklist](#tracklist) artists where the join input is outlined and flagged.
-
-Shares the _Enlarge punctuation_ master switch (`0` = off).
-
-##### Join-phrase presets — keyboard (#419)
-
-The join input's preset dropdown (▾) is fully keyboard-driven:
-
-| Key | Action |
-| --- | ------ |
-| *typing* | opens the dropdown filtered to matching presets (`fe` → `feat.` / `featuring`), top hit pre-highlighted |
-| <kbd>↓</kbd> / <kbd>↑</kbd> | open the list / move the highlight (wraps) |
-| <kbd>Enter</kbd> | pick the highlighted preset (or commit the typed value when the list is closed) |
-| <kbd>Esc</kbd> | close the list |
-
-### Dark theme
-
-Apollo supports dark theme that can be enabled via [Stylus](https://github.com/kellnerd/userstyles#musicbrainz):
-
-<img src="../apollo_editor/screenshots/release-dark.png" />
-<img src="../apollo_editor/screenshots/tracklist-dark.png" />
-
-### Persistence
-
-These are remembered automatically as you use the UI:
-
-- **Column widths** — drag a column border to resize; reset/auto-fit via the **Resize Columns** tool.
-- **Suggestions collapsed** — the picker remembers whether its *suggestions* section is collapsed.
-- **Tools bar** — which tools are on the bar, their order, each tool's icon/text choice, and whether its parameters are collapsed.
-- **Apply mode**, **Cutoff**, and all dialog options above — saved on change.
+| Tracklist | ↓, Enter | next row |
+| Tracklist | ↑, Shift+Enter | previous row |
+| Tracklist | Tab, Shift+Tab | next, previous column |
+| Join phrase | typing, ↓ ↑, Enter | filter the presets, move, pick |
+| Length parser | Ctrl+V | read the lengths from the link on the clipboard |
+| Length parser | Ctrl+Enter | apply |
+| Annotation | Ctrl+B, Ctrl+I | bold, italic |
+| Annotation | Tab, Shift+Tab | make or change a list, remove it |
 
 ---
 
@@ -604,7 +315,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 
 ### Full-screen viewer
 
-← → move between covers, ↑ ↓ zoom (the level is remembered). When zoomed, the image follows the mouse (switch it off in ⚙ to drag instead). **P** runs a slideshow, **Enter** edits the comment, **Delete** marks the cover for removal. See [Shortcuts](#shortcuts).
+← → move between covers, ↑ ↓ zoom (the level is remembered). When zoomed, the image follows the mouse (switch it off in ⚙ to drag instead). **P** runs a slideshow, **Enter** edits the comment, **Delete** marks the cover for removal. See [Shortcuts](#shortcuts-1).
 
 ### File names ⇄ types
 
