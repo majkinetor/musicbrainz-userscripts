@@ -390,7 +390,7 @@
     }
     MODEL = source.map((s, i) => ({
       id: s.id, types: s.types.slice(), comment: s.comment,
-      order: i, w: 0, h: 0, fmt: fileFormat((byId.get(String(s.id)) || {}).image), _del: false, _new: false, _pending: !!s.pending, _pdf: !!s.pdf || /\.pdf(\?|$)/i.test(s.img || ''), _img: s.img,
+      order: i, w: 0, h: 0, fmt: fileFormat((byId.get(String(s.id)) || {}).image) || fileFormat(s.img), _del: false, _new: false, _pending: !!s.pending, _pdf: !!s.pdf || /\.pdf(\?|$)/i.test(s.img || ''), _img: s.img,
       _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();

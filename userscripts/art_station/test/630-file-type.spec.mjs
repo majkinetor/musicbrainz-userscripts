@@ -48,9 +48,11 @@ test.describe('turned on', () => {
     const png = cards.find(c => / PNG$/.test(c.size)), jpg = cards.find(c => / JPEG$/.test(c.size));
     check(png && /^\d+(\.\d)?[KM]b PNG$/.test(png.size) && png.px === '300 × 200', `a dropped PNG: "${png && png.size}" then "${png && png.px}"`);
     check(jpg && /^\d+(\.\d)?[KM]b JPEG$/.test(jpg.size) && jpg.px === '400 × 400', `a dropped JPEG: "${jpg && jpg.size}" then "${jpg && jpg.px}"`);
-    // the release's own covers: from the originals' names on archive.org, or the CAA image URL
-    const old = await until(() => existing(page), s => s.length && s.every(t => /[KM]b (JPEG|PNG|GIF|WEBP|PDF)$/.test(t)), { timeout: 30000 });
-    check(old.length && old.every(t => /[KM]b (JPEG|PNG|GIF|WEBP|PDF)$/.test(t)), `existing covers show theirs (${JSON.stringify(old)})`);
+    // the release's own covers: from the originals' names on archive.org, the CAA image URL, or
+    // the page's own 'original' link; alone when archive.org doesn't know a cover's size
+    const typed = t => /(^|[KM]b )(JPEG|PNG|GIF|WEBP|PDF)$/.test(t);
+    const old = await until(() => existing(page), s => s.length && s.every(typed), { timeout: 30000 });
+    check(old.length && old.every(typed), `existing covers show theirs (${JSON.stringify(old)})`);
 
     // turning it off in the setup panel takes it away at once
     await page.click('#as-setup-btn');
