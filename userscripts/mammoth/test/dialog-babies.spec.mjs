@@ -5,7 +5,7 @@
 //
 // A stub MusicBrainz page, no network, with MusicBrainz's relationship-dialog markup and
 // a custom "Credited as" field (.attribute-credit).
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 
 const SETTINGS = JSON.stringify({ customFields: [{ match: '.attribute-credit', label: 'Credited as' }] });
 test.use({ profile: 'fresh', gm: { name: 'Mammoth', values: { 'mammoth:settings': SETTINGS } } });
@@ -15,7 +15,7 @@ test('a dialog hides the pins unless it hosts a pinned field', { tag: '@unit' },
     body: '<!doctype html><meta charset="utf-8"><body><div id="content"><h1>Recording</h1></div></body>' }));
   await page.goto('https://musicbrainz.org/recording/00000000-0000-0000-0000-000000000000/edit', { waitUntil: 'domcontentloaded' });
   await inject('mammoth');
-  await page.waitForTimeout(800);
+  await idle(page);
 
   const open = kind => page.evaluate(kind => {
     document.querySelectorAll('.dialog.popover').forEach(d => d.remove());
@@ -38,14 +38,14 @@ test('a dialog hides the pins unless it hosts a pinned field', { tag: '@unit' },
     };
   });
 
-  await open('instrument'); await page.waitForTimeout(700);
-  const bass = await state();
+  await open('instrument');
+  const bass = await until(state, s => s.pinned && s.pinVisible && !s.blocking);
   check(bass.pinned && bass.pinVisible && !bass.blocking, `an instrument dialog (no Task) shows its "Credited as" pin (${JSON.stringify(bass)})`);
 
-  await open('task'); await page.waitForTimeout(700);
-  const mixer = await state();
+  await open('task');
+  const mixer = await until(state, s => s.pinned && s.pinVisible && !s.blocking);
   check(mixer.pinned && mixer.pinVisible && !mixer.blocking, `a dialog with Task shows it too (${JSON.stringify(mixer)})`);
 
-  await open('plain'); await page.waitForTimeout(500);
-  check((await state()).blocking, 'a dialog with no pinned field hides the pins');
+  await open('plain');
+  check((await until(state, s => s.blocking)).blocking, 'a dialog with no pinned field hides the pins');
 });
